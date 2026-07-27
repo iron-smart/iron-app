@@ -3,11 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>איירון פיטנס — CRM</title>
+<title>איירון פיטנס — המערכת</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{ --navy:#002D48; --green:#6A9F85; --dark:#061827; --bg:#f4f6f8; --line:#e2e8f0; --red:#c0392b; --amber:#d97706; }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body{ margin:0; font-family:-apple-system,"Segoe UI",Rubik,Arial,sans-serif; background:var(--bg); color:var(--dark); }
+  body{ margin:0; font-family:'Heebo',-apple-system,"Segoe UI",Rubik,Arial,sans-serif; background:var(--bg); color:var(--dark); }
   button{ font-family:inherit; cursor:pointer; }
   .hidden{ display:none !important; }
 
@@ -101,6 +102,30 @@
     .tabs button{ padding:12px 11px; font-size:14px; }
     main{ padding:12px; }
   }
+
+  /* ===== מעטפת מאוחדת — סרגל עליון + תפריט צד ימני (עיצוב לוח התיאום) ===== */
+  .topnav{ position:sticky; top:0; z-index:30; display:flex; align-items:center; gap:12px; background:linear-gradient(135deg,#061827,#0b3552); color:#fff; padding:9px 14px; min-height:52px; box-sizing:border-box; }
+  .topnav .burger{ background:rgba(255,255,255,.12); border:none; color:#fff; font-size:19px; border-radius:8px; padding:5px 12px; }
+  .topnav .brand{ display:flex; align-items:center; gap:10px; font-weight:800; font-size:16px; }
+  .topnav .brand img{ width:30px; height:30px; background:#fff; border-radius:8px; padding:3px; box-sizing:border-box; }
+  .topnav .spacer{ flex:1; }
+  .topnav .who2{ font-size:13px; opacity:.92; }
+  .topnav button.out{ background:rgba(255,255,255,.15); color:#fff; border:none; border-radius:8px; padding:7px 12px; font-size:13px; }
+  .shell{ display:flex; align-items:stretch; }
+  aside#side{ width:225px; flex:none; background:linear-gradient(180deg,#061827,#0b3552); padding:12px 0; position:sticky; top:52px; align-self:flex-start; height:calc(100vh - 52px); overflow-y:auto; box-sizing:border-box; }
+  aside#side.closed{ display:none; }
+  .nav-item{ display:flex; align-items:center; gap:10px; width:100%; text-align:start; background:none; border:none; color:#cfd8e3; font-size:15px; font-family:inherit; padding:12px 18px; border-inline-start:3px solid transparent; }
+  .nav-item.active{ color:#fff; background:rgba(255,255,255,.07); border-inline-start-color:var(--green); font-weight:700; }
+  .nav-item:hover{ color:#fff; }
+  .side-foot{ color:#84898f; font-size:11px; text-align:center; padding:14px 10px; }
+  .content{ flex:1; min-width:0; }
+  main:has(#tab-orders:not(.hidden)){ max-width:1500px; }
+  #board-wrap{ height:calc(100vh - 175px); }
+  #board-wrap iframe{ width:100%; height:100%; border:none; border-radius:12px; background:#fff; box-shadow:0 2px 10px rgba(6,24,39,.08); }
+  @media(max-width:800px){
+    aside#side{ position:fixed; inset-inline-end:0; top:52px; z-index:29; box-shadow:0 0 40px rgba(0,0,0,.45); }
+    #board-wrap{ height:calc(100vh - 165px); }
+  }
 </style>
 </head>
 <body>
@@ -131,25 +156,28 @@
 
 <!-- ===== אפליקציה ===== -->
 <div id="app" class="hidden">
-  <header>
-    <div class="who">היי,<b id="uName">—</b></div>
-    <div style="display:flex;align-items:center;">
-      <span class="role" id="uRole">—</span>
-      <button id="logoutBtn" style="margin-inline-start:10px;">יציאה</button>
-    </div>
-  </header>
-  <div class="tabs">
-    <button class="active" data-tab="today">היום שלי</button>
-    <button data-tab="leads">לידים</button>
-    <button data-tab="deals">עסקאות</button>
-    <button data-tab="meets">פגישות</button>
-    <button data-tab="customers">לקוחות</button>
-    <button data-tab="contacts">אנשי קשר</button>
-    <button data-tab="pays">תשלומים</button>
-    <button data-tab="tasks">משימות</button>
-    <button data-tab="orders">הזמנות</button>
-    <button class="jump" onclick="location.href='orders/'">לוח תיאומים ↗</button>
+  <div class="topnav">
+    <button class="burger" id="sideToggle" title="הצגה/הסתרה של התפריט">☰</button>
+    <div class="brand"><img class="brand-logo" alt="">איירון פיטנס</div>
+    <div class="spacer"></div>
+    <span class="who2">היי, <b id="uName">—</b></span>
+    <span class="role" id="uRole">—</span>
+    <button class="out" id="logoutBtn">יציאה</button>
   </div>
+  <div class="shell">
+  <aside id="side">
+    <button class="nav-item active" data-tab="today">🏠 דשבורד — היום שלי</button>
+    <button class="nav-item" data-tab="leads">📞 לידים</button>
+    <button class="nav-item" data-tab="customers">👥 לקוחות</button>
+    <button class="nav-item" data-tab="contacts">🗂️ אנשי קשר</button>
+    <button class="nav-item" data-tab="tasks">✅ משימות</button>
+    <button class="nav-item" data-tab="deals">💼 עסקאות</button>
+    <button class="nav-item" data-tab="meets">📅 פגישות</button>
+    <button class="nav-item" data-tab="orders">📦 הזמנות</button>
+    <button class="nav-item" data-tab="pays">💳 תשלומים</button>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת</div>
+  </aside>
+  <div class="content">
 
   <main>
     <!-- היום שלי -->
@@ -218,14 +246,22 @@
       <div id="tasks-list"></div>
     </section>
 
-    <!-- הזמנות (מערכת התיאומים — קריאה בלבד) -->
+    <!-- הזמנות — לוח תיאום התקנות ומשלוחים + רשימה -->
     <section id="tab-orders" class="hidden">
-      <div class="linkout">📦 הנתונים מלוח ההזמנות והתיאומים · <a href="orders/">פתיחת הלוח המלא ←</a></div>
-      <div class="chips" id="ord-chips"></div>
-      <div class="toolbar"><input id="ordSearch" placeholder="חיפוש לפי לקוח, מס' הזמנה או עיר…"></div>
-      <div id="orders-list"></div>
+      <div class="chips">
+        <button class="chip active" id="ov-board" onclick="setOrdView('board')">🗓️ לוח תיאום התקנות ומשלוחים</button>
+        <button class="chip" id="ov-list" onclick="setOrdView('list')">📋 רשימה מהירה וכרטיסים</button>
+      </div>
+      <div id="board-wrap"><iframe id="boardFrame" title="לוח תיאום התקנות ומשלוחים"></iframe></div>
+      <div id="ord-list-wrap" class="hidden">
+        <div class="chips" id="ord-chips"></div>
+        <div class="toolbar"><input id="ordSearch" placeholder="חיפוש לפי לקוח, מס' הזמנה או עיר…"></div>
+        <div id="orders-list"></div>
+      </div>
     </section>
   </main>
+  </div><!-- content -->
+  </div><!-- shell -->
 </div>
 
 <!-- מודל משימה חדשה -->
@@ -327,12 +363,27 @@ async function afterLogin(){
 
 $('#logoutBtn').onclick = async ()=>{ await sb.auth.signOut(); location.reload(); };
 
-document.querySelectorAll('.tabs button:not(.jump)').forEach(b=> b.onclick=()=>{
-  document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));
+document.querySelectorAll('.nav-item').forEach(b=> b.onclick=()=>{
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
   b.classList.add('active');
   ['today','leads','deals','meets','customers','contacts','pays','tasks','orders'].forEach(t=>
     $('#tab-'+t).classList.toggle('hidden', b.dataset.tab!==t));
+  if(b.dataset.tab==='orders') initBoard();
+  if(window.innerWidth<800) $('#side').classList.add('closed');
 });
+$('#sideToggle').onclick = ()=> $('#side').classList.toggle('closed');
+if(window.innerWidth<800) $('#side').classList.add('closed');
+function initBoard(){
+  const f = $('#boardFrame');
+  if(!f.getAttribute('src')) f.src = 'orders/';
+}
+window.setOrdView = v=>{
+  $('#ov-board').classList.toggle('active', v==='board');
+  $('#ov-list').classList.toggle('active', v==='list');
+  $('#board-wrap').classList.toggle('hidden', v!=='board');
+  $('#ord-list-wrap').classList.toggle('hidden', v==='board');
+  if(v==='board') initBoard();
+};
 
 const LOGO = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAsYAAALGCAYAAABGaFe1AAAACXBIWXMAAAsTAAALEwEAmpwYAAAE9GlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgOS4xLWMwMDIgNzkuYTFjZDEyZjQxLCAyMDI0LzExLzA4LTE2OjA5OjIwICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgMjYuNCAoTWFjaW50b3NoKSIgeG1wOkNyZWF0ZURhdGU9IjIwMjUtMDMtMTJUMTg6MDM6NTIrMDI6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDI1LTAzLTEyVDE4OjA2OjM2KzAyOjAwIiB4bXA6TWV0YWRhdGFEYXRlPSIyMDI1LTAzLTEyVDE4OjA2OjM2KzAyOjAwIiBkYzpmb3JtYXQ9ImltYWdlL3BuZyIgcGhvdG9zaG9wOkNvbG9yTW9kZT0iMyIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo0MmM4ZjdjOS0xOGMxLTQwY2QtYjZiOC1kZmE4NTU4NmUyN2EiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6NDJjOGY3YzktMThjMS00MGNkLWI2YjgtZGZhODU1ODZlMjdhIiB4bXBNTTpPcmlnaW5hbERvY3VtZW50SUQ9InhtcC5kaWQ6NDJjOGY3YzktMThjMS00MGNkLWI2YjgtZGZhODU1ODZlMjdhIj4gPHhtcE1NOkhpc3Rvcnk+IDxyZGY6U2VxPiA8cmRmOmxpIHN0RXZ0OmFjdGlvbj0iY3JlYXRlZCIgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDo0MmM4ZjdjOS0xOGMxLTQwY2QtYjZiOC1kZmE4NTU4NmUyN2EiIHN0RXZ0OndoZW49IjIwMjUtMDMtMTJUMTg6MDM6NTIrMDI6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIFBob3Rvc2hvcCAyNi40IChNYWNpbnRvc2gpIi8+IDwvcmRmOlNlcT4gPC94bXBNTTpIaXN0b3J5PiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pg2jSN8AABmVSURBVHic7d1LkiTHdUDR2zBtR1iHsGJqHdSCWgOyiUajPln5ifB4fs6MNA6yItz93XJLVn/7/v17AACwu9/O/gAAALACYQwAAAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKCq/zr7A7zKt9//+H72ZwCG+7///Xb2R/ib//4fZx/wUt//+Y/1zr4nGRHGIhgA4BhvddeUWL5kGAthAIB1/NpmVw3lS4WxIAYAWN+PZrtaIC8fxmIYAOCafu64K0TysmEsiAEA5rhCJC8XxoIYAGC2Vb9qsczfMf72+x/fRTEAwD5Wa7/Tb4xXeyAAABxnpdvj08JYEAMA8MMKgXzKVylEMQAAbzmzEw+9MRbEAAB85qzb48NujEUxAABfcXQ/HhLGohgAgHsc+ZfLXhrG/gQbAADPcERTviyMBTEAAM/06r58SRiLYgAAXuGVnfn0MBbFAAC80qt686lhLIoBADjCK7rzaWEsigEAONKz+/MpYSyKAQA4wzM79OEwFsUAAJzpWT36UBiLYgAAVvCMLr07jEUxAAArebRPD/knoQEA4AiPxPFdYey2GACAab4cxqIYAICV3durXwpjUQwAwBXc062+YwwAwEhfjeObw9htMQAAk90UxqIYAIAr+krH+ioFAAB0Qxi7LQYA4Mpu7Vk3xgAAjHdLHH8Yxm6LAQDYhRtjAAC28Nml77th7LYYAICduDEGAGAbH13+vhnGbosBANiNG2MAAOiNMHZbDADAZO/1rhtjAABIGAMAsKG3bo1/++x/AAAAO3BjDAAA/RTGbosBANjJr/3rxhgAABLGAABQCWMAAKiEMQAAG/v5e8a//fpfAADAjtwYAwBAwhgAACphDADA5n58rfg33y8GAAA3xgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBA337/47swBgCA3BgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAH3/5z++CWMAAMiNMQAAVMIYAAAqYQwAAJUwBgCAqn77/s9/fDv7QwAAwNncGAMAQMIYAAAqYQwAwOZ+fLX4t5//AwAA7MqNMQAAJIwBAKASxgAAUP0Uxr5nDADAbn5uYDfGAACQMAYAgOqXMPZ1CgAAdvFr+7oxBgCAhDEAAFRvhLGvUwAAMN1bzevGGAAAEsYAAFC9E8a+TgEAwFTvta4bYwAA6IMwdmsMAMA0HzWuG2MAAOiTMHZrDADAFJ+1rRtjAADohjB2awwAwNXd0rQ33RiLYwAArurWlvVVCgAA6Ath7NYYAICr+UrDfunGWBwDAHAVX21XX6UAAIDuCGO3xgAArO6eZr3rxlgcAwCwqntb1VcpAACgB8LYrTEAAKt5pFEfujEWxwAArOLRNn34qxTiGACAsz2jSZ/yHWNxDADAWZ7Vok/7P9+JYwAAjvbMBn3qX6UQxwAAHOXZ7fn0P9cmjgEAeLVXNOdL/o6xOAYA4Gr8Ax8AAFzKqy5hXxbGbo0BAHi2VzbmS2+MxTEAAM/y6rZ8+VcpxDEAAI86oikP+Y6xOAYA4F5HteRh/+c7cQwAwFcd2ZCH/lUKcQwAwK2ObsfD/1ybOAYA4DNnNOMpf8dYHAMA8J6zWvG0f+BDHAMAsBL/8h0AAMs48/L01DB2awwAwA9nt+HpN8ZnPwAAAM63QhOeHsa1xoMAAOAcq7TgEmFc6zwQAACOs1IDLhPGtdaDAQDgtVZrv2/fv38/+zP8zbff/1jvQ8GDVtv8PO7bt/Ve6YpnOo8zF5loxbm41I3xDys+KHiUwQbcw9nBRKu23pJhXOs+MAA4iihmopUbb9kwrrUfHNzDkANu5byA4y0dxjCRYQd8xjnBVKtfei4fxqs/QLiHoQe8x/nAVFdouuXDuK7xIOGrDD/gV84FprpKy10ijOs6DxS+whAEfnAeMNWVGu4yYVzXerBwK8MQcA4w1dXa7VJhXNd7wHALQxH2Zf8z1RWb7XJhXNd80PAZwxH2Y98z1VVb7ZJhXNd94PARQxL2Yb8z1ZUb7bJhXNd+8PAewxIAznHpMC5xzEziGGazx5nq6l12+TCGqQxOmMneZqqrR3ENCeMJLwKA+UQxU01psRFhXHNeCPzMEIU57GemmtRgY8K4Zr0Y+MEwheuzj5lqWnuNCuOa94KgDFW4MvuXqSY217gwrpkvCgxXuB77lqmmttbIMK65L4y9GbJwHfYrU01urLFhXLNfHPsybGF99ilTTW+r0WFc818gezJ0YV32J1zX+DAuccxMhi+sx75ksh16aoswhqkMYViH/chkO0RxbRTGu7xQ9mMYA/BKOzXUNmFce71Y9iKO4Vz2IFPt1k5bhXHt94LZh8EM57D3mGrHZtoujGvPFw3A84liptq1lbYM49r3hTObIQ3Hsd+YaudG2jaMa+8Xz1yGNbyefcZUu7fR1mFcFgAzGdrwOvYXU2kiYVxZCMxkeMPz2VcwmzD+N3HMRIY4PI/9xGQ66F+EMQxnmMPj7CMmE8V/EsY/sTCYylCH+9k/TKZ9/koY/8ICYSrDHb7OvmEyzfN3wvgNFgpTGfJwO/uFybTO24TxOywYpjLsAfamcd4njD9g4TCVOIaP2SNMpW0+Jow/YQExlcEPb7M3mErTfE4Y38BCAtiDKGYqLXMbYXwjC4qJRAD8yX4AhDFsTgyAfcBsLvduJ4y/wMJiKlHAzqx/JtMuXyOMv8gCYypxwI6seybTLF8njO9goTGVSGAn1juTaZX7COM7WXBMJRbYgXXOZBrlfsL4ARYeU4kGJrO+mUybPEYYP8gCZCrxwETWNZNpkscJ4yewEJlKRDCJ9cxkWuQ5hPGTWJBMJSYA1qZBnkcYP5GFyVTimKuzhoFbCGPgJsKCq7J2mcyl3HMJ4yezQAHWIYqZTHM8nzB+AQuVqUQGV2K9MpnWeA1h/CIWLFOJDa7AOmUyjfE6wviFLFymEh2szPpkMm3xWsL4xSxgphIfrMi6ZDJN8XrC+AAWMlOJEFZiPTKZljiGMD6IBc1UYoQVWIdMpiGOI4wPZGEzlSjhTNYfk2mHYwnjg1ngTCVOOIN1BzyTMAaeRqRwJOuN6VymHU8Yn8BCZzKxAvA4rXAOYXwSC57JxDGvZo0xmUY4jzA+kYXPZMKFV7G2mEwbnEsYn8wGALidKGYyTXA+YbwAG4GpRAzPZD0xmRZYgzBehA3BVGKGZ7COmEwDrEMYL8TGYCpRwyOsHyYz+9cijBdjgzCVuOEe1g2TmfnrEcYLslGYSuTwFdYLcDRhDBxK7HAL64TpXIKtSRgvyoZhMtHDR6wPpjPj1yWMF2bjMJn44S3WBdOZ7WsTxouzgZhMBPEz64HpzPT1CeMLsJGYTAwBOzDLr0EYX4QNxWTiGGuAyczw6xDGF2JjMZkw2pd3z2Rm97UI44uxwYBJRDGTmdnXI4wvyEZjKpG0F++byczqaxLGF2XDMZVY2oP3DKxIGAPLEU2zeb9M5/LquoTxhdl4TCaeZvJemc5svjZhfHE2IJOJqFm8T6Yzk69PGA9gIzKZmJrBe2Q6s3gGYTyEDclkouravD+mM4PnEMaD2JhMJq6uyXtjOrN3FmE8jA3KZCLrWrwvpjNz5xHGA9moTCa2gBWYtTMJ46FsWCYTx+vzjoArEsaDiWMmE17r8m6YznydSxgD8DSimOlE8WzCeDgbmMlE2Fq8D6YzU+cTxhuwkZlMjK3Be2A6s3QPwngTNjSTibJzef5MZ4buQxhvxMZmMnF2Ds+d6czOvQjjzdjgTCbSjuV5M52ZuR9hvCEbncnE2jE8Z6YzK/ckjDdlwzOZaHstz5fpzMh9CeON2fhMJt5ew3MFJhPGmxPHTCbinsvzZAfm4t6EMTCamANuJYoRxjgIGE8cP84zZDqzkBLG/JsDgemE3f08O6YzA/lBGPMfDgbgV6KY6cw+fiaM+QsHBJOJvK/xvJjOzONXwpi/cVAwmdi7jefEdGYdbxHGvMmBwWSi72OeD9OZcbxHGPMuBweTib+3eS5MZ7bxEWHMhxwgTCYC/8rzAHYnjPmUOGYyMfgvngM7MM/4jDAGtrd7FO7+87MHUcwthDE3caAw3a5xuOvPzV7MMG4ljLmZg4XpdovE3X5e9mR28RXCmC9xwDCdWIQ5zCy+ShjzZQ4aptshjnf4GdmbWcU9hDF3ceAw3eRwnPyzQZlR3E8YczcHD1yPKGY6s4lHCGMe4gBismkROe3ngV+ZSTxKGPMwBxGTTYnJKT8HwCsJY4BPXD0qr/754RYuaXgGYcxTOJCY7qpxedXPDV9hBvEswpincTAx3dUi82qfF+5h9vBMwpinckAx3VVi8yqfEx5h5vBswpinc1Ax3erRufrng2cwa3iFb9+/Oz95DcOZ8f7vf9cbzP/9P/Yd44liXsWNMS/j4ALg2cwWXkkY81IOMACexUzh1YQxL+cgA+BRZglHEMYcwoEGAKxOGAMAS3O5wlGEMYdxsAHwVWYHRxLGHMoBB8CtzAyOJow5nIMOgM+YFZxBGHMKBx4A7zEjOIsw5jQOPgB+ZTZwJmHMqRyAAPxgJnA2YczpHIQAmAWsQBizBAciwL7MAFYhjFmGgxEAOJMwBgBO41KElQhjluKABNiHM5/VCGOW46AEmM9Zz4qEMUtyYALM5YxnVcKYZTk4AeZxtrMyYczSHKAAczjTWZ0wZnkOUoDrc5ZzBcKYS3CgAlyXM5yrEMZchoMV4Hqc3VyJMOZSHLAAwKsIYwDgJVxmcDXCmMtx0AKsz1nNFQljLsmBC7AuZzRXJYy5LAcvwHqczVyZMObSHMAA63Amc3XCmMtzEAOcz1nMBMKYERzIAOdxBjOFMGYMBzPA8Zy9TCKMGcUBDXAcZy7TCGPGcVADAPcQxgDAl7mEYCJhzEgObIDXccYylTBmLAc3wPM5W5lMGDOaAxzgeZypTCeMGc9BDvA4Zyk7EMZswYEOcD9nKLsQxmzDwQ7wdc5OdiKM2YoDHuB2zkx2I4zZjoMeAHiLMGZL4hjgY85JdiSMAYC/EMXsShizLQc/wN85G9mZMGZrBgDAn5yJ7E4Ysz2DAMBZCCWMoTIQgL05A+FfhDH8m8EA7MjZB38SxvATAwLYiTMP/koYwy8MCmAHzjr4O2EMbzAwAGA/whjeIY6BqZxv8DZhDAAbEcXwPmEMHzBAgEmcafAxYQyfMEiACZxl8DlhDDcwUIArc4bBbYQx3MhgAa7I2QW3E8bwBQYMcCXOLPgaYQxfZNAAV+Csgq8TxnAHAwdYmTMK7iOM4U4GDwDMIowBYBC/tMP9hDE8wAACVuJMgscIY3iQQQSswFkEjxPG8AQGEnAmZxA8hzCGJzGYgDM4e+B5hDE8kQEFHMmZA88ljOHJDCrgCM4aeD5hDC9gYAGv5IyB1xDG8CIGF/AKzhZ4HWEML2SAAcB1CGMAuAi/bMNrCWN4MYMMeAZnCbyeMIYDGGjAI5whcAxhDAcx2IB7ODvgOMIYDmTAAV/hzIBjCWM4mEEH3MJZAccTxnACAw/4iDMCziGM4SQGH/AWZwOcRxjDiQxA4GfOBDiXMIaTGYQAsAZhDAAL8EsynE8YwwIMRNibMwDWIIxhEQYj7Mneh3UIY1iIAQl7sedhLcIYFmNQwh7sdViPMIYFGZgwmz0OaxLGsCiDE2ayt2FdwhgWZoDCLPY0rE0Yw+IMUpjBXob1CWO4AAMVAF5PGAPAi/nlFq5BGMNFGKxwTfYuXIcwhgsxYOFa7Fm4FmEMF2PQwjXYq3A9whguyMCFtdmjcE3CGC7K4IU12ZtwXcIYLswAhrXYk3BtwhguziCGNdiLcH3CGAYwkOFc9iDMIIxhCIMZAB4jjAHgAX4phTmEMQxiQMOx7DmYRRjDMAY1HMNeg3mEMQxkYMNr2WMwkzCGoQxueA17C+YSxjCYAQ7PZU/BbMIYhjPI4TnsJZhPGMMGDHR4jD0EexDGsAmDHe5j78A+hDFsxIAHgPcJYwB4h18mYS/CGDZj0MNt7BXYjzCGDRn48DF7BPYkjGFTBj+8zd6AfQlj2JgAgL+yJ2Bvwhg2JwTgX+wFQBgDgoDt2QNACWPg34QBu7L2gR+EMfAfAgGAnQlj4C/EMTux3oGfCWMAtiSKgV8JY+BvBAPTWePAW4Qx8CbhwFTWNvAeYQy8S0AwjTUNfEQYAx8SEkxhLQOfEcbApwQFV2cNA7cQxsBNhAVXZe0CtxLGwM0EBldjzQJfIYyBLxEaAEwljIEvE8dcgXUKfJUwBmAcUQzcQxgDdxEerMraBO4ljIG7CRBWY00CjxDGwEOECKuwFoFHCWPgYYKEs1mDwDMIY+AphAlnsfaAZxHGwNMIFI5mzQHPJIyBpxIqHMVaA55NGANPJ1gAuCJhDMDl+OULeAVhDLyEcOFVrC3gVYQx8DIChmezpoBXEsbASwkZnsVaAl5NGAMvJ2h4lDUEHEEYA4cQNtzL2gGOIoyBwwgcvsqaAY4kjIFDCR1uZa0ARxPGwOEED5+xRoAzCGPgFMIHgNUIYwCW4pcm4CzCGDiNAOJX1gRwJmEMnEoI8YO1AJxNGAOnE0RYA8AKhDGwBGG0L+8eWIUwBpYhkPbjnQMrEcbAUoTSPrxrYDXCGFiOYJrPOwZWJIyBJQmnubxbYFXCGFiWgALgSMIYgMP4ZQdYmTAGliak5vAugdUJY2B5gur6vEPgCoQxcAnC6rq8O+AqhDFwGQLrerwz4EqEMXApQus6vCvgaoQxcDmCa33eEXBFwhi4JOG1Lu8GuCphDFyWAFuPdwJcmTAGLk2IAfAswhi4PHG8Bu8BuDphDIwgys7l+QMTCGMAHiKKgSmEMTCGQDueZw5MIoyBUYTacTxrYBphDIzz/Z//+CbaXsvzBSYSxsBY4u01PFdgKmEMjCbinsdNPDCdMAbGE3OP8wyBHQhjYAtuO+/nuQG7EMbAVkTe7fwyAexGGAPbEXyf83yAHQljYFvi7+/80gDsTBgDWxOCf/IcgN3919kfAGAFP6Lw2+9/fD/7sxxNEAP8izAG+MlOgSyIAf5KGAO8YXIgC2KAtwljgA/8HJFXjmQxDPA5YQxwoyveIgtigNt9+/79Muc7AAC8jD/XBgAACWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQ1f8D9mGDK+0RyRcAAAAASUVORK5CYII=';
 document.querySelectorAll('.brand-logo').forEach(im=> im.src = LOGO);

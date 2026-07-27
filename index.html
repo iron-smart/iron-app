@@ -151,8 +151,7 @@
   .sku-none{ display:flex; align-items:center; justify-content:center; background:#f1f5f9; font-size:20px; cursor:default; }
   #board-wrap{ height:calc(100vh - 122px); }
   #board-wrap iframe{ border-radius:0; box-shadow:none; }
-  #dash-board-wrap{ height:72vh; margin-bottom:18px; }
-  #dash-board-wrap iframe{ width:100%; height:100%; border:none; border-radius:12px; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+  #dash-board-wrap{ margin-bottom:18px; }
   #board-wrap{ height:calc(100vh - 175px); }
   #board-wrap iframe{ width:100%; height:100%; border:none; border-radius:12px; background:#fff; box-shadow:0 2px 10px rgba(6,24,39,.08); }
   @media(max-width:800px){
@@ -222,7 +221,7 @@
   <main>
     <!-- היום שלי -->
     <section id="tab-today">
-      <div id="dash-board-wrap" class="hidden"><iframe id="dashFrame" title="דשבורד תפעולי"></iframe></div>
+      <div id="dash-board-wrap" class="hidden"></div>
       <div id="dash-sales">
       <div class="stats">
         <div class="stat"><div class="n" id="s-open">0</div><div class="l">לידים פתוחים</div></div>
@@ -305,7 +304,7 @@
         <button class="chip" data-v="settings" onclick="logiView('settings')">⚙️ הגדרות</button>
       </div>
       <div id="cal-wrap"></div>
-      <div id="board-wrap" class="hidden"><iframe id="boardFrame" title="הגדרות הלוח"></iframe></div>
+      <div id="set-wrap" class="hidden"></div>
     </section>
 
     <!-- מקטים — קטלוג המוצרים (נטיבי) -->
@@ -314,9 +313,11 @@
       <div id="skus-list"></div>
     </section>
 
-    <!-- מסמכים — מאגר המסמכים המרכזי של המערכת -->
+    <!-- מסמכים — פרוטוקולים, דוחות וחתימות (נטיבי) -->
     <section id="tab-docs" class="hidden">
-      <div class="frame-wrap"><iframe id="docsFrame" title="מאגר מסמכים"></iframe></div>
+      <div class="chips" id="doc-chips"></div>
+      <div class="toolbar"><input id="docSearch" placeholder="חיפוש לפי לקוח או מס' הזמנה…"></div>
+      <div id="docs-list"></div>
     </section>
   </main>
   </div><!-- content -->
@@ -430,47 +431,61 @@ document.querySelectorAll('.nav-item').forEach(b=> b.onclick=()=>{
   ['today','leads','deals','meets','customers','contacts','pays','tasks','orders','logi','skus','docs'].forEach(t=>
     $('#tab-'+t).classList.toggle('hidden', b.dataset.tab!==t));
   if(b.dataset.tab==='logi') renderCal();
-  if(b.dataset.tab==='docs') initFrame('docsFrame','docs');
   if(window.innerWidth<800) $('#side').classList.add('closed');
 });
 $('#sideToggle').onclick = ()=> $('#side').classList.toggle('closed');
 if(window.innerWidth<800) $('#side').classList.add('closed');
-function seamless(f, view){
-  f.addEventListener('load', ()=>{ try{
-    const d = f.contentDocument;
-    const st = d.createElement('style');
-    st.textContent = 'header.topbar{display:none !important}';
-    d.head.appendChild(st);
-    // בחירת המסך גם אחרי שהלוח מסיים להיטען (הוא עלול לחזור לברירת המחדל שלו)
-    const pick = ()=>{ try{ const b = f.contentDocument.querySelector(`.tab[data-view="${view}"]`); if(b && !b.classList.contains('active')) b.click(); }catch(_e){} };
-    if(view){ pick(); setTimeout(pick, 1500); setTimeout(pick, 4000); }
-  }catch(_e){} });
-}
-function initFrame(id, view){
-  const f = $('#'+id);
-  if(!f.getAttribute('src')){ seamless(f, view); f.src = 'orders/'; }
-}
-function initBoard(){ initFrame('boardFrame', 'orders'); }
-
-/* ===== דשבורד אחד, מותאם לתפקיד המשתמש ===== */
+/* ===== דשבורד אחד, מותאם לתפקיד — נטיבי לגמרי ===== */
 function applyDashboard(){
   const d = ME.dashboard || ({rep:'sales', manager:'sales', viewer:'sales'}[ME.role] || 'combined');
-  const showBoard = d==='logistics' || d==='combined';
-  const showSales = d!=='logistics';
-  $('#dash-board-wrap').classList.toggle('hidden', !showBoard);
-  $('#dash-sales').classList.toggle('hidden', !showSales);
-  if(showBoard){
-    const f = $('#dashFrame');
-    if(!f.getAttribute('src')){ seamless(f, 'dashboard'); f.src = 'orders/'; }
-  }
+  $('#dash-board-wrap').classList.toggle('hidden', !(d==='logistics'||d==='combined'));
+  $('#dash-sales').classList.toggle('hidden', d==='logistics');
+}
+function renderOps(){
+  const el=$('#dash-board-wrap'); if(!el) return;
+  const act=ORDS.filter(o=>!['הושלם','בוטל'].includes(o.order_status));
+  const today=isoD(new Date());
+  const wk=new Date(); wk.setDate(wk.getDate()+7); const weekIso=isoD(wk);
+  const tToday=[...act.filter(o=>o.scheduled_date===today),...SCALLS.filter(s=>s.scheduled_date===today&&!['בוטלה'].includes(s.status))];
+  const tWeek=act.filter(o=>o.scheduled_date&&o.scheduled_date>=today&&o.scheduled_date<=weekIso);
+  const noSched=act.filter(o=>!o.scheduled_date);
+  const noContact=act.filter(o=>o.contact_status==='טרם נוצר קשר');
+  const inProto=act.filter(o=>(o.contact_status||'').includes('פרוטוקול'));
+  const openCalls=SCALLS.filter(s=>!['הושלם','הושלמה','בוטלה','סגורה'].includes(s.status));
+  const byTeam={};
+  act.forEach(o=>{ const t=o.team||'לא משויך'; byTeam[t]=(byTeam[t]||0)+1; });
+  const mx=Math.max(1,...Object.values(byTeam));
+  const upcoming=act.filter(o=>o.scheduled_date&&o.scheduled_date>=today).sort((a,b)=>a.scheduled_date.localeCompare(b.scheduled_date)).slice(0,8);
+  el.innerHTML=`
+    <div class="stats">
+      <div class="stat"><div class="n">${act.length}</div><div class="l">הזמנות פעילות בלוח</div></div>
+      <div class="stat"><div class="n" style="color:#c0392b">${noContact.length}</div><div class="l">ממתין לקשר ראשוני</div></div>
+      <div class="stat"><div class="n" style="color:#d97706">${noSched.length}</div><div class="l">ממתין לשיבוץ</div></div>
+      <div class="stat"><div class="n">${tToday.length}</div><div class="l">מתואמים היום</div></div>
+      <div class="stat"><div class="n">${tWeek.length}</div><div class="l">השבוע הקרוב</div></div>
+      <div class="stat"><div class="n">${inProto.length}</div><div class="l">בתהליך פרוטוקול</div></div>
+      <div class="stat"><div class="n" style="color:#c0392b">${openCalls.length}</div><div class="l">קריאות שירות פתוחות</div></div>
+      <div class="stat"><div class="n">${PROTS.filter(p=>p.status!=='נחתם').length}</div><div class="l">מסמכים ממתינים לחתימה</div></div>
+    </div>
+    <h2 class="sec">🧑‍🔧 עומס צוותים — הזמנות פעילות</h2>
+    <div class="tbl-wrap" style="padding:12px">${Object.entries(byTeam).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;font-size:13.5px">
+        <span style="width:110px;flex:none">${esc(t)}</span>
+        <div style="flex:1;background:#f1f5f9;border-radius:20px;height:14px;overflow:hidden"><div style="width:${Math.round(n/mx*100)}%;height:100%;background:${t==='לא משויך'?'#c0392b':teamColor(t)}"></div></div>
+        <b style="width:34px;text-align:center">${n}</b>
+      </div>`).join('')}</div>
+    <h2 class="sec">📅 השיבוצים הקרובים</h2>
+    ${upcoming.map(o=>`<div class="lead" onclick="openOrd('${o.id}')">
+      <div><div class="nm">${esc(o.customer_name||'')}</div><div class="meta">${fmtD(o.scheduled_date)}${o.time_slot?' · '+esc(o.time_slot):''}${o.city?' · '+esc(o.city):''}${o.team?' · '+esc(o.team):''}</div></div>
+      <span class="pill ${ordStClass(o.order_status)}">${esc(o.order_status)}</span></div>`).join('')||'<div class="empty">אין שיבוצים קרובים</div>'}`;
 }
 window.gotoTab = t=>{ const b=document.querySelector(`.nav-item[data-tab="${t}"]`); if(b) b.click(); };
 window.gotoCalls = ()=>{ gotoTab('orders'); setOrdFilter('calls'); };
 window.logiView = v=>{
   document.querySelectorAll('#logi-chips .chip[data-v]').forEach(c=>c.classList.toggle('active', c.dataset.v===v));
   $('#cal-wrap').classList.toggle('hidden', v!=='cal');
-  $('#board-wrap').classList.toggle('hidden', v!=='settings');
-  if(v==='settings') initFrame('boardFrame','settings');
+  $('#set-wrap').classList.toggle('hidden', v!=='settings');
+  if(v==='settings') renderSettings();
   if(v==='cal') renderCal();
 };
 
@@ -501,7 +516,7 @@ function renderCal(){
     d.setDate(d.getDate()+1);
   }
   const title = CAL_D.toLocaleDateString('he-IL',{month:'long',year:'numeric'});
-  const legend = OTEAMS.map(t=>`<span class="cal-lg"><span class="cal-dot" style="background:${t.color||'#64748b'}"></span>${esc(t.name)}</span>`).join('');
+  const legend = OTEAMS.filter(t=>t.active!==false).map(t=>`<span class="cal-lg"><span class="cal-dot" style="background:${t.color||'#64748b'}"></span>${esc(t.name)}</span>`).join('');
   el.innerHTML = `<div class="cal-head2">
       <button class="ghost cal-btn" onclick="calShift(-1)">‹ הקודם</button>
       <b>${title}</b>
@@ -552,12 +567,96 @@ function renderSkus(){
 }
 $('#skuSearch').addEventListener('input', renderSkus);
 
+/* ===== מסמכים ופרוטוקולים — נטיבי (עמוד החתימה sign.html נשאר כמו שהוא) ===== */
+let DOC_FILTER='sent';
+const TOKEN_AB='abcdefghjkmnpqrstuvwxyz23456789';
+function genToken(n=14){ const a=new Uint8Array(n); crypto.getRandomValues(a); return [...a].map(x=>TOKEN_AB[x%TOKEN_AB.length]).join(''); }
+const signUrl = t => new URL('sign.html?t='+t, location.href).href;
+const viewUrl = t => new URL('sign.html?view='+t, location.href).href;
+function waLink(phone, text){ let d=digitsOf(phone); if(d.startsWith('0')) d='972'+d.slice(1); return 'https://wa.me/'+d+'?text='+encodeURIComponent(text); }
+window.copyTxt = async t=>{ try{ await navigator.clipboard.writeText(t); alert('הקישור הועתק ✓'); }catch(_e){ prompt('העתקה ידנית:', t); } };
+function docChips(){
+  const sent=PROTS.filter(p=>p.status!=='נחתם'), signed=PROTS.filter(p=>p.status==='נחתם');
+  $('#doc-chips').innerHTML = `
+    <button class="chip ${DOC_FILTER==='sent'?'active':''}" onclick="setDocFilter('sent')">ממתינים לחתימה ${sent.length}</button>
+    <button class="chip ${DOC_FILTER==='signed'?'active':''}" onclick="setDocFilter('signed')">נחתמו ${signed.length}</button>
+    <button class="chip ${DOC_FILTER==='all'?'active':''}" onclick="setDocFilter('all')">הכל ${PROTS.length}</button>`;
+}
+window.setDocFilter=f=>{DOC_FILTER=f;renderDocs();};
+function docRow(p){
+  const signed=p.status==='נחתם';
+  return `<div class="lead" style="cursor:default">
+    <div style="flex:1"><div class="nm">${esc(p.customer_name||'—')} <small style="color:#94a3b8;font-weight:400">· ${esc(p.doc_type)}${p.order_number?' · '+esc(p.order_number):''}</small></div>
+    <div class="meta">נשלח ${p.sent_at?new Date(p.sent_at).toLocaleDateString('he-IL'):'—'}${signed?' · נחתם '+new Date(p.signed_at).toLocaleDateString('he-IL')+(p.signer_name?' ע"י '+esc(p.signer_name):''):''}</div>
+    <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
+      ${signed?`<a class="chip" style="text-decoration:none" href="${viewUrl(p.token)}" target="_blank">📄 צפייה במסמך החתום</a>`
+        :`<button class="chip" onclick="copyTxt('${signUrl(p.token)}')">🔗 העתקת קישור</button>
+          ${p.phone?`<a class="chip" style="text-decoration:none" target="_blank" href="${waLink(p.phone,'שלום '+(p.customer_name||'')+', נא לחתום על '+p.doc_type+': '+signUrl(p.token))}">💬 וואטסאפ</a>`:''}`}
+    </div></div>
+    <span class="pill ${signed?'st-rel':'st-def'}">${esc(p.status)}</span></div>`;
+}
+function renderDocs(){
+  docChips();
+  const q=($('#docSearch').value||'').trim();
+  let list = DOC_FILTER==='all'?PROTS:(DOC_FILTER==='signed'?PROTS.filter(p=>p.status==='נחתם'):PROTS.filter(p=>p.status!=='נחתם'));
+  if(q) list=list.filter(p=>(p.customer_name||'').includes(q)||(p.order_number||'').includes(q));
+  $('#docs-list').innerHTML = capped(list, docRow, 'אין מסמכים בסינון הזה');
+}
+$('#docSearch').addEventListener('input', renderDocs);
+window.createProtocol = async (orderId)=>{
+  const o = ORDS.find(x=>x.id===orderId); if(!o) return;
+  if(!confirm('ליצור קישור חתימה לפרוטוקול הכנה עבור '+(o.customer_name||o.order_number)+'?')) return;
+  const token = genToken();
+  const row = { order_id:o.id, order_number:o.order_number, customer_name:o.customer_name, phone:o.phone,
+    doc_type:'פרוטוקול הכנה להתקנה', status:'נשלח', token, sent_by:ME.email };
+  const { error } = await sb.schema('ord').from('protocols').insert(row);
+  if(error){ alert('יצירת הפרוטוקול נכשלה: '+error.message); return; }
+  PROTS.unshift({...row, sent_at:new Date().toISOString()});
+  try{ await sb.schema('ord').from('audit_log').insert({ user_email:ME.email, action:'שליחת פרוטוקול לחתימה', entity:'הזמנה', entity_id:String(o.order_number), label:o.customer_name||'' }); }catch(_e){}
+  renderDocs(); renderOps(); openOrd(orderId);
+};
+
+/* ===== הגדרות הלוח — נטיבי (צוותים + טקסטים) ===== */
+function renderSettings(){
+  const el=$('#set-wrap'); if(!el) return;
+  const admin=['admin','manager'].includes(ME.role);
+  el.innerHTML = `
+    <h2 class="sec">🎨 צוותים (צבע · שם · פעיל)</h2>
+    <div class="tbl-wrap" style="padding:12px">
+      ${OTEAMS.map(t=>`<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+        <input type="color" value="${esc(t.color||'#64748b')}" id="tc-${t.id}" ${admin?'':'disabled'} style="width:42px;height:34px;border:none;background:none;padding:0">
+        <input value="${esc(t.name)}" id="tn-${t.id}" ${admin?'':'disabled'} style="flex:1;min-width:120px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit">
+        <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox" id="ta-${t.id}" ${t.active!==false?'checked':''} ${admin?'':'disabled'}>פעיל</label>
+        ${admin?`<button class="chip" onclick="saveTeam('${t.id}')">שמירה</button>`:''}
+      </div>`).join('')||'<div class="empty">אין צוותים</div>'}
+    </div>
+    <h2 class="sec">📝 טקסטים והגדרות (פרוטוקול, דוח 150 ועוד)</h2>
+    ${OSET.map((s,i)=>`<div class="tbl-wrap" style="padding:12px;margin-bottom:10px">
+      <b style="font-size:13px">${esc(s.key)}</b>
+      <textarea id="sv-${i}" ${admin?'':'disabled'} style="width:100%;min-height:90px;margin-top:6px;padding:10px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13.5px;box-sizing:border-box">${esc(s.value||'')}</textarea>
+      ${admin?`<button class="chip" onclick="saveSetting(${i})">שמירה</button>`:''}
+    </div>`).join('')}`;
+}
+window.saveTeam = async id=>{
+  const upd={ name:$('#tn-'+id).value.trim(), color:$('#tc-'+id).value, active:$('#ta-'+id).checked };
+  const { error } = await sb.schema('ord').from('teams').update(upd).eq('id', id);
+  if(error){ alert('שמירה נכשלה: '+error.message); return; }
+  const t=OTEAMS.find(x=>x.id===id); if(t) Object.assign(t,upd);
+  renderCal(); renderOps(); alert('הצוות נשמר ✓');
+};
+window.saveSetting = async i=>{
+  const s=OSET[i]; const v=$('#sv-'+i).value;
+  const { error } = await sb.schema('ord').from('settings').update({value:v}).eq('key', s.key);
+  if(error){ alert('שמירה נכשלה: '+error.message); return; }
+  s.value=v; alert('נשמר ✓ — ישתקף במסמכים הבאים שיישלחו');
+};
+
 const LOGO = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAsYAAALGCAYAAABGaFe1AAAACXBIWXMAAAsTAAALEwEAmpwYAAAE9GlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgOS4xLWMwMDIgNzkuYTFjZDEyZjQxLCAyMDI0LzExLzA4LTE2OjA5OjIwICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgMjYuNCAoTWFjaW50b3NoKSIgeG1wOkNyZWF0ZURhdGU9IjIwMjUtMDMtMTJUMTg6MDM6NTIrMDI6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDI1LTAzLTEyVDE4OjA2OjM2KzAyOjAwIiB4bXA6TWV0YWRhdGFEYXRlPSIyMDI1LTAzLTEyVDE4OjA2OjM2KzAyOjAwIiBkYzpmb3JtYXQ9ImltYWdlL3BuZyIgcGhvdG9zaG9wOkNvbG9yTW9kZT0iMyIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo0MmM4ZjdjOS0xOGMxLTQwY2QtYjZiOC1kZmE4NTU4NmUyN2EiIHhtcE1NOkRvY3VtZW50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';
 document.querySelectorAll('.brand-logo').forEach(im=> im.src = LOGO);
 
-let CUSTS=[], TASKS=[], DEALS=[], MEETS=[], CONTS=[], PAYS=[], ORDS=[], SCALLS=[], OTEAMS=[], SKUS=[];
+let CUSTS=[], TASKS=[], DEALS=[], MEETS=[], CONTS=[], PAYS=[], ORDS=[], SCALLS=[], OTEAMS=[], SKUS=[], PROTS=[], OSET=[];
 async function loadLeads(){
-  const [l,c,t,d,m,k,p,o,sc,tm,sy,sk] = await Promise.all([
+  const [l,c,t,d,m,k,p,o,sc,tm,sy,sk,pr,st] = await Promise.all([
     sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,customer_type,customer_id,created_at').order('created_at',{ascending:false}).limit(10000),
     sb.schema('core').from('customers').select('id,name,phone,email,priority_id,status,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes').order('created_at',{ascending:false}).limit(10000),
     sb.schema('crm').from('tasks').select('id,name,status,category,due_at,closed_at,linked_type,linked_id,owner_id').order('due_at',{ascending:true}).limit(10000),
@@ -567,15 +666,17 @@ async function loadLeads(){
     sb.schema('crm').from('payments').select('id,customer_id,deal_id,status,due_date,total_amount,paid_amount,notes').order('due_date',{ascending:false}).limit(10000),
     sb.schema('ord').from('orders').select('id,order_number,order_date,customer_name,customer_number,phone,city,region,order_status,contact_status,scheduled_date,time_slot,team,delivery_method,items_count,erp_status,erp_price,equipment_list,address').order('order_date',{ascending:false}).limit(10000),
     sb.schema('ord').from('service_calls').select('id,call_number,opened_date,customer_name,customer_number,phone,city,status,call_type,product,fault_details,scheduled_date,urgency,team').order('opened_date',{ascending:false}).limit(10000),
-    sb.schema('ord').from('teams').select('name,color,active,sort_order').eq('active',true).order('sort_order',{ascending:true}),
+    sb.schema('ord').from('teams').select('id,name,color,active,sort_order').order('sort_order',{ascending:true}),
     sb.schema('ord').from('sync_log').select('ran_at,ok,details').order('ran_at',{ascending:false}).limit(20),
-    sb.schema('ord').from('inv_items').select('partname,partdes,price,family,image_url,image_full').order('partname',{ascending:true}).limit(10000)
+    sb.schema('ord').from('inv_items').select('partname,partdes,price,family,image_url,image_full').order('partname',{ascending:true}).limit(10000),
+    sb.schema('ord').from('protocols').select('id,order_id,call_id,order_number,customer_name,phone,doc_type,status,sent_at,signed_at,signer_name,token').order('sent_at',{ascending:false}).limit(10000),
+    sb.schema('ord').from('settings').select('key,value').order('key',{ascending:true})
   ]);
   LEADS = l.data||[]; CUSTS = c.data||[]; TASKS = t.data||[]; DEALS = d.data||[]; MEETS = m.data||[]; CONTS = k.data||[]; PAYS = p.data||[];
-  ORDS = o.data||[]; SCALLS = sc.data||[]; OTEAMS = tm.data||[]; SKUS = sk.data||[];
+  ORDS = o.data||[]; SCALLS = sc.data||[]; OTEAMS = tm.data||[]; SKUS = sk.data||[]; PROTS = pr.data||[]; OSET = st.data||[];
   const lastOk = (sy.data||[]).find(r=>r.ok && (!r.details || !r.details.fn || r.details.fn==='priority-sync'));
   $('#lastSync').textContent = lastOk ? 'סנכרון אחרון: ' + new Date(lastOk.ran_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
-  renderStats(); renderToday(); renderLeads(); renderCustomers(); renderTasks(); renderDeals(); renderMeets(); renderConts(); renderPays(); renderOrders(); renderSkus(); renderCal();
+  renderStats(); renderToday(); renderLeads(); renderCustomers(); renderTasks(); renderDeals(); renderMeets(); renderConts(); renderPays(); renderOrders(); renderSkus(); renderCal(); renderDocs(); renderOps();
 }
 function capped(list, rowFn, emptyMsg){
   if(!list.length) return `<div class="empty">${emptyMsg}</div>`;
@@ -757,7 +858,7 @@ window.openScall = (id)=>{
   const stVals = uniqVals(SCALLS,'status',s.status);
   const urVals = [...new Set(['רגילה','דחוף','קריטי', ...uniqVals(SCALLS,'urgency',s.urgency)])];
   const slotVals = uniqVals([...ORDS,...SCALLS],'time_slot',s.time_slot);
-  const teamVals = [...new Set([...OTEAMS.map(t=>t.name), ...uniqVals(SCALLS,'team',s.team)])];
+  const teamVals = [...new Set([...OTEAMS.filter(t=>t.active!==false).map(t=>t.name), ...uniqVals(SCALLS,'team',s.team)])];
   $('#ordSheet').innerHTML = `
     <h3>קריאת שירות ${esc(s.call_number||'')}</h3>
     <div class="row"><span class="k">לקוח</span><span class="v">${esc(s.customer_name||'—')}</span></div>
@@ -846,6 +947,9 @@ window.openOrd = (id)=>{
     ${o.erp_price?`<div class="row"><span class="k">סכום (פריוריטי)</span><span class="v">${shekel(o.erp_price)}</span></div>`:''}
     ${o.erp_status?`<div class="row"><span class="k">סטטוס בפריוריטי</span><span class="v">${esc(o.erp_status)}</span></div>`:''}
     ${o.equipment_list?`<div class="note">🏋️ ${esc(o.equipment_list)}</div>`:''}
+    ${(()=>{ const ps=PROTS.filter(p=>p.order_id===o.id); return `<h2 class="sec">📄 מסמכים וחתימות (${ps.length})</h2>`+
+      (ps.map(p=>`<div class="row"><span class="k">${esc(p.doc_type)}${p.sent_at?' · '+new Date(p.sent_at).toLocaleDateString('he-IL'):''}</span><span class="v">${p.status==='נחתם'?`<a href="${viewUrl(p.token)}" target="_blank">📄 צפייה</a>`:`<a href="#" onclick="event.preventDefault();copyTxt('${signUrl(p.token)}')">🔗 קישור</a>`} <span class="pill ${p.status==='נחתם'?'st-rel':'st-def'}">${esc(p.status)}</span></span></div>`).join(''))+
+      (['admin','manager'].includes(ME.role)?`<button class="ghost" style="margin-top:8px" onclick="createProtocol('${o.id}')">➕ יצירת פרוטוקול הכנה לחתימה</button>`:''); })()}
     ${['admin','manager'].includes(ME.role)?ordEditHtml(o):'<div class="note">לעדכון ותיאום נדרשת הרשאת מנהל.</div>'}
     <div class="actions">
       <a class="btn green" style="text-align:center;text-decoration:none;display:block" href="${ORDERS_URL}">פתיחה בלוח התיאומים ↗</a>
@@ -867,7 +971,7 @@ function ordEditHtml(o){
   const stVals = uniqVals(ORDS,'order_status',o.order_status);
   const ctVals = uniqVals(ORDS,'contact_status',o.contact_status);
   const slotVals = uniqVals(ORDS,'time_slot',o.time_slot);
-  const teamVals = [...new Set([...OTEAMS.map(t=>t.name), ...uniqVals(ORDS,'team',o.team)])];
+  const teamVals = [...new Set([...OTEAMS.filter(t=>t.active!==false).map(t=>t.name), ...uniqVals(ORDS,'team',o.team)])];
   return `<h2 class="sec">🛠️ עדכון ותיאום</h2>
     <div class="field"><label>סטטוס בלוח</label><select id="oe-status">${optHtml(stVals,o.order_status)}</select></div>
     <div class="field"><label>סטטוס קשר</label><select id="oe-contact">${optHtml(ctVals,o.contact_status)}</select></div>

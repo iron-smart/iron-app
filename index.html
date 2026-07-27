@@ -35,7 +35,7 @@
   .tabs button{ flex:none; padding:14px 16px; border:none; background:none; font-size:15px; color:#64748b; border-bottom:3px solid transparent; white-space:nowrap; }
   .tabs button.active{ color:var(--navy); font-weight:700; border-bottom-color:var(--green); }
   .tabs button.jump{ color:var(--green); font-weight:700; }
-  main{ padding:16px; max-width:900px; margin:0 auto; }
+  main{ padding:16px 3vw; margin:0 auto; }
 
   .stats{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
   .stat{ background:#fff; border-radius:14px; padding:18px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,.06); }
@@ -84,7 +84,7 @@
   }
   @media(min-width:700px){
     /* שפה עיצובית אחידה עם לוח התיאום: שורות טבלאיות, קווים דקים, סטטוסים צבעוניים */
-    main{ max-width:1100px; padding:20px 24px; }
+    main{ padding:22px 3vw; }
     .lead{ border-radius:0; box-shadow:none; border:1px solid var(--line); margin-bottom:-1px; padding:10px 14px; }
     .lead:hover{ background:#f8fafc; cursor:pointer; }
     .lead:first-child{ border-radius:12px 12px 0 0; }
@@ -114,12 +114,21 @@
   .shell{ display:flex; align-items:stretch; }
   aside#side{ width:225px; flex:none; background:linear-gradient(180deg,#061827,#0b3552); padding:12px 0; position:sticky; top:52px; align-self:flex-start; height:calc(100vh - 52px); overflow-y:auto; box-sizing:border-box; }
   aside#side.closed{ display:none; }
-  .nav-item{ display:flex; align-items:center; gap:10px; width:100%; text-align:start; background:none; border:none; color:#cfd8e3; font-size:15px; font-family:inherit; padding:12px 18px; border-inline-start:3px solid transparent; }
+  .nav-item{ display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%; text-align:start; background:none; border:none; color:#cfd8e3; font-size:14px; font-family:inherit; padding:8px 18px; border-inline-start:3px solid transparent; }
+  .side-top{ display:flex; align-items:center; justify-content:space-between; padding:2px 18px 8px; color:#8fa3b5; font-size:12px; border-bottom:1px solid rgba(255,255,255,.08); margin-bottom:6px; }
+  .side-hide{ background:rgba(255,255,255,.1); border:none; color:#cfd8e3; border-radius:6px; padding:2px 9px; font-size:14px; cursor:pointer; }
+  .side-hide:hover{ background:rgba(255,255,255,.2); color:#fff; }
+  .nav-wrap{ position:relative; }
+  .nav-arrow{ font-size:13px; opacity:.55; }
+  .submenu{ display:none; position:absolute; inset-inline-end:100%; top:0; background:#0b3552; border:1px solid rgba(255,255,255,.15); border-radius:10px 0 0 10px; min-width:165px; padding:6px 0; box-shadow:0 8px 30px rgba(0,0,0,.35); z-index:45; }
+  .nav-wrap:hover .submenu{ display:block; }
+  .submenu button{ display:block; width:100%; text-align:start; background:none; border:none; color:#cfd8e3; font-size:13.5px; font-family:inherit; padding:9px 16px; cursor:pointer; }
+  .submenu button:hover{ color:#fff; background:rgba(255,255,255,.08); }
   .nav-item.active{ color:#fff; background:rgba(255,255,255,.07); border-inline-start-color:var(--green); font-weight:700; }
   .nav-item:hover{ color:#fff; }
   .side-foot{ color:#84898f; font-size:11px; text-align:center; padding:14px 10px; }
   .content{ flex:1; min-width:0; }
-  main:has(#tab-logi:not(.hidden)), main:has(#tab-skus:not(.hidden)), main:has(#tab-docs:not(.hidden)){ max-width:none; padding:10px 12px 0; }
+  /* כל המסכים פרוסים לרוחב מלא עם שוליים אחידים (3vw) */
   .frame-wrap{ height:calc(100vh - 82px); }
   .frame-wrap iframe{ width:100%; height:100%; border:none; border-radius:0; background:#fff; }
 
@@ -202,19 +211,31 @@
   </div>
   <div class="shell">
   <aside id="side">
-    <button class="nav-item active" data-tab="today">🏠 דשבורד — היום שלי</button>
-    <button class="nav-item" data-tab="leads">📞 לידים</button>
-    <button class="nav-item" data-tab="customers">👥 לקוחות</button>
-    <button class="nav-item" data-tab="contacts">🗂️ אנשי קשר</button>
-    <button class="nav-item" data-tab="tasks">✅ משימות</button>
-    <button class="nav-item" data-tab="deals">💼 תהליכי מכירה</button>
-    <button class="nav-item" data-tab="orders">📦 הזמנות</button>
-    <button class="nav-item" data-tab="meets">📅 פגישות</button>
-    <button class="nav-item" data-tab="logi">🚚 לוגיסטיקה</button>
-    <button class="nav-item" data-tab="docs">📁 מסמכים</button>
-    <button class="nav-item" data-tab="skus">🏷️ מקטים</button>
-    <button class="nav-item" data-tab="pays">💳 תשלומים</button>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 4.0.0</div>
+    <div class="side-top">
+      <span>תפריט</span>
+      <button class="side-hide" title="הסתרת התפריט (☰ להחזרה)" onclick="document.getElementById('side').classList.add('closed')">«</button>
+    </div>
+    <button class="nav-item active" data-tab="today">דשבורד — היום שלי</button>
+    <button class="nav-item" data-tab="leads">לידים</button>
+    <button class="nav-item" data-tab="customers">לקוחות</button>
+    <button class="nav-item" data-tab="contacts">אנשי קשר</button>
+    <button class="nav-item" data-tab="tasks">משימות</button>
+    <button class="nav-item" data-tab="deals">תהליכי מכירה</button>
+    <button class="nav-item" data-tab="orders">הזמנות</button>
+    <button class="nav-item" data-tab="meets">פגישות</button>
+    <div class="nav-wrap">
+      <button class="nav-item" data-tab="logi">לוגיסטיקה <span class="nav-arrow">‹</span></button>
+      <div class="submenu">
+        <button onclick="gotoTab('logi')">לוח שנה</button>
+        <button onclick="gotoCalls()">קריאות שירות</button>
+        <button onclick="gotoTab('orders')">הזמנות ותיאומים</button>
+      </div>
+    </div>
+    <button class="nav-item" data-tab="docs">מסמכים</button>
+    <button class="nav-item" data-tab="skus">מקטים</button>
+    <button class="nav-item" data-tab="pays">תשלומים</button>
+    <button class="nav-item" data-tab="set">הגדרות</button>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 4.1</div>
   </aside>
   <div class="content">
 
@@ -298,13 +319,16 @@
     <!-- לוגיסטיקה — לוח שנה נטיבי + קיצורים -->
     <section id="tab-logi" class="hidden">
       <div class="chips" id="logi-chips">
-        <button class="chip active" data-v="cal" onclick="logiView('cal')">🗓️ לוח שנה</button>
-        <button class="chip" onclick="gotoTab('orders')">📦 הזמנות ותיאומים</button>
-        <button class="chip" onclick="gotoCalls()">🔧 קריאות שירות</button>
-        <button class="chip" data-v="settings" onclick="logiView('settings')">⚙️ הגדרות</button>
+        <button class="chip active">לוח שנה</button>
+        <button class="chip" onclick="gotoTab('orders')">הזמנות ותיאומים</button>
+        <button class="chip" onclick="gotoCalls()">קריאות שירות</button>
       </div>
       <div id="cal-wrap"></div>
-      <div id="set-wrap" class="hidden"></div>
+    </section>
+
+    <!-- הגדרות — כלליות לכל המערכת -->
+    <section id="tab-set" class="hidden">
+      <div id="set-wrap"></div>
     </section>
 
     <!-- מקטים — קטלוג המוצרים (נטיבי) -->
@@ -428,9 +452,10 @@ $('#logoutBtn').onclick = async ()=>{ await sb.auth.signOut(); location.reload()
 document.querySelectorAll('.nav-item').forEach(b=> b.onclick=()=>{
   document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
   b.classList.add('active');
-  ['today','leads','deals','meets','customers','contacts','pays','tasks','orders','logi','skus','docs'].forEach(t=>
+  ['today','leads','deals','meets','customers','contacts','pays','tasks','orders','logi','skus','docs','set'].forEach(t=>
     $('#tab-'+t).classList.toggle('hidden', b.dataset.tab!==t));
   if(b.dataset.tab==='logi') renderCal();
+  if(b.dataset.tab==='set') renderSettings();
   if(window.innerWidth<800) $('#side').classList.add('closed');
 });
 $('#sideToggle').onclick = ()=> $('#side').classList.toggle('closed');
@@ -481,41 +506,62 @@ function renderOps(){
 }
 window.gotoTab = t=>{ const b=document.querySelector(`.nav-item[data-tab="${t}"]`); if(b) b.click(); };
 window.gotoCalls = ()=>{ gotoTab('orders'); setOrdFilter('calls'); };
-window.logiView = v=>{
-  document.querySelectorAll('#logi-chips .chip[data-v]').forEach(c=>c.classList.toggle('active', c.dataset.v===v));
-  $('#cal-wrap').classList.toggle('hidden', v!=='cal');
-  $('#set-wrap').classList.toggle('hidden', v!=='settings');
-  if(v==='settings') renderSettings();
-  if(v==='cal') renderCal();
-};
+window.logiView = ()=> renderCal();
 
 /* ===== לוח שנה נטיבי — שיבוצי התקנות, משלוחים וקריאות שירות ===== */
 let CAL_D = new Date();
 const isoD = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-window.calShift = n=>{ CAL_D = new Date(CAL_D.getFullYear(), CAL_D.getMonth()+n, 1); renderCal(); };
+let CAL_VIEW='month';
+window.calMode = v=>{ CAL_VIEW=v; renderCal(); };
+window.calShift = n=>{
+  if(CAL_VIEW==='month') CAL_D = new Date(CAL_D.getFullYear(), CAL_D.getMonth()+n, 1);
+  else CAL_D = new Date(CAL_D.getFullYear(), CAL_D.getMonth(), CAL_D.getDate()+n*(CAL_VIEW==='week'?7:1));
+  renderCal();
+};
 window.calToday = ()=>{ CAL_D = new Date(); renderCal(); };
 function teamColor(name){ const t=OTEAMS.find(x=>x.name===name); return (t&&t.color)?t.color:'#64748b'; }
+function calEv(e, full){
+  const nm = full ? (e.nm||'') : (e.nm||'').slice(0,18);
+  return `<div class="cal-ev" style="border-inline-start-color:${teamColor(e.team)}" title="${esc(e.nm||'')}${e.team?' · '+esc(e.team):''}" onclick="${e.t==='o'?`openOrd('${e.id}')`:`openScall('${e.id}')`}">${e.t==='s'?'🔧 ':''}${esc(nm)}${e.slot?`<small> · ${esc(e.slot)}</small>`:''}${full&&e.team?`<small> · ${esc(e.team)}</small>`:''}</div>`;
+}
 function renderCal(){
   const el = $('#cal-wrap'); if(!el) return;
-  const y=CAL_D.getFullYear(), m=CAL_D.getMonth();
-  const first=new Date(y,m,1);
-  const start=new Date(y,m,1-first.getDay());
   const byDay={};
-  ORDS.forEach(o=>{ if(o.scheduled_date&&!['בוטל'].includes(o.order_status)) (byDay[o.scheduled_date]=byDay[o.scheduled_date]||[]).push({t:'o',id:o.id,nm:o.customer_name,team:o.team,slot:o.time_slot}); });
-  SCALLS.forEach(s=>{ if(s.scheduled_date&&!['בוטלה'].includes(s.status)) (byDay[s.scheduled_date]=byDay[s.scheduled_date]||[]).push({t:'s',id:s.id,nm:s.customer_name,team:s.team,slot:s.time_slot}); });
+  ORDS.forEach(o=>{ if(o.scheduled_date&&!['בוטל'].includes(o.order_status)) (byDay[o.scheduled_date]=byDay[o.scheduled_date]||[]).push({t:'o',id:o.id,nm:o.customer_name,team:o.team,slot:o.time_slot,city:o.city}); });
+  SCALLS.forEach(s=>{ if(s.scheduled_date&&!['בוטלה'].includes(s.status)) (byDay[s.scheduled_date]=byDay[s.scheduled_date]||[]).push({t:'s',id:s.id,nm:s.customer_name,team:s.team,slot:s.time_slot,city:s.city}); });
   const todayIso = isoD(new Date());
-  let cells='';
-  const d=new Date(start);
-  for(let i=0;i<42;i++){
-    const ds=isoD(d);
-    const items=(byDay[ds]||[]);
-    cells+=`<div class="cal-day ${d.getMonth()===m?'':'cal-out'} ${ds===todayIso?'cal-today':''}">
-      <div class="cal-num">${d.getDate()}</div>
-      ${items.map(e=>`<div class="cal-ev" style="border-inline-start-color:${teamColor(e.team)}" title="${esc(e.nm||'')}${e.team?' · '+esc(e.team):''}" onclick="${e.t==='o'?`openOrd('${e.id}')`:`openScall('${e.id}')`}">${e.t==='s'?'🔧 ':''}${esc((e.nm||'').slice(0,18))}${e.slot?`<small> · ${esc(e.slot)}</small>`:''}</div>`).join('')}
-    </div>`;
-    d.setDate(d.getDate()+1);
+  const names = `<div class="cal-grid cal-names"><div>א'</div><div>ב'</div><div>ג'</div><div>ד'</div><div>ה'</div><div>ו'</div><div>ש'</div></div>`;
+  let title='', body='';
+  if(CAL_VIEW==='month'){
+    const y=CAL_D.getFullYear(), m=CAL_D.getMonth();
+    const start=new Date(y,m,1-new Date(y,m,1).getDay());
+    let cells=''; const d=new Date(start);
+    for(let i=0;i<42;i++){
+      const ds=isoD(d);
+      cells+=`<div class="cal-day ${d.getMonth()===m?'':'cal-out'} ${ds===todayIso?'cal-today':''}"><div class="cal-num">${d.getDate()}</div>${(byDay[ds]||[]).map(e=>calEv(e,false)).join('')}</div>`;
+      d.setDate(d.getDate()+1);
+    }
+    title = CAL_D.toLocaleDateString('he-IL',{month:'long',year:'numeric'});
+    body = names + `<div class="cal-grid">${cells}</div>`;
+  } else if(CAL_VIEW==='week'){
+    const start=new Date(CAL_D.getFullYear(),CAL_D.getMonth(),CAL_D.getDate()-CAL_D.getDay());
+    let cells=''; const d=new Date(start);
+    for(let i=0;i<7;i++){
+      const ds=isoD(d);
+      cells+=`<div class="cal-day cal-wk ${ds===todayIso?'cal-today':''}"><div class="cal-num">${d.toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'})}</div>${(byDay[ds]||[]).map(e=>calEv(e,true)).join('')||'<div style="color:#c3cbd4;font-size:11px">—</div>'}</div>`;
+      d.setDate(d.getDate()+1);
+    }
+    const end=new Date(start); end.setDate(end.getDate()+6);
+    title = `${start.toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'})} – ${end.toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'})}`;
+    body = names + `<div class="cal-grid">${cells}</div>`;
+  } else {
+    const ds=isoD(CAL_D);
+    const items=(byDay[ds]||[]).sort((a,b)=>String(a.slot||'').localeCompare(String(b.slot||'')));
+    title = CAL_D.toLocaleDateString('he-IL',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
+    body = items.map(e=>`<div class="lead" onclick="${e.t==='o'?`openOrd('${e.id}')`:`openScall('${e.id}')`}">
+      <div><div class="nm">${e.t==='s'?'🔧 ':''}${esc(e.nm||'')}</div><div class="meta">${e.slot?esc(e.slot)+' · ':''}${e.city?esc(e.city)+' · ':''}${e.team?'צוות '+esc(e.team):''}</div></div>
+      <span class="cal-dot" style="background:${teamColor(e.team)};width:14px;height:14px"></span></div>`).join('')||'<div class="empty">אין שיבוצים ביום זה</div>';
   }
-  const title = CAL_D.toLocaleDateString('he-IL',{month:'long',year:'numeric'});
   const legend = OTEAMS.filter(t=>t.active!==false).map(t=>`<span class="cal-lg"><span class="cal-dot" style="background:${t.color||'#64748b'}"></span>${esc(t.name)}</span>`).join('');
   el.innerHTML = `<div class="cal-head2">
       <button class="ghost cal-btn" onclick="calShift(-1)">‹ הקודם</button>
@@ -523,8 +569,12 @@ function renderCal(){
       <button class="ghost cal-btn" onclick="calToday()">היום</button>
       <button class="ghost cal-btn" onclick="calShift(1)">הבא ›</button>
     </div>
-    <div class="cal-grid cal-names"><div>א'</div><div>ב'</div><div>ג'</div><div>ד'</div><div>ה'</div><div>ו'</div><div>ש'</div></div>
-    <div class="cal-grid">${cells}</div>
+    <div class="chips" style="justify-content:center">
+      <button class="chip ${CAL_VIEW==='month'?'active':''}" onclick="calMode('month')">חודש</button>
+      <button class="chip ${CAL_VIEW==='week'?'active':''}" onclick="calMode('week')">שבוע</button>
+      <button class="chip ${CAL_VIEW==='day'?'active':''}" onclick="calMode('day')">יום</button>
+    </div>
+    ${body}
     <div class="cal-legend">${legend}</div>`;
 }
 
@@ -621,7 +671,9 @@ function renderSettings(){
   const el=$('#set-wrap'); if(!el) return;
   const admin=['admin','manager'].includes(ME.role);
   el.innerHTML = `
-    <h2 class="sec">🎨 צוותים (צבע · שם · פעיל)</h2>
+    <h2 class="sec">הגדרות המערכת</h2>
+    <div class="note">כאן מרוכזות כל הגדרות המערכת. בהמשך יתווספו: ניהול משתמשים והרשאות, הגדרות מכירות ואוטומציות.</div>
+    <h2 class="sec">צוותי לוגיסטיקה (צבע · שם · פעיל)</h2>
     <div class="tbl-wrap" style="padding:12px">
       ${OTEAMS.map(t=>`<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
         <input type="color" value="${esc(t.color||'#64748b')}" id="tc-${t.id}" ${admin?'':'disabled'} style="width:42px;height:34px;border:none;background:none;padding:0">
@@ -744,8 +796,13 @@ window.openCust = async (id)=>{
     <div class="row"><span class="k">סוג לקוח</span><span class="v">${esc(c.customer_type||'—')}</span></div>
     <h2 class="sec">עסקאות (${(deals||[]).length})</h2>
     ${(deals||[]).map(d=>`<div class="row"><span class="k">${esc(d.priority_quote_id||'ללא הצעה')}</span><span class="v">${esc(d.stage)}${d.amount?' · ₪'+Number(d.amount).toLocaleString():''}</span></div>`).join('')||'<div class="empty" style="padding:10px">אין עסקאות</div>'}
-    ${(()=>{ const co = custOrders(c); return co.length ? `<h2 class="sec">📦 הזמנות במערכת התיאומים (${co.length})</h2>` +
-      co.map(o=>`<div class="row" style="cursor:pointer" onclick="document.getElementById('custModal').classList.add('hidden');openOrd('${o.id}')"><span class="k">${esc(o.order_number)}${o.scheduled_date?' · '+fmtD(o.scheduled_date):''}</span><span class="v"><span class="pill ${ordStClass(o.order_status)}">${esc(o.order_status||'—')}</span></span></div>`).join('') : ''; })()}
+    ${(()=>{ const co = custOrders(c); if(!co.length) return '';
+      const open=co.filter(o=>!['הושלם','בוטל'].includes(o.order_status)), past=co.filter(o=>['הושלם','בוטל'].includes(o.order_status));
+      const row=o=>`<div class="row" style="cursor:pointer" onclick="document.getElementById('custModal').classList.add('hidden');openOrd('${o.id}')"><span class="k">${esc(o.order_number)}${o.scheduled_date?' · '+fmtD(o.scheduled_date):''}</span><span class="v"><span class="pill ${ordStClass(o.order_status)}">${esc(o.order_status||'—')}</span></span></div>`;
+      return (open.length?`<h2 class="sec">📦 הזמנות פתוחות (${open.length})</h2>`+open.map(row).join(''):'') +
+             (past.length?`<h2 class="sec">🗄️ הזמנות עבר (${past.length})</h2>`+past.map(row).join(''):''); })()}
+    ${(()=>{ const cp=PAYS.filter(p=>p.customer_id===c.id); return cp.length?`<h2 class="sec">💳 תשלומים (${cp.length})</h2>`+cp.slice(0,10).map(p=>`<div class="row"><span class="k">${p.due_date?fmtD(p.due_date):'—'}</span><span class="v">${shekel(p.total_amount)} · ${esc(p.status||'')}</span></div>`).join(''):''; })()}
+    ${(()=>{ const cm=MEETS.filter(m=>m.linked_type==='customer'&&m.linked_id===c.id); return cm.length?`<h2 class="sec">📅 פגישות (${cm.length})</h2>`+cm.slice(0,10).map(m=>`<div class="row"><span class="k">${m.meet_date?fmtD(m.meet_date):''}</span><span class="v">${esc(m.subject||'')}</span></div>`).join(''):''; })()}
     <h2 class="sec">אנשי קשר (${(contacts||[]).length})</h2>
     ${(contacts||[]).map(p=>`<div class="row"><span class="k">${esc(p.full_name)}</span><span class="v">${esc(p.phone||p.email||'—')}</span></div>`).join('')||'<div class="empty" style="padding:10px">אין אנשי קשר</div>'}
     <div class="actions"><button class="ghost" onclick="document.getElementById('custModal').classList.add('hidden')">סגירה</button></div>`;

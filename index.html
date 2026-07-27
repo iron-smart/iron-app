@@ -658,13 +658,76 @@ function ordRow(o){
     <div class="meta">${fmtD(o.order_date)}${o.city?' · '+esc(o.city):''}${o.team?' · צוות '+esc(o.team):''}${when}</div></div>
     <span class="pill ${ordStClass(o.order_status)}">${esc(o.order_status||'—')}</span></div>`;
 }
+const scStClass = s => ['הושלם','הושלמה','סגורה'].includes(s)?'st-rel':(['בוטלה'].includes(s)?'st-no':(s==='חדש'?'st-new':'st-def'));
 function scRow(s){
-  const stc = ['הושלם','הושלמה','סגורה'].includes(s.status)?'st-rel':(['בוטלה'].includes(s.status)?'st-no':(s.status==='חדש'?'st-new':'st-def'));
-  return `<div class="lead">
+  return `<div class="lead" onclick="openScall('${s.id}')">
     <div><div class="nm">${esc(s.customer_name||'ללא שם')} <small style="color:#94a3b8;font-weight:400">· קריאה ${esc(s.call_number||'')}</small></div>
     <div class="meta">${fmtD(s.opened_date)}${s.product?' · '+esc(s.product):''}${s.city?' · '+esc(s.city):''}${s.urgency&&s.urgency!=='רגילה'?' · <b style="color:#c0392b">'+esc(s.urgency)+'</b>':''}</div></div>
-    <span class="pill ${stc}">${esc(s.status||'—')}</span></div>`;
+    <span class="pill ${scStClass(s.status)}">${esc(s.status||'—')}</span></div>`;
 }
+function scTable(list){
+  if(!list.length) return '<div class="empty">אין קריאות שירות בסינון הזה</div>';
+  const rows = list.slice(0,200).map(s=>`<tr onclick="openScall('${s.id}')">
+      <td dir="ltr">${esc(s.call_number||'')}</td><td><b>${esc(s.customer_name||'')}</b></td><td>${esc(s.product||'')}</td><td>${esc(s.city||'')}</td>
+      <td><span class="pill ${scStClass(s.status)}">${esc(s.status||'—')}</span></td>
+      <td>${s.urgency&&s.urgency!=='רגילה'?'<b style="color:#c0392b">'+esc(s.urgency)+'</b>':esc(s.urgency||'רגילה')}</td>
+      <td>${fmtD(s.scheduled_date)||'—'}${s.time_slot?' · '+esc(s.time_slot):''}</td>
+      <td>${esc(s.team||'—')}</td></tr>`).join('');
+  const more = list.length>200 ? `<div class="more">מוצגות 200 מתוך ${list.length} — חדדו את החיפוש</div>` : '';
+  return `<div class="tbl-wrap"><table class="tbl"><thead><tr>
+    <th>מס' קריאה</th><th>לקוח</th><th>מוצר</th><th>עיר</th><th>סטטוס</th><th>דחיפות</th><th>תואם ל-</th><th>צוות</th>
+  </tr></thead><tbody>${rows}</tbody></table></div>${more}`;
+}
+window.openScall = (id)=>{
+  const s = SCALLS.find(x=>x.id===id); if(!s) return;
+  const editable = ['admin','manager'].includes(ME.role);
+  const stVals = uniqVals(SCALLS,'status',s.status);
+  const urVals = [...new Set(['רגילה','דחוף','קריטי', ...uniqVals(SCALLS,'urgency',s.urgency)])];
+  const slotVals = uniqVals([...ORDS,...SCALLS],'time_slot',s.time_slot);
+  const teamVals = [...new Set([...OTEAMS.map(t=>t.name), ...uniqVals(SCALLS,'team',s.team)])];
+  $('#ordSheet').innerHTML = `
+    <h3>קריאת שירות ${esc(s.call_number||'')}</h3>
+    <div class="row"><span class="k">לקוח</span><span class="v">${esc(s.customer_name||'—')}</span></div>
+    <div class="row"><span class="k">נפתחה</span><span class="v">${fmtD(s.opened_date)||'—'}</span></div>
+    ${s.phone?`<div class="row"><span class="k">טלפון</span><span class="v" dir="ltr">${esc(s.phone)}</span></div>`:''}
+    ${s.product?`<div class="row"><span class="k">מוצר</span><span class="v">${esc(s.product)}</span></div>`:''}
+    ${s.city?`<div class="row"><span class="k">עיר</span><span class="v">${esc(s.city)}</span></div>`:''}
+    ${s.call_type?`<div class="row"><span class="k">סוג קריאה</span><span class="v">${esc(s.call_type)}</span></div>`:''}
+    ${s.fault_details?`<div class="note">🔧 ${esc(s.fault_details)}</div>`:''}
+    ${editable?`<h2 class="sec">🛠️ עדכון ותיאום</h2>
+    <div class="field"><label>סטטוס</label><select id="se-status">${optHtml(stVals,s.status)}</select></div>
+    <div class="field"><label>דחיפות</label><select id="se-urgency">${optHtml(urVals,s.urgency||'רגילה')}</select></div>
+    <div class="field"><label>תאריך תיאום</label><input id="se-date" type="date" value="${esc(s.scheduled_date||'')}"></div>
+    <div class="field"><label>משבצת זמן</label><select id="se-slot"><option value="">—</option>${optHtml(slotVals,s.time_slot)}</select></div>
+    <div class="field"><label>צוות</label><select id="se-team"><option value="">—</option>${optHtml(teamVals,s.team)}</select></div>
+    <button class="btn" onclick="saveScall('${s.id}')">שמירת עדכון</button>
+    <div class="err" id="se-err"></div>`:'<div class="note">לעדכון נדרשת הרשאת מנהל.</div>'}
+    <div class="actions"><button class="ghost" onclick="document.getElementById('ordModal').classList.add('hidden')">סגירה</button></div>`;
+  $('#ordModal').classList.remove('hidden');
+};
+window.saveScall = async (id)=>{
+  const s = SCALLS.find(x=>x.id===id); if(!s) return;
+  const upd = {
+    status: $('#se-status').value,
+    urgency: $('#se-urgency').value,
+    scheduled_date: $('#se-date').value || null,
+    time_slot: $('#se-slot').value || null,
+    team: $('#se-team').value || null,
+  };
+  const { error } = await sb.schema('ord').from('service_calls').update(upd).eq('id', id);
+  if(error){ $('#se-err').textContent = 'השמירה נכשלה — ' + error.message; return; }
+  const changes = [];
+  for(const k of Object.keys(upd)) if((s[k]||null)!==(upd[k]||null)) changes.push(k);
+  Object.assign(s, upd);
+  try{
+    await sb.schema('ord').from('audit_log').insert({
+      user_email: ME.email, action: 'עדכון קריאת שירות מהמערכת',
+      entity: 'קריאת שירות', entity_id: String(s.call_number||''), label: changes.join(', ') || 'ללא שינוי'
+    });
+  }catch(_e){}
+  $('#ordModal').classList.add('hidden');
+  renderOrders();
+};
 const wideScreen = ()=> window.matchMedia('(min-width:700px)').matches;
 function ordTable(list){
   if(!list.length) return '<div class="empty">אין הזמנות בסינון הזה</div>';
@@ -685,7 +748,7 @@ function renderOrders(){
   if(ORD_FILTER==='calls'){
     let list = SCALLS.filter(s=>!['הושלם','הושלמה','בוטלה','סגורה'].includes(s.status));
     if(q) list = SCALLS.filter(s=>(s.customer_name||'').includes(q)||(s.call_number||'').includes(q)||(s.city||'').includes(q));
-    $('#orders-list').innerHTML = capped(list, scRow, 'אין קריאות שירות בסינון הזה');
+    $('#orders-list').innerHTML = wideScreen() ? scTable(list) : capped(list, scRow, 'אין קריאות שירות בסינון הזה');
     return;
   }
   let list = ORD_FILTER==='all' ? ORDS : (ORD_FILTER==='done' ? ORDS.filter(o=>o.order_status==='הושלם') : ORDS.filter(o=>!['הושלם','בוטל'].includes(o.order_status)));

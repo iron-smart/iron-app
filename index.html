@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>איירון פיטנס — המערכת</title>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -120,7 +120,7 @@
   .side-hide:hover{ background:rgba(255,255,255,.2); color:#fff; }
   .nav-wrap{ position:relative; }
   .nav-arrow{ font-size:13px; opacity:.55; }
-  .submenu{ display:none; position:absolute; inset-inline-end:100%; top:0; background:#0b3552; border:1px solid rgba(255,255,255,.15); border-radius:10px 0 0 10px; min-width:165px; padding:6px 0; box-shadow:0 8px 30px rgba(0,0,0,.35); z-index:45; }
+  .submenu{ display:none; position:absolute; inset-inline-start:100%; inset-inline-end:auto; top:0; background:#0b3552; border:1px solid rgba(255,255,255,.15); border-radius:10px 0 0 10px; min-width:165px; padding:6px 0; box-shadow:0 8px 30px rgba(0,0,0,.35); z-index:45; }
   .nav-wrap:hover .submenu{ display:block; }
   .submenu button{ display:block; width:100%; text-align:start; background:none; border:none; color:#cfd8e3; font-size:13.5px; font-family:inherit; padding:9px 16px; cursor:pointer; }
   .submenu button:hover{ color:#fff; background:rgba(255,255,255,.08); }
@@ -135,8 +135,13 @@
   /* טבלה בעיצוב הלוח */
   .tbl-wrap{ background:#fff; border:1px solid var(--line); border-radius:12px; overflow:auto; }
   table.tbl{ width:100%; border-collapse:collapse; font-size:14px; }
-  .tbl th{ text-align:right; color:#fff; background:linear-gradient(135deg,#061827,#0b3552); font-weight:700; font-size:13px; padding:10px 12px; white-space:nowrap; position:sticky; top:0; }
+  .tbl th{ text-align:right; color:#fff; background:linear-gradient(135deg,#061827,#0b3552); font-weight:700; font-size:13px; padding:10px 12px; white-space:nowrap; position:sticky; top:0; z-index:3; }
   .tbl td{ padding:9px 12px; border-bottom:1px solid #eef1f4; white-space:nowrap; }
+  /* תיקון ממצא 23 — רק עוטף שיש בתוכו טבלה מקבל גובה מרבי, כדי שהגלילה תתרחש בתוכו והכותרת תידבק */
+  .tbl-wrap:has(> table.tbl){ max-height:calc(100vh - 215px); }
+  /* תיקון ממצא 17 — רקע מוצלל מאחורי הסרגל הנפתח במובייל */
+  #sideBackdrop{ display:none; position:fixed; inset:52px 0 0 0; background:rgba(6,24,39,.45); z-index:28; }
+  @media(min-width:801px){ #sideBackdrop{ display:none !important; } }
   .tbl tbody tr{ cursor:pointer; }
   .tbl tbody tr:hover{ background:#f6f9fb; }
   .tbl tbody tr:last-child td{ border-bottom:none; }
@@ -207,7 +212,12 @@
   #board-wrap{ height:calc(100vh - 175px); }
   #board-wrap iframe{ width:100%; height:100%; border:none; border-radius:12px; background:#fff; box-shadow:0 2px 10px rgba(6,24,39,.08); }
   @media(max-width:800px){
-    aside#side{ position:fixed; inset-inline-end:0; top:52px; z-index:29; box-shadow:0 0 40px rgba(0,0,0,.45); }
+    /* תיקון ממצא 17 — ב-RTL‏ inset-inline-start הוא הצד הימני, שם הסרגל יושב בדסקטופ */
+    aside#side{ position:fixed; inset-inline-start:0; inset-inline-end:auto; top:52px; z-index:29; box-shadow:0 0 40px rgba(0,0,0,.45); max-width:82vw; }
+    /* תיקון ממצא 18 — במגע אין hover, לכן תפריטי המשנה נפרסים בתוך הרשימה */
+    .submenu{ display:block; position:static; min-width:0; padding:2px 0 6px; border:none; border-radius:0; box-shadow:none; background:rgba(255,255,255,.05); }
+    .submenu button{ padding:8px 34px; font-size:13px; }
+    .tbl-wrap:has(> table.tbl){ max-height:calc(100vh - 168px); }
     #board-wrap{ height:calc(100vh - 165px); }
     #lastSync{ display:none; }
     .user-chip .rle{ display:none; }
@@ -334,6 +344,13 @@
   .pill.p-orange{ background:#ffedd5; color:#9a3412; } .pill.p-yellow{ background:#fef9c3; color:#854d0e; }
   .pill.p-green{ background:#dcfce7; color:#166534; } .pill.p-gray{ background:#f1f5f9; color:#475569; }
   .pill.p-red{ background:#fee2e2; color:#991b1b; }
+  /* ===== נגישות (תיקון ממצא 14) ===== */
+  :focus-visible{ outline:3px solid #6A9F85; outline-offset:2px; }
+  .tbl tbody tr:focus-visible{ outline-offset:-3px; background:#eef7f2; }
+  .nav-item:focus-visible, .submenu button:focus-visible{ outline:3px solid #9cd326; outline-offset:-3px; }
+  .modal .sheet:focus{ outline:none; }
+  .a11y-skip{ position:absolute; inset-inline-start:-9999px; top:0; z-index:100000; background:var(--navy); color:#fff; padding:10px 16px; border-radius:0 0 10px 10px; font-size:14px; text-decoration:none; }
+  .a11y-skip:focus{ inset-inline-start:12px; }
   .modal-actions{ display:flex; gap:10px; margin-top:20px; align-items:center; flex-wrap:wrap; }
   .modal-actions .btnw{ width:auto; padding:11px 22px; }
   .modal-actions .del{ margin-inline-start:auto; background:none; border:none; color:var(--red); font-weight:600; font-size:13px; }
@@ -369,9 +386,9 @@
   <div class="card">
     <div style="text-align:center;margin:-4px 0 8px;"><img class="brand-logo" alt="איירון פיטנס" style="width:96px;"></div>
     <h1>איירון פיטנס</h1>
-    <p class="sub">המערכת המאוחדת · גרסה 5.3.1</p>
-    <div class="field"><label>דוא"ל</label><input id="email" type="email" autocomplete="username" placeholder="name@ironfitness.co.il"></div>
-    <div class="field"><label>סיסמה</label><input id="password" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+    <p class="sub">המערכת המאוחדת · גרסה 5.5.0</p>
+    <div class="field"><label for="email">דוא"ל</label><input id="email" type="email" autocomplete="username" placeholder="name@ironfitness.co.il"></div>
+    <div class="field"><label for="password">סיסמה</label><input id="password" type="password" autocomplete="current-password" placeholder="••••••••"></div>
     <button class="btn" id="loginBtn">כניסה</button>
     <div class="err" id="loginErr"></div>
   </div>
@@ -380,7 +397,7 @@
 <!-- ===== אפליקציה ===== -->
 <div id="app" class="hidden">
   <div class="topnav">
-    <button class="burger" id="sideToggle" title="הצגה/הסתרה של התפריט">☰</button>
+    <button class="burger" id="sideToggle" title="הצגה/הסתרה של התפריט" aria-label="הצגה או הסתרה של התפריט" aria-expanded="true" aria-controls="side">☰</button>
     <img class="brand-wm" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'">
     <div class="spacer"></div>
     <span class="who2" id="lastSync" title="סנכרון אחרון מפריוריטי"></span>
@@ -392,9 +409,9 @@
   <aside id="side">
     <div class="side-top">
       <span>תפריט</span>
-      <button class="side-hide" title="הסתרת התפריט" onclick="setSide(false)">«</button>
+      <button class="side-hide" title="הסתרת התפריט" aria-label="הסתרת התפריט" onclick="setSide(false)">«</button>
     </div>
-    <nav>
+    <nav aria-label="תפריט ראשי">
     <button class="nav-item active" data-tab="today"><span><img class="nav-ico" src="assets/logo-white.png" alt="" onerror="this.style.display='none'"> לובי</span> <span class="nav-arrow">‹</span></button>
     <button class="nav-item" data-tab="leads">לידים <span class="nav-arrow">‹</span></button>
     <button class="nav-item" data-tab="customers">לקוחות <span class="nav-arrow">‹</span></button>
@@ -423,14 +440,14 @@
     </div>
     <button class="nav-item" data-tab="set">הגדרות <span class="nav-arrow">‹</span></button>
     </nav>
-    <div class="side-user" onclick="openProfile()" title="אזור אישי">
+    <div class="side-user" onclick="openProfile()" title="אזור אישי" role="button" tabindex="0" aria-label="אזור אישי">
       <span class="init" id="sideInit">—</span>
       <span><b id="sideName">—</b><small id="sideRole">אזור אישי</small></span>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.3.1</div>
-    <button class="side-collapse" title="כיווץ התפריט" onclick="setSide(false)">⟩</button>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.5.0</div>
+    <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
-  <button id="sideOpenTab" title="פתיחת התפריט" onclick="setSide(true)">‹</button>
+  <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)">‹</button>
   <div class="content">
 
   <main>
@@ -645,7 +662,42 @@ const TASK_STATUSES = ['חדש','בעדיפות','תקוע','הושלם','20K+',
 const TASK_ST_COLORS = {'חדש':'#c4c4c4','בעדיפות':'#579bfc','תקוע':'#df2f4a','הושלם':'#00c875','20K+':'#175a63','50K+':'#5559df','100K+':'#fdab3d'};
 const QUOTE_STATUSES = ['בדיקות מימון','ממתין ליועץ עסקי','משווה מול מתחרים','טרם סגר את המקום','בבדיקות'];
 const DEAL_IRRELEVANT = ['מחיר יקר','העדיף מתחרים','ירד מהעניין','אין בשלות כלכלית','רכש באתר','תקוע ארוכות - אם יהיה רלוונטי יצרו קשר עצמאית'];
-const mdPill = (v, colors) => v ? `<span class="pill" style="background:${(colors&&colors[v])||'#f1f5f9'};color:#fff;${(colors&&colors[v])?'':'color:#475569;'}">${esc(v)}</span>` : '';
+/* תיקון ממצא 15 — בחירת צבע טקסט קריא לפי בהירות הרקע (WCAG) במקום לבן קבוע */
+function _rgbOf(h){
+  h = String(h||'').trim().replace('#','');
+  if(h.length===3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+  if(!/^[0-9a-fA-F]{6}$/.test(h)) return null;
+  return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+}
+function _lumOf(c){
+  const f = v => { v/=255; return v<=0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4); };
+  return 0.2126*f(c[0]) + 0.7152*f(c[1]) + 0.0722*f(c[2]);
+}
+function _contrast(a,b){
+  const l1=_lumOf(a), l2=_lumOf(b);
+  return (Math.max(l1,l2)+0.05)/(Math.min(l1,l2)+0.05);
+}
+/* צבע טקסט על גבי רקע צבעוני — לבן או כהה, מה שקריא יותר */
+function inkOn(bg){
+  const c=_rgbOf(bg); if(!c) return '#fff';
+  return _contrast(c,[255,255,255]) >= _contrast(c,[16,34,47]) ? '#fff' : '#10222f';
+}
+/* אותו צבע, מוכהה עד שהוא קריא על רקע לבן (יחס 4.5:1) */
+function onWhite(bg){
+  let c=_rgbOf(bg); if(!c) return '#475569';
+  let g=0;
+  while(_contrast(c,[255,255,255]) < 4.5 && g < 40){
+    c = [Math.round(c[0]*0.88), Math.round(c[1]*0.88), Math.round(c[2]*0.88)];
+    g++;
+  }
+  return '#' + c.map(v=>('0'+Math.max(0,Math.min(255,v)).toString(16)).slice(-2)).join('');
+}
+const mdPill = (v, colors) => {
+  if(!v) return '';
+  const bg = (colors && colors[v]) || '';
+  return bg ? `<span class="pill" style="background:${bg};color:${inkOn(bg)}">${esc(v)}</span>`
+            : `<span class="pill" style="background:#f1f5f9;color:#475569">${esc(v)}</span>`;
+};
 
 async function boot(){
   const { data:{ session } } = await sb.auth.getSession();
@@ -694,6 +746,17 @@ document.querySelectorAll('.nav-item').forEach(b=> b.onclick=()=>{
 window.setSide = open=>{
   $('#side').classList.toggle('closed', !open);
   document.body.classList.toggle('side-closed', !open);
+  /* תיקון ממצא 17 — במובייל הסרגל צף מעל התוכן, ולחיצה על הרקע סוגרת אותו */
+  let bd = document.getElementById('sideBackdrop');
+  if(open && window.innerWidth < 800){
+    if(!bd){
+      bd = document.createElement('div');
+      bd.id = 'sideBackdrop';
+      bd.onclick = ()=> setSide(false);
+      document.body.appendChild(bd);
+    }
+    bd.style.display = 'block';
+  } else if(bd){ bd.style.display = 'none'; }
 };
 $('#sideToggle').onclick = ()=> setSide($('#side').classList.contains('closed'));
 if(window.innerWidth<800) setSide(false);
@@ -702,7 +765,13 @@ if(window.innerWidth<800) setSide(false);
 let CARD_STACK=[], CARD_CUR=null, CARD_NAV=false, CARD_BACK=false;
 window.goCard = fn => { CARD_NAV=true; fn(); };            // ניווט כרטיס←כרטיס (עם חזרה)
 window.cardBack = () => { const p=CARD_STACK.pop(); if(!p) return closeCards(); CARD_BACK=true; p(); };
-window.closeCards = () => { CARD_STACK=[]; CARD_CUR=null; document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden')); };
+window.closeCards = () => {
+  CARD_STACK=[]; CARD_CUR=null;
+  document.querySelectorAll('.modal').forEach(m=>{ m.classList.add('hidden'); m.removeAttribute('aria-modal'); });
+  /* תיקון ממצא 14 — החזרת המיקוד לאלמנט שממנו נפתח הכרטיס */
+  const r = A11Y_RETURN; A11Y_RETURN = null;
+  if(r && r.focus && document.contains(r)){ try{ r.focus(); }catch(e){} }
+};
 function mountCard(mid, reopen){
   if(CARD_BACK){ /* חזרה — המחסנית כבר קוצרה */ }
   else if(CARD_NAV && CARD_CUR){ CARD_STACK.push(CARD_CUR); }
@@ -713,12 +782,72 @@ function mountCard(mid, reopen){
   const sheet=modal.querySelector('.sheet');
   const oldBar=sheet.querySelector('.card-bar'); if(oldBar) oldBar.remove();
   const bar=document.createElement('div'); bar.className='card-bar';
-  bar.innerHTML=(CARD_STACK.length?`<button class="card-back" onclick="cardBack()">→ חזרה</button>`:'<span></span>')+`<button class="card-x" title="סגירה" onclick="closeCards()">✕</button>`;
+  bar.innerHTML=(CARD_STACK.length?`<button class="card-back" onclick="cardBack()">→ חזרה</button>`:'<span></span>')+`<button class="card-x" title="סגירה" aria-label="סגירת הכרטיס" onclick="closeCards()">✕</button>`;
   sheet.prepend(bar);
   modal.classList.remove('hidden');
   sheet.scrollTop=0;
+  /* תיקון ממצא 14 — הכרטיס מוכרז כדיאלוג, מקבל מיקוד, ומחזיר אותו בסגירה */
+  A11Y_RETURN = A11Y_RETURN || document.activeElement;
+  modal.setAttribute('role','dialog');
+  modal.setAttribute('aria-modal','true');
+  const _h = sheet.querySelector('h3, h2');
+  if(_h){ if(!_h.id) _h.id = 'cardTitle_' + mid; sheet.setAttribute('aria-labelledby', _h.id); }
+  sheet.setAttribute('tabindex','-1');
+  setTimeout(function(){ try{ sheet.focus(); }catch(e){} }, 30);
 }
+/* אלמנטים שאפשר למקד בהם — לשימוש מלכודת המיקוד של הכרטיס */
+const A11Y_FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+let A11Y_RETURN = null;
+function _openModal(){ return Array.prototype.slice.call(document.querySelectorAll('.modal')).filter(m=>!m.classList.contains('hidden'))[0] || null; }
 document.addEventListener('click', e=>{ if(e.target.classList && e.target.classList.contains('modal')) closeCards(); });
+/* ===== ניווט מקלדת (תיקון ממצא 14) ===== */
+document.addEventListener('keydown', function(e){
+  /* Esc — סגירת כרטיס פתוח, אחרת סגירת התפריט הצף במובייל */
+  if(e.key === 'Escape'){
+    if(_openModal()){ e.preventDefault(); closeCards(); return; }
+    if(window.innerWidth < 800 && !document.getElementById('side').classList.contains('closed')){ setSide(false); }
+    return;
+  }
+  /* Tab — מלכודת מיקוד בתוך הכרטיס הפתוח */
+  if(e.key === 'Tab'){
+    const m = _openModal(); if(!m) return;
+    const f = Array.prototype.slice.call(m.querySelectorAll(A11Y_FOCUSABLE)).filter(el=>el.offsetParent !== null);
+    if(!f.length) return;
+    const first = f[0], last = f[f.length-1];
+    if(e.shiftKey && (document.activeElement === first || !m.contains(document.activeElement))){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    return;
+  }
+  /* Enter או רווח — הפעלת שורה או כרטיסון לחיץ */
+  if(e.key !== 'Enter' && e.key !== ' ') return;
+  const el = e.target;
+  if(!el || !el.getAttribute) return;
+  const tag = el.tagName;
+  if(tag === 'BUTTON' || tag === 'A' || tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+  if(el.getAttribute('role') === 'button' && (el.hasAttribute('onclick') || el.onclick)){
+    e.preventDefault();
+    el.click();
+  }
+});
+/* הפיכת שורות טבלה וכרטיסונים לחיצים לנגישים למקלדת — רץ אחרי כל ציור מחדש */
+function a11yUpgrade(){
+  const sel = 'tr[onclick], div.lead[onclick], div.card-row[onclick], [onclick][class*="lead"]';
+  document.querySelectorAll(sel).forEach(function(el){
+    if(el.hasAttribute('tabindex')) return;
+    el.setAttribute('tabindex','0');
+    if(!el.getAttribute('role')) el.setAttribute('role','button');
+  });
+  const b = document.getElementById('sideToggle');
+  if(b) b.setAttribute('aria-expanded', String(!document.getElementById('side').classList.contains('closed')));
+}
+let _a11yTimer = null;
+try{
+  new MutationObserver(function(){
+    clearTimeout(_a11yTimer);
+    _a11yTimer = setTimeout(a11yUpgrade, 120);
+  }).observe(document.body, { childList:true, subtree:true });
+  a11yUpgrade();
+}catch(e){ console.error('הפעלת שיפורי הנגישות נכשלה', e); }
 
 /* אזור אישי (הערה 6ג) */
 window.openProfile = ()=>{
@@ -773,7 +902,7 @@ function ieSel(kind,id,field,options,val,opts){
   if(!canIE()) return opts.mdColors ? mdPill(val,opts.mdColors) : (STATUS_PILL[val]?`<span class="pill ${STATUS_PILL[val]}">${esc(val)}</span>`:`<span>${esc(val||'—')}</span>`);
   const list=(opts.allowEmpty?[['',opts.emptyLabel||'—']]:[]).concat([...new Set([...(options||[]), ...(val?[val]:[])])].map(o=>[o,o]));
   let cls='inline-edit', style='';
-  if(opts.mdColors){ cls+=' mdc'; style=`background:${opts.mdColors[val]||'#94a3b8'}`; }
+  if(opts.mdColors){ cls+=' mdc'; const _bg=opts.mdColors[val]||'#94a3b8'; style=`background:${_bg};color:${inkOn(_bg)}`; } /* תיקון ממצא 15 */
   else if(STATUS_PILL[val]) cls+=` pilled ${STATUS_PILL[val]}`;
   return `<select class="${cls}" style="${style}" data-ie="${kind}|${id}|${field}" onclick="event.stopPropagation()" onchange="ieSave(this)">${list.map(([v,l])=>`<option value="${esc(v)}" ${String(val||'')===v?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
 }
@@ -1056,7 +1185,7 @@ function filteredSkus(){
   return list;
 }
 function skuRow(s){
-  return `<div class="lead" onclick="openSku('${esc(s.partname)}')">
+  return `<div class="lead" onclick="openSku('${jsq(s.partname)}')">
     ${s.image_url?`<img class="sku-img" src="${esc(s.image_url)}" loading="lazy">`:'<div class="sku-img sku-none">🏋️</div>'}
     <div style="flex:1"><div class="nm">${esc(s.partdes||s.partname)}</div>
     <div class="meta">מק"ט ${esc(s.partname)}${s.family?' · '+esc(s.family):''}${s.price?' · '+shekel(s.price):''}</div></div>
@@ -1067,9 +1196,9 @@ function skuTable(list){
   if(!list.length) return '<div class="empty">אין מק"טים להצגה</div>';
   /* ברקוד מוצג רק אם הוא שונה מהמק"ט — בלי כפילות (הערת רומן 27/07) */
   const bc = s => (s.barcode && String(s.barcode).trim()!==String(s.partname).trim()) ? esc(s.barcode) : '—';
-  const rows=list.slice(0,300).map((s,i)=>`<tr onclick="openSku('${esc(s.partname)}')">
+  const rows=list.slice(0,300).map((s,i)=>`<tr onclick="openSku('${jsq(s.partname)}')">
     <td class="rownum">${i+1}</td>
-    <td>${s.image_url?`<img class="sku-img" style="width:38px;height:38px" src="${esc(s.image_url)}" loading="lazy" onclick="event.stopPropagation();window.open('${esc(s.image_full||s.image_url)}','_blank')">`:'<span style="color:#c3cbd4">—</span>'}</td>
+    <td>${s.image_url?`<img class="sku-img" style="width:38px;height:38px" src="${esc(s.image_url)}" loading="lazy" onclick="event.stopPropagation();window.open('${jsq(s.image_full||s.image_url)}','_blank')">`:'<span style="color:#c3cbd4">—</span>'}</td>
     <td dir="ltr"><b>${esc(s.partname)}</b></td><td class="td-desc">${esc(s.partdes||'—')}</td><td>${esc(s.family||'—')}</td>
     <td>${skuActPill(s)}</td>
     <td>${s.price?shekel(s.price):'—'}</td>
@@ -1092,7 +1221,7 @@ window.openSku = (pn)=>{
   $('#skuSheet').innerHTML = `
     <h3 style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">${esc(s.partdes||s.partname)} ${skuActPill(s)}</h3>
     <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:6px">
-      ${s.image_url?`<img src="${esc(s.image_full||s.image_url)}" style="width:120px;height:120px;object-fit:cover;border-radius:12px;border:1px solid var(--line);cursor:pointer" onclick="window.open('${esc(s.image_full||s.image_url)}','_blank')">`:'<div class="sku-img sku-none" style="width:120px;height:120px;font-size:40px">🏋️</div>'}
+      ${s.image_url?`<img src="${esc(s.image_full||s.image_url)}" style="width:120px;height:120px;object-fit:cover;border-radius:12px;border:1px solid var(--line);cursor:pointer" onclick="window.open('${jsq(s.image_full||s.image_url)}','_blank')">`:'<div class="sku-img sku-none" style="width:120px;height:120px;font-size:40px">🏋️</div>'}
       <div style="flex:1;min-width:220px">
         <div class="row"><span class="k">מק"ט</span><span class="v" dir="ltr">${esc(s.partname)}</span></div>
         ${s.barcode&&String(s.barcode).trim()!==String(s.partname).trim()?`<div class="row"><span class="k">ברקוד</span><span class="v" dir="ltr">${esc(s.barcode)}</span></div>`:''}
@@ -1106,11 +1235,11 @@ window.openSku = (pn)=>{
     ${mgr?`<div class="row"><span class="k">עלות (פריוריטי)</span><span class="v">${s.cost?shekel(s.cost):'—'}</span></div>`:''}
     ${mgr?`
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:10px">
-      <div class="field"><label>מחיר התקנה איירון (₪)</label><input id="sk-inst-iron" type="number" step="any" inputmode="decimal" value="${s.install_price_iron??''}"></div>
-      <div class="field"><label>מחיר התקנה קבלני (₪)</label><input id="sk-inst-cont" type="number" step="any" inputmode="decimal" value="${s.install_price_contractor??''}"></div>
-      <div class="field"><label>מקדם העמסה משטחי</label><input id="sk-pallet" type="number" step="any" inputmode="decimal" value="${s.pallet_load_factor??''}"></div>
+      <div class="field"><label>מחיר התקנה איירון (₪)</label><input id="sk-inst-iron" type="text" inputmode="decimal" dir="ltr" placeholder="לדוגמה 1250 או 1,5" value="${s.install_price_iron??''}"></div>
+      <div class="field"><label>מחיר התקנה קבלני (₪)</label><input id="sk-inst-cont" type="text" inputmode="decimal" dir="ltr" placeholder="לדוגמה 900" value="${s.install_price_contractor??''}"></div>
+      <div class="field"><label>מקדם העמסה משטחי</label><input id="sk-pallet" type="text" inputmode="decimal" dir="ltr" placeholder="לדוגמה 0.25" value="${s.pallet_load_factor??''}"></div>
     </div>
-    <button class="btn green" style="margin-top:4px" onclick="saveSku('${esc(s.partname)}')">שמירת נתוני התקנה והעמסה</button>
+    <button class="btn green" style="margin-top:4px" onclick="saveSku('${jsq(s.partname)}')">שמירת נתוני התקנה והעמסה</button>
     <div class="err" id="sk-err"></div>`
     :`<div class="row"><span class="k">מחיר התקנה איירון</span><span class="v">${s.install_price_iron!=null?shekel(s.install_price_iron):'—'}</span></div>
       <div class="row"><span class="k">מחיר התקנה קבלני</span><span class="v">${s.install_price_contractor!=null?shekel(s.install_price_contractor):'—'}</span></div>
@@ -1126,8 +1255,10 @@ window.openSku = (pn)=>{
 };
 window.saveSku = async (pn)=>{
   const s = SKUS.find(x=>String(x.partname)===String(pn)); if(!s) return;
-  const nv = id => { const v=$(id).value; return v===''?null:Number(v); };
-  const patch = { install_price_iron:nv('#sk-inst-iron'), install_price_contractor:nv('#sk-inst-cont'), pallet_load_factor:nv('#sk-pallet') };
+  const bad=[];
+  const nv = (id,lbl) => { const v=numIn($(id).value); if(v===undefined){ bad.push(lbl); return null; } return v; };
+  const patch = { install_price_iron:nv('#sk-inst-iron','מחיר התקנה איירון'), install_price_contractor:nv('#sk-inst-cont','מחיר התקנה קבלני'), pallet_load_factor:nv('#sk-pallet','מקדם העמסה משטחי') };
+  if(bad.length){ $('#sk-err').textContent='ערך מספרי לא תקין בשדה: '+bad.join(', '); return; }
   const { error } = await sb.schema('ord').from('inv_items').update(patch).eq('partname', s.partname);
   if(error){ $('#sk-err').textContent='השמירה נכשלה — '+error.message; return; }
   Object.assign(s, patch);
@@ -1158,7 +1289,7 @@ function docRow(p){
     <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
       ${signed?`<a class="chip" style="text-decoration:none" href="${viewUrl(p.token)}" target="_blank">📄 צפייה במסמך החתום</a>`
         :`<button class="chip" onclick="copyTxt('${signUrl(p.token)}')">🔗 העתקת קישור</button>
-          ${p.phone?`<a class="chip" style="text-decoration:none" target="_blank" href="${waLink(p.phone,'שלום '+(p.customer_name||'')+', נא לחתום על '+p.doc_type+': '+signUrl(p.token))}">💬 וואטסאפ</a>`:''}`}
+          ${p.phone?`<a class="chip" style="text-decoration:none" target="_blank" href="${waLink(p.phone, waProtocolMsg(p, signUrl(p.token)))}">💬 וואטסאפ</a>`:''}`}
     </div></div>
     <span class="pill ${signed?'st-rel':'st-def'}">${esc(p.status)}</span></div>`;
 }
@@ -1249,7 +1380,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.3.1</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.5.0</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
@@ -1342,8 +1473,23 @@ const LOGO = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAsYAAALGCAYAAABGaFe1
 document.querySelectorAll('.brand-logo').forEach(im=> im.src = LOGO);
 
 let CUSTS=[], TASKS=[], DEALS=[], MEETS=[], CONTS=[], PAYS=[], ORDS=[], SCALLS=[], OTEAMS=[], SKUS=[], PROTS=[], OSET=[];
+/* פס אזהרה עליון כשטעינת נתונים נכשלה — במקום להציג "אין נתונים" (תיקון ממצא 11) */
+function loadErrBanner(names){
+  let b=document.getElementById('loadErr');
+  if(!names||!names.length){ if(b) b.remove(); return; }
+  if(!b){
+    b=document.createElement('div'); b.id='loadErr';
+    b.setAttribute('style','position:fixed;top:0;inset-inline:0;z-index:9998;background:#c0392b;color:#fff;padding:9px 14px;font-size:14px;text-align:center;direction:rtl;font-family:inherit;box-shadow:0 2px 10px rgba(0,0,0,.25)');
+    document.body.appendChild(b);
+  }
+  b.innerHTML='⚠️ חלק מהנתונים לא נטענו ('+esc(names.join(', '))+'). ייתכן שהמוצג חלקי — '
+    +'<button onclick="location.reload()" style="background:rgba(255,255,255,.22);color:#fff;border:0;border-radius:6px;padding:3px 10px;margin-inline-start:8px;cursor:pointer;font-family:inherit">רענון</button>';
+}
+const LOAD_NAMES = ['לידים','לקוחות','משימות','עסקאות','פגישות','אנשי קשר','תשלומים','הזמנות','קריאות שירות','צוותים','לוג סנכרון','מק"טים','מסמכים','הגדרות'];
 async function loadLeads(){
-  const [l,c,t,d,m,k,p,o,sc,tm,sy,sk,pr,st] = await Promise.all([
+  let _q;
+  try{
+  _q = await Promise.all([
     sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at').order('created_at',{ascending:false}).limit(10000),
     sb.schema('core').from('customers').select('id,name,phone,email,priority_id,status,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes').order('created_at',{ascending:false}).limit(10000),
     sb.schema('crm').from('tasks').select('id,name,status,value_tag,category,due_at,closed_at,linked_type,linked_id,owner_id').order('due_at',{ascending:true}).limit(10000),
@@ -1359,10 +1505,20 @@ async function loadLeads(){
     sb.schema('ord').from('protocols').select('id,order_id,call_id,order_number,customer_name,phone,doc_type,status,sent_at,signed_at,signer_name,token').order('sent_at',{ascending:false}).limit(10000),
     sb.schema('ord').from('settings').select('key,value').order('key',{ascending:true})
   ]);
+  }catch(e){ console.error('טעינת הנתונים נכשלה לגמרי', e); loadErrBanner(['החיבור לשרת']); return; }
+  const [l,c,t,d,m,k,p,o,sc,tm,sy,sk,pr,st] = _q;
+  /* תיקון ממצא 11 — שאילתה שנכשלה כבר לא מתחזה ל"אין נתונים" */
+  const _bad = _q.map((r,i)=>(r&&r.error)?{n:LOAD_NAMES[i],e:r.error}:null).filter(Boolean);
+  if(_bad.length){ _bad.forEach(b=>console.error('טעינת נתונים נכשלה —', b.n, b.e)); loadErrBanner(_bad.map(b=>b.n)); }
+  else loadErrBanner(null);
   LEADS = l.data||[]; CUSTS = c.data||[]; TASKS = t.data||[]; DEALS = d.data||[]; MEETS = m.data||[]; CONTS = k.data||[]; PAYS = p.data||[];
   ORDS = o.data||[]; SCALLS = sc.data||[]; OTEAMS = tm.data||[]; SKUS = sk.data||[]; PROTS = pr.data||[]; OSET = st.data||[];
   const lastOk = (sy.data||[]).find(r=>r.ok && (!r.details || !r.details.fn || r.details.fn==='priority-sync'));
   $('#lastSync').textContent = lastOk ? 'סנכרון אחרון: ' + new Date(lastOk.ran_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+  renderAllViews();
+}
+/* ציור כל המסכים מחדש — משמש גם במעבר בין תצוגת טבלה לכרטיסים (תיקון ממצא 24) */
+function renderAllViews(){
   renderStats(); renderToday(); renderLeads(); renderCustomers(); renderTasks(); renderDeals(); renderMeets(); renderConts(); renderPays(); renderOrdersTools(); renderOrders(); renderSkuTools(); renderSkus(); renderLogi(); renderDocs(); renderOps();
 }
 function capped(list, rowFn, emptyMsg){
@@ -1376,7 +1532,7 @@ function taskRow(t){
   const due = t.due_at ? new Date(t.due_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
   /* סטטוס משימה — הרשימה מהמאנדיי (הערה 17) */
   const stSel = `<select onclick="event.stopPropagation()" onchange="setTaskStatus('${t.id}',this.value)"
-    style="width:auto;padding:5px 8px;font-size:12.5px;border-radius:99px;border:1.5px solid ${TASK_ST_COLORS[t.status]||'#e2e8f0'};color:${TASK_ST_COLORS[t.status]&&t.status!=='חדש'?TASK_ST_COLORS[t.status]:'#475569'};font-weight:700">
+    style="width:auto;padding:5px 8px;font-size:12.5px;border-radius:99px;border:1.5px solid ${TASK_ST_COLORS[t.status]||'#e2e8f0'};color:${TASK_ST_COLORS[t.status]&&t.status!=='חדש'?onWhite(TASK_ST_COLORS[t.status]):'#475569'};font-weight:700">
     ${TASK_STATUSES.map(s=>`<option ${s===t.status?'selected':''}>${s}</option>`).join('')}</select>`;
   return `<div class="lead">
     <div><div class="nm" style="${t.status==='הושלם'?'text-decoration:line-through;color:#94a3b8':''}">${esc(t.name)}</div>
@@ -1424,7 +1580,7 @@ window.doneTask = async (id)=>{
   await loadLeads();
 };
 $('#addTaskBtn').onclick = ()=>{ $('#t-name').value=''; $('#t-err').textContent='';
-  $('#t-due').value = new Date().toISOString().slice(0,10);
+  $('#t-due').value = todayStr(); /* תיקון ממצא 27 — תאריך מקומי ולא UTC */
   mountCard('taskModal', ()=>$('#taskModal').classList.remove('hidden')); };
 $('#t-cancel').onclick = ()=> closeCards();
 $('#t-save').onclick = async ()=>{
@@ -1654,10 +1810,32 @@ function ordChips(){
   $('#ord-chips').innerHTML = chips.map(([k,l,n])=>`<button class="chip ${OF.chip===k?'active':''}" onclick="setOrdFilter('${k}')">${l} <span class="n">${n}</span></button>`).join('');
 }
 window.setOrdFilter = f => { OF.chip=f; renderOrders(); };
-/* תבנית וואטסאפ תיאום מההגדרות (wa_coord) */
+/* תבניות וואטסאפ מההגדרות — תמיכה מלאה ב-{שם} {תאריך} {שעה} {קישור} (תיקון ממצא 19) */
+function waTpl(key,fallback){ const r=OSET.find(x=>x.key===key); return (r&&r.value)||fallback; }
+function waFill(tpl,v){
+  return String(tpl||'')
+    .replace(/\{name\}|\{שם\}/g, v.name||'')
+    .replace(/\{date\}|\{תאריך\}/g, v.date||'')
+    .replace(/\{time\}|\{שעה\}/g, v.time||'')
+    .replace(/\{slot\}|\{שעות\}/g, v.time?(' '+v.time):'')
+    .replace(/\{link\}|\{קישור\}/g, v.link||'')
+    .replace(/\\n/g, '\n')
+    .replace(/ ?בשעה(?=[ \t]*([.,!?]|\n|$))/g, '')
+    .replace(/[ \t]+([,.!?])/g, '$1')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
+}
 function waCoordMsg(o){
-  const tpl=((OSET.find(x=>x.key==='wa_coord')||{}).value)||'שלום {name}, ההגעה תואמה ל-{date}{slot}. איירון פיטנס';
-  return tpl.replace(/\{name\}|\{שם\}/g,o.customer_name||'').replace(/\{date\}|\{תאריך\}/g,fmtD(o.scheduled_date)||'').replace(/\{slot\}|\{שעות\}/g,o.time_slot?(' '+o.time_slot):'');
+  return waFill(waTpl('wa_coord','שלום {שם}, ההגעה תואמה לתאריך {תאריך} בשעה {שעה}. איירון פיטנס'),
+    { name:o.customer_name, date:fmtD(o.scheduled_date), time:o.time_slot });
+}
+function waServiceMsg(s){
+  return waFill(waTpl('wa_service','שלום {שם}, קריאת השירות תואמה לתאריך {תאריך} בשעה {שעה}. איירון פיטנס'),
+    { name:s.customer_name, date:fmtD(s.scheduled_date), time:s.time_slot });
+}
+function waProtocolMsg(p,link){
+  return waFill(waTpl('wa_protocol','שלום {שם}, נא לעבור על המסמך ולחתום עליו בקישור:\n{קישור}\nתודה, איירון פיטנס!'),
+    { name:p.customer_name, link:link });
 }
 function ordRow(o){
   const when = o.scheduled_date ? ' · תואם ל-'+fmtD(o.scheduled_date)+(o.time_slot?' '+esc(o.time_slot):'') : '';
@@ -1676,7 +1854,7 @@ function scRow(s){
 function scTable(list){
   if(!list.length) return '<div class="empty">אין קריאות שירות בסינון הזה</div>';
   const rows = list.slice(0,300).map((s,i)=>{
-    const wa=s.phone?waLink(s.phone,'שלום '+(s.customer_name||'')+', בנוגע לקריאת השירות'+(s.scheduled_date?' — תואם ל-'+fmtD(s.scheduled_date)+(s.time_slot?' '+s.time_slot:''):'')):'';
+    const wa=s.phone?waLink(s.phone, s.scheduled_date?waServiceMsg(s):('שלום '+(s.customer_name||'')+', בנוגע לקריאת השירות')):'';
     return `<tr onclick="openScall('${s.id}')">
       <td class="rownum">${i+1}</td>
       <td dir="ltr"><b>${esc(s.call_number||'')}</b></td>
@@ -1784,6 +1962,21 @@ window.saveScall = async (id)=>{
   renderOrders(); renderLogi(); renderCal();
 };
 const wideScreen = ()=> window.matchMedia('(min-width:700px)').matches;
+/* תיקון ממצא 24 — סיבוב מסך או שינוי גודל חוצה את סף 700px: מציירים מחדש כדי לעבור טבלה⇄כרטיסים */
+let _wideNow = wideScreen(), _vpTimer = null;
+function _viewportChanged(){
+  clearTimeout(_vpTimer);
+  _vpTimer = setTimeout(function(){
+    const w = wideScreen();
+    if(w === _wideNow) return;
+    _wideNow = w;
+    if(window.innerWidth >= 800){ const bd=document.getElementById('sideBackdrop'); if(bd) bd.style.display='none'; }
+    else setSide(false); /* במעבר למסך צר התפריט הצף נסגר ולא מסתיר את התוכן */
+    try{ renderAllViews(); }catch(e){ console.error('ציור מחדש אחרי שינוי גודל מסך נכשל', e); }
+  }, 150);
+}
+window.addEventListener('resize', _viewportChanged);
+window.addEventListener('orientationchange', _viewportChanged);
 /* טבלת הזמנות מלאה — עמודות ועריכה ישירה כמו בלוח הישן, בלי עמודת סכום, עם אזור (איפיון 8א) */
 function ordTable(list){
   if(!list.length) return '<div class="empty">לא נמצאו הזמנות מתאימות</div>';
@@ -2263,10 +2456,11 @@ window.openLead = (id)=>{
 window.saveLead = async (id)=>{
   const l = LEADS.find(x=>x.id===id); if(!l) return;
   const st=$('#l-status').value, sub=$('#l-sub')?$('#l-sub').value||null:null;
+  /* תיקון ממצא 22 — החלפת סטטוס מנקה את תתי-הסטטוס שאינם שייכים לו */
   const upd={ status:st, source:$('#l-source').value||null,
-    sub_status: st==='רלוונטי'?sub:l.sub_status||null,
-    reject_reason: st==='סירוב'?sub:(st==='רלוונטי'?l.reject_reason||null:l.reject_reason||null),
-    irrelevant_reason: st==='לא רלוונטי'?sub:l.irrelevant_reason||null };
+    sub_status: st==='רלוונטי'?sub:null,
+    reject_reason: st==='סירוב'?sub:null,
+    irrelevant_reason: st==='לא רלוונטי'?sub:null };
   const { error } = await sb.schema('crm').from('leads').update(upd).eq('id', id);
   if(error){ $('#l-err').textContent='השמירה נכשלה — '+error.message; return; }
   Object.assign(l, upd);
@@ -2284,6 +2478,19 @@ window.convertLead = async (id)=>{
 };
 
 function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+/* בריחה בטוחה לתוך מחרוזת ג'אווהסקריפט בתוך onclick — מק"טים עם גרש (תיקון ממצא 20) */
+function jsq(s){ return esc(String(s??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'")); }
+/* קריאת מספר מהמשתמש — פסיק עשרוני ומפריד אלפים (תיקון ממצא 21). מחזיר null לריק, undefined ללא-תקין */
+function numIn(raw){
+  let v=String(raw==null?'':raw).trim().replace(/[\s‎‏₪]/g,'');
+  if(v==='') return null;
+  const lc=v.lastIndexOf(','), ld=v.lastIndexOf('.');
+  if(lc>-1 && ld>-1){ v = (lc>ld) ? v.replace(/\./g,'').replace(/,/g,'.') : v.replace(/,/g,''); }
+  else if(lc>-1){ const p=v.split(','); v = (p.length===2 && p[1].length!==3) ? p[0]+'.'+p[1] : v.replace(/,/g,''); }
+  if(!/^-?(\d+\.?\d*|\.\d+)$/.test(v)) return undefined;
+  const x=Number(v);
+  return isFinite(x) ? x : undefined;
+}
 
 /* ===== מסך חתימה ציבורי (?sign=TOKEN) ===== */
 const SIGN_FN = SB_URL + '/functions/v1/sign-quote';

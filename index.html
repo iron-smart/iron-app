@@ -82,18 +82,16 @@
     .tabs{ justify-content:center; }
     .tabs button{ font-size:14px; }
   }
-  @media(min-width:900px){
+  @media(min-width:700px){
+    /* שפה עיצובית אחידה עם לוח התיאום: שורות טבלאיות, קווים דקים, סטטוסים צבעוניים */
     main{ max-width:1100px; padding:20px 24px; }
-    #leads-list, #customers-list, #contacts-list, #pays-list, #deals-list, #meets-list, #tasks-list, #orders-list,
-    #today-meets, #today-tasks, #today-leads{
-      display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:start;
-    }
-    #leads-list .lead, #customers-list .lead, #contacts-list .lead, #pays-list .lead, #deals-list .lead,
-    #meets-list .lead, #tasks-list .lead, #orders-list .lead, #today-meets .lead, #today-tasks .lead, #today-leads .lead{ margin-bottom:0; }
-    #leads-list .empty, #customers-list .empty, #contacts-list .empty, #pays-list .empty, #deals-list .empty,
-    #meets-list .empty, #tasks-list .empty, #orders-list .empty, #today-meets .empty, #today-tasks .empty, #today-leads .empty,
-    #leads-list .more, #customers-list .more, #contacts-list .more, #pays-list .more, #deals-list .more,
-    #meets-list .more, #tasks-list .more, #orders-list .more{ grid-column:1/-1; }
+    .lead{ border-radius:0; box-shadow:none; border:1px solid var(--line); margin-bottom:-1px; padding:10px 14px; }
+    .lead:hover{ background:#f8fafc; cursor:pointer; }
+    .lead:first-child{ border-radius:12px 12px 0 0; }
+    .lead:last-child{ border-radius:0 0 12px 12px; margin-bottom:12px; }
+    .lead:only-child{ border-radius:12px; }
+    .lead .nm{ font-size:15px; }
+    .lead .meta{ font-size:12.5px; }
     .modal .sheet{ max-width:600px; }
     .toolbar input{ max-width:520px; }
   }
@@ -106,8 +104,10 @@
   /* ===== מעטפת מאוחדת — סרגל עליון + תפריט צד ימני (עיצוב לוח התיאום) ===== */
   .topnav{ position:sticky; top:0; z-index:30; display:flex; align-items:center; gap:12px; background:linear-gradient(135deg,#061827,#0b3552); color:#fff; padding:9px 14px; min-height:52px; box-sizing:border-box; }
   .topnav .burger{ background:rgba(255,255,255,.12); border:none; color:#fff; font-size:19px; border-radius:8px; padding:5px 12px; }
-  .topnav .brand{ display:flex; align-items:center; gap:10px; font-weight:800; font-size:16px; }
-  .topnav .brand img{ width:30px; height:30px; background:#fff; border-radius:8px; padding:3px; box-sizing:border-box; }
+  .brand-wm{ height:26px; width:auto; }
+  .user-chip{ display:flex; align-items:center; gap:8px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18); border-radius:999px; padding:4px 12px 4px 6px; font-size:13px; }
+  .user-chip .av{ width:26px; height:26px; border-radius:50%; background:var(--green); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; }
+  .user-chip .rle{ opacity:.75; font-size:12px; }
   .topnav .spacer{ flex:1; }
   .topnav .who2{ font-size:13px; opacity:.92; }
   .topnav button.out{ background:rgba(255,255,255,.15); color:#fff; border:none; border-radius:8px; padding:7px 12px; font-size:13px; }
@@ -119,10 +119,11 @@
   .nav-item:hover{ color:#fff; }
   .side-foot{ color:#84898f; font-size:11px; text-align:center; padding:14px 10px; }
   .content{ flex:1; min-width:0; }
-  main:has(#tab-logi:not(.hidden)){ max-width:1500px; }
+  main:has(#tab-logi:not(.hidden)){ max-width:none; padding:10px 12px 0; }
   .sku-img{ width:46px; height:46px; object-fit:cover; border-radius:10px; border:1px solid var(--line); flex:none; cursor:pointer; }
   .sku-none{ display:flex; align-items:center; justify-content:center; background:#f1f5f9; font-size:20px; cursor:default; }
-  #board-wrap{ height:calc(100vh - 110px); }
+  #board-wrap{ height:calc(100vh - 122px); }
+  #board-wrap iframe{ border-radius:0; box-shadow:none; }
   #board-wrap{ height:calc(100vh - 175px); }
   #board-wrap iframe{ width:100%; height:100%; border:none; border-radius:12px; background:#fff; box-shadow:0 2px 10px rgba(6,24,39,.08); }
   @media(max-width:800px){
@@ -161,10 +162,10 @@
 <div id="app" class="hidden">
   <div class="topnav">
     <button class="burger" id="sideToggle" title="הצגה/הסתרה של התפריט">☰</button>
-    <div class="brand"><img class="brand-logo" alt="">איירון פיטנס</div>
+    <img class="brand-wm" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'">
     <div class="spacer"></div>
-    <span class="who2">היי, <b id="uName">—</b></span>
-    <span class="role" id="uRole">—</span>
+    <button class="out" id="syncBtn" onclick="syncPriority()">🔄 סנכרון פריוריטי</button>
+    <span class="user-chip"><span class="av" id="uAv">—</span><b id="uName">—</b><span class="rle" id="uRole">—</span></span>
     <button class="out" id="logoutBtn">יציאה</button>
   </div>
   <div class="shell">
@@ -258,8 +259,17 @@
       <div id="orders-list"></div>
     </section>
 
-    <!-- לוגיסטיקה — לוח תיאום התקנות ומשלוחים המלא -->
+    <!-- לוגיסטיקה — לוח תיאום התקנות ומשלוחים, מוטמע כחלק מהמערכת -->
     <section id="tab-logi" class="hidden">
+      <div class="chips" id="logi-chips">
+        <button class="chip active" data-v="dashboard" onclick="boardView('dashboard')">דשבורד</button>
+        <button class="chip" data-v="orders" onclick="boardView('orders')">הזמנות ותיאומים</button>
+        <button class="chip" data-v="service" onclick="boardView('service')">קריאות שירות</button>
+        <button class="chip" data-v="calendar" onclick="boardView('calendar')">לוח שנה</button>
+        <button class="chip" data-v="skus" onclick="boardView('skus')">מק"טים</button>
+        <button class="chip" data-v="docs" onclick="boardView('docs')">מסמכים</button>
+        <button class="chip" data-v="settings" onclick="boardView('settings')">הגדרות</button>
+      </div>
       <div id="board-wrap"><iframe id="boardFrame" title="לוח תיאום התקנות ומשלוחים"></iframe></div>
     </section>
 
@@ -366,7 +376,8 @@ async function afterLogin(){
   ME = { id:user.id, ...prof };
   $('#login').classList.add('hidden'); $('#app').classList.remove('hidden');
   $('#uName').textContent = prof.full_name || prof.email;
-  $('#uRole').textContent = ({admin:'מנהל',manager:'מנהל מכירות',rep:'נציג',viewer:'צפייה'})[prof.role]||prof.role;
+  $('#uRole').textContent = '(' + (({admin:'אדמיניסטרטור',manager:'מנהל מכירות',rep:'נציג',viewer:'צפייה'})[prof.role]||prof.role) + ')';
+  $('#uAv').textContent = (prof.full_name||prof.email||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('');
   await loadLeads();
 }
 
@@ -384,8 +395,46 @@ $('#sideToggle').onclick = ()=> $('#side').classList.toggle('closed');
 if(window.innerWidth<800) $('#side').classList.add('closed');
 function initBoard(){
   const f = $('#boardFrame');
-  if(!f.getAttribute('src')) f.src = 'orders/';
+  if(!f.getAttribute('src')){
+    f.addEventListener('load', ()=>{ try{
+      const d = f.contentDocument;
+      const st = d.createElement('style');
+      st.textContent = 'header.topbar{display:none !important}';
+      d.head.appendChild(st);
+    }catch(_e){} });
+    f.src = 'orders/';
+  }
 }
+window.boardView = v=>{
+  initBoard();
+  const f = $('#boardFrame');
+  const go = ()=>{ try{ const b = f.contentDocument.querySelector(`.tab[data-view="${v}"]`); if(b) b.click(); }catch(_e){} };
+  try{ if(f.contentDocument && f.contentDocument.readyState==='complete'){ go(); } else { f.addEventListener('load', go, {once:true}); } }
+  catch(_e){ f.addEventListener('load', go, {once:true}); }
+  document.querySelectorAll('#logi-chips .chip').forEach(c=>c.classList.toggle('active', c.dataset.v===v));
+};
+
+/* ===== סנכרון פריוריטי מהמסך הראשי ===== */
+window.syncPriority = async ()=>{
+  const btn = $('#syncBtn'); if(btn.disabled) return;
+  btn.disabled = true; const t0 = btn.textContent; btn.textContent = '⏳ מסנכרן מפריוריטי…';
+  try{
+    const { data:{ session } } = await sb.auth.getSession();
+    const r = await fetch(SB_URL + '/functions/v1/priority-sync', {
+      method:'POST',
+      headers:{ 'authorization':'Bearer '+session.access_token, 'apikey':SB_KEY, 'content-type':'application/json' },
+      body:'{}'
+    });
+    const j = await r.json();
+    if(r.ok){
+      alert(`סנכרון פריוריטי הושלם ✓\nהזמנות: ${j.orders_updated||0} עודכנו · ${j.orders_inserted||0} חדשות\nקריאות שירות: ${j.calls_updated||0} עודכנו · ${j.calls_inserted||0} חדשות`);
+      await loadLeads();
+    } else {
+      alert('הסנכרון נכשל: ' + (j.error || r.status));
+    }
+  }catch(e){ alert('הסנכרון נכשל: ' + e.message); }
+  btn.disabled = false; btn.textContent = t0;
+};
 
 /* ===== מקטים — קטלוג המוצרים (ord.inv_items) ===== */
 function skuRow(s){

@@ -1,0 +1,293 @@
+<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>איירון פיטנס — חתימה דיגיטלית</title>
+<meta property="og:title" content="איירון פיטנס — חתימה דיגיטלית">
+<meta property="og:description" content="מסמך מאובטח לחתימה דיגיטלית מצוות איירון פיטנס. לחצו לפתיחה ולחתימה.">
+<meta property="og:image" content="https://orders.ironfitness.co.il/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="IRON FITNESS">
+<meta name="twitter:card" content="summary_large_image">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Heebo',system-ui,sans-serif;direction:rtl;background:#f2f4f4;color:#0b1620;line-height:1.65}
+.band{background:linear-gradient(135deg,#061827,#0b3552);color:#fff;padding:22px 18px;text-align:center}
+.band img{height:44px;margin-bottom:8px}
+.band h1{font-size:1.15rem;font-weight:800}
+.band .sub{color:#9fb3bf;font-size:.82rem;margin-top:2px}
+.wrap{max-width:640px;margin:0 auto;padding:16px 14px 50px}
+.card{background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(6,24,39,.08);padding:18px 18px;margin-bottom:14px}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;font-size:.9rem}
+.facts b{color:#002d48}
+.facts .lbl{font-size:.72rem;color:#84898f;display:block}
+h2{color:#002d48;font-size:1.02rem;margin-bottom:10px}
+h3{color:#002d48;font-size:.92rem;margin:14px 0 6px;border-bottom:1px solid #e0e2e4;padding-bottom:3px}
+ul{padding-inline-start:18px;font-size:.88rem}
+li{margin-bottom:4px}
+.warn{background:#fff7e6;border:1px solid #f2d492;color:#7a5b00;border-radius:10px;padding:12px 14px;font-size:.86rem;font-weight:600}
+label{font-size:.8rem;font-weight:700;color:#4c5560;display:block;margin-bottom:4px}
+input[type=text]{width:100%;border:1px solid #c0c5c9;border-radius:9px;padding:10px 12px;font-size:1rem;font-family:inherit;direction:rtl}
+textarea{width:100%;border:1px solid #c0c5c9;border-radius:9px;padding:10px 12px;font-size:.95rem;font-family:inherit;direction:rtl}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:.9rem;padding:7px 9px;border-radius:9px;cursor:pointer;border:1px solid transparent}
+.chk:hover{background:#f4f8f6}
+.chk input{width:20px;height:20px;margin-top:2px;flex:none}
+.chk.on{background:#e8f2ed;border-color:#bcd9cb}
+.sig-box{border:2px dashed #c0c5c9;border-radius:12px;background:#fff;position:relative;touch-action:none}
+.sig-box canvas{display:block;width:100%;height:170px;border-radius:12px}
+.sig-hint{position:absolute;inset:0;display:grid;place-items:center;color:#b8bdc2;font-size:.9rem;pointer-events:none}
+.btn-clear{background:none;border:none;color:#a92f2f;font-weight:700;font-size:.82rem;cursor:pointer;font-family:inherit;margin-top:6px}
+.agree{display:flex;gap:9px;align-items:flex-start;font-size:.88rem;font-weight:600;margin:14px 0}
+.agree input{width:20px;height:20px;margin-top:2px;flex:none}
+.btn-send{width:100%;background:#002d48;color:#fff;border:none;border-radius:11px;padding:14px;font-size:1.05rem;font-weight:800;font-family:inherit;cursor:pointer}
+.btn-send:disabled{background:#b8bdc2}
+.foot{text-align:center;color:#84898f;font-size:.8rem;margin-top:18px}
+.ok-wrap{max-width:520px;margin:60px auto;text-align:center;padding:0 16px}
+.ok-card{background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(6,24,39,.1);padding:34px 24px}
+.ok-card .v{font-size:3rem}
+.photos{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.photos img{width:120px;height:120px;object-fit:cover;border-radius:10px;border:1px solid #e0e2e4}
+.workbox{background:#f4f8f6;border:1px solid #d5e5dc;border-radius:10px;padding:12px 14px;font-size:.9rem;white-space:pre-wrap}
+.statement{background:#f4f8f6;border:1px solid #d5e5dc;border-radius:10px;padding:11px 13px;font-size:.86rem;font-weight:600;margin-bottom:12px}
+</style></head>
+<body>
+<div id="app"><div class="ok-wrap"><div class="ok-card">⏳ טוען...</div></div></div>
+<script>
+// דפי החתימה של איירון פיטנס — פרוטוקול הכנה + דוח אישור תקינות ציוד.
+// הנתונים והתכנים מגיעים מפונקציית הענן sign (ניתנים לעריכה בהגדרות המערכת).
+const API='https://hjibpfavkjqocjvffsbq.supabase.co/functions/v1/sign';
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const q=new URLSearchParams(location.search);
+const token=q.get('t'), view=q.get('view');
+
+const DEF_SECTIONS=[
+ ["ניקוי המשטח",["יש לנקות את המשטח המיועד להתקנה מכל לכלוך, אבק ושאריות אחרות.","יש לוודא שהמשטח יבש ונקי לחלוטין לפני תחילת ההתקנה."]],
+ ["פילוס המשטח",["יש לוודא שהמשטח מפולס וישר.","במידה והמשטח אינו מפולס, יש לבצע תיקונים לפני ההתקנה."]],
+ ["פינוי חפצים ומכשירים",["יש לפנות את כל החפצים מהשטח המיועד להתקנה.","עיכוב עקב חפצים שלא פונו יגרור חיובים נוספים."]],
+ ["הכנת תשתיות",["יש לוודא שהתשתיות (חשמל, תקשורת, מים) מוכנות ונגישות."]],
+ ["אישור מהנדס/קונסטרוקטור (במידה ונדרש)",["יש לוודא שהאישור התקבל לפני ההתקנה."]],
+ ["תיאום עם נציג ההתקנה",["יש לתאם מועד ולשלוח תמונות/וידאו לאישור המשטח."]],
+];
+
+function show(html){ document.getElementById('app').innerHTML='<div class="ok-wrap"><div class="ok-card">'+html+'</div></div>'; }
+
+init();
+async function init(){
+  try{
+    if(view){
+      const r=await fetch(API+'?viewdata='+encodeURIComponent(view));
+      const d=await r.json();
+      if(!r.ok) throw new Error(d.error||'שגיאה');
+      let html=d.html;
+      if(d.hash) html=html.replace('<div class="foot">',
+        '<div style="text-align:center;color:#84898f;font-size:.68rem;margin-top:12px;word-break:break-all" dir="ltr"><b>טביעת אצבע דיגיטלית (SHA-256):</b><br>'+d.hash+'</div><div class="foot">');
+      document.open(); document.write(html); document.close();
+      return;
+    }
+    if(!token){ show('קישור לא תקין.'); return; }
+    const r=await fetch(API+'?data='+encodeURIComponent(token));
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.error||'שגיאה');
+    if(d.status==='נחתם'){
+      show('<div class="v">✅</div><h2 style="margin:10px 0 6px">המסמך הזה כבר נחתם</h2><p style="font-size:.9rem;color:#4c5560">תודה רבה!</p>');
+      return;
+    }
+    if(d.doc_type&&d.doc_type!=='פרוטוקול הכנה להתקנה') renderReport(d); else renderProtocol(d);
+  }catch(e){
+    show('אירעה שגיאה: '+esc(e.message)+'<br><br>אנא פנו לצוות איירון פיטנס: 074-7779988');
+  }
+}
+
+/* ============ לוח חתימה (קנבס) — תומך בכמה לוחות בעמוד ============ */
+function makePad(canvasId,hintId,clearId,onChange){
+  const canvas=document.getElementById(canvasId), hint=document.getElementById(hintId);
+  const ctx=canvas.getContext('2d');
+  let drew=false, drawing=false;
+  function fit(){ const r=canvas.getBoundingClientRect(); const img=drew?canvas.toDataURL():null;
+    canvas.width=r.width*2; canvas.height=340; ctx.scale(2,2); ctx.lineWidth=2.2; ctx.lineCap='round'; ctx.strokeStyle='#0b1620';
+    if(img){ const im=new Image(); im.onload=()=>ctx.drawImage(im,0,0,r.width,170); im.src=img; } }
+  fit(); addEventListener('resize',fit);
+  function pos(e){ const r=canvas.getBoundingClientRect(); const p=e.touches?e.touches[0]:e; return [p.clientX-r.left, p.clientY-r.top]; }
+  function start(e){ e.preventDefault(); drawing=true; hint.style.display='none'; const [x,y]=pos(e); ctx.beginPath(); ctx.moveTo(x,y); }
+  function move(e){ if(!drawing) return; e.preventDefault(); const [x,y]=pos(e); ctx.lineTo(x,y); ctx.stroke(); if(!drew){ drew=true; onChange&&onChange(); } }
+  function end(){ drawing=false; }
+  canvas.addEventListener('mousedown',start); canvas.addEventListener('mousemove',move); addEventListener('mouseup',end);
+  canvas.addEventListener('touchstart',start,{passive:false}); canvas.addEventListener('touchmove',move,{passive:false}); canvas.addEventListener('touchend',end);
+  document.getElementById(clearId).onclick=()=>{ ctx.clearRect(0,0,canvas.width,canvas.height); drew=false; hint.style.display='grid'; onChange&&onChange(); };
+  // חיתוך לגבולות הדיו והקטנה — משקל מינימלי
+  function trimmed(){
+    const w=canvas.width,h=canvas.height;
+    try{
+      const data=ctx.getImageData(0,0,w,h).data;
+      let minX=w,minY=h,maxX=0,maxY=0,found=false;
+      for(let y=0;y<h;y++)for(let x=0;x<w;x++){ if(data[(y*w+x)*4+3]>10){found=true;if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;} }
+      if(!found) return null;
+      const pad=8; minX=Math.max(0,minX-pad); minY=Math.max(0,minY-pad); maxX=Math.min(w-1,maxX+pad); maxY=Math.min(h-1,maxY+pad);
+      const cw=maxX-minX+1, ch=maxY-minY+1, scale=Math.min(1,500/cw);
+      const c2=document.createElement('canvas'); c2.width=Math.max(1,Math.round(cw*scale)); c2.height=Math.max(1,Math.round(ch*scale));
+      c2.getContext('2d').drawImage(canvas,minX,minY,cw,ch,0,0,c2.width,c2.height);
+      return c2.toDataURL('image/png');
+    }catch(_e){ return canvas.toDataURL('image/png'); }
+  }
+  return { hasInk:()=>drew, dataURL:trimmed };
+}
+
+/* ============ פרוטוקול הכנה להתקנה ============ */
+function renderProtocol(d){
+  const addr=d.address||d.customer_address||'';
+  const covered=Array.isArray(d.covered)?d.covered:[];
+  const multi=covered.length>1;
+  document.getElementById('app').innerHTML=`
+<div class="band">${d.logo?`<img src="${d.logo}" alt="IRON FITNESS">`:`<h1>IRON FITNESS</h1>`}
+  <h1>פרוטוקול הכנה להתקנה</h1><div class="sub">נא לקרוא בעיון ולחתום בתחתית העמוד</div></div>
+<div class="wrap">
+  <div class="card"><div class="facts">
+    ${multi
+      ?`<div style="grid-column:1/-1"><span class="lbl">ההזמנות הכלולות בפרוטוקול (${covered.length})</span><b>${covered.map(esc).join(' · ')}</b></div>`
+      :`<div><span class="lbl">מס' הזמנה</span><b>${esc(d.order_number)}</b></div>`}
+    <div><span class="lbl">שם לקוח</span><b>${esc(d.customer_name)}</b></div>
+    ${addr?`<div><span class="lbl">כתובת</span><b>${esc(addr)}</b></div>`:''}
+    ${d.city?`<div><span class="lbl">עיר</span><b>${esc(d.city)}</b></div>`:''}
+  </div></div>
+  <div class="card"><h2>לקוח יקר,</h2>
+  <p style="font-size:.92rem;font-weight:600">${esc(d.intro||'')}</p>
+  ${(d.sections&&d.sections.length?d.sections:DEF_SECTIONS).map(([t,items])=>`<h3>${esc(t)}</h3><ul>${items.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`).join('')}</div>
+  <div class="warn">${esc(d.warning||'')}</div>
+  <div class="card">
+    <h2>אישור וחתימה</h2>
+    <label>שם מלא של החותם</label>
+    <input type="text" id="signerName" value="${esc(d.customer_name)}">
+    <label style="margin-top:14px">חתימה (עם האצבע או העכבר)</label>
+    <div class="sig-box"><canvas id="pad1"></canvas><div class="sig-hint" id="hint1">✍️ חתמו כאן</div></div>
+    <button type="button" class="btn-clear" id="clear1">🗑 ניקוי חתימה</button>
+    <div class="agree"><input type="checkbox" id="agree"><span>קראתי את הנחיות ההכנה, הבנתי אותן, ואני מתחייב/ת שכל ההכנות יבוצעו בהתאם לפני מועד ההתקנה.${multi?` <b>החתימה חלה על כל ההזמנות הפתוחות שלי (${covered.length}): ${covered.map(esc).join(', ')}.</b>`:''}</span></div>
+    <button class="btn-send" id="sendBtn" disabled>שליחת הפרוטוקול החתום ✓</button>
+    <div id="err" style="color:#a92f2f;font-weight:700;font-size:.85rem;margin-top:8px"></div>
+  </div>
+  <div class="foot">צוות איירון פיטנס בע"מ · טלפון 074-7779988</div>
+</div>`;
+  const pad=makePad('pad1','hint1','clear1',check);
+  const agree=document.getElementById('agree'), sendBtn=document.getElementById('sendBtn');
+  function check(){ sendBtn.disabled=!(pad.hasInk()&&agree.checked); }
+  agree.onchange=check;
+  sendBtn.onclick=async()=>{
+    const sig=pad.dataURL();
+    if(!sig){ document.getElementById('err').textContent='נראה שלא נחתמה חתימה — אנא חתמו על הלוח לפני השליחה.'; return; }
+    sendBtn.disabled=true; sendBtn.textContent='שולח...';
+    try{
+      const r=await fetch(API,{method:'POST',headers:{'content-type':'application/json'},
+        body:JSON.stringify({token,signer_name:document.getElementById('signerName').value.trim(),signature:sig})});
+      const dd=await r.json();
+      if(!r.ok||!dd.ok) throw new Error(dd.error||'שגיאה');
+      show('<div class="v">✅</div><h2 style="margin:10px 0 6px">הפרוטוקול נחתם בהצלחה!</h2><p style="font-size:.9rem;color:#4c5560">תודה רבה. נציג מטעמנו יצור איתך קשר לתיאום מועד ההתקנה.<br><br>צוות איירון פיטנס 💪</p>');
+    }catch(e){ document.getElementById('err').textContent='השליחה נכשלה: '+e.message+' — נסו שוב'; sendBtn.disabled=false; sendBtn.textContent='שליחת הפרוטוקול החתום ✓'; }
+  };
+}
+
+/* ============ דוח אישור תקינות ציוד (הטופס הרשמי) ============ */
+function renderReport(d){
+  const addr=d.address||d.customer_address||'';
+  const photos=Array.isArray(d.report&&d.report.photos)?d.report.photos:[];
+  const checks=Array.isArray(d.checks)?d.checks:[];
+  const training=Array.isArray(d.training)?d.training:[];
+  const ref=d.call_number||d.order_number||'';
+  document.getElementById('app').innerHTML=`
+<div class="band">${d.logo?`<img src="${d.logo}" alt="IRON FITNESS">`:`<h1>IRON FITNESS</h1>`}
+  <h1>דוח אישור תקינות ציוד</h1><div class="sub">הטכנאי ממלא · הלקוח והטכנאי חותמים בתחתית</div></div>
+<div class="wrap">
+  <div class="card"><div class="facts">
+    <div><span class="lbl">${d.call_number?"מס' קריאה":"מס' הזמנה"}</span><b>${esc(ref)}</b></div>
+    <div><span class="lbl">לקוח / חברה</span><b>${esc(d.customer_name)}</b></div>
+    ${d.phone?`<div><span class="lbl">טלפון</span><b dir="ltr">${esc(d.phone)}</b></div>`:''}
+    ${addr?`<div><span class="lbl">כתובת מלאה</span><b>${esc(addr)}${d.city?', '+esc(d.city):''}</b></div>`:''}
+    ${d.product?`<div><span class="lbl">מוצר</span><b>${esc(d.product)}</b></div>`:''}
+    ${d.sent_by?`<div><span class="lbl">טכנאי מבצע</span><b>${esc(d.sent_by)}</b></div>`:''}
+  </div></div>
+
+  <div class="card"><h2>פרטי ההתקנה</h2>
+    <label class="chk"><input type="radio" name="itype" value="מכשיר בודד" checked><span>התקנת מכשיר בודד</span></label>
+    <label class="chk"><input type="radio" name="itype" value="הקמה חלקית / מלאה של פרויקט"><span>הקמה חלקית / מלאה של פרויקט</span></label>
+    <label style="margin-top:8px">פרט (סוג המכשיר / תכולת הפרויקט)</label>
+    <textarea id="idetail" rows="2">${esc(d.product||'')}</textarea>
+  </div>
+
+  <div class="card"><h2>בדיקות תקינות שבוצעו ע״י הטכנאי</h2>
+    <p style="font-size:.8rem;color:#84898f;margin-bottom:8px">יש לסמן רק מה שרלוונטי להליך ההתקנה.</p>
+    ${checks.map((c,i)=>`<label class="chk"><input type="checkbox" data-chk="${i}"><span>${esc(c)}</span></label>`).join('')}
+    <h3>סטטוס כללי טכנאי</h3>
+    <label class="chk"><input type="radio" name="gstat" value="ok" checked><span>כל הציוד תקין ומוכן לשימוש</span></label>
+    <label class="chk"><input type="radio" name="gstat" value="defects"><span>נמצאו ליקויים — פירוט:</span></label>
+    <textarea id="defects" rows="2" placeholder="פירוט הליקויים (אם נמצאו)" style="display:none"></textarea>
+  </div>
+
+  <div class="card"><h2>הדרכת משתמשים</h2>
+    <p style="font-size:.85rem;margin-bottom:6px">הוסבר ללקוח / איש קשר מטעמו:</p>
+    ${training.map((g,gi)=>`<h3>${gi+1}. ${esc(g[0])}</h3>${g[1].map((item,ii)=>`<label class="chk"><input type="checkbox" data-tr="${gi}:${ii}"><span>${esc(item)}</span></label>`).join('')}`).join('')}
+  </div>
+
+  ${photos.length?`<div class="card"><h2>📷 תיעוד מהשטח (${photos.length})</h2><div class="photos">${photos.map(u=>`<a href="${esc(u)}" target="_blank"><img src="${esc(u)}"></a>`).join('')}</div></div>`:''}
+
+  <div class="warn">${esc(d.warning150||'')}</div>
+
+  <div class="card"><h2>✍️ אישור הלקוח</h2>
+    <div class="statement">${esc(d.customer_statement||'')}</div>
+    <label>שם הלקוח</label>
+    <input type="text" id="custName" value="${esc(d.customer_name)}">
+    <label style="margin-top:12px">חתימת הלקוח</label>
+    <div class="sig-box"><canvas id="pad1"></canvas><div class="sig-hint" id="hint1">✍️ חתימת הלקוח</div></div>
+    <button type="button" class="btn-clear" id="clear1">🗑 ניקוי</button>
+  </div>
+
+  <div class="card"><h2>🔧 חתימת הטכנאי</h2>
+    <div class="statement">${esc(d.tech_statement||'')}</div>
+    <label>שם הטכנאי</label>
+    <input type="text" id="techName" value="${esc(d.sent_by||'')}">
+    <label style="margin-top:12px">חתימת הטכנאי</label>
+    <div class="sig-box"><canvas id="pad2"></canvas><div class="sig-hint" id="hint2">✍️ חתימת הטכנאי</div></div>
+    <button type="button" class="btn-clear" id="clear2">🗑 ניקוי</button>
+  </div>
+
+  <div class="card">
+    <button class="btn-send" id="sendBtn" disabled>שליחת הדוח החתום ✓</button>
+    <div id="hintSend" style="font-size:.8rem;color:#84898f;margin-top:8px;text-align:center">נדרשות שתי חתימות — של הלקוח ושל הטכנאי</div>
+    <div id="err" style="color:#a92f2f;font-weight:700;font-size:.85rem;margin-top:8px"></div>
+  </div>
+  <div class="foot">צוות איירון פיטנס בע"מ · טלפון 074-7779988</div>
+</div>`;
+  const pad1=makePad('pad1','hint1','clear1',check);
+  const pad2=makePad('pad2','hint2','clear2',check);
+  const sendBtn=document.getElementById('sendBtn');
+  function check(){ const ok=pad1.hasInk()&&pad2.hasInk(); sendBtn.disabled=!ok; document.getElementById('hintSend').style.display=ok?'none':'block'; }
+  // סימון ויזואלי של שורות מסומנות + פתיחת שדה ליקויים
+  document.querySelectorAll('.chk input').forEach(inp=>inp.addEventListener('change',()=>{
+    inp.closest('.chk').classList.toggle('on',inp.checked);
+    if(inp.name==='gstat') document.getElementById('defects').style.display = document.querySelector('[name=gstat]:checked').value==='defects'?'block':'none';
+    if(inp.type==='radio') document.querySelectorAll(`[name=${inp.name}]`).forEach(o=>o.closest('.chk').classList.toggle('on',o.checked));
+  }));
+  sendBtn.onclick=async()=>{
+    const cSig=pad1.dataURL(), tSig=pad2.dataURL();
+    if(!cSig||!tSig){ document.getElementById('err').textContent='נדרשות שתי חתימות — לקוח וטכנאי. אנא חתמו על שני הלוחות.'; return; }
+    sendBtn.disabled=true; sendBtn.textContent='שולח...';
+    try{
+      const checksOn=[...document.querySelectorAll('[data-chk]')].filter(i=>i.checked).map(i=>+i.dataset.chk);
+      const trainOn=[...document.querySelectorAll('[data-tr]')].filter(i=>i.checked).map(i=>i.dataset.tr);
+      const r=await fetch(API,{method:'POST',headers:{'content-type':'application/json'},
+        body:JSON.stringify({token,
+          report_form:{
+            install_type:document.querySelector('[name=itype]:checked').value,
+            install_detail:document.getElementById('idetail').value.trim(),
+            checks:checksOn, training:trainOn,
+            status_ok:document.querySelector('[name=gstat]:checked').value==='ok',
+            defects:document.getElementById('defects').value.trim(),
+            customer_name:document.getElementById('custName').value.trim(),
+            tech_name:document.getElementById('techName').value.trim(),
+          },
+          customer_sig:cSig, tech_sig:tSig})});
+      const dd=await r.json();
+      if(!r.ok||!dd.ok) throw new Error(dd.error||'שגיאה');
+      show('<div class="v">✅</div><h2 style="margin:10px 0 6px">דוח התקינות נחתם בהצלחה!</h2><p style="font-size:.9rem;color:#4c5560">הדוח תויק אוטומטית במערכת.<br><br>תודה, צוות איירון פיטנס 💪</p>');
+    }catch(e){ document.getElementById('err').textContent='השליחה נכשלה: '+e.message+' — נסו שוב'; sendBtn.disabled=false; sendBtn.textContent='שליחת הדוח החתום ✓'; }
+  };
+}
+</script></body></html>

@@ -133,6 +133,9 @@
   @media(max-width:800px){
     aside#side{ position:fixed; inset-inline-end:0; top:52px; z-index:29; box-shadow:0 0 40px rgba(0,0,0,.45); }
     #board-wrap{ height:calc(100vh - 165px); }
+    #lastSync{ display:none; }
+    .user-chip .rle{ display:none; }
+    .brand-wm{ height:28px; }
   }
 </style>
 </head>
@@ -412,7 +415,9 @@ function seamless(f, view){
     const st = d.createElement('style');
     st.textContent = 'header.topbar{display:none !important}';
     d.head.appendChild(st);
-    if(view){ const b = d.querySelector(`.tab[data-view="${view}"]`); if(b) b.click(); }
+    // בחירת המסך גם אחרי שהלוח מסיים להיטען (הוא עלול לחזור לברירת המחדל שלו)
+    const pick = ()=>{ try{ const b = f.contentDocument.querySelector(`.tab[data-view="${view}"]`); if(b && !b.classList.contains('active')) b.click(); }catch(_e){} };
+    if(view){ pick(); setTimeout(pick, 1500); setTimeout(pick, 4000); }
   }catch(_e){} });
 }
 function initFrame(id, view){

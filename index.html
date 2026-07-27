@@ -131,6 +131,22 @@
   .tbl tbody tr{ cursor:pointer; }
   .tbl tbody tr:hover{ background:#f6f9fb; }
   .tbl tbody tr:last-child td{ border-bottom:none; }
+
+  /* לוח שנה */
+  .cal-head2{ display:flex; align-items:center; justify-content:center; gap:10px; margin:4px 0 12px; font-size:17px; color:var(--navy); }
+  .cal-btn{ width:auto; padding:8px 14px; }
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+  .cal-names{ margin-bottom:4px; text-align:center; color:#64748b; font-size:12px; font-weight:700; }
+  .cal-day{ background:#fff; border:1px solid var(--line); border-radius:10px; min-height:96px; padding:5px; font-size:11.5px; overflow:hidden; }
+  .cal-out{ opacity:.35; }
+  .cal-today{ outline:2px solid var(--green); }
+  .cal-num{ font-weight:700; color:#64748b; font-size:11px; margin-bottom:3px; }
+  .cal-ev{ background:#f6f9fb; border:1px solid var(--line); border-inline-start:4px solid #64748b; border-radius:6px; padding:2px 5px; margin-bottom:3px; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .cal-ev:hover{ background:#eef4fa; }
+  .cal-legend{ display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; font-size:12.5px; color:#475569; }
+  .cal-lg{ display:flex; align-items:center; gap:5px; }
+  .cal-dot{ width:10px; height:10px; border-radius:50%; display:inline-block; }
+  @media(max-width:700px){ .cal-day{ min-height:64px; } .cal-ev small{ display:none; } }
   .sku-img{ width:46px; height:46px; object-fit:cover; border-radius:10px; border:1px solid var(--line); flex:none; cursor:pointer; }
   .sku-none{ display:flex; align-items:center; justify-content:center; background:#f1f5f9; font-size:20px; cursor:default; }
   #board-wrap{ height:calc(100vh - 122px); }
@@ -280,20 +296,22 @@
       <div id="orders-list"></div>
     </section>
 
-    <!-- לוגיסטיקה — לוח תיאום התקנות ומשלוחים, מוטמע כחלק מהמערכת -->
+    <!-- לוגיסטיקה — לוח שנה נטיבי + קיצורים -->
     <section id="tab-logi" class="hidden">
       <div class="chips" id="logi-chips">
-        <button class="chip active" data-v="orders" onclick="boardView('orders')">הזמנות ותיאומים</button>
-        <button class="chip" data-v="service" onclick="boardView('service')">קריאות שירות</button>
-        <button class="chip" data-v="calendar" onclick="boardView('calendar')">לוח שנה</button>
-        <button class="chip" data-v="settings" onclick="boardView('settings')">הגדרות</button>
+        <button class="chip active" data-v="cal" onclick="logiView('cal')">🗓️ לוח שנה</button>
+        <button class="chip" onclick="gotoTab('orders')">📦 הזמנות ותיאומים</button>
+        <button class="chip" onclick="gotoCalls()">🔧 קריאות שירות</button>
+        <button class="chip" data-v="settings" onclick="logiView('settings')">⚙️ הגדרות</button>
       </div>
-      <div id="board-wrap"><iframe id="boardFrame" title="לוח תיאום התקנות ומשלוחים"></iframe></div>
+      <div id="cal-wrap"></div>
+      <div id="board-wrap" class="hidden"><iframe id="boardFrame" title="הגדרות הלוח"></iframe></div>
     </section>
 
-    <!-- מקטים — קטלוג המק"טים (אותו מסך כמו בלוח, מוטמע) -->
+    <!-- מקטים — קטלוג המוצרים (נטיבי) -->
     <section id="tab-skus" class="hidden">
-      <div class="frame-wrap"><iframe id="skusFrame" title="קטלוג מקטים"></iframe></div>
+      <div class="toolbar"><input id="skuSearch" placeholder="חיפוש מק&quot;ט או תיאור מוצר…"></div>
+      <div id="skus-list"></div>
     </section>
 
     <!-- מסמכים — מאגר המסמכים המרכזי של המערכת -->
@@ -411,8 +429,7 @@ document.querySelectorAll('.nav-item').forEach(b=> b.onclick=()=>{
   b.classList.add('active');
   ['today','leads','deals','meets','customers','contacts','pays','tasks','orders','logi','skus','docs'].forEach(t=>
     $('#tab-'+t).classList.toggle('hidden', b.dataset.tab!==t));
-  if(b.dataset.tab==='logi') initBoard();
-  if(b.dataset.tab==='skus') initFrame('skusFrame','skus');
+  if(b.dataset.tab==='logi') renderCal();
   if(b.dataset.tab==='docs') initFrame('docsFrame','docs');
   if(window.innerWidth<800) $('#side').classList.add('closed');
 });
@@ -447,14 +464,54 @@ function applyDashboard(){
     if(!f.getAttribute('src')){ seamless(f, 'dashboard'); f.src = 'orders/'; }
   }
 }
-window.boardView = v=>{
-  initBoard();
-  const f = $('#boardFrame');
-  const go = ()=>{ try{ const b = f.contentDocument.querySelector(`.tab[data-view="${v}"]`); if(b) b.click(); }catch(_e){} };
-  try{ if(f.contentDocument && f.contentDocument.readyState==='complete'){ go(); } else { f.addEventListener('load', go, {once:true}); } }
-  catch(_e){ f.addEventListener('load', go, {once:true}); }
-  document.querySelectorAll('#logi-chips .chip').forEach(c=>c.classList.toggle('active', c.dataset.v===v));
+window.gotoTab = t=>{ const b=document.querySelector(`.nav-item[data-tab="${t}"]`); if(b) b.click(); };
+window.gotoCalls = ()=>{ gotoTab('orders'); setOrdFilter('calls'); };
+window.logiView = v=>{
+  document.querySelectorAll('#logi-chips .chip[data-v]').forEach(c=>c.classList.toggle('active', c.dataset.v===v));
+  $('#cal-wrap').classList.toggle('hidden', v!=='cal');
+  $('#board-wrap').classList.toggle('hidden', v!=='settings');
+  if(v==='settings') initFrame('boardFrame','settings');
+  if(v==='cal') renderCal();
 };
+
+/* ===== לוח שנה נטיבי — שיבוצי התקנות, משלוחים וקריאות שירות ===== */
+let CAL_D = new Date();
+const isoD = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+window.calShift = n=>{ CAL_D = new Date(CAL_D.getFullYear(), CAL_D.getMonth()+n, 1); renderCal(); };
+window.calToday = ()=>{ CAL_D = new Date(); renderCal(); };
+function teamColor(name){ const t=OTEAMS.find(x=>x.name===name); return (t&&t.color)?t.color:'#64748b'; }
+function renderCal(){
+  const el = $('#cal-wrap'); if(!el) return;
+  const y=CAL_D.getFullYear(), m=CAL_D.getMonth();
+  const first=new Date(y,m,1);
+  const start=new Date(y,m,1-first.getDay());
+  const byDay={};
+  ORDS.forEach(o=>{ if(o.scheduled_date&&!['בוטל'].includes(o.order_status)) (byDay[o.scheduled_date]=byDay[o.scheduled_date]||[]).push({t:'o',id:o.id,nm:o.customer_name,team:o.team,slot:o.time_slot}); });
+  SCALLS.forEach(s=>{ if(s.scheduled_date&&!['בוטלה'].includes(s.status)) (byDay[s.scheduled_date]=byDay[s.scheduled_date]||[]).push({t:'s',id:s.id,nm:s.customer_name,team:s.team,slot:s.time_slot}); });
+  const todayIso = isoD(new Date());
+  let cells='';
+  const d=new Date(start);
+  for(let i=0;i<42;i++){
+    const ds=isoD(d);
+    const items=(byDay[ds]||[]);
+    cells+=`<div class="cal-day ${d.getMonth()===m?'':'cal-out'} ${ds===todayIso?'cal-today':''}">
+      <div class="cal-num">${d.getDate()}</div>
+      ${items.map(e=>`<div class="cal-ev" style="border-inline-start-color:${teamColor(e.team)}" title="${esc(e.nm||'')}${e.team?' · '+esc(e.team):''}" onclick="${e.t==='o'?`openOrd('${e.id}')`:`openScall('${e.id}')`}">${e.t==='s'?'🔧 ':''}${esc((e.nm||'').slice(0,18))}${e.slot?`<small> · ${esc(e.slot)}</small>`:''}</div>`).join('')}
+    </div>`;
+    d.setDate(d.getDate()+1);
+  }
+  const title = CAL_D.toLocaleDateString('he-IL',{month:'long',year:'numeric'});
+  const legend = OTEAMS.map(t=>`<span class="cal-lg"><span class="cal-dot" style="background:${t.color||'#64748b'}"></span>${esc(t.name)}</span>`).join('');
+  el.innerHTML = `<div class="cal-head2">
+      <button class="ghost cal-btn" onclick="calShift(-1)">‹ הקודם</button>
+      <b>${title}</b>
+      <button class="ghost cal-btn" onclick="calToday()">היום</button>
+      <button class="ghost cal-btn" onclick="calShift(1)">הבא ›</button>
+    </div>
+    <div class="cal-grid cal-names"><div>א'</div><div>ב'</div><div>ג'</div><div>ד'</div><div>ה'</div><div>ו'</div><div>ש'</div></div>
+    <div class="cal-grid">${cells}</div>
+    <div class="cal-legend">${legend}</div>`;
+}
 
 /* ===== סנכרון פריוריטי מהמסך הראשי ===== */
 window.syncPriority = async ()=>{
@@ -478,14 +535,29 @@ window.syncPriority = async ()=>{
   btn.disabled = false; btn.textContent = t0;
 };
 
-/* מקטים ומסמכים מוצגים מהלוח המוטמע (initFrame) — מסך אחד לכל דבר */
+/* ===== מקטים — קטלוג המוצרים (נטיבי, ord.inv_items) ===== */
+function skuRow(s){
+  return `<div class="lead">
+    ${s.image_url?`<img class="sku-img" src="${esc(s.image_url)}" loading="lazy" onclick="window.open('${esc(s.image_full||s.image_url)}','_blank')">`:'<div class="sku-img sku-none">🏋️</div>'}
+    <div style="flex:1"><div class="nm">${esc(s.partdes||s.partname)}</div>
+    <div class="meta">מק"ט ${esc(s.partname)}${s.family?' · '+esc(s.family):''}</div></div>
+    ${s.price?`<span class="pill st-def">${shekel(s.price)}</span>`:''}</div>`;
+}
+function renderSkus(){
+  const q=($('#skuSearch').value||'').trim();
+  const qU=q.toUpperCase();
+  let list=SKUS;
+  if(q) list=SKUS.filter(s=>String(s.partname||'').toUpperCase().includes(qU)||(s.partdes||'').includes(q));
+  $('#skus-list').innerHTML = capped(list, skuRow, 'אין מק"טים להצגה');
+}
+$('#skuSearch').addEventListener('input', renderSkus);
 
 const LOGO = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAsYAAALGCAYAAABGaFe1AAAACXBIWXMAAAsTAAALEwEAmpwYAAAE9GlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgOS4xLWMwMDIgNzkuYTFjZDEyZjQxLCAyMDI0LzExLzA4LTE2OjA5OjIwICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgMjYuNCAoTWFjaW50b3NoKSIgeG1wOkNyZWF0ZURhdGU9IjIwMjUtMDMtMTJUMTg6MDM6NTIrMDI6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDI1LTAzLTEyVDE4OjA2OjM2KzAyOjAwIiB4bXA6TWV0YWRhdGFEYXRlPSIyMDI1LTAzLTEyVDE4OjA2OjM2KzAyOjAwIiBkYzpmb3JtYXQ9ImltYWdlL3BuZyIgcGhvdG9zaG9wOkNvbG9yTW9kZT0iMyIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo0MmM4ZjdjOS0xOGMxLTQwY2QtYjZiOC1kZmE4NTU4NmUyN2EiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6NDJjOGY3YzktMThjMS00MGNkLWI2YjgtZGZhODU1ODZlMjdhIiB4bXBNTTpPcmlnaW5hbERvY3VtZW50SUQ9InhtcC5kaWQ6NDJjOGY3YzktMThjMS00MGNkLWI2YjgtZGZhODU1ODZlMjdhIj4gPHhtcE1NOkhpc3Rvcnk+IDxyZGY6U2VxPiA8cmRmOmxpIHN0RXZ0OmFjdGlvbj0iY3JlYXRlZCIgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDo0MmM4ZjdjOS0xOGMxLTQwY2QtYjZiOC1kZmE4NTU4NmUyN2EiIHN0RXZ0OndoZW49IjIwMjUtMDMtMTJUMTg6MDM6NTIrMDI6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIFBob3Rvc2hvcCAyNi40IChNYWNpbnRvc2gpIi8+IDwvcmRmOlNlcT4gPC94bXBNTTpIaXN0b3J5PiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pg2jSN8AABmVSURBVHic7d1LkiTHdUDR2zBtR1iHsGJqHdSCWgOyiUajPln5ifB4fs6MNA6yItz93XJLVn/7/v17AACwu9/O/gAAALACYQwAAAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKASxgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBAJYwBAKCq/zr7A7zKt9//+H72ZwCG+7///Xb2R/ib//4fZx/wUt//+Y/1zr4nGRHGIhgA4BhvddeUWL5kGAthAIB1/NpmVw3lS4WxIAYAWN+PZrtaIC8fxmIYAOCafu64K0TysmEsiAEA5rhCJC8XxoIYAGC2Vb9qsczfMf72+x/fRTEAwD5Wa7/Tb4xXeyAAABxnpdvj08JYEAMA8MMKgXzKVylEMQAAbzmzEw+9MRbEAAB85qzb48NujEUxAABfcXQ/HhLGohgAgHsc+ZfLXhrG/gQbAADPcERTviyMBTEAAM/06r58SRiLYgAAXuGVnfn0MBbFAAC80qt686lhLIoBADjCK7rzaWEsigEAONKz+/MpYSyKAQA4wzM79OEwFsUAAJzpWT36UBiLYgAAVvCMLr07jEUxAAArebRPD/knoQEA4AiPxPFdYey2GACAab4cxqIYAICV3durXwpjUQwAwBXc062+YwwAwEhfjeObw9htMQAAk90UxqIYAIAr+krH+ioFAAB0Qxi7LQYA4Mpu7Vk3xgAAjHdLHH8Yxm6LAQDYhRtjAAC28Nml77th7LYYAICduDEGAGAbH13+vhnGbosBANiNG2MAAOiNMHZbDADAZO/1rhtjAABIGAMAsKG3bo1/++x/AAAAO3BjDAAA/RTGbosBANjJr/3rxhgAABLGAABQCWMAAKiEMQAAG/v5e8a//fpfAADAjtwYAwBAwhgAACphDADA5n58rfg33y8GAAA3xgAAUAljAACohDEAAFTCGAAAKmEMAACVMAYAgEoYAwBA337/47swBgCA3BgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAH3/5z++CWMAAMiNMQAAVMIYAAAqYQwAAJUwBgCAqn77/s9/fDv7QwAAwNncGAMAQMIYAAAqYQwAwOZ+fLX4t5//AwAA7MqNMQAAJIwBAKASxgAAUP0Uxr5nDADAbn5uYDfGAACQMAYAgOqXMPZ1CgAAdvFr+7oxBgCAhDEAAFRvhLGvUwAAMN1bzevGGAAAEsYAAFC9E8a+TgEAwFTvta4bYwAA6IMwdmsMAMA0HzWuG2MAAOiTMHZrDADAFJ+1rRtjAADohjB2awwAwNXd0rQ33RiLYwAArurWlvVVCgAA6Ath7NYYAICr+UrDfunGWBwDAHAVX21XX6UAAIDuCGO3xgAArO6eZr3rxlgcAwCwqntb1VcpAACgB8LYrTEAAKt5pFEfujEWxwAArOLRNn34qxTiGACAsz2jSZ/yHWNxDADAWZ7Vok/7P9+JYwAAjvbMBn3qX6UQxwAAHOXZ7fn0P9cmjgEAeLVXNOdL/o6xOAYA4Gr8Ax8AAFzKqy5hXxbGbo0BAHi2VzbmS2+MxTEAAM/y6rZ8+VcpxDEAAI86oikP+Y6xOAYA4F5HteRh/+c7cQwAwFcd2ZCH/lUKcQwAwK2ObsfD/1ybOAYA4DNnNOMpf8dYHAMA8J6zWvG0f+BDHAMAsBL/8h0AAMs48/L01DB2awwAwA9nt+HpN8ZnPwAAAM63QhOeHsa1xoMAAOAcq7TgEmFc6zwQAACOs1IDLhPGtdaDAQDgtVZrv2/fv38/+zP8zbff/1jvQ8GDVtv8PO7bt/Ve6YpnOo8zF5loxbm41I3xDys+KHiUwQbcw9nBRKu23pJhXOs+MAA4iihmopUbb9kwrrUfHNzDkANu5byA4y0dxjCRYQd8xjnBVKtfei4fxqs/QLiHoQe8x/nAVFdouuXDuK7xIOGrDD/gV84FprpKy10ijOs6DxS+whAEfnAeMNWVGu4yYVzXerBwK8MQcA4w1dXa7VJhXNd7wHALQxH2Zf8z1RWb7XJhXNd80PAZwxH2Y98z1VVb7ZJhXNd94PARQxL2Yb8z1ZUb7bJhXNd+8PAewxIAznHpMC5xzEziGGazx5nq6l12+TCGqQxOmMneZqqrR3ENCeMJLwKA+UQxU01psRFhXHNeCPzMEIU57GemmtRgY8K4Zr0Y+MEwheuzj5lqWnuNCuOa94KgDFW4MvuXqSY217gwrpkvCgxXuB77lqmmttbIMK65L4y9GbJwHfYrU01urLFhXLNfHPsybGF99ilTTW+r0WFc818gezJ0YV32J1zX+DAuccxMhi+sx75ksh16aoswhqkMYViH/chkO0RxbRTGu7xQ9mMYA/BKOzXUNmFce71Y9iKO4Vz2IFPt1k5bhXHt94LZh8EM57D3mGrHZtoujGvPFw3A84liptq1lbYM49r3hTObIQ3Hsd+YaudG2jaMa+8Xz1yGNbyefcZUu7fR1mFcFgAzGdrwOvYXU2kiYVxZCMxkeMPz2VcwmzD+N3HMRIY4PI/9xGQ66F+EMQxnmMPj7CMmE8V/EsY/sTCYylCH+9k/TKZ9/koY/8ICYSrDHb7OvmEyzfN3wvgNFgpTGfJwO/uFybTO24TxOywYpjLsAfamcd4njD9g4TCVOIaP2SNMpW0+Jow/YQExlcEPb7M3mErTfE4Y38BCAtiDKGYqLXMbYXwjC4qJRAD8yX4AhDFsTgyAfcBsLvduJ4y/wMJiKlHAzqx/JtMuXyOMv8gCYypxwI6seybTLF8njO9goTGVSGAn1juTaZX7COM7WXBMJRbYgXXOZBrlfsL4ARYeU4kGJrO+mUybPEYYP8gCZCrxwETWNZNpkscJ4yewEJlKRDCJ9cxkWuQ5hPGTWJBMJSYA1qZBnkcYP5GFyVTimKuzhoFbCGPgJsKCq7J2mcyl3HMJ4yezQAHWIYqZTHM8nzB+AQuVqUQGV2K9MpnWeA1h/CIWLFOJDa7AOmUyjfE6wviFLFymEh2szPpkMm3xWsL4xSxgphIfrMi6ZDJN8XrC+AAWMlOJEFZiPTKZljiGMD6IBc1UYoQVWIdMpiGOI4wPZGEzlSjhTNYfk2mHYwnjg1ngTCVOOIN1BzyTMAaeRqRwJOuN6VymHU8Yn8BCZzKxAvA4rXAOYXwSC57JxDGvZo0xmUY4jzA+kYXPZMKFV7G2mEwbnEsYn8wGALidKGYyTXA+YbwAG4GpRAzPZD0xmRZYgzBehA3BVGKGZ7COmEwDrEMYL8TGYCpRwyOsHyYz+9cijBdjgzCVuOEe1g2TmfnrEcYLslGYSuTwFdYLcDRhDBxK7HAL64TpXIKtSRgvyoZhMtHDR6wPpjPj1yWMF2bjMJn44S3WBdOZ7WsTxouzgZhMBPEz64HpzPT1CeMLsJGYTAwBOzDLr0EYX4QNxWTiGGuAyczw6xDGF2JjMZkw2pd3z2Rm97UI44uxwYBJRDGTmdnXI4wvyEZjKpG0F++byczqaxLGF2XDMZVY2oP3DKxIGAPLEU2zeb9M5/LquoTxhdl4TCaeZvJemc5svjZhfHE2IJOJqFm8T6Yzk69PGA9gIzKZmJrBe2Q6s3gGYTyEDclkouravD+mM4PnEMaD2JhMJq6uyXtjOrN3FmE8jA3KZCLrWrwvpjNz5xHGA9moTCa2gBWYtTMJ46FsWCYTx+vzjoArEsaDiWMmE17r8m6YznydSxgD8DSimOlE8WzCeDgbmMlE2Fq8D6YzU+cTxhuwkZlMjK3Be2A6s3QPwngTNjSTibJzef5MZ4buQxhvxMZmMnF2Ds+d6czOvQjjzdjgTCbSjuV5M52ZuR9hvCEbncnE2jE8Z6YzK/ckjDdlwzOZaHstz5fpzMh9CeON2fhMJt5ew3MFJhPGmxPHTCbinsvzZAfm4t6EMTCamANuJYoRxjgIGE8cP84zZDqzkBLG/JsDgemE3f08O6YzA/lBGPMfDgbgV6KY6cw+fiaM+QsHBJOJvK/xvJjOzONXwpi/cVAwmdi7jefEdGYdbxHGvMmBwWSi72OeD9OZcbxHGPMuBweTib+3eS5MZ7bxEWHMhxwgTCYC/8rzAHYnjPmUOGYyMfgvngM7MM/4jDAGtrd7FO7+87MHUcwthDE3caAw3a5xuOvPzV7MMG4ljLmZg4XpdovE3X5e9mR28RXCmC9xwDCdWIQ5zCy+ShjzZQ4aptshjnf4GdmbWcU9hDF3ceAw3eRwnPyzQZlR3E8YczcHD1yPKGY6s4lHCGMe4gBismkROe3ngV+ZSTxKGPMwBxGTTYnJKT8HwCsJY4BPXD0qr/754RYuaXgGYcxTOJCY7qpxedXPDV9hBvEswpincTAx3dUi82qfF+5h9vBMwpinckAx3VVi8yqfEx5h5vBswpinc1Ax3erRufrng2cwa3iFb9+/Oz95DcOZ8f7vf9cbzP/9P/Yd44liXsWNMS/j4ALg2cwWXkkY81IOMACexUzh1YQxL+cgA+BRZglHEMYcwoEGAKxOGAMAS3O5wlGEMYdxsAHwVWYHRxLGHMoBB8CtzAyOJow5nIMOgM+YFZxBGHMKBx4A7zEjOIsw5jQOPgB+ZTZwJmHMqRyAAPxgJnA2YczpHIQAmAWsQBizBAciwL7MAFYhjFmGgxEAOJMwBgBO41KElQhjluKABNiHM5/VCGOW46AEmM9Zz4qEMUtyYALM5YxnVcKYZTk4AeZxtrMyYczSHKAAczjTWZ0wZnkOUoDrc5ZzBcKYS3CgAlyXM5yrEMZchoMV4Hqc3VyJMOZSHLAAwKsIYwDgJVxmcDXCmMtx0AKsz1nNFQljLsmBC7AuZzRXJYy5LAcvwHqczVyZMObSHMAA63Amc3XCmMtzEAOcz1nMBMKYERzIAOdxBjOFMGYMBzPA8Zy9TCKMGcUBDXAcZy7TCGPGcVADAPcQxgDAl7mEYCJhzEgObIDXccYylTBmLAc3wPM5W5lMGDOaAxzgeZypTCeMGc9BDvA4Zyk7EMZswYEOcD9nKLsQxmzDwQ7wdc5OdiKM2YoDHuB2zkx2I4zZjoMeAHiLMGZL4hjgY85JdiSMAYC/EMXsShizLQc/wN85G9mZMGZrBgDAn5yJ7E4Ysz2DAMBZCCWMoTIQgL05A+FfhDH8m8EA7MjZB38SxvATAwLYiTMP/koYwy8MCmAHzjr4O2EMbzAwAGA/whjeIY6BqZxv8DZhDAAbEcXwPmEMHzBAgEmcafAxYQyfMEiACZxl8DlhDDcwUIArc4bBbYQx3MhgAa7I2QW3E8bwBQYMcCXOLPgaYQxfZNAAV+Csgq8TxnAHAwdYmTMK7iOM4U4GDwDMIowBYBC/tMP9hDE8wAACVuJMgscIY3iQQQSswFkEjxPG8AQGEnAmZxA8hzCGJzGYgDM4e+B5hDE8kQEFHMmZA88ljOHJDCrgCM4aeD5hDC9gYAGv5IyB1xDG8CIGF/AKzhZ4HWEML2SAAcB1CGMAuAi/bMNrCWN4MYMMeAZnCbyeMIYDGGjAI5whcAxhDAcx2IB7ODvgOMIYDmTAAV/hzIBjCWM4mEEH3MJZAccTxnACAw/4iDMCziGM4SQGH/AWZwOcRxjDiQxA4GfOBDiXMIaTGYQAsAZhDAAL8EsynE8YwwIMRNibMwDWIIxhEQYj7Mneh3UIY1iIAQl7sedhLcIYFmNQwh7sdViPMIYFGZgwmz0OaxLGsCiDE2ayt2FdwhgWZoDCLPY0rE0Yw+IMUpjBXob1CWO4AAMVAF5PGAPAi/nlFq5BGMNFGKxwTfYuXIcwhgsxYOFa7Fm4FmEMF2PQwjXYq3A9whguyMCFtdmjcE3CGC7K4IU12ZtwXcIYLswAhrXYk3BtwhguziCGNdiLcH3CGAYwkOFc9iDMIIxhCIMZAB4jjAHgAX4phTmEMQxiQMOx7DmYRRjDMAY1HMNeg3mEMQxkYMNr2WMwkzCGoQxueA17C+YSxjCYAQ7PZU/BbMIYhjPI4TnsJZhPGMMGDHR4jD0EexDGsAmDHe5j78A+hDFsxIAHgPcJYwB4h18mYS/CGDZj0MNt7BXYjzCGDRn48DF7BPYkjGFTBj+8zd6AfQlj2JgAgL+yJ2Bvwhg2JwTgX+wFQBgDgoDt2QNACWPg34QBu7L2gR+EMfAfAgGAnQlj4C/EMTux3oGfCWMAtiSKgV8JY+BvBAPTWePAW4Qx8CbhwFTWNvAeYQy8S0AwjTUNfEQYAx8SEkxhLQOfEcbApwQFV2cNA7cQxsBNhAVXZe0CtxLGwM0EBldjzQJfIYyBLxEaAEwljIEvE8dcgXUKfJUwBmAcUQzcQxgDdxEerMraBO4ljIG7CRBWY00CjxDGwEOECKuwFoFHCWPgYYKEs1mDwDMIY+AphAlnsfaAZxHGwNMIFI5mzQHPJIyBpxIqHMVaA55NGANPJ1gAuCJhDMDl+OULeAVhDLyEcOFVrC3gVYQx8DIChmezpoBXEsbASwkZnsVaAl5NGAMvJ2h4lDUEHEEYA4cQNtzL2gGOIoyBwwgcvsqaAY4kjIFDCR1uZa0ARxPGwOEED5+xRoAzCGPgFMIHgNUIYwCW4pcm4CzCGDiNAOJX1gRwJmEMnEoI8YO1AJxNGAOnE0RYA8AKhDGwBGG0L+8eWIUwBpYhkPbjnQMrEcbAUoTSPrxrYDXCGFiOYJrPOwZWJIyBJQmnubxbYFXCGFiWgALgSMIYgMP4ZQdYmTAGliak5vAugdUJY2B5gur6vEPgCoQxcAnC6rq8O+AqhDFwGQLrerwz4EqEMXApQus6vCvgaoQxcDmCa33eEXBFwhi4JOG1Lu8GuCphDFyWAFuPdwJcmTAGLk2IAfAswhi4PHG8Bu8BuDphDIwgys7l+QMTCGMAHiKKgSmEMTCGQDueZw5MIoyBUYTacTxrYBphDIzz/Z//+CbaXsvzBSYSxsBY4u01PFdgKmEMjCbinsdNPDCdMAbGE3OP8wyBHQhjYAtuO+/nuQG7EMbAVkTe7fwyAexGGAPbEXyf83yAHQljYFvi7+/80gDsTBgDWxOCf/IcgN3919kfAGAFP6Lw2+9/fD/7sxxNEAP8izAG+MlOgSyIAf5KGAO8YXIgC2KAtwljgA/8HJFXjmQxDPA5YQxwoyveIgtigNt9+/79Muc7AAC8jD/XBgAACWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQCWMAAKiEMQAAVMIYAAAqYQwAAJUwBgCAShgDAEAljAEAoBLGAABQ1f8D9mGDK+0RyRcAAAAASUVORK5CYII=';
 document.querySelectorAll('.brand-logo').forEach(im=> im.src = LOGO);
 
-let CUSTS=[], TASKS=[], DEALS=[], MEETS=[], CONTS=[], PAYS=[], ORDS=[], SCALLS=[], OTEAMS=[];
+let CUSTS=[], TASKS=[], DEALS=[], MEETS=[], CONTS=[], PAYS=[], ORDS=[], SCALLS=[], OTEAMS=[], SKUS=[];
 async function loadLeads(){
-  const [l,c,t,d,m,k,p,o,sc,tm,sy] = await Promise.all([
+  const [l,c,t,d,m,k,p,o,sc,tm,sy,sk] = await Promise.all([
     sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,customer_type,customer_id,created_at').order('created_at',{ascending:false}).limit(10000),
     sb.schema('core').from('customers').select('id,name,phone,email,priority_id,status,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes').order('created_at',{ascending:false}).limit(10000),
     sb.schema('crm').from('tasks').select('id,name,status,category,due_at,closed_at,linked_type,linked_id,owner_id').order('due_at',{ascending:true}).limit(10000),
@@ -495,14 +567,15 @@ async function loadLeads(){
     sb.schema('crm').from('payments').select('id,customer_id,deal_id,status,due_date,total_amount,paid_amount,notes').order('due_date',{ascending:false}).limit(10000),
     sb.schema('ord').from('orders').select('id,order_number,order_date,customer_name,customer_number,phone,city,region,order_status,contact_status,scheduled_date,time_slot,team,delivery_method,items_count,erp_status,erp_price,equipment_list,address').order('order_date',{ascending:false}).limit(10000),
     sb.schema('ord').from('service_calls').select('id,call_number,opened_date,customer_name,customer_number,phone,city,status,call_type,product,fault_details,scheduled_date,urgency,team').order('opened_date',{ascending:false}).limit(10000),
-    sb.schema('ord').from('teams').select('name,active,sort_order').eq('active',true).order('sort_order',{ascending:true}),
-    sb.schema('ord').from('sync_log').select('ran_at,ok,details').order('ran_at',{ascending:false}).limit(20)
+    sb.schema('ord').from('teams').select('name,color,active,sort_order').eq('active',true).order('sort_order',{ascending:true}),
+    sb.schema('ord').from('sync_log').select('ran_at,ok,details').order('ran_at',{ascending:false}).limit(20),
+    sb.schema('ord').from('inv_items').select('partname,partdes,price,family,image_url,image_full').order('partname',{ascending:true}).limit(10000)
   ]);
   LEADS = l.data||[]; CUSTS = c.data||[]; TASKS = t.data||[]; DEALS = d.data||[]; MEETS = m.data||[]; CONTS = k.data||[]; PAYS = p.data||[];
-  ORDS = o.data||[]; SCALLS = sc.data||[]; OTEAMS = tm.data||[];
+  ORDS = o.data||[]; SCALLS = sc.data||[]; OTEAMS = tm.data||[]; SKUS = sk.data||[];
   const lastOk = (sy.data||[]).find(r=>r.ok && (!r.details || !r.details.fn || r.details.fn==='priority-sync'));
   $('#lastSync').textContent = lastOk ? 'סנכרון אחרון: ' + new Date(lastOk.ran_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
-  renderStats(); renderToday(); renderLeads(); renderCustomers(); renderTasks(); renderDeals(); renderMeets(); renderConts(); renderPays(); renderOrders();
+  renderStats(); renderToday(); renderLeads(); renderCustomers(); renderTasks(); renderDeals(); renderMeets(); renderConts(); renderPays(); renderOrders(); renderSkus(); renderCal();
 }
 function capped(list, rowFn, emptyMsg){
   if(!list.length) return `<div class="empty">${emptyMsg}</div>`;

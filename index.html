@@ -369,7 +369,7 @@
   <div class="card">
     <div style="text-align:center;margin:-4px 0 8px;"><img class="brand-logo" alt="איירון פיטנס" style="width:96px;"></div>
     <h1>איירון פיטנס</h1>
-    <p class="sub">המערכת המאוחדת · גרסה 5.2.1</p>
+    <p class="sub">המערכת המאוחדת · גרסה 5.3.0</p>
     <div class="field"><label>דוא"ל</label><input id="email" type="email" autocomplete="username" placeholder="name@ironfitness.co.il"></div>
     <div class="field"><label>סיסמה</label><input id="password" type="password" autocomplete="current-password" placeholder="••••••••"></div>
     <button class="btn" id="loginBtn">כניסה</button>
@@ -427,7 +427,7 @@
       <span class="init" id="sideInit">—</span>
       <span><b id="sideName">—</b><small id="sideRole">אזור אישי</small></span>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.2.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.3.0</div>
     <button class="side-collapse" title="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -527,7 +527,7 @@
 
     <!-- מקטים — קטלוג המוצרים (נטיבי) -->
     <section id="tab-skus" class="hidden">
-      <div class="toolbar"><input id="skuSearch" placeholder="חיפוש מק&quot;ט או תיאור מוצר…"></div>
+      <div class="tools-bar" id="sku-tools"></div>
       <div id="skus-list"></div>
     </section>
 
@@ -593,6 +593,11 @@
 <!-- מודל כרטיס עסקה -->
 <div class="modal hidden" id="dealModal">
   <div class="sheet" id="dealSheet"></div>
+</div>
+
+<!-- מודל כרטיס פריט (מק"ט) -->
+<div class="modal hidden" id="skuModal">
+  <div class="sheet" id="skuSheet"></div>
 </div>
 
 <!-- מודל כרטיס פגישה -->
@@ -996,33 +1001,129 @@ window.syncPriority = async ()=>{
   btn.disabled = false; btn.textContent = t0;
 };
 
-/* ===== מקטים — קטלוג המוצרים (נטיבי, ord.inv_items) ===== */
-function skuRow(s){
-  return `<div class="lead">
-    ${s.image_url?`<img class="sku-img" src="${esc(s.image_url)}" loading="lazy" onclick="window.open('${esc(s.image_full||s.image_url)}','_blank')">`:'<div class="sku-img sku-none">🏋️</div>'}
-    <div style="flex:1"><div class="nm">${esc(s.partdes||s.partname)}</div>
-    <div class="meta">מק"ט ${esc(s.partname)}${s.family?' · '+esc(s.family):''}</div></div>
-    ${s.price?`<span class="pill st-def">${shekel(s.price)}</span>`:''}</div>`;
+/* ===== מקטים — קטלוג המוצרים (נטיבי, ord.inv_items) + כרטיס פריט + סינון ומיון (הערת רומן 27/07 16:10) ===== */
+const skuActive = s => (s.erp_status||'')!=='לא פעיל';
+const skuActPill = s => skuActive(s) ? '<span class="pill st-rel">פעיל</span>' : '<span class="pill st-no">לא פעיל</span>';
+const SKU_F = { q:'', fam:'', act:'', stock:'', sort:'partname' };
+const SKU_SORTS = [
+  ['partname','מק"ט'], ['partdes','תיאור'], ['family','משפחה'],
+  ['price_d','מחיר ↓'], ['qty_d','מלאי ↓'], ['sold_d','נמכר הכי הרבה']
+];
+function renderSkuTools(){
+  const box=$('#sku-tools'); if(!box) return;
+  const fams=[...new Set(SKUS.map(s=>s.family).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'he'));
+  box.innerHTML = `
+    <input id="skuSearch" placeholder="🔎 מק&quot;ט / תיאור / ברקוד / ספק…" value="${esc(SKU_F.q)}" style="min-width:220px">
+    <select id="skuFam"><option value="">כל המשפחות</option>${fams.map(f=>`<option ${f===SKU_F.fam?'selected':''}>${esc(f)}</option>`).join('')}</select>
+    <select id="skuAct"><option value="">פעיל + לא פעיל</option><option value="y" ${SKU_F.act==='y'?'selected':''}>פעילים בלבד</option><option value="n" ${SKU_F.act==='n'?'selected':''}>לא פעילים</option></select>
+    <select id="skuStock"><option value="">כל המלאי</option><option value="in" ${SKU_F.stock==='in'?'selected':''}>יש במלאי</option><option value="out" ${SKU_F.stock==='out'?'selected':''}>אין במלאי</option></select>
+    <select id="skuSort">${SKU_SORTS.map(([k,l])=>`<option value="${k}" ${k===SKU_F.sort?'selected':''}>↕️ ${l}</option>`).join('')}</select>`;
+  $('#skuSearch').addEventListener('input', e=>{ SKU_F.q=e.target.value; renderSkus(); });
+  $('#skuFam').onchange = e=>{ SKU_F.fam=e.target.value; renderSkus(); };
+  $('#skuAct').onchange = e=>{ SKU_F.act=e.target.value; renderSkus(); };
+  $('#skuStock').onchange = e=>{ SKU_F.stock=e.target.value; renderSkus(); };
+  $('#skuSort').onchange = e=>{ SKU_F.sort=e.target.value; renderSkus(); };
 }
+function filteredSkus(){
+  const q=(SKU_F.q||'').trim(), qU=q.toUpperCase();
+  let list=SKUS.filter(s=>{
+    if(q && !(String(s.partname||'').toUpperCase().includes(qU)||(s.partdes||'').includes(q)||String(s.barcode||'').toUpperCase().includes(qU)||(s.supplier||'').includes(q))) return false;
+    if(SKU_F.fam && s.family!==SKU_F.fam) return false;
+    if(SKU_F.act==='y' && !skuActive(s)) return false;
+    if(SKU_F.act==='n' && skuActive(s)) return false;
+    if(SKU_F.stock==='in' && !(Number(s.qty)>0)) return false;
+    if(SKU_F.stock==='out' && Number(s.qty)>0) return false;
+    return true;
+  });
+  const n=v=>Number(v||0);
+  switch(SKU_F.sort){
+    case 'partdes': list.sort((a,b)=>(a.partdes||'').localeCompare(b.partdes||'','he')); break;
+    case 'family': list.sort((a,b)=>(a.family||'').localeCompare(b.family||'','he')||String(a.partname).localeCompare(String(b.partname))); break;
+    case 'price_d': list.sort((a,b)=>n(b.price)-n(a.price)); break;
+    case 'qty_d': list.sort((a,b)=>n(b.qty)-n(a.qty)); break;
+    case 'sold_d': list.sort((a,b)=>n(b.sales_total)-n(a.sales_total)); break;
+    default: list.sort((a,b)=>String(a.partname||'').localeCompare(String(b.partname||'')));
+  }
+  return list;
+}
+function skuRow(s){
+  return `<div class="lead" onclick="openSku('${esc(s.partname)}')">
+    ${s.image_url?`<img class="sku-img" src="${esc(s.image_url)}" loading="lazy">`:'<div class="sku-img sku-none">🏋️</div>'}
+    <div style="flex:1"><div class="nm">${esc(s.partdes||s.partname)}</div>
+    <div class="meta">מק"ט ${esc(s.partname)}${s.family?' · '+esc(s.family):''}${s.price?' · '+shekel(s.price):''}</div></div>
+    ${skuActPill(s)}</div>`;
+}
+const fmtNum = v => (v==null||v==='') ? '—' : Number(v).toLocaleString('he-IL');
 function skuTable(list){
   if(!list.length) return '<div class="empty">אין מק"טים להצגה</div>';
-  /* תמונה בעמודה הראשונה (מימין); ברקוד מוצג רק אם הוא שונה מהמק"ט — בלי כפילות (הערת רומן 27/07) */
+  /* ברקוד מוצג רק אם הוא שונה מהמק"ט — בלי כפילות (הערת רומן 27/07) */
   const bc = s => (s.barcode && String(s.barcode).trim()!==String(s.partname).trim()) ? esc(s.barcode) : '—';
-  const rows=list.slice(0,300).map(s=>`<tr>
+  const rows=list.slice(0,300).map((s,i)=>`<tr onclick="openSku('${esc(s.partname)}')">
+    <td class="rownum">${i+1}</td>
     <td>${s.image_url?`<img class="sku-img" style="width:38px;height:38px" src="${esc(s.image_url)}" loading="lazy" onclick="event.stopPropagation();window.open('${esc(s.image_full||s.image_url)}','_blank')">`:'<span style="color:#c3cbd4">—</span>'}</td>
     <td dir="ltr"><b>${esc(s.partname)}</b></td><td class="td-desc">${esc(s.partdes||'—')}</td><td>${esc(s.family||'—')}</td>
-    <td>${s.price?shekel(s.price):'—'}</td><td>${s.qty!=null&&s.qty!==''?esc(s.qty):'—'}</td><td dir="ltr">${bc(s)}</td></tr>`).join('');
-  const more=list.length>300?`<div class="more">מוצגים 300 מתוך ${list.length} — חדדו את החיפוש</div>`:'';
-  return `<div class="tbl-wrap"><table class="tbl tbl-center"><thead><tr><th style="width:56px">תמונה</th><th style="width:120px">מק"ט</th><th>תיאור</th><th>משפחה</th><th>מחיר</th><th>מלאי</th><th>ברקוד</th></tr></thead><tbody>${rows}</tbody></table></div>${more}`;
+    <td>${skuActPill(s)}</td>
+    <td>${s.price?shekel(s.price):'—'}</td>
+    <td>${s.install_price_iron!=null?shekel(s.install_price_iron):'—'}</td>
+    <td>${s.install_price_contractor!=null?shekel(s.install_price_contractor):'—'}</td>
+    <td>${fmtNum(s.pallet_load_factor)}</td>
+    <td>${s.qty!=null&&s.qty!==''?fmtNum(s.qty):'—'}</td><td dir="ltr">${bc(s)}</td></tr>`).join('');
+  return `<div class="tbl-wrap"><table class="tbl tbl-center"><thead><tr><th class="rownum">#</th><th style="width:50px">תמונה</th><th style="width:110px">מק"ט</th><th>תיאור</th><th>משפחה</th><th>פעיל</th><th>מחיר</th><th>התקנה איירון</th><th>התקנה קבלני</th><th>מקדם העמסה</th><th>מלאי</th><th>ברקוד</th></tr></thead><tbody>${rows}</tbody></table></div><div class="count-line2">מציג ${Math.min(list.length,300)} מתוך ${list.length} מק"טים</div>`;
 }
 function renderSkus(){
-  const q=($('#skuSearch').value||'').trim();
-  const qU=q.toUpperCase();
-  let list=SKUS;
-  if(q) list=SKUS.filter(s=>String(s.partname||'').toUpperCase().includes(qU)||(s.partdes||'').includes(q));
+  const list=filteredSkus();
   $('#skus-list').innerHTML = wideScreen() ? skuTable(list) : capped(list, skuRow, 'אין מק"טים להצגה');
 }
-$('#skuSearch').addEventListener('input', renderSkus);
+/* כרטיס פריט — פרופיל מק"ט מלא */
+window.openSku = (pn)=>{
+  const s = SKUS.find(x=>String(x.partname)===String(pn)); if(!s) return;
+  const mgr = ['admin','manager'].includes(ME.role);
+  const bals = Array.isArray(s.bals) ? s.bals : [];
+  const balRows = bals.map(b=>`<div class="row"><span class="k">מחסן ${esc(b.loc??'—')} · ${b.d?new Date(b.d+'T00:00').toLocaleDateString('he-IL'):'—'}</span><span class="v">${fmtNum(b.qty)} ${esc(s.unit||'יח\'')}</span></div>`).join('');
+  $('#skuSheet').innerHTML = `
+    <h3 style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">${esc(s.partdes||s.partname)} ${skuActPill(s)}</h3>
+    <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:6px">
+      ${s.image_url?`<img src="${esc(s.image_full||s.image_url)}" style="width:120px;height:120px;object-fit:cover;border-radius:12px;border:1px solid var(--line);cursor:pointer" onclick="window.open('${esc(s.image_full||s.image_url)}','_blank')">`:'<div class="sku-img sku-none" style="width:120px;height:120px;font-size:40px">🏋️</div>'}
+      <div style="flex:1;min-width:220px">
+        <div class="row"><span class="k">מק"ט</span><span class="v" dir="ltr">${esc(s.partname)}</span></div>
+        ${s.barcode&&String(s.barcode).trim()!==String(s.partname).trim()?`<div class="row"><span class="k">ברקוד</span><span class="v" dir="ltr">${esc(s.barcode)}</span></div>`:''}
+        <div class="row"><span class="k">משפחה</span><span class="v">${esc(s.family||'—')}</span></div>
+        <div class="row"><span class="k">יחידה</span><span class="v">${esc(s.unit||'—')}</span></div>
+        ${s.supplier?`<div class="row"><span class="k">ספק</span><span class="v">${esc(s.supplier)}</span></div>`:''}
+      </div>
+    </div>
+    <h2 class="sec">מחירים</h2>
+    <div class="row"><span class="k">מחיר מחירון (פריוריטי)</span><span class="v">${s.price?shekel(s.price):'—'}</span></div>
+    ${mgr?`<div class="row"><span class="k">עלות (פריוריטי)</span><span class="v">${s.cost?shekel(s.cost):'—'}</span></div>`:''}
+    ${mgr?`
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:10px">
+      <div class="field"><label>מחיר התקנה איירון (₪)</label><input id="sk-inst-iron" type="number" step="any" inputmode="decimal" value="${s.install_price_iron??''}"></div>
+      <div class="field"><label>מחיר התקנה קבלני (₪)</label><input id="sk-inst-cont" type="number" step="any" inputmode="decimal" value="${s.install_price_contractor??''}"></div>
+      <div class="field"><label>מקדם העמסה משטחי</label><input id="sk-pallet" type="number" step="any" inputmode="decimal" value="${s.pallet_load_factor??''}"></div>
+    </div>
+    <button class="btn green" style="margin-top:4px" onclick="saveSku('${esc(s.partname)}')">שמירת נתוני התקנה והעמסה</button>
+    <div class="err" id="sk-err"></div>`
+    :`<div class="row"><span class="k">מחיר התקנה איירון</span><span class="v">${s.install_price_iron!=null?shekel(s.install_price_iron):'—'}</span></div>
+      <div class="row"><span class="k">מחיר התקנה קבלני</span><span class="v">${s.install_price_contractor!=null?shekel(s.install_price_contractor):'—'}</span></div>
+      <div class="row"><span class="k">מקדם העמסה משטחי</span><span class="v">${fmtNum(s.pallet_load_factor)}</span></div>`}
+    <h2 class="sec">מלאי ותנועה</h2>
+    <div class="row"><span class="k">מלאי נוכחי</span><span class="v"><b>${s.qty!=null?fmtNum(s.qty):'—'}</b> ${esc(s.unit||'')}</span></div>
+    <div class="row"><span class="k">בהזמנות לקוח פתוחות</span><span class="v">${fmtNum(s.ord)}</span></div>
+    <div class="row"><span class="k">בהזמנות רכש פתוחות</span><span class="v">${fmtNum(s.pord)}</span></div>
+    <div class="row"><span class="k">סה"כ נמכר (12 חוד')</span><span class="v">${fmtNum(s.sales_total)}</span></div>
+    ${balRows?`<h2 class="sec">מלאי לפי מחסן</h2>${balRows}`:''}
+    <div class="note">שדות הפריוריטי (מחיר, עלות, מלאי, סטטוס פעיל) מסונכרנים אוטומטית ואינם ניתנים לעריכה כאן.</div>`;
+  mountCard('skuModal', ()=>openSku(pn));
+};
+window.saveSku = async (pn)=>{
+  const s = SKUS.find(x=>String(x.partname)===String(pn)); if(!s) return;
+  const nv = id => { const v=$(id).value; return v===''?null:Number(v); };
+  const patch = { install_price_iron:nv('#sk-inst-iron'), install_price_contractor:nv('#sk-inst-cont'), pallet_load_factor:nv('#sk-pallet') };
+  const { error } = await sb.schema('ord').from('inv_items').update(patch).eq('partname', s.partname);
+  if(error){ $('#sk-err').textContent='השמירה נכשלה — '+error.message; return; }
+  Object.assign(s, patch);
+  toast('נשמר ✓'); closeCards(); renderSkus();
+};
 
 /* ===== מסמכים ופרוטוקולים — נטיבי (עמוד החתימה sign.html נשאר כמו שהוא) ===== */
 let DOC_FILTER='sent';
@@ -1139,7 +1240,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.2.1</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.3.0</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
@@ -1245,7 +1346,7 @@ async function loadLeads(){
     sb.schema('ord').from('service_calls').select('id,call_number,opened_date,customer_name,customer_number,phone,customer_email,customer_address,address,city,region,status,call_type,warranty,product,fault_details,scheduled_date,time_slot,deadline,urgency,team,notes,erp_status').order('opened_date',{ascending:false}).limit(10000),
     sb.schema('ord').from('teams').select('id,name,color,active,sort_order').order('sort_order',{ascending:true}),
     sb.schema('ord').from('sync_log').select('ran_at,ok,details').order('ran_at',{ascending:false}).limit(20),
-    sb.schema('ord').from('inv_items').select('partname,partdes,price,family,qty,barcode,image_url,image_full').order('partname',{ascending:true}).limit(10000),
+    sb.schema('ord').from('inv_items').select('partname,partdes,price,family,qty,barcode,image_url,image_full,erp_status,unit,cost,supplier,sales_total,ord,pord,bals,install_price_iron,install_price_contractor,pallet_load_factor').order('partname',{ascending:true}).limit(10000),
     sb.schema('ord').from('protocols').select('id,order_id,call_id,order_number,customer_name,phone,doc_type,status,sent_at,signed_at,signer_name,token').order('sent_at',{ascending:false}).limit(10000),
     sb.schema('ord').from('settings').select('key,value').order('key',{ascending:true})
   ]);
@@ -1253,7 +1354,7 @@ async function loadLeads(){
   ORDS = o.data||[]; SCALLS = sc.data||[]; OTEAMS = tm.data||[]; SKUS = sk.data||[]; PROTS = pr.data||[]; OSET = st.data||[];
   const lastOk = (sy.data||[]).find(r=>r.ok && (!r.details || !r.details.fn || r.details.fn==='priority-sync'));
   $('#lastSync').textContent = lastOk ? 'סנכרון אחרון: ' + new Date(lastOk.ran_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
-  renderStats(); renderToday(); renderLeads(); renderCustomers(); renderTasks(); renderDeals(); renderMeets(); renderConts(); renderPays(); renderOrdersTools(); renderOrders(); renderSkus(); renderLogi(); renderDocs(); renderOps();
+  renderStats(); renderToday(); renderLeads(); renderCustomers(); renderTasks(); renderDeals(); renderMeets(); renderConts(); renderPays(); renderOrdersTools(); renderOrders(); renderSkuTools(); renderSkus(); renderLogi(); renderDocs(); renderOps();
 }
 function capped(list, rowFn, emptyMsg){
   if(!list.length) return `<div class="empty">${emptyMsg}</div>`;

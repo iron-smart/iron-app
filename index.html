@@ -104,7 +104,7 @@
   /* ===== מעטפת מאוחדת — סרגל עליון + תפריט צד ימני (עיצוב לוח התיאום) ===== */
   .topnav{ position:sticky; top:0; z-index:30; display:flex; align-items:center; gap:12px; background:linear-gradient(135deg,#061827,#0b3552); color:#fff; padding:9px 14px; min-height:52px; box-sizing:border-box; }
   .topnav .burger{ background:rgba(255,255,255,.12); border:none; color:#fff; font-size:19px; border-radius:8px; padding:5px 12px; }
-  .brand-wm{ height:26px; width:auto; }
+  .brand-wm{ height:36px; width:auto; }
   .user-chip{ display:flex; align-items:center; gap:8px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18); border-radius:999px; padding:4px 12px 4px 6px; font-size:13px; }
   .user-chip .av{ width:26px; height:26px; border-radius:50%; background:var(--green); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; }
   .user-chip .rle{ opacity:.75; font-size:12px; }
@@ -154,7 +154,7 @@
   <div class="card">
     <div style="text-align:center;margin:-4px 0 8px;"><img class="brand-logo" alt="איירון פיטנס" style="width:96px;"></div>
     <h1>איירון פיטנס</h1>
-    <p class="sub">מערכת ניהול מכירות (CRM)</p>
+    <p class="sub">המערכת המאוחדת · גרסה 4.0.0</p>
     <div class="field"><label>דוא"ל</label><input id="email" type="email" autocomplete="username" placeholder="name@ironfitness.co.il"></div>
     <div class="field"><label>סיסמה</label><input id="password" type="password" autocomplete="current-password" placeholder="••••••••"></div>
     <button class="btn" id="loginBtn">כניסה</button>
@@ -168,6 +168,7 @@
     <button class="burger" id="sideToggle" title="הצגה/הסתרה של התפריט">☰</button>
     <img class="brand-wm" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'">
     <div class="spacer"></div>
+    <span class="who2" id="lastSync" title="סנכרון אחרון מפריוריטי"></span>
     <button class="out" id="syncBtn" onclick="syncPriority()">🔄 סנכרון פריוריטי</button>
     <span class="user-chip"><span class="av" id="uAv">—</span><b id="uName">—</b><span class="rle" id="uRole">—</span></span>
     <button class="out" id="logoutBtn">יציאה</button>
@@ -186,7 +187,7 @@
     <button class="nav-item" data-tab="docs">📁 מסמכים</button>
     <button class="nav-item" data-tab="skus">🏷️ מקטים</button>
     <button class="nav-item" data-tab="pays">💳 תשלומים</button>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 4.0.0</div>
   </aside>
   <div class="content">
 
@@ -470,7 +471,7 @@ document.querySelectorAll('.brand-logo').forEach(im=> im.src = LOGO);
 
 let CUSTS=[], TASKS=[], DEALS=[], MEETS=[], CONTS=[], PAYS=[], ORDS=[], SCALLS=[], OTEAMS=[];
 async function loadLeads(){
-  const [l,c,t,d,m,k,p,o,sc,tm] = await Promise.all([
+  const [l,c,t,d,m,k,p,o,sc,tm,sy] = await Promise.all([
     sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,customer_type,customer_id,created_at').order('created_at',{ascending:false}).limit(10000),
     sb.schema('core').from('customers').select('id,name,phone,email,priority_id,status,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes').order('created_at',{ascending:false}).limit(10000),
     sb.schema('crm').from('tasks').select('id,name,status,category,due_at,closed_at,linked_type,linked_id,owner_id').order('due_at',{ascending:true}).limit(10000),
@@ -480,10 +481,13 @@ async function loadLeads(){
     sb.schema('crm').from('payments').select('id,customer_id,deal_id,status,due_date,total_amount,paid_amount,notes').order('due_date',{ascending:false}).limit(10000),
     sb.schema('ord').from('orders').select('id,order_number,order_date,customer_name,customer_number,phone,city,region,order_status,contact_status,scheduled_date,time_slot,team,delivery_method,items_count,erp_status,erp_price,equipment_list,address').order('order_date',{ascending:false}).limit(10000),
     sb.schema('ord').from('service_calls').select('id,call_number,opened_date,customer_name,customer_number,phone,city,status,call_type,product,fault_details,scheduled_date,urgency,team').order('opened_date',{ascending:false}).limit(10000),
-    sb.schema('ord').from('teams').select('name,active,sort_order').eq('active',true).order('sort_order',{ascending:true})
+    sb.schema('ord').from('teams').select('name,active,sort_order').eq('active',true).order('sort_order',{ascending:true}),
+    sb.schema('ord').from('sync_log').select('ran_at,ok,details').order('ran_at',{ascending:false}).limit(20)
   ]);
   LEADS = l.data||[]; CUSTS = c.data||[]; TASKS = t.data||[]; DEALS = d.data||[]; MEETS = m.data||[]; CONTS = k.data||[]; PAYS = p.data||[];
   ORDS = o.data||[]; SCALLS = sc.data||[]; OTEAMS = tm.data||[];
+  const lastOk = (sy.data||[]).find(r=>r.ok && (!r.details || !r.details.fn || r.details.fn==='priority-sync'));
+  $('#lastSync').textContent = lastOk ? 'סנכרון אחרון: ' + new Date(lastOk.ran_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
   renderStats(); renderToday(); renderLeads(); renderCustomers(); renderTasks(); renderDeals(); renderMeets(); renderConts(); renderPays(); renderOrders();
 }
 function capped(list, rowFn, emptyMsg){

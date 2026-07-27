@@ -369,7 +369,7 @@
   <div class="card">
     <div style="text-align:center;margin:-4px 0 8px;"><img class="brand-logo" alt="איירון פיטנס" style="width:96px;"></div>
     <h1>איירון פיטנס</h1>
-    <p class="sub">המערכת המאוחדת · גרסה 5.3.0</p>
+    <p class="sub">המערכת המאוחדת · גרסה 5.3.1</p>
     <div class="field"><label>דוא"ל</label><input id="email" type="email" autocomplete="username" placeholder="name@ironfitness.co.il"></div>
     <div class="field"><label>סיסמה</label><input id="password" type="password" autocomplete="current-password" placeholder="••••••••"></div>
     <button class="btn" id="loginBtn">כניסה</button>
@@ -427,7 +427,7 @@
       <span class="init" id="sideInit">—</span>
       <span><b id="sideName">—</b><small id="sideRole">אזור אישי</small></span>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.3.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.3.1</div>
     <button class="side-collapse" title="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -615,8 +615,17 @@
   <div class="sheet" id="profSheet"></div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.9/dist/umd/supabase.js" integrity="sha384-6foGJ1oz/y3anEo0BXRtTgBK1GvpnR0GbJZb0ijG+nBAJ4rYT+VqlD/9e3CSiFIA" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>/* גיבוי: אם ג'יי-אס-דליבר לא זמין — טעינה מ-unpkg עם אותה חתימת אבטחה */
+if(!window.supabase){document.write('<scr'+'ipt src="https://unpkg.com/@supabase/supabase-js@2.110.9/dist/umd/supabase.js" integrity="sha384-6foGJ1oz/y3anEo0BXRtTgBK1GvpnR0GbJZb0ijG+nBAJ4rYT+VqlD/9e3CSiFIA" crossorigin="anonymous"><\/scr'+'ipt>');}</script>
 <script>
+if(!window.supabase){
+  document.body.innerHTML = '<div style="max-width:520px;margin:80px auto;padding:24px;border:1px solid #e5e0d8;border-radius:14px;font-family:system-ui,Segoe UI,Arial;direction:rtl;text-align:center;line-height:1.9">'
+    + '<div style="font-size:40px">⚠️</div><h2 style="margin:8px 0">טעינת המערכת נכשלה</h2>'
+    + '<p>לא הצלחנו לטעון רכיב חיצוני הדרוש להתחברות. בדקו את חיבור האינטרנט ורעננו את הדף.</p>'
+    + '<button onclick="location.reload()" style="padding:10px 22px;border-radius:8px;border:0;background:#1f6f4a;color:#fff;font-size:15px;cursor:pointer">רענון</button></div>';
+  throw new Error('supabase-js failed to load');
+}
 const SB_URL = "https://hjibpfavkjqocjvffsbq.supabase.co";
 const SB_KEY = "sb_publishable_tAnwO6ncZD5QIo1bNFYrhA_qs-YPY1J";
 const sb = supabase.createClient(SB_URL, SB_KEY);
@@ -837,11 +846,11 @@ function renderLogi(){
   const q=($('#logiSearch').value||'').trim();
   if(LOGI_VIEW==='calls'){
     let list = SCALLS.filter(s=>!['הושלם','הושלמה','בוטלה','סגורה'].includes(s.status));
-    if(q) list = SCALLS.filter(s=>(s.customer_name||'').includes(q)||(s.call_number||'').includes(q)||(s.city||'').includes(q));
+    if(q) list = list.filter(s=>(s.customer_name||'').includes(q)||(s.call_number||'').includes(q)||(s.city||'').includes(q));
     $('#logi-tbl').innerHTML = wideScreen() ? scTable(list) : capped(list, scRow, 'אין קריאות שירות');
   } else {
     let list = ORDS.filter(o=>!['הושלם','בוטל'].includes(o.order_status));
-    if(q) list = ORDS.filter(o=>(o.customer_name||'').includes(q)||(o.order_number||'').includes(q)||(o.city||'').includes(q));
+    if(q) list = list.filter(o=>(o.customer_name||'').includes(q)||(o.order_number||'').includes(q)||(o.city||'').includes(q));
     $('#logi-tbl').innerHTML = wideScreen() ? ordTable(list) : capped(list, ordRow, 'אין הזמנות');
   }
 }
@@ -1240,7 +1249,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.3.0</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.3.1</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
@@ -1406,7 +1415,7 @@ function taskTable(list){
 function renderTasks(){
   const q=($('#taskSearch').value||'').trim();
   let list=TASKS.filter(t=>t.status!=='הושלם');
-  if(q) list=TASKS.filter(t=>(t.name||'').includes(q));
+  if(q) list=list.filter(t=>(t.name||'').includes(q));
   $('#tasks-list').innerHTML = wideScreen() ? taskTable(list) : capped(list, taskRow, q?'לא נמצאו משימות':'אין משימות פתוחות 🎉');
 }
 window.doneTask = async (id)=>{
@@ -1849,8 +1858,8 @@ window.openOrd = (id)=>{
       <div class="form-sep">אספקה, מחסן ומסמכים</div>
       <div><label>זמן אספקה (ימים)</label><input id="oe-supdays" type="number" value="${o.supply_days??''}"></div>
       <div><label>תאריך סיום אספקה</label><input id="oe-supend" type="date" value="${esc(o.supply_end_date||'')}"></div>
-      <div><label>תעודת משלוח</label>${selHtml('oe-dnote',YESNO,o.delivery_note==='כן'?'כן':'לא')}</div>
-      <div><label>חשבונית</label>${selHtml('oe-invoice',YESNO,o.invoice==='כן'?'כן':'לא')}</div>
+      <div><label>תעודת משלוח</label>${selHtml('oe-dnote',YESNO,o.delivery_note||'',true)}</div>
+      <div><label>חשבונית</label>${selHtml('oe-invoice',YESNO,o.invoice||'',true)}</div>
       <div class="span2"><label>רשימת ציוד (טקסט חופשי)</label><textarea id="oe-equip" rows="2">${esc(o.equipment_list||'')}</textarea></div>
       <div class="span2"><label>הערות למחסן</label><textarea id="oe-wnotes" rows="2">${esc(o.warehouse_notes||'')}</textarea></div>
       <div class="span4"><label>דו שיח פנימי${SRC_TAG}</label><div class="dialog-box">${o.internal_dialog?esc(o.internal_dialog).replace(/\n/g,'<br>'):'<span class="dialog-empty">אין דו שיח פנימי בהזמנה זו</span>'}</div></div>
@@ -1925,8 +1934,8 @@ window.saveOrd = async (id)=>{
     friday_ok: $('#oe-friday').checked,
     supply_days: num($('#oe-supdays').value),
     supply_end_date: $('#oe-supend').value || null,
-    delivery_note: $('#oe-dnote').value,
-    invoice: $('#oe-invoice').value,
+    delivery_note: $('#oe-dnote').value || null,
+    invoice: $('#oe-invoice').value || null,
     equipment_list: $('#oe-equip').value || null,
     warehouse_notes: $('#oe-wnotes').value || null,
   };
@@ -2335,7 +2344,7 @@ window.createSignLink = async (dealId)=>{
   const box = document.getElementById('signlink-box'); if(box) box.innerHTML = '<div class="note">יוצר קישור…</div>';
   const { data, error } = await sb.schema('crm').from('sign_requests').insert({ deal_id: dealId, created_by: ME.id }).select('token').single();
   if(error || !data){ if(box) box.innerHTML = '<div class="note" style="color:#c0392b">שגיאה ביצירת הקישור</div>'; console.error(error); return; }
-  const link = location.origin + '/?sign=' + data.token;
+  const link = new URL('?sign=' + data.token, location.href).href;
   if(box) box.innerHTML = `<div class="ok-box">🔗 קישור חתימה נוצר (תקף 14 יום):<br>
     <input id="sl-url" readonly value="${esc(link)}" style="width:100%;margin-top:8px;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:13px;direction:ltr;">
     <button class="ghost" style="margin-top:8px;padding:8px 14px;" onclick="navigator.clipboard.writeText(document.getElementById('sl-url').value).then(()=>this.textContent='הועתק ✓')">העתקת הקישור</button>

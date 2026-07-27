@@ -608,12 +608,21 @@ function skuRow(s){
     <div class="meta">מק"ט ${esc(s.partname)}${s.family?' · '+esc(s.family):''}</div></div>
     ${s.price?`<span class="pill st-def">${shekel(s.price)}</span>`:''}</div>`;
 }
+function skuTable(list){
+  if(!list.length) return '<div class="empty">אין מק"טים להצגה</div>';
+  const rows=list.slice(0,300).map(s=>`<tr>
+    <td dir="ltr"><b>${esc(s.partname)}</b></td><td>${esc(s.partdes||'—')}</td><td>${esc(s.family||'—')}</td>
+    <td>${s.price?shekel(s.price):'—'}</td><td>${s.qty!=null&&s.qty!==''?esc(s.qty):'—'}</td><td dir="ltr">${esc(s.barcode||'—')}</td>
+    <td>${s.image_url?`<img class="sku-img" style="width:34px;height:34px" src="${esc(s.image_url)}" loading="lazy" onclick="window.open('${esc(s.image_full||s.image_url)}','_blank')">`:'—'}</td></tr>`).join('');
+  const more=list.length>300?`<div class="more">מוצגים 300 מתוך ${list.length} — חדדו את החיפוש</div>`:'';
+  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>מק"ט</th><th>תיאור</th><th>משפחה</th><th>מחיר</th><th>מלאי</th><th>ברקוד</th><th>תמונה</th></tr></thead><tbody>${rows}</tbody></table></div>${more}`;
+}
 function renderSkus(){
   const q=($('#skuSearch').value||'').trim();
   const qU=q.toUpperCase();
   let list=SKUS;
   if(q) list=SKUS.filter(s=>String(s.partname||'').toUpperCase().includes(qU)||(s.partdes||'').includes(q));
-  $('#skus-list').innerHTML = capped(list, skuRow, 'אין מק"טים להצגה');
+  $('#skus-list').innerHTML = wideScreen() ? skuTable(list) : capped(list, skuRow, 'אין מק"טים להצגה');
 }
 $('#skuSearch').addEventListener('input', renderSkus);
 
@@ -720,7 +729,7 @@ async function loadLeads(){
     sb.schema('ord').from('service_calls').select('id,call_number,opened_date,customer_name,customer_number,phone,city,status,call_type,product,fault_details,scheduled_date,urgency,team').order('opened_date',{ascending:false}).limit(10000),
     sb.schema('ord').from('teams').select('id,name,color,active,sort_order').order('sort_order',{ascending:true}),
     sb.schema('ord').from('sync_log').select('ran_at,ok,details').order('ran_at',{ascending:false}).limit(20),
-    sb.schema('ord').from('inv_items').select('partname,partdes,price,family,image_url,image_full').order('partname',{ascending:true}).limit(10000),
+    sb.schema('ord').from('inv_items').select('partname,partdes,price,family,qty,barcode,image_url,image_full').order('partname',{ascending:true}).limit(10000),
     sb.schema('ord').from('protocols').select('id,order_id,call_id,order_number,customer_name,phone,doc_type,status,sent_at,signed_at,signer_name,token').order('sent_at',{ascending:false}).limit(10000),
     sb.schema('ord').from('settings').select('key,value').order('key',{ascending:true})
   ]);

@@ -122,6 +122,15 @@
   main:has(#tab-logi:not(.hidden)), main:has(#tab-skus:not(.hidden)), main:has(#tab-docs:not(.hidden)){ max-width:none; padding:10px 12px 0; }
   .frame-wrap{ height:calc(100vh - 82px); }
   .frame-wrap iframe{ width:100%; height:100%; border:none; border-radius:0; background:#fff; }
+
+  /* טבלה בעיצוב הלוח */
+  .tbl-wrap{ background:#fff; border:1px solid var(--line); border-radius:12px; overflow:auto; }
+  table.tbl{ width:100%; border-collapse:collapse; font-size:14px; }
+  .tbl th{ text-align:right; color:#fff; background:linear-gradient(135deg,#061827,#0b3552); font-weight:700; font-size:13px; padding:10px 12px; white-space:nowrap; position:sticky; top:0; }
+  .tbl td{ padding:9px 12px; border-bottom:1px solid #eef1f4; white-space:nowrap; }
+  .tbl tbody tr{ cursor:pointer; }
+  .tbl tbody tr:hover{ background:#f6f9fb; }
+  .tbl tbody tr:last-child td{ border-bottom:none; }
   .sku-img{ width:46px; height:46px; object-fit:cover; border-radius:10px; border:1px solid var(--line); flex:none; cursor:pointer; }
   .sku-none{ display:flex; align-items:center; justify-content:center; background:#f1f5f9; font-size:20px; cursor:default; }
   #board-wrap{ height:calc(100vh - 122px); }
@@ -656,6 +665,20 @@ function scRow(s){
     <div class="meta">${fmtD(s.opened_date)}${s.product?' · '+esc(s.product):''}${s.city?' · '+esc(s.city):''}${s.urgency&&s.urgency!=='רגילה'?' · <b style="color:#c0392b">'+esc(s.urgency)+'</b>':''}</div></div>
     <span class="pill ${stc}">${esc(s.status||'—')}</span></div>`;
 }
+const wideScreen = ()=> window.matchMedia('(min-width:700px)').matches;
+function ordTable(list){
+  if(!list.length) return '<div class="empty">אין הזמנות בסינון הזה</div>';
+  const rows = list.slice(0,200).map(o=>`<tr onclick="openOrd('${o.id}')">
+      <td dir="ltr">${esc(o.order_number)}</td><td><b>${esc(o.customer_name||'')}</b></td><td>${esc(o.city||'')}</td>
+      <td><span class="pill ${ordStClass(o.order_status)}">${esc(o.order_status||'—')}</span></td>
+      <td>${esc(o.contact_status||'')}</td>
+      <td>${fmtD(o.scheduled_date)||'—'}${o.time_slot?' · '+esc(o.time_slot):''}</td>
+      <td>${esc(o.team||'—')}</td><td>${o.erp_price?shekel(o.erp_price):'—'}</td></tr>`).join('');
+  const more = list.length>200 ? `<div class="more">מוצגות 200 מתוך ${list.length} — חדדו את החיפוש</div>` : '';
+  return `<div class="tbl-wrap"><table class="tbl"><thead><tr>
+    <th>מס' הזמנה</th><th>לקוח</th><th>עיר</th><th>סטטוס בלוח</th><th>סטטוס קשר</th><th>תואם ל-</th><th>צוות</th><th>סכום</th>
+  </tr></thead><tbody>${rows}</tbody></table></div>${more}`;
+}
 function renderOrders(){
   ordChips();
   const q=($('#ordSearch').value||'').trim();
@@ -667,7 +690,7 @@ function renderOrders(){
   }
   let list = ORD_FILTER==='all' ? ORDS : (ORD_FILTER==='done' ? ORDS.filter(o=>o.order_status==='הושלם') : ORDS.filter(o=>!['הושלם','בוטל'].includes(o.order_status)));
   if(q) list = list.filter(o=>(o.customer_name||'').includes(q)||(o.order_number||'').includes(q)||(o.city||'').includes(q));
-  $('#orders-list').innerHTML = capped(list, ordRow, 'אין הזמנות בסינון הזה');
+  $('#orders-list').innerHTML = wideScreen() ? ordTable(list) : capped(list, ordRow, 'אין הזמנות בסינון הזה');
 }
 window.openOrd = (id)=>{
   const o = ORDS.find(x=>x.id===id); if(!o) return;

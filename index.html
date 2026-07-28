@@ -226,6 +226,33 @@
 
   /* ===== כרטיסים: X לסגירה + חזרה אחורה (הערות 1–3) ===== */
   .modal .sheet{ position:relative; }
+  /* ===== מסך המק"טים — איפיון מסך מקטים (סעיפים 1–12) ===== */
+  #skuModal .sheet{ max-width:980px; }
+  @media(min-width:1200px){ #skuModal .sheet{ max-width:1120px; } }
+  .sku-hero{ display:flex; gap:18px; align-items:flex-start; flex-wrap:wrap; background:linear-gradient(135deg,#f6f9fc,#eef4f8); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:14px; }
+  .sku-hero .ph{ width:150px; height:150px; object-fit:contain; background:#fff; border-radius:14px; border:1px solid var(--line); cursor:pointer; }
+  .sku-hero .pi{ flex:1; min-width:240px; }
+  .sku-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; }
+  .sku-kpi{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:10px 12px; text-align:center; }
+  .sku-kpi .kl{ font-size:11.5px; color:#64748b; font-weight:600; display:block; margin-bottom:3px; }
+  .sku-kpi .kv{ font-size:19px; font-weight:800; color:var(--navy); }
+  .sku-kpi.neg .kv{ color:#c0392b; }
+  .sku-kpi.ok .kv{ color:#1faa53; }
+  .sku-box{ border:1px solid var(--line); border-radius:14px; padding:14px; margin-top:12px; background:#fff; }
+  .sku-box.install{ border:1px dashed #b58a2b; background:#fffdf5; }
+  .sku-box .bx-t{ font-size:13px; font-weight:800; color:var(--navy); margin:0 0 10px; display:flex; align-items:center; gap:6px; }
+  .sku-box.install .bx-t{ color:#8a6410; }
+  .tbl th.srt{ cursor:pointer; user-select:none; }
+  .tbl th.srt:hover{ background:linear-gradient(135deg,#0b3552,#12507a); }
+  .tbl th.srt .ar{ font-size:10px; opacity:.55; margin-inline-start:3px; }
+  .tbl th.srt.on .ar{ opacity:1; color:#ffd479; }
+  .sku-adv{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px; margin-bottom:12px; }
+  .sku-fams{ display:flex; flex-wrap:wrap; gap:6px; max-height:132px; overflow:auto; }
+  .fam-chip{ border:1px solid var(--line); background:#f8fafc; border-radius:99px; padding:5px 11px; font-size:12.5px; cursor:pointer; color:#475569; font-weight:600; }
+  .fam-chip.on{ background:var(--navy); border-color:var(--navy); color:#fff; }
+  .view-chip{ border:1px solid var(--line); background:#fff; border-radius:9px; padding:7px 11px; font-size:12.5px; font-weight:700; color:#475569; cursor:pointer; }
+  .view-chip.on{ background:var(--navy); border-color:var(--navy); color:#fff; }
+  .view-chip .st{ color:#f0b429; margin-inline-end:3px; }
   .card-bar{ display:flex; justify-content:space-between; align-items:center; margin:-6px -6px 8px 0; }
   .card-x{ background:#f1f5f9; border:none; color:#475569; width:32px; height:32px; border-radius:50%; font-size:15px; line-height:1; }
   .card-x:hover{ background:#e2e8f0; color:#0b3552; }
@@ -561,6 +588,8 @@
     <!-- מקטים — קטלוג המוצרים (נטיבי) -->
     <section id="tab-skus" class="hidden">
       <div class="tools-bar" id="sku-tools"></div>
+      <div id="sku-views" class="tools-bar" style="margin-top:-4px"></div>
+      <div id="sku-adv" class="sku-adv hidden"></div>
       <div id="skus-list"></div>
     </section>
 
@@ -1196,118 +1225,340 @@ window.syncPriority = async ()=>{
   btn.disabled = false; btn.textContent = t0;
 };
 
-/* ===== מקטים — קטלוג המוצרים (נטיבי, ord.inv_items) + כרטיס פריט + סינון ומיון (הערת רומן 27/07 16:10) ===== */
+/* ===== מקטים — קטלוג המוצרים (נטיבי, ord.inv_items)
+   מיושם לפי "מסמך איפיון למסך מקטים" (רומן, 28/07) — סעיפים 1–12:
+   1+3 סינון מתקדם · 2 מיון בלחיצה על כותרת עמודה · 4 תצוגות שמורות עם ברירת מחדל לאדמין
+   5 חיפוש חכם ולא תלוי רישיות · 6+11 כרטיס פריט רחב עם הפרדת מחירי התקנה
+   7 כפתור סנכרון מק"טים למנהל בלבד (הסנכרון האוטומטי רץ 07:00 א׳–ו׳)
+   8 "ברקוד" → "איתור" · 9 מלאי וזמינות · 10 נמכר 3/6 חודשים · 12 מחירון לפני/כולל מע"מ ===== */
 const skuActive = s => (s.erp_status||'')!=='לא פעיל';
 const skuActPill = s => skuActive(s) ? '<span class="pill st-rel">פעיל</span>' : '<span class="pill st-no">לא פעיל</span>';
-const SKU_F = { q:'', fam:'', act:'', stock:'', sort:'partname' };
-const SKU_SORTS = [
-  ['partname','מק"ט'], ['partdes','תיאור'], ['family','משפחה'],
-  ['price_d','מחיר ↓'], ['qty_d','מלאי ↓'], ['sold_d','נמכר הכי הרבה']
+const fmtNum = v => (v==null||v==='') ? '—' : Number(v).toLocaleString('he-IL');
+
+/* מצב הסינון. המבנה זהה ל-filters שנשמר ב-ord.sku_views (סעיף 4) */
+const SKU_F = { q:'', fams:[], act:'', stock:'', sort:'partname', dir:'asc' };
+let SKU_VIEWS = [], SKU_VIEW_ID = '', SKU_ADV = false, _skuViewsLoaded = false;
+const skuMgr = () => ['admin','manager'].includes(ME.role);
+
+/* עמודות הטבלה — מקור אחד לכותרת, לתא ולמיון (סעיפים 2, 8, 9, 10, 12) */
+const SKU_COLS = [
+  {k:'partname',    t:'מק"ט',              y:'t', w:'110px'},
+  {k:'partdes',     t:'תיאור',             y:'t'},
+  {k:'family',      t:'משפחה',             y:'t'},
+  {k:'erp_status',  t:'פעיל',              y:'t'},
+  {k:'price_base',  t:'מחירון לפני מע"מ',   y:'m'},
+  {k:'price_vat',   t:'מחירון כולל מע"מ',   y:'m'},
+  {k:'qty',         t:'מלאי זמין',          y:'n'},
+  {k:'sell_qty',    t:'זמין למכירה',        y:'n'},
+  {k:'ord',         t:'הזמנות לקוח',        y:'n'},
+  {k:'expected_qty',t:'מלאי צפוי',          y:'n'},
+  {k:'pord',        t:'הזמנות רכש',         y:'n'},
+  {k:'sold_3m',     t:'נמכר 3 חוד׳',        y:'n'},
+  {k:'sold_6m',     t:'נמכר 6 חוד׳',        y:'n'},
+  {k:'install_price_iron',      t:'התקנה איירון', y:'m'},
+  {k:'install_price_contractor',t:'התקנה קבלני',  y:'m'},
+  {k:'pallet_load_factor',      t:'מקדם העמסה',   y:'n'},
+  {k:'barcode',     t:'איתור',             y:'t'}
 ];
-function renderSkuTools(){
-  const box=$('#sku-tools'); if(!box) return;
-  const fams=[...new Set(SKUS.map(s=>s.family).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'he'));
-  box.innerHTML = `
-    <input id="skuSearch" placeholder="🔎 מק&quot;ט / תיאור / ברקוד / ספק…" value="${esc(SKU_F.q)}" style="min-width:220px">
-    <select id="skuFam"><option value="">כל המשפחות</option>${fams.map(f=>`<option ${f===SKU_F.fam?'selected':''}>${esc(f)}</option>`).join('')}</select>
-    <select id="skuAct"><option value="">פעיל + לא פעיל</option><option value="y" ${SKU_F.act==='y'?'selected':''}>פעילים בלבד</option><option value="n" ${SKU_F.act==='n'?'selected':''}>לא פעילים</option></select>
-    <select id="skuStock"><option value="">כל המלאי</option><option value="in" ${SKU_F.stock==='in'?'selected':''}>יש במלאי</option><option value="out" ${SKU_F.stock==='out'?'selected':''}>אין במלאי</option></select>
-    <select id="skuSort">${SKU_SORTS.map(([k,l])=>`<option value="${k}" ${k===SKU_F.sort?'selected':''}>↕️ ${l}</option>`).join('')}</select>`;
-  $('#skuSearch').addEventListener('input', e=>{ SKU_F.q=e.target.value; renderSkus(); });
-  $('#skuFam').onchange = e=>{ SKU_F.fam=e.target.value; renderSkus(); };
-  $('#skuAct').onchange = e=>{ SKU_F.act=e.target.value; renderSkus(); };
-  $('#skuStock').onchange = e=>{ SKU_F.stock=e.target.value; renderSkus(); };
-  $('#skuSort').onchange = e=>{ SKU_F.sort=e.target.value; renderSkus(); };
+
+/* ---- חיפוש (סעיף 5) ----
+   הכול מונרמל לאותיות גדולות, ולכן "sand" מוצא גם "Sandwich" וגם "SAND".
+   בנוסף נשמרת גרסה בלי מקפים/רווחים, כך ש-"styt0003" מוצא "ST-YT0003D".
+   כמה מילים בחיפוש = כל אחת חייבת להימצא (חיפוש מצטבר). */
+const _skuHay = new Map();
+const skuFlat = t => t.replace(/[\s\-_.\/]/g,'');
+function skuHay(s){
+  let h=_skuHay.get(s.partname);
+  if(h===undefined){
+    const raw=[s.partname,s.partdes,s.barcode,s.supplier,s.family].map(x=>String(x??'')).join(' ').toUpperCase();
+    h={ raw, flat:skuFlat(raw) };
+    _skuHay.set(s.partname,h);
+  }
+  return h;
 }
+
 function filteredSkus(){
-  const q=(SKU_F.q||'').trim(), qU=q.toUpperCase();
-  let list=SKUS.filter(s=>{
-    if(q && !(String(s.partname||'').toUpperCase().includes(qU)||(s.partdes||'').includes(q)||String(s.barcode||'').toUpperCase().includes(qU)||(s.supplier||'').includes(q))) return false;
-    if(SKU_F.fam && s.family!==SKU_F.fam) return false;
+  const toks=(SKU_F.q||'').trim().toUpperCase().split(/\s+/).filter(Boolean);
+  const famSet=(SKU_F.fams&&SKU_F.fams.length)?new Set(SKU_F.fams):null;
+  const list=SKUS.filter(s=>{
+    if(toks.length){
+      const h=skuHay(s);
+      for(const t of toks){ if(!h.raw.includes(t) && !h.flat.includes(skuFlat(t))) return false; }
+    }
+    if(famSet && !famSet.has(s.family||'')) return false;
     if(SKU_F.act==='y' && !skuActive(s)) return false;
     if(SKU_F.act==='n' && skuActive(s)) return false;
     if(SKU_F.stock==='in' && !(Number(s.qty)>0)) return false;
     if(SKU_F.stock==='out' && Number(s.qty)>0) return false;
     return true;
   });
-  const n=v=>Number(v||0);
-  switch(SKU_F.sort){
-    case 'partdes': list.sort((a,b)=>(a.partdes||'').localeCompare(b.partdes||'','he')); break;
-    case 'family': list.sort((a,b)=>(a.family||'').localeCompare(b.family||'','he')||String(a.partname).localeCompare(String(b.partname))); break;
-    case 'price_d': list.sort((a,b)=>n(b.price)-n(a.price)); break;
-    case 'qty_d': list.sort((a,b)=>n(b.qty)-n(a.qty)); break;
-    case 'sold_d': list.sort((a,b)=>n(b.sales_total)-n(a.sales_total)); break;
-    default: list.sort((a,b)=>String(a.partname||'').localeCompare(String(b.partname||'')));
-  }
+  const col=SKU_COLS.find(c=>c.k===SKU_F.sort)||SKU_COLS[0];
+  const m=SKU_F.dir==='desc'?-1:1;
+  const nm=v=>{ const x=Number(v); return isFinite(x)?x:-Infinity; };
+  const tie=(a,b)=>String(a.partname||'').localeCompare(String(b.partname||''));
+  if(col.y==='t') list.sort((a,b)=> m*String(a[col.k]??'').localeCompare(String(b[col.k]??''),'he') || tie(a,b));
+  else list.sort((a,b)=> m*(nm(a[col.k])-nm(b[col.k])) || tie(a,b));
   return list;
 }
+
+window.skuSortBy = (k)=>{
+  const col=SKU_COLS.find(c=>c.k===k); if(!col) return;
+  if(SKU_F.sort===k) SKU_F.dir = SKU_F.dir==='asc' ? 'desc' : 'asc';
+  else { SKU_F.sort=k; SKU_F.dir = col.y==='t' ? 'asc' : 'desc'; }
+  renderSkus();
+};
+
+/* ---- סרגל הכלים (סעיפים 1, 3, 5, 7) ---- */
+function renderSkuTools(){
+  const box=$('#sku-tools'); if(!box) return;
+  _skuHay.clear();
+  const sel=(v,cur)=>v===cur?' selected':'';
+  box.innerHTML = `
+    <div class="search"><input id="skuSearch" placeholder="חיפוש חופשי — מק״ט · תיאור · איתור · ספק · משפחה" value="${esc(SKU_F.q)}"></div>
+    <select id="skuAct" title="סינון לפי פעיל / לא פעיל"><option value="">פעיל + לא פעיל</option><option value="y"${sel('y',SKU_F.act)}>פעילים בלבד</option><option value="n"${sel('n',SKU_F.act)}>לא פעילים בלבד</option></select>
+    <select id="skuStock" title="סינון לפי מלאי"><option value="">כל המלאי</option><option value="in"${sel('in',SKU_F.stock)}>יש מלאי</option><option value="out"${sel('out',SKU_F.stock)}>אין מלאי</option></select>
+    <button class="tb-clear" id="skuAdvBtn" title="בחירת משפחות להצגה ותצוגות שמורות">⚙️ סינון מתקדם</button>
+    <button class="tb-clear" id="skuReset" title="ניקוי כל הסינונים">✕ ניקוי</button>
+    <span class="tb-lbl" id="skuCount"></span>
+    ${skuMgr()?'<button class="tb-clear" id="skuSyncBtn" title="הסנכרון האוטומטי רץ כל יום ב-07:00 (א׳–ו׳). כאן אפשר להריץ אותו ידנית.">🔄 סנכרון מק״טים</button>':''}`;
+  $('#skuSearch').addEventListener('input', e=>{ SKU_F.q=e.target.value; SKU_VIEW_ID=''; renderSkus(); });
+  $('#skuAct').onchange = e=>{ SKU_F.act=e.target.value; SKU_VIEW_ID=''; renderSkus(); renderSkuViews(); };
+  $('#skuStock').onchange = e=>{ SKU_F.stock=e.target.value; SKU_VIEW_ID=''; renderSkus(); renderSkuViews(); };
+  $('#skuAdvBtn').onclick = ()=>{ SKU_ADV=!SKU_ADV; renderSkuAdv(); };
+  $('#skuReset').onclick = ()=>{ clearSkuView(); };
+  if($('#skuSyncBtn')) $('#skuSyncBtn').onclick = ()=>syncSkus();
+  renderSkuAdv();
+  if(!_skuViewsLoaded){ _skuViewsLoaded=true; loadSkuViews(); } else renderSkuViews();
+}
+
+/* ---- תצוגות סינון שמורות (סעיף 4) ---- */
+async function loadSkuViews(){
+  const { data, error } = await sb.schema('ord').from('sku_views').select('id,name,filters,is_default,sort_order').order('sort_order').order('name');
+  if(error){ renderSkuViews(); return; }
+  SKU_VIEWS = data||[];
+  const def = SKU_VIEWS.find(v=>v.is_default);
+  if(def && !SKU_VIEW_ID){ applySkuView(def.id); return; }
+  renderSkuViews();
+}
+function renderSkuViews(){
+  const box=$('#sku-views'); if(!box) return;
+  const chips = SKU_VIEWS.map(v=>`<button class="view-chip${String(v.id)===SKU_VIEW_ID?' on':''}" onclick="applySkuView('${jsq(v.id)}')">${v.is_default?'<span class="st">★</span>':''}${esc(v.name)}</button>`).join('');
+  box.innerHTML = SKU_VIEWS.length
+    ? `<span class="tb-lbl">תצוגות:</span><button class="view-chip${SKU_VIEW_ID?'':' on'}" onclick="clearSkuView()">הכול</button>${chips}`
+    : '';
+}
+window.applySkuView = (id)=>{
+  const v = SKU_VIEWS.find(x=>String(x.id)===String(id)); if(!v) return;
+  const f = v.filters||{};
+  SKU_F.q = f.q||''; SKU_F.fams = Array.isArray(f.fams)?f.fams.slice():[];
+  SKU_F.act = f.act||''; SKU_F.stock = f.stock||'';
+  SKU_F.sort = f.sort||'partname'; SKU_F.dir = f.dir==='desc'?'desc':'asc';
+  SKU_VIEW_ID = String(v.id);
+  renderSkuTools(); renderSkuViews(); renderSkus();
+};
+window.clearSkuView = ()=>{
+  SKU_F.q=''; SKU_F.fams=[]; SKU_F.act=''; SKU_F.stock=''; SKU_F.sort='partname'; SKU_F.dir='asc';
+  SKU_VIEW_ID='';
+  renderSkuTools(); renderSkuViews(); renderSkus();
+};
+window.saveSkuView = async ()=>{
+  const eb=$('#skuViewErr'); if(eb) eb.textContent='';
+  const nm=($('#skuViewName')?$('#skuViewName').value:'').trim();
+  if(!nm){ if(eb) eb.textContent='נא להזין שם לתצוגה'; return; }
+  const def = !!($('#skuViewDef') && $('#skuViewDef').checked);
+  const row = { name:nm, is_default:def, filters:{ q:SKU_F.q, fams:SKU_F.fams, act:SKU_F.act, stock:SKU_F.stock, sort:SKU_F.sort, dir:SKU_F.dir } };
+  if(def) await sb.schema('ord').from('sku_views').update({ is_default:false }).eq('is_default', true);
+  const { data, error } = await sb.schema('ord').from('sku_views').insert(row).select('id').single();
+  if(error){ if(eb) eb.textContent='השמירה נכשלה — '+error.message; return; }
+  SKU_VIEW_ID = String(data.id);
+  toast('התצוגה נשמרה ✓');
+  await loadSkuViews(); renderSkuAdv();
+};
+window.setSkuViewDefault = async ()=>{
+  const eb=$('#skuViewErr'); if(eb) eb.textContent='';
+  if(!SKU_VIEW_ID){ if(eb) eb.textContent='יש לבחור תצוגה קודם'; return; }
+  await sb.schema('ord').from('sku_views').update({ is_default:false }).eq('is_default', true);
+  const { error } = await sb.schema('ord').from('sku_views').update({ is_default:true, updated_at:new Date().toISOString() }).eq('id', SKU_VIEW_ID);
+  if(error){ if(eb) eb.textContent='העדכון נכשל — '+error.message; return; }
+  toast('נקבעה ברירת מחדל ✓');
+  await loadSkuViews(); renderSkuAdv();
+};
+window.deleteSkuView = async ()=>{
+  const eb=$('#skuViewErr'); if(eb) eb.textContent='';
+  if(!SKU_VIEW_ID){ if(eb) eb.textContent='יש לבחור תצוגה קודם'; return; }
+  const { error } = await sb.schema('ord').from('sku_views').delete().eq('id', SKU_VIEW_ID);
+  if(error){ if(eb) eb.textContent='המחיקה נכשלה — '+error.message; return; }
+  SKU_VIEW_ID='';
+  toast('התצוגה נמחקה ✓');
+  await loadSkuViews(); renderSkuAdv();
+};
+
+/* ---- פאנל הסינון המתקדם: משפחות להצגה + ניהול תצוגות (סעיפים 1, 3, 4) ---- */
+window.skuFamTgl = (f)=>{
+  const i=SKU_F.fams.indexOf(f);
+  if(i<0) SKU_F.fams.push(f); else SKU_F.fams.splice(i,1);
+  SKU_VIEW_ID=''; renderSkuAdv(); renderSkuViews(); renderSkus();
+};
+window.skuFamAll = (on)=>{
+  SKU_F.fams = on ? [...new Set(SKUS.map(s=>s.family).filter(Boolean))] : [];
+  SKU_VIEW_ID=''; renderSkuAdv(); renderSkuViews(); renderSkus();
+};
+function renderSkuAdv(){
+  const box=$('#sku-adv'); if(!box) return;
+  box.classList.toggle('hidden', !SKU_ADV);
+  if(!SKU_ADV){ box.innerHTML=''; return; }
+  const fams=[...new Set(SKUS.map(s=>s.family).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'he'));
+  box.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+      <b style="font-size:13px;color:var(--navy)">משפחות להצגה — ${SKU_F.fams.length?SKU_F.fams.length+' נבחרו':'הכול'}</b>
+      <span style="display:flex;gap:6px"><button class="tb-clear" onclick="skuFamAll(1)">בחירת הכול</button><button class="tb-clear" onclick="skuFamAll(0)">ניקוי הבחירה</button></span>
+    </div>
+    <div class="sku-fams">${fams.map(f=>`<button class="fam-chip${SKU_F.fams.includes(f)?' on':''}" onclick="skuFamTgl('${jsq(f)}')">${esc(f)}</button>`).join('')}</div>
+    ${skuMgr()?`
+    <div style="border-top:1px solid var(--line);margin-top:12px;padding-top:12px">
+      <b style="font-size:13px;color:var(--navy);display:block;margin-bottom:8px">תצוגות שמורות — הגדרת מנהל</b>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <input id="skuViewName" placeholder="שם התצוגה החדשה" style="width:auto;min-width:180px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;font-size:13px">
+        <label class="tb-lbl" style="display:flex;align-items:center;gap:5px"><input type="checkbox" id="skuViewDef" style="width:auto"> ברירת מחדל לכל המשתמשים</label>
+        <button class="view-chip" onclick="saveSkuView()">💾 שמירת הסינון הנוכחי</button>
+        ${SKU_VIEW_ID?'<button class="view-chip" onclick="setSkuViewDefault()">★ קביעת הנבחרת כברירת מחדל</button><button class="view-chip" onclick="deleteSkuView()">🗑 מחיקת הנבחרת</button>':''}
+      </div>
+      <div class="err" id="skuViewErr"></div>
+      <div class="note">התצוגה שסומנה כברירת מחדל נטענת אוטומטית לכל המשתמשים בכניסה למסך.</div>
+    </div>`
+    :'<div class="note" style="margin-top:10px">תצוגות שמורות מוגדרות על ידי מנהל המערכת.</div>'}`;
+}
+
+/* ---- סנכרון מק"טים ידני — למנהל בלבד (סעיף 7) ----
+   כפתור הסנכרון הראשי (syncPriority) מסנכרן הזמנות וקריאות שירות בלבד
+   ואינו נוגע במק"טים — לחיסכון בתעבורה מול פריוריטי. */
+window.syncSkus = async ()=>{
+  const btn=$('#skuSyncBtn'); if(!btn||btn.disabled) return;
+  const t0=btn.textContent; btn.disabled=true; btn.textContent='⏳ מסנכרן מק״טים…';
+  try{
+    const { data, error } = await sb.functions.invoke('inventory-sync', { body:{} });
+    if(error) alert('סנכרון המק״טים נכשל: '+error.message);
+    else if(data && data.ok===false) alert('סנכרון המק״טים נכשל: '+(data.error||''));
+    else { toast(`סונכרנו ${fmtNum(data&&data.items_synced)} מק״טים ✓`); await loadLeads(); }
+  }catch(e){ alert('סנכרון המק״טים נכשל: '+(e&&e.message?e.message:e)); }
+  btn.disabled=false; btn.textContent=t0;
+};
+
+/* ---- תצוגת רשימה (מובייל) ---- */
 function skuRow(s){
   return `<div class="lead" onclick="openSku('${jsq(s.partname)}')">
     ${s.image_url?`<img class="sku-img" src="${esc(s.image_url)}" loading="lazy">`:'<div class="sku-img sku-none">🏋️</div>'}
     <div style="flex:1"><div class="nm">${esc(s.partdes||s.partname)}</div>
-    <div class="meta">מק"ט ${esc(s.partname)}${s.family?' · '+esc(s.family):''}${s.price?' · '+shekel(s.price):''}</div></div>
+    <div class="meta">מק"ט ${esc(s.partname)}${s.family?' · '+esc(s.family):''}${s.price_vat?' · '+shekel(s.price_vat)+' כולל מע"מ':''}${s.qty!=null?' · מלאי '+fmtNum(s.qty):''}</div></div>
     ${skuActPill(s)}</div>`;
 }
-const fmtNum = v => (v==null||v==='') ? '—' : Number(v).toLocaleString('he-IL');
+
+/* ---- תצוגה טבלאית עם מיון בלחיצה על כותרת (סעיף 2) ---- */
+function skuCell(s,c){
+  if(c.k==='erp_status') return skuActPill(s);
+  if(c.k==='partname') return `<b dir="ltr">${esc(s.partname)}</b>`;
+  /* "איתור" — מוצג רק אם הוא שונה מהמק"ט, בלי כפילות (סעיף 8) */
+  if(c.k==='barcode') return (s.barcode && String(s.barcode).trim()!==String(s.partname).trim()) ? `<span dir="ltr">${esc(s.barcode)}</span>` : '—';
+  if(c.y==='m') return (s[c.k]==null||s[c.k]==='') ? '—' : shekel(s[c.k]);
+  if(c.y==='n') return fmtNum(s[c.k]);
+  return esc(s[c.k]||'—');
+}
+function skuHead(){
+  const th = c => `<th class="srt${SKU_F.sort===c.k?' on':''}"${c.w?` style="width:${c.w}"`:''} onclick="skuSortBy('${c.k}')" title="מיון לפי ${esc(c.t)}">${esc(c.t)}<span class="ar">${SKU_F.sort===c.k?(SKU_F.dir==='desc'?'▼':'▲'):'⇅'}</span></th>`;
+  return `<th class="rownum">#</th><th style="width:50px">תמונה</th>`+SKU_COLS.map(th).join('');
+}
 function skuTable(list){
-  if(!list.length) return '<div class="empty">אין מק"טים להצגה</div>';
-  /* ברקוד מוצג רק אם הוא שונה מהמק"ט — בלי כפילות (הערת רומן 27/07) */
-  const bc = s => (s.barcode && String(s.barcode).trim()!==String(s.partname).trim()) ? esc(s.barcode) : '—';
+  if(!list.length) return '<div class="empty">אין מק"טים להצגה בסינון הזה</div>';
   const rows=list.slice(0,pgLim('sku')).map((s,i)=>`<tr onclick="openSku('${jsq(s.partname)}')">
     <td class="rownum">${i+1}</td>
     <td>${s.image_url?`<img class="sku-img" style="width:38px;height:38px" src="${esc(s.image_url)}" loading="lazy" onclick="event.stopPropagation();window.open('${jsq(s.image_full||s.image_url)}','_blank')">`:'<span style="color:#c3cbd4">—</span>'}</td>
-    <td dir="ltr"><b>${esc(s.partname)}</b></td><td class="td-desc">${esc(s.partdes||'—')}</td><td>${esc(s.family||'—')}</td>
-    <td>${skuActPill(s)}</td>
-    <td>${s.price?shekel(s.price):'—'}</td>
-    <td>${s.install_price_iron!=null?shekel(s.install_price_iron):'—'}</td>
-    <td>${s.install_price_contractor!=null?shekel(s.install_price_contractor):'—'}</td>
-    <td>${fmtNum(s.pallet_load_factor)}</td>
-    <td>${s.qty!=null&&s.qty!==''?fmtNum(s.qty):'—'}</td><td dir="ltr">${bc(s)}</td></tr>`).join('');
-  return `<div class="tbl-wrap"><table class="tbl tbl-center"><thead><tr><th class="rownum">#</th><th style="width:50px">תמונה</th><th style="width:110px">מק"ט</th><th>תיאור</th><th>משפחה</th><th>פעיל</th><th>מחיר</th><th>התקנה איירון</th><th>התקנה קבלני</th><th>מקדם העמסה</th><th>מלאי</th><th>ברקוד</th></tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('sku',list.length,'מק"טים')}`;
+    ${SKU_COLS.map(c=>`<td${c.k==='partdes'?' class="td-desc"':''}>${skuCell(s,c)}</td>`).join('')}</tr>`).join('');
+  return `<div class="tbl-wrap"><table class="tbl tbl-center"><thead><tr>${skuHead()}</tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('sku',list.length,'מק"טים')}`;
 }
 function renderSkus(){
   const list=filteredSkus();
-  $('#skus-list').innerHTML = wideScreen() ? skuTable(list) : capped(list, skuRow, 'אין מק"טים להצגה');
+  const box=$('#skus-list');
+  if(box) box.innerHTML = wideScreen() ? skuTable(list) : capped(list, skuRow, 'אין מק"טים להצגה');
+  const cnt=$('#skuCount');
+  if(cnt) cnt.textContent = list.length===SKUS.length ? `${fmtNum(SKUS.length)} מק״טים` : `${fmtNum(list.length)} מתוך ${fmtNum(SKUS.length)} מק״טים`;
+  const ab=$('#skuAdvBtn');
+  if(ab) ab.textContent = SKU_F.fams.length ? `⚙️ סינון מתקדם · ${SKU_F.fams.length} משפחות` : '⚙️ סינון מתקדם';
 }
-/* כרטיס פריט — פרופיל מק"ט מלא */
+
+/* ---- כרטיס פריט — פרופיל מק"ט מלא (סעיפים 6, 9, 10, 11, 12) ---- */
 window.openSku = (pn)=>{
   const s = SKUS.find(x=>String(x.partname)===String(pn)); if(!s) return;
-  const mgr = ['admin','manager'].includes(ME.role);
+  const mgr = skuMgr();
+  const unit = esc(s.unit||'');
   const bals = Array.isArray(s.bals) ? s.bals : [];
   const balRows = bals.map(b=>`<div class="row"><span class="k">מחסן ${esc(b.loc??'—')} · ${b.d?new Date(b.d+'T00:00').toLocaleDateString('he-IL'):'—'}</span><span class="v">${fmtNum(b.qty)} ${esc(s.unit||'יח\'')}</span></div>`).join('');
+  const kpi = (l,v,cls)=>`<div class="sku-kpi${cls?' '+cls:''}"><span class="kl">${l}</span><span class="kv">${v}</span></div>`;
+  const money = v => (v==null||v==='') ? '—' : shekel(v);
+  const exp = Number(s.expected_qty||0);
   $('#skuSheet').innerHTML = `
     <h3 style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">${esc(s.partdes||s.partname)} ${skuActPill(s)}</h3>
-    <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:6px">
-      ${s.image_url?`<img src="${esc(s.image_full||s.image_url)}" style="width:120px;height:120px;object-fit:cover;border-radius:12px;border:1px solid var(--line);cursor:pointer" onclick="window.open('${jsq(s.image_full||s.image_url)}','_blank')">`:'<div class="sku-img sku-none" style="width:120px;height:120px;font-size:40px">🏋️</div>'}
-      <div style="flex:1;min-width:220px">
+    <div class="sku-hero">
+      ${s.image_url?`<img class="ph" src="${esc(s.image_full||s.image_url)}" loading="lazy" onclick="window.open('${jsq(s.image_full||s.image_url)}','_blank')" title="פתיחת התמונה בגודל מלא">`:'<div class="ph sku-none" style="display:flex;align-items:center;justify-content:center;font-size:44px">🏋️</div>'}
+      <div class="pi">
         <div class="row"><span class="k">מק"ט</span><span class="v" dir="ltr">${esc(s.partname)}</span></div>
-        ${s.barcode&&String(s.barcode).trim()!==String(s.partname).trim()?`<div class="row"><span class="k">ברקוד</span><span class="v" dir="ltr">${esc(s.barcode)}</span></div>`:''}
+        ${s.barcode&&String(s.barcode).trim()!==String(s.partname).trim()?`<div class="row"><span class="k">איתור</span><span class="v" dir="ltr">${esc(s.barcode)}</span></div>`:''}
         <div class="row"><span class="k">משפחה</span><span class="v">${esc(s.family||'—')}</span></div>
-        <div class="row"><span class="k">יחידה</span><span class="v">${esc(s.unit||'—')}</span></div>
+        <div class="row"><span class="k">יחידת מידה</span><span class="v">${esc(s.unit||'—')}</span></div>
         ${s.supplier?`<div class="row"><span class="k">ספק</span><span class="v">${esc(s.supplier)}</span></div>`:''}
       </div>
     </div>
-    <h2 class="sec">מחירים</h2>
-    <div class="row"><span class="k">מחיר מחירון (פריוריטי)</span><span class="v">${s.price?shekel(s.price):'—'}</span></div>
-    ${mgr?`<div class="row"><span class="k">עלות (פריוריטי)</span><span class="v">${s.cost?shekel(s.cost):'—'}</span></div>`:''}
-    ${mgr?`
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:10px">
-      <div class="field"><label>מחיר התקנה איירון (₪)</label><input id="sk-inst-iron" type="text" inputmode="decimal" dir="ltr" placeholder="לדוגמה 1250 או 1,5" value="${s.install_price_iron??''}"></div>
-      <div class="field"><label>מחיר התקנה קבלני (₪)</label><input id="sk-inst-cont" type="text" inputmode="decimal" dir="ltr" placeholder="לדוגמה 900" value="${s.install_price_contractor??''}"></div>
-      <div class="field"><label>מקדם העמסה משטחי</label><input id="sk-pallet" type="text" inputmode="decimal" dir="ltr" placeholder="לדוגמה 0.25" value="${s.pallet_load_factor??''}"></div>
+
+    <div class="sku-box">
+      <div class="bx-t">💰 מחירון</div>
+      <div class="sku-grid">
+        ${kpi('מחירון בסיס — לפני מע"מ', money(s.price_base))}
+        ${kpi('מחירון בסיס — כולל מע"מ', money(s.price_vat))}
+        ${mgr?kpi('עלות (פריוריטי)', money(s.cost)):''}
+      </div>
+      <div class="note">המחירון נמשך מפריוריטי. המחיר לפני מע"מ מחושב מהמחיר כולל מע"מ (18%).</div>
     </div>
-    <button class="btn green" style="margin-top:4px" onclick="saveSku('${jsq(s.partname)}')">שמירת נתוני התקנה והעמסה</button>
-    <div class="err" id="sk-err"></div>`
-    :`<div class="row"><span class="k">מחיר התקנה איירון</span><span class="v">${s.install_price_iron!=null?shekel(s.install_price_iron):'—'}</span></div>
-      <div class="row"><span class="k">מחיר התקנה קבלני</span><span class="v">${s.install_price_contractor!=null?shekel(s.install_price_contractor):'—'}</span></div>
-      <div class="row"><span class="k">מקדם העמסה משטחי</span><span class="v">${fmtNum(s.pallet_load_factor)}</span></div>`}
-    <h2 class="sec">מלאי ותנועה</h2>
-    <div class="row"><span class="k">מלאי נוכחי</span><span class="v"><b>${s.qty!=null?fmtNum(s.qty):'—'}</b> ${esc(s.unit||'')}</span></div>
-    <div class="row"><span class="k">בהזמנות לקוח פתוחות</span><span class="v">${fmtNum(s.ord)}</span></div>
-    <div class="row"><span class="k">בהזמנות רכש פתוחות</span><span class="v">${fmtNum(s.pord)}</span></div>
-    <div class="row"><span class="k">סה"כ נמכר (12 חוד')</span><span class="v">${fmtNum(s.sales_total)}</span></div>
-    ${balRows?`<h2 class="sec">מלאי לפי מחסן</h2>${balRows}`:''}
-    <div class="note">שדות הפריוריטי (מחיר, עלות, מלאי, סטטוס פעיל) מסונכרנים אוטומטית ואינם ניתנים לעריכה כאן.</div>`;
+
+    <div class="sku-box install">
+      <div class="bx-t">🛠 מחירי התקנה ומקדם העמסה — נתוני איירון (לא מפריוריטי)</div>
+      ${mgr?`
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
+        <div class="field"><label>מחיר התקנה איירון (₪)</label><input id="sk-inst-iron" type="text" inputmode="decimal" dir="ltr" placeholder="לדוגמה 1250 או 1,5" value="${s.install_price_iron??''}"></div>
+        <div class="field"><label>מחיר התקנה קבלני (₪)</label><input id="sk-inst-cont" type="text" inputmode="decimal" dir="ltr" placeholder="לדוגמה 900" value="${s.install_price_contractor??''}"></div>
+        <div class="field"><label>מקדם העמסה משטחי</label><input id="sk-pallet" type="text" inputmode="decimal" dir="ltr" placeholder="לדוגמה 0.25" value="${s.pallet_load_factor??''}"></div>
+      </div>
+      <button class="btn green" style="margin-top:8px" onclick="saveSku('${jsq(s.partname)}')">שמירת נתוני התקנה והעמסה</button>
+      <div class="err" id="sk-err"></div>`
+      :`<div class="sku-grid">
+        ${kpi('התקנה איירון', money(s.install_price_iron))}
+        ${kpi('התקנה קבלני', money(s.install_price_contractor))}
+        ${kpi('מקדם העמסה משטחי', fmtNum(s.pallet_load_factor))}
+      </div>`}
+    </div>
+
+    <div class="sku-box">
+      <div class="bx-t">📦 מלאי וזמינות</div>
+      <div class="sku-grid">
+        ${kpi('מלאי זמין', `${fmtNum(s.qty)} ${unit}`)}
+        ${kpi('מלאי זמין למכירה', fmtNum(s.sell_qty))}
+        ${kpi('הזמנות לקוח', fmtNum(s.ord))}
+        ${kpi('מלאי צפוי', fmtNum(s.expected_qty), exp<0?'neg':'ok')}
+        ${kpi('הזמנות רכש', fmtNum(s.pord))}
+      </div>
+      <div class="note">מלאי צפוי = מלאי זמין למכירה פחות הזמנות לקוח, בלי להביא בחשבון הזמנות רכש.</div>
+      ${balRows?`<div style="margin-top:10px"><b style="font-size:12.5px;color:#64748b">מלאי לפי מחסן</b>${balRows}</div>`:''}
+    </div>
+
+    <div class="sku-box">
+      <div class="bx-t">📈 מכירות</div>
+      <div class="sku-grid">
+        ${kpi('נמכר 3 חודשים', fmtNum(s.sold_3m))}
+        ${kpi('נמכר 6 חודשים', fmtNum(s.sold_6m))}
+        ${kpi('נמכר 12 חודשים', fmtNum(s.sales_total))}
+      </div>
+      <div class="note">הכמות כוללת גם מלאי שיצא בפועל וגם מלאי שהוזמן וטרם יצא.</div>
+    </div>
+
+    <div class="note">שדות פריוריטי (מחירון, עלות, מלאי, זמינות, מכירות, סטטוס פעיל) מסונכרנים אוטומטית כל יום ב-07:00, א׳–ו׳, ואינם ניתנים לעריכה כאן.</div>`;
   mountCard('skuModal', ()=>openSku(pn));
 };
 window.saveSku = async (pn)=>{
@@ -1559,7 +1810,7 @@ async function loadLeads(){
     oldPart('service_calls'),   /* ישירות ממערכת ההזמנות הישנה — מקור האמת */
     sb.schema('ord').from('teams').select('id,name,color,active,sort_order').order('sort_order',{ascending:true}),
     oldPart('sync_log'),        /* ישירות ממערכת ההזמנות הישנה — מקור האמת */
-    sb.schema('ord').from('inv_items').select('partname,partdes,price,family,qty,barcode,image_url,image_full,erp_status,unit,cost,supplier,sales_total,ord,pord,bals,install_price_iron,install_price_contractor,pallet_load_factor').order('partname',{ascending:true}).limit(10000),
+    sb.schema('ord').from('inv_items').select('partname,partdes,price,family,qty,barcode,image_url,image_full,erp_status,unit,cost,supplier,sales_total,ord,pord,bals,install_price_iron,install_price_contractor,pallet_load_factor,sell_qty,expected_qty,sold_3m,sold_6m,price_vat,price_base').order('partname',{ascending:true}).limit(10000),
     sb.schema('ord').from('protocols').select('id,order_id,call_id,order_number,customer_name,phone,doc_type,status,sent_at,signed_at,signer_name,token').order('sent_at',{ascending:false}).limit(10000),
     sb.schema('ord').from('settings').select('key,value').order('key',{ascending:true})
   ]);

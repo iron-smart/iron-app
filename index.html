@@ -12,11 +12,58 @@
   button{ font-family:inherit; cursor:pointer; }
   .hidden{ display:none !important; }
 
-  /* התחברות */
-  #login{ min-height:100vh; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,var(--navy),var(--dark)); padding:20px; }
-  #login .card{ background:#fff; border-radius:18px; padding:34px 26px; width:100%; max-width:380px; box-shadow:0 20px 60px rgba(0,0,0,.3); }
-  #login h1{ text-align:center; color:var(--navy); margin:0 0 4px; font-size:24px; }
-  #login .sub{ text-align:center; color:#64748b; margin:0 0 24px; font-size:14px; }
+  /* ===== מסך ההתחברות — עוצב מחדש בסבב 4 (28/07/2026) =====
+     רומן: "תוסיף לוגו שם בהתחברות ולא סמל. באופן כללי גם תשפר משמעותית את כל מסך ההתחברות".
+     המבנה: כרטיס דו-טורי — פאנל מותג כהה (בצד ימין ב-RTL) עם לוגו הרוחב הלבן,
+     ופאנל טופס לבן. במסכים צרים הפאנלים נערמים. כל הכללים ממוקדים תחת #login
+     כדי שלא ידרסו את .field/.btn/.err המשותפים לשאר המערכת. */
+  #bootsplash{ position:fixed; inset:0; z-index:9999; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,var(--navy),var(--dark)); }
+  #bootsplash .sp{ width:44px; height:44px; border-radius:50%; border:3px solid rgba(255,255,255,.2); border-top-color:#9cd326; animation:bspin .8s linear infinite; }
+  @keyframes bspin{ to{ transform:rotate(360deg); } }
+  #login{ min-height:100vh; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,var(--navy),var(--dark)); padding:20px; position:relative; overflow:hidden; }
+  #login::before{ content:''; position:absolute; width:620px; height:620px; border-radius:50%; background:radial-gradient(circle at 30% 30%, rgba(156,211,38,.16), transparent 65%); top:-220px; inset-inline-start:-180px; pointer-events:none; }
+  #login::after{ content:''; position:absolute; width:520px; height:520px; border-radius:50%; background:radial-gradient(circle at 60% 60%, rgba(106,159,133,.18), transparent 65%); bottom:-200px; inset-inline-end:-160px; pointer-events:none; }
+  #login .card{ position:relative; z-index:1; background:#fff; border-radius:20px; width:100%; max-width:860px; box-shadow:0 30px 80px rgba(0,0,0,.42); overflow:hidden; display:grid; grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr); padding:0; }
+  #login .brand{ background:linear-gradient(160deg,#062b45,#03151f); color:#fff; padding:38px 30px; display:flex; flex-direction:column; justify-content:center; gap:14px; position:relative; }
+  #login .brand::after{ content:''; position:absolute; inset-inline-start:0; top:12%; bottom:12%; width:3px; background:linear-gradient(180deg,transparent,#9cd326,transparent); opacity:.7; }
+  #login .brand img.wm{ width:100%; max-width:230px; height:auto; }
+  #login .brand .wmtxt{ font-size:28px; font-weight:900; letter-spacing:2px; }
+  #login .brand h2{ margin:6px 0 0; font-size:19px; font-weight:800; }
+  #login .brand p{ margin:0; font-size:13.5px; line-height:1.7; color:#b9c9d6; }
+  #login .brand .pts{ display:flex; flex-direction:column; gap:7px; margin-top:6px; }
+  #login .brand .pts span{ display:flex; align-items:center; gap:8px; font-size:13px; color:#d6e2ea; }
+  #login .brand .pts span::before{ content:''; width:6px; height:6px; border-radius:50%; background:#9cd326; flex:none; }
+  #login .brand .ver{ margin-top:10px; font-size:11.5px; color:#7f95a6; letter-spacing:.4px; }
+  #login .form{ padding:38px 34px; display:flex; flex-direction:column; justify-content:center; }
+  #login .form h1{ margin:0 0 4px; color:var(--navy); font-size:24px; font-weight:900; }
+  #login .form .sub{ margin:0 0 22px; color:#64748b; font-size:13.5px; }
+  #login .field{ margin-bottom:14px; position:relative; }
+  #login .field label{ display:block; font-size:12.5px; font-weight:700; color:#475569; margin-bottom:5px; }
+  #login .field input{ width:100%; box-sizing:border-box; padding:12px 13px; border:1.5px solid #dbe3ec; border-radius:11px; font-size:14.5px; font-family:inherit; background:#fbfcfd; transition:border-color .15s, box-shadow .15s, background .15s; }
+  #login .field input:focus{ outline:none; border-color:var(--green); background:#fff; box-shadow:0 0 0 3px rgba(106,159,133,.16); }
+  #login .field.pw input{ padding-inline-end:60px; }
+  #login .pw-eye{ position:absolute; inset-inline-end:10px; top:31px; background:none; border:none; font-family:inherit; font-size:12px; font-weight:700; color:#64748b; cursor:pointer; padding:6px 4px; }
+  #login .pw-eye:hover{ color:var(--navy); }
+  #login .row2{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin:2px 0 18px; flex-wrap:wrap; }
+  #login .rmb{ display:flex; align-items:center; gap:7px; font-size:13px; color:#475569; cursor:pointer; }
+  #login .rmb input{ width:16px; height:16px; accent-color:var(--green); cursor:pointer; }
+  #login .lnk{ background:none; border:none; font-family:inherit; font-size:13px; font-weight:700; color:var(--navy); cursor:pointer; padding:2px; text-decoration:underline; text-underline-offset:3px; }
+  #login .lnk:hover{ color:var(--green); }
+  #login .btn{ width:100%; background:linear-gradient(135deg,var(--navy),#0b3f63); color:#fff; border:none; border-radius:11px; padding:13px; font-size:15.5px; font-weight:800; font-family:inherit; cursor:pointer; box-shadow:0 6px 18px rgba(0,45,72,.24); transition:transform .12s, box-shadow .15s, opacity .15s; }
+  #login .btn:hover{ box-shadow:0 9px 24px rgba(0,45,72,.32); transform:translateY(-1px); }
+  #login .btn:active{ transform:translateY(0); }
+  #login .btn:disabled{ opacity:.65; cursor:default; transform:none; }
+  #login .err{ color:var(--red); font-size:13px; margin-top:12px; min-height:18px; text-align:center; }
+  #login .ok{ color:#1faa53; font-size:13px; margin-top:6px; min-height:18px; text-align:center; }
+  #login .foot{ margin-top:18px; padding-top:14px; border-top:1px solid var(--line); font-size:11.5px; color:#94a3b8; text-align:center; line-height:1.6; }
+  @media(max-width:760px){
+    #login .card{ grid-template-columns:1fr; max-width:420px; }
+    #login .brand{ padding:24px 24px 20px; gap:10px; text-align:center; align-items:center; }
+    #login .brand::after{ display:none; }
+    #login .brand .pts, #login .brand h2{ display:none; }
+    #login .brand img.wm{ max-width:180px; }
+    #login .form{ padding:26px 22px 28px; }
+  }
   .field{ margin-bottom:14px; }
   .field label{ display:block; font-size:13px; color:#475569; margin-bottom:6px; }
   .field input{ width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:10px; font-size:16px; }
@@ -105,9 +152,16 @@
   .topnav{ position:sticky; top:0; z-index:30; display:flex; align-items:center; gap:12px; background:linear-gradient(135deg,#061827,#0b3552); color:#fff; padding:9px 14px; min-height:52px; box-sizing:border-box; }
   .topnav .burger{ background:rgba(255,255,255,.12); border:none; color:#fff; font-size:19px; border-radius:8px; padding:5px 12px; }
   .brand-wm{ height:36px; width:auto; }
-  .user-chip{ display:flex; align-items:center; gap:8px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18); border-radius:999px; padding:4px 12px 4px 6px; font-size:13px; }
-  .user-chip .av{ width:26px; height:26px; border-radius:50%; background:var(--green); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; }
-  .user-chip .rle{ opacity:.75; font-size:12px; }
+  /* .user-chip הוסר בסבב 4 (28/07/2026) לבקשת רומן — "נא להוריד את כפתור
+     היציאה וכפתור המשתמש כי גם ככה יש בפאנל הימני בצד ימין". שם המשתמש וההרשאה
+     מוצגים כעת בפאנל הימני בלבד, וכפתור היציאה הועבר לשם, ליד שורת המשתמש. */
+  .side-user-row{ display:flex; align-items:stretch; border-top:1px solid rgba(255,255,255,.1); }
+  .side-user-row .side-user{ flex:1; min-width:0; border-top:0; }
+  .side-user-row .side-user > span:last-child{ min-width:0; overflow:hidden; }
+  .side-user-row .side-user b{ display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .side-out{ flex:none; width:44px; background:none; border:0; border-inline-start:1px solid rgba(255,255,255,.1); color:#cfd8e3; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
+  .side-out:hover{ color:#fff; background:rgba(255,255,255,.08); }
+  .side-out svg{ width:18px; height:18px; }
   .topnav .spacer{ flex:1; }
   .topnav .who2{ font-size:13px; opacity:.92; }
   .topnav button.out{ background:rgba(255,255,255,.15); color:#fff; border:none; border-radius:8px; padding:7px 12px; font-size:13px; }
@@ -134,27 +188,31 @@
   .frame-wrap{ height:calc(100vh - 82px); }
   .frame-wrap iframe{ width:100%; height:100%; border:none; border-radius:0; background:#fff; }
 
-  /* טבלה בעיצוב הלוח */
+  /* ===== טבלאות המערכת — אחידות צבע ויישור · סבב 4 (28/07/2026) =====
+     רומן: "כל השורות של הטבלאות נראות ככה משהו בצבעים התפקשש נא לסדר בכל המערכת.
+     כמו כן יש לשים לב שהכל מיושר וממורכז."
+     שתי סיבות לכתמים: (1) כל תא כותרת צייר לעצמו linear-gradient נפרד, ועם
+     border-collapse:collapse כל תא התחיל את המעבר מחדש — ולכן נוצרה רצועה מנומרת;
+     (2) נצברו שלוש הגדרות סותרות לרקע השורות ולריחוף (#f6f9fb, #f6f7f6, #eef4f2).
+     כאן הכול אוחד: צבע כותרת אחיד ומלא ללא גרדיאנט, פס זברה אחד, ריחוף אחד,
+     והכול מיושר וממורכז אנכית ואופקית. */
   .tbl-wrap{ background:#fff; border:1px solid var(--line); border-radius:12px; overflow:auto; }
-  table.tbl{ width:100%; border-collapse:collapse; font-size:14px; }
-  .tbl th{ text-align:right; color:#fff; background:linear-gradient(135deg,#061827,#0b3552); font-weight:700; font-size:13px; padding:10px 12px; white-space:nowrap; position:sticky; top:0; z-index:3; }
-  .tbl td{ padding:9px 12px; border-bottom:1px solid #eef1f4; white-space:nowrap; }
+  table.tbl{ width:100%; border-collapse:collapse; font-size:14px; background:#fff; }
+  .tbl thead, .tbl thead tr{ background:var(--navy); }
+  .tbl th{ text-align:center; vertical-align:middle; color:#fff; background:var(--navy); background-image:none; font-weight:700; font-size:13px; padding:10px 12px; white-space:nowrap; position:sticky; top:0; z-index:3; box-shadow:inset 0 -1px 0 rgba(255,255,255,.14); }
+  .tbl th + th{ border-inline-start:1px solid rgba(255,255,255,.08); }
+  .tbl td{ text-align:center; vertical-align:middle; padding:9px 12px; border-bottom:1px solid #eef1f4; white-space:nowrap; max-width:200px; overflow:hidden; text-overflow:ellipsis; line-height:1.35; }
   /* תיקון ממצא 23 — רק עוטף שיש בתוכו טבלה מקבל גובה מרבי, כדי שהגלילה תתרחש בתוכו והכותרת תידבק */
   .tbl-wrap:has(> table.tbl){ max-height:calc(100vh - 215px); }
   /* תיקון ממצא 17 — רקע מוצלל מאחורי הסרגל הנפתח במובייל */
   #sideBackdrop{ display:none; position:fixed; inset:52px 0 0 0; background:rgba(6,24,39,.45); z-index:28; }
   @media(min-width:801px){ #sideBackdrop{ display:none !important; } }
-  .tbl tbody tr{ cursor:pointer; }
-  .tbl tbody tr:hover{ background:#f6f9fb; }
+  .tbl tbody tr{ cursor:pointer; background:#fff; }
+  .tbl tbody tr:nth-child(even){ background:#f7f9fb; }
+  .tbl tbody tr:hover{ background:#eaf1f6; }
   .tbl tbody tr:last-child td{ border-bottom:none; }
-  /* טבלת מקטים — כותרות ותאים ממורכזים, תיאור צמוד לימין (הערת רומן 27/07) */
-  table.tbl-center th, table.tbl-center td{ text-align:center; vertical-align:middle; }
-  table.tbl-center td.td-desc{ text-align:right; white-space:normal; min-width:220px; }
-
-  /* ===== שפת הטבלה של הלוח הישן — על כל המערכת (איפיון 8, סבב 3) ===== */
-  .tbl tbody tr:nth-child(even){ background:#f6f7f6; }
-  .tbl tbody tr:hover{ background:#eef4f2; }
-  .tbl td{ max-width:200px; overflow:hidden; text-overflow:ellipsis; line-height:1.35; }
+  /* טקסט חופשי ארוך נשאר צמוד לימין וגולש לשורות — מיושר, אבל קריא */
+  .tbl td.td-desc, .tbl td.txt-start{ text-align:right; white-space:normal; min-width:220px; }
   .rownum{ width:38px; min-width:38px; text-align:center; color:#94a3b8; font-size:11.5px; font-weight:600; }
   .note-preview{ font-size:11px; color:#8a9199; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
   .count-line2{ color:#64748b; font-size:12.5px; padding:8px 4px; }
@@ -224,7 +282,6 @@
     .tbl-wrap:has(> table.tbl){ max-height:calc(100vh - 168px); }
     #board-wrap{ height:calc(100vh - 165px); }
     #lastSync{ display:none; }
-    .user-chip .rle{ display:none; }
     .brand-wm{ height:28px; }
   }
 
@@ -286,10 +343,7 @@
   .sku-box .bx-t{ font-size:12.5px; font-weight:800; color:var(--navy); margin:0 0 7px; }
   .sku-box.install .bx-t{ color:#8a6410; }
   .sku-box .note{ font-size:11px; margin-top:6px; }
-  .tbl th.srt{ cursor:pointer; user-select:none; }
-  .tbl th.srt:hover{ background:linear-gradient(135deg,#0b3552,#12507a); }
-  .tbl th.srt .ar{ font-size:10px; opacity:.55; margin-inline-start:3px; }
-  .tbl th.srt.on .ar{ opacity:1; color:#ffd479; }
+  /* כללי המיון אוחדו בסבב 4 לבלוק אחד — ראו "מיון בלחיצה על כותרת עמודה" בהמשך. */
   .sku-adv{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px; margin-bottom:12px; }
   .sku-adv .fx{ display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:8px; margin-bottom:10px; }
   .sku-adv .fx label{ display:block; font-size:11.5px; color:#64748b; font-weight:700; margin-bottom:3px; }
@@ -426,12 +480,23 @@
   .waze-ico svg{ width:16px; height:16px; display:block; }
   .addr-cell{ display:flex; align-items:center; gap:7px; }
   .addr-cell .ac-txt{ min-width:0; }
-  /* מיון בלחיצה על כותרת עמודה */
-  .tbl th.srt{ cursor:pointer; user-select:none; }
-  .tbl th.srt:hover{ background:linear-gradient(135deg,#0b3552,#14618f); }
-  .tbl th .sar{ font-size:10px; opacity:.4; margin-inline-start:5px; }
-  .tbl th.on{ background:linear-gradient(135deg,#0b3552,#14618f); }
-  .tbl th.on .sar{ opacity:1; color:#7dd3fc; }
+  /* ===== מיון בלחיצה על כותרת עמודה — מאוחד לכל המערכת · סבב 4 (28/07/2026) =====
+     רומן: "להוסיף לכל טבלה אפשרות מיון בלחיצה על השורה מלמטה למעלה או הפוך...
+     אפשר לשנות את החץ לירוק."
+     עד סבב 4 היו שתי הגדרות נפרדות ומתנגשות (מסך מק"טים + מסך הזמנות), כל אחת עם
+     גרדיאנט אחר וחץ בצבע אחר (צהוב מול תכלת) — וזה חלק ממה שיצר את חוסר האחידות.
+     כאן הכול מאוחד: חץ ירוק מותג אחד, סימון עמודה ממוינת בקו תחתון ירוק בלבד.
+     .srt  = טבלאות שמציירות את החץ בעצמן בתוך ה-HTML (מק"טים, הזמנות).
+     .gsrt = טבלאות שמקבלות מיון אוטומטי מהמנוע הגנרי — החץ מצויר ב-::after. */
+  .tbl th.srt, .tbl th.gsrt{ cursor:pointer; user-select:none; }
+  .tbl th.srt:hover, .tbl th.gsrt:hover{ background:#0b3f63; }
+  .tbl th.srt:focus-visible, .tbl th.gsrt:focus-visible{ outline:2px solid #9cd326; outline-offset:-2px; }
+  .tbl th .ar, .tbl th .sar{ font-size:10px; opacity:.45; margin-inline-start:5px; font-weight:400; }
+  .tbl th.gsrt::after{ content:'\2195'; font-size:10px; opacity:.45; margin-inline-start:5px; font-weight:400; }
+  .tbl th.srt.on, .tbl th.on, .tbl th.gsrt.asc, .tbl th.gsrt.desc{ background:#0b3f63; box-shadow:inset 0 -3px 0 #9cd326, inset 0 -1px 0 rgba(255,255,255,.14); }
+  .tbl th.srt.on .ar, .tbl th.on .sar{ opacity:1; color:#9cd326; }
+  .tbl th.gsrt.asc::after{ content:'\25B2'; opacity:1; color:#9cd326; }
+  .tbl th.gsrt.desc::after{ content:'\25BC'; opacity:1; color:#9cd326; }
   .tbl td.odate{ white-space:nowrap; font-size:12.5px; color:#475569; font-weight:600; }
   .tools-bar .tb-clear{ background:#fff; border:1px solid var(--line); border-radius:9px; padding:8px 11px; font-size:12.5px; color:#64748b; cursor:pointer; font-weight:600; }
   .tools-bar .tb-clear:hover{ background:#f1f5f9; color:#0f172a; }
@@ -476,16 +541,38 @@
   </div>
 </div>
 
-<!-- ===== התחברות ===== -->
-<div id="login">
+<!-- מסך טעינה — חוסם את ההבזק של מסך ההתחברות עד שידוע אם קיים סשן (סבב 4) -->
+<div id="bootsplash"><div class="sp"></div></div>
+<!-- ===== התחברות — עוצב מחדש בסבב 4 (28/07/2026) =====
+     #login מוסתר מלכתחילה (class="hidden") ומוצג רק אחרי ש-boot() קבע שאין סשן תקף.
+     בלי זה הכרטיס הובזק לרגע בכל טעינה ואז נעלם — מה שנראה כמו "מעביר אותי ישר פנימה". -->
+<div id="login" class="hidden">
   <div class="card">
-    <div style="text-align:center;margin:-4px 0 8px;"><img class="brand-logo" alt="איירון פיטנס" style="width:96px;"></div>
-    <h1>איירון פיטנס</h1>
-    <p class="sub">המערכת המאוחדת · גרסה 5.8.0</p>
-    <div class="field"><label for="email">דוא"ל</label><input id="email" type="email" autocomplete="username" placeholder="name@ironfitness.co.il"></div>
-    <div class="field"><label for="password">סיסמה</label><input id="password" type="password" autocomplete="current-password" placeholder="••••••••"></div>
-    <button class="btn" id="loginBtn">כניסה</button>
-    <div class="err" id="loginErr"></div>
+    <div class="brand">
+      <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS">
+      <h2>המערכת המאוחדת</h2>
+      <p>ניהול מכירות, הזמנות, מלאי ומחירון — הכול במקום אחד, מסונכרן מול פריוריטי.</p>
+      <div class="pts">
+        <span>לידים, לקוחות ועסקאות</span>
+        <span>מחירון ומלאי בזמן אמת</span>
+        <span>הזמנות, התקנות והנהלת חשבונות</span>
+      </div>
+      <div class="ver">גרסה 5.8.0</div>
+    </div>
+    <div class="form">
+      <h1>ברוכים הבאים</h1>
+      <p class="sub">התחברו כדי להיכנס למערכת</p>
+      <div class="field"><label for="email">דוא"ל</label><input id="email" type="email" autocomplete="username" placeholder="name@ironfitness.co.il"></div>
+      <div class="field pw"><label for="password">סיסמה</label><input id="password" type="password" autocomplete="current-password" placeholder="••••••••"><button type="button" class="pw-eye" id="pwEye" aria-label="הצגת הסיסמה">הצג</button></div>
+      <div class="row2">
+        <label class="rmb" for="rememberMe"><input type="checkbox" id="rememberMe">השאר אותי מחובר</label>
+        <button type="button" class="lnk" id="forgotBtn">שכחתי סיסמה</button>
+      </div>
+      <button class="btn" id="loginBtn">כניסה למערכת</button>
+      <div class="err" id="loginErr"></div>
+      <div class="ok" id="loginOk"></div>
+      <div class="foot">איירון פיטנס בע"מ · מערכת פנימית<br>הגישה מותרת למשתמשים מורשים בלבד</div>
+    </div>
   </div>
 </div>
 
@@ -496,9 +583,7 @@
     <img class="brand-wm" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'">
     <div class="spacer"></div>
     <span class="who2" id="lastSync" title="סנכרון אחרון מפריוריטי"></span>
-    <button class="out" id="syncBtn" onclick="syncPriority()">🔄 סנכרון פריוריטי</button>
-    <span class="user-chip"><span class="av" id="uAv">—</span><b id="uName">—</b><span class="rle" id="uRole">—</span></span>
-    <button class="out" id="logoutBtn">יציאה</button>
+    <button class="out" id="syncBtn" onclick="syncPriority()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:-2px;margin-inline-end:5px;"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>סנכרון פריוריטי</button>
   </div>
   <div class="shell">
   <aside id="side">
@@ -535,9 +620,12 @@
     </div>
     <button class="nav-item" data-tab="set">הגדרות <span class="nav-arrow">‹</span></button>
     </nav>
-    <div class="side-user" onclick="openProfile()" title="אזור אישי" role="button" tabindex="0" aria-label="אזור אישי">
-      <span class="init" id="sideInit">—</span>
-      <span><b id="sideName">—</b><small id="sideRole">אזור אישי</small></span>
+    <div class="side-user-row">
+      <div class="side-user" onclick="openProfile()" title="אזור אישי" role="button" tabindex="0" aria-label="אזור אישי">
+        <span class="init" id="sideInit">—</span>
+        <span><b id="sideName">—</b><small id="sideRole">אזור אישי</small></span>
+      </div>
+      <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
     <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.8.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
@@ -836,39 +924,116 @@ const mdPill = (v, colors) => {
             : `<span class="pill" style="background:#f1f5f9;color:#475569">${esc(v)}</span>`;
 };
 
+/* ===== התחברות — נבנתה מחדש בסבב 4 (28/07/2026) =====
+   הבאג שרומן דיווח עליו: "זה נטען ואז ישר מעביר אותי למערכת בלי באמת להתחבר".
+   שני דברים נפרדים גרמו לזה:
+   1. #login לא היה מוסתר ב-HTML, ולכן הכרטיס הוצג לרגע בכל טעינה ואז נעלם
+      ברגע ש-getSession החזיר סשן שמור. ההבזק הזה הוא מה שנראה כמו "מעביר אותי".
+   2. supabase-js שומר את הסשן ב-localStorage לנצח, כך שאחרי כניסה אחת אף פעם
+      לא נדרשת סיסמה שוב — גם אחרי סגירת הדפדפן.
+   התיקון: מסך טעינה (#bootsplash) חוסם את ההבזק עד שידוע אם יש סשן, וסשן שמור
+   תקף רק בתוך אותה לשונית — אלא אם המשתמש סימן "השאר אותי מחובר". */
+const RMB_KEY = 'iron_remember', TAB_KEY = 'iron_tab_session';
+
+function killSplash(){ const s = document.getElementById('bootsplash'); if(s) s.remove(); }
+window.killSplash = killSplash;
+
+function showLogin(msg){
+  killSplash();
+  $('#login').classList.remove('hidden');
+  $('#app').classList.add('hidden');
+  $('#loginErr').textContent = msg || '';
+  setTimeout(()=>{ const e=$('#email'); if(e && !e.value) try{ e.focus(); }catch(_){} }, 60);
+}
+
 async function boot(){
-  const { data:{ session } } = await sb.auth.getSession();
-  if(session){ await afterLogin(); } else { $('#login').classList.remove('hidden'); }
+  try{
+    const { data:{ session } } = await sb.auth.getSession();
+    if(!session){ showLogin(); return; }
+    const remembered = localStorage.getItem(RMB_KEY) === '1';
+    const sameTab    = sessionStorage.getItem(TAB_KEY) === '1';
+    if(!remembered && !sameTab){
+      /* הדפדפן נסגר ונפתח מחדש ולא נתבקשה זכירה — נדרשת התחברות אמיתית */
+      await sb.auth.signOut();
+      showLogin();
+      return;
+    }
+    sessionStorage.setItem(TAB_KEY, '1');
+    await afterLogin();
+  }catch(e){
+    console.error('boot', e);
+    showLogin('שגיאה בבדיקת ההתחברות — נסו שוב');
+  }
 }
 
 $('#loginBtn').onclick = async ()=>{
-  $('#loginErr').textContent='';
+  const btn = $('#loginBtn');
+  $('#loginErr').textContent=''; $('#loginOk').textContent='';
   const email=$('#email').value.trim(), password=$('#password').value;
+  if(!email || !password){ $('#loginErr').textContent='יש למלא דוא"ל וסיסמה'; return; }
+  btn.disabled = true; btn.textContent = 'מתחבר…';
   const { error } = await sb.auth.signInWithPassword({ email, password });
-  if(error){ $('#loginErr').textContent = 'התחברות נכשלה — בדוק דוא"ל וסיסמה'; return; }
+  btn.disabled = false; btn.textContent = 'כניסה למערכת';
+  if(error){ $('#loginErr').textContent = 'התחברות נכשלה — בדקו דוא"ל וסיסמה'; return; }
+  try{
+    if($('#rememberMe') && $('#rememberMe').checked) localStorage.setItem(RMB_KEY,'1');
+    else localStorage.removeItem(RMB_KEY);
+    sessionStorage.setItem(TAB_KEY,'1');
+  }catch(_){}
   await afterLogin();
 };
 $('#email').addEventListener('keydown',e=>{ if(e.key==='Enter') $('#password').focus(); });
 $('#password').addEventListener('keydown',e=>{ if(e.key==='Enter') $('#loginBtn').click(); });
 
+/* הצגה/הסתרה של הסיסמה */
+$('#pwEye').onclick = ()=>{
+  const p=$('#password'), b=$('#pwEye'), show = p.type==='password';
+  p.type = show ? 'text' : 'password';
+  b.textContent = show ? 'הסתר' : 'הצג';
+  b.setAttribute('aria-label', show ? 'הסתרת הסיסמה' : 'הצגת הסיסמה');
+  try{ p.focus(); }catch(_){}
+};
+
+/* איפוס סיסמה בדוא"ל */
+$('#forgotBtn').onclick = async ()=>{
+  const email=$('#email').value.trim();
+  $('#loginErr').textContent=''; $('#loginOk').textContent='';
+  if(!email){ $('#loginErr').textContent='הזינו דוא"ל ואז לחצו "שכחתי סיסמה"'; try{ $('#email').focus(); }catch(_){} return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  if(error) $('#loginErr').textContent = 'שליחת הקישור נכשלה — פנו למנהל המערכת';
+  else $('#loginOk').textContent = 'נשלח קישור לאיפוס סיסמה לכתובת שהוזנה';
+};
+
+/* אם הלוגו הרחב לא נטען — נופלים לכיתוב טקסטואלי במקום ריבוע ריק */
+if($('#loginLogo')) $('#loginLogo').onerror = function(){
+  this.style.display='none';
+  const d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS';
+  if(this.parentNode) this.parentNode.insertBefore(d, this);
+};
+
 async function afterLogin(){
   const { data:{ user } } = await sb.auth.getUser();
   const { data: prof } = await sb.schema('core').from('profiles').select('full_name,role,email,dashboard,job_title').eq('id',user.id).maybeSingle();
-  if(!prof || prof.role==='pending'){ $('#loginErr').textContent='המשתמש ממתין לאישור מנהל'; await sb.auth.signOut(); return; }
+  if(!prof || prof.role==='pending'){ await sb.auth.signOut(); showLogin('המשתמש ממתין לאישור מנהל'); return; }
   ME = { id:user.id, ...prof };
+  killSplash();
   $('#login').classList.add('hidden'); $('#app').classList.remove('hidden');
-  $('#uName').textContent = prof.full_name || prof.email;
-  $('#uRole').textContent = '(' + (({admin:'אדמיניסטרטור',manager:'מנהל מכירות',rep:'נציג',viewer:'צפייה'})[prof.role]||prof.role) + ')';
+  /* שם המשתמש וההרשאה מוצגים בפאנל הימני בלבד — הצ'יפ שהיה בסרגל העליון הוסר
+     בסבב 4 לבקשת רומן ("גם ככה יש בפאנל הימני"). */
   const initials = (prof.full_name||prof.email||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('');
-  $('#uAv').textContent = initials;
+  const roleHe = ({admin:'אדמיניסטרטור',manager:'מנהל מכירות',rep:'נציג',viewer:'צפייה'})[prof.role] || prof.role;
   $('#sideInit').textContent = initials;
   $('#sideName').textContent = prof.full_name || prof.email;
-  $('#sideRole').textContent = prof.job_title || 'אזור אישי';
+  $('#sideRole').textContent = prof.job_title || roleHe;
   applyDashboard();
   await loadLeads();
 }
 
-$('#logoutBtn').onclick = async ()=>{ await sb.auth.signOut(); location.reload(); };
+$('#logoutBtn').onclick = async ()=>{
+  try{ localStorage.removeItem(RMB_KEY); sessionStorage.removeItem(TAB_KEY); }catch(_){}
+  await sb.auth.signOut();
+  location.reload();
+};
 
 document.querySelectorAll('.nav-item').forEach(b=> b.onclick=()=>{
   document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
@@ -3215,7 +3380,165 @@ window.createSignLink = async (dealId)=>{
 };
 
 const SIGN_TOKEN = new URLSearchParams(location.search).get('sign');
-if (SIGN_TOKEN) { renderSignView(SIGN_TOKEN); } else { boot(); }
+/* ===== מנוע מיון גנרי לכל טבלאות המערכת · סבב 4 (28/07/2026) =====
+   רומן: "להוסיף לכל טבלה אפשרות מיון בלחיצה על השורה מלמטה למעלה או הפוך".
+   במקום לשכתב שמונה פונקציות רינדור שונות, המנוע הזה פועל ברמת ה-DOM:
+   כל table.tbl שנוספת לעמוד מקבלת אוטומטית כותרות לחיצות (class="gsrt").
+   טבלאות שכבר יש להן מיון משלהן על כל מערך הנתונים (מק"טים דרך skuSortBy,
+   הזמנות דרך ordSortBy) מסומנות data-gs="own" ומדולגות — כדי לא לשבור מיון
+   שחוצה עמודים. המיון כאן יציב, ערכים ריקים תמיד בסוף, ועמודת המספור
+   (td.rownum) ממוספרת מחדש 1..n אחרי כל מיון. */
+(function(){
+  var COLLATOR = null;
+  try{ COLLATOR = new Intl.Collator('he', { numeric:true, sensitivity:'base' }); }catch(_){ COLLATOR = null; }
+
+  /* טקסט נקי מתא, בלי רווחים כפולים */
+  function gsText(td){
+    if(!td) return '';
+    var t = (td.getAttribute('data-sort') != null) ? td.getAttribute('data-sort') : (td.textContent || '');
+    return t.replace(/‏|‎/g,'').replace(/\s+/g,' ').trim();
+  }
+
+  /* המרת טקסט למפתח מיון: מספר / תאריך / מחרוזת */
+  function gsVal(raw){
+    if(raw === '' || raw === '—' || raw === '-') return null;
+    /* תאריך dd/mm/yyyy או dd.mm.yyyy או dd-mm-yyyy (אפשר עם שעה) */
+    var d = raw.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})(?:[ ,]+(\d{1,2}):(\d{2}))?/);
+    if(d){
+      var yy = +d[3]; if(yy < 100) yy += 2000;
+      return { t:'n', v: yy*100000000 + (+d[2])*1000000 + (+d[1])*10000 + (d[4]?(+d[4])*100:0) + (d[5]?+d[5]:0) };
+    }
+    /* תאריך ISO yyyy-mm-dd */
+    var iso = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if(iso) return { t:'n', v: (+iso[1])*10000 + (+iso[2])*100 + (+iso[3]) };
+    /* מספר — כולל ₪, %, פסיקי אלפים, סוגריים לשלילי */
+    var num = raw.replace(/[₪%,\s]/g,'');
+    var neg = /^\(.*\)$/.test(num);
+    if(neg) num = num.slice(1,-1);
+    if(num !== '' && /^[+-]?\d*\.?\d+$/.test(num)){
+      var n = parseFloat(num);
+      if(!isNaN(n)) return { t:'n', v: neg ? -n : n };
+    }
+    return { t:'s', v: raw };
+  }
+
+  function gsCompare(a, b){
+    if(a === null && b === null) return 0;
+    if(a === null) return 1;   /* ריקים תמיד בסוף, בשני הכיוונים */
+    if(b === null) return -1;
+    if(a.t === 'n' && b.t === 'n') return a.v - b.v;
+    if(a.t === 'n') return -1;
+    if(b.t === 'n') return 1;
+    return COLLATOR ? COLLATOR.compare(a.v, b.v) : (a.v < b.v ? -1 : a.v > b.v ? 1 : 0);
+  }
+
+  /* מספור מחדש של עמודת ה-# אחרי מיון */
+  function gsRenumber(tbody){
+    var rows = tbody.rows, k = 0, i, c;
+    for(i=0;i<rows.length;i++){
+      c = rows[i].querySelector('td.rownum');
+      if(c){ k++; c.textContent = k; }
+    }
+  }
+
+  function gsSort(table, idx, dir){
+    var tbody = table.tBodies && table.tBodies[0];
+    if(!tbody) return;
+    var rows = [], i;
+    for(i=0;i<tbody.rows.length;i++){
+      var r = tbody.rows[i];
+      /* שורות "אין נתונים" / שורות מקובצות עם colspan נשארות במקומן בסוף */
+      if(r.cells.length <= 1 && r.cells[0] && r.cells[0].colSpan > 1) continue;
+      rows.push({ r:r, k:gsVal(gsText(r.cells[idx])), i:i });
+    }
+    rows.sort(function(a,b){
+      var c = gsCompare(a.k, b.k);
+      if(c === 0) return a.i - b.i;          /* מיון יציב */
+      return dir > 0 ? c : -c;
+    });
+    var frag = document.createDocumentFragment();
+    for(i=0;i<rows.length;i++) frag.appendChild(rows[i].r);
+    tbody.appendChild(frag);
+    gsRenumber(tbody);
+  }
+
+  /* סימון הכותרות: איזו עמודה ממוינת ולאיזה כיוון */
+  function gsMark(thead, idx, dir){
+    var ths = thead.rows[0] ? thead.rows[0].cells : [];
+    for(var i=0;i<ths.length;i++){
+      ths[i].classList.remove('asc','desc');
+      if(i === idx) ths[i].classList.add(dir > 0 ? 'asc' : 'desc');
+    }
+  }
+
+  /* הפיכת כותרות טבלה ללחיצות. מדלג על טבלאות עם מיון משלהן ועל עמודות
+     שאין טעם למיין לפיהן (תמונה, תיבות סימון, כפתורי פעולה). */
+  function gsDecorate(table){
+    if(!table || table.getAttribute('data-gs')) return;
+    var thead = table.tHead, tbody = table.tBodies && table.tBodies[0];
+    if(!thead || !thead.rows.length || !tbody){ return; }
+    if(thead.rows.length > 1 || table.querySelector('th.srt')){ table.setAttribute('data-gs','own'); return; }
+    table.setAttribute('data-gs','1');
+    var ths = thead.rows[0].cells;
+    for(var i=0;i<ths.length;i++){
+      var th = ths[i], lbl = (th.textContent||'').trim();
+      if(th.colSpan > 1) continue;
+      if(th.querySelector('input,button')) continue;
+      if(lbl === '' || lbl === '#' || lbl === 'תמונה' || lbl === 'פעולות') continue;
+      th.classList.add('gsrt');
+      th.setAttribute('data-gsi', i);
+      th.setAttribute('tabindex','0');
+      th.setAttribute('role','button');
+      if(!th.title) th.title = 'מיון לפי ' + lbl;
+    }
+  }
+
+  function gsActivate(th){
+    var table = th.closest ? th.closest('table.tbl') : null;
+    if(!table) return;
+    var idx = +th.getAttribute('data-gsi');
+    var dir = th.classList.contains('asc') ? -1 : 1;
+    gsSort(table, idx, dir);
+    gsMark(table.tHead, idx, dir);
+  }
+
+  document.addEventListener('click', function(e){
+    var th = e.target && e.target.closest ? e.target.closest('th.gsrt') : null;
+    if(!th) return;
+    gsActivate(th);
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Enter' && e.key !== ' ') return;
+    var th = e.target && e.target.closest ? e.target.closest('th.gsrt') : null;
+    if(!th) return;
+    e.preventDefault();
+    gsActivate(th);
+  });
+
+  /* סריקה מושהית — טבלאות נבנות מחדש בכל רינדור, ולכן צריך לעטר אותן שוב */
+  var pending = false;
+  function gsScan(){
+    pending = false;
+    var t = document.querySelectorAll('table.tbl:not([data-gs])');
+    for(var i=0;i<t.length;i++) gsDecorate(t[i]);
+  }
+  function gsQueue(){
+    if(pending) return;
+    pending = true;
+    (window.requestAnimationFrame || function(f){ setTimeout(f,16); })(gsScan);
+  }
+  window.gsScan = gsScan;
+
+  function gsStart(){
+    gsScan();
+    try{
+      new MutationObserver(gsQueue).observe(document.body, { childList:true, subtree:true });
+    }catch(err){ console.warn('gsrt observer', err); }
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', gsStart);
+  else gsStart();
+})();
+if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN); } else { boot(); }
 </script>
 </body>
 </html>

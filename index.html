@@ -340,6 +340,22 @@
   .same-tag{ background:#f59e0b; color:#fff; border-radius:99px; padding:1px 9px; font-size:11px; font-weight:800; }
   .waze-btn{ display:inline-flex; align-items:center; gap:4px; background:#e8f7fd; color:#0b6e8f; border:1px solid #b8e4f5; border-radius:99px; padding:1px 9px; font-size:11px; font-weight:700; text-decoration:none; }
   .waze-btn:hover{ background:#d8f0fb; }
+  .waze-btn svg{ width:13px; height:13px; display:block; flex:none; }
+  /* כפתור ניווט Waze עגול לתצוגה הטבלאית */
+  .waze-ico{ display:inline-flex; align-items:center; justify-content:center; width:27px; height:27px; border-radius:9px; background:#e8f7fd; border:1px solid #b8e4f5; text-decoration:none; flex:none; }
+  .waze-ico:hover{ background:#c9edfb; border-color:#33ccff; }
+  .waze-ico svg{ width:16px; height:16px; display:block; }
+  .addr-cell{ display:flex; align-items:center; gap:7px; }
+  .addr-cell .ac-txt{ min-width:0; }
+  /* מיון בלחיצה על כותרת עמודה */
+  .tbl th.srt{ cursor:pointer; user-select:none; }
+  .tbl th.srt:hover{ background:linear-gradient(135deg,#0b3552,#14618f); }
+  .tbl th .sar{ font-size:10px; opacity:.4; margin-inline-start:5px; }
+  .tbl th.on{ background:linear-gradient(135deg,#0b3552,#14618f); }
+  .tbl th.on .sar{ opacity:1; color:#7dd3fc; }
+  .tbl td.odate{ white-space:nowrap; font-size:12.5px; color:#475569; font-weight:600; }
+  .tools-bar .tb-clear{ background:#fff; border:1px solid var(--line); border-radius:9px; padding:8px 11px; font-size:12.5px; color:#64748b; cursor:pointer; font-weight:600; }
+  .tools-bar .tb-clear:hover{ background:#f1f5f9; color:#0f172a; }
   .pill.p-blue{ background:#e0e7ff; color:#3730a3; } .pill.p-violet{ background:#ede9fe; color:#5b21b6; }
   .pill.p-orange{ background:#ffedd5; color:#9a3412; } .pill.p-yellow{ background:#fef9c3; color:#854d0e; }
   .pill.p-green{ background:#dcfce7; color:#166534; } .pill.p-gray{ background:#f1f5f9; color:#475569; }
@@ -386,7 +402,7 @@
   <div class="card">
     <div style="text-align:center;margin:-4px 0 8px;"><img class="brand-logo" alt="איירון פיטנס" style="width:96px;"></div>
     <h1>איירון פיטנס</h1>
-    <p class="sub">המערכת המאוחדת · גרסה 5.6.2</p>
+    <p class="sub">המערכת המאוחדת · גרסה 5.7.0</p>
     <div class="field"><label for="email">דוא"ל</label><input id="email" type="email" autocomplete="username" placeholder="name@ironfitness.co.il"></div>
     <div class="field"><label for="password">סיסמה</label><input id="password" type="password" autocomplete="current-password" placeholder="••••••••"></div>
     <button class="btn" id="loginBtn">כניסה</button>
@@ -444,7 +460,7 @@
       <span class="init" id="sideInit">—</span>
       <span><b id="sideName">—</b><small id="sideRole">אזור אישי</small></span>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.6.2</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.7.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -1421,7 +1437,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.6.2</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.7.0</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
@@ -1786,8 +1802,13 @@ function custOrders(c){
   return ORDS.filter(o => (pid && String(o.customer_number||'').trim()===pid) || (ph && digitsOf(o.phone)===ph));
 }
 /* ===== מסנני ההזמנות המלאים — כמו בלוח הישן (איפיון 8א) ===== */
-let OF = { q:'', team:'', region:'', status:'', contact:'', dateFrom:'', dateTo:'', sort:'', chip:'active' };
+const OF_EMPTY = { q:'', team:'', region:'', status:'', contact:'', dateFrom:'', dateTo:'', odFrom:'', odTo:'', sort:'', col:'', dir:1 };
+let OF = Object.assign({}, OF_EMPTY, { chip:'active' });
 const ACTIVE_ORD = o => !['הושלם','בוטל','מבוטלת'].includes(o.order_status);
+/* פריוריטי מייצר גם מסמכי מלאי פנימיים — למשל "ריקון" על הלקוח הפנימי Goods ("מלאי חופשי"),
+   בלי תאריך, בלי שורות ובלי סכום. אלה אינם הזמנות לקוח ולכן אינם מוצגים במסך ההזמנות. */
+const SYS_CUSTOMERS = ['Goods'];
+const REAL_ORDER = o => !SYS_CUSTOMERS.includes(String(o.customer_number||'').trim());
 const ORDER_SORTS = [['','מס\' הזמנה (חדשה ראשונה)'],['order_date','תאריך הזמנה (חדש ראשון)'],['scheduled','תאריך מתואם (קרוב ראשון)'],['supply_end','תאריך סיום אספקה'],['customer','שם לקוח (א-ב)'],['city','עיר (א-ב)'],['status','סטטוס הזמנה']];
 function renderOrdersTools(){
   const el=$('#ord-tools'); if(!el) return;
@@ -1797,20 +1818,33 @@ function renderOrdersTools(){
     <select id="fRegion"><option value="">כל האזורים</option>${REGIONS.map(r=>`<option ${OF.region===r?'selected':''}>${r}</option>`).join('')}</select>
     <select id="fStatus"><option value="">כל הסטטוסים</option>${ORDER_STATUSES.map(s=>`<option ${OF.status===s?'selected':''}>${s}</option>`).join('')}</select>
     <select id="fContact"><option value="">יצרנו קשר? — הכל</option>${CONTACT_STATUSES.map(s=>`<option ${OF.contact===s?'selected':''}>${s}</option>`).join('')}</select>
+    <span class="tb-group"><span class="tb-lbl">🧾 תאריך הזמנה:</span>
+    <input type="date" id="fOdFrom" value="${esc(OF.odFrom)}"><span class="tb-lbl">עד</span>
+    <input type="date" id="fOdTo" value="${esc(OF.odTo)}"></span>
     <span class="tb-group"><span class="tb-lbl">📅 מתואם:</span>
     <input type="date" id="fDateFrom" value="${esc(OF.dateFrom)}"><span class="tb-lbl">עד</span>
     <input type="date" id="fDateTo" value="${esc(OF.dateTo)}"></span>
     <span class="tb-group"><span class="tb-lbl">↕️ מיון:</span>
-    <select id="fSort">${ORDER_SORTS.map(([v,l])=>`<option value="${v}" ${OF.sort===v?'selected':''}>${l}</option>`).join('')}</select></span>
+    <select id="fSort">${ORDER_SORTS.map(([v,l])=>`<option value="${v}" ${(!OF.col&&OF.sort===v)?'selected':''}>${l}</option>`).join('')}</select></span>
+    <button type="button" class="tb-clear" id="fClear" title="מאפס את כל הסינונים והמיון">✕ ניקוי סינון</button>
   </div>`;
   $('#fQ').addEventListener('input', ()=>{ OF.q=$('#fQ').value; renderOrders(); });
-  [['fTeam','team'],['fRegion','region'],['fStatus','status'],['fContact','contact'],['fDateFrom','dateFrom'],['fDateTo','dateTo'],['fSort','sort']].forEach(([id,k])=>{
+  [['fTeam','team'],['fRegion','region'],['fStatus','status'],['fContact','contact'],['fOdFrom','odFrom'],['fOdTo','odTo'],['fDateFrom','dateFrom'],['fDateTo','dateTo']].forEach(([id,k])=>{
     $('#'+id).addEventListener('change', ()=>{ OF[k]=$('#'+id).value; renderOrders(); });
   });
+  /* בחירה בתפריט המיון מבטלת מיון-עמודה שנבחר בלחיצה על כותרת, כדי שלא יתנגשו */
+  $('#fSort').addEventListener('change', ()=>{ OF.sort=$('#fSort').value; OF.col=''; renderOrders(); });
+  $('#fClear').addEventListener('click', ()=>{ const c=OF.chip; OF=Object.assign({}, OF_EMPTY, { chip:c }); renderOrdersTools(); renderOrders(); });
 }
+/* מיון בלחיצה על כותרת עמודה — לחיצה נוספת הופכת את הכיוון */
+window.ordSortBy = key => {
+  if(OF.col===key) OF.dir = -OF.dir;
+  else { OF.col = key; OF.dir = ['order_date','scheduled_date','order_number'].includes(key) ? -1 : 1; }
+  renderOrdersTools(); renderOrders();
+};
 function filteredOrders(){
   const t=todayStr(), wk=addDaysIso(t,7);
-  let list=ORDS.slice();
+  let list=ORDS.filter(REAL_ORDER);
   if(OF.chip==='active') list=list.filter(ACTIVE_ORD);
   else if(OF.chip==='nocontact') list=list.filter(o=>ACTIVE_ORD(o)&&o.contact_status==='טרם נוצר קשר');
   else if(OF.chip==='nosched') list=list.filter(o=>ACTIVE_ORD(o)&&(!o.team||!o.scheduled_date));
@@ -1821,10 +1855,21 @@ function filteredOrders(){
   if(OF.region) list=list.filter(o=>o.region===OF.region);
   if(OF.status) list=list.filter(o=>o.order_status===OF.status);
   if(OF.contact) list=list.filter(o=>o.contact_status===OF.contact);
-  if(OF.q){ const q=OF.q.toLowerCase(); list=list.filter(o=>[o.order_number,o.customer_name,o.phone,o.city,o.contact_name].some(v=>v&&String(v).toLowerCase().includes(q))); }
+  if(OF.q){ const q=OF.q.toLowerCase(); list=list.filter(o=>[o.order_number,o.customer_name,o.phone,o.city,o.contact_name,o.address,o.customer_address,o.region,o.team,o.order_notes].some(v=>v&&String(v).toLowerCase().includes(q))); }
+  if(OF.odFrom) list=list.filter(o=>o.order_date && o.order_date>=OF.odFrom);
+  if(OF.odTo) list=list.filter(o=>o.order_date && o.order_date<=OF.odTo);
   if(OF.dateFrom) list=list.filter(o=>o.scheduled_date && o.scheduled_date>=OF.dateFrom);
   if(OF.dateTo) list=list.filter(o=>o.scheduled_date && o.scheduled_date<=OF.dateTo);
-  const cmpStr=(a,b,k,dir)=>{ const va=a[k]||'', vb=b[k]||''; if(!va&&!vb) return 0; if(!va) return 1; if(!vb) return -1; return dir*String(va).localeCompare(String(vb)); };
+  const cmpStr=(a,b,k,dir)=>{ const va=a[k]||'', vb=b[k]||''; if(!va&&!vb) return 0; if(!va) return 1; if(!vb) return -1; return dir*String(va).localeCompare(String(vb),'he',{numeric:true}); };
+  /* מיון שנבחר בלחיצה על כותרת עמודה גובר על תפריט המיון */
+  if(OF.col){
+    const k=OF.col, d=OF.dir;
+    if(k==='order_status') list.sort((a,b)=>d*(ORDER_STATUSES.indexOf(a.order_status)-ORDER_STATUSES.indexOf(b.order_status)));
+    else if(k==='contact_status') list.sort((a,b)=>d*(CONTACT_STATUSES.indexOf(a.contact_status)-CONTACT_STATUSES.indexOf(b.contact_status)));
+    else if(k==='time_slot') list.sort((a,b)=>d*(TIME_SLOTS.indexOf(a.time_slot)-TIME_SLOTS.indexOf(b.time_slot)));
+    else list.sort((a,b)=>cmpStr(a,b,k,d));
+    return list;
+  }
   switch(OF.sort){
     case 'order_date': list.sort((a,b)=>cmpStr(a,b,'order_date',-1)); break;
     case 'scheduled': list.sort((a,b)=>cmpStr(a,b,'scheduled_date',1)); break;
@@ -1837,7 +1882,7 @@ function filteredOrders(){
   return list;
 }
 function ordChips(){
-  const act=ORDS.filter(ACTIVE_ORD), t=todayStr(), wk=addDaysIso(t,7);
+  const RO=ORDS.filter(REAL_ORDER), act=RO.filter(ACTIVE_ORD), t=todayStr(), wk=addDaysIso(t,7);
   const scOpen=SCALLS.filter(s=>!['הושלם','הושלמה','בוטלה','סגורה'].includes(s.status));
   const chips=[
     ['active','פעילות',act.length],
@@ -1845,9 +1890,9 @@ function ordChips(){
     ['nosched','ממתין לשיבוץ',act.filter(o=>!o.team||!o.scheduled_date).length],
     ['protocol','פרוטוקול',act.filter(o=>['נוצר קשר ראשוני לפרוטוקול','פרוטוקול חתום ממתין לתיאום'].includes(o.contact_status)).length],
     ['week','השבוע הקרוב',act.filter(o=>o.scheduled_date&&o.scheduled_date>=t&&o.scheduled_date<wk).length],
-    ['done','הושלמו',ORDS.filter(o=>o.order_status==='הושלם').length],
+    ['done','הושלמו',RO.filter(o=>o.order_status==='הושלם').length],
     ['calls','קריאות שירות',scOpen.length],
-    ['all','הכל',ORDS.length],
+    ['all','הכל',RO.length],
   ];
   $('#ord-chips').innerHTML = chips.map(([k,l,n])=>`<button class="chip ${OF.chip===k?'active':''}" onclick="setOrdFilter('${k}')">${l} <span class="n">${n}</span></button>`).join('');
 }
@@ -1932,7 +1977,12 @@ const STATUS_PILL = {
   'תקלה':'p-red','אחזקה':'p-orange','שירות':'p-blue','אחר':'p-gray','כן':'p-green','לא':'p-red'
 };
 const SRC_TAG = '<span class="src-tag">🔒 פריוריטי</span>';
-const wazeBtn = addr => addr ? `<a class="waze-btn" target="_blank" href="https://waze.com/ul?q=${encodeURIComponent(addr)}&navigate=yes">🚗 ניווט</a>` : '';
+/* סמל Waze מוטבע (SVG) — בלי תלות ברשת חיצונית ובלי אימוג'י */
+const WAZE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="#33ccff" d="M12 2.2C6.9 2.2 3 5.7 3 10.1c0 2 .8 3.8 2.1 5.2-.2 1.2-.8 2.2-1.6 2.9-.5.4-.2 1.2.4 1.2 2.2 0 4-.8 5.1-1.6 1 .2 2 .3 3 .3 5.1 0 9-3.5 9-8s-3.9-7.9-9-7.9z"/><circle cx="9.2" cy="9.4" r="1.25" fill="#0b3552"/><circle cx="14.8" cy="9.4" r="1.25" fill="#0b3552"/><path d="M9 12.9c.7 1 1.8 1.6 3 1.6s2.3-.6 3-1.6" stroke="#0b3552" stroke-width="1.35" fill="none" stroke-linecap="round"/></svg>';
+const wazeUrl = addr => 'https://waze.com/ul?q=' + encodeURIComponent(addr) + '&navigate=yes';
+const wazeBtn = addr => addr ? `<a class="waze-btn" target="_blank" rel="noopener" href="${wazeUrl(addr)}" onclick="event.stopPropagation()">${WAZE_SVG} ניווט</a>` : '';
+/* גרסת אייקון בלבד — לשימוש בתוך תאי טבלה */
+const wazeIco = addr => addr ? `<a class="waze-ico" target="_blank" rel="noopener" title="ניווט ב-Waze אל ${esc(addr)}" href="${wazeUrl(addr)}" onclick="event.stopPropagation()">${WAZE_SVG}</a>` : '';
 const roIn = (val,{ltr}={}) => `<input value="${esc(val??'')}" readonly class="ro" ${ltr?'dir="ltr"':''} title="${esc(val??'')}">`;
 /* select-ים בכרטיסים נצבעים לפי הערך ומתעדכנים מיד עם שינוי (איפיון 8א) */
 const selHtml = (id, vals, cur, allowEmpty) => `<select id="${id}" class="pilled ${STATUS_PILL[cur]||''}" onchange="this.className='pilled '+(STATUS_PILL[this.value]||'')">${allowEmpty?'<option value=""></option>':''}${[...new Set([...(vals||[]), ...(cur?[cur]:[])])].map(v=>`<option ${v===cur?'selected':''}>${esc(v)}</option>`).join('')}</select>`;
@@ -2020,16 +2070,41 @@ function _viewportChanged(){
 window.addEventListener('resize', _viewportChanged);
 window.addEventListener('orientationchange', _viewportChanged);
 /* טבלת הזמנות מלאה — עמודות ועריכה ישירה כמו בלוח הישן, בלי עמודת סכום, עם אזור (איפיון 8א) */
+/* תא עיר/כתובת — עיר, שורת כתובת מקוצרת וכפתור ניווט Waze (במקום אימוג'י המשאית) */
+function ordCityCell(o){
+  const ship = o.address ? (o.address + ' ' + (o.city||'')).trim() : '';
+  const home = o.customer_address || '';
+  const nav  = ship || home;
+  const sub  = o.address ? `<div class="note-preview" title="כתובת משלוח: ${esc(o.address)}">${esc(String(o.address).slice(0,22))}</div>`
+             : (home ? `<div class="note-preview" title="כתובת לקוח: ${esc(home)}">${esc(String(home).slice(0,22))}</div>`
+             : (o.region ? `<div class="note-preview">${esc(o.region)}</div>` : ''));
+  return `<div class="addr-cell"><div class="ac-txt">${esc(o.city||'')}${sub}</div>${wazeIco(nav)}</div>`;
+}
+/* עמודות טבלת ההזמנות: [כותרת, שדה למיון ('' = לא ניתן למיון), מחלקה] */
+const ORD_COLS = [
+  ['#','','rownum'], ['תאריך הזמנה','order_date','odate'], ['הזמנה','order_number',''],
+  ['לקוח','customer_name',''], ['טלפון','phone',''], ['עיר / אזור','city',''],
+  ['סטטוס','order_status',''], ['יצרנו קשר?','contact_status',''], ['צוות','team',''],
+  ['תאריך','scheduled_date',''], ['שעות','time_slot',''], ['וואטסאפ','',''],
+];
+function ordHead(){
+  return ORD_COLS.map(([lbl,key,cls])=>{
+    if(!key) return `<th class="${cls}">${lbl}</th>`;
+    const on = OF.col===key;
+    return `<th class="srt ${cls} ${on?'on':''}" onclick="ordSortBy('${key}')" title="לחצו למיון לפי ${lbl}">${lbl}<span class="sar">${on?(OF.dir>0?'▲':'▼'):'⇅'}</span></th>`;
+  }).join('');
+}
 function ordTable(list){
   if(!list.length) return '<div class="empty">לא נמצאו הזמנות מתאימות</div>';
   const rows = list.slice(0,300).map((o,i)=>{
     const wa = o.phone && o.scheduled_date ? waLink(o.phone, waCoordMsg(o)) : '';
     return `<tr onclick="openOrd('${o.id}')">
       <td class="rownum">${i+1}</td>
+      <td class="odate">${fmtD(o.order_date)||'—'}</td>
       <td><b>${esc(o.order_number)}</b>${o.order_notes?`<div class="note-preview" title="${esc(o.order_notes)}">📝 ${esc(String(o.order_notes).slice(0,28))}${String(o.order_notes).length>28?'…':''}</div>`:''}</td>
       <td title="${esc(o.customer_name||'')}">${esc(o.customer_name||'')}</td>
       <td dir="ltr">${esc(o.phone||'')}</td>
-      <td>${esc(o.city||'')}${o.address?`<div class="note-preview" title="כתובת משלוח: ${esc(o.address)}">🚚 ${esc(String(o.address).slice(0,20))}</div>`:(o.customer_address?`<div class="note-preview" title="כתובת לקוח: ${esc(o.customer_address)}">🏠 ${esc(String(o.customer_address).slice(0,20))}</div>`:(o.region?`<div class="note-preview">${esc(o.region)}</div>`:''))}</td>
+      <td>${ordCityCell(o)}</td>
       <td>${ieSel('ord',o.id,'order_status',ORDER_STATUSES,o.order_status)}</td>
       <td>${ieSel('ord',o.id,'contact_status',CONTACT_STATUSES,o.contact_status)}</td>
       <td>${ieSel('ord',o.id,'team',OTEAMS.filter(t=>t.active!==false).map(t=>t.name),o.team,{allowEmpty:true,emptyLabel:'לא משויך'})}</td>
@@ -2037,9 +2112,7 @@ function ordTable(list){
       <td>${ieSel('ord',o.id,'time_slot',TIME_SLOTS,o.time_slot,{allowEmpty:true})}</td>
       <td>${wa?`<a class="btn-wa2" href="${wa}" target="_blank" onclick="event.stopPropagation()">📱</a>`:''}</td>
     </tr>`;}).join('');
-  return `<div class="tbl-wrap"><table class="tbl"><thead><tr>
-    <th class="rownum">#</th><th>הזמנה</th><th>לקוח</th><th>טלפון</th><th>עיר / אזור</th><th>סטטוס</th><th>יצרנו קשר?</th><th>צוות</th><th>תאריך</th><th>שעות</th><th>וואטסאפ</th>
-  </tr></thead><tbody>${rows}</tbody></table></div><div class="count-line2">מציג ${Math.min(list.length,300)} מתוך ${list.length} הזמנות</div>`;
+  return `<div class="tbl-wrap"><table class="tbl"><thead><tr>${ordHead()}</tr></thead><tbody>${rows}</tbody></table></div><div class="count-line2">מציג ${Math.min(list.length,300)} מתוך ${list.length} הזמנות</div>`;
 }
 function renderOrders(){
   ordChips();
@@ -2095,7 +2168,6 @@ window.openOrd = (id)=>{
       <div><label>תאריך סיום אספקה</label><input id="oe-supend" type="date" value="${esc(o.supply_end_date||'')}"></div>
       <div><label>תעודת משלוח</label>${selHtml('oe-dnote',YESNO,o.delivery_note||'',true)}</div>
       <div><label>חשבונית</label>${selHtml('oe-invoice',YESNO,o.invoice||'',true)}</div>
-      <div class="span2"><label>רשימת ציוד (טקסט חופשי)</label><textarea id="oe-equip" rows="2">${esc(o.equipment_list||'')}</textarea></div>
       <div class="span2"><label>הערות למחסן</label><textarea id="oe-wnotes" rows="2">${esc(o.warehouse_notes||'')}</textarea></div>
       <div class="span4"><label>דו שיח פנימי${SRC_TAG}</label><div class="dialog-box">${o.internal_dialog?esc(o.internal_dialog).replace(/\n/g,'<br>'):'<span class="dialog-empty">אין דו שיח פנימי בהזמנה זו</span>'}</div></div>
       <div class="form-sep">📦 פירוט ההזמנה${SRC_TAG}</div>
@@ -2106,7 +2178,7 @@ window.openOrd = (id)=>{
       return `<div class="others-box"><div class="ob-title">📦 ללקוח יש עוד ${others.length===1?'הזמנה פתוחה':others.length+' הזמנות פתוחות'}:${hasSame?' <span class="same-tag">🚚 יש הזמנות לאותה כתובת משלוח — כדאי לשלב יחד!</span>':''}</div>
       ${others.map(x=>{
         const same=myAddr && norm(x.address)===myAddr;
-        return `<div class="other-row ${same?'same-addr':''}" onclick="goCard(()=>openOrd('${x.id}'))"><b>${esc(x.order_number)}</b><span>${fmtD(x.order_date)||'—'}</span><span>${x.items_count??'?'} פריטים</span>${x.address?`<span class="ob-note" title="כתובת משלוח: ${esc(x.address)}">🚚 ${esc(String(x.address).slice(0,30))}</span>`:''}${same?'<span class="same-tag">אותה כתובת משלוח!</span>':''}</div>`;
+        return `<div class="other-row ${same?'same-addr':''}" onclick="goCard(()=>openOrd('${x.id}'))"><b>${esc(x.order_number)}</b><span>${fmtD(x.order_date)||'—'}</span><span>${x.items_count??'?'} פריטים</span>${x.address?`<span class="ob-note" title="כתובת משלוח: ${esc(x.address)}">${esc(String(x.address).slice(0,30))}</span>`:''}${same?'<span class="same-tag">אותה כתובת משלוח!</span>':''}</div>`;
       }).join('')}</div>`;
     })()}
     ${(()=>{ const ps=PROTS.filter(p=>p.order_id===o.id); return `<h2 class="sec">📄 מסמכים וחתימות (${ps.length})</h2>`+
@@ -2172,7 +2244,6 @@ window.saveOrd = async (id)=>{
     supply_end_date: $('#oe-supend').value || null,
     delivery_note: $('#oe-dnote').value || null,
     invoice: $('#oe-invoice').value || null,
-    equipment_list: $('#oe-equip').value || null,
     warehouse_notes: $('#oe-wnotes').value || null,
   };
   /* עדכון חלקי — רק שדות שהשתנו, כדי לא לדרוס עדכונים מקבילים */

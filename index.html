@@ -1575,7 +1575,9 @@ function _skuXlsx(head, rows){
   };
   const body = [`<row r="1">${head.map((h,i)=>cell(i,1,String(h),1)).join('')}</row>`]
     .concat(rows.map((rw,ri)=>`<row r="${ri+2}">${rw.map((v,i)=>cell(i,ri+2,v,0)).join('')}</row>`)).join('');
-  const cols = head.map((h,i)=>`<col min="${i+1}" max="${i+1}" width="${Math.min(46,Math.max(11,String(h).length+6))}" customWidth="1"/>`).join('');
+  const cols = head.map((h,i)=>{ let w = String(h).length + 4;
+    for(let r=0; r<rows.length && r<500; r++){ const t=rows[r][i]; if(t!=null && t!==''){ const n=String(t).length+2; if(n>w) w=n; } }
+    return `<col min="${i+1}" max="${i+1}" width="${Math.min(52,Math.max(10,w))}" customWidth="1"/>`; }).join('');
   const last = _colRef(head.length-1);
   const P='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
   const NS='http://schemas.openxmlformats.org/spreadsheetml/2006/main';
@@ -1598,7 +1600,8 @@ function _skuXlsx(head, rows){
       '<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>'+
       '<borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'+
       '<cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'+
-      '<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs></styleSheet>'},
+      '<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs>'+
+      '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>'},
     {name:'xl/worksheets/sheet1.xml', xml:P+'<worksheet xmlns="'+NS+'">'+
       '<sheetViews><sheetView rightToLeft="1" tabSelected="1" workbookViewId="0">'+
       '<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'+

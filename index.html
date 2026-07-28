@@ -112,7 +112,7 @@
   .topnav .who2{ font-size:13px; opacity:.92; }
   .topnav button.out{ background:rgba(255,255,255,.15); color:#fff; border:none; border-radius:8px; padding:7px 12px; font-size:13px; }
   .shell{ display:flex; align-items:stretch; }
-  aside#side{ width:225px; flex:none; background:linear-gradient(180deg,#061827,#0b3552); padding:12px 0; position:sticky; top:52px; align-self:flex-start; height:calc(100vh - 52px); overflow-y:auto; box-sizing:border-box; }
+  aside#side{ width:225px; flex:none; background:linear-gradient(180deg,#061827,#0b3552); padding:12px 0; position:sticky; top:52px; align-self:flex-start; height:calc(100vh - 52px); overflow-y:auto; overflow-x:hidden; box-sizing:border-box; }
   aside#side.closed{ display:none; }
   .nav-item{ display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%; text-align:start; background:none; border:none; color:#cfd8e3; font-size:14px; font-family:inherit; padding:8px 18px; border-inline-start:3px solid transparent; }
   .side-top{ display:flex; align-items:center; justify-content:space-between; padding:2px 18px 8px; color:#8fa3b5; font-size:12px; border-bottom:1px solid rgba(255,255,255,.08); margin-bottom:6px; }
@@ -120,7 +120,9 @@
   .side-hide:hover{ background:rgba(255,255,255,.2); color:#fff; }
   .nav-wrap{ position:relative; }
   .nav-arrow{ font-size:13px; opacity:.55; }
-  .submenu{ display:none; position:absolute; inset-inline-start:100%; inset-inline-end:auto; top:0; background:#0b3552; border:1px solid rgba(255,255,255,.15); border-radius:10px 0 0 10px; min-width:165px; padding:6px 0; box-shadow:0 8px 30px rgba(0,0,0,.35); z-index:45; }
+  /* תפריט המשנה צף מחוץ לסרגל: position:fixed אינו נחתך על ידי overflow של אב.
+     המיקום עצמו מחושב ב-JS (placeSubmenu) מול מיקום פריט התפריט. */
+  .submenu{ display:none; position:fixed; background:#0b3552; border:1px solid rgba(255,255,255,.15); border-radius:10px; min-width:172px; padding:6px 0; box-shadow:0 12px 36px rgba(0,0,0,.45); z-index:60; }
   .nav-wrap:hover .submenu{ display:block; }
   .submenu button{ display:block; width:100%; text-align:start; background:none; border:none; color:#cfd8e3; font-size:13.5px; font-family:inherit; padding:9px 16px; cursor:pointer; }
   .submenu button:hover{ color:#fff; background:rgba(255,255,255,.08); }
@@ -226,9 +228,42 @@
 
   /* ===== כרטיסים: X לסגירה + חזרה אחורה (הערות 1–3) ===== */
   .modal .sheet{ position:relative; }
-  /* ===== מסך המק"טים — איפיון מסך מקטים · סבב 2 (28/07/2026) =====
+  /* ===== מסך המק"טים — איפיון מסך מקטים · סבב 2 (28/07/2026) + סבב 3 (סרגל כלים) =====
      סבב 2: הכול הוקטן והודק לבקשת רומן — "שיכנס יותר בפחות מסך ויותר קומפקטי".
-     אזור ההירו האפור הפך לרשת דו-טורית כדי שיותר מידע ייכנס באותו גובה. */
+     אזור ההירו האפור הפך לרשת דו-טורית כדי שיותר מידע ייכנס באותו גובה.
+     סבב 3: סרגל הכלים אורגן מחדש — כרטיס אחד עם היררכיה ברורה במקום ערימת כפתורים.
+     חיפוש + סינון בצד ההתחלה, פעולות בצד הסיום, המונה כתווית ולא ככפתור,
+     שורת התצוגות השמורות מופרדת בקו דק בתוך אותו כרטיס. */
+
+  /* --- כרטיס סרגל הכלים (סבב 3) --- */
+  .sku-tb{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin-bottom:12px; box-shadow:0 1px 2px rgba(15,23,42,.04); }
+  .sku-tb .tools-bar{ margin-bottom:0; gap:7px; }
+  .sku-tb #sku-views:not(:empty){ margin-top:9px; padding-top:9px; border-top:1px solid var(--line); }
+  #sku-tools .search{ flex:1 1 240px; max-width:380px; min-width:180px; }
+  #sku-tools .search input{ padding:8px 32px 8px 11px; font-size:13px; border-radius:9px; }
+  #sku-tools .search::before{ content:''; width:15px; height:15px; top:9px; inset-inline-start:9px; opacity:1;
+    background:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%2394a3b8'%20stroke-width='2.2'%20stroke-linecap='round'%3E%3Ccircle%20cx='10.5'%20cy='10.5'%20r='6.5'/%3E%3Cpath%20d='M20%2020l-4.6-4.6'/%3E%3C/svg%3E") center/contain no-repeat; }
+  #sku-tools .tb-grp{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  #sku-tools .tb-grp.end{ margin-inline-start:auto; }
+  #sku-tools select{ min-width:132px; font-size:12.5px; padding:7px 9px; color:#334155; }
+  #sku-tools .tb-count{ font-size:12px; font-weight:700; color:#526074; background:#eef2f7; border-radius:99px; padding:5px 11px; white-space:nowrap; }
+  button.tb-btn{ background:#fff; border:1px solid var(--line); border-radius:9px; padding:7px 12px; font-size:12.5px; font-family:inherit; font-weight:600; color:#475569; cursor:pointer; white-space:nowrap; }
+  button.tb-btn:hover{ background:#f1f5f9; color:#0f172a; }
+  button.tb-btn.adv{ color:var(--navy); border-color:#c3d3e0; background:#f7fafc; }
+  button.tb-btn.adv:hover{ background:#eaf1f7; }
+  button.tb-btn.adv.on{ background:var(--navy); border-color:var(--navy); color:#fff; }
+  button.tb-btn.quiet{ border-color:transparent; background:none; color:#7c8a9b; font-weight:600; }
+  button.tb-btn.quiet:hover{ background:#f1f5f9; color:#0f172a; }
+  button.tb-btn.go{ border-color:#bcd98a; background:#f6fbee; color:#4d6b16; }
+  button.tb-btn.go:hover{ background:#edf6df; color:#3d5511; }
+  button.tb-clear{ background:#fff; border:1px solid var(--line); border-radius:9px; padding:7px 11px; font-size:12.5px; font-family:inherit; font-weight:600; color:#64748b; cursor:pointer; }
+  button.tb-clear:hover{ background:#f1f5f9; color:#0f172a; }
+  @media(max-width:800px){
+    #sku-tools .search{ flex:1 1 100%; max-width:none; }
+    #sku-tools .tb-grp.end{ margin-inline-start:0; }
+  }
+
+  /* --- כרטיס המק"ט --- */
   #skuModal .sheet{ max-width:900px; }
   @media(min-width:1200px){ #skuModal .sheet{ max-width:1040px; } }
   .sku-hero{ display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap; background:linear-gradient(135deg,#f6f9fc,#eef4f8); border:1px solid var(--line); border-radius:12px; padding:10px; margin-bottom:10px; }
@@ -261,7 +296,8 @@
   .fam-chip{ border:1px solid var(--line); background:#f8fafc; border-radius:99px; padding:4px 10px; font-size:12px; cursor:pointer; color:#475569; font-weight:600; }
   .fam-chip.on{ background:var(--navy); border-color:var(--navy); color:#fff; }
   .fam-chip.ex{ background:#c0392b; border-color:#c0392b; color:#fff; text-decoration:line-through; }
-  .view-chip{ border:1px solid var(--line); background:#fff; border-radius:9px; padding:7px 11px; font-size:12.5px; font-weight:700; color:#475569; cursor:pointer; }
+  .view-chip{ border:1px solid var(--line); background:#fff; border-radius:8px; padding:5px 11px; font-size:12px; font-weight:600; color:#475569; cursor:pointer; }
+  .view-chip:hover{ background:#f1f5f9; color:#0f172a; }
   .view-chip.on{ background:var(--navy); border-color:var(--navy); color:#fff; }
   .view-chip.def{ border-color:#f0b429; box-shadow:inset 0 -2px 0 #f0b429; }
   .sku-exp{ display:grid; grid-template-columns:repeat(auto-fit,minmax(185px,1fr)); gap:4px 10px; max-height:330px; overflow:auto; border:1px solid var(--line); border-radius:10px; padding:10px; }
@@ -279,7 +315,7 @@
 
   /* ===== פאנל בסגנון GreenInvoice (הערה 6) ===== */
   aside#side{ display:flex; flex-direction:column; }
-  #side nav{ flex:1; overflow-y:auto; }
+  #side nav{ flex:1; overflow-y:auto; overflow-x:hidden; }
   .nav-item{ padding:9px 18px; }
   .nav-item .nav-arrow{ font-size:12px; opacity:.45; }
   .side-user{ display:flex; align-items:center; gap:10px; padding:10px 16px; border-top:1px solid rgba(255,255,255,.1); color:#cfd8e3; font-size:13px; cursor:pointer; }
@@ -601,8 +637,10 @@
 
     <!-- מקטים — קטלוג המוצרים (נטיבי) -->
     <section id="tab-skus" class="hidden">
-      <div class="tools-bar" id="sku-tools"></div>
-      <div id="sku-views" class="tools-bar" style="margin-top:-4px"></div>
+      <div class="sku-tb">
+        <div class="tools-bar" id="sku-tools"></div>
+        <div id="sku-views" class="tools-bar"></div>
+      </div>
       <div id="sku-adv" class="sku-adv hidden"></div>
       <div id="skus-list"></div>
     </section>
@@ -856,6 +894,35 @@ window.setSide = open=>{
   } else if(bd){ bd.style.display = 'none'; }
 };
 $('#sideToggle').onclick = ()=> setSide($('#side').classList.contains('closed'));
+
+/* ---- תפריטי משנה צפים בתפריט הצד (סבב 3) ----
+   מה היה שבור: aside#side ו-#side nav מוגדרים overflow-y:auto. לפי מפרט CSS,
+   overflow-y:auto גורם ל-overflow-x להתנהג כ-auto גם הוא, ולכן תפריט משנה
+   position:absolute שיוצא מחוץ לרוחב הסרגל נחתך — ובנוסף נוצר פס גלילה אופקי
+   שדחף את שמות פריטי התפריט אל מחוץ לתצוגה.
+   הפתרון: התפריט הוא position:fixed, שאינו נחתך על ידי overflow של אב, והמיקום
+   מחושב כאן מול ה-bounding rect של פריט התפריט. במסכים צרים ה-CSS מחזיר אותו
+   ל-position:static (תפריט נפתח בתוך הרשימה) והפונקציה מנקה את הסגנון המוטבע. */
+function placeSubmenu(w){
+  const sm = w.querySelector('.submenu'); if(!sm) return;
+  if(getComputedStyle(sm).position !== 'fixed'){ sm.style.top=''; sm.style.left=''; sm.style.right=''; return; }
+  const prev = sm.style.display;
+  sm.style.display = 'block';
+  const h = sm.offsetHeight;
+  sm.style.display = prev;
+  const r = w.getBoundingClientRect();
+  const rtl = getComputedStyle(w).direction === 'rtl';
+  sm.style.top = Math.round(Math.max(56, Math.min(r.top - 4, window.innerHeight - h - 10))) + 'px';
+  if(rtl){ sm.style.right = Math.round(window.innerWidth - r.left) + 'px'; sm.style.left = 'auto'; }
+  else   { sm.style.left  = Math.round(r.right) + 'px'; sm.style.right = 'auto'; }
+}
+document.querySelectorAll('.nav-wrap').forEach(w=>{
+  w.addEventListener('mouseenter', ()=>placeSubmenu(w));
+  w.addEventListener('focusin',    ()=>placeSubmenu(w));
+});
+const _posSubmenus = ()=>document.querySelectorAll('.nav-wrap:hover').forEach(w=>placeSubmenu(w));
+window.addEventListener('resize', _posSubmenus);
+window.addEventListener('scroll', _posSubmenus, true);
 if(window.innerWidth<800) setSide(false);
 
 /* ===== מסגרת כרטיסים אחידה: X, חזרה אחורה, סגירה בלחיצה על הרקע (הערות 1–3) ===== */
@@ -1364,15 +1431,20 @@ function renderSkuTools(){
   const box=$('#sku-tools'); if(!box) return;
   _skuHay.clear();
   const sel=(v,cur)=>v===cur?' selected':'';
+  // סבב 3 — ארגון הסרגל: חיפוש וסינון בצד אחד, פעולות בצד השני, מונה כתווית ולא ככפתור.
   box.innerHTML = `
     <div class="search"><input id="skuSearch" placeholder="חיפוש חופשי — מק״ט · תיאור · איתור · ספק · משפחה" value="${esc(SKU_F.q)}"></div>
-    <select id="skuAct" title="סינון לפי פעיל / לא פעיל"><option value="">פעיל + לא פעיל</option><option value="y"${sel('y',SKU_F.act)}>פעילים בלבד</option><option value="n"${sel('n',SKU_F.act)}>לא פעילים בלבד</option></select>
-    <select id="skuStock" title="סינון לפי מלאי"><option value="">כל המלאי</option><option value="in"${sel('in',SKU_F.stock)}>יש מלאי</option><option value="out"${sel('out',SKU_F.stock)}>אין מלאי</option></select>
-    <button class="tb-clear" id="skuAdvBtn" title="החרגות, משפחות, טווחי מחיר ומלאי ותצוגות שמורות">סינון מתקדם</button>
-    <button class="tb-clear" id="skuExpBtn" title="ייצוא הרשימה המסוננת לאקסל, לפי שדות שתבחר">ייצוא לאקסל</button>
-    <button class="tb-clear" id="skuReset" title="ניקוי כל הסינונים">ניקוי</button>
-    <span class="tb-lbl" id="skuCount"></span>
-    ${skuMgr()?'<button class="tb-clear" id="skuSyncBtn" title="הסנכרון האוטומטי רץ כל יום ב-07:00 (א׳–ו׳). כאן אפשר להריץ אותו ידנית.">סנכרון מק״טים</button>':''}`;
+    <div class="tb-grp">
+      <select id="skuAct" title="סינון לפי פעיל / לא פעיל"><option value="">פעיל + לא פעיל</option><option value="y"${sel('y',SKU_F.act)}>פעילים בלבד</option><option value="n"${sel('n',SKU_F.act)}>לא פעילים בלבד</option></select>
+      <select id="skuStock" title="סינון לפי מלאי"><option value="">כל המלאי</option><option value="in"${sel('in',SKU_F.stock)}>יש מלאי</option><option value="out"${sel('out',SKU_F.stock)}>אין מלאי</option></select>
+      <button class="tb-btn adv" id="skuAdvBtn" title="החרגות, משפחות, טווחי מחיר ומלאי ותצוגות שמורות">סינון מתקדם</button>
+      <button class="tb-btn quiet" id="skuReset" title="ניקוי כל הסינונים">ניקוי</button>
+    </div>
+    <span class="tb-count" id="skuCount"></span>
+    <div class="tb-grp end">
+      <button class="tb-btn" id="skuExpBtn" title="ייצוא הרשימה המסוננת לאקסל, לפי שדות שתבחר">ייצוא לאקסל</button>
+      ${skuMgr()?'<button class="tb-btn go" id="skuSyncBtn" title="הסנכרון האוטומטי רץ כל יום ב-07:00 (א׳–ו׳). כאן אפשר להריץ אותו ידנית.">סנכרון מק״טים</button>':''}
+    </div>`;
   $('#skuSearch').addEventListener('input', e=>{ SKU_F.q=e.target.value; SKU_VIEW_ID=''; renderSkus(); });
   $('#skuAct').onchange = e=>{ SKU_F.act=e.target.value; SKU_VIEW_ID=''; renderSkus(); renderSkuViews(); };
   $('#skuStock').onchange = e=>{ SKU_F.stock=e.target.value; SKU_VIEW_ID=''; renderSkus(); renderSkuViews(); };
@@ -1468,7 +1540,6 @@ window.skuFamAll = (on)=>{
 window.skuSetF = (k,v)=>{
   SKU_F[k]=v; SKU_VIEW_ID='';
   renderSkuViews(); renderSkus();
-  const ab=$('#skuAdvBtn'); if(ab) ab.textContent = skuAdvN() ? `סינון מתקדם · ${skuAdvN()}` : 'סינון מתקדם';
 };
 function renderSkuAdv(){
   const box=$('#sku-adv'); if(!box) return;
@@ -1683,8 +1754,14 @@ function renderSkus(){
   if(box) box.innerHTML = wideScreen() ? skuTable(list) : capped(list, skuRow, 'אין מק"טים להצגה');
   const cnt=$('#skuCount');
   if(cnt) cnt.textContent = list.length===SKUS.length ? `${fmtNum(SKUS.length)} מק״טים` : `${fmtNum(list.length)} מתוך ${fmtNum(SKUS.length)} מק״טים`;
-  const ab=$('#skuAdvBtn');
-  if(ab) ab.textContent = skuAdvN() ? `סינון מתקדם · ${skuAdvN()}` : 'סינון מתקדם';
+  skuAdvBtnState();
+}
+/* מצב כפתור הסינון המתקדם — מספר הסינונים הפעילים + הדגשה כשיש כאלה */
+function skuAdvBtnState(){
+  const ab=$('#skuAdvBtn'); if(!ab) return;
+  const n=skuAdvN();
+  ab.textContent = n ? `סינון מתקדם · ${n}` : 'סינון מתקדם';
+  ab.classList.toggle('on', !!n);
 }
 
 /* ---- כרטיס פריט — פרופיל מק"ט קומפקטי (סעיפים 6, 9, 10, 11, 12 + סבב 2) ---- */
@@ -1693,7 +1770,9 @@ window.openSku = (pn)=>{
   const mgr = skuMgr();
   const unit = esc(s.unit||'');
   const bals = Array.isArray(s.bals) ? s.bals : [];
-  const balRows = bals.map(b=>`<div class="row"><span class="k">מחסן ${esc(b.loc??'—')} · ${b.d?new Date(b.d+'T00:00').toLocaleDateString('he-IL'):'—'}</span><span class="v">${fmtNum(b.qty)} ${esc(s.unit||'יח\'')}</span></div>`).join('');
+  // סבב 3 — b.loc מחזיק עכשיו את שם המחסן (WARHSNAME) ולא את קוד המיקום שהיה תמיד "0".
+  const wname = v=>{ const t=String(v??'').trim(); return (!t || t==='0') ? 'מחסן ראשי' : t; };
+  const balRows = bals.filter(b=>Number(b.qty)!==0).map(b=>`<div class="row"><span class="k">${esc(wname(b.loc))}${b.d?' · '+new Date(b.d+'T00:00').toLocaleDateString('he-IL'):''}</span><span class="v">${fmtNum(b.qty)} ${esc(s.unit||'יח\'')}</span></div>`).join('');
   const kpi = (l,v,cls)=>`<div class="sku-kpi${cls?' '+cls:''}"><span class="kl">${l}</span><span class="kv">${v}</span></div>`;
   const money = v => (v==null||v==='') ? '—' : shekel(v);
   const exp = Number(s.expected_qty||0), expF = Number(s.expected_qty_full||0);

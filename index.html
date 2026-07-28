@@ -386,7 +386,7 @@
   <div class="card">
     <div style="text-align:center;margin:-4px 0 8px;"><img class="brand-logo" alt="איירון פיטנס" style="width:96px;"></div>
     <h1>איירון פיטנס</h1>
-    <p class="sub">המערכת המאוחדת · גרסה 5.6.1</p>
+    <p class="sub">המערכת המאוחדת · גרסה 5.6.2</p>
     <div class="field"><label for="email">דוא"ל</label><input id="email" type="email" autocomplete="username" placeholder="name@ironfitness.co.il"></div>
     <div class="field"><label for="password">סיסמה</label><input id="password" type="password" autocomplete="current-password" placeholder="••••••••"></div>
     <button class="btn" id="loginBtn">כניסה</button>
@@ -444,7 +444,7 @@
       <span class="init" id="sideInit">—</span>
       <span><b id="sideName">—</b><small id="sideRole">אזור אישי</small></span>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.6.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.6.2</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -672,7 +672,12 @@ async function oldCall(op, payload){
 let _oldBootP = null;
 function oldBoot(fresh){
   if(fresh) _oldBootP = null;
-  if(!_oldBootP) _oldBootP = oldCall('bootstrap');
+  if(!_oldBootP) _oldBootP = oldCall('bootstrap').then(r => {
+    if(!r.error) return r;
+    /* 5.6.2 — ניסיון שני: תקלה רגעית בגשר (בעיקר בקריאה הראשונה
+       אחרי טעינת עמוד) לא צריכה להקפיץ את הבאנר האדום */
+    return new Promise(res => setTimeout(res, 700)).then(() => oldCall('bootstrap'));
+  });
   return _oldBootP;
 }
 /* עוטף כל חלק בצורה שנראית כמו תשובת supabase — כדי לא לשנות את מבנה הטעינה */
@@ -1416,7 +1421,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.6.1</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.6.2</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>

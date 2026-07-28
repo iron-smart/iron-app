@@ -402,7 +402,7 @@
   <div class="card">
     <div style="text-align:center;margin:-4px 0 8px;"><img class="brand-logo" alt="איירון פיטנס" style="width:96px;"></div>
     <h1>איירון פיטנס</h1>
-    <p class="sub">המערכת המאוחדת · גרסה 5.7.0</p>
+    <p class="sub">המערכת המאוחדת · גרסה 5.8.0</p>
     <div class="field"><label for="email">דוא"ל</label><input id="email" type="email" autocomplete="username" placeholder="name@ironfitness.co.il"></div>
     <div class="field"><label for="password">סיסמה</label><input id="password" type="password" autocomplete="current-password" placeholder="••••••••"></div>
     <button class="btn" id="loginBtn">כניסה</button>
@@ -460,7 +460,7 @@
       <span class="init" id="sideInit">—</span>
       <span><b id="sideName">—</b><small id="sideRole">אזור אישי</small></span>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.7.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.8.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -1253,7 +1253,7 @@ function skuTable(list){
   if(!list.length) return '<div class="empty">אין מק"טים להצגה</div>';
   /* ברקוד מוצג רק אם הוא שונה מהמק"ט — בלי כפילות (הערת רומן 27/07) */
   const bc = s => (s.barcode && String(s.barcode).trim()!==String(s.partname).trim()) ? esc(s.barcode) : '—';
-  const rows=list.slice(0,300).map((s,i)=>`<tr onclick="openSku('${jsq(s.partname)}')">
+  const rows=list.slice(0,pgLim('sku')).map((s,i)=>`<tr onclick="openSku('${jsq(s.partname)}')">
     <td class="rownum">${i+1}</td>
     <td>${s.image_url?`<img class="sku-img" style="width:38px;height:38px" src="${esc(s.image_url)}" loading="lazy" onclick="event.stopPropagation();window.open('${jsq(s.image_full||s.image_url)}','_blank')">`:'<span style="color:#c3cbd4">—</span>'}</td>
     <td dir="ltr"><b>${esc(s.partname)}</b></td><td class="td-desc">${esc(s.partdes||'—')}</td><td>${esc(s.family||'—')}</td>
@@ -1263,7 +1263,7 @@ function skuTable(list){
     <td>${s.install_price_contractor!=null?shekel(s.install_price_contractor):'—'}</td>
     <td>${fmtNum(s.pallet_load_factor)}</td>
     <td>${s.qty!=null&&s.qty!==''?fmtNum(s.qty):'—'}</td><td dir="ltr">${bc(s)}</td></tr>`).join('');
-  return `<div class="tbl-wrap"><table class="tbl tbl-center"><thead><tr><th class="rownum">#</th><th style="width:50px">תמונה</th><th style="width:110px">מק"ט</th><th>תיאור</th><th>משפחה</th><th>פעיל</th><th>מחיר</th><th>התקנה איירון</th><th>התקנה קבלני</th><th>מקדם העמסה</th><th>מלאי</th><th>ברקוד</th></tr></thead><tbody>${rows}</tbody></table></div><div class="count-line2">מציג ${Math.min(list.length,300)} מתוך ${list.length} מק"טים</div>`;
+  return `<div class="tbl-wrap"><table class="tbl tbl-center"><thead><tr><th class="rownum">#</th><th style="width:50px">תמונה</th><th style="width:110px">מק"ט</th><th>תיאור</th><th>משפחה</th><th>פעיל</th><th>מחיר</th><th>התקנה איירון</th><th>התקנה קבלני</th><th>מקדם העמסה</th><th>מלאי</th><th>ברקוד</th></tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('sku',list.length,'מק"טים')}`;
 }
 function renderSkus(){
   const list=filteredSkus();
@@ -1437,7 +1437,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.7.0</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.8.0</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
@@ -1579,10 +1579,24 @@ async function loadLeads(){
 function renderAllViews(){
   renderStats(); renderToday(); renderLeads(); renderCustomers(); renderTasks(); renderDeals(); renderMeets(); renderConts(); renderPays(); renderOrdersTools(); renderOrders(); renderSkuTools(); renderSkus(); renderLogi(); renderDocs(); renderOps();
 }
+/* עימוד — כפתור "הצג עוד" בכל מסכי הרשימות (הערת רומן 28/07) */
+const PGSTEP=300; const PGL={};
+function pgLim(k){ return PGL[k]||PGSTEP; }
+function pgBtn(fn,txt){ return `<button class="ghost" style="width:auto;display:inline-block;padding:4px 12px;margin-inline-start:8px;font-size:12.5px" onclick="${fn}">${txt}</button>`; }
+function pgFoot(k,total,noun){
+  const shown=Math.min(total,pgLim(k));
+  let extra='';
+  if(total>shown) extra = pgBtn(`pgMore('${k}')`,`הצג עוד ${Math.min(PGSTEP,total-shown)}`) + pgBtn(`pgAll('${k}',${total})`,'הצג הכל');
+  else if(shown>PGSTEP) extra = pgBtn(`pgReset('${k}')`,'הצג פחות');
+  return `<div class="count-line2">מציג ${shown} מתוך ${total} ${noun}${extra}</div>`;
+}
+window.pgMore=(k)=>{ PGL[k]=pgLim(k)+PGSTEP; renderAllViews(); };
+window.pgAll=(k,t)=>{ PGL[k]=t; renderAllViews(); };
+window.pgReset=(k)=>{ PGL[k]=PGSTEP; renderAllViews(); };
 function capped(list, rowFn, emptyMsg){
   if(!list.length) return `<div class="empty">${emptyMsg}</div>`;
-  const html = list.slice(0,200).map(rowFn).join('');
-  return list.length>200 ? html+`<div class="more">מציג 200 מתוך ${list.length} — חדד את החיפוש</div>` : html;
+  const html = list.slice(0,pgLim('cards')).map(rowFn).join('');
+  return list.length>pgLim('cards') ? html+pgFoot('cards',list.length,'רשומות') : html;
 }
 
 function taskRow(t){
@@ -1613,7 +1627,7 @@ function myOpenTodayTasks(){
 }
 function taskTable(list){
   if(!list.length) return '<div class="empty">אין משימות פתוחות 🎉</div>';
-  const rows=list.slice(0,300).map((t,i)=>{
+  const rows=list.slice(0,pgLim('tasks')).map((t,i)=>{
     const overdue = t.status!=='הושלם' && t.due_at && new Date(t.due_at) < new Date();
     const due = t.due_at ? new Date(t.due_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
     return `<tr>
@@ -1624,7 +1638,7 @@ function taskTable(list){
       <td>${ieSel('task',t.id,'status',TASK_STATUSES,t.status,{mdColors:TASK_ST_COLORS})}</td>
       <td>${t.status!=='הושלם'?`<button class="chip" onclick="event.stopPropagation();doneTask('${t.id}')">בוצע ✓</button>`:'✓'}</td>
     </tr>`;}).join('');
-  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="rownum">#</th><th>משימה</th><th>סיווג</th><th>יעד</th><th>סטטוס</th><th></th></tr></thead><tbody>${rows}</tbody></table></div><div class="count-line2">מציג ${Math.min(list.length,300)} מתוך ${list.length} משימות</div>`;
+  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="rownum">#</th><th>משימה</th><th>סיווג</th><th>יעד</th><th>סטטוס</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('tasks',list.length,'משימות')}`;
 }
 function renderTasks(){
   const q=($('#taskSearch').value||'').trim();
@@ -1658,7 +1672,7 @@ function custRow(c){
 }
 function custTable(list){
   if(!list.length) return '<div class="empty">לא נמצאו לקוחות</div>';
-  const rows=list.slice(0,300).map((c,i)=>`<tr onclick="openCust('${c.id}')">
+  const rows=list.slice(0,pgLim('cust')).map((c,i)=>`<tr onclick="openCust('${c.id}')">
     <td class="rownum">${i+1}</td>
     <td><b>${esc(c.name)}</b></td>
     <td dir="ltr">${esc(c.priority_id||'—')}</td>
@@ -1668,7 +1682,7 @@ function custTable(list){
     <td>${esc(c.price_group||'—')}</td>
     <td><span class="pill ${c.status==='פעיל'?'st-rel':(c.status==='לא פעיל'?'st-no':'st-def')}">${esc(c.status||'—')}</span></td>
   </tr>`).join('');
-  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="rownum">#</th><th>לקוח</th><th>מס' פריוריטי</th><th>טלפון</th><th>עיר / כתובת</th><th>סוג</th><th>מחירון</th><th>פעיל?</th></tr></thead><tbody>${rows}</tbody></table></div><div class="count-line2">מציג ${Math.min(list.length,300)} מתוך ${list.length} לקוחות</div>`;
+  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="rownum">#</th><th>לקוח</th><th>מס' פריוריטי</th><th>טלפון</th><th>עיר / כתובת</th><th>סוג</th><th>מחירון</th><th>פעיל?</th></tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('cust',list.length,'לקוחות')}`;
 }
 function renderCustomers(){
   const q=($('#custSearch').value||'').trim();
@@ -1720,7 +1734,7 @@ function contRow(k){
 }
 function contTable(list){
   if(!list.length) return '<div class="empty">לא נמצאו אנשי קשר</div>';
-  const rows=list.slice(0,300).map((k,i)=>{
+  const rows=list.slice(0,pgLim('cont')).map((k,i)=>{
     const cust = k.customer_id ? CUSTS.find(c=>c.id===k.customer_id) : null;
     return `<tr onclick="${cust?`openCust('${cust.id}')`:''}">
       <td class="rownum">${i+1}</td>
@@ -1730,7 +1744,7 @@ function contTable(list){
       <td>${esc(k.role||'—')}</td>
       <td>${cust?esc(cust.name):'<span style="color:#94a3b8">ללא לקוח</span>'}</td>
     </tr>`;}).join('');
-  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="rownum">#</th><th>שם</th><th>טלפון</th><th>מייל</th><th>תפקיד</th><th>לקוח</th></tr></thead><tbody>${rows}</tbody></table></div><div class="count-line2">מציג ${Math.min(list.length,300)} מתוך ${list.length} אנשי קשר</div>`;
+  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="rownum">#</th><th>שם</th><th>טלפון</th><th>מייל</th><th>תפקיד</th><th>לקוח</th></tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('cont',list.length,'אנשי קשר')}`;
 }
 function renderConts(){
   const q=($('#contSearch').value||'').trim();
@@ -1767,7 +1781,7 @@ function payRow(p){
 const PAY_STATUSES=['ממתין לתשלום','שולמה חלקית','שולמה'];
 function payTable(list){
   if(!list.length) return '<div class="empty">אין רשומות תשלום בסינון הזה</div>';
-  const rows=list.slice(0,300).map((p,i)=>{
+  const rows=list.slice(0,pgLim('pays')).map((p,i)=>{
     const cust = p.customer_id ? CUSTS.find(c=>c.id===p.customer_id) : null;
     const nm = cust ? cust.name : (p.notes||'ללא לקוח').split(' | ')[0];
     const rem = remaining(p);
@@ -1780,7 +1794,7 @@ function payTable(list){
       <td>${rem&&p.status!=='שולמה'?`<b style="color:#c0392b">${shekel(rem)}</b>`:'—'}</td>
       <td>${ieSel('pay',p.id,'status',PAY_STATUSES,p.status)}</td>
     </tr>`;}).join('');
-  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="rownum">#</th><th>לקוח</th><th>תאריך</th><th>סה"כ</th><th>שולם</th><th>יתרה</th><th>סטטוס</th></tr></thead><tbody>${rows}</tbody></table></div><div class="count-line2">מציג ${Math.min(list.length,300)} מתוך ${list.length} רשומות</div>`;
+  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="rownum">#</th><th>לקוח</th><th>תאריך</th><th>סה"כ</th><th>שולם</th><th>יתרה</th><th>סטטוס</th></tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('pays',list.length,'רשומות')}`;
 }
 function renderPays(){
   payChips();
@@ -1940,7 +1954,7 @@ function scRow(s){
 }
 function scTable(list){
   if(!list.length) return '<div class="empty">אין קריאות שירות בסינון הזה</div>';
-  const rows = list.slice(0,300).map((s,i)=>{
+  const rows = list.slice(0,pgLim('calls')).map((s,i)=>{
     const wa=s.phone?waLink(s.phone, s.scheduled_date?waServiceMsg(s):('שלום '+(s.customer_name||'')+', בנוגע לקריאת השירות')):'';
     return `<tr onclick="openScall('${s.id}')">
       <td class="rownum">${i+1}</td>
@@ -1958,7 +1972,7 @@ function scTable(list){
     </tr>`;}).join('');
   return `<div class="tbl-wrap"><table class="tbl"><thead><tr>
     <th class="rownum">#</th><th>קריאה</th><th>לקוח</th><th>טלפון</th><th>מוצר</th><th>עיר / אזור</th><th>סטטוס</th><th>דחיפות</th><th>צוות</th><th>תאריך</th><th>שעות</th><th>וואטסאפ</th>
-  </tr></thead><tbody>${rows}</tbody></table></div><div class="count-line2">מציג ${Math.min(list.length,300)} מתוך ${list.length} קריאות</div>`;
+  </tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('calls',list.length,'קריאות')}`;
 }
 /* קבועי הלוח הישן — כרטיסים מלאים (הערות 21–22) */
 const ORDER_STATUSES = ['הזמנה חדשה','נשלח לייצור','הכנה לצביעה','בהשהיה','תואם','הושלם','בוטל'];
@@ -2096,7 +2110,7 @@ function ordHead(){
 }
 function ordTable(list){
   if(!list.length) return '<div class="empty">לא נמצאו הזמנות מתאימות</div>';
-  const rows = list.slice(0,300).map((o,i)=>{
+  const rows = list.slice(0,pgLim('orders')).map((o,i)=>{
     const wa = o.phone && o.scheduled_date ? waLink(o.phone, waCoordMsg(o)) : '';
     return `<tr onclick="openOrd('${o.id}')">
       <td class="rownum">${i+1}</td>
@@ -2112,7 +2126,7 @@ function ordTable(list){
       <td>${ieSel('ord',o.id,'time_slot',TIME_SLOTS,o.time_slot,{allowEmpty:true})}</td>
       <td>${wa?`<a class="btn-wa2" href="${wa}" target="_blank" onclick="event.stopPropagation()">📱</a>`:''}</td>
     </tr>`;}).join('');
-  return `<div class="tbl-wrap"><table class="tbl"><thead><tr>${ordHead()}</tr></thead><tbody>${rows}</tbody></table></div><div class="count-line2">מציג ${Math.min(list.length,300)} מתוך ${list.length} הזמנות</div>`;
+  return `<div class="tbl-wrap"><table class="tbl"><thead><tr>${ordHead()}</tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('orders',list.length,'הזמנות')}`;
 }
 function renderOrders(){
   ordChips();
@@ -2302,7 +2316,7 @@ function dealRow(d){
 }
 function dealTable(list){
   if(!list.length) return '<div class="empty">אין עסקאות בסינון הזה</div>';
-  const rows=list.slice(0,300).map((d,i)=>{
+  const rows=list.slice(0,pgLim('deals')).map((d,i)=>{
     const cust = d.customer_id ? CUSTS.find(c=>c.id===d.customer_id) : null;
     return `<tr onclick="openDeal('${d.id}')">
       <td class="rownum">${i+1}</td>
@@ -2313,7 +2327,7 @@ function dealTable(list){
       <td>${ieSel('deal',d.id,'stage',STAGES,d.stage,{mdColors:DEAL_ST_COLORS})}</td>
       <td>${esc(d.quote_status||d.irrelevant_reason||'—')}</td>
     </tr>`;}).join('');
-  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="rownum">#</th><th>עסקה</th><th>לקוח</th><th>הצעה</th><th>סכום</th><th>שלב</th><th>תת-סטטוס</th></tr></thead><tbody>${rows}</tbody></table></div><div class="count-line2">מציג ${Math.min(list.length,300)} מתוך ${list.length} עסקאות</div>`;
+  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="rownum">#</th><th>עסקה</th><th>לקוח</th><th>הצעה</th><th>סכום</th><th>שלב</th><th>תת-סטטוס</th></tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('deals',list.length,'עסקאות')}`;
 }
 function renderDeals(){
   dealChips();
@@ -2431,7 +2445,7 @@ function meetRow(m){
 const MEET_STATUSES=['חדשה','תואמה','נדחתה','התקיימה','לא התקיימה','בוטלה'];
 function meetTable(list){
   if(!list.length) return '<div class="empty">אין פגישות בסינון הזה</div>';
-  const rows=list.slice(0,300).map((m,i)=>{
+  const rows=list.slice(0,pgLim('meets')).map((m,i)=>{
     const ln=linkedName(m);
     return `<tr onclick="openMeet('${m.id}')">
       <td class="rownum">${i+1}</td>
@@ -2442,7 +2456,7 @@ function meetTable(list){
       <td>${ln?ln.label+': '+esc(ln.name):'—'}</td>
       <td>${ieSel('meet',m.id,'status',MEET_STATUSES,m.status)}</td>
     </tr>`;}).join('');
-  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="rownum">#</th><th>נושא</th><th>תאריך</th><th>שעות</th><th>סוג</th><th>מקושרת אל</th><th>סטטוס</th></tr></thead><tbody>${rows}</tbody></table></div><div class="count-line2">מציג ${Math.min(list.length,300)} מתוך ${list.length} פגישות</div>`;
+  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="rownum">#</th><th>נושא</th><th>תאריך</th><th>שעות</th><th>סוג</th><th>מקושרת אל</th><th>סטטוס</th></tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('meets',list.length,'פגישות')}`;
 }
 function renderMeets(){
   meetChips();
@@ -2488,7 +2502,7 @@ function renderToday(){
 }
 function leadTable(list){
   if(!list.length) return '<div class="empty">לא נמצאו לידים</div>';
-  const rows=list.slice(0,300).map((l,i)=>{
+  const rows=list.slice(0,pgLim('leads')).map((l,i)=>{
     const sub=l.sub_status||l.reject_reason||l.irrelevant_reason;
     return `<tr onclick="openLead('${l.id}')">
       <td class="rownum">${i+1}</td>
@@ -2500,7 +2514,7 @@ function leadTable(list){
       <td>${sub?esc(sub):'—'}</td>
       <td>${l.created_at?new Date(l.created_at).toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit'}):'—'}</td>
     </tr>`;}).join('');
-  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="rownum">#</th><th>שם</th><th>טלפון</th><th>עיר</th><th>מקור הגעה</th><th>סטטוס</th><th>תת-סטטוס</th><th>נוצר</th></tr></thead><tbody>${rows}</tbody></table></div><div class="count-line2">מציג ${Math.min(list.length,300)} מתוך ${list.length} לידים</div>`;
+  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="rownum">#</th><th>שם</th><th>טלפון</th><th>עיר</th><th>מקור הגעה</th><th>סטטוס</th><th>תת-סטטוס</th><th>נוצר</th></tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('leads',list.length,'לידים')}`;
 }
 function renderLeads(){
   const q = ($('#search').value||'').trim();

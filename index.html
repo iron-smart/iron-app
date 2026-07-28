@@ -219,7 +219,7 @@
   .rownum{ width:38px; min-width:38px; text-align:center; color:#94a3b8; font-size:11.5px; font-weight:600; }
   .note-preview{ font-size:11px; color:#8a9199; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
   .count-line2{ color:#64748b; font-size:12.5px; padding:8px 4px; }
-  .inline-edit{ width:auto; max-width:135px; font-size:12.5px; padding:3px 6px; border:1px solid transparent; background:transparent; border-radius:6px; cursor:pointer; }
+  .inline-edit{ width:auto; max-width:190px; font-size:12.5px; padding:3px 6px; border:1px solid transparent; background:transparent; border-radius:6px; cursor:pointer; }
   .inline-edit:hover{ border-color:var(--line); background:#fff; }
   .inline-edit:focus{ border-color:#579bfc; background:#fff; outline:none; }
   .inline-edit.ie-date{ max-width:122px; direction:ltr; }
@@ -494,7 +494,7 @@
   .tbl th.srt, .tbl th.gsrt{ cursor:pointer; user-select:none; }
   .tbl th.srt:hover, .tbl th.gsrt:hover{ background:#0b3f63; }
   .tbl th.srt:focus-visible, .tbl th.gsrt:focus-visible{ outline:2px solid #9cd326; outline-offset:-2px; }
-  .tbl th .ar, .tbl th .sar{ font-size:10px; opacity:.45; margin-inline-start:5px; font-weight:400; }
+  .tbl th .ar, .tbl th .sar{ font-size:10px; opacity:.45; margin-inline-start:5px; font-weight:400; display:inline-block; width:11px; text-align:center; }
   .tbl th.gsrt::after{ content:'\2195'; font-size:10px; opacity:.45; margin-inline-start:5px; font-weight:400; display:inline-block; width:11px; text-align:center; }
   .tbl th.srt.on, .tbl th.on, .tbl th.gsrt.asc, .tbl th.gsrt.desc{ background:#0b3f63; box-shadow:inset 0 -3px 0 #9cd326, inset 0 -1px 0 rgba(255,255,255,.14); }
   .tbl th.srt.on .ar, .tbl th.on .sar{ opacity:1; color:#9cd326; }
@@ -560,7 +560,7 @@
         <span>מחירון ומלאי בזמן אמת</span>
         <span>הזמנות, התקנות והנהלת חשבונות</span>
       </div>
-      <div class="ver">גרסה 5.8.1</div>
+      <div class="ver">גרסה 5.8.2</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -632,7 +632,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.8.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.8.2</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -939,16 +939,34 @@ const mdPill = (v, colors) => {
    התיקון: מסך טעינה (#bootsplash) חוסם את ההבזק עד שידוע אם יש סשן, וסשן שמור
    תקף רק בתוך אותה לשונית — אלא אם המשתמש סימן "השאר אותי מחובר". */
 const RMB_KEY = 'iron_remember', TAB_KEY = 'iron_tab_session', ALIVE_KEY = 'iron_alive';
+/* בסגירת הדפדפן מוחקים את פעימת החיים, אחרת מי שיפתח את הדפדפן תוך 15 שניות
+   יירש סשן של משתמש שלא ביקש "השאר אותי מחובר" (תחנה משותפת). */
+window.addEventListener('pagehide', ()=>{ try{ if(localStorage.getItem(RMB_KEY) !== '1') localStorage.removeItem(ALIVE_KEY); }catch(_){} });
 
 function killSplash(){ const s = document.getElementById('bootsplash'); if(s) s.remove(); }
 window.killSplash = killSplash;
 
 /* שומר-זמן: אם boot() נתקע (שגיאת ריצה, getSession שלא חוזר, רשת שנפלה) —
    לא נשארים עם ספינר לנצח אלא מציגים טופס התחברות שמיש. */
-setTimeout(()=>{ if(document.getElementById('bootsplash')) showLogin('הטעינה נתקעה — נסו לרענן את הדף'); }, 10000);
+let BOOT_BUSY = false;
+setTimeout(()=>{ if(document.getElementById('bootsplash') && !BOOT_BUSY) showLogin('הטעינה נתקעה — נסו לרענן את הדף'); }, 10000);
 
 function showLogin(msg){
   killSplash();
+  /* יציאה ממצב "בחירת סיסמה חדשה" — בלי זה, אם afterLogin נכשל אחרי איפוס
+     מוצלח, הטופס נשאר בלי שדה דוא"ל ועם כפתור "מעדכן…" תקוע. */
+  if(!PW_RECOVERY){
+    try{
+      $('#emailField').classList.remove('hidden');
+      $('#loginRow2').classList.remove('hidden');
+      $('#pw2Field').classList.add('hidden');
+      $('#pwLabel').textContent = 'סיסמה';
+      $('#password').setAttribute('autocomplete','current-password');
+      $('#password2').value = '';
+      $('#loginBtn').textContent = 'כניסה למערכת';
+      $('#loginBtn').disabled = false;
+    }catch(_){}
+  }
   $('#login').classList.remove('hidden');
   $('#app').classList.add('hidden');
   $('#loginErr').textContent = msg || '';
@@ -977,6 +995,7 @@ async function boot(){
       return;
     }
     sessionStorage.setItem(TAB_KEY, '1');
+    BOOT_BUSY = true;
     await afterLogin();
   }catch(e){
     console.error('boot', e);
@@ -1003,7 +1022,7 @@ function enterRecoveryMode(){
   $('#password').setAttribute('autocomplete','new-password');
   $('#loginBtn').textContent = 'עדכון הסיסמה';
   $('#loginErr').textContent = '';
-  $('#loginOk').textContent = 'קישור האיפוס אומת — בחרו סיסמה חדשה';
+  $('#loginOk').textContent = 'בחרו סיסמה חדשה לחשבון';
   setTimeout(()=>{ try{ $('#password').focus(); }catch(_){} }, 60);
 }
 
@@ -1059,6 +1078,9 @@ $('#loginBtn').onclick = async ()=>{
     if(!PW_RECOVERY) btn.textContent = 'כניסה למערכת';
   }
 };
+/* טעינת המצב השמור — אחרת משתמש שסימן "השאר אותי מחובר" בעבר מבטל אותו
+   בלי לדעת בפעם הבאה שהוא מתחבר. */
+try{ if(localStorage.getItem(RMB_KEY) === '1' && $('#rememberMe')) $('#rememberMe').checked = true; }catch(_){}
 $('#email').addEventListener('keydown',e=>{ if(e.key==='Enter') $('#password').focus(); });
 $('#password').addEventListener('keydown',e=>{ if(e.key==='Enter') $('#loginBtn').click(); });
 
@@ -1114,8 +1136,10 @@ async function afterLogin(){
   $('#sideInit').textContent = initials;
   $('#sideName').textContent = prof.full_name || prof.email;
   $('#sideRole').textContent = prof.job_title || roleHe;
-  applyDashboard();
-  await loadLeads();
+  /* מכאן והלאה המשתמש כבר מחובר והמערכת מוצגת — כשל ברינדור הוא תקלת נתונים,
+     לא תקלת התחברות, ואסור שיגלגל חריגה חזרה ל-boot() וישליך למסך ההתחברות. */
+  try{ applyDashboard(); await loadLeads(); }
+  catch(e){ console.error('afterLogin render', e); }
 }
 
 $('#logoutBtn').onclick = async ()=>{
@@ -3481,6 +3505,9 @@ const SIGN_TOKEN = new URLSearchParams(location.search).get('sign');
    שחוצה עמודים. המיון כאן יציב, ערכים ריקים תמיד בסוף, ועמודת המספור
    (td.rownum) ממוספרת מחדש 1..n אחרי כל מיון. */
 (function(){
+  /* זיכרון מיון לפי מזהה המכולה — כל רינדור מחדש בונה <table> חדשה,
+     ובלי זה כל עריכה בשורה הייתה מאפסת את המיון שהמשתמש בחר. */
+  var GSMEM = {};
   var COLLATOR = null;
   try{ COLLATOR = new Intl.Collator('he', { numeric:true, sensitivity:'base' }); }catch(_){ COLLATOR = null; }
 
@@ -3502,7 +3529,7 @@ const SIGN_TOKEN = new URLSearchParams(location.search).get('sign');
 
   /* המרת טקסט למפתח מיון: מספר / תאריך / מחרוזת */
   function gsVal(raw){
-    if(raw === '' || raw === '—' || raw === '-') return null;
+    if(raw === '' || raw === '—' || raw === '-' || raw === 'לא משויך' || raw === 'ללא לקוח') return null;
     /* תאריך dd/mm/yyyy או dd.mm.yyyy או dd-mm-yyyy (אפשר עם שעה) */
     var d = raw.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})(?:[ ,]+(\d{1,2}):(\d{2}))?/);
     if(d){
@@ -3591,7 +3618,10 @@ const SIGN_TOKEN = new URLSearchParams(location.search).get('sign');
       table.setAttribute('data-gs','own');
       /* טבלאות עם מיון משלהן (מק"טים, הזמנות) — הכותרות עדיין צריכות להיות נגישות במקלדת */
       var own = table.querySelectorAll('th.srt');
-      for(var j=0;j<own.length;j++) if(!own[j].hasAttribute('tabindex')) own[j].setAttribute('tabindex','0');
+      for(var j=0;j<own.length;j++){
+        if(!own[j].hasAttribute('tabindex')) own[j].setAttribute('tabindex','0');
+        own[j].setAttribute('aria-sort', own[j].classList.contains('on') ? (own[j].textContent.indexOf('▼') >= 0 ? 'descending' : 'ascending') : 'none');
+      }
       return;
     }
     table.setAttribute('data-gs','1');
@@ -3608,6 +3638,11 @@ const SIGN_TOKEN = new URLSearchParams(location.search).get('sign');
       th.setAttribute('aria-sort','none');
       if(!th.title) th.title = 'מיון לפי ' + lbl + ' (בתוך העמוד המוצג)';
     }
+    /* שחזור המיון האחרון של אותה מכולה אחרי רינדור מחדש */
+    try{
+      var host = table.closest('[id]'), s = host && GSMEM[host.id];
+      if(s && ths[s[0]] && ths[s[0]].classList.contains('gsrt')){ gsSort(table, s[0], s[1]); gsMark(thead, s[0], s[1]); }
+    }catch(_){}
   }
 
   function gsActivate(th){
@@ -3617,6 +3652,7 @@ const SIGN_TOKEN = new URLSearchParams(location.search).get('sign');
     var dir = th.classList.contains('asc') ? -1 : 1;
     gsSort(table, idx, dir);
     gsMark(table.tHead, idx, dir);
+    try{ var host = table.closest('[id]'); if(host) GSMEM[host.id] = [idx, dir]; }catch(_){}
   }
 
   document.addEventListener('click', function(e){
@@ -3657,7 +3693,7 @@ const SIGN_TOKEN = new URLSearchParams(location.search).get('sign');
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', gsStart);
   else gsStart();
 })();
-if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN); } else { boot(); }
+if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN).catch(e=>{ console.error('sign', e); const b=document.getElementById('signbody'); if(b) b.innerHTML = '<div class="empty">שגיאה בטעינת המסמך — נסו שוב</div>'; }); } else { boot(); }
 </script>
 </body>
 </html>

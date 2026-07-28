@@ -386,7 +386,7 @@
   <div class="card">
     <div style="text-align:center;margin:-4px 0 8px;"><img class="brand-logo" alt="איירון פיטנס" style="width:96px;"></div>
     <h1>איירון פיטנס</h1>
-    <p class="sub">המערכת המאוחדת · גרסה 5.5.0</p>
+    <p class="sub">המערכת המאוחדת · גרסה 5.6.0</p>
     <div class="field"><label for="email">דוא"ל</label><input id="email" type="email" autocomplete="username" placeholder="name@ironfitness.co.il"></div>
     <div class="field"><label for="password">סיסמה</label><input id="password" type="password" autocomplete="current-password" placeholder="••••••••"></div>
     <button class="btn" id="loginBtn">כניסה</button>
@@ -444,7 +444,7 @@
       <span class="init" id="sideInit">—</span>
       <span><b id="sideName">—</b><small id="sideRole">אזור אישי</small></span>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.5.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.6.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -646,6 +646,39 @@ if(!window.supabase){
 const SB_URL = "https://hjibpfavkjqocjvffsbq.supabase.co";
 const SB_KEY = "sb_publishable_tAnwO6ncZD5QIo1bNFYrhA_qs-YPY1J";
 const sb = supabase.createClient(SB_URL, SB_KEY);
+
+/* ===== גשר ההזמנות החי (5.6.0) =====
+   מערכת ההזמנות הישנה נשארת מקור האמת — פריוריטי מסנכרן אליה כל בוקר.
+   במקום להחזיק עותק בפלטפורמה, המסכים קוראים וכותבים ישירות דרך פונקציית
+   orders-live שרצה על הפרויקט הישן ומאמתת את המשתמש מול הפלטפורמה. */
+const OLD_BRIDGE = "https://gwycwxkesgsplsmytgri.supabase.co/functions/v1/orders-live";
+async function oldCall(op, payload){
+  let tok = null;
+  try{ const { data } = await sb.auth.getSession(); tok = data && data.session && data.session.access_token; }catch(_e){}
+  if(!tok) return { data:null, error:{ message:'ההתחברות פגה — רעננו את הדף' } };
+  let r;
+  try{
+    r = await fetch(OLD_BRIDGE, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+tok },
+      body: JSON.stringify(Object.assign({ op }, payload||{}))
+    });
+  }catch(e){ return { data:null, error:{ message:'אין תקשורת עם מערכת ההזמנות ('+(e&&e.message||e)+')' } }; }
+  let j = null; try{ j = await r.json(); }catch(_e){}
+  if(!r.ok) return { data:null, error:{ message:(j&&j.error) || ('מערכת ההזמנות החזירה שגיאה '+r.status) } };
+  return { data:j, error:null };
+}
+/* טעינה אחת משותפת לשלושת המקורות (הזמנות, קריאות שירות, לוג סנכרון) */
+let _oldBootP = null;
+function oldBoot(fresh){
+  if(fresh) _oldBootP = null;
+  if(!_oldBootP) _oldBootP = oldCall('bootstrap');
+  return _oldBootP;
+}
+/* עוטף כל חלק בצורה שנראית כמו תשובת supabase — כדי לא לשנות את מבנה הטעינה */
+function oldPart(key){
+  return oldBoot().then(r => r.error ? { data:null, error:r.error } : { data:(r.data && r.data[key]) || [], error:null });
+}
 const $ = s => document.querySelector(s);
 let ME = null, LEADS = [];
 
@@ -870,8 +903,9 @@ function toast(msg){
   clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'), 1800);
 }
 const IE_TABLES = {
-  ord:   { schema:'ord', table:'orders',        arr:()=>ORDS,  ent:'הזמנה',        key:o=>o.order_number, rerender:()=>{ renderOrders(); renderLogi(); renderCal(); renderOps(); } },
-  scall: { schema:'ord', table:'service_calls', arr:()=>SCALLS,ent:'קריאת שירות',  key:s=>s.call_number,  rerender:()=>{ renderOrders(); renderLogi(); renderCal(); } },
+  /* הזמנות וקריאות שירות נשמרות דרך הגשר אל המערכת הישנה — היא מקור האמת */
+  ord:   { bridge:'update_order',        schema:'ord', table:'orders',        arr:()=>ORDS,  ent:'הזמנה',        key:o=>o.order_number, rerender:()=>{ renderOrders(); renderLogi(); renderCal(); renderOps(); } },
+  scall: { bridge:'update_service_call', schema:'ord', table:'service_calls', arr:()=>SCALLS,ent:'קריאת שירות',  key:s=>s.call_number,  rerender:()=>{ renderOrders(); renderLogi(); renderCal(); } },
   lead:  { schema:'crm', table:'leads',         arr:()=>LEADS, ent:'ליד',          key:l=>l.full_name,    rerender:()=>{ renderLeads(); renderToday(); renderStats(); } },
   task:  { schema:'crm', table:'tasks',         arr:()=>TASKS, ent:'משימה',        key:t=>t.name,         rerender:()=>{ renderTasks(); renderToday(); renderStats(); } },
   deal:  { schema:'crm', table:'deals',         arr:()=>DEALS, ent:'עסקה',         key:d=>d.name,         rerender:()=>{ renderDeals(); renderStats(); } },
@@ -886,9 +920,15 @@ window.ieSave = async (el)=>{
   const patch={ [field]:val };
   if(kind==='task' && field==='status' && val==='הושלם') patch.closed_at=new Date().toISOString();
   if(kind==='deal' && field==='stage' && ['הושלם','לא רלוונטי'].includes(val)) patch.closed_at=new Date().toISOString();
-  const { error } = await sb.schema(cfg.schema).from(cfg.table).update(patch).eq('id', id);
+  let error, row = null;
+  if(cfg.bridge){
+    const r = await oldCall(cfg.bridge, { id, patch });
+    error = r.error; row = r.data && r.data.row;
+  }else{
+    ({ error } = await sb.schema(cfg.schema).from(cfg.table).update(patch).eq('id', id));
+  }
   if(error){ toast('שגיאה בשמירה: '+error.message); cfg.rerender(); return; }
-  Object.assign(rec, patch);
+  Object.assign(rec, row || patch);
   if(cfg.schema==='ord'){
     try{ await sb.schema('ord').from('audit_log').insert({ user_email:ME.email, action:'עריכה ישירה מהטבלה', entity:cfg.ent, entity_id:String(cfg.key(rec)||''), label:field }); }catch(_e){}
   }
@@ -1380,7 +1420,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.5.0</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.6.0</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
@@ -1488,6 +1528,7 @@ function loadErrBanner(names){
 const LOAD_NAMES = ['לידים','לקוחות','משימות','עסקאות','פגישות','אנשי קשר','תשלומים','הזמנות','קריאות שירות','צוותים','לוג סנכרון','מק"טים','מסמכים','הגדרות'];
 async function loadLeads(){
   let _q;
+  oldBoot(true);   /* טעינה טרייה מהמערכת הישנה בכל רענון */
   try{
   _q = await Promise.all([
     sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at').order('created_at',{ascending:false}).limit(10000),
@@ -1497,10 +1538,10 @@ async function loadLeads(){
     sb.schema('crm').from('meetings').select('id,subject,status,meet_date,start_time,end_time,meet_type,location,teams_link,linked_type,linked_id').order('meet_date',{ascending:false}).limit(10000),
     sb.schema('core').from('contacts').select('id,full_name,phone,office_phone,email,role,customer_id').order('full_name',{ascending:true}).limit(10000),
     sb.schema('crm').from('payments').select('id,customer_id,deal_id,status,due_date,total_amount,paid_amount,notes').order('due_date',{ascending:false}).limit(10000),
-    sb.schema('ord').from('orders').select('id,order_number,order_date,customer_name,customer_number,phone,contact_name,contact_phone,customer_email,customer_address,city,region,order_status,contact_status,scheduled_date,days_count,time_slot,team,delivery_method,items_count,order_notes,erp_status,erp_price,erp_synced_at,equipment_list,warehouse_notes,supply_days,supply_end_date,delivery_note,invoice,friday_ok,internal_dialog,address').order('order_date',{ascending:false}).limit(10000),
-    sb.schema('ord').from('service_calls').select('id,call_number,opened_date,customer_name,customer_number,phone,customer_email,customer_address,address,city,region,status,call_type,warranty,product,fault_details,scheduled_date,time_slot,deadline,urgency,team,notes,erp_status').order('opened_date',{ascending:false}).limit(10000),
+    oldPart('orders'),          /* ישירות ממערכת ההזמנות הישנה — מקור האמת */
+    oldPart('service_calls'),   /* ישירות ממערכת ההזמנות הישנה — מקור האמת */
     sb.schema('ord').from('teams').select('id,name,color,active,sort_order').order('sort_order',{ascending:true}),
-    sb.schema('ord').from('sync_log').select('ran_at,ok,details').order('ran_at',{ascending:false}).limit(20),
+    oldPart('sync_log'),        /* ישירות ממערכת ההזמנות הישנה — מקור האמת */
     sb.schema('ord').from('inv_items').select('partname,partdes,price,family,qty,barcode,image_url,image_full,erp_status,unit,cost,supplier,sales_total,ord,pord,bals,install_price_iron,install_price_contractor,pallet_load_factor').order('partname',{ascending:true}).limit(10000),
     sb.schema('ord').from('protocols').select('id,order_id,call_id,order_number,customer_name,phone,doc_type,status,sent_at,signed_at,signer_name,token').order('sent_at',{ascending:false}).limit(10000),
     sb.schema('ord').from('settings').select('key,value').order('key',{ascending:true})
@@ -1947,11 +1988,11 @@ window.saveScall = async (id)=>{
     team: $('#se-team').value || null,
     notes: $('#se-notes').value || null,
   };
-  const { error } = await sb.schema('ord').from('service_calls').update(upd).eq('id', id);
+  const { data: res, error } = await oldCall('update_service_call', { id, patch: upd });
   if(error){ $('#se-err').textContent = 'השמירה נכשלה — ' + error.message; return; }
   const changes = [];
   for(const k of Object.keys(upd)) if((s[k]||null)!==(upd[k]||null)) changes.push(k);
-  Object.assign(s, upd);
+  Object.assign(s, (res && res.row) || upd);
   try{
     await sb.schema('ord').from('audit_log').insert({
       user_email: ME.email, action: 'עדכון קריאת שירות מהמערכת',
@@ -2083,8 +2124,9 @@ window.openOrd = (id)=>{
 async function loadOrderItems(orderNumber){
   const box=$('#orderItemsBox'); if(!box) return;
   try{
-    const { data: rows, error } = await sb.schema('ord').from('order_items').select('kline,partname,partdes,qty,synced_at').eq('order_number', orderNumber).order('kline',{ascending:true});
-    if(error) throw error;
+    const { data: res, error } = await oldCall('order_items', { order_number: orderNumber });
+    if(error) throw new Error(error.message);
+    const rows = (res && res.items) || [];
     if(!box.isConnected) return;
     /* אותה שורה עשויה להופיע מכמה ריצות סנכרון — מציגים את העדכני לכל kline */
     const byLine={};
@@ -2136,9 +2178,9 @@ window.saveOrd = async (id)=>{
   const changed={};
   for(const k in upd){ if((upd[k]??null)!==(o[k]??null)) changed[k]=upd[k]; }
   if(!Object.keys(changed).length){ closeCards(); return; }
-  const { error } = await sb.schema('ord').from('orders').update(changed).eq('id', id);
+  const { data: res, error } = await oldCall('update_order', { id, patch: changed });
   if(error){ $('#oe-err').textContent = 'השמירה נכשלה — ' + error.message; return; }
-  Object.assign(o, changed);
+  Object.assign(o, (res && res.row) || changed);   /* מקבלים בחזרה את השורה כפי שהיא בישן */
   try{
     await sb.schema('ord').from('audit_log').insert({
       user_email: ME.email, action: 'עדכון הזמנה מהמערכת',

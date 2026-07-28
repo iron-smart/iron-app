@@ -158,7 +158,7 @@
   .side-user-row{ display:flex; align-items:stretch; border-top:1px solid rgba(255,255,255,.1); }
   .side-user-row .side-user{ flex:1; min-width:0; border-top:0; }
   .side-user-row .side-user > span:last-child{ min-width:0; overflow:hidden; }
-  .side-user-row .side-user b{ display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .side-user-row .side-user b, .side-user-row .side-user small{ display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .side-out{ flex:none; width:44px; background:none; border:0; border-inline-start:1px solid rgba(255,255,255,.1); color:#cfd8e3; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
   .side-out:hover{ color:#fff; background:rgba(255,255,255,.08); }
   .side-out svg{ width:18px; height:18px; }
@@ -201,7 +201,10 @@
   .tbl thead, .tbl thead tr{ background:var(--navy); }
   .tbl th{ text-align:center; vertical-align:middle; color:#fff; background:var(--navy); background-image:none; font-weight:700; font-size:13px; padding:10px 12px; white-space:nowrap; position:sticky; top:0; z-index:3; box-shadow:inset 0 -1px 0 rgba(255,255,255,.14); }
   .tbl th + th{ border-inline-start:1px solid rgba(255,255,255,.08); }
-  .tbl td{ text-align:center; vertical-align:middle; padding:9px 12px; border-bottom:1px solid #eef1f4; white-space:nowrap; max-width:200px; overflow:hidden; text-overflow:ellipsis; line-height:1.35; }
+  .tbl td{ text-align:center; vertical-align:middle; padding:9px 12px; border-bottom:1px solid #eef1f4; white-space:nowrap; line-height:1.35; }
+  /* קיצוץ טקסט הוא בחירה מפורשת בלבד. קיצוץ גורף (סבב 4) הסתיר נתונים בעמודות
+     ארוכות בלי שום דרך לראות אותם, וגם חתך את טבעת המיקוד של הנגישות. */
+  .tbl td.clip{ max-width:200px; overflow:hidden; text-overflow:ellipsis; }
   /* תיקון ממצא 23 — רק עוטף שיש בתוכו טבלה מקבל גובה מרבי, כדי שהגלילה תתרחש בתוכו והכותרת תידבק */
   .tbl-wrap:has(> table.tbl){ max-height:calc(100vh - 215px); }
   /* תיקון ממצא 17 — רקע מוצלל מאחורי הסרגל הנפתח במובייל */
@@ -212,7 +215,7 @@
   .tbl tbody tr:hover{ background:#eaf1f6; }
   .tbl tbody tr:last-child td{ border-bottom:none; }
   /* טקסט חופשי ארוך נשאר צמוד לימין וגולש לשורות — מיושר, אבל קריא */
-  .tbl td.td-desc, .tbl td.txt-start{ text-align:right; white-space:normal; min-width:220px; }
+  .tbl td.td-desc, .tbl td.txt-start{ text-align:right; white-space:normal; min-width:220px; max-width:none; overflow:visible; text-overflow:clip; }
   .rownum{ width:38px; min-width:38px; text-align:center; color:#94a3b8; font-size:11.5px; font-weight:600; }
   .note-preview{ font-size:11px; color:#8a9199; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
   .count-line2{ color:#64748b; font-size:12.5px; padding:8px 4px; }
@@ -478,7 +481,7 @@
   .waze-ico{ display:inline-flex; align-items:center; justify-content:center; width:27px; height:27px; border-radius:9px; background:#e8f7fd; border:1px solid #b8e4f5; text-decoration:none; flex:none; }
   .waze-ico:hover{ background:#c9edfb; border-color:#33ccff; }
   .waze-ico svg{ width:16px; height:16px; display:block; }
-  .addr-cell{ display:flex; align-items:center; gap:7px; }
+  .addr-cell{ display:flex; align-items:center; justify-content:center; gap:7px; }
   .addr-cell .ac-txt{ min-width:0; }
   /* ===== מיון בלחיצה על כותרת עמודה — מאוחד לכל המערכת · סבב 4 (28/07/2026) =====
      רומן: "להוסיף לכל טבלה אפשרות מיון בלחיצה על השורה מלמטה למעלה או הפוך...
@@ -492,7 +495,7 @@
   .tbl th.srt:hover, .tbl th.gsrt:hover{ background:#0b3f63; }
   .tbl th.srt:focus-visible, .tbl th.gsrt:focus-visible{ outline:2px solid #9cd326; outline-offset:-2px; }
   .tbl th .ar, .tbl th .sar{ font-size:10px; opacity:.45; margin-inline-start:5px; font-weight:400; }
-  .tbl th.gsrt::after{ content:'\2195'; font-size:10px; opacity:.45; margin-inline-start:5px; font-weight:400; }
+  .tbl th.gsrt::after{ content:'\2195'; font-size:10px; opacity:.45; margin-inline-start:5px; font-weight:400; display:inline-block; width:11px; text-align:center; }
   .tbl th.srt.on, .tbl th.on, .tbl th.gsrt.asc, .tbl th.gsrt.desc{ background:#0b3f63; box-shadow:inset 0 -3px 0 #9cd326, inset 0 -1px 0 rgba(255,255,255,.14); }
   .tbl th.srt.on .ar, .tbl th.on .sar{ opacity:1; color:#9cd326; }
   .tbl th.gsrt.asc::after{ content:'\25B2'; opacity:1; color:#9cd326; }
@@ -506,7 +509,7 @@
   .pill.p-red{ background:#fee2e2; color:#991b1b; }
   /* ===== נגישות (תיקון ממצא 14) ===== */
   :focus-visible{ outline:3px solid #6A9F85; outline-offset:2px; }
-  .tbl tbody tr:focus-visible{ outline-offset:-3px; background:#eef7f2; }
+  .tbl tbody tr:focus-visible{ outline-offset:-3px; background:#eaf1f6; }
   .nav-item:focus-visible, .submenu button:focus-visible{ outline:3px solid #9cd326; outline-offset:-3px; }
   .modal .sheet:focus{ outline:none; }
   .a11y-skip{ position:absolute; inset-inline-start:-9999px; top:0; z-index:100000; background:var(--navy); color:#fff; padding:10px 16px; border-radius:0 0 10px 10px; font-size:14px; text-decoration:none; }
@@ -549,7 +552,7 @@
 <div id="login" class="hidden">
   <div class="card">
     <div class="brand">
-      <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS">
+      <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
       <h2>המערכת המאוחדת</h2>
       <p>ניהול מכירות, הזמנות, מלאי ומחירון — הכול במקום אחד, מסונכרן מול פריוריטי.</p>
       <div class="pts">
@@ -557,14 +560,16 @@
         <span>מחירון ומלאי בזמן אמת</span>
         <span>הזמנות, התקנות והנהלת חשבונות</span>
       </div>
-      <div class="ver">גרסה 5.8.0</div>
+      <div class="ver">גרסה 5.8.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
       <p class="sub">התחברו כדי להיכנס למערכת</p>
-      <div class="field"><label for="email">דוא"ל</label><input id="email" type="email" autocomplete="username" placeholder="name@ironfitness.co.il"></div>
-      <div class="field pw"><label for="password">סיסמה</label><input id="password" type="password" autocomplete="current-password" placeholder="••••••••"><button type="button" class="pw-eye" id="pwEye" aria-label="הצגת הסיסמה">הצג</button></div>
-      <div class="row2">
+      <div class="field" id="emailField"><label for="email">דוא"ל</label><input id="email" type="email" autocomplete="username" placeholder="name@ironfitness.co.il"></div>
+      <div class="field pw"><label for="password" id="pwLabel">סיסמה</label><input id="password" type="password" autocomplete="current-password" placeholder="••••••••"><button type="button" class="pw-eye" id="pwEye" aria-label="הצגת הסיסמה">הצג</button></div>
+      <!-- שדה אימות מוצג רק במצב איפוס סיסמה (קישור מהדוא"ל) -->
+      <div class="field hidden" id="pw2Field"><label for="password2">אימות הסיסמה החדשה</label><input id="password2" type="password" autocomplete="new-password" placeholder="••••••••"></div>
+      <div class="row2" id="loginRow2">
         <label class="rmb" for="rememberMe"><input type="checkbox" id="rememberMe">השאר אותי מחובר</label>
         <button type="button" class="lnk" id="forgotBtn">שכחתי סיסמה</button>
       </div>
@@ -627,7 +632,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.8.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.8.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -933,28 +938,41 @@ const mdPill = (v, colors) => {
       לא נדרשת סיסמה שוב — גם אחרי סגירת הדפדפן.
    התיקון: מסך טעינה (#bootsplash) חוסם את ההבזק עד שידוע אם יש סשן, וסשן שמור
    תקף רק בתוך אותה לשונית — אלא אם המשתמש סימן "השאר אותי מחובר". */
-const RMB_KEY = 'iron_remember', TAB_KEY = 'iron_tab_session';
+const RMB_KEY = 'iron_remember', TAB_KEY = 'iron_tab_session', ALIVE_KEY = 'iron_alive';
 
 function killSplash(){ const s = document.getElementById('bootsplash'); if(s) s.remove(); }
 window.killSplash = killSplash;
+
+/* שומר-זמן: אם boot() נתקע (שגיאת ריצה, getSession שלא חוזר, רשת שנפלה) —
+   לא נשארים עם ספינר לנצח אלא מציגים טופס התחברות שמיש. */
+setTimeout(()=>{ if(document.getElementById('bootsplash')) showLogin('הטעינה נתקעה — נסו לרענן את הדף'); }, 10000);
 
 function showLogin(msg){
   killSplash();
   $('#login').classList.remove('hidden');
   $('#app').classList.add('hidden');
   $('#loginErr').textContent = msg || '';
+  if($('#loginOk')) $('#loginOk').textContent = '';
   setTimeout(()=>{ const e=$('#email'); if(e && !e.value) try{ e.focus(); }catch(_){} }, 60);
 }
 
 async function boot(){
   try{
+    /* קישור איפוס סיסמה מגיע עם #...type=recovery — חייב להיבדק לפני בדיקת הסשן,
+       אחרת הסשן הזמני שנוצר מהקישור היה מכניס למערכת בלי החלפת סיסמה. */
+    if(/type=recovery/.test(location.hash || '')){ enterRecoveryMode(); return; }
     const { data:{ session } } = await sb.auth.getSession();
     if(!session){ showLogin(); return; }
     const remembered = localStorage.getItem(RMB_KEY) === '1';
-    const sameTab    = sessionStorage.getItem(TAB_KEY) === '1';
+    let   sameTab    = sessionStorage.getItem(TAB_KEY) === '1';
+    /* לשונית חדשה שנפתחה בזמן שהמערכת כבר פתוחה בלשונית אחרת נחשבת לאותו סשן.
+       ALIVE_KEY מתעדכן כל 5 שניות כל עוד המערכת פתוחה, ולכן פער של 15 שניות
+       מעיד על דפדפן שנסגר ונפתח מחדש. */
+    try{ if(!remembered && !sameTab && (Date.now() - (+localStorage.getItem(ALIVE_KEY) || 0) < 15000)) sameTab = true; }catch(_){}
     if(!remembered && !sameTab){
-      /* הדפדפן נסגר ונפתח מחדש ולא נתבקשה זכירה — נדרשת התחברות אמיתית */
-      await sb.auth.signOut();
+      /* הדפדפן נסגר ונפתח מחדש ולא נתבקשה זכירה — נדרשת התחברות אמיתית.
+         scope:'local' — ניתוק הדפדפן הזה בלבד; בלעדיו כל הסשנים בכל המכשירים נמחקים. */
+      await sb.auth.signOut({ scope:'local' });
       showLogin();
       return;
     }
@@ -966,21 +984,80 @@ async function boot(){
   }
 }
 
+/* ===== איפוס סיסמה — השלמה בתוך המסך =====
+   עד סבב 4ב הקישור מהדוא"ל היה מבוי סתום: Supabase המיר אותו לסשן זמני,
+   הטוקן נשרף, והמשתמש או חזר לטופס ההתחברות או נכנס למערכת בלי להחליף סיסמה.
+   כאן הקישור מעביר את המסך למצב "בחירת סיסמה חדשה" וקורא ל-updateUser. */
+let PW_RECOVERY = false;
+
+function enterRecoveryMode(){
+  PW_RECOVERY = true;
+  killSplash();
+  $('#login').classList.remove('hidden');
+  $('#app').classList.add('hidden');
+  $('#emailField').classList.add('hidden');
+  $('#loginRow2').classList.add('hidden');
+  $('#pw2Field').classList.remove('hidden');
+  $('#pwLabel').textContent = 'סיסמה חדשה';
+  $('#password').value = ''; $('#password2').value = '';
+  $('#password').setAttribute('autocomplete','new-password');
+  $('#loginBtn').textContent = 'עדכון הסיסמה';
+  $('#loginErr').textContent = '';
+  $('#loginOk').textContent = 'קישור האיפוס אומת — בחרו סיסמה חדשה';
+  setTimeout(()=>{ try{ $('#password').focus(); }catch(_){} }, 60);
+}
+
+try{
+  sb.auth.onAuthStateChange((ev)=>{ if(ev === 'PASSWORD_RECOVERY' && !PW_RECOVERY) enterRecoveryMode(); });
+}catch(_){}
+
+async function doSetPassword(){
+  const btn = $('#loginBtn');
+  const p1 = $('#password').value, p2 = $('#password2').value;
+  if(p1.length < 8){ $('#loginErr').textContent = 'הסיסמה חייבת להכיל לפחות 8 תווים'; return; }
+  if(p1 !== p2){ $('#loginErr').textContent = 'שתי הסיסמאות אינן זהות'; return; }
+  btn.disabled = true; btn.textContent = 'מעדכן…';
+  try{
+    const { error } = await sb.auth.updateUser({ password: p1 });
+    if(error){ $('#loginErr').textContent = 'עדכון הסיסמה נכשל — בקשו קישור חדש'; return; }
+    PW_RECOVERY = false;
+    $('#loginOk').textContent = 'הסיסמה עודכנה — נכנסים למערכת…';
+    try{ sessionStorage.setItem(TAB_KEY,'1'); }catch(_){}
+    await afterLogin();
+  }catch(e){
+    console.error('setpw', e);
+    $('#loginErr').textContent = 'שגיאה בעדכון הסיסמה — נסו שוב';
+  }finally{
+    btn.disabled = false;
+    if(PW_RECOVERY) btn.textContent = 'עדכון הסיסמה';
+  }
+}
+
 $('#loginBtn').onclick = async ()=>{
   const btn = $('#loginBtn');
+  if(btn.disabled) return;                       /* מניעת שליחה כפולה */
   $('#loginErr').textContent=''; $('#loginOk').textContent='';
+  if(PW_RECOVERY){ await doSetPassword(); return; }
   const email=$('#email').value.trim(), password=$('#password').value;
   if(!email || !password){ $('#loginErr').textContent='יש למלא דוא"ל וסיסמה'; return; }
   btn.disabled = true; btn.textContent = 'מתחבר…';
-  const { error } = await sb.auth.signInWithPassword({ email, password });
-  btn.disabled = false; btn.textContent = 'כניסה למערכת';
-  if(error){ $('#loginErr').textContent = 'התחברות נכשלה — בדקו דוא"ל וסיסמה'; return; }
   try{
-    if($('#rememberMe') && $('#rememberMe').checked) localStorage.setItem(RMB_KEY,'1');
-    else localStorage.removeItem(RMB_KEY);
-    sessionStorage.setItem(TAB_KEY,'1');
-  }catch(_){}
-  await afterLogin();
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if(error){ $('#loginErr').textContent = 'התחברות נכשלה — בדקו דוא"ל וסיסמה'; return; }
+    try{
+      if($('#rememberMe') && $('#rememberMe').checked) localStorage.setItem(RMB_KEY,'1');
+      else localStorage.removeItem(RMB_KEY);
+      sessionStorage.setItem(TAB_KEY,'1');
+    }catch(_){}
+    /* הכפתור נשאר נעול עד ש-afterLogin מסתיים — קודם אפשר היה ללחוץ שוב בזמן הטעינה */
+    await afterLogin();
+  }catch(e){
+    console.error('login', e);
+    $('#loginErr').textContent = 'שגיאה בכניסה למערכת — נסו שוב';
+  }finally{
+    btn.disabled = false;
+    if(!PW_RECOVERY) btn.textContent = 'כניסה למערכת';
+  }
 };
 $('#email').addEventListener('keydown',e=>{ if(e.key==='Enter') $('#password').focus(); });
 $('#password').addEventListener('keydown',e=>{ if(e.key==='Enter') $('#loginBtn').click(); });
@@ -996,27 +1073,39 @@ $('#pwEye').onclick = ()=>{
 
 /* איפוס סיסמה בדוא"ל */
 $('#forgotBtn').onclick = async ()=>{
+  const fb = $('#forgotBtn');
+  if(fb.disabled) return;
   const email=$('#email').value.trim();
   $('#loginErr').textContent=''; $('#loginOk').textContent='';
   if(!email){ $('#loginErr').textContent='הזינו דוא"ל ואז לחצו "שכחתי סיסמה"'; try{ $('#email').focus(); }catch(_){} return; }
-  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
-  if(error) $('#loginErr').textContent = 'שליחת הקישור נכשלה — פנו למנהל המערכת';
-  else $('#loginOk').textContent = 'נשלח קישור לאיפוס סיסמה לכתובת שהוזנה';
+  fb.disabled = true;
+  try{
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+    if(error) $('#loginErr').textContent = 'שליחת הקישור נכשלה — פנו למנהל המערכת';
+    else $('#loginOk').textContent = 'נשלח קישור לאיפוס סיסמה לכתובת שהוזנה';
+  }catch(e){
+    $('#loginErr').textContent = 'שליחת הקישור נכשלה — נסו שוב';
+  }finally{ fb.disabled = false; }
 };
 
-/* אם הלוגו הרחב לא נטען — נופלים לכיתוב טקסטואלי במקום ריבוע ריק */
-if($('#loginLogo')) $('#loginLogo').onerror = function(){
-  this.style.display='none';
-  const d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS';
-  if(this.parentNode) this.parentNode.insertBefore(d, this);
-};
+/* ה-fallback של הלוגו עבר ל-onerror בתוך התגית עצמה — מאזין שנקשר כאן רץ
+   אחרי שהתמונה כבר ניסתה להיטען, ולכן פספס כישלון טעינה מהיר. */
 
 async function afterLogin(){
-  const { data:{ user } } = await sb.auth.getUser();
-  const { data: prof } = await sb.schema('core').from('profiles').select('full_name,role,email,dashboard,job_title').eq('id',user.id).maybeSingle();
-  if(!prof || prof.role==='pending'){ await sb.auth.signOut(); showLogin('המשתמש ממתין לאישור מנהל'); return; }
+  const { data:{ user } = {}, error:uErr } = await sb.auth.getUser();
+  if(uErr || !user){ try{ await sb.auth.signOut({ scope:'local' }); }catch(_){} showLogin('פג תוקף ההתחברות — התחברו שוב'); return; }
+  const { data: prof, error:pErr } = await sb.schema('core').from('profiles').select('full_name,role,email,dashboard,job_title').eq('id',user.id).maybeSingle();
+  /* הפרדה בין "אין פרופיל" (ממתין לאישור) לבין תקלת שאילתה — קודם כל תקלה
+     דווחה כ"ממתין לאישור מנהל", וזו הודעה שמובילה לאבחון שגוי. */
+  if(pErr){ console.error('profile', pErr); try{ await sb.auth.signOut({ scope:'local' }); }catch(_){} showLogin('שגיאה בטעינת הפרופיל — פנו למנהל המערכת'); return; }
+  if(!prof || prof.role==='pending'){ try{ await sb.auth.signOut({ scope:'local' }); }catch(_){} showLogin('המשתמש ממתין לאישור מנהל'); return; }
   ME = { id:user.id, ...prof };
   killSplash();
+  /* פעימת חיים — מאפשרת ללשונית חדשה באותו דפדפן להיחשב לאותו סשן (ראו boot) */
+  try{
+    localStorage.setItem(ALIVE_KEY, Date.now());
+    if(!window.__aliveTimer) window.__aliveTimer = setInterval(()=>{ try{ localStorage.setItem(ALIVE_KEY, Date.now()); }catch(_){} }, 5000);
+  }catch(_){}
   $('#login').classList.add('hidden'); $('#app').classList.remove('hidden');
   /* שם המשתמש וההרשאה מוצגים בפאנל הימני בלבד — הצ'יפ שהיה בסרגל העליון הוסר
      בסבב 4 לבקשת רומן ("גם ככה יש בפאנל הימני"). */
@@ -1030,8 +1119,8 @@ async function afterLogin(){
 }
 
 $('#logoutBtn').onclick = async ()=>{
-  try{ localStorage.removeItem(RMB_KEY); sessionStorage.removeItem(TAB_KEY); }catch(_){}
-  await sb.auth.signOut();
+  try{ localStorage.removeItem(RMB_KEY); localStorage.removeItem(ALIVE_KEY); sessionStorage.removeItem(TAB_KEY); }catch(_){}
+  try{ await sb.auth.signOut({ scope:'local' }); }catch(_){}
   location.reload();
 };
 
@@ -1460,7 +1549,12 @@ function renderCal(){
    קודם הוא רץ על העותק שבפלטפורמה, ולכן "הצליח" בלי שהמסך השתנה. */
 window.syncPriority = async ()=>{
   const btn = $('#syncBtn'); if(btn.disabled) return;
-  btn.disabled = true; const t0 = btn.textContent; btn.textContent = '⏳ מסנכרן מפריוריטי…';
+  /* תיקון סבב 4ב — btn.textContent מוחק את אייקון ה-SVG שנוסף לכפתור בסבב 4.
+     לכן מעדכנים רק את צומת הטקסט עצמו, והאייקון נשאר במקומו. */
+  const lbl = Array.prototype.find.call(btn.childNodes, n=>n.nodeType===3)
+              || btn.appendChild(document.createTextNode(''));
+  const t0 = lbl.nodeValue;
+  btn.disabled = true; lbl.nodeValue = 'מסנכרן מפריוריטי…';
   const { data:j, error } = await oldCall('sync');
   if(error){
     alert('הסנכרון נכשל: ' + error.message);
@@ -1470,7 +1564,7 @@ window.syncPriority = async ()=>{
     alert(`סנכרון פריוריטי הושלם ✓\nהזמנות: ${j.orders_updated||0} עודכנו · ${j.orders_inserted||0} חדשות\nקריאות שירות: ${j.calls_updated||0} עודכנו · ${j.calls_inserted||0} חדשות` + (j && j.skipped ? '\n(סנכרון הסתיים לפני פחות מדקה — אלה התוצאות שלו)' : ''));
   }
   await loadLeads();
-  btn.disabled = false; btn.textContent = t0;
+  btn.disabled = false; lbl.nodeValue = t0;
 };
 
 /* ===== מקטים — קטלוג המוצרים (נטיבי, ord.inv_items)
@@ -1913,7 +2007,7 @@ function skuTable(list){
     <td class="rownum">${i+1}</td>
     <td>${s.image_url?`<img class="sku-img" style="width:38px;height:38px" src="${esc(s.image_url)}" loading="lazy" onclick="event.stopPropagation();window.open('${jsq(s.image_full||s.image_url)}','_blank')">`:'<span style="color:#c3cbd4">—</span>'}</td>
     ${cols.map(c=>`<td${c.k==='partdes'?' class="td-desc"':''}>${skuCell(s,c)}</td>`).join('')}</tr>`).join('');
-  return `<div class="tbl-wrap"><table class="tbl tbl-center"><thead><tr>${skuHead()}</tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('sku',list.length,'מק"טים')}`;
+  return `<div class="tbl-wrap"><table class="tbl"><thead><tr>${skuHead()}</tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('sku',list.length,'מק"טים')}`;
 }
 function renderSkus(){
   const list=filteredSkus();
@@ -2219,8 +2313,6 @@ window.saveSetting = async i=>{
   s.value=v; alert('נשמר ✓ — ישתקף במסמכים הבאים שיישלחו');
 };
 
-const LOGO = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAsYAAALGCAYAAABGaFe1AAAACXBIWXMAAAsTAAALEwEAmpwYAAAE9GlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgOS4xLWMwMDIgNzkuYTFjZDEyZjQxLCAyMDI0LzExLzA4LTE2OjA5OjIwICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgMjYuNCAoTWFjaW50b3NoKSIgeG1wOkNyZWF0ZURhdGU9IjIwMjUtMDMtMTJUMTg6MDM6NTIrMDI6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDI1LTAzLTEyVDE4OjA2OjM2KzAyOjAwIiB4bXA6TWV0YWRhdGFEYXRlPSIyMDI1LTAzLTEyVDE4OjA2OjM2KzAyOjAwIiBkYzpmb3JtYXQ9ImltYWdlL3BuZyIgcGhvdG9zaG9wOkNvbG9yTW9kZT0iMyIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo0MmM4ZjdjOS0xOGMxLTQwY2QtYjZiOC1kZmE4NTU4NmUyN2EiIHhtcE1NOkRvY3VtZW50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';
-document.querySelectorAll('.brand-logo').forEach(im=> im.src = LOGO);
 
 let CUSTS=[], TASKS=[], DEALS=[], MEETS=[], CONTS=[], PAYS=[], ORDS=[], SCALLS=[], OTEAMS=[], SKUS=[], PROTS=[], OSET=[];
 /* פס אזהרה עליון כשטעינת נתונים נכשלה — במקום להציג "אין נתונים" (תיקון ממצא 11) */
@@ -2327,7 +2419,7 @@ function taskTable(list){
       <td class="rownum">${i+1}</td>
       <td style="max-width:340px"><b style="${t.status==='הושלם'?'text-decoration:line-through;color:#94a3b8':''}">${esc(t.name)}</b></td>
       <td>${esc(t.category||'—')}</td>
-      <td style="${overdue?'color:#c0392b;font-weight:700':''}">${due}${overdue?' · באיחור!':''}</td>
+      <td data-sort="${esc(t.due_at||'')}" style="${overdue?'color:#c0392b;font-weight:700':''}">${due}${overdue?' · באיחור!':''}</td>
       <td>${ieSel('task',t.id,'status',TASK_STATUSES,t.status,{mdColors:TASK_ST_COLORS})}</td>
       <td>${t.status!=='הושלם'?`<button class="chip" onclick="event.stopPropagation();doneTask('${t.id}')">בוצע ✓</button>`:'✓'}</td>
     </tr>`;}).join('');
@@ -3395,8 +3487,17 @@ const SIGN_TOKEN = new URLSearchParams(location.search).get('sign');
   /* טקסט נקי מתא, בלי רווחים כפולים */
   function gsText(td){
     if(!td) return '';
-    var t = (td.getAttribute('data-sort') != null) ? td.getAttribute('data-sort') : (td.textContent || '');
-    return t.replace(/‏|‎/g,'').replace(/\s+/g,' ').trim();
+    var t;
+    if(td.getAttribute('data-sort') != null){ t = td.getAttribute('data-sort'); }
+    else{
+      /* תאי עריכה מהירה (ieSel/ieDate) מכילים select או input — ה-textContent שלהם
+         ריק, ולכן בלי הקריאה הזו כל עמודת סטטוס הייתה ממוינת לפי מחרוזת ריקה. */
+      var f = td.querySelector('select,input:not([type=checkbox]),textarea');
+      if(f && f.tagName === 'SELECT') t = (f.selectedOptions && f.selectedOptions[0]) ? f.selectedOptions[0].textContent : f.value;
+      else if(f) t = f.value || '';
+      else t = td.textContent || '';
+    }
+    return String(t).replace(/‏|‎/g,'').replace(/\s+/g,' ').trim();
   }
 
   /* המרת טקסט למפתח מיון: מספר / תאריך / מחרוזת */
@@ -3408,9 +3509,10 @@ const SIGN_TOKEN = new URLSearchParams(location.search).get('sign');
       var yy = +d[3]; if(yy < 100) yy += 2000;
       return { t:'n', v: yy*100000000 + (+d[2])*1000000 + (+d[1])*10000 + (d[4]?(+d[4])*100:0) + (d[5]?+d[5]:0) };
     }
-    /* תאריך ISO yyyy-mm-dd */
-    var iso = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if(iso) return { t:'n', v: (+iso[1])*10000 + (+iso[2])*100 + (+iso[3]) };
+    /* תאריך ISO yyyy-mm-dd, אפשר עם שעה — כך מגיע data-sort של תאריכי יעד.
+       הסולם זהה לזה של הענף הקודם כדי ששתי הצורות יהיו בנות-השוואה. */
+    var iso = raw.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}))?/);
+    if(iso) return { t:'n', v: (+iso[1])*100000000 + (+iso[2])*1000000 + (+iso[3])*10000 + (iso[4]?(+iso[4])*100:0) + (iso[5]?+iso[5]:0) };
     /* מספר — כולל ₪, %, פסיקי אלפים, סוגריים לשלילי */
     var num = raw.replace(/[₪%,\s]/g,'');
     var neg = /^\(.*\)$/.test(num);
@@ -3444,20 +3546,26 @@ const SIGN_TOKEN = new URLSearchParams(location.search).get('sign');
   function gsSort(table, idx, dir){
     var tbody = table.tBodies && table.tBodies[0];
     if(!tbody) return;
-    var rows = [], i;
+    var rows = [], tail = [], i;
     for(i=0;i<tbody.rows.length;i++){
       var r = tbody.rows[i];
-      /* שורות "אין נתונים" / שורות מקובצות עם colspan נשארות במקומן בסוף */
-      if(r.cells.length <= 1 && r.cells[0] && r.cells[0].colSpan > 1) continue;
+      /* שורות "אין נתונים" / שורות מקובצות עם colspan מרוכזות לסוף הטבלה */
+      if(r.cells.length <= 1 && r.cells[0] && r.cells[0].colSpan > 1){ tail.push(r); continue; }
       rows.push({ r:r, k:gsVal(gsText(r.cells[idx])), i:i });
     }
     rows.sort(function(a,b){
+      /* ריקים תמיד בסוף — מוכרע לפני היפוך הכיוון, אחרת במיון יורד הם קופצים לראש */
+      if(a.k === null || b.k === null){
+        if(a.k === b.k) return a.i - b.i;
+        return a.k === null ? 1 : -1;
+      }
       var c = gsCompare(a.k, b.k);
       if(c === 0) return a.i - b.i;          /* מיון יציב */
       return dir > 0 ? c : -c;
     });
     var frag = document.createDocumentFragment();
     for(i=0;i<rows.length;i++) frag.appendChild(rows[i].r);
+    for(i=0;i<tail.length;i++) frag.appendChild(tail[i]);
     tbody.appendChild(frag);
     gsRenumber(tbody);
   }
@@ -3467,7 +3575,9 @@ const SIGN_TOKEN = new URLSearchParams(location.search).get('sign');
     var ths = thead.rows[0] ? thead.rows[0].cells : [];
     for(var i=0;i<ths.length;i++){
       ths[i].classList.remove('asc','desc');
-      if(i === idx) ths[i].classList.add(dir > 0 ? 'asc' : 'desc');
+      if(!ths[i].classList.contains('gsrt')) continue;
+      if(i === idx){ ths[i].classList.add(dir > 0 ? 'asc' : 'desc'); ths[i].setAttribute('aria-sort', dir > 0 ? 'ascending' : 'descending'); }
+      else ths[i].setAttribute('aria-sort','none');
     }
   }
 
@@ -3477,7 +3587,13 @@ const SIGN_TOKEN = new URLSearchParams(location.search).get('sign');
     if(!table || table.getAttribute('data-gs')) return;
     var thead = table.tHead, tbody = table.tBodies && table.tBodies[0];
     if(!thead || !thead.rows.length || !tbody){ return; }
-    if(thead.rows.length > 1 || table.querySelector('th.srt')){ table.setAttribute('data-gs','own'); return; }
+    if(thead.rows.length > 1 || table.querySelector('th.srt')){
+      table.setAttribute('data-gs','own');
+      /* טבלאות עם מיון משלהן (מק"טים, הזמנות) — הכותרות עדיין צריכות להיות נגישות במקלדת */
+      var own = table.querySelectorAll('th.srt');
+      for(var j=0;j<own.length;j++) if(!own[j].hasAttribute('tabindex')) own[j].setAttribute('tabindex','0');
+      return;
+    }
     table.setAttribute('data-gs','1');
     var ths = thead.rows[0].cells;
     for(var i=0;i<ths.length;i++){
@@ -3488,8 +3604,9 @@ const SIGN_TOKEN = new URLSearchParams(location.search).get('sign');
       th.classList.add('gsrt');
       th.setAttribute('data-gsi', i);
       th.setAttribute('tabindex','0');
-      th.setAttribute('role','button');
-      if(!th.title) th.title = 'מיון לפי ' + lbl;
+      /* aria-sort ולא role=button — role=button היה מוחק את סמנטיקת columnheader */
+      th.setAttribute('aria-sort','none');
+      if(!th.title) th.title = 'מיון לפי ' + lbl + ' (בתוך העמוד המוצג)';
     }
   }
 
@@ -3509,10 +3626,12 @@ const SIGN_TOKEN = new URLSearchParams(location.search).get('sign');
   });
   document.addEventListener('keydown', function(e){
     if(e.key !== 'Enter' && e.key !== ' ') return;
-    var th = e.target && e.target.closest ? e.target.closest('th.gsrt') : null;
-    if(!th) return;
-    e.preventDefault();
-    gsActivate(th);
+    if(!e.target || !e.target.closest) return;
+    var th = e.target.closest('th.gsrt');
+    if(th){ e.preventDefault(); gsActivate(th); return; }
+    /* כותרות עם מיון משלהן — הפעלה במקלדת דרך ה-onclick שכבר מוגדר עליהן */
+    var own = e.target.closest('th.srt');
+    if(own){ e.preventDefault(); own.click(); }
   });
 
   /* סריקה מושהית — טבלאות נבנות מחדש בכל רינדור, ולכן צריך לעטר אותן שוב */

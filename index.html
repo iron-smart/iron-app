@@ -341,13 +341,19 @@
   /* --- כרטיס המק"ט --- */
   #skuModal .sheet{ max-width:900px; }
   @media(min-width:1200px){ #skuModal .sheet{ max-width:1040px; } }
-  .sku-hero{ display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap; background:linear-gradient(135deg,#f6f9fc,#eef4f8); border:1px solid var(--line); border-radius:12px; padding:10px; margin-bottom:10px; }
+  .sku-hero{ display:flex; gap:10px; align-items:flex-start; flex-wrap:wrap; background:linear-gradient(135deg,#f6f9fc,#eef4f8); border:1px solid var(--line); border-radius:12px; padding:9px; margin-bottom:10px; }
   .sku-hero .ph{ width:96px; height:96px; object-fit:contain; background:#fff; border-radius:10px; border:1px solid var(--line); cursor:pointer; }
-  .sku-hero .pi{ flex:1; min-width:220px; display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:0 14px; }
-  .sku-hero .pi .row{ display:flex; justify-content:space-between; align-items:center; gap:8px; padding:2px 0; font-size:12.5px; border:0; }
-  .sku-hero .pi .row .k{ color:#64748b; font-weight:600; }
-  .sku-hero .pi .row .v{ font-weight:700; color:var(--navy); }
-  .sku-hero .pi .row.pr .v{ font-size:14.5px; font-weight:800; }
+  /* סבב 9 סעיף 1 — כל נתון זיהוי הוא כרטיסון נפרד: תווית קטנה מעל וערך מודגש מתחת.
+     קודם השורות היו תווית-מימין/ערך-משמאל בתוך רשת רחבה, והעין לא ידעה איזה ערך שייך לאיזו תווית. */
+  .sku-hero .pi{ flex:1; min-width:220px; display:grid; grid-template-columns:repeat(auto-fit,minmax(124px,1fr)); gap:6px; }
+  .sku-hero .pi .f{ background:#fff; border:1px solid var(--line); border-radius:9px; padding:4px 8px 5px; min-width:0; }
+  .sku-hero .pi .f .k{ display:block; font-size:10px; color:#8496aa; font-weight:700; letter-spacing:.1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sku-hero .pi .f .v{ display:block; font-size:13px; font-weight:800; color:var(--navy); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.35; }
+  .sku-hero .pi .f.pr{ background:#f2f9f5; border-color:#c9e2d5; }
+  .sku-hero .pi .f.pr .k{ color:#5d8a73; }
+  .sku-hero .pi .f.pr .v{ font-size:14.5px; color:#1c6e49; }
+  .sku-hero .pi .f.wide{ grid-column:span 2; }
+  @media (max-width:560px){ .sku-hero .pi .f.wide{ grid-column:span 1; } }
   .sku-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(112px,1fr)); gap:7px; }
   .sku-kpi{ background:#fff; border:1px solid var(--line); border-radius:10px; padding:6px 8px; text-align:center; }
   .sku-kpi .kl{ font-size:10.5px; color:#64748b; font-weight:600; display:block; margin-bottom:1px; }
@@ -377,6 +383,14 @@
   .sku-box.install .d3 b{ color:#b58a2b; font-size:12px; font-weight:700; }
   @media (max-width:560px){ .sku-box.install .field.dim3{ grid-column:span 1; } }
   .sku-box .note{ font-size:11px; margin-top:6px; }
+  /* סבב 9 סעיף 6 — פירוט הזמנות רכש פתוחות עם מועדי אספקה */
+  .sku-box .po-open{ margin-top:8px; }
+  .sku-box .po-open>b{ font-size:11.5px; color:#64748b; display:block; margin-bottom:2px; }
+  .sku-box .po-open .row{ font-size:12px; padding:4px 0; }
+  .sku-box .po-open .row .k{ color:#475569; }
+  .sku-box .po-open .row .v{ font-weight:700; color:var(--navy); white-space:nowrap; }
+  /* סבב 9 סעיף 4 — מציין המקום היחיד שנשאר (אורך/רוחב/גובה) מובחן ויזואלית כדי שלא ייראה כערך אמיתי */
+  .sku-box.install .field input::placeholder{ color:#c9bb96; font-style:italic; }
   /* כללי המיון אוחדו בסבב 4 לבלוק אחד — ראו "מיון בלחיצה על כותרת עמודה" בהמשך. */
   .sku-adv{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px; margin-bottom:12px; }
   .sku-adv .fx{ display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:8px; margin-bottom:10px; }
@@ -591,7 +605,7 @@
         <span>מחירון ומלאי בזמן אמת</span>
         <span>הזמנות, התקנות והנהלת חשבונות</span>
       </div>
-      <div class="ver">גרסה 5.9.4</div>
+      <div class="ver">גרסה 5.9.5</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -663,7 +677,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.9.4</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.9.5</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -2147,11 +2161,16 @@ function skuAdvBtnState(){
 window.openSku = (pn)=>{
   const s = SKUS.find(x=>String(x.partname)===String(pn)); if(!s) return;
   const mgr = skuMgr();
-  const unit = esc(s.unit||'');
-  const bals = Array.isArray(s.bals) ? s.bals : [];
-  // סבב 3 — b.loc מחזיק עכשיו את שם המחסן (WARHSNAME) ולא את קוד המיקום שהיה תמיד "0".
-  const wname = v=>{ const t=String(v??'').trim(); return (!t || t==='0') ? 'מחסן ראשי' : t; };
-  const balRows = bals.filter(b=>Number(b.qty)!==0).map(b=>`<div class="row"><span class="k">${esc(wname(b.loc))}${b.d?' · '+new Date(b.d+'T00:00').toLocaleDateString('he-IL'):''}</span><span class="v">${fmtNum(b.qty)} ${esc(s.unit||'יח\'')}</span></div>`).join('');
+  const unit = esc(s.unit||'יח\'');
+  /* סבב 9 סעיף 2 — כל מדד מלאי מוצג עם יחידת המידה, לא רק "מלאי זמין".
+     סעיף 3 — פילוח "מלאי לפי מחסן" הוסר מהכרטיס לבקשת רומן. */
+  const qu = v => (v==null||v==='') ? '—' : `${fmtNum(v)} ${unit}`;
+  /* סבב 9 סעיף 6 — פירוט הזמנות הרכש הפתוחות עם מועד האספקה הצפוי (DUEDATE מפריוריטי) */
+  const dmy = v => { const t=String(v||'').slice(0,10); if(!/^\d{4}-\d{2}-\d{2}$/.test(t)) return ''; const [y,m,d]=t.split('-'); return `${+d}.${+m}.${y}`; };
+  const pls = Array.isArray(s.pord_lines) ? s.pord_lines : [];
+  const poRows = pls.length ? `<div class="po-open"><b>הזמנות רכש פתוחות — מועדי אספקה</b>${
+    pls.map(p=>`<div class="row"><span class="k">${dmy(p.d)||'ללא תאריך'}${p.o?' · '+esc(p.o):''}${p.s?' · '+esc(p.s):''}</span><span class="v">${fmtNum(p.q)} ${unit}</span></div>`).join('')
+  }</div>` : '';
   const kpi = (l,v,cls)=>`<div class="sku-kpi${cls?' '+cls:''}"><span class="kl">${l}</span><span class="kv">${v}</span></div>`;
   const money = v => (v==null||v==='') ? '—' : shekel(v);
   const exp = Number(s.expected_qty||0), expF = Number(s.expected_qty_full||0);
@@ -2160,28 +2179,28 @@ window.openSku = (pn)=>{
     <div class="sku-hero">
       ${s.image_url?`<img class="ph" src="${esc(s.image_full||s.image_url)}" loading="lazy" onclick="window.open('${jsq(s.image_full||s.image_url)}','_blank')" title="פתיחת התמונה בגודל מלא">`:'<div class="ph sku-none"></div>'}
       <div class="pi">
-        <div class="row"><span class="k">מק"ט</span><span class="v" dir="ltr">${esc(s.partname)}</span></div>
-        <div class="row pr"><span class="k">מחירון לפני מע"מ</span><span class="v">${money(s.price_base)}</span></div>
-        ${s.barcode&&String(s.barcode).trim()!==String(s.partname).trim()?`<div class="row"><span class="k">איתור</span><span class="v" dir="ltr">${esc(s.barcode)}</span></div>`:'<div class="row"></div>'}
-        <div class="row pr"><span class="k">מחירון כולל מע"מ</span><span class="v">${money(s.price_vat)}</span></div>
-        <div class="row"><span class="k">משפחה</span><span class="v">${esc(s.family||'—')}</span></div>
-        <div class="row"><span class="k">יחידת מידה</span><span class="v">${esc(s.unit||'—')}</span></div>
-        ${s.supplier?`<div class="row"><span class="k">ספק</span><span class="v">${esc(s.supplier)}</span></div>`:''}
+        <div class="f"><span class="k">מק"ט</span><span class="v" dir="ltr" title="${esc(s.partname)}">${esc(s.partname)}</span></div>
+        <div class="f pr"><span class="k">מחירון לפני מע"מ</span><span class="v">${money(s.price_base)}</span></div>
+        <div class="f pr"><span class="k">מחירון כולל מע"מ</span><span class="v">${money(s.price_vat)}</span></div>
+        <div class="f"><span class="k">משפחה</span><span class="v" title="${esc(s.family||'')}">${esc(s.family||'—')}</span></div>
+        <div class="f"><span class="k">יחידת מידה</span><span class="v">${esc(s.unit||'—')}</span></div>
+        ${s.barcode&&String(s.barcode).trim()!==String(s.partname).trim()?`<div class="f"><span class="k">איתור</span><span class="v" dir="ltr" title="${esc(s.barcode)}">${esc(s.barcode)}</span></div>`:''}
+        ${s.supplier?`<div class="f wide"><span class="k">ספק</span><span class="v" title="${esc(s.supplier)}">${esc(s.supplier)}</span></div>`:''}
       </div>
     </div>
 
     <div class="sku-box">
       <div class="bx-t">מלאי וזמינות</div>
       <div class="sku-grid">
-        ${kpi('מלאי זמין', `${fmtNum(s.qty)} ${unit}`)}
-        ${kpi('זמין למכירה', fmtNum(s.sell_qty))}
-        ${kpi('הזמנות לקוח', fmtNum(s.ord))}
-        ${kpi('הזמנות רכש', fmtNum(s.pord))}
-        ${kpi('מלאי צפוי — ללא רכש', fmtNum(s.expected_qty), exp<0?'neg':'ok')}
-        ${kpi('מלאי צפוי — כולל רכש', fmtNum(s.expected_qty_full), expF<0?'neg':'ok')}
+        ${kpi('מלאי זמין', qu(s.qty))}
+        ${kpi('זמין למכירה', qu(s.sell_qty))}
+        ${kpi('הזמנות לקוח', qu(s.ord))}
+        ${kpi('הזמנות רכש', qu(s.pord))}
+        ${kpi('מלאי צפוי — ללא רכש', qu(s.expected_qty), exp<0?'neg':'ok')}
+        ${kpi('מלאי צפוי — כולל רכש', qu(s.expected_qty_full), expF<0?'neg':'ok')}
       </div>
-      <div class="note">מלאי צפוי ללא רכש = זמין למכירה פחות הזמנות לקוח. מלאי צפוי כולל רכש מוסיף לזה גם את הזמנות הרכש שטרם התקבלו. "מלאי לפי מחסן" שלמטה הוא פילוח המלאי הפיזי הקיים — לא אותו נתון.</div>
-      ${balRows?`<div style="margin-top:8px"><b style="font-size:12px;color:#64748b">מלאי לפי מחסן</b>${balRows}</div>`:''}
+      <div class="note">מלאי צפוי ללא רכש = זמין למכירה פחות הזמנות לקוח. מלאי צפוי כולל רכש מוסיף לזה גם את הזמנות הרכש שטרם התקבלו.</div>
+      ${poRows}
     </div>
 
     <div class="sku-box">
@@ -2199,12 +2218,12 @@ window.openSku = (pn)=>{
       ${mgr?`
       <div class="ig">
         <div class="field"><label>נדרשת התקנה?</label><select id="sk-need" class="need-sel${s.needs_install===true?' yes':(s.needs_install===false?' no':'')}" onchange="skuNeedTint(this)"><option value=""${s.needs_install==null?' selected':''}>טרם נקבע</option><option value="1"${s.needs_install===true?' selected':''}>כן</option><option value="0"${s.needs_install===false?' selected':''}>לא</option></select></div>
-        <div class="field"><label>התקנה איירון (לפני מע"מ)</label><input id="sk-inst-iron" type="text" inputmode="decimal" dir="ltr" placeholder="1250" value="${s.install_price_iron??''}"></div>
-        <div class="field"><label>התקנה קבלני (לפני מע"מ)</label><input id="sk-inst-cont" type="text" inputmode="decimal" dir="ltr" placeholder="900" value="${s.install_price_contractor??''}" oninput="skuContVat()"></div>
-        <div class="field"><label>התקנה קבלני (כולל מע"מ)</label><input id="sk-inst-cont-vat" type="text" inputmode="decimal" dir="ltr" placeholder="1062" value="${s.install_price_contractor_vat??''}"><div class="auto-hint">מתמלא לפי 18% · ניתן לדרוס</div></div>
-        <div class="field"><label>שילוח מוצר בודד (לפני מע"מ)</label><input id="sk-ship" type="text" inputmode="decimal" dir="ltr" placeholder="150" value="${s.ship_price_single??''}"></div>
-        <div class="field"><label>מקדם משטחים</label><input id="sk-pallet" type="text" inputmode="decimal" dir="ltr" placeholder="0.25" value="${s.pallet_load_factor??''}"></div>
-        <div class="field"><label>משקל (ק"ג)</label><input id="sk-weight" type="text" inputmode="decimal" dir="ltr" placeholder="32" value="${s.weight_kg??''}"></div>
+        <div class="field"><label>התקנה איירון (לפני מע"מ)</label><input id="sk-inst-iron" type="text" inputmode="decimal" dir="ltr" value="${s.install_price_iron??''}"></div>
+        <div class="field"><label>התקנה קבלני (לפני מע"מ)</label><input id="sk-inst-cont" type="text" inputmode="decimal" dir="ltr" value="${s.install_price_contractor??''}" oninput="skuContVat()"></div>
+        <div class="field"><label>התקנה קבלני (כולל מע"מ)</label><input id="sk-inst-cont-vat" type="text" inputmode="decimal" dir="ltr" value="${s.install_price_contractor_vat??''}"><div class="auto-hint">מתמלא לפי 18% · ניתן לדרוס</div></div>
+        <div class="field"><label>שילוח מוצר בודד (לפני מע"מ)</label><input id="sk-ship" type="text" inputmode="decimal" dir="ltr" value="${s.ship_price_single??''}"></div>
+        <div class="field"><label>מקדם משטחים</label><input id="sk-pallet" type="text" inputmode="decimal" dir="ltr" value="${s.pallet_load_factor??''}"></div>
+        <div class="field"><label>משקל (ק"ג)</label><input id="sk-weight" type="text" inputmode="decimal" dir="ltr" value="${s.weight_kg??''}"></div>
         <div class="field dim3"><label>מידות (ס"מ) · אורך × רוחב × גובה</label>
           <div class="d3"><input id="sk-len" type="text" inputmode="decimal" dir="ltr" placeholder="אורך" value="${s.length_cm??''}" oninput="skuVol()"><b>×</b><input id="sk-wid" type="text" inputmode="decimal" dir="ltr" placeholder="רוחב" value="${s.width_cm??''}" oninput="skuVol()"><b>×</b><input id="sk-hei" type="text" inputmode="decimal" dir="ltr" placeholder="גובה" value="${s.height_cm??''}" oninput="skuVol()"></div>
           <div class="auto-hint" id="sk-vol">${volHint(s.length_cm,s.width_cm,s.height_cm)}</div></div>
@@ -2381,7 +2400,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.9.4</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.9.5</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
@@ -2502,7 +2521,7 @@ async function loadLeads(){
     oldPart('service_calls'),   /* ישירות ממערכת ההזמנות הישנה — מקור האמת */
     sb.schema('ord').from('teams').select('id,name,color,active,sort_order').order('sort_order',{ascending:true}),
     oldPart('sync_log'),        /* ישירות ממערכת ההזמנות הישנה — מקור האמת */
-    sb.schema('ord').from('inv_items').select('partname,partdes,price,family,qty,barcode,image_url,image_full,erp_status,unit,cost,supplier,sales_total,ord,pord,bals,install_price_iron,install_price_contractor,pallet_load_factor,needs_install,install_price_contractor_vat,ship_price_single,sell_qty,expected_qty,sold_3m,sold_6m,price_vat,price_base,expected_qty_full,weight_kg,length_cm,width_cm,height_cm').order('partname',{ascending:true}).limit(10000),
+    sb.schema('ord').from('inv_items').select('partname,partdes,price,family,qty,barcode,image_url,image_full,erp_status,unit,cost,supplier,sales_total,ord,pord,install_price_iron,install_price_contractor,pallet_load_factor,needs_install,install_price_contractor_vat,ship_price_single,sell_qty,expected_qty,sold_3m,sold_6m,price_vat,price_base,expected_qty_full,weight_kg,length_cm,width_cm,height_cm,pord_lines').order('partname',{ascending:true}).limit(10000),
     sb.schema('ord').from('protocols').select('id,order_id,call_id,order_number,customer_name,phone,doc_type,status,sent_at,signed_at,signer_name,token').order('sent_at',{ascending:false}).limit(10000),
     sb.schema('ord').from('settings').select('key,value').order('key',{ascending:true}),
     /* סבב 8 — לוג הסנכרון של הפלטפורמה, לשליפת מועד סנכרון המק"טים האחרון */

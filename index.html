@@ -366,6 +366,12 @@
   .sku-box.install .need-sel.no{ color:#991b1b; border-color:#e8aca4; background:#fdf4f3; }
   .sku-box.install .auto-hint{ font-size:9.5px; color:#8a6410; line-height:1.2; margin-top:2px; }
   .sku-box.install .btn{ width:auto; padding:6px 18px; font-size:12.5px; font-weight:700; border-radius:8px; margin-top:8px; }
+  /* סבב 6 — משקל ומידות */
+  .sku-box.install .field.dim3{ grid-column:span 2; }
+  .sku-box.install .d3{ display:flex; align-items:center; gap:4px; }
+  .sku-box.install .d3 input{ flex:1 1 0; min-width:0; text-align:center; padding:5px 3px; }
+  .sku-box.install .d3 b{ color:#b58a2b; font-size:12px; font-weight:700; }
+  @media (max-width:560px){ .sku-box.install .field.dim3{ grid-column:span 1; } }
   .sku-box .note{ font-size:11px; margin-top:6px; }
   /* כללי המיון אוחדו בסבב 4 לבלוק אחד — ראו "מיון בלחיצה על כותרת עמודה" בהמשך. */
   .sku-adv{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px; margin-bottom:12px; }
@@ -581,7 +587,7 @@
         <span>מחירון ומלאי בזמן אמת</span>
         <span>הזמנות, התקנות והנהלת חשבונות</span>
       </div>
-      <div class="ver">גרסה 5.9.1</div>
+      <div class="ver">גרסה 5.9.2</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -653,7 +659,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.9.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.9.2</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -1691,6 +1697,10 @@ const SKU_COLS = [
   {k:'install_price_contractor_vat',t:'התקנה קבלני (כולל מע"מ)',      y:'m'},
   {k:'ship_price_single',           t:'שילוח מוצר בודד (לפני מע"מ)',  y:'m'},
   {k:'pallet_load_factor',          t:'מקדם משטחים',                 y:'n'},
+  {k:'weight_kg',   t:'משקל (ק"ג)',            y:'n'},
+  {k:'length_cm',   t:'אורך (ס"מ)',            y:'n'},
+  {k:'width_cm',    t:'רוחב (ס"מ)',            y:'n'},
+  {k:'height_cm',   t:'גובה (ס"מ)',            y:'n'},
   {k:'unit',        t:'יחידת מידה',            y:'t'},
   {k:'supplier',    t:'ספק',                  y:'t'},
   {k:'barcode',     t:'איתור',                y:'t'}
@@ -2170,6 +2180,10 @@ window.openSku = (pn)=>{
         <div class="field"><label>התקנה קבלני (כולל מע"מ)</label><input id="sk-inst-cont-vat" type="text" inputmode="decimal" dir="ltr" placeholder="1062" value="${s.install_price_contractor_vat??''}"><div class="auto-hint">מתמלא לפי 18% · ניתן לדרוס</div></div>
         <div class="field"><label>שילוח מוצר בודד (לפני מע"מ)</label><input id="sk-ship" type="text" inputmode="decimal" dir="ltr" placeholder="150" value="${s.ship_price_single??''}"></div>
         <div class="field"><label>מקדם משטחים</label><input id="sk-pallet" type="text" inputmode="decimal" dir="ltr" placeholder="0.25" value="${s.pallet_load_factor??''}"></div>
+        <div class="field"><label>משקל (ק"ג)</label><input id="sk-weight" type="text" inputmode="decimal" dir="ltr" placeholder="32" value="${s.weight_kg??''}"></div>
+        <div class="field dim3"><label>מידות (ס"מ) · אורך × רוחב × גובה</label>
+          <div class="d3"><input id="sk-len" type="text" inputmode="decimal" dir="ltr" placeholder="אורך" value="${s.length_cm??''}" oninput="skuVol()"><b>×</b><input id="sk-wid" type="text" inputmode="decimal" dir="ltr" placeholder="רוחב" value="${s.width_cm??''}" oninput="skuVol()"><b>×</b><input id="sk-hei" type="text" inputmode="decimal" dir="ltr" placeholder="גובה" value="${s.height_cm??''}" oninput="skuVol()"></div>
+          <div class="auto-hint" id="sk-vol">${volHint(s.length_cm,s.width_cm,s.height_cm)}</div></div>
       </div>
       <button class="btn green" onclick="saveSku('${jsq(s.partname)}')">שמירה</button>
       <div class="err" id="sk-err"></div>`
@@ -2180,6 +2194,8 @@ window.openSku = (pn)=>{
         ${kpi('התקנה קבלני (כולל מע"מ)', money(s.install_price_contractor_vat))}
         ${kpi('שילוח מוצר בודד (לפני מע"מ)', money(s.ship_price_single))}
         ${kpi('מקדם משטחים', fmtNum(s.pallet_load_factor))}
+        ${kpi('משקל (ק"ג)', fmtNum(s.weight_kg))}
+        ${kpi('מידות (ס"מ)', dimStr(s.length_cm,s.width_cm,s.height_cm))}
       </div>`}
     </div>
 
@@ -2194,6 +2210,16 @@ window.skuContVat = ()=>{
   if(v===null||v===undefined){ t.value=''; return; }
   t.value = String(Math.round(v*VAT_RATE*100)/100);
 };
+/* סבב 6 — מידות ומשקל */
+window.dimStr = (l,w,h)=> (l==null&&w==null&&h==null) ? '—'
+  : [l,w,h].map(x=> (x==null||x==='') ? '?' : fmtNum(x)).join(' × ');
+window.volHint = (l,w,h)=>{
+  const n=[l,w,h].map(x=> (x===''||x==null)?null:Number(x));
+  if(n.some(x=> x===null || !isFinite(x) || x<=0)) return '';
+  return 'נפח: '+(n[0]*n[1]*n[2]/1e6).toFixed(3)+' מ״ק';
+};
+window.skuVol = ()=>{ const t=$('#sk-vol'); if(!t) return;
+  t.textContent = volHint($('#sk-len').value.trim(), $('#sk-wid').value.trim(), $('#sk-hei').value.trim()); };
 window.saveSku = async (pn)=>{
   const s = SKUS.find(x=>String(x.partname)===String(pn)); if(!s) return;
   const bad=[];
@@ -2204,7 +2230,11 @@ window.saveSku = async (pn)=>{
     install_price_contractor:nv('#sk-inst-cont','עלות התקנה קבלני (לפני מע"מ)'),
     install_price_contractor_vat:nv('#sk-inst-cont-vat','עלות התקנה קבלני (כולל מע"מ)'),
     ship_price_single:nv('#sk-ship','עלות שילוח כמוצר בודד (לפני מע"מ)'),
-    pallet_load_factor:nv('#sk-pallet','מקדם משטחים') };
+    pallet_load_factor:nv('#sk-pallet','מקדם משטחים'),
+    weight_kg:nv('#sk-weight','משקל (ק"ג)'),
+    length_cm:nv('#sk-len','אורך (ס"מ)'),
+    width_cm:nv('#sk-wid','רוחב (ס"מ)'),
+    height_cm:nv('#sk-hei','גובה (ס"מ)') };
   if(bad.length){ $('#sk-err').textContent='ערך מספרי לא תקין בשדה: '+bad.join(', '); return; }
   const { error } = await sb.schema('ord').from('inv_items').update(patch).eq('partname', s.partname);
   if(error){ $('#sk-err').textContent='השמירה נכשלה — '+error.message; return; }
@@ -2327,7 +2357,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.9.1</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.9.2</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
@@ -2448,7 +2478,7 @@ async function loadLeads(){
     oldPart('service_calls'),   /* ישירות ממערכת ההזמנות הישנה — מקור האמת */
     sb.schema('ord').from('teams').select('id,name,color,active,sort_order').order('sort_order',{ascending:true}),
     oldPart('sync_log'),        /* ישירות ממערכת ההזמנות הישנה — מקור האמת */
-    sb.schema('ord').from('inv_items').select('partname,partdes,price,family,qty,barcode,image_url,image_full,erp_status,unit,cost,supplier,sales_total,ord,pord,bals,install_price_iron,install_price_contractor,pallet_load_factor,needs_install,install_price_contractor_vat,ship_price_single,sell_qty,expected_qty,sold_3m,sold_6m,price_vat,price_base,expected_qty_full').order('partname',{ascending:true}).limit(10000),
+    sb.schema('ord').from('inv_items').select('partname,partdes,price,family,qty,barcode,image_url,image_full,erp_status,unit,cost,supplier,sales_total,ord,pord,bals,install_price_iron,install_price_contractor,pallet_load_factor,needs_install,install_price_contractor_vat,ship_price_single,sell_qty,expected_qty,sold_3m,sold_6m,price_vat,price_base,expected_qty_full,weight_kg,length_cm,width_cm,height_cm').order('partname',{ascending:true}).limit(10000),
     sb.schema('ord').from('protocols').select('id,order_id,call_id,order_number,customer_name,phone,doc_type,status,sent_at,signed_at,signer_name,token').order('sent_at',{ascending:false}).limit(10000),
     sb.schema('ord').from('settings').select('key,value').order('key',{ascending:true})
   ]);

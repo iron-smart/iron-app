@@ -2409,7 +2409,7 @@ async function loadLeads(){
     sb.schema('ord').from('protocols').select('id,order_id,call_id,order_number,customer_name,phone,doc_type,status,sent_at,signed_at,signer_name,token').order('sent_at',{ascending:false}).limit(10000),
     sb.schema('ord').from('settings').select('key,value').order('key',{ascending:true})
   ]);
-  }catch(e){ console.error('טעינת הנתונים נכשלה לגמרי', e); loadErrBanner(['החיבור לשרת']); return; }
+  }catch(e){ console.error('טעינת הנתונים נכשלה לגמרי', e); loadErrBanner(['החיבור לשרת']); try{ $('#lastSync').textContent=''; renderAllViews(); }catch(_){} return; }
   const [l,c,t,d,m,k,p,o,sc,tm,sy,sk,pr,st] = _q;
   /* תיקון ממצא 11 — שאילתה שנכשלה כבר לא מתחזה ל"אין נתונים" */
   const _bad = _q.map((r,i)=>(r&&r.error)?{n:LOAD_NAMES[i],e:r.error}:null).filter(Boolean);

@@ -318,6 +318,10 @@
   #sku-tools .tb-grp.end{ margin-inline-start:auto; }
   #sku-tools select{ min-width:132px; font-size:12.5px; padding:7px 9px; color:#334155; }
   #sku-tools .tb-count{ font-size:12px; font-weight:700; color:#526074; background:#eef2f7; border-radius:99px; padding:5px 11px; white-space:nowrap; }
+  /* סבב 8 — מועד סנכרון המק"טים האחרון, לצד כפתור הסנכרון */
+  #sku-tools .tb-sync{ display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:#64748b; white-space:nowrap; padding:0 2px; cursor:default; }
+  #sku-tools .tb-sync::before{ content:''; width:7px; height:7px; border-radius:50%; background:var(--green); flex:none; }
+  #sku-tools .tb-sync.stale::before{ background:#d97706; }
   button.tb-btn{ background:#fff; border:1px solid var(--line); border-radius:9px; padding:7px 12px; font-size:12.5px; font-family:inherit; font-weight:600; color:#475569; cursor:pointer; white-space:nowrap; }
   button.tb-btn:hover{ background:#f1f5f9; color:#0f172a; }
   button.tb-btn.adv{ color:var(--navy); border-color:#c3d3e0; background:#f7fafc; }
@@ -587,7 +591,7 @@
         <span>מחירון ומלאי בזמן אמת</span>
         <span>הזמנות, התקנות והנהלת חשבונות</span>
       </div>
-      <div class="ver">גרסה 5.9.3</div>
+      <div class="ver">גרסה 5.9.4</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -659,7 +663,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.9.3</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.9.4</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -1782,6 +1786,22 @@ window.skuSortBy = (k)=>{
   renderSkus();
 };
 
+/* ---- מועד הסנכרון האחרון של המק"טים (סבב 8 — הערת רומן 29/07) ----
+   המקור הוא ord.sync_log בפלטפורמה, שורות של inventory-sync בלבד.
+   שימו לב: המחוון שבכותרת העליונה (#lastSync) מציג את סנכרון ההזמנות
+   מהמערכת הישנה ואינו נוגע במק"טים — ולכן נדרש כאן מקור נפרד. */
+let SKU_SYNC_ROW = null;
+function skuLastSyncHtml(){
+  if(!SKU_SYNC_ROW || !SKU_SYNC_ROW.ran_at) return '<span class="tb-sync stale" id="skuLastSync" title="לא נמצאה רשומת סנכרון מק״טים מוצלחת">סנכרון מק״טים אחרון: לא ידוע</span>';
+  const d = new Date(SKU_SYNC_ROW.ran_at);
+  const short = d.toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const full  = d.toLocaleString('he-IL',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const n = SKU_SYNC_ROW.details && SKU_SYNC_ROW.details.items_synced;
+  const stale = (Date.now() - d.getTime()) > 36*3600*1000;   /* יותר מיממה וחצי — סימון כתום */
+  const tip = 'הסנכרון המוצלח האחרון של המק״טים: ' + full + (n?' · '+fmtNum(n)+' מק״טים':'') + '. הסנכרון האוטומטי רץ כל יום ב-07:00 (א׳–ו׳).';
+  return `<span class="tb-sync${stale?' stale':''}" id="skuLastSync" title="${esc(tip)}">סנכרון מק״טים אחרון: ${esc(short)}</span>`;
+}
+
 /* ---- סרגל הכלים (סעיפים 1, 3, 5, 7) ---- */
 function renderSkuTools(){
   const box=$('#sku-tools'); if(!box) return;
@@ -1799,6 +1819,7 @@ function renderSkuTools(){
     <span class="tb-count" id="skuCount"></span>
     <div class="tb-grp end">
       <button class="tb-btn" id="skuExpBtn" title="ייצוא הרשימה המסוננת לאקסל, לפי שדות שתבחר">ייצוא לאקסל</button>
+      ${skuLastSyncHtml()}
       ${skuMgr()?'<button class="tb-btn go" id="skuSyncBtn" title="הסנכרון האוטומטי רץ כל יום ב-07:00 (א׳–ו׳). כאן אפשר להריץ אותו ידנית.">סנכרון מק״טים</button>':''}
     </div>`;
   $('#skuSearch').addEventListener('input', e=>{ SKU_F.q=e.target.value; SKU_VIEW_ID=''; renderSkus(); });
@@ -2360,7 +2381,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.9.3</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.9.4</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
@@ -2463,7 +2484,7 @@ function loadErrBanner(names){
   b.innerHTML='⚠️ חלק מהנתונים לא נטענו ('+esc(names.join(', '))+'). ייתכן שהמוצג חלקי — '
     +'<button onclick="location.reload()" style="background:rgba(255,255,255,.22);color:#fff;border:0;border-radius:6px;padding:3px 10px;margin-inline-start:8px;cursor:pointer;font-family:inherit">רענון</button>';
 }
-const LOAD_NAMES = ['לידים','לקוחות','משימות','עסקאות','פגישות','אנשי קשר','תשלומים','הזמנות','קריאות שירות','צוותים','לוג סנכרון','מק"טים','מסמכים','הגדרות'];
+const LOAD_NAMES = ['לידים','לקוחות','משימות','עסקאות','פגישות','אנשי קשר','תשלומים','הזמנות','קריאות שירות','צוותים','לוג סנכרון','מק"טים','מסמכים','הגדרות','לוג סנכרון מק"טים'];
 async function loadLeads(){
   let _q;
   try{ if(!$('#lastSync').textContent) $('#lastSync').textContent = 'טוען נתונים…'; }catch(_){}
@@ -2483,16 +2504,20 @@ async function loadLeads(){
     oldPart('sync_log'),        /* ישירות ממערכת ההזמנות הישנה — מקור האמת */
     sb.schema('ord').from('inv_items').select('partname,partdes,price,family,qty,barcode,image_url,image_full,erp_status,unit,cost,supplier,sales_total,ord,pord,bals,install_price_iron,install_price_contractor,pallet_load_factor,needs_install,install_price_contractor_vat,ship_price_single,sell_qty,expected_qty,sold_3m,sold_6m,price_vat,price_base,expected_qty_full,weight_kg,length_cm,width_cm,height_cm').order('partname',{ascending:true}).limit(10000),
     sb.schema('ord').from('protocols').select('id,order_id,call_id,order_number,customer_name,phone,doc_type,status,sent_at,signed_at,signer_name,token').order('sent_at',{ascending:false}).limit(10000),
-    sb.schema('ord').from('settings').select('key,value').order('key',{ascending:true})
+    sb.schema('ord').from('settings').select('key,value').order('key',{ascending:true}),
+    /* סבב 8 — לוג הסנכרון של הפלטפורמה, לשליפת מועד סנכרון המק"טים האחרון */
+    sb.schema('ord').from('sync_log').select('ran_at,ok,details').order('ran_at',{ascending:false}).limit(60)
   ]);
   }catch(e){ console.error('טעינת הנתונים נכשלה לגמרי', e); loadErrBanner(['החיבור לשרת']); try{ $('#lastSync').textContent=''; renderAllViews(); }catch(_){} return; }
-  const [l,c,t,d,m,k,p,o,sc,tm,sy,sk,pr,st] = _q;
+  const [l,c,t,d,m,k,p,o,sc,tm,sy,sk,pr,st,sl] = _q;
   /* תיקון ממצא 11 — שאילתה שנכשלה כבר לא מתחזה ל"אין נתונים" */
   const _bad = _q.map((r,i)=>(r&&r.error)?{n:LOAD_NAMES[i],e:r.error}:null).filter(Boolean);
   if(_bad.length){ _bad.forEach(b=>console.error('טעינת נתונים נכשלה —', b.n, b.e)); loadErrBanner(_bad.map(b=>b.n)); }
   else loadErrBanner(null);
   LEADS = l.data||[]; CUSTS = c.data||[]; TASKS = t.data||[]; DEALS = d.data||[]; MEETS = m.data||[]; CONTS = k.data||[]; PAYS = p.data||[];
   ORDS = o.data||[]; SCALLS = sc.data||[]; OTEAMS = tm.data||[]; SKUS = sk.data||[]; PROTS = pr.data||[]; OSET = st.data||[];
+  /* סבב 8 — מועד סנכרון המק"טים האחרון (inventory-sync בלבד) */
+  SKU_SYNC_ROW = (sl && sl.data || []).find(r=>r.ok && r.details && r.details.fn==='inventory-sync') || null;
   const lastOk = (sy.data||[]).find(r=>r.ok && (!r.details || !r.details.fn || r.details.fn==='priority-sync'));
   $('#lastSync').textContent = lastOk ? 'סנכרון אחרון: ' + new Date(lastOk.ran_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
   renderAllViews();

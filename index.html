@@ -90,7 +90,9 @@
   .stat .l{ font-size:13px; color:#64748b; margin-top:4px; }
   h2.sec{ font-size:16px; color:var(--navy); margin:22px 4px 12px; }
 
-  .toolbar{ display:flex; gap:10px; margin-bottom:14px; }
+  .toolbar{ display:flex; gap:10px; margin-bottom:14px; align-items:center; }
+  /* 6.2.2 — מונה תוצאות לצד שדה החיפוש בלוח השנה */
+  .qinfo{ font-size:12.5px; color:#64748b; white-space:nowrap; }
   .toolbar input{ flex:1; padding:11px 14px; border:1px solid var(--line); border-radius:10px; font-size:15px; }
   .toolbar .add{ background:var(--green); color:#fff; border:none; border-radius:10px; padding:0 18px; font-size:22px; font-weight:700; }
 
@@ -476,6 +478,9 @@
   .mini-ev .me-time{ color:var(--navy); font-weight:800; font-size:10px; flex:none; }
   .mini-ev .me-line2{ color:#64748b; font-size:10px; display:flex; gap:4px; align-items:center; white-space:nowrap; overflow:hidden; }
   .mini-ev .me-dot{ width:7px; height:7px; border-radius:2px; flex:none; display:inline-block; }
+  /* 6.2.2 — סימן ✓ לאירוע תואם או שהושלם */
+  .mini-ev .me-ok{ font-weight:900; font-size:11px; flex:none; margin-inline-start:auto; }
+  .day-ev .ev-ok{ font-size:12px; font-weight:800; white-space:nowrap; }
   .mini-more{ font-size:11px; color:var(--navy); font-weight:700; margin-top:2px; }
   .day-list{ max-width:820px; }
   .day-ev{ background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:10px; cursor:pointer; border-inline-start:5px solid #94a3b8; box-shadow:0 1px 3px rgba(6,24,39,.06); display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
@@ -644,7 +649,7 @@
         <span>מחירון ומלאי בזמן אמת</span>
         <span>הזמנות, התקנות והנהלת חשבונות</span>
       </div>
-      <div class="ver">גרסה 6.2.1</div>
+      <div class="ver">גרסה 6.2.2</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -727,7 +732,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.2.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.2.2</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -812,9 +817,20 @@
 
     <!-- לוגיסטיקה — לוח שנה, הזמנות ותיאומים וקריאות שירות בתוך אותו מסך (הערה 19) -->
     <section id="tab-logi" class="hidden">
+      <!-- 6.2.2 — חיפוש הלוח יושב מחוץ ל-#cal-wrap כי הלוח נצבע מחדש בכל הקלדה
+           ואילו הוא היה בתוכו, השדה היה מאבד מיקוד וטקסט (רומן 29/07/2026). -->
+      <div id="cal-tools" class="toolbar hidden">
+        <input id="calSearch" placeholder="חיפוש בלוח שנה — לקוח, מספר, עיר או צוות…">
+        <span id="cal-qinfo" class="qinfo"></span>
+      </div>
       <div id="cal-wrap"></div>
+      <!-- 6.2.2 — שדה חיפוש נפרד לכל תצוגה: ההקשר שונה (מספר הזמנה מול מספר
+           קריאה), ולכן גם הטקסט שהוקלד נשמר בנפרד ולא נגרר בין המסכים. -->
       <div id="logi-list" class="hidden">
-        <div class="toolbar"><input id="logiSearch" placeholder="חיפוש לפי לקוח, מספר או עיר…"></div>
+        <div class="toolbar">
+          <input id="logiSearchOrders" placeholder="חיפוש הזמנה — לקוח, מספר הזמנה, עיר או צוות…">
+          <input id="logiSearchCalls" class="hidden" placeholder="חיפוש קריאת שירות — לקוח, מספר קריאה, עיר או מוצר…">
+        </div>
         <div id="logi-tbl"></div>
       </div>
     </section>
@@ -1648,18 +1664,25 @@ function renderLogi(){
   /* 6.2.1 — שורת השבבים העליונה הוסרה: המעבר בין שלוש התצוגות נעשה רק
      מהתפריט הצף בסרגל הצד (רומן 29/07/2026). */
   if(!$('#cal-wrap')) return;
-  const isCal = LOGI_VIEW==='cal';
+  const isCal = LOGI_VIEW==='cal', isCalls = LOGI_VIEW==='calls';
   $('#cal-wrap').classList.toggle('hidden', !isCal);
+  $('#cal-tools').classList.toggle('hidden', !isCal);
   $('#logi-list').classList.toggle('hidden', isCal);
   if(isCal){ renderCal(); return; }
-  const q=($('#logiSearch').value||'').trim();
-  if(LOGI_VIEW==='calls'){
+  /* 6.2.2 — כל תצוגה מחפשת בשדה שלה, וכל שדה זוכר את מה שהוקלד בו */
+  $('#logiSearchOrders').classList.toggle('hidden', isCalls);
+  $('#logiSearchCalls').classList.toggle('hidden', !isCalls);
+  if(isCalls){
+    const q=($('#logiSearchCalls').value||'').trim();
     let list = SCALLS.filter(s=>!['הושלם','הושלמה','בוטלה','סגורה'].includes(s.status));
-    if(q) list = list.filter(s=>(s.customer_name||'').includes(q)||(s.call_number||'').includes(q)||(s.city||'').includes(q));
+    if(q) list = list.filter(s=>[s.customer_name,s.call_number,s.city,s.product,s.address,s.team,s.phone]
+      .some(v=>String(v||'').includes(q)));
     $('#logi-tbl').innerHTML = wideScreen() ? scTable(list) : capped(list, scRow, 'אין קריאות שירות');
   } else {
+    const q=($('#logiSearchOrders').value||'').trim();
     let list = ORDS.filter(o=>!['הושלם','בוטל'].includes(o.order_status));
-    if(q) list = list.filter(o=>(o.customer_name||'').includes(q)||(o.order_number||'').includes(q)||(o.city||'').includes(q));
+    if(q) list = list.filter(o=>[o.customer_name,o.order_number,o.city,o.address,o.team,o.phone]
+      .some(v=>String(v||'').includes(q)));
     $('#logi-tbl').innerHTML = wideScreen() ? ordTable(list) : capped(list, ordRow, 'אין הזמנות');
   }
 }
@@ -1676,6 +1699,17 @@ window.calShift = n=>{
 };
 window.calToday = ()=>{ CAL_D = new Date(); renderCal(); };
 function teamColor(name){ const t=OTEAMS.find(x=>x.name===name); return (t&&t.color)?t.color:'#64748b'; }
+/* 6.2.2 — לוח השנה נצבע לפי סטטוס ולא לפי צוות (רומן 29/07/2026).
+   הגוונים נגזרים מאותה פלטה של שבבי הסטטוס בטבלאות (STATUS_PILL), כדי
+   שהצבע בלוח והצבע בטבלה יסמנו את אותו הדבר. */
+const STATUS_COLOR = {
+  'הזמנה חדשה':'#2563eb','נשלח לייצור':'#7c3aed','הכנה לצביעה':'#ea580c','בהשהיה':'#ca8a04',
+  'תואם':'#16a34a','הושלם':'#64748b','הושלמה':'#64748b','בוטל':'#dc2626','מבוטלת':'#dc2626','בוטלה':'#dc2626',
+  'חדש':'#2563eb','פתוחה':'#2563eb','סגורה':'#64748b'
+};
+const CAL_LEGEND = ['הזמנה חדשה','נשלח לייצור','הכנה לצביעה','בהשהיה','תואם','הושלם'];
+const evStatus = e => e.kind==='order' ? (e.o.order_status||'') : (e.o.status||'');
+const evColor  = e => STATUS_COLOR[evStatus(e)] || '#94a3b8';
 /* לוח שנה בעיצוב המערכת הקודמת (הזמנות ותיאומים), בקנה מידה נוכחי — הנחיית רומן 27/07.
    שבוע עבודה ראשון–חמישי; שישי מוצג רק אם שובצה בו עבודה שאושרה; אירועים רב-יומיים לפי days_count. */
 const CAL_FRIDAY=5, CAL_SATURDAY=6;
@@ -1694,6 +1728,16 @@ function workDates(o){
   return out;
 }
 function dayIndexOf(o, ds){ const i=workDates(o).indexOf(ds); return i<0?0:i+1; }
+/* 6.2.2 — חיפוש בלוח השנה. הסינון יושב ב-eventsOn() ולכן הוא חל על שלוש
+   התצוגות כאחת, כולל מוני האירועים בתאי החודש (רומן 29/07/2026). */
+let CAL_Q='';
+function evMatch(e,q){
+  const o=e.o;
+  return [o.customer_name, o.city, o.address, o.team, o.phone, o.time_slot,
+          e.kind==='svc'?o.call_number:o.order_number,
+          e.kind==='svc'?o.product:o.order_notes]
+    .some(v=>String(v||'').includes(q));
+}
 function eventsOn(ds){
   const evs=[];
   for(const o of ORDS){
@@ -1703,28 +1747,32 @@ function eventsOn(ds){
     if(idx) evs.push({kind:'order',o,dayIdx:idx,dayTotal:Math.max(1,o.days_count||1)});
   }
   for(const c of SCALLS){ if(c.scheduled_date===ds && c.status!=='בוטלה') evs.push({kind:'svc',o:c}); }
-  return evs.sort((a,b)=>String(a.o.time_slot||'').localeCompare(String(b.o.time_slot||'')));
+  const out = CAL_Q ? evs.filter(e=>evMatch(e,CAL_Q)) : evs;
+  return out.sort((a,b)=>String(a.o.time_slot||'').localeCompare(String(b.o.time_slot||'')));
 }
 const teamChip=(name,col)=> name?`<span class="teamchip" style="background:${col}">${esc(name)}</span>`:'<span class="teamchip nochip">ללא צוות</span>';
 const slotShort=s=>!s?'':(s==='יום מלא'?'יום מלא':String(s).split('-')[0]);
 const evOpen=e=> e.kind==='svc'?`openScall('${e.o.id}')`:`openOrd('${e.o.id}')`;
 const evDone=e=> e.kind==='order' ? e.o.order_status==='הושלם' : ['הושלם','הושלמה'].includes(e.o.status);
+/* 6.2.2 — גם אירוע שסטטוסו "תואם" מקבל סימן ✓, לא רק "הושלם" (רומן 29/07/2026) */
+const evOk=e=> evDone(e) || evStatus(e)==='תואם';
+const evMark=e=> evDone(e) ? '✓ הושלם' : (evStatus(e)==='תואם' ? '✓ תואם' : '');
 function evCard(e){
-  const o=e.o, col=teamColor(o.team), done=evDone(e);
+  const o=e.o, col=evColor(e), done=evDone(e), mark=evMark(e);
   return `<div class="ev ${e.kind==='svc'?'svc':''}" style="border-inline-start-color:${col};${done?'opacity:.55':''}" onclick="${evOpen(e)}">
-    <div class="ev-top"><span class="ev-time">${esc(o.time_slot||'ללא שעה')}</span>${done?'<span class="ev-done">✓ הושלם</span>':''}</div>
+    <div class="ev-top"><span class="ev-time">${esc(o.time_slot||'ללא שעה')}</span>${mark?`<span class="ev-done" style="color:${col}">${mark}</span>`:''}</div>
     <div class="t">${e.kind==='svc'?'🛠️ ':''}${esc(o.customer_name||'')}</div>
     <div class="s">${e.kind==='svc'?esc(String(o.product||'').slice(0,30)):esc(o.order_number||'')}${o.items_count?` · ${o.items_count} פר'`:''}</div>
     ${o.city||o.address?`<div class="s">📍 ${esc(o.city||'')}${o.address?`, ${esc(String(o.address).slice(0,24))}`:''}</div>`:''}
     ${o.phone?`<div class="s" dir="ltr" style="text-align:right">📞 ${esc(o.phone)}</div>`:''}
-    <div class="s ev-foot">${teamChip(o.team,col)}${e.kind==='order'&&e.dayTotal>1?`<span class="tagx">${e.dayIdx>1?'המשך · ':''}יום ${e.dayIdx} מתוך ${e.dayTotal}</span>`:''}${e.kind==='order'&&o.friday_ok?'<span class="tagx" title="אושרה עבודה ביום שישי">🗓️ שישי</span>':''}${e.kind==='order'&&o.order_notes?`<span class="tagx" title="${esc(o.order_notes)}">📝</span>`:''}</div>
+    <div class="s ev-foot">${teamChip(o.team,teamColor(o.team))}${e.kind==='order'&&e.dayTotal>1?`<span class="tagx">${e.dayIdx>1?'המשך · ':''}יום ${e.dayIdx} מתוך ${e.dayTotal}</span>`:''}${e.kind==='order'&&o.friday_ok?'<span class="tagx" title="אושרה עבודה ביום שישי">🗓️ שישי</span>':''}${e.kind==='order'&&o.order_notes?`<span class="tagx" title="${esc(o.order_notes)}">📝</span>`:''}</div>
   </div>`;
 }
 window.calGoDay = ds=>{ CAL_D=new Date(ds+'T12:00:00'); CAL_VIEW='day'; renderCal(); };
 function renderCal(){
   const el = $('#cal-wrap'); if(!el) return;
   const t=isoD(new Date()), cd=isoD(CAL_D);
-  let title='', body='';
+  let title='', body='', scope=[];
   if(CAL_VIEW==='month'){
     const first=cd.slice(0,8)+'01';
     const mNum=new Date(first+'T12:00:00').getMonth();
@@ -1735,6 +1783,7 @@ function renderCal(){
       cur=addDaysIso(cur,7);
       if(new Date(cur+'T12:00:00').getMonth()!==mNum && w>=3) break;
     }
+    scope=cells;
     body=`<div class="cal-scroll"><div class="month-grid">
       ${['ראשון','שני','שלישי','רביעי','חמישי','שישי'].map(n=>`<div class="mh">${n}</div>`).join('')}
       ${cells.map(d=>{
@@ -1743,9 +1792,9 @@ function renderCal(){
         const nowork=dowOf(d)===CAL_FRIDAY&&!evs.length;
         return `<div class="month-cell ${inMonth?'':'out'} ${d===t?'today':''} ${nowork?'nowork':''}" onclick="calGoDay('${d}')">
           <div class="mnum"><span>${parseInt(d.slice(8),10)}</span>${evs.length?`<span class="mcount">${evs.length}</span>`:''}</div>
-          ${shown.map(e=>{ const o=e.o, col=teamColor(o.team), done=evDone(e);
-            return `<div class="mini-ev" style="border-inline-start-color:${col};${done?'opacity:.5':''}" title="${esc(o.customer_name||'')} · ${esc(o.time_slot||'ללא שעה')} · ${esc(o.team||'ללא צוות')}${o.city?' · '+esc(o.city):''}">
-              <div class="me-line1"><span class="me-time">${esc(slotShort(o.time_slot))||'—'}</span><b>${e.kind==='svc'?'🛠️':''}${esc(o.customer_name||'')}</b></div>
+          ${shown.map(e=>{ const o=e.o, col=evColor(e), done=evDone(e), ok=evOk(e), st=evStatus(e);
+            return `<div class="mini-ev" style="border-inline-start-color:${col};${done?'opacity:.5':''}" title="${esc(o.customer_name||'')} · ${esc(o.time_slot||'ללא שעה')} · ${esc(st||'ללא סטטוס')} · ${esc(o.team||'ללא צוות')}${o.city?' · '+esc(o.city):''}">
+              <div class="me-line1"><span class="me-time">${esc(slotShort(o.time_slot))||'—'}</span><b>${e.kind==='svc'?'🛠️':''}${esc(o.customer_name||'')}</b>${ok?`<span class="me-ok" style="color:${col}">✓</span>`:''}</div>
               <div class="me-line2"><span class="me-dot" style="background:${col}"></span>${esc(o.team||'ללא צוות')}${o.city?` · ${esc(o.city)}`:''}</div>
             </div>`;}).join('')}
           ${evs.length>3?`<div class="mini-more">+${evs.length-3} נוספים…</div>`:''}
@@ -1756,6 +1805,7 @@ function renderCal(){
     const days=[0,1,2,3,4].map(i=>addDaysIso(ws,i));
     const fri=addDaysIso(ws,5);
     if(eventsOn(fri).length) days.push(fri);
+    scope=days;
     title=`שבוע ${fmtD(days[0])} — ${fmtD(days[days.length-1])}`;
     body=`<div class="cal-scroll"><div class="wk-grid" style="grid-template-columns:repeat(${days.length},minmax(185px,1fr))">
       ${days.map(d=>{ const evs=eventsOn(d);
@@ -1766,22 +1816,27 @@ function renderCal(){
     </div></div>`;
   } else {
     const evs=eventsOn(cd);
+    scope=[cd];
     title=`${dayNameHe(cd)}, ${fmtD(cd)}`;
     body=`<div class="cal-scroll"><div class="day-list">
-      ${evs.length? evs.map(e=>{ const o=e.o, col=teamColor(o.team), done=evDone(e);
+      ${evs.length? evs.map(e=>{ const o=e.o, col=evColor(e), done=evDone(e), st=evStatus(e), mark=evMark(e);
         return `<div class="day-ev" style="border-inline-start-color:${col};${done?'opacity:.55':''}" onclick="${evOpen(e)}">
           <div class="tm">${esc(o.time_slot||'ללא שעה')}</div>
           <div class="who">
-            <div class="nm2">${e.kind==='svc'?'🛠️ ':'📦 '}${esc(o.customer_name||'')} ${done?'✓':''}</div>
+            <div class="nm2">${e.kind==='svc'?'🛠️ ':'📦 '}${esc(o.customer_name||'')}${mark?` <span class="ev-ok" style="color:${col}">${mark}</span>`:''}</div>
             <div class="dt">${e.kind==='svc'?esc(o.product||''):esc(o.order_number||'')}${o.city?` · ${esc(o.city)}`:''}${o.address?` · ${esc(o.address)}`:''}</div>
             ${e.kind==='order'&&o.order_notes?`<div class="dt">📝 ${esc(String(o.order_notes).slice(0,80))}</div>`:''}
           </div>
-          ${teamChip(o.team,col)}
+          ${st?`<span class="pill ${STATUS_PILL[st]||'p-gray'}">${esc(st)}</span>`:''}
+          ${teamChip(o.team,teamColor(o.team))}
           <span dir="ltr" style="font-size:12.5px;color:#64748b">${esc(o.phone||'')}</span>
-        </div>`;}).join('') : '<div class="empty">אין אירועים מתואמים ליום זה</div>'}
+        </div>`;}).join('') : `<div class="empty">${CAL_Q?'אין אירועים תואמים לחיפוש ביום זה':'אין אירועים מתואמים ליום זה'}</div>`}
     </div></div>`;
   }
-  const legend = OTEAMS.filter(x=>x.active!==false).map(x=>`<span class="cal-lg"><span class="cal-dot" style="background:${x.color||'#64748b'};border-radius:3px"></span>${esc(x.name)}</span>`).join('')+'<span class="cal-lg">🛠️ קריאת שירות</span>';
+  /* 6.2.2 — המקרא מציג סטטוסים, כי הצבע בלוח מסמן סטטוס. הצוות ממשיך להופיע
+     כשבב בתוך האירוע עצמו, בצבע הצוות. */
+  const legend = CAL_LEGEND.map(s=>`<span class="cal-lg"><span class="cal-dot" style="background:${STATUS_COLOR[s]};border-radius:3px"></span>${esc(s)}</span>`).join('')
+    + '<span class="cal-lg">✓ תואם / הושלם</span><span class="cal-lg">🛠️ קריאת שירות</span>';
   /* הבקרות למעלה, בשורה אחת — הלוח מקבל את שאר המסך (הערה 8) */
   el.innerHTML = `<div class="cal-topbar">
       <button class="ghost cal-btn" onclick="calShift(-1)">‹ הקודם</button>
@@ -1795,6 +1850,15 @@ function renderCal(){
     </div>
     ${body}
     <div class="cal-legend">${legend}</div>`;
+  /* 6.2.2 — מונה תוצאות בטווח המוצג. ריק כשאין חיפוש פעיל. */
+  const info=$('#cal-qinfo');
+  if(info){
+    if(!CAL_Q) info.textContent='';
+    else{
+      const n=scope.reduce((a,d)=>a+eventsOn(d).length,0);
+      info.textContent = n ? `${n} אירועים תואמים בטווח המוצג` : 'אין אירועים תואמים בטווח המוצג';
+    }
+  }
 }
 
 /* ===== סנכרון פריוריטי מהמסך הראשי =====
@@ -2703,7 +2767,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.2.1</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.2.2</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
@@ -3505,7 +3569,9 @@ async function loadOrderItems(orderNumber){
     <div class="count-line">${list.length} שורות · סה"כ ${totalQty.toLocaleString('he-IL')} יח'</div>`;
   }catch(err){ console.error(err); box.innerHTML='<div class="items-empty">לא ניתן לטעון את פירוט ההזמנה</div>'; }
 }
-$('#logiSearch').addEventListener('input', ()=>renderLogi());
+$('#logiSearchOrders').addEventListener('input', ()=>renderLogi());
+$('#logiSearchCalls').addEventListener('input', ()=>renderLogi());
+$('#calSearch').addEventListener('input', e=>{ CAL_Q=(e.target.value||'').trim(); renderCal(); });
 
 const uniqVals = (arr, field, current) => {
   const s = new Set(arr.map(x=>x[field]).filter(Boolean));

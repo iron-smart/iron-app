@@ -166,7 +166,11 @@
   .topnav .who2{ font-size:13px; opacity:.92; }
   .topnav button.out{ background:rgba(255,255,255,.15); color:#fff; border:none; border-radius:8px; padding:7px 12px; font-size:13px; }
   .shell{ display:flex; align-items:stretch; }
-  aside#side{ width:225px; flex:none; background:linear-gradient(180deg,#061827,#0b3552); padding:12px 0; position:sticky; top:52px; align-self:flex-start; height:calc(100vh - 52px); overflow-y:auto; overflow-x:hidden; box-sizing:border-box; }
+  /* z-index על הסרגל: position:sticky יוצר הקשר ערימה (stacking context) משלו,
+     ולכן ה-z-index של התפריט הצף נספר רק *בתוך* הסרגל. בלי z-index כאן הסרגל
+     כולו נצבע לפני אזור התוכן, ותאי לוח השנה נראו מעל התפריט הצף כאילו הוא שקוף
+     (רומן 29/07/2026). z-index:25 מרים את כל הסרגל מעל התוכן ומתחת לסרגל העליון (30). */
+  aside#side{ width:225px; flex:none; background:linear-gradient(180deg,#061827,#0b3552); padding:12px 0; position:sticky; top:52px; align-self:flex-start; height:calc(100vh - 52px); overflow-y:auto; overflow-x:hidden; box-sizing:border-box; z-index:25; }
   aside#side.closed{ display:none; }
   .nav-item{ display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%; text-align:start; background:none; border:none; color:#cfd8e3; font-size:14px; font-family:inherit; padding:8px 18px; border-inline-start:3px solid transparent; }
   .side-top{ display:flex; align-items:center; justify-content:space-between; padding:2px 18px 8px; color:#8fa3b5; font-size:12px; border-bottom:1px solid rgba(255,255,255,.08); margin-bottom:6px; }
@@ -176,7 +180,7 @@
   .nav-arrow{ font-size:13px; opacity:.55; }
   /* תפריט המשנה צף מחוץ לסרגל: position:fixed אינו נחתך על ידי overflow של אב.
      המיקום עצמו מחושב ב-JS (placeSubmenu) מול מיקום פריט התפריט. */
-  .submenu{ display:none; position:fixed; background:#0b3552; border:1px solid rgba(255,255,255,.15); border-radius:10px; min-width:186px; padding:6px 0; box-shadow:0 12px 36px rgba(0,0,0,.45); z-index:60; }
+  .submenu{ display:none; position:fixed; background:#0b3552; background-image:linear-gradient(180deg,#0e3d5f,#0a3050); border:1px solid rgba(255,255,255,.18); border-radius:10px; min-width:186px; padding:6px 0; box-shadow:0 14px 40px rgba(0,0,0,.55); z-index:60; isolation:isolate; }
   /* 6.2.0 — הפתיחה מנוהלת ב-JS עם השהיית סגירה; ה-hover נשאר כגיבוי ללא JS */
   .nav-wrap:hover .submenu, .nav-wrap.open .submenu{ display:block; }
   .submenu button{ display:block; width:100%; text-align:start; background:none; border:none; color:#cfd8e3; font-size:13.5px; font-family:inherit; padding:9px 16px; cursor:pointer; white-space:nowrap; }
@@ -640,7 +644,7 @@
         <span>מחירון ומלאי בזמן אמת</span>
         <span>הזמנות, התקנות והנהלת חשבונות</span>
       </div>
-      <div class="ver">גרסה 6.2.0</div>
+      <div class="ver">גרסה 6.2.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -691,32 +695,24 @@
         <button data-tab="orders"    onclick="gotoTab('orders')">הזמנות</button>
       </div>
     </div>
+    <!-- לוגיסטיקה — שלושה מסכים אמיתיים, ולכן תת-קטגוריות. הסדר לפי רומן 29/07/2026 -->
     <div class="nav-wrap" data-tabs="logi">
       <button class="nav-item" data-tab="logi">לוגיסטיקה <span class="nav-arrow">‹</span></button>
       <div class="submenu">
-        <button data-view="cal"    onclick="gotoLogi('cal')">לוח שנה</button>
-        <button data-view="calls"  onclick="gotoLogi('calls')">קריאות שירות</button>
         <button data-view="orders" onclick="gotoLogi('orders')">הזמנות ותיאומים</button>
+        <button data-view="calls"  onclick="gotoLogi('calls')">קריאות שירות</button>
+        <button data-view="cal"    onclick="gotoLogi('cal')">לוח שנה</button>
       </div>
     </div>
-    <div class="nav-wrap" data-tabs="docs">
-      <button class="nav-item" data-tab="docs">מסמכים <span class="nav-arrow">‹</span></button>
-      <div class="submenu">
-        <button data-view="sent"   onclick="gotoDocs('sent')">ממתינים לחתימה</button>
-        <button data-view="signed" onclick="gotoDocs('signed')">נחתמו</button>
-        <button data-view="all"    onclick="gotoDocs('all')">הכל</button>
-      </div>
-    </div>
-    <div class="nav-wrap" data-tabs="skus">
-      <button class="nav-item" data-tab="skus">מקטים <span class="nav-arrow">‹</span></button>
-      <div class="submenu" id="skuSubmenu"></div>
-    </div>
+    <!-- מסמכים / מק״טים — "ממתינים לחתימה", "נחתמו", "תצוגות שמורות" הם פילטרים על
+         אותו מסך ולא מסכים נפרדים, ולכן הם נשארים כשבבים בתוך המסך ואין להם תפריט צף
+         (רומן 29/07/2026). ללא חץ — חץ פירושו תמיד "יש כאן תת-קטגוריות". -->
+    <button class="nav-item" data-tab="docs">מסמכים</button>
+    <button class="nav-item" data-tab="skus">מקטים</button>
     <div class="nav-wrap" data-tabs="pays">
-      <button class="nav-item" data-tab="pays">תשלומים <span class="nav-arrow">‹</span></button>
+      <button class="nav-item" data-tab="pays">הנהלת חשבונות <span class="nav-arrow">‹</span></button>
       <div class="submenu">
-        <button data-view="open" onclick="gotoPays('open')">לחיוב</button>
-        <button data-view="paid" onclick="gotoPays('paid')">שולם</button>
-        <button data-view="all"  onclick="gotoPays('all')">הכל</button>
+        <button data-tab="pays" onclick="gotoPays('open')">תשלומים</button>
       </div>
     </div>
     <div class="nav-wrap" data-tabs="set">
@@ -731,7 +727,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.2.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.2.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -816,7 +812,6 @@
 
     <!-- לוגיסטיקה — לוח שנה, הזמנות ותיאומים וקריאות שירות בתוך אותו מסך (הערה 19) -->
     <section id="tab-logi" class="hidden">
-      <div class="chips" id="logi-chips"></div>
       <div id="cal-wrap"></div>
       <div id="logi-list" class="hidden">
         <div class="toolbar"><input id="logiSearch" placeholder="חיפוש לפי לקוח, מספר או עיר…"></div>
@@ -1313,8 +1308,9 @@ const NAV_TABS = ['today','leads','deals','meets','customers','contacts','pays',
 let CUR_TAB = 'today';
 /* התצוגה הפנימית הנוכחית של כל מסך שיש לו תתי-קטגוריות — לצורך סימון הפריט הפעיל */
 const NAV_VIEW = {
-  logi: ()=>LOGI_VIEW, pays: ()=>PAY_FILTER, set: ()=>SET_VIEW,
-  docs: ()=>DOC_FILTER, skus: ()=>SKU_VIEW_ID
+  /* 6.2.1 — רק לקטגוריות שיש להן באמת תת-מסכים. מסמכים / מק״טים / תשלומים
+     מסוננים בתוך המסך ולכן אינם משתתפים בסימון התפריט הצף. */
+  logi: ()=>LOGI_VIEW, set: ()=>SET_VIEW
 };
 function navMark(){
   let view = null;
@@ -1649,11 +1645,9 @@ window.gotoCalls = ()=> gotoLogi('calls');
 window.logiMode = v=>{ LOGI_VIEW=v; renderLogi(); navMark(); };
 window.logiView = ()=> renderLogi();
 function renderLogi(){
-  const chips=$('#logi-chips'); if(!chips) return;
-  chips.innerHTML = `
-    <button class="chip ${LOGI_VIEW==='cal'?'active':''}" onclick="logiMode('cal')">לוח שנה</button>
-    <button class="chip ${LOGI_VIEW==='orders'?'active':''}" onclick="logiMode('orders')">הזמנות ותיאומים</button>
-    <button class="chip ${LOGI_VIEW==='calls'?'active':''}" onclick="logiMode('calls')">קריאות שירות</button>`;
+  /* 6.2.1 — שורת השבבים העליונה הוסרה: המעבר בין שלוש התצוגות נעשה רק
+     מהתפריט הצף בסרגל הצד (רומן 29/07/2026). */
+  if(!$('#cal-wrap')) return;
   const isCal = LOGI_VIEW==='cal';
   $('#cal-wrap').classList.toggle('hidden', !isCal);
   $('#logi-list').classList.toggle('hidden', isCal);
@@ -2027,14 +2021,8 @@ function renderSkuViews(){
       ? `<span class="tb-lbl">תצוגות:</span><button class="view-chip${SKU_VIEW_ID?'':' on'}" onclick="clearSkuView()">הכול</button>${chips}`
       : '';
   }
-  /* אותן תצוגות שמורות זמינות גם כתת-קטגוריות צפות בסרגל הצד (6.2.0) */
-  const sub=$('#skuSubmenu');
-  if(sub){
-    sub.innerHTML = SKU_VIEWS.length
-      ? `<button data-view="" onclick="gotoSkuView('')">הכול</button>` +
-        SKU_VIEWS.map(v=>`<button data-view="${esc(String(v.id))}" onclick="gotoSkuView('${jsq(v.id)}')">${esc(v.name)}</button>`).join('')
-      : '';
-  }
+  /* 6.2.1 — התצוגות השמורות הן פילטרים על מסך המק״טים ולא תת-קטגוריות,
+     ולכן הן נשארות כשבבים בתוך המסך בלבד (רומן 29/07/2026). */
   if(typeof navMark==='function') navMark();
 }
 window.applySkuView = (id)=>{
@@ -2643,9 +2631,10 @@ window.setMode = v=>{ SET_VIEW=v; renderSettings(); navMark(); };
 /* מקור אחד לתתי-הקטגוריות של ההגדרות — משמש גם את המסך וגם את התפריט הצף בסרגל */
 function settingsCats(){
   const isAdmin = ME && ME.role==='admin';
-  return [ ...(isAdmin?[['users','👥 משתמשים והרשאות']]:[]),
-    ['teams','🧑‍🔧 צוותי לוגיסטיקה'], ['texts','📝 טקסטים ומסמכים'],
-    ...(isAdmin?[['synclog','🔄 יומן סנכרון']]:[]), ['general','⚙️ כללי'] ];
+  /* ללא אימוג׳ים — רומן 29/07/2026 */
+  return [ ...(isAdmin?[['users','משתמשים והרשאות']]:[]),
+    ['teams','צוותי לוגיסטיקה'], ['texts','טקסטים ומסמכים'],
+    ...(isAdmin?[['synclog','יומן סנכרון']]:[]), ['general','כללי'] ];
 }
 /* תפריט ההגדרות בסרגל נבנה לפי ההרשאה בפועל — פריטי אדמין אינם מוצגים למי שאינו אדמין */
 window.buildSetSubmenu = ()=>{
@@ -2714,7 +2703,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.2.0</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.2.1</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>

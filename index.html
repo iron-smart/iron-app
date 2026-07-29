@@ -354,13 +354,18 @@
   .sku-box.install{ border:1px dashed #b58a2b; background:#fffdf5; }
   .sku-box .bx-t{ font-size:12.5px; font-weight:800; color:var(--navy); margin:0 0 7px; }
   .sku-box.install .bx-t{ color:#8a6410; }
-  /* סבב 4 — שדות ההתקנה, השילוח והמשטחים */
-  .sku-box.install .field label{ font-size:12px; margin-bottom:4px; }
-  .sku-box.install .field input, .sku-box.install .field select{ padding:8px 10px; font-size:13.5px; border-radius:9px; }
-  .sku-box.install .need-sel{ width:100%; font-weight:800; background:#fff; }
+  /* סבב 4 — שדות ההתקנה, השילוח והמשטחים · הודקו בסבב 5 */
+  .sku-box.install{ padding:8px 10px 9px; }
+  .sku-box.install .bx-t{ margin-bottom:5px; }
+  .sku-box.install .ig{ display:grid; grid-template-columns:repeat(auto-fit,minmax(132px,1fr)); gap:6px 7px; }
+  .sku-box.install .field{ margin-bottom:0; }
+  .sku-box.install .field label{ font-size:10.5px; font-weight:600; color:#64748b; line-height:1.25; margin-bottom:2px; }
+  .sku-box.install .field input, .sku-box.install .field select{ width:100%; box-sizing:border-box; padding:5px 8px; font-size:12.5px; border-radius:7px; border:1px solid var(--line); font-family:inherit; }
+  .sku-box.install .need-sel{ font-weight:800; background:#fff; }
   .sku-box.install .need-sel.yes{ color:#166534; border-color:#8fcfa8; background:#f1fbf5; }
   .sku-box.install .need-sel.no{ color:#991b1b; border-color:#e8aca4; background:#fdf4f3; }
-  .sku-box.install .auto-hint{ font-size:10.5px; color:#8a6410; margin-top:3px; }
+  .sku-box.install .auto-hint{ font-size:9.5px; color:#8a6410; line-height:1.2; margin-top:2px; }
+  .sku-box.install .btn{ width:auto; padding:6px 18px; font-size:12.5px; font-weight:700; border-radius:8px; margin-top:8px; }
   .sku-box .note{ font-size:11px; margin-top:6px; }
   /* כללי המיון אוחדו בסבב 4 לבלוק אחד — ראו "מיון בלחיצה על כותרת עמודה" בהמשך. */
   .sku-adv{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px; margin-bottom:12px; }
@@ -576,7 +581,7 @@
         <span>מחירון ומלאי בזמן אמת</span>
         <span>הזמנות, התקנות והנהלת חשבונות</span>
       </div>
-      <div class="ver">גרסה 5.9.0</div>
+      <div class="ver">גרסה 5.9.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -648,7 +653,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.9.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.9.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -2158,15 +2163,15 @@ window.openSku = (pn)=>{
     <div class="sku-box install">
       <div class="bx-t">נתוני התקנה, שילוח ומשטחים</div>
       ${mgr?`
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:8px">
-        <div class="field"><label>האם נדרשת התקנה למוצר זה?</label><select id="sk-need" class="need-sel${s.needs_install===true?' yes':(s.needs_install===false?' no':'')}" onchange="skuNeedTint(this)"><option value=""${s.needs_install==null?' selected':''}>טרם נקבע</option><option value="1"${s.needs_install===true?' selected':''}>כן</option><option value="0"${s.needs_install===false?' selected':''}>לא</option></select></div>
-        <div class="field"><label>עלות התקנה איירון (לפני מע"מ)</label><input id="sk-inst-iron" type="text" inputmode="decimal" dir="ltr" placeholder="לדוגמה 1250" value="${s.install_price_iron??''}"></div>
-        <div class="field"><label>עלות התקנה קבלני (לפני מע"מ)</label><input id="sk-inst-cont" type="text" inputmode="decimal" dir="ltr" placeholder="לדוגמה 900" value="${s.install_price_contractor??''}" oninput="skuContVat()"></div>
-        <div class="field"><label>עלות התקנה קבלני (כולל מע"מ)</label><input id="sk-inst-cont-vat" type="text" inputmode="decimal" dir="ltr" placeholder="לדוגמה 1062" value="${s.install_price_contractor_vat??''}"><div class="auto-hint">מתמלא לפי 18% כשמזינים את המחיר לפני מע"מ — ניתן לדרוס ידנית</div></div>
-        <div class="field"><label>עלות שילוח כמוצר בודד (לפני מע"מ)</label><input id="sk-ship" type="text" inputmode="decimal" dir="ltr" placeholder="לדוגמה 150" value="${s.ship_price_single??''}"></div>
-        <div class="field"><label>מקדם משטחים</label><input id="sk-pallet" type="text" inputmode="decimal" dir="ltr" placeholder="לדוגמה 0.25" value="${s.pallet_load_factor??''}"></div>
+      <div class="ig">
+        <div class="field"><label>נדרשת התקנה?</label><select id="sk-need" class="need-sel${s.needs_install===true?' yes':(s.needs_install===false?' no':'')}" onchange="skuNeedTint(this)"><option value=""${s.needs_install==null?' selected':''}>טרם נקבע</option><option value="1"${s.needs_install===true?' selected':''}>כן</option><option value="0"${s.needs_install===false?' selected':''}>לא</option></select></div>
+        <div class="field"><label>התקנה איירון (לפני מע"מ)</label><input id="sk-inst-iron" type="text" inputmode="decimal" dir="ltr" placeholder="1250" value="${s.install_price_iron??''}"></div>
+        <div class="field"><label>התקנה קבלני (לפני מע"מ)</label><input id="sk-inst-cont" type="text" inputmode="decimal" dir="ltr" placeholder="900" value="${s.install_price_contractor??''}" oninput="skuContVat()"></div>
+        <div class="field"><label>התקנה קבלני (כולל מע"מ)</label><input id="sk-inst-cont-vat" type="text" inputmode="decimal" dir="ltr" placeholder="1062" value="${s.install_price_contractor_vat??''}"><div class="auto-hint">מתמלא לפי 18% · ניתן לדרוס</div></div>
+        <div class="field"><label>שילוח מוצר בודד (לפני מע"מ)</label><input id="sk-ship" type="text" inputmode="decimal" dir="ltr" placeholder="150" value="${s.ship_price_single??''}"></div>
+        <div class="field"><label>מקדם משטחים</label><input id="sk-pallet" type="text" inputmode="decimal" dir="ltr" placeholder="0.25" value="${s.pallet_load_factor??''}"></div>
       </div>
-      <button class="btn green" style="margin-top:8px" onclick="saveSku('${jsq(s.partname)}')">שמירת נתוני התקנה, שילוח ומשטחים</button>
+      <button class="btn green" onclick="saveSku('${jsq(s.partname)}')">שמירה</button>
       <div class="err" id="sk-err"></div>`
       :`<div class="sku-grid">
         ${kpi('נדרשת התקנה', s.needs_install===true?'כן':(s.needs_install===false?'לא':'—'), s.needs_install===true?'ok':(s.needs_install===false?'neg':''))}
@@ -2176,7 +2181,6 @@ window.openSku = (pn)=>{
         ${kpi('שילוח מוצר בודד (לפני מע"מ)', money(s.ship_price_single))}
         ${kpi('מקדם משטחים', fmtNum(s.pallet_load_factor))}
       </div>`}
-      <div class="note">שדות אלה הם נתוני איירון בלבד ואינם קיימים בפריוריטי.</div>
     </div>
 
     <div class="note">שדות פריוריטי (מחירון לפני וכולל מע"מ, מלאי, זמינות, מכירות, סטטוס פעיל) מסונכרנים אוטומטית כל יום ב-07:00, א׳–ו׳, ואינם ניתנים לעריכה כאן. שני המחירים נמשכים כמות שהם ממחירון הבסיס בפריוריטי — אף אחד מהם אינו מחושב.</div>`;
@@ -2323,7 +2327,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.9.0</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.9.1</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>

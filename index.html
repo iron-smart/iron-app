@@ -605,7 +605,7 @@
         <span>מחירון ומלאי בזמן אמת</span>
         <span>הזמנות, התקנות והנהלת חשבונות</span>
       </div>
-      <div class="ver">גרסה 5.9.5</div>
+      <div class="ver">גרסה 6.0.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -677,7 +677,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.9.5</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.0.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -884,26 +884,57 @@ const SB_URL = "https://hjibpfavkjqocjvffsbq.supabase.co";
 const SB_KEY = "sb_publishable_tAnwO6ncZD5QIo1bNFYrhA_qs-YPY1J";
 const sb = supabase.createClient(SB_URL, SB_KEY);
 
-/* ===== גשר ההזמנות החי (5.6.0) =====
-   מערכת ההזמנות הישנה נשארת מקור האמת — פריוריטי מסנכרן אליה כל בוקר.
-   במקום להחזיק עותק בפלטפורמה, המסכים קוראים וכותבים ישירות דרך פונקציית
-   orders-live שרצה על הפרויקט הישן ומאמתת את המשתמש מול הפלטפורמה. */
-const OLD_BRIDGE = "https://gwycwxkesgsplsmytgri.supabase.co/functions/v1/orders-live";
+/* ===== 6.0.0 — המערכת אוחדה: מקור האמת להזמנות הוא הפלטפורמה =====
+   הפרויקט הישן אוחד לכאן ונמחק (29/07/2026). פריוריטי מסנכרן ישירות
+   לסכימת ord, והמסכים קוראים וכותבים בלי גשר. שמות הפונקציות נשמרו
+   כדי לא לגעת בשאר הקוד. רשימת העמודות המותרות לעריכה נאכפת במסד
+   (column grants) — לא בצד הלקוח. */
 async function oldCall(op, payload){
-  let tok = null;
-  try{ const { data } = await sb.auth.getSession(); tok = data && data.session && data.session.access_token; }catch(_e){}
-  if(!tok) return { data:null, error:{ message:'ההתחברות פגה — רעננו את הדף' } };
-  let r;
   try{
-    r = await fetch(OLD_BRIDGE, {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+tok },
-      body: JSON.stringify(Object.assign({ op }, payload||{}))
-    });
-  }catch(e){ return { data:null, error:{ message:'אין תקשורת עם מערכת ההזמנות ('+(e&&e.message||e)+')' } }; }
-  let j = null; try{ j = await r.json(); }catch(_e){}
-  if(!r.ok) return { data:null, error:{ message:(j&&j.error) || ('מערכת ההזמנות החזירה שגיאה '+r.status) } };
-  return { data:j, error:null };
+    if(op === 'bootstrap'){
+      const [o, sc, sy] = await Promise.all([
+        sb.schema('ord').from('orders').select('*').order('order_date',{ascending:false}).limit(10000),
+        sb.schema('ord').from('service_calls').select('*').order('opened_date',{ascending:false}).limit(10000),
+        sb.schema('ord').from('sync_log').select('ran_at,ok,details').order('ran_at',{ascending:false}).limit(20)
+      ]);
+      const bad = [o,sc,sy].find(x=>x.error);
+      if(bad) return { data:null, error:bad.error };
+      return { data:{ orders:o.data||[], service_calls:sc.data||[], sync_log:sy.data||[] }, error:null };
+    }
+    if(op === 'order_items'){
+      const { data, error } = await sb.schema('ord').from('order_items')
+        .select('kline,partname,partdes,qty,synced_at')
+        .eq('order_number', String((payload && payload.order_number) || ''))
+        .order('kline',{ascending:true});
+      return error ? { data:null, error } : { data:{ items:data||[] }, error:null };
+    }
+    if(op === 'update_order' || op === 'update_service_call'){
+      const table = op === 'update_order' ? 'orders' : 'service_calls';
+      const patch = Object.assign({}, (payload && payload.patch) || {});
+      patch.updated_at = new Date().toISOString();
+      const { data, error } = await sb.schema('ord').from(table)
+        .update(patch).eq('id', payload.id).select('*').maybeSingle();
+      if(error) return { data:null, error };
+      if(!data) return { data:null, error:{ message:'הרשומה לא נמצאה' } };
+      return { data:{ row:data }, error:null };
+    }
+    if(op === 'sync'){
+      let tok = null;
+      try{ const { data } = await sb.auth.getSession(); tok = data && data.session && data.session.access_token; }catch(_e){}
+      if(!tok) return { data:null, error:{ message:'ההתחברות פגה — רעננו את הדף' } };
+      const hdrs = { 'Content-Type':'application/json', 'Authorization':'Bearer '+tok, 'apikey': SB_KEY };
+      let r;
+      try{
+        r = await fetch(SB_URL + '/functions/v1/priority-sync', { method:'POST', headers:hdrs, body:'{"source":"app"}' });
+      }catch(e){ return { data:null, error:{ message:'אין תקשורת עם שרת הסנכרון ('+(e&&e.message||e)+')' } }; }
+      let j = null; try{ j = await r.json(); }catch(_e){}
+      if(!r.ok || (j && j.ok === false)) return { data:null, error:{ message:(j&&j.error) || ('הסנכרון החזיר שגיאה '+r.status) } };
+      /* פירוט הפריטים מסונכרן ברקע — לא מעכב את המסך */
+      fetch(SB_URL + '/functions/v1/orders-detail-sync', { method:'POST', headers:hdrs, body:'{"source":"app"}' }).catch(()=>{});
+      return { data: j || { ok:true }, error:null };
+    }
+    return { data:null, error:{ message:'פעולה לא מוכרת: '+op } };
+  }catch(e){ return { data:null, error:{ message:String((e&&e.message)||e) } }; }
 }
 /* טעינה אחת משותפת לשלושת המקורות (הזמנות, קריאות שירות, לוג סנכרון) */
 let _oldBootP = null;
@@ -1641,8 +1672,7 @@ function renderCal(){
 }
 
 /* ===== סנכרון פריוריטי מהמסך הראשי =====
-   מ-5.6.1 הסנכרון רץ על מערכת ההזמנות הישנה — היא מקור האמת.
-   קודם הוא רץ על העותק שבפלטפורמה, ולכן "הצליח" בלי שהמסך השתנה. */
+   מ-6.0.0 הסנכרון רץ על הפלטפורמה עצמה — המערכת אוחדה והישן נמחק. */
 window.syncPriority = async ()=>{
   const btn = $('#syncBtn'); if(btn.disabled) return;
   /* תיקון סבב 4ב — btn.textContent מוחק את אייקון ה-SVG שנוסף לכפתור בסבב 4.
@@ -2400,7 +2430,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.9.5</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.0.0</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
@@ -2507,7 +2537,7 @@ const LOAD_NAMES = ['לידים','לקוחות','משימות','עסקאות','�
 async function loadLeads(){
   let _q;
   try{ if(!$('#lastSync').textContent) $('#lastSync').textContent = 'טוען נתונים…'; }catch(_){}
-  oldBoot(true);   /* טעינה טרייה מהמערכת הישנה בכל רענון */
+  oldBoot(true);   /* טעינה טרייה של נתוני ההזמנות בכל רענון */
   try{
   _q = await Promise.all([
     sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at').order('created_at',{ascending:false}).limit(10000),
@@ -2517,10 +2547,10 @@ async function loadLeads(){
     sb.schema('crm').from('meetings').select('id,subject,status,meet_date,start_time,end_time,meet_type,location,teams_link,linked_type,linked_id').order('meet_date',{ascending:false}).limit(10000),
     sb.schema('core').from('contacts').select('id,full_name,phone,office_phone,email,role,customer_id').order('full_name',{ascending:true}).limit(10000),
     sb.schema('crm').from('payments').select('id,customer_id,deal_id,status,due_date,total_amount,paid_amount,notes').order('due_date',{ascending:false}).limit(10000),
-    oldPart('orders'),          /* ישירות ממערכת ההזמנות הישנה — מקור האמת */
-    oldPart('service_calls'),   /* ישירות ממערכת ההזמנות הישנה — מקור האמת */
+    oldPart('orders'),          /* סכימת ord בפלטפורמה — מקור האמת */
+    oldPart('service_calls'),   /* סכימת ord בפלטפורמה — מקור האמת */
     sb.schema('ord').from('teams').select('id,name,color,active,sort_order').order('sort_order',{ascending:true}),
-    oldPart('sync_log'),        /* ישירות ממערכת ההזמנות הישנה — מקור האמת */
+    oldPart('sync_log'),        /* סכימת ord בפלטפורמה — מקור האמת */
     sb.schema('ord').from('inv_items').select('partname,partdes,price,family,qty,barcode,image_url,image_full,erp_status,unit,cost,supplier,sales_total,ord,pord,install_price_iron,install_price_contractor,pallet_load_factor,needs_install,install_price_contractor_vat,ship_price_single,sell_qty,expected_qty,sold_3m,sold_6m,price_vat,price_base,expected_qty_full,weight_kg,length_cm,width_cm,height_cm,pord_lines').order('partname',{ascending:true}).limit(10000),
     sb.schema('ord').from('protocols').select('id,order_id,call_id,order_number,customer_name,phone,doc_type,status,sent_at,signed_at,signer_name,token').order('sent_at',{ascending:false}).limit(10000),
     sb.schema('ord').from('settings').select('key,value').order('key',{ascending:true}),

@@ -587,7 +587,7 @@
         <span>מחירון ומלאי בזמן אמת</span>
         <span>הזמנות, התקנות והנהלת חשבונות</span>
       </div>
-      <div class="ver">גרסה 5.9.2</div>
+      <div class="ver">גרסה 5.9.3</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -659,7 +659,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.9.2</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 5.9.3</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -1657,7 +1657,9 @@ window.syncPriority = async ()=>{
      · נוסף "מלאי צפוי (כולל הזמנות רכש)" לצד "מלאי צפוי (ללא רכש)"
      · התצוגה הטבלאית צומצמה ל: מספור · תמונה · תיאור · משפחה · פעיל · מחיר לפני מע"מ · מחיר כולל מע"מ
      · הסינון המתקדם הורחב — החרגה (exclude) בטקסט ובמשפחות, טווחי מחיר ומלאי, תמונה, ספק, תנועה
-     · ייצוא לאקסל (xlsx אמיתי) לפי בחירת שדות ===== */
+     · ייצוא לאקסל (xlsx אמיתי) לפי בחירת שדות
+   סבב 7 — הערת רומן (29/07): עמודת מק"ט נוספה לתצוגה הטבלאית מימין לתיאור.
+     · סדר סופי: מספור · תמונה · מק"ט · תיאור · משפחה · פעיל · מחיר לפני מע"מ · מחיר כולל מע"מ ===== */
 const skuActive = s => (s.erp_status||'')!=='לא פעיל';
 const skuActPill = s => skuActive(s) ? '<span class="pill st-rel">פעיל</span>' : '<span class="pill st-no">לא פעיל</span>';
 /* סבב 4 — "האם נדרשת התקנה": כן ירוק, לא אדום, ריק = טרם נקבע */
@@ -1705,8 +1707,9 @@ const SKU_COLS = [
   {k:'supplier',    t:'ספק',                  y:'t'},
   {k:'barcode',     t:'איתור',                y:'t'}
 ];
-/* התצוגה הטבלאית — רק מה שרומן ביקש. מספור ותמונה מתווספים בנפרד בכותרת. */
-const SKU_TABLE_KEYS = ['partdes','family','erp_status','price_base','price_vat'];
+/* התצוגה הטבלאית — רק מה שרומן ביקש. מספור ותמונה מתווספים בנפרד בכותרת.
+   סבב 7 — נוספה עמודת מק"ט מימין לתיאור (ב-RTL: לפניו בסדר ה-DOM). */
+const SKU_TABLE_KEYS = ['partname','partdes','family','erp_status','price_base','price_vat'];
 const skuTableCols = () => SKU_COLS.filter(c=>SKU_TABLE_KEYS.includes(c.k));
 
 /* ---- חיפוש (סעיף 5) ----
@@ -2357,7 +2360,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.9.2</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">5.9.3</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>

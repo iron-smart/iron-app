@@ -241,6 +241,10 @@
   select.pilled.p-red{ background:#fbe0e0; color:#a92f2f; border-color:#f0bcbc; }
   select.pilled.p-violet{ background:#e9e6f8; color:#4a3aa7; border-color:#cfc8f0; }
   select.pilled.p-gray{ background:#eeeeea; color:#555; border-color:#d8d8d2; }
+  select.pilled.p-teal{ background:#d7f4ef; color:#0b5f57; border-color:#b3e6dd; }
+  /* מירכוז עמודות הסטטוס בטבלת ההזמנות (בקשת רומן 31/07/2026) */
+  .tbl th.stcell, .tbl td.stcell{ text-align:center; }
+  .tbl td.stcell select.inline-edit{ display:inline-block; margin-inline:auto; text-align:center; text-align-last:center; }
   select.inline-edit.mdc{ color:#fff; border:none; border-radius:99px; font-weight:700; padding:2px 10px; font-size:12px; -webkit-appearance:none; appearance:none; }
   .btn-wa2{ background:#1faa53; color:#fff; padding:4px 9px; border-radius:7px; font-size:12.5px; font-weight:700; text-decoration:none; display:inline-flex; gap:4px; align-items:center; }
   .btn-wa2:hover{ background:#178a43; }
@@ -647,7 +651,7 @@
   .pill.p-blue{ background:#e0e7ff; color:#3730a3; } .pill.p-violet{ background:#ede9fe; color:#5b21b6; }
   .pill.p-orange{ background:#ffedd5; color:#9a3412; } .pill.p-yellow{ background:#fef9c3; color:#854d0e; }
   .pill.p-green{ background:#dcfce7; color:#166534; } .pill.p-gray{ background:#f1f5f9; color:#475569; }
-  .pill.p-red{ background:#fee2e2; color:#991b1b; }
+  .pill.p-red{ background:#fee2e2; color:#991b1b; } .pill.p-teal{ background:#ccfbf1; color:#115e59; }
   /* ===== נגישות (תיקון ממצא 14) ===== */
   :focus-visible{ outline:3px solid #6A9F85; outline-offset:2px; }
   .tbl tbody tr:focus-visible{ outline-offset:-3px; background:#eaf1f6; }
@@ -734,7 +738,7 @@
         <span>מחירון ומלאי בזמן אמת</span>
         <span>הזמנות, התקנות והנהלת חשבונות</span>
       </div>
-      <div class="ver">גרסה 6.3.0</div>
+      <div class="ver">גרסה 6.4.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -817,7 +821,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.3.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.4.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -1970,11 +1974,11 @@ function teamColor(name){ const t=OTEAMS.find(x=>x.name===name); return (t&&t.co
    הגוונים נגזרים מאותה פלטה של שבבי הסטטוס בטבלאות (STATUS_PILL), כדי
    שהצבע בלוח והצבע בטבלה יסמנו את אותו הדבר. */
 const STATUS_COLOR = {
-  'הזמנה חדשה':'#2563eb','נשלח לייצור':'#7c3aed','הכנה לצביעה':'#ea580c','בהשהיה':'#ca8a04',
+  'הזמנה חדשה':'#2563eb','נשלח לייצור':'#7c3aed','נשלח לצביעה':'#ea580c','ממתין לאספקה':'#0d9488','בהשהיה':'#ca8a04',
   'תואם':'#16a34a','הושלם':'#64748b','הושלמה':'#64748b','בוטל':'#dc2626','מבוטלת':'#dc2626','בוטלה':'#dc2626',
   'חדש':'#2563eb','פתוחה':'#2563eb','סגורה':'#64748b'
 };
-const CAL_LEGEND = ['הזמנה חדשה','נשלח לייצור','הכנה לצביעה','בהשהיה','תואם','הושלם'];
+const CAL_LEGEND = ['הזמנה חדשה','נשלח לייצור','נשלח לצביעה','ממתין לאספקה','תואם','הושלם','בהשהיה'];
 const evStatus = e => e.kind==='order' ? (e.o.order_status||'') : (e.o.status||'');
 const evColor  = e => STATUS_COLOR[evStatus(e)] || '#94a3b8';
 /* לוח שנה בעיצוב המערכת הקודמת (הזמנות ותיאומים), בקנה מידה נוכחי — הנחיית רומן 27/07.
@@ -3561,7 +3565,14 @@ function renderOrdersTools(){
   $('#fSort').addEventListener('change', ()=>{ OF.sort=$('#fSort').value; OF.col=''; renderOrders(); });
   $('#fClear').addEventListener('click', ()=>{ const c=OF.chip; OF=Object.assign({}, OF_EMPTY, { chip:c }); renderOrdersTools(); renderOrders(); });
 }
-/* מיון בלחיצה על כותרת עמודה — לחיצה נוספת הופכת את הכיוון */
+/* מיון בלחיצה על כותרת עמודה — לחיצה נוספת הופכת את הכיוון.
+   31/07/2026: המאזין הועבר להאצלה ברמת המסמך (data-sk) במקום onclick מוטבע בכותרת,
+   כדי שהלחיצה תיתפס גם על חץ המיון ועל תוכן פנימי אחר בכותרת. */
+document.addEventListener('click', function(e){
+  var th = e.target && e.target.closest ? e.target.closest('th.srt[data-sk]') : null;
+  if(!th) return;
+  window.ordSortBy(th.getAttribute('data-sk'));
+});
 window.ordSortBy = key => {
   if(OF.col===key) OF.dir = -OF.dir;
   else { OF.col = key; OF.dir = ['order_date','scheduled_date','order_number'].includes(key) ? -1 : 1; }
@@ -3686,8 +3697,8 @@ function scTable(list){
   </tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('calls',list.length,'קריאות')}`;
 }
 /* קבועי הלוח הישן — כרטיסים מלאים (הערות 21–22) */
-const ORDER_STATUSES = ['הזמנה חדשה','נשלח לייצור','הכנה לצביעה','בהשהיה','תואם','הושלם','בוטל'];
-const CONTACT_STATUSES = ['טרם נוצר קשר','נוצר קשר ראשוני לפרוטוקול','פרוטוקול חתום ממתין לתיאום','תואם'];
+const ORDER_STATUSES = ['הזמנה חדשה','נשלח לייצור','נשלח לצביעה','ממתין לאספקה','תואם','הושלם','בהשהיה','בוטל'];
+const CONTACT_STATUSES = ['טרם נוצר קשר','נוצר קשר ראשוני לפרוטוקול','פרוטוקול חתום ממתין לתיאום'];
 const CALL_STATUSES = ['חדש','תואם','הושלם'];
 const URGENCIES = ['רגילה','בינונית','משביתה'];
 const CALL_TYPES = ['תקלה','אחזקה','שירות','אחר'];
@@ -3695,7 +3706,7 @@ const TIME_SLOTS = ['08:00-11:00','10:00-12:00','11:00-13:00','12:00-14:00','13:
 const REGIONS = ['תל אביב והסביבה','מרכז','שרון','שפלה','ירושלים והסביבה','חיפה והקריות','צפון','דרום','נגב','אילת והערבה','יהודה ושומרון'];
 const YESNO = ['כן','לא'];
 const STATUS_PILL = {
-  'הזמנה חדשה':'p-blue','נשלח לייצור':'p-violet','הכנה לצביעה':'p-orange','בהשהיה':'p-yellow',
+  'הזמנה חדשה':'p-blue','נשלח לייצור':'p-violet','נשלח לצביעה':'p-orange','ממתין לאספקה':'p-teal','בהשהיה':'p-yellow',
   'תואם':'p-green','הושלם':'p-gray','בוטל':'p-red','מבוטלת':'p-red',
   'טרם נוצר קשר':'p-red','נוצר קשר ראשוני לפרוטוקול':'p-yellow','פרוטוקול חתום ממתין לתיאום':'p-blue',
   'חדש':'p-blue','רגילה':'p-gray','בינונית':'p-yellow','משביתה':'p-red',
@@ -3820,14 +3831,14 @@ function ordCityCell(o){
 const ORD_COLS = [
   ['#','','rownum'], ['תאריך הזמנה','order_date','odate'], ['הזמנה','order_number',''],
   ['לקוח','customer_name',''], ['טלפון','phone',''], ['עיר / אזור','city',''],
-  ['סטטוס','order_status',''], ['יצרנו קשר?','contact_status',''], ['צוות','team',''],
+  ['סטטוס לוגיסטי','order_status','stcell'], ['יצרנו קשר?','contact_status','stcell'], ['צוות','team',''],
   ['תאריך','scheduled_date',''], ['שעות','time_slot',''], ['וואטסאפ','',''],
 ];
 function ordHead(){
   return ORD_COLS.map(([lbl,key,cls])=>{
     if(!key) return `<th class="${cls}">${lbl}</th>`;
     const on = OF.col===key;
-    return `<th class="srt ${cls} ${on?'on':''}" onclick="ordSortBy('${key}')" title="לחצו למיון לפי ${lbl}">${lbl}<span class="sar">${on?(OF.dir>0?'▲':'▼'):'⇅'}</span></th>`;
+    return `<th class="srt ${cls} ${on?'on':''}" data-sk="${key}" title="לחצו למיון לפי ${lbl}">${lbl}<span class="sar">${on?(OF.dir>0?'▲':'▼'):'⇅'}</span></th>`;
   }).join('');
 }
 function ordTable(list){
@@ -3841,8 +3852,8 @@ function ordTable(list){
       <td title="${esc(o.customer_name||'')}">${esc(o.customer_name||'')}</td>
       <td dir="ltr">${esc(o.phone||'')}</td>
       <td>${ordCityCell(o)}</td>
-      <td>${ieSel('ord',o.id,'order_status',ORDER_STATUSES,o.order_status)}</td>
-      <td>${ieSel('ord',o.id,'contact_status',CONTACT_STATUSES,o.contact_status)}</td>
+      <td class="stcell">${ieSel('ord',o.id,'order_status',ORDER_STATUSES,o.order_status)}</td>
+      <td class="stcell">${ieSel('ord',o.id,'contact_status',CONTACT_STATUSES,o.contact_status)}</td>
       <td>${ieSel('ord',o.id,'team',OTEAMS.filter(t=>t.active!==false).map(t=>t.name),o.team,{allowEmpty:true,emptyLabel:'לא משויך'})}</td>
       <td>${ieDate('ord',o.id,'scheduled_date',o.scheduled_date)}${o.scheduled_date?`<div class="note-preview">${dayNameHe(o.scheduled_date)}${o.days_count>1?` · ${o.days_count} ימים`:''}</div>`:''}</td>
       <td>${ieSel('ord',o.id,'time_slot',TIME_SLOTS,o.time_slot,{allowEmpty:true})}</td>

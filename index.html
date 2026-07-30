@@ -575,6 +575,17 @@
   .waze-ico{ display:inline-flex; align-items:center; justify-content:center; width:27px; height:27px; border-radius:9px; background:#e8f7fd; border:1px solid #b8e4f5; text-decoration:none; flex:none; }
   .waze-ico:hover{ background:#c9edfb; border-color:#33ccff; }
   .waze-ico svg{ width:16px; height:16px; display:block; }
+  /* 6.2.7 — טלפון לחיץ + וואטסאפ, לטכנאים שעובדים מהטלפון או מהטאבלט (רומן 30/07/2026) */
+  .ph-btn{ display:inline-flex; align-items:center; gap:4px; border-radius:99px; padding:1px 9px; font-size:11px; font-weight:700; text-decoration:none; border:1px solid transparent; }
+  .ph-btn svg{ width:13px; height:13px; display:block; flex:none; }
+  .ph-btn.call{ background:#eef2ff; color:#3730a3; border-color:#c7d2fe; }
+  .ph-btn.call:hover{ background:#e0e7ff; }
+  .ph-btn.wa{ background:#e7f8ee; color:#15803d; border-color:#bbf7d0; }
+  .ph-btn.wa:hover{ background:#d3f3e0; }
+  .ev-ph{ display:inline-flex; align-items:center; gap:6px; }
+  .ev-ph a{ text-decoration:none; }
+  .ev-ph .wa-ico{ display:inline-flex; width:19px; height:19px; align-items:center; justify-content:center; border-radius:6px; background:#e7f8ee; border:1px solid #bbf7d0; flex:none; }
+  .ev-ph .wa-ico svg{ width:12px; height:12px; display:block; }
   .addr-cell{ display:flex; align-items:center; justify-content:center; gap:7px; }
   .addr-cell .ac-txt{ min-width:0; }
   /* ===== מיון בלחיצה על כותרת עמודה — מאוחד לכל המערכת · סבב 4 (28/07/2026) =====
@@ -687,7 +698,7 @@
         <span>מחירון ומלאי בזמן אמת</span>
         <span>הזמנות, התקנות והנהלת חשבונות</span>
       </div>
-      <div class="ver">גרסה 6.2.6</div>
+      <div class="ver">גרסה 6.2.7</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -770,7 +781,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.2.6</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.2.7</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -1813,7 +1824,7 @@ function tgChip(e){
   const line2=[ref, o.city, o.address].filter(Boolean).map(x=>esc(String(x))).join(' · ');
   return `<div class="tg-chip" style="border-inline-start-color:${col};${evDone(e)?'opacity:.55':''}" onclick="${evOpen(e)}" title="${esc(o.customer_name||'')} · ${esc(o.time_slot||'ללא שעה')} · ${esc(evStatus(e)||'')} · ${esc(o.team||'ללא צוות')}${o.phone?' · '+esc(o.phone):''}">
     <div class="c1"><span class="tm">${esc(o.time_slot||'ללא שעה')}</span>${e.kind==='svc'?'🛠️':''}<span style="overflow:hidden;text-overflow:ellipsis">${esc(o.customer_name||'')}</span>${mark?`<span style="color:${col};font-size:10.5px;flex:none">${mark}</span>`:''}</div>
-    <div class="c2">${line2||'—'}${o.team?` · <span class="team">${esc(o.team)}</span>`:''}${o.phone?` · <span dir="ltr">${esc(o.phone)}</span>`:''}</div>
+    <div class="c2">${line2||'—'}${o.team?` · <span class="team">${esc(o.team)}</span>`:''}${o.phone?` · ${evPh(o.phone)}`:''}</div>
   </div>`;
 }
 function tgNowLine(ds){
@@ -1866,7 +1877,7 @@ function evCard(e, compact){
     <div class="t">${e.kind==='svc'?'🛠️ ':''}${esc(o.customer_name||'')}</div>
     <div class="s">${e.kind==='svc'?esc(String(o.product||'').slice(0,30)):esc(o.order_number||'')}${o.items_count?` · ${o.items_count} פר'`:''}</div>
     ${o.city||o.address?`<div class="s">📍 ${esc(o.city||'')}${o.address?`, ${esc(String(o.address).slice(0,24))}`:''}</div>`:''}
-    ${o.phone?`<div class="s" dir="ltr" style="text-align:right">📞 ${esc(o.phone)}</div>`:''}
+    ${o.phone?`<div class="s" style="text-align:right">${evPh(o.phone)}</div>`:''}
     <div class="s ev-foot">${teamChip(o.team,teamColor(o.team))}${e.kind==='order'&&e.dayTotal>1?`<span class="tagx">${e.dayIdx>1?'המשך · ':''}יום ${e.dayIdx} מתוך ${e.dayTotal}</span>`:''}${e.kind==='order'&&o.friday_ok?'<span class="tagx" title="אושרה עבודה ביום שישי">🗓️ שישי</span>':''}${e.kind==='order'&&o.order_notes?`<span class="tagx" title="${esc(o.order_notes)}">📝</span>`:''}</div>
   </div>`;
 }
@@ -3479,6 +3490,17 @@ const wazeUrl = addr => 'https://waze.com/ul?q=' + encodeURIComponent(addr) + '&
 const wazeBtn = addr => addr ? `<a class="waze-btn" target="_blank" rel="noopener" href="${wazeUrl(addr)}" onclick="event.stopPropagation()">${WAZE_SVG} ניווט</a>` : '';
 /* גרסת אייקון בלבד — לשימוש בתוך תאי טבלה */
 const wazeIco = addr => addr ? `<a class="waze-ico" target="_blank" rel="noopener" title="ניווט ב-Waze אל ${esc(addr)}" href="${wazeUrl(addr)}" onclick="event.stopPropagation()">${WAZE_SVG}</a>` : '';
+/* 6.2.7 — טלפון לחיץ (רומן 30/07/2026): מספר תקין נפתח בחיוג ישיר ובוואטסאפ.
+   מספר ישראלי מומר ל-972 עבור wa.me; מספר קצר/פגום לא מקבל כפתורים כלל. */
+const WA_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="#25D366" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z"/><path fill="#fff" d="M8.6 7.2c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.4-.3.3-.9.9-.9 2.1s.9 2.4 1 2.6c.1.2 1.7 2.8 4.3 3.8 2.1.8 2.6.7 3 .6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.2-.2-.5-.3l-1.7-.8c-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1-.2-.1-1-.4-1.9-1.2-.7-.6-1.2-1.4-1.3-1.6-.1-.2 0-.4.1-.5l.4-.5c.1-.2.2-.3.2-.5s0-.3-.1-.4l-.8-1.9z"/></svg>';
+const phDigits = p => { let d=digitsOf(p); if(d.startsWith('00')) d=d.slice(2); return d; };
+const phOk = p => { const d=phDigits(p); return d.length>=9 && d.length<=15; };
+const telUrl = p => 'tel:+' + (phDigits(p).startsWith('972') ? phDigits(p) : '972'+phDigits(p).replace(/^0/,''));
+const waUrl  = p => 'https://wa.me/' + (phDigits(p).startsWith('972') ? phDigits(p) : '972'+phDigits(p).replace(/^0/,''));
+const phBtns = p => phOk(p) ? `<a class="ph-btn call" href="${telUrl(p)}" title="חיוג אל ${esc(p)}" onclick="event.stopPropagation()">📞 חיוג</a> <a class="ph-btn wa" target="_blank" rel="noopener" href="${waUrl(p)}" title="פתיחת וואטסאפ עם ${esc(p)}" onclick="event.stopPropagation()">${WA_SVG} וואטסאפ</a>` : '';
+const evPh = p => phOk(p)
+  ? `<span class="ev-ph"><a href="${telUrl(p)}" dir="ltr" onclick="event.stopPropagation()" title="חיוג אל ${esc(p)}">📞 ${esc(p)}</a><a class="wa-ico" target="_blank" rel="noopener" href="${waUrl(p)}" onclick="event.stopPropagation()" title="וואטסאפ עם ${esc(p)}">${WA_SVG}</a></span>`
+  : `<span dir="ltr">📞 ${esc(p||'')}</span>`;
 const roIn = (val,{ltr}={}) => `<input value="${esc(val??'')}" readonly class="ro" ${ltr?'dir="ltr"':''} title="${esc(val??'')}">`;
 /* select-ים בכרטיסים נצבעים לפי הערך ומתעדכנים מיד עם שינוי (איפיון 8א) */
 const selHtml = (id, vals, cur, allowEmpty) => `<select id="${id}" class="pilled ${STATUS_PILL[cur]||''}" onchange="this.className='pilled '+(STATUS_PILL[this.value]||'')">${allowEmpty?'<option value=""></option>':''}${[...new Set([...(vals||[]), ...(cur?[cur]:[])])].map(v=>`<option ${v===cur?'selected':''}>${esc(v)}</option>`).join('')}</select>`;
@@ -3497,7 +3519,7 @@ window.openScall = (id)=>{
       <div><label>תאריך פתיחה${tag}</label>${roIn(fmtD(s.opened_date),{ltr:1})}</div>
       <div><label>מס' לקוח${tag}</label>${roIn(s.customer_number,{ltr:1})}</div>
       <div><label>שם לקוח${tag}</label>${roIn(s.customer_name)}</div>
-      <div><label>טלפון${tag}</label>${roIn(s.phone,{ltr:1})}</div>
+      <div><label>טלפון${tag} ${phBtns(s.phone)}</label>${roIn(s.phone,{ltr:1})}</div>
       <div><label>אימייל לקוח${tag}</label>${roIn(s.customer_email,{ltr:1})}</div>
       <div><label>מהות הקריאה</label>${selHtml('se-type',CALL_TYPES,s.call_type)}</div>
       <div><label>באחריות?</label>${selHtml('se-warranty',YESNO,s.warranty,true)}</div>
@@ -3640,9 +3662,9 @@ window.openOrd = (id)=>{
       <div><label>תאריך הזמנה${SRC_TAG}</label>${roIn(fmtD(o.order_date),{ltr:1})}</div>
       <div><label>מס' לקוח${SRC_TAG}</label>${roIn(o.customer_number,{ltr:1})}</div>
       <div><label>שם לקוח${SRC_TAG}</label>${roIn(o.customer_name)}</div>
-      <div><label>טלפון${SRC_TAG}</label>${roIn(o.phone,{ltr:1})}</div>
+      <div><label>טלפון${SRC_TAG} ${phBtns(o.phone)}</label>${roIn(o.phone,{ltr:1})}</div>
       <div><label>איש קשר${SRC_TAG}</label>${roIn(o.contact_name)}</div>
-      <div><label>טלפון איש קשר${SRC_TAG}</label>${roIn(o.contact_phone,{ltr:1})}</div>
+      <div><label>טלפון איש קשר${SRC_TAG} ${phBtns(o.contact_phone)}</label>${roIn(o.contact_phone,{ltr:1})}</div>
       <div><label>כמות פריטים${SRC_TAG}</label>${roIn(o.items_count)}</div>
       <div><label>אופן משלוח${SRC_TAG}</label>${roIn(o.delivery_method)}</div>
       <div><label>אימייל לקוח${SRC_TAG}</label>${roIn(o.customer_email,{ltr:1})}</div>

@@ -440,10 +440,43 @@
   body.side-closed #sideOpenTab{ display:flex; }
 
   /* ===== לוח שנה — בקרות למעלה + עיצוב המערכת הקודמת בקנה מידה נוכחי (הנחיית רומן 27/07) ===== */
-  .cal-topbar{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
-  .cal-topbar .cal-title{ font-size:16px; font-weight:800; color:var(--navy); }
+  .cal-topbar{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:8px 12px; box-shadow:0 1px 3px rgba(6,24,39,.06); }
+  .cal-topbar .cal-title{ font-size:17px; font-weight:800; color:var(--navy); letter-spacing:-.2px; }
   .cal-topbar .grow{ flex:1; }
+  /* 6.2.5 — סרגל הלוח עוצב מחדש (רומן 30/07/2026): כותרת התקופה בימין,
+     ומעבר התקופות ובורר התצוגה בשמאל. */
+  .cal-nav{ display:flex; align-items:center; gap:4px; }
+  .cal-nav .nav-b{ width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:1px solid var(--line); background:#fff; border-radius:9px; color:#475569; font-size:15px; font-weight:700; cursor:pointer; transition:.12s; padding:0; }
+  .cal-nav .nav-b:hover{ background:#f1f5f9; color:var(--navy); }
+  .cal-nav .nav-today{ width:auto; padding:0 12px; font-size:12.5px; }
+  .cal-seg{ display:flex; background:#eef2f6; border-radius:10px; padding:3px; gap:2px; }
+  .cal-seg button{ border:0; background:transparent; border-radius:8px; padding:6px 14px; font-size:12.5px; font-weight:700; color:#64748b; cursor:pointer; transition:.12s; font-family:inherit; }
+  .cal-seg button:hover{ color:var(--navy); }
+  .cal-seg button.on{ background:#fff; color:var(--navy); box-shadow:0 1px 3px rgba(6,24,39,.14); }
   .cal-scroll{ height:calc(100vh - 205px); min-height:340px; overflow:auto; }
+  /* 6.2.5 — רשת שעות בלוח השנה: 08:00–17:00, אירוע ממוקם לפי שעתו (רומן 30/07/2026) */
+  .tg-wrap{ display:grid; gap:0 8px; align-items:start; padding-bottom:8px; }
+  .tg-corner{ position:sticky; top:0; z-index:4; }
+  .tg-head{ position:sticky; top:0; z-index:3; background:#e9eff3; border-radius:8px; padding:6px 8px; font-size:12.5px; font-weight:800; color:var(--navy); display:flex; justify-content:space-between; align-items:center; gap:6px; cursor:pointer; margin-bottom:6px; }
+  .tg-head.today{ outline:2px solid var(--green); outline-offset:-1px; }
+  .tg-head .dnum{ font-size:12px; color:#64748b; font-weight:700; }
+  .tg-hr{ position:absolute; inset-inline-end:4px; transform:translateY(-7px); font-size:11.5px; font-weight:700; color:#94a3b8; white-space:nowrap; }
+  .tg-col{ background:#fff; border:1px solid var(--line); border-radius:10px; padding:4px; box-shadow:0 1px 3px rgba(6,24,39,.06); }
+  .tg-col.nowork{ background:repeating-linear-gradient(45deg,#f7f7f5,#f7f7f5 8px,#f1f1ee 8px,#f1f1ee 16px); }
+  .tg-allday{ overflow:hidden; }
+  .tg-allday.has{ border-bottom:1px dashed #dbe3ea; }
+  .tg-chip{ font-size:11px; font-weight:700; background:#f1f5f9; border-inline-start:4px solid #94a3b8; border-radius:6px; padding:3px 6px; margin-bottom:3px; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tg-chip:hover{ filter:brightness(.95); }
+  .tg-body{ position:relative; }
+  .tg-line{ position:absolute; inset-inline:0; height:1px; background:#eef1f4; }
+  .tg-line.half{ background:#f6f8fa; }
+  .tg-now{ position:absolute; inset-inline:0; height:2px; background:#dc2626; z-index:2; }
+  .tg-ev{ position:absolute; }
+  .tg-ev .ev{ height:100%; margin:0; overflow:hidden; box-sizing:border-box; }
+  .ev.ev-c{ font-size:11.5px; padding:5px 7px; line-height:1.35; }
+  .ev.ev-c .t{ font-size:12px; }
+  .ev.ev-c .s{ font-size:10.5px; }
+  .ev.ev-c .ev-foot{ margin-top:2px; }
   .wk-grid{ display:grid; gap:10px; padding-bottom:6px; align-items:start; }
   .wk-day{ background:#fff; border:1px solid var(--line); border-radius:12px; min-height:190px; padding:8px; box-shadow:0 1px 3px rgba(6,24,39,.07); }
   .wk-day.today{ outline:2px solid var(--green); outline-offset:-1px; }
@@ -649,7 +682,7 @@
         <span>מחירון ומלאי בזמן אמת</span>
         <span>הזמנות, התקנות והנהלת חשבונות</span>
       </div>
-      <div class="ver">גרסה 6.2.4</div>
+      <div class="ver">גרסה 6.2.5</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -732,7 +765,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.2.4</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.2.5</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -1738,6 +1771,64 @@ function evMatch(e,q){
           e.kind==='svc'?o.product:o.order_notes]
     .some(v=>String(v||'').includes(q));
 }
+/* ===== 6.2.5 — רשת שעות (רומן 30/07/2026) =====
+   הלוח השבועי והיומי מציגים את שעות העבודה 08:00–17:00 כרשת, וכל שיבוץ ממוקם
+   בגובה שמתאים לשעתו ובגובה שמתאים לאורכו. שיבוץ ללא שעה או "יום מלא" יושב
+   ברצועה עליונה נפרדת. בתצוגה החודשית האירועים ממוינים לפי שעה מלמעלה למטה. */
+const CAL_H0=8, CAL_H1=17, CAL_PX=62, CAL_CHIP=26;
+const CAL_HOURS=(()=>{const a=[];for(let h=CAL_H0;h<=CAL_H1;h++)a.push(h);return a;})();
+function evSpan(e){
+  const s=String(e.o.time_slot||'').trim();
+  if(!s || s==='יום מלא') return null;
+  const m=s.match(/(\d{1,2}):(\d{2})\s*[-–—]\s*(\d{1,2}):(\d{2})/);
+  if(m){ let a=(+m[1])*60+(+m[2]), b=(+m[3])*60+(+m[4]); if(b<=a) b=a+60; return {s:a,e:b}; }
+  const one=s.match(/(\d{1,2}):(\d{2})/);
+  if(one){ const a=(+one[1])*60+(+one[2]); return {s:a,e:a+60}; }
+  return null;
+}
+const evSortKey=e=>{ const sp=evSpan(e); if(sp) return sp.s; return String(e.o.time_slot||'').trim()==='יום מלא' ? -2 : -1; };
+const adCount=ds=>eventsOn(ds).filter(e=>!evSpan(e)).length;
+function layoutDay(evs){
+  const timed=evs.filter(e=>evSpan(e)).slice(), allday=evs.filter(e=>!evSpan(e));
+  timed.sort((a,b)=>{const x=evSpan(a),y=evSpan(b);return x.s-y.s||x.e-y.e;});
+  const ends=[], place=[];
+  for(const e of timed){
+    const sp=evSpan(e);
+    let ci=ends.findIndex(end=>end<=sp.s);
+    if(ci<0){ ci=ends.length; ends.push(0); }
+    ends[ci]=sp.e; place.push({e,sp,ci});
+  }
+  return {allday, place, n:Math.max(1,ends.length)};
+}
+const tgTop=m=>((Math.min(Math.max(m,CAL_H0*60),CAL_H1*60)-CAL_H0*60)/60)*CAL_PX;
+const TG_H=(CAL_H1-CAL_H0)*CAL_PX;
+function tgChip(e){
+  const o=e.o, col=evColor(e);
+  return `<div class="tg-chip" style="border-inline-start-color:${col};${evDone(e)?'opacity:.55':''}" onclick="${evOpen(e)}" title="${esc(o.customer_name||'')} · ${esc(o.team||'ללא צוות')}">${esc(o.time_slot||'ללא שעה')} · ${e.kind==='svc'?'🛠️ ':''}${esc(o.customer_name||'')}</div>`;
+}
+function tgNowLine(ds){
+  const now=new Date();
+  if(ds!==isoD(now)) return '';
+  const m=now.getHours()*60+now.getMinutes();
+  if(m<CAL_H0*60||m>CAL_H1*60) return '';
+  return `<div class="tg-now" style="top:${tgTop(m)}px"></div>`;
+}
+function tgDay(ds, evs, compact, adH){
+  const {allday, place, n}=layoutDay(evs);
+  return `${adH>0?`<div class="tg-allday ${allday.length?'has':''}" style="height:${adH}px">${allday.map(tgChip).join('')}</div>`:''}
+    <div class="tg-body" style="height:${TG_H}px">
+      ${CAL_HOURS.map((h,i)=>i?`<div class="tg-line" style="top:${i*CAL_PX}px"></div>`:'').join('')}
+      ${CAL_HOURS.slice(0,-1).map((h,i)=>`<div class="tg-line half" style="top:${i*CAL_PX+CAL_PX/2}px"></div>`).join('')}
+      ${tgNowLine(ds)}
+      ${place.map(p=>{ const t=tgTop(p.sp.s), b=tgTop(p.sp.e);
+        return `<div class="tg-ev" style="top:${t}px;height:${Math.max(34,b-t-3)}px;inset-inline-start:calc(${p.ci*100/n}% + 1px);width:calc(${100/n}% - 4px)">${evCard(p.e,compact)}</div>`;}).join('')}
+    </div>`;
+}
+function tgGutter(adH){
+  return `<div><div style="height:${adH}px"></div><div style="position:relative;height:${TG_H}px">
+    ${CAL_HOURS.map((h,i)=>`<div class="tg-hr" style="top:${i*CAL_PX}px">${String(h).padStart(2,'0')}:00</div>`).join('')}
+  </div></div>`;
+}
 function eventsOn(ds){
   const evs=[];
   for(const o of ORDS){
@@ -1748,7 +1839,8 @@ function eventsOn(ds){
   }
   for(const c of SCALLS){ if(c.scheduled_date===ds && c.status!=='בוטלה') evs.push({kind:'svc',o:c}); }
   const out = CAL_Q ? evs.filter(e=>evMatch(e,CAL_Q)) : evs;
-  return out.sort((a,b)=>String(a.o.time_slot||'').localeCompare(String(b.o.time_slot||'')));
+  /* 6.2.5 — מיון לפי שעה אמיתית ולא לפי טקסט: "8:00" חייב לבוא לפני "14:00" */
+  return out.sort((a,b)=>evSortKey(a)-evSortKey(b));
 }
 const teamChip=(name,col)=> name?`<span class="teamchip" style="background:${col}">${esc(name)}</span>`:'<span class="teamchip nochip">ללא צוות</span>';
 const slotShort=s=>!s?'':(s==='יום מלא'?'יום מלא':String(s).split('-')[0]);
@@ -1757,9 +1849,9 @@ const evDone=e=> e.kind==='order' ? e.o.order_status==='הושלם' : ['הושל
 /* 6.2.2 — גם אירוע שסטטוסו "תואם" מקבל סימן ✓, לא רק "הושלם" (רומן 29/07/2026) */
 const evOk=e=> evDone(e) || evStatus(e)==='תואם';
 const evMark=e=> evDone(e) ? '✓ הושלם' : (evStatus(e)==='תואם' ? '✓ תואם' : '');
-function evCard(e){
+function evCard(e, compact){
   const o=e.o, col=evColor(e), done=evDone(e), mark=evMark(e);
-  return `<div class="ev ${e.kind==='svc'?'svc':''}" style="border-inline-start-color:${col};${done?'opacity:.55':''}" onclick="${evOpen(e)}">
+  return `<div class="ev ${e.kind==='svc'?'svc':''} ${compact?'ev-c':''}" style="border-inline-start-color:${col};${done?'opacity:.55':''}" onclick="${evOpen(e)}">
     <div class="ev-top"><span class="ev-time">${esc(o.time_slot||'ללא שעה')}</span>${mark?`<span class="ev-done" style="color:${col}">${mark}</span>`:''}</div>
     <div class="t">${e.kind==='svc'?'🛠️ ':''}${esc(o.customer_name||'')}</div>
     <div class="s">${e.kind==='svc'?esc(String(o.product||'').slice(0,30)):esc(o.order_number||'')}${o.items_count?` · ${o.items_count} פר'`:''}</div>
@@ -1807,30 +1899,29 @@ function renderCal(){
     if(eventsOn(fri).length) days.push(fri);
     scope=days;
     title=`שבוע ${fmtD(days[0])} — ${fmtD(days[days.length-1])}`;
-    body=`<div class="cal-scroll"><div class="wk-grid" style="grid-template-columns:repeat(${days.length},minmax(185px,1fr))">
-      ${days.map(d=>{ const evs=eventsOn(d);
-        return `<div class="wk-day ${d===t?'today':''} ${dowOf(d)===CAL_FRIDAY?'nowork':''}">
-          <div class="dhead" onclick="calGoDay('${d}')"><span>${dayNameHe(d)}${dowOf(d)===CAL_FRIDAY?' <span class="fri-tag">שישי</span>':''}</span><span class="dnum">${fmtD(d)}</span></div>
-          ${evs.map(evCard).join('')||'<div style="color:#c3cbd4;font-size:12px;text-align:center;padding:14px 0">—</div>'}
-        </div>`;}).join('')}
+    /* 6.2.5 — רשת שעות: עמודת שעות אחת ואחריה עמודה לכל יום. רצועת "ללא שעה"
+       בגובה אחיד בכל העמודות, כדי שקו השעה 08:00 יהיה באותו גובה בכל היום. */
+    const adMax=Math.max(0,...days.map(adCount));
+    const adH=adMax? adMax*CAL_CHIP+6 : 0;
+    body=`<div class="cal-scroll"><div class="tg-wrap" style="grid-template-columns:56px repeat(${days.length},minmax(150px,1fr))">
+      ${tgGutter(adH)}
+      ${days.map(d=>`<div class="tg-col ${dowOf(d)===CAL_FRIDAY?'nowork':''}">
+          <div class="tg-head ${d===t?'today':''}" onclick="calGoDay('${d}')"><span>${dayNameHe(d)}${dowOf(d)===CAL_FRIDAY?' <span class="fri-tag">שישי</span>':''}</span><span class="dnum">${fmtD(d)}</span></div>
+          ${tgDay(d, eventsOn(d), true, adH)}
+        </div>`).join('')}
     </div></div>`;
   } else {
     const evs=eventsOn(cd);
     scope=[cd];
     title=`${dayNameHe(cd)}, ${fmtD(cd)}`;
-    body=`<div class="cal-scroll"><div class="day-list">
-      ${evs.length? evs.map(e=>{ const o=e.o, col=evColor(e), done=evDone(e), st=evStatus(e), mark=evMark(e);
-        return `<div class="day-ev" style="border-inline-start-color:${col};${done?'opacity:.55':''}" onclick="${evOpen(e)}">
-          <div class="tm">${esc(o.time_slot||'ללא שעה')}</div>
-          <div class="who">
-            <div class="nm2">${e.kind==='svc'?'🛠️ ':'📦 '}${esc(o.customer_name||'')}${mark?` <span class="ev-ok" style="color:${col}">${mark}</span>`:''}</div>
-            <div class="dt">${e.kind==='svc'?esc(o.product||''):esc(o.order_number||'')}${o.city?` · ${esc(o.city)}`:''}${o.address?` · ${esc(o.address)}`:''}</div>
-            ${e.kind==='order'&&o.order_notes?`<div class="dt">📝 ${esc(String(o.order_notes).slice(0,80))}</div>`:''}
-          </div>
-          ${st?`<span class="pill ${STATUS_PILL[st]||'p-gray'}">${esc(st)}</span>`:''}
-          ${teamChip(o.team,teamColor(o.team))}
-          <span dir="ltr" style="font-size:12.5px;color:#64748b">${esc(o.phone||'')}</span>
-        </div>`;}).join('') : `<div class="empty">${CAL_Q?'אין אירועים תואמים לחיפוש ביום זה':'אין אירועים מתואמים ליום זה'}</div>`}
+    /* 6.2.5 — התצוגה היומית היא אותה רשת שעות, בעמודה אחת ובכרטיסים מלאים. */
+    const adH=adCount(cd)? adCount(cd)*CAL_CHIP+6 : 0;
+    body=`<div class="cal-scroll"><div class="tg-wrap" style="grid-template-columns:56px minmax(260px,1fr)">
+      ${tgGutter(adH)}
+      <div class="tg-col ${dowOf(cd)===CAL_FRIDAY?'nowork':''}">
+        <div class="tg-head ${cd===t?'today':''}"><span>${dayNameHe(cd)}</span><span class="dnum">${fmtD(cd)}</span></div>
+        ${evs.length? tgDay(cd, evs, false, adH) : `<div class="empty">${CAL_Q?'אין אירועים תואמים לחיפוש ביום זה':'אין אירועים מתואמים ליום זה'}</div>`}
+      </div>
     </div></div>`;
   }
   /* 6.2.2 — המקרא מציג סטטוסים, כי הצבע בלוח מסמן סטטוס. הצוות ממשיך להופיע
@@ -1839,14 +1930,18 @@ function renderCal(){
     + '<span class="cal-lg">✓ תואם / הושלם</span><span class="cal-lg">🛠️ קריאת שירות</span>';
   /* הבקרות למעלה, בשורה אחת — הלוח מקבל את שאר המסך (הערה 8) */
   el.innerHTML = `<div class="cal-topbar">
-      <button class="ghost cal-btn" onclick="calShift(-1)">‹ הקודם</button>
-      <button class="ghost cal-btn" onclick="calToday()">היום</button>
-      <button class="ghost cal-btn" onclick="calShift(1)">הבא ›</button>
-      <span class="cal-title">🗓️ ${title}</span>
+      <span class="cal-title">${title}</span>
       <span class="grow"></span>
-      <button class="chip ${CAL_VIEW==='month'?'active':''}" onclick="calMode('month')">חודשי</button>
-      <button class="chip ${CAL_VIEW==='week'?'active':''}" onclick="calMode('week')">שבועי</button>
-      <button class="chip ${CAL_VIEW==='day'?'active':''}" onclick="calMode('day')">יומי</button>
+      <div class="cal-seg">
+        <button class="${CAL_VIEW==='day'?'on':''}" onclick="calMode('day')">יומי</button>
+        <button class="${CAL_VIEW==='week'?'on':''}" onclick="calMode('week')">שבועי</button>
+        <button class="${CAL_VIEW==='month'?'on':''}" onclick="calMode('month')">חודשי</button>
+      </div>
+      <div class="cal-nav">
+        <button class="nav-b" onclick="calShift(-1)" title="הקודם">▸</button>
+        <button class="nav-b nav-today" onclick="calToday()">היום</button>
+        <button class="nav-b" onclick="calShift(1)" title="הבא">◂</button>
+      </div>
     </div>
     ${body}
     <div class="cal-legend">${legend}</div>`;

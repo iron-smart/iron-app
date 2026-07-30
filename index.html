@@ -465,8 +465,13 @@
   .tg-col.nowork{ background:repeating-linear-gradient(45deg,#f7f7f5,#f7f7f5 8px,#f1f1ee 8px,#f1f1ee 16px); }
   .tg-allday{ overflow:hidden; }
   .tg-allday.has{ border-bottom:1px dashed #dbe3ea; }
-  .tg-chip{ font-size:11px; font-weight:700; background:#f1f5f9; border-inline-start:4px solid #94a3b8; border-radius:6px; padding:3px 6px; margin-bottom:3px; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .tg-chip:hover{ filter:brightness(.95); }
+  /* 6.2.6 — שיבוץ "יום מלא" מציג את אותם פרטים ככל שיבוץ אחר (רומן 30/07/2026) */
+  .tg-chip{ background:#fff; border:1px solid var(--line); border-inline-start:4px solid #94a3b8; border-radius:8px; padding:5px 8px; margin-bottom:4px; cursor:pointer; overflow:hidden; box-shadow:0 1px 2px rgba(6,24,39,.05); }
+  .tg-chip:hover{ background:#f8fafc; }
+  .tg-chip .c1{ display:flex; align-items:center; gap:5px; font-size:12px; font-weight:800; color:var(--navy); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tg-chip .c1 .tm{ font-size:10.5px; font-weight:800; color:#0f766e; background:#ccfbf1; border-radius:5px; padding:1px 5px; flex:none; }
+  .tg-chip .c2{ font-size:10.5px; color:#64748b; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px; }
+  .tg-chip .c2 .team{ color:#334155; font-weight:700; }
   .tg-body{ position:relative; }
   .tg-line{ position:absolute; inset-inline:0; height:1px; background:#eef1f4; }
   .tg-line.half{ background:#f6f8fa; }
@@ -682,7 +687,7 @@
         <span>מחירון ומלאי בזמן אמת</span>
         <span>הזמנות, התקנות והנהלת חשבונות</span>
       </div>
-      <div class="ver">גרסה 6.2.5</div>
+      <div class="ver">גרסה 6.2.6</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -765,7 +770,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.2.5</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.2.6</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -1775,7 +1780,7 @@ function evMatch(e,q){
    הלוח השבועי והיומי מציגים את שעות העבודה 08:00–17:00 כרשת, וכל שיבוץ ממוקם
    בגובה שמתאים לשעתו ובגובה שמתאים לאורכו. שיבוץ ללא שעה או "יום מלא" יושב
    ברצועה עליונה נפרדת. בתצוגה החודשית האירועים ממוינים לפי שעה מלמעלה למטה. */
-const CAL_H0=8, CAL_H1=17, CAL_PX=62, CAL_CHIP=26;
+const CAL_H0=8, CAL_H1=17, CAL_PX=62, CAL_CHIP=52;
 const CAL_HOURS=(()=>{const a=[];for(let h=CAL_H0;h<=CAL_H1;h++)a.push(h);return a;})();
 function evSpan(e){
   const s=String(e.o.time_slot||'').trim();
@@ -1804,7 +1809,12 @@ const tgTop=m=>((Math.min(Math.max(m,CAL_H0*60),CAL_H1*60)-CAL_H0*60)/60)*CAL_PX
 const TG_H=(CAL_H1-CAL_H0)*CAL_PX;
 function tgChip(e){
   const o=e.o, col=evColor(e);
-  return `<div class="tg-chip" style="border-inline-start-color:${col};${evDone(e)?'opacity:.55':''}" onclick="${evOpen(e)}" title="${esc(o.customer_name||'')} · ${esc(o.team||'ללא צוות')}">${esc(o.time_slot||'ללא שעה')} · ${e.kind==='svc'?'🛠️ ':''}${esc(o.customer_name||'')}</div>`;
+  const mark=evMark(e), ref=e.kind==='svc'?(o.product||''):(o.order_number||'');
+  const line2=[ref, o.city, o.address].filter(Boolean).map(x=>esc(String(x))).join(' · ');
+  return `<div class="tg-chip" style="border-inline-start-color:${col};${evDone(e)?'opacity:.55':''}" onclick="${evOpen(e)}" title="${esc(o.customer_name||'')} · ${esc(o.time_slot||'ללא שעה')} · ${esc(evStatus(e)||'')} · ${esc(o.team||'ללא צוות')}${o.phone?' · '+esc(o.phone):''}">
+    <div class="c1"><span class="tm">${esc(o.time_slot||'ללא שעה')}</span>${e.kind==='svc'?'🛠️':''}<span style="overflow:hidden;text-overflow:ellipsis">${esc(o.customer_name||'')}</span>${mark?`<span style="color:${col};font-size:10.5px;flex:none">${mark}</span>`:''}</div>
+    <div class="c2">${line2||'—'}${o.team?` · <span class="team">${esc(o.team)}</span>`:''}${o.phone?` · <span dir="ltr">${esc(o.phone)}</span>`:''}</div>
+  </div>`;
 }
 function tgNowLine(ds){
   const now=new Date();

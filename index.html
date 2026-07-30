@@ -649,7 +649,7 @@
         <span>מחירון ומלאי בזמן אמת</span>
         <span>הזמנות, התקנות והנהלת חשבונות</span>
       </div>
-      <div class="ver">גרסה 6.2.3</div>
+      <div class="ver">גרסה 6.2.4</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -732,7 +732,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.2.3</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.2.4</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -1949,6 +1949,34 @@ const SKU_COLS = [
 const SKU_TABLE_KEYS = ['partname','partdes','family','erp_status','price_base','price_vat'];
 const skuTableCols = () => SKU_COLS.filter(c=>SKU_TABLE_KEYS.includes(c.k));
 
+/* ---- טעינה בשתי שכבות (משימת לילה 7, 30/07) ----
+   הטעינה הראשונית של המסך משכה 32 עמודות לכל 1,178 המק"טים — 947KB —
+   בעוד שהמסך עצמו (טבלה, רשימת מובייל, חיפוש, סינון ומיון) צריך 12 מהן בלבד.
+   שאר העמודות נדרשות רק בכרטיס הפריט ובייצוא לאקסל, ולכן הן נמשכות
+   לפי דרישה ונשמרות על אותו אובייקט ב-SKUS. אין שינוי בהתנהגות למשתמש.
+   שתי עמודות (cost, price) הוסרו כליל — הן לא היו בשימוש בשום מקום בקוד. */
+const SKU_LIST_COLS = 'partname,partdes,family,erp_status,price_base,price_vat,qty,barcode,supplier,image_url,image_full,sold_6m';
+const SKU_LAZY_KEYS = ['unit','pord_lines','needs_install','install_price_iron','install_price_contractor',
+  'install_price_contractor_vat','ship_price_single','pallet_load_factor','weight_kg','length_cm','width_cm',
+  'height_cm','sell_qty','ord','pord','expected_qty','expected_qty_full','sold_3m'];
+const SKU_FULL = new Set();          /* מק"טים שכבר הושלמו לכל השדות */
+async function skuFill(pns){
+  const need=[...new Set(pns.map(String))].filter(p=>!SKU_FULL.has(p));
+  if(!need.length) return true;
+  const by=new Map(SKUS.map(s=>[String(s.partname), s]));
+  for(let i=0;i<need.length;i+=250){
+    const chunk=need.slice(i,i+250);
+    const { data, error } = await sb.schema('ord').from('inv_items')
+      .select('partname,'+SKU_LAZY_KEYS.join(',')).in('partname', chunk);
+    if(error){ console.error('skuFill', error); return false; }
+    for(const r of (data||[])){
+      const s=by.get(String(r.partname));
+      if(s){ Object.assign(s, r); SKU_FULL.add(String(r.partname)); }
+    }
+  }
+  return true;
+}
+
 /* ---- חיפוש (סעיף 5) ----
    הכול מונרמל לאותיות גדולות, ולכן "sand" מוצא גם "Sandwich" וגם "SAND".
    בנוסף נשמרת גרסה בלי מקפים/רווחים, כך ש-"styt0003" מוצא "ST-YT0003D".
@@ -2038,7 +2066,7 @@ function skuLastSyncHtml(){
 /* ---- סרגל הכלים (סעיפים 1, 3, 5, 7) ---- */
 function renderSkuTools(){
   const box=$('#sku-tools'); if(!box) return;
-  _skuHay.clear();
+  _skuHay.clear(); SKU_FULL.clear();   /* SKUS נטען מחדש — המטמון של השדות הכבדים מתאפס */
   const sel=(v,cur)=>v===cur?' selected':'';
   // סבב 3 — ארגון הסרגל: חיפוש וסינון בצד אחד, פעולות בצד השני, מונה כתווית ולא ככפתור.
   box.innerHTML = `
@@ -2312,11 +2340,18 @@ window.openSkuExport = ()=>{
     <button class="btn green" style="margin-top:10px" onclick="skuExport()">הורדת קובץ אקסל</button>`;
   mountCard('skuModal', ()=>openSkuExport());
 };
-window.skuExport = ()=>{
+window.skuExport = async ()=>{
   const cols = SKU_COLS.filter(c=>SKU_EXP_COLS.includes(c.k));
   if(!cols.length){ $('#skuExpErr').textContent='יש לבחור לפחות שדה אחד לייצוא'; return; }
   const list = filteredSkus();
   if(!list.length){ $('#skuExpErr').textContent='אין מק״טים בסינון הנוכחי'; return; }
+  /* שדות שאינם נטענים מראש (ראו skuFill) — נמשכים כאן, רק אם נבחרו לייצוא */
+  if(cols.some(c=>SKU_LAZY_KEYS.includes(c.k))){
+    $('#skuExpErr').textContent='טוען את שאר השדות לייצוא…';
+    const ok = await skuFill(list.map(s=>s.partname));
+    if(!ok){ $('#skuExpErr').textContent='טעינת השדות לייצוא נכשלה — נסה שוב'; return; }
+    $('#skuExpErr').textContent='';
+  }
   const rows = list.map(s=>cols.map(c=>{
     if(c.k==='erp_status') return skuActive(s)?'פעיל':'לא פעיל';
     if(c.y==='b') return s[c.k]===true?'כן':(s[c.k]===false?'לא':'');
@@ -2383,6 +2418,14 @@ function skuAdvBtnState(){
 
 /* ---- כרטיס פריט — פרופיל מק"ט קומפקטי (סעיפים 6, 9, 10, 11, 12 + סבב 2) ---- */
 window.openSku = (pn)=>{
+  /* השדות הכבדים של הכרטיס נמשכים רק עכשיו, פעם אחת לכל מק"ט (ראו skuFill) */
+  if(!SKU_FULL.has(String(pn))){
+    skuFill([pn]).then(ok=> ok ? _openSku(pn) : toast('טעינת נתוני המק״ט נכשלה'));
+    return;
+  }
+  _openSku(pn);
+};
+function _openSku(pn){
   const s = SKUS.find(x=>String(x.partname)===String(pn)); if(!s) return;
   const mgr = skuMgr();
   const unit = esc(s.unit||'יח\'');
@@ -2467,7 +2510,7 @@ window.openSku = (pn)=>{
 
     <div class="note">שדות פריוריטי (מחירון לפני וכולל מע"מ, מלאי, זמינות, מכירות, סטטוס פעיל) מסונכרנים אוטומטית כל יום ב-07:00, א׳–ו׳, ואינם ניתנים לעריכה כאן. שני המחירים נמשכים כמות שהם ממחירון הבסיס בפריוריטי — אף אחד מהם אינו מחושב.</div>`;
   mountCard('skuModal', ()=>openSku(pn));
-};
+}
 /* סבב 4 — צביעת הבורר וחישוב-עזר של המחיר כולל מע"מ */
 window.skuNeedTint = (el)=>{ el.classList.remove('yes','no'); if(el.value==='1') el.classList.add('yes'); else if(el.value==='0') el.classList.add('no'); };
 window.skuContVat = ()=>{
@@ -2765,7 +2808,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.2.3</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.2.4</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
@@ -2886,7 +2929,7 @@ async function loadLeads(){
     oldPart('orders'),          /* סכימת ord בפלטפורמה — מקור האמת */
     oldPart('service_calls'),   /* סכימת ord בפלטפורמה — מקור האמת */
     sb.schema('ord').from('teams').select('id,name,color,active,sort_order').order('sort_order',{ascending:true}),
-    sb.schema('ord').from('inv_items').select('partname,partdes,price,family,qty,barcode,image_url,image_full,erp_status,unit,cost,supplier,ord,pord,install_price_iron,install_price_contractor,pallet_load_factor,needs_install,install_price_contractor_vat,ship_price_single,sell_qty,expected_qty,sold_3m,sold_6m,price_vat,price_base,expected_qty_full,weight_kg,length_cm,width_cm,height_cm,pord_lines').order('partname',{ascending:true}).limit(10000),
+    sb.schema('ord').from('inv_items').select(SKU_LIST_COLS).order('partname',{ascending:true}).limit(10000),
     sb.schema('ord').from('protocols').select('id,order_id,call_id,order_number,customer_name,phone,doc_type,status,sent_at,signed_at,signer_name,token').order('sent_at',{ascending:false}).limit(10000),
     sb.schema('ord').from('settings').select('key,value').order('key',{ascending:true}),
     /* תמצית מצב הסנכרון — זמינה לכל אנשי הצוות. היומן המלא נשאר

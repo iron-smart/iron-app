@@ -587,6 +587,26 @@
   .waze-ico{ display:inline-flex; align-items:center; justify-content:center; width:27px; height:27px; border-radius:9px; background:#e8f7fd; border:1px solid #b8e4f5; text-decoration:none; flex:none; }
   .waze-ico:hover{ background:#c9edfb; border-color:#33ccff; }
   .waze-ico svg{ width:16px; height:16px; display:block; }
+  /* 6.6.0 — הגדרות ← חיבורים: כרטיס לכל אפליקציית צד שלישי (רומן 31/07/2026) */
+  .int-cat{ font-size:12.5px; font-weight:800; color:var(--navy); margin:14px 2px 8px; }
+  .int-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(268px,1fr)); gap:12px; }
+  .int-card{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; gap:7px; box-shadow:0 1px 3px rgba(6,24,39,.06); }
+  .int-card.soon{ opacity:.72; }
+  .ic-top{ display:flex; align-items:center; gap:8px; }
+  .ic-ico{ font-size:18px; line-height:1; flex:none; }
+  .ic-name{ font-weight:800; font-size:14px; color:var(--dark); flex:1; min-width:0; }
+  .ic-desc{ font-size:12.5px; color:#64748b; line-height:1.5; flex:1; }
+  .ic-meta{ font-size:11.5px; color:#94a3b8; }
+  .ic-err{ font-size:12px; color:var(--red); background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:4px 8px; }
+  .ic-act{ display:flex; align-items:center; gap:9px; flex-wrap:wrap; border-top:1px solid #f1f5f9; padding-top:9px; }
+  .ic-note{ font-size:12px; color:#94a3b8; }
+  .ic-sw{ display:flex; align-items:center; gap:5px; font-size:12px; color:#475569; }
+  .ic-btn.ic-go{ background:var(--green); border-color:var(--green); color:#fff; }
+  .int-st{ border-radius:99px; padding:1px 9px; font-size:11px; font-weight:800; flex:none; }
+  .ist-ok{ background:#e7f8ee; color:#15803d; }
+  .ist-off{ background:#eef0f2; color:#8a9199; }
+  .ist-err{ background:#fef2f2; color:#b91c1c; }
+  .ist-soon{ background:#fff7ed; color:#b45309; }
   /* 6.2.7 — טלפון לחיץ + וואטסאפ, לטכנאים שעובדים מהטלפון או מהטאבלט (רומן 30/07/2026) */
   .ph-btn{ display:inline-flex; align-items:center; gap:3px; border-radius:99px; padding:1px 7px; font-size:10.5px; font-weight:700; text-decoration:none; border:1px solid transparent; }
   .ph-btn svg{ width:13px; height:13px; display:block; flex:none; }
@@ -746,7 +766,7 @@
         <span>מחירון ומלאי בזמן אמת</span>
         <span>הזמנות, התקנות והנהלת חשבונות</span>
       </div>
-      <div class="ver">גרסה 6.5.1</div>
+      <div class="ver">גרסה 6.6.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -829,7 +849,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.5.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.6.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -3151,6 +3171,7 @@ function settingsCats(){
   /* ללא אימוג׳ים — רומן 29/07/2026 */
   return [ ...(isAdmin?[['users','משתמשים והרשאות']]:[]),
     ['teams','צוותי לוגיסטיקה'], ['texts','טקסטים ומסמכים'],
+    ['conn','חיבורים'],
     ...(isAdmin?[['synclog','יומן סנכרון']]:[]), ['general','כללי'] ];
 }
 /* תפריט ההגדרות בסרגל נבנה לפי ההרשאה בפועל — פריטי אדמין אינם מוצגים למי שאינו אדמין */
@@ -3158,6 +3179,87 @@ window.buildSetSubmenu = ()=>{
   const box=$('#setSubmenu'); if(!box) return;
   box.innerHTML = settingsCats().map(([v,l])=>`<button data-view="${v}" onclick="gotoSet('${v}')">${l}</button>`).join('');
   navMark();
+};
+/* 6.6.0 — הגדרות ← חיבורים: אפליקציות צד שלישי (רומן 31/07/2026).
+   הנתונים חיים ב-core.integrations. סודות אינם נשמרים שם אלא ב-Edge Function Secrets. */
+let INTEGS=[];
+const INT_ST = {
+  connected:     ['מחובר','ist-ok'],
+  not_connected: ['לא מחובר','ist-off'],
+  error:         ['תקלה','ist-err'],
+  soon:          ['בקרוב','ist-soon']
+};
+const INT_ICO = {
+  microsoft:'📅', heyy:'💬', priority:'🧾', monday:'📋',
+  make:'🔗', voicenter:'📞', gamapay:'💳'
+};
+const intDT = v => { try{ return new Date(v).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}); }catch(_e){ return String(v||''); } };
+function integHtml(){
+  return `<h2 class="sec" style="margin-top:0">חיבורים</h2>
+    <div class="note">כל חיבור לאפליקציה חיצונית מנוהל כאן בנפרד. פרטי ההתחברות עצמם (מפתחות וסיסמאות) נשמרים בכספת המערכת ואינם מוצגים במסך.</div>
+    <div id="integBox"><div class="empty">טוען חיבורים…</div></div>`;
+}
+async function loadIntegrations(){
+  const box=$('#integBox'); if(!box) return;
+  const { data, error } = await sb.schema('core').from('integrations')
+    .select('key,name,provider,category,description,status,enabled,last_sync_at,last_error,connected_by,connected_at,sort_order')
+    .order('sort_order',{ascending:true});
+  if(error){ box.innerHTML='<div class="empty">שגיאה בטעינת החיבורים: '+esc(error.message)+'</div>'; return; }
+  INTEGS = data||[];
+  renderIntegs();
+}
+function renderIntegs(){
+  const box=$('#integBox'); if(!box) return;
+  if(!INTEGS.length){ box.innerHTML='<div class="empty">לא הוגדרו חיבורים</div>'; return; }
+  const admin = ['admin','manager'].includes(ME.role);
+  const cats=[...new Set(INTEGS.map(i=>i.category||'כללי'))];
+  box.innerHTML = cats.map(c=>`<div class="int-cat">${esc(c)}</div>
+    <div class="int-grid">${INTEGS.filter(i=>(i.category||'כללי')===c).map(i=>intCard(i,admin)).join('')}</div>`).join('');
+}
+function intCard(i,admin){
+  const [lbl,cls] = INT_ST[i.status] || INT_ST.not_connected;
+  const soon = i.status==='soon';
+  const on   = i.status==='connected';
+  const meta = [];
+  if(i.last_sync_at) meta.push('סנכרון אחרון: '+esc(intDT(i.last_sync_at)));
+  if(on && i.connected_by) meta.push('חובר על ידי '+esc(i.connected_by));
+  return `<div class="int-card ${soon?'soon':''}">
+    <div class="ic-top">
+      <span class="ic-ico">${INT_ICO[i.provider]||'🔌'}</span>
+      <span class="ic-name">${esc(i.name)}</span>
+      <span class="int-st ${cls}">${lbl}</span>
+    </div>
+    <div class="ic-desc">${esc(i.description||'')}</div>
+    ${i.last_error?`<div class="ic-err">${esc(i.last_error)}</div>`:''}
+    ${meta.length?`<div class="ic-meta">${meta.join(' · ')}</div>`:''}
+    <div class="ic-act">
+      ${soon
+        ? '<span class="ic-note">בפיתוח — יופעל בהמשך</span>'
+        : (admin
+            ? `<button type="button" class="chip ic-btn ${on?'':'ic-go'}" onclick="intToggle('${i.key}')">${on?'ניתוק':'חיבור'}</button>
+               <label class="ic-sw"><input type="checkbox" ${i.enabled?'checked':''} onchange="intEnable('${i.key}',this.checked)">פעיל</label>`
+            : `<span class="ic-note">${on?'פעיל':'אינו מחובר'}</span>`)}
+    </div>
+  </div>`;
+}
+window.intToggle = async (key)=>{
+  const i = INTEGS.find(x=>x.key===key); if(!i) return;
+  const on = i.status==='connected';
+  if(!confirm(on ? `לנתק את החיבור "${i.name}"?` : `לסמן את "${i.name}" כמחובר?`)) return;
+  const patch = on
+    ? { status:'not_connected', enabled:false, connected_by:null, last_error:null }
+    : { status:'connected', enabled:true, connected_by:ME.email, last_error:null };
+  const { error } = await sb.schema('core').from('integrations').update(patch).eq('key',key);
+  if(error){ toast('שגיאה: '+error.message); return; }
+  Object.assign(i,patch);
+  toast(on?'החיבור נותק':'החיבור סומן כמחובר ✓');
+  renderIntegs();
+};
+window.intEnable = async (key,val)=>{
+  const { error } = await sb.schema('core').from('integrations').update({ enabled:!!val }).eq('key',key);
+  if(error){ toast('שגיאה: '+error.message); return; }
+  const i=INTEGS.find(x=>x.key===key); if(i) i.enabled=!!val;
+  toast(val?'החיבור הופעל':'החיבור הושהה');
 };
 function renderSettings(){
   const el=$('#set-wrap'); if(!el) return;
@@ -3214,18 +3316,20 @@ function renderSettings(){
     const rest=OSET.filter(s=>!used.has(s.key));
     if(rest.length) gHtml+=`<h2 class="sec">⚙️ אחר</h2>`+rest.map(tbox).join('');
     body = `<h2 class="sec" style="margin-top:0">טקסטים ומסמכים — מקובץ לפי קטגוריה</h2>`+(gHtml||'<div class="empty">אין טקסטים מוגדרים</div>');
+  } else if(SET_VIEW==='conn'){
+    body = integHtml();
   } else if(SET_VIEW==='synclog' && isAdmin){
     body = syncLogHtml();
   } else {
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.2.4</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.6.0</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
       </div>
-      <div class="note" style="margin-top:12px">קטגוריות נוספות (אוטומציות, התראות, חיבורים) ייפתחו כאן בהמשך.</div>`;
+      <div class="note" style="margin-top:12px">קטגוריות נוספות (אוטומציות והתראות) ייפתחו כאן בהמשך. חיבורים לאפליקציות חיצוניות מנוהלים בקטגוריית "חיבורים".</div>`;
   }
   el.innerHTML = `<div class="set-layout">
     <div class="set-nav">${cats.map(([v,l])=>`<button class="${SET_VIEW===v?'active':''}" onclick="setMode('${v}')">${l}<span class="nav-arrow" style="color:#94a3b8">‹</span></button>`).join('')}</div>
@@ -3233,6 +3337,7 @@ function renderSettings(){
   </div>`;
   if(SET_VIEW==='users' && isAdmin) renderUsers();
   if(SET_VIEW==='synclog' && isAdmin) loadSyncLog();
+  if(SET_VIEW==='conn') loadIntegrations();
 }
 async function renderUsers(){
   const box=$('#usersBox'); if(!box) return;

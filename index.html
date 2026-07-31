@@ -343,6 +343,11 @@
   button.tb-btn.quiet:hover{ background:#f1f5f9; color:#0f172a; }
   button.tb-btn.go{ border-color:#bcd98a; background:#f6fbee; color:#4d6b16; }
   button.tb-btn.go:hover{ background:#edf6df; color:#3d5511; }
+  .selcol{ width:62px; text-align:center; white-space:nowrap; }
+  .selcol input[type=checkbox]{ width:16px; height:16px; cursor:pointer; vertical-align:middle; }
+  .qdone{ margin-inline-start:5px; background:#ecfdf5; border:1px solid #a7f3d0; color:#047857; border-radius:7px; padding:2px 7px; font-size:13px; font-weight:700; cursor:pointer; }
+  .qdone:hover{ background:#d1fae5; }
+  #logi-bulk{ align-items:center; gap:9px; }
   button.tb-clear{ background:#fff; border:1px solid var(--line); border-radius:9px; padding:7px 11px; font-size:12.5px; font-family:inherit; font-weight:600; color:#64748b; cursor:pointer; }
   button.tb-clear:hover{ background:#f1f5f9; color:#0f172a; }
   @media(max-width:800px){
@@ -738,7 +743,7 @@
         <span>מחירון ומלאי בזמן אמת</span>
         <span>הזמנות, התקנות והנהלת חשבונות</span>
       </div>
-      <div class="ver">גרסה 6.4.1</div>
+      <div class="ver">גרסה 6.5.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -821,7 +826,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.4.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.5.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -920,6 +925,8 @@
           <input id="logiSearchOrders" placeholder="חיפוש הזמנה — לקוח, מספר הזמנה, עיר או צוות…">
           <input id="logiSearchCalls" class="hidden" placeholder="חיפוש קריאת שירות — לקוח, מספר קריאה, עיר או מוצר…">
         </div>
+        <div class="chips" id="logi-scope"></div>
+        <div id="logi-bulk" class="toolbar hidden"></div>
         <div id="logi-tbl"></div>
       </div>
     </section>
@@ -1931,6 +1938,61 @@ window.gotoLogi = v=>{ LOGI_VIEW=v||'cal'; gotoTab('logi'); };
 window.gotoCalls = ()=> gotoLogi('calls');
 window.logiMode = v=>{ LOGI_VIEW=v; renderLogi(); navMark(); };
 window.logiView = ()=> renderLogi();
+/* 6.5.0 — הזמנות שאינן דורשות תיאום: היקף תצוגה בלוח + סגירה מהירה */
+let LOGI_SCOPE='sched';
+const LOGI_SEL=new Set();
+let LOGI_SHOWN=[];
+const needsSched = o => o.needs_scheduling !== false;
+const scopeOk = o => LOGI_SCOPE==='all' ? true : (LOGI_SCOPE==='ship' ? !needsSched(o) : needsSched(o));
+window.logiScope = v => { LOGI_SCOPE=v; LOGI_SEL.clear(); renderLogi(); };
+window.logiSelClear = () => { LOGI_SEL.clear(); renderLogi(); };
+function renderLogiScope(){
+  const box=$('#logi-scope'); if(!box) return;
+  const base = ORDS.filter(o=>!['הושלם','בוטל'].includes(o.order_status));
+  const n = { sched: base.filter(needsSched).length, ship: base.filter(o=>!needsSched(o)).length, all: base.length };
+  box.innerHTML = [['sched','לתיאום'],['ship','משלוחים'],['all','הכל']]
+    .map(([k,l])=>`<button type="button" class="chip ${LOGI_SCOPE===k?'on':''}" onclick="logiScope('${k}')">${l} <b>${n[k]}</b></button>`).join('');
+}
+function logiBulkBar(){
+  const bar=$('#logi-bulk'); if(!bar) return;
+  const c=LOGI_SEL.size;
+  bar.classList.toggle('hidden', c===0);
+  if(c) bar.innerHTML = `<span>נבחרו <b>${c}</b> הזמנות</span> <button type="button" class="btn" onclick="ordBulkDone()">סמן כהושלם ✓</button> <button type="button" class="tb-clear" onclick="logiSelClear()">ניקוי בחירה</button>`;
+}
+document.addEventListener('change', function(e){
+  const t=e.target; if(!t) return;
+  if(t.id==='ordSelAll'){
+    LOGI_SEL.clear();
+    if(t.checked) LOGI_SHOWN.forEach(o=>LOGI_SEL.add(String(o.id)));
+    document.querySelectorAll('#logi-tbl .ordsel').forEach(cb=>{ cb.checked=t.checked; });
+    logiBulkBar(); return;
+  }
+  if(t.classList && t.classList.contains('ordsel')){
+    const id=String(t.dataset.oid||'');
+    if(t.checked) LOGI_SEL.add(id); else LOGI_SEL.delete(id);
+    logiBulkBar();
+  }
+});
+async function ordCloseIds(ids){
+  if(!ids.length) return;
+  const { error } = await sb.schema('ord').from('orders').update({ order_status:'הושלם' }).in('id', ids);
+  if(error){ toast('שגיאה בסגירה: '+error.message); return; }
+  ids.forEach(id=>{ const r=ORDS.find(o=>String(o.id)===String(id)); if(r) r.order_status='הושלם'; });
+  try{ await sb.schema('ord').from('audit_log').insert(ids.map(id=>({ user_email:ME.email, action:'סגירה מהירה', entity:'הזמנה', entity_id:String(id), label:'הושלם' }))); }catch(_e){}
+  LOGI_SEL.clear();
+  toast('נסגרו '+ids.length+' הזמנות ✓');
+  renderLogi(); renderOrders();
+}
+window.ordBulkDone = async ()=>{
+  const ids=[...LOGI_SEL];
+  if(!ids.length) return;
+  if(!confirm('לסמן '+ids.length+' הזמנות כהושלמו?')) return;
+  await ordCloseIds(ids);
+};
+window.ordQuickDone = async (id)=>{
+  if(!confirm('לסמן את ההזמנה כהושלמה?')) return;
+  await ordCloseIds([id]);
+};
 function renderLogi(){
   /* 6.2.1 — שורת השבבים העליונה הוסרה: המעבר בין שלוש התצוגות נעשה רק
      מהתפריט הצף בסרגל הצד (רומן 29/07/2026). */
@@ -1943,6 +2005,8 @@ function renderLogi(){
   /* 6.2.2 — כל תצוגה מחפשת בשדה שלה, וכל שדה זוכר את מה שהוקלד בו */
   $('#logiSearchOrders').classList.toggle('hidden', isCalls);
   $('#logiSearchCalls').classList.toggle('hidden', !isCalls);
+  if($('#logi-scope')) $('#logi-scope').classList.toggle('hidden', isCalls);
+  if(!isCalls) renderLogiScope(); else { LOGI_SEL.clear(); logiBulkBar(); }
   if(isCalls){
     const q=($('#logiSearchCalls').value||'').trim();
     let list = SCALLS.filter(s=>!['הושלם','הושלמה','בוטלה','סגורה'].includes(s.status));
@@ -1954,8 +2018,13 @@ function renderLogi(){
     let list = ORDS.filter(o=>!['הושלם','בוטל'].includes(o.order_status));
     if(q) list = list.filter(o=>[o.customer_name,o.order_number,o.city,o.address,o.team,o.phone]
       .some(v=>String(v||'').includes(q)));
+    list = list.filter(scopeOk);
     list = window.ordSortList(list.slice());
-    $('#logi-tbl').innerHTML = wideScreen() ? ordTable(list) : capped(list, ordRow, 'אין הזמנות');
+    LOGI_SHOWN = list;
+    const _ids=new Set(list.map(o=>String(o.id))); [...LOGI_SEL].forEach(id=>{ if(!_ids.has(id)) LOGI_SEL.delete(id); });
+    $('#logi-tbl').innerHTML = wideScreen() ? ordTable(list,{sel:true}) : capped(list, ordRow, 'אין הזמנות');
+    document.querySelectorAll('#logi-tbl .ordsel').forEach(cb=>{ cb.checked = LOGI_SEL.has(String(cb.dataset.oid)); });
+    logiBulkBar();
   }
 }
 
@@ -2078,6 +2147,7 @@ function eventsOn(ds){
   for(const o of ORDS){
     if(!o.scheduled_date || ['בוטל','מבוטלת'].includes(o.order_status)) continue;
     if(ds<o.scheduled_date) continue;
+    if(o.needs_scheduling===false) continue;
     const idx=dayIndexOf(o,ds);
     if(idx) evs.push({kind:'order',o,dayIdx:idx,dayTotal:Math.max(1,o.days_count||1)});
   }
@@ -3847,18 +3917,20 @@ const ORD_COLS = [
   ['סטטוס לוגיסטי','order_status','stcell'], ['יצרנו קשר?','contact_status','stcell'], ['צוות','team',''],
   ['תאריך','scheduled_date',''], ['שעות','time_slot',''], ['וואטסאפ','',''],
 ];
-function ordHead(){
-  return ORD_COLS.map(([lbl,key,cls])=>{
+function ordHead(sel){
+  return (sel?'<th class="selcol"><input type="checkbox" id="ordSelAll" title="בחירת הכל"></th>':'')+ORD_COLS.map(([lbl,key,cls])=>{
     if(!key) return `<th class="${cls}">${lbl}</th>`;
     const on = OF.col===key;
     return `<th class="srt ${cls} ${on?'on':''}" data-sk="${key}" title="לחצו למיון לפי ${lbl}">${lbl}<span class="sar">${on?(OF.dir>0?'▲':'▼'):'⇅'}</span></th>`;
   }).join('');
 }
-function ordTable(list){
+function ordTable(list,opts){
+  const SEL = !!(opts&&opts.sel);
   if(!list.length) return '<div class="empty">לא נמצאו הזמנות מתאימות</div>';
   const rows = list.slice(0,pgLim('orders')).map((o,i)=>{
     const wa = o.phone && o.scheduled_date ? waLink(o.phone, waCoordMsg(o)) : '';
     return `<tr onclick="openOrd('${o.id}')">
+      ${SEL?`<td class="selcol" onclick="event.stopPropagation()"><input type="checkbox" class="ordsel" data-oid="${o.id}"><button type="button" class="qdone" title="סימון כהושלם" onclick="ordQuickDone('${o.id}')">✓</button></td>`:''}
       <td class="rownum">${i+1}</td>
       <td class="odate">${fmtD(o.order_date)||'—'}</td>
       <td><b>${esc(o.order_number)}</b>${o.order_notes?`<div class="note-preview" title="${esc(o.order_notes)}">📝 ${esc(String(o.order_notes).slice(0,28))}${String(o.order_notes).length>28?'…':''}</div>`:''}</td>
@@ -3872,7 +3944,7 @@ function ordTable(list){
       <td>${ieSel('ord',o.id,'time_slot',TIME_SLOTS,o.time_slot,{allowEmpty:true})}</td>
       <td>${wa?`<a class="btn-wa2" href="${wa}" target="_blank" onclick="event.stopPropagation()">📱</a>`:''}</td>
     </tr>`;}).join('');
-  return `<div class="tbl-wrap"><table class="tbl"><thead><tr>${ordHead()}</tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('orders',list.length,'הזמנות')}`;
+  return `<div class="tbl-wrap"><table class="tbl"><thead><tr>${ordHead(SEL)}</tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('orders',list.length,'הזמנות')}`;
 }
 function renderOrders(){
   ordChips();

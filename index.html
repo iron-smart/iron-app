@@ -738,7 +738,7 @@
         <span>מחירון ומלאי בזמן אמת</span>
         <span>הזמנות, התקנות והנהלת חשבונות</span>
       </div>
-      <div class="ver">גרסה 6.4.0</div>
+      <div class="ver">גרסה 6.4.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -821,7 +821,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.4.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.4.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)">⟩</button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)">‹</button>
@@ -1954,6 +1954,7 @@ function renderLogi(){
     let list = ORDS.filter(o=>!['הושלם','בוטל'].includes(o.order_status));
     if(q) list = list.filter(o=>[o.customer_name,o.order_number,o.city,o.address,o.team,o.phone]
       .some(v=>String(v||'').includes(q)));
+    list = window.ordSortList(list.slice());
     $('#logi-tbl').innerHTML = wideScreen() ? ordTable(list) : capped(list, ordRow, 'אין הזמנות');
   }
 }
@@ -3576,7 +3577,19 @@ document.addEventListener('click', function(e){
 window.ordSortBy = key => {
   if(OF.col===key) OF.dir = -OF.dir;
   else { OF.col = key; OF.dir = ['order_date','scheduled_date','order_number'].includes(key) ? -1 : 1; }
-  renderOrdersTools(); renderOrders();
+  renderOrdersTools(); renderOrders(); renderLogi();
+};
+/* 31/07/2026 — מיון בלחיצה על כותרת עבד רק במסך ההזמנות; בלוח הלוגיסטיקה הכותרות
+   נראו זהות אך הרשימה נבנתה בנפרד ובלי מיון. הפונקציה הזו משתפת את אותו מיון. */
+window.ordSortList = list => {
+  if(!OF.col) return list;
+  const k=OF.col, d=OF.dir;
+  const cs=(a,b)=>{ const va=a[k]||'', vb=b[k]||''; if(!va&&!vb) return 0; if(!va) return 1; if(!vb) return -1; return d*String(va).localeCompare(String(vb),'he',{numeric:true}); };
+  if(k==='order_status') list.sort((a,b)=>d*(ORDER_STATUSES.indexOf(a.order_status)-ORDER_STATUSES.indexOf(b.order_status)));
+  else if(k==='contact_status') list.sort((a,b)=>d*(CONTACT_STATUSES.indexOf(a.contact_status)-CONTACT_STATUSES.indexOf(b.contact_status)));
+  else if(k==='time_slot') list.sort((a,b)=>d*(TIME_SLOTS.indexOf(a.time_slot)-TIME_SLOTS.indexOf(b.time_slot)));
+  else list.sort(cs);
+  return list;
 };
 function filteredOrders(){
   const t=todayStr(), wk=addDaysIso(t,7);

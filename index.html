@@ -182,6 +182,9 @@
   .nav-arrow{ font-size:13px; opacity:.55; display:inline-flex; align-items:center; }
   .chev{ width:1em; height:1em; display:inline-block; vertical-align:-.12em; flex:none; }
   .burger-logo{ height:26px; width:auto; display:block; }
+  .ic-mail{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; width:100%; margin-bottom:6px; }
+  .ic-mail label{ font-size:11.5px; color:#64748b; }
+  .ic-mail input{ flex:1; min-width:150px; padding:5px 8px; border:1px solid var(--line); border-radius:7px; font-size:12.5px; }
   /* תפריט המשנה צף מחוץ לסרגל: position:fixed אינו נחתך על ידי overflow של אב.
      המיקום עצמו מחושב ב-JS (placeSubmenu) מול מיקום פריט התפריט. */
   .submenu{ display:none; position:fixed; background:#0b3552; background-image:linear-gradient(180deg,#0e3d5f,#0a3050); border:1px solid rgba(255,255,255,.18); border-radius:10px; min-width:186px; padding:6px 0; box-shadow:0 14px 40px rgba(0,0,0,.55); z-index:60; isolation:isolate; }
@@ -879,7 +882,7 @@
         <span>מחירון ומלאי בזמן אמת</span>
         <span>הזמנות, התקנות והנהלת חשבונות</span>
       </div>
-      <div class="ver">גרסה 6.8.1</div>
+      <div class="ver">גרסה 6.8.2</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -970,7 +973,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.8.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.8.2</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1006,6 +1009,7 @@
     <!-- פגישות -->
     <section id="tab-meets" class="hidden">
       <div class="chips" id="meet-chips"></div>
+      <div id="meet-cal-wrap"></div>
       <div id="meets-list"></div>
     </section>
 
@@ -4074,7 +4078,7 @@ async function loadIntegrations(force){
     const { data, error } = await sb.schema('core').from('v_integration_health')
       .select('key,name,provider,category,description,doc_url,status,enabled,last_sync_at,last_error,'
             + 'connected_by,connected_at,sort_order,sync_fns,last_run_at,last_run_ok,runs_24h,fails_24h,'
-            + 'last_fail_at,health,hours_since')
+            + 'last_fail_at,health,hours_since,config')
       .order('sort_order',{ascending:true});
     if(error) throw error;
     INTEGS = data || [];
@@ -4151,6 +4155,19 @@ function intCard(i, admin){
     act = '<span class="ic-ask">' + (on ? 'לנתק את החיבור?' : 'לסמן כמחובר?') + '</span>'
       + '<button type="button" class="chip ic-btn ic-yes" onclick="intToggle(\'' + esc(i.key) + '\',true)">' + (on ? 'ניתוק' : 'חיבור') + '</button>'
       + '<button type="button" class="chip ic-btn" onclick="intAsk(\'\')">ביטול</button>';
+  } else if(i.key === 'outlook_calendar'){
+    /* 6.8.2 — היומן המשותף של אנשי המכירות. "חיבור" פותח את מסך ההרשאות של
+       Microsoft (הסכמת מנהל לארגון, הרשאת צפייה ביומנים), ולאחריו הסנכרון
+       רץ בשם היישום ואינו תלוי במשתמש מחובר. */
+    const cfg = i.config || {};
+    const mb  = cfg.mailbox || '';
+    act = '<div class="ic-mail"><label>תיבת היומן המשותפת</label>'
+      + '<input id="ic-mailbox" type="email" dir="ltr" placeholder="sales@ironfitness.co.il" value="' + esc(mb) + '">'
+      + '<button type="button" class="chip ic-btn" onclick="intSaveMailbox()">שמירה</button></div>'
+      + '<button type="button" class="chip ic-btn ' + (on ? '' : 'ic-go') + '" onclick="intOutlookConnect()">' + (on ? 'חיבור מחדש' : 'חיבור') + '</button>'
+      + '<button type="button" class="chip ic-btn" onclick="intOutlookSync()">סנכרון עכשיו</button>'
+      + '<label class="ic-sw"><input type="checkbox" ' + (i.enabled ? 'checked' : '') + ' onchange="intEnable(\'outlook_calendar\',this.checked)">פעיל</label>'
+      + (mb ? '' : '<div class="ic-note">יש למלא את כתובת היומן המשותף לפני הסנכרון.</div>');
   } else {
     act = '<button type="button" class="chip ic-btn ' + (on ? '' : 'ic-go') + '" onclick="intAsk(\'' + esc(i.key) + '\')">' + (on ? 'ניתוק' : 'חיבור') + '</button>'
       + '<label class="ic-sw"><input type="checkbox" ' + (i.enabled ? 'checked' : '') + ' ' + (on ? '' : 'disabled') + ' onchange="intEnable(\'' + esc(i.key) + '\',this.checked)">פעיל</label>';
@@ -4210,6 +4227,48 @@ window.intEnable = async (key, val) => {
     renderIntegs();
   }
 };
+/* ===== 6.8.2 — חיבור יומן Outlook המשותף (רומן 01/08/2026) ===== */
+window.intSaveMailbox = async () => {
+  const el = $('#ic-mailbox'); if(!el) return;
+  const mb = String(el.value || '').trim();
+  const i  = INTEGS.find(x => x.key === 'outlook_calendar'); if(!i) return;
+  const cfg = Object.assign({}, i.config || {}, { mailbox: mb });
+  try{
+    const { error } = await sb.schema('core').from('integrations').update({ config: cfg }).eq('key','outlook_calendar');
+    if(error) throw error;
+    i.config = cfg;
+    toast(mb ? 'כתובת היומן נשמרה ✓' : 'כתובת היומן נוקתה');
+    renderIntegs();
+  }catch(e){ toast(intErrText(e, 'שמירה')); }
+};
+
+window.intOutlookConnect = () => {
+  const i = INTEGS.find(x => x.key === 'outlook_calendar');
+  const cfg = (i && i.config) || {};
+  const tenant = cfg.tenant_id || 'common';
+  const client = cfg.client_id || '';
+  if(!client){ toast('חסר מזהה יישום בהגדרות החיבור — יש לפנות למנהל המערכת'); return; }
+  const url = 'https://login.microsoftonline.com/' + encodeURIComponent(tenant)
+    + '/adminconsent?client_id=' + encodeURIComponent(client)
+    + '&redirect_uri=' + encodeURIComponent(location.origin + '/');
+  window.open(url, '_blank', 'noopener');
+  toast('נפתח מסך ההרשאות של Microsoft. לאחר האישור יש ללחוץ "סנכרון עכשיו".');
+};
+
+window.intOutlookSync = async () => {
+  const i = INTEGS.find(x => x.key === 'outlook_calendar');
+  const cfg = (i && i.config) || {};
+  if(!cfg.mailbox){ toast('יש למלא תחילה את כתובת היומן המשותף'); return; }
+  toast('מסנכרן את יומן הפגישות…');
+  try{
+    const { data, error } = await sb.functions.invoke('outlook-calendar-sync', { body: { mailbox: cfg.mailbox } });
+    if(error) throw error;
+    const n = data && (data.upserted != null ? data.upserted : data.count);
+    toast('סנכרון היומן הסתיים ✓' + (n != null ? ' · ' + n + ' פגישות' : ''));
+    loadIntegrations(true);
+  }catch(e){ toast(intErrText(e, 'סנכרון')); }
+};
+
 function renderSettings(){
   const el=$('#set-wrap'); if(!el) return;
   const admin=['admin','manager'].includes(ME.role);
@@ -4273,7 +4332,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.8.1</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.8.2</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
@@ -5298,10 +5357,12 @@ function meetChips(){
   const t = todayStr();
   const cnt = { today: MEETS.filter(m=>m.meet_date===t).length, future: MEETS.filter(m=>m.meet_date>=t).length };
   $('#meet-chips').innerHTML = `
+    <button class="chip ${MEET_MODE==='cal'?'active':''}" onclick="setMeetMode('cal')">יומן</button>
+    <button class="chip ${MEET_MODE==='list'?'active':''}" onclick="setMeetMode('list')">רשימה</button>` + (MEET_MODE==='cal' ? '' : `
     <button class="chip ${MEET_FILTER==='today'?'active':''}" onclick="setMeetFilter('today')">היום ${cnt.today}</button>
     <button class="chip ${MEET_FILTER==='week'?'active':''}" onclick="setMeetFilter('week')">השבוע</button>
     <button class="chip ${MEET_FILTER==='future'?'active':''}" onclick="setMeetFilter('future')">עתידיות ${cnt.future}</button>
-    <button class="chip ${MEET_FILTER==='all'?'active':''}" onclick="setMeetFilter('all')">הכל ${MEETS.length}</button>`;
+    <button class="chip ${MEET_FILTER==='all'?'active':''}" onclick="setMeetFilter('all')">הכל ${MEETS.length}</button>`);
 }
 window.setMeetFilter = f => { MEET_FILTER = f; renderMeets(); };
 function linkedName(m){
@@ -5319,7 +5380,7 @@ function meetRow(m){
     <div class="meta">${d}${m.start_time?' · '+esc(m.start_time):''}${m.meet_type?' · '+esc(m.meet_type):''}${ln?' · '+ln.label+': '+esc(ln.name):''}</div></div>
     <span class="pill ${meetStClass(m.status)}">${esc(m.status)}</span></div>`;
 }
-const MEET_STATUSES=['חדשה','תואמה','נדחתה','התקיימה','לא התקיימה','בוטלה'];
+const MEET_STATUSES=['חדשה','מתוכננת','תואמה','נדחתה','התקיימה','לא התקיימה','בוטלה'];
 function meetTable(list){
   if(!list.length) return '<div class="empty">אין פגישות בסינון הזה</div>';
   const rows=list.slice(0,pgLim('meets')).map((m,i)=>{
@@ -5335,8 +5396,169 @@ function meetTable(list){
     </tr>`;}).join('');
   return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="rownum">#</th><th>נושא</th><th>תאריך</th><th>שעות</th><th>סוג</th><th>מקושרת אל</th><th>סטטוס</th></tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('meets',list.length,'פגישות')}`;
 }
+/* ===== 6.8.2 — יומן פגישות ב-CRM (רומן 01/08/2026) =====
+   הנראות זהה ללוח השנה של הלוגיסטיקה: אותה שורת בקרה, אותה רשת שעות 08:00–17:00,
+   אותם כרטיסים ואותו מקרא. המקור crm.meetings — פגישות מאנדיי ופגישות מיומן
+   Outlook המשותף של אנשי המכירות, באותה תצוגה. */
+let MEET_MODE='cal', MCAL_VIEW='month', MCAL_D=new Date(), MCAL_Q='';
+const MSTATUS_COLOR={'חדשה':'#2563eb','מתוכננת':'#0d9488','תואמה':'#16a34a','נדחתה':'#ca8a04','התקיימה':'#64748b','לא התקיימה':'#dc2626','בוטלה':'#dc2626'};
+const MCAL_LEGEND=['חדשה','מתוכננת','תואמה','נדחתה','התקיימה','לא התקיימה'];
+const mColor=m=>MSTATUS_COLOR[m.status]||'#94a3b8';
+const mDone=m=>['התקיימה','לא התקיימה','בוטלה'].includes(m.status);
+const mOk=m=>['תואמה','התקיימה'].includes(m.status);
+const mMark=m=>m.status==='התקיימה'?'✓ התקיימה':(m.status==='תואמה'?'✓ תואמה':'');
+const mSlot=m=>{ if(m.all_day) return 'יום מלא'; const s=String(m.start_time||'').slice(0,5), e=String(m.end_time||'').slice(0,5); return s?(e?s+'-'+e:s):''; };
+function mSpan(m){
+  if(!m || m.all_day) return null;
+  const a=String(m.start_time||'').match(/(\d{1,2}):(\d{2})/); if(!a) return null;
+  const s=(+a[1])*60+(+a[2]);
+  const b=String(m.end_time||'').match(/(\d{1,2}):(\d{2})/);
+  let e=b?(+b[1])*60+(+b[2]):s+60; if(e<=s) e=s+60;
+  return {s:s,e:e};
+}
+const mSortKey=m=>{ const sp=mSpan(m); return sp?sp.s:-1; };
+function mMatch(m,q){ const ln=linkedName(m); return [m.subject,m.location,m.organizer_name,m.meet_type,m.status,ln&&ln.name].some(v=>String(v||'').includes(q)); }
+function meetsOn(ds){
+  let l=MEETS.filter(m=>m.meet_date===ds && m.status!=='בוטלה');
+  if(MCAL_Q) l=l.filter(m=>mMatch(m,MCAL_Q));
+  return l.slice().sort((a,b)=>mSortKey(a)-mSortKey(b));
+}
+const mAdCount=ds=>meetsOn(ds).filter(m=>!mSpan(m)).length;
+function mLayout(evs){
+  const timed=evs.filter(m=>mSpan(m)), allday=evs.filter(m=>!mSpan(m));
+  timed.sort((a,b)=>{const x=mSpan(a),y=mSpan(b);return x.s-y.s||x.e-y.e;});
+  const ends=[], place=[];
+  for(const m of timed){
+    const sp=mSpan(m);
+    let ci=ends.findIndex(end=>end<=sp.s);
+    if(ci<0){ ci=ends.length; ends.push(0); }
+    ends[ci]=sp.e; place.push({m:m,sp:sp,ci:ci});
+  }
+  return {allday:allday, place:place, n:Math.max(1,ends.length)};
+}
+function mCard(m,compact){
+  const col=mColor(m), done=mDone(m), mark=mMark(m), ln=linkedName(m);
+  const att=Array.isArray(m.attendees)?m.attendees.length:0;
+  return `<div class="ev ${compact?'ev-c':''}" style="border-inline-start-color:${col};${done?'opacity:.55':''}" onclick="openMeet('${m.id}')">
+    <div class="ev-top"><span class="ev-time">${esc(mSlot(m)||'ללא שעה')}</span>${mark?`<span class="ev-done" style="color:${col}">${mark}</span>`:''}</div>
+    <div class="t">${m.source==='outlook'?'📅 ':''}${esc(m.subject||'ללא נושא')}</div>
+    ${ln?`<div class="s">${ln.label}: ${esc(ln.name||'')}</div>`:''}
+    ${m.location?`<div class="s">📍 ${esc(String(m.location).slice(0,32))}</div>`:''}
+    <div class="s ev-foot">${m.organizer_name?`<span class="teamchip" style="background:${col}">${esc(m.organizer_name)}</span>`:'<span class="teamchip nochip">ללא מארגן</span>'}${att?`<span class="tagx">${att} משתתפים</span>`:''}${(m.teams_link||m.web_link)?'<span class="tagx" title="קישור לפגישה">🔗</span>':''}</div>
+  </div>`;
+}
+function mChip(m){
+  const col=mColor(m);
+  return `<div class="tg-chip" style="border-inline-start-color:${col};${mDone(m)?'opacity:.55':''}" onclick="openMeet('${m.id}')" title="${esc(m.subject||'')}">
+    <div class="c1"><span class="tm">${esc(mSlot(m)||'ללא שעה')}</span><span style="overflow:hidden;text-overflow:ellipsis">${esc(m.subject||'')}</span></div>
+    <div class="c2">${esc(m.organizer_name||m.meet_type||'—')}${m.location?' · '+esc(String(m.location).slice(0,24)):''}</div>
+  </div>`;
+}
+function mTgDay(ds, evs, compact, adH){
+  const L=mLayout(evs);
+  return `${adH>0?`<div class="tg-allday ${L.allday.length?'has':''}" style="height:${adH}px">${L.allday.map(mChip).join('')}</div>`:''}
+    <div class="tg-body" style="height:${TG_H}px">
+      ${CAL_HOURS.map((h,i)=>i?`<div class="tg-line" style="top:${i*CAL_PX}px"></div>`:'').join('')}
+      ${CAL_HOURS.slice(0,-1).map((h,i)=>`<div class="tg-line half" style="top:${i*CAL_PX+CAL_PX/2}px"></div>`).join('')}
+      ${tgNowLine(ds)}
+      ${L.place.map(p=>{ const t=tgTop(p.sp.s), b=tgTop(p.sp.e);
+        return `<div class="tg-ev" style="top:${t}px;height:${Math.max(34,b-t-3)}px;inset-inline-start:calc(${p.ci*100/L.n}% + 1px);width:calc(${100/L.n}% - 4px)">${mCard(p.m,compact)}</div>`;}).join('')}
+    </div>`;
+}
+window.setMeetMode = v => { MEET_MODE = v; renderMeets(); };
+window.mcalMode    = v => { MCAL_VIEW = v; renderMeets(); };
+window.mcalToday   = () => { MCAL_D = new Date(); renderMeets(); };
+window.mcalGoDay   = ds => { MCAL_D = new Date(ds+'T12:00:00'); MCAL_VIEW='day'; renderMeets(); };
+window.mcalShift   = n => {
+  if(MCAL_VIEW==='month') MCAL_D = new Date(MCAL_D.getFullYear(), MCAL_D.getMonth()+n, 1);
+  else MCAL_D = new Date(MCAL_D.getFullYear(), MCAL_D.getMonth(), MCAL_D.getDate()+n*(MCAL_VIEW==='week'?7:1));
+  renderMeets();
+};
+function meetCal(){
+  const t=isoD(new Date()), cd=isoD(MCAL_D);
+  let title='', body='';
+  if(MCAL_VIEW==='month'){
+    const first=cd.slice(0,8)+'01';
+    const mNum=new Date(first+'T12:00:00').getMonth();
+    title=MCAL_D.toLocaleDateString('he-IL',{month:'long',year:'numeric'});
+    let cur=weekStartIso(first); const cells=[];
+    for(let w=0;w<6;w++){
+      for(let i=0;i<6;i++) cells.push(addDaysIso(cur,i));
+      cur=addDaysIso(cur,7);
+      if(new Date(cur+'T12:00:00').getMonth()!==mNum && w>=3) break;
+    }
+    body=`<div class="cal-scroll"><div class="month-grid">
+      ${['ראשון','שני','שלישי','רביעי','חמישי','שישי'].map(n=>`<div class="mh">${n}</div>`).join('')}
+      ${cells.map(d=>{
+        const inMonth=new Date(d+'T12:00:00').getMonth()===mNum;
+        const evs=meetsOn(d); const shown=evs.slice(0,3);
+        const nowork=dowOf(d)===CAL_FRIDAY&&!evs.length;
+        return `<div class="month-cell ${inMonth?'':'out'} ${d===t?'today':''} ${nowork?'nowork':''}" onclick="mcalGoDay('${d}')">
+          <div class="mnum"><span>${parseInt(d.slice(8),10)}</span>${evs.length?`<span class="mcount">${evs.length}</span>`:''}</div>
+          ${shown.map(m=>{ const col=mColor(m);
+            return `<div class="mini-ev" style="border-inline-start-color:${col};${mDone(m)?'opacity:.5':''}" title="${esc(m.subject||'')} · ${esc(mSlot(m)||'ללא שעה')} · ${esc(m.status||'')}${m.organizer_name?' · '+esc(m.organizer_name):''}">
+              <div class="me-line1"><span class="me-time">${esc((mSlot(m)||'').split('-')[0])||'—'}</span><b>${m.source==='outlook'?'📅':''}${esc(m.subject||'')}</b>${mOk(m)?`<span class="me-ok" style="color:${col}">✓</span>`:''}</div>
+              <div class="me-line2"><span class="me-dot" style="background:${col}"></span>${esc(m.organizer_name||m.meet_type||'פגישה')}${m.location?` · ${esc(String(m.location).slice(0,18))}`:''}</div>
+            </div>`;}).join('')}
+          ${evs.length>3?`<div class="mini-more">+${evs.length-3} נוספות…</div>`:''}
+        </div>`;}).join('')}
+    </div></div>`;
+  } else if(MCAL_VIEW==='week'){
+    const ws=weekStartIso(cd);
+    const days=[0,1,2,3,4].map(i=>addDaysIso(ws,i));
+    const fri=addDaysIso(ws,5);
+    if(meetsOn(fri).length) days.push(fri);
+    title=`שבוע ${fmtD(days[0])} — ${fmtD(days[days.length-1])}`;
+    const adMax=Math.max(0,...days.map(mAdCount));
+    const adH=adMax? adMax*CAL_CHIP+6 : 0;
+    body=`<div class="cal-scroll"><div class="tg-wrap" style="grid-template-columns:56px repeat(${days.length},minmax(150px,1fr))">
+      ${tgGutter(adH)}
+      ${days.map(d=>`<div class="tg-col ${dowOf(d)===CAL_FRIDAY?'nowork':''}">
+          <div class="tg-head ${d===t?'today':''}" onclick="mcalGoDay('${d}')"><span>${dayNameHe(d)}${dowOf(d)===CAL_FRIDAY?' <span class="fri-tag">שישי</span>':''}</span><span class="dnum">${fmtD(d)}</span></div>
+          ${mTgDay(d, meetsOn(d), true, adH)}
+        </div>`).join('')}
+    </div></div>`;
+  } else {
+    const evs=meetsOn(cd);
+    title=`${dayNameHe(cd)}, ${fmtD(cd)}`;
+    const adH=mAdCount(cd)? mAdCount(cd)*CAL_CHIP+6 : 0;
+    body=`<div class="cal-scroll"><div class="tg-wrap" style="grid-template-columns:56px minmax(260px,1fr)">
+      ${tgGutter(adH)}
+      <div class="tg-col ${dowOf(cd)===CAL_FRIDAY?'nowork':''}">
+        <div class="tg-head ${cd===t?'today':''}"><span>${dayNameHe(cd)}</span><span class="dnum">${fmtD(cd)}</span></div>
+        ${evs.length? mTgDay(cd, evs, false, adH) : '<div class="empty">אין פגישות ליום זה</div>'}
+      </div>
+    </div></div>`;
+  }
+  const legend = MCAL_LEGEND.map(s=>`<span class="cal-lg"><span class="cal-dot" style="background:${MSTATUS_COLOR[s]};border-radius:3px"></span>${esc(s)}</span>`).join('')
+    + '<span class="cal-lg">📅 מיומן Outlook המשותף</span>';
+  return `<div class="cal-topbar">
+      <span class="cal-title">${title}</span>
+      <span class="grow"></span>
+      <div class="cal-seg">
+        <button class="${MCAL_VIEW==='day'?'on':''}" onclick="mcalMode('day')">יומי</button>
+        <button class="${MCAL_VIEW==='week'?'on':''}" onclick="mcalMode('week')">שבועי</button>
+        <button class="${MCAL_VIEW==='month'?'on':''}" onclick="mcalMode('month')">חודשי</button>
+      </div>
+      <div class="cal-nav">
+        <button class="nav-b" onclick="mcalShift(-1)" title="הקודם">▸</button>
+        <button class="nav-b nav-today" onclick="mcalToday()">היום</button>
+        <button class="nav-b" onclick="mcalShift(1)" title="הבא">◂</button>
+      </div>
+    </div>
+    ${body}
+    <div class="cal-legend">${legend}</div>`;
+}
 function renderMeets(){
   meetChips();
+  const cw=$('#meet-cal-wrap'), lw=$('#meets-list');
+  if(MEET_MODE==='cal'){
+    if(lw){ lw.style.display='none'; lw.innerHTML=''; }
+    if(cw){ cw.style.display=''; cw.innerHTML=meetCal(); }
+    return;
+  }
+  if(cw){ cw.style.display='none'; cw.innerHTML=''; }
+  if(lw) lw.style.display='';
   const list=meetFilterList();
   $('#meets-list').innerHTML = wideScreen() ? meetTable(list) : capped(list, meetRow, 'אין פגישות בסינון הזה');
 }

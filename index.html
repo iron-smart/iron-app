@@ -253,7 +253,7 @@
   .tbl th.stcell, .tbl td.stcell{ text-align:center; }
   .tbl td.stcell select.inline-edit{ display:inline-block; margin-inline:auto; text-align:center; text-align-last:center; }
   select.inline-edit.mdc{ color:#fff; border:none; border-radius:99px; font-weight:700; padding:5px 12px; font-size:12px; -webkit-appearance:none; appearance:none; }
-  /* 6.8.6 — עמודות צוות / שעות / תאריך בטבלאות (בקשת רומן 01/08/2026) */
+  /* 6.9.0 — עמודות צוות / שעות / תאריך בטבלאות (בקשת רומן 01/08/2026) */
   .tbl th.teamcell, .tbl td.teamcell, .tbl th.slotcell, .tbl td.slotcell{ text-align:center; }
   .tbl td.teamcell select.inline-edit, .tbl td.slotcell select.inline-edit{ display:inline-block; margin-inline:auto; text-align:center; text-align-last:center; }
   .tbl th.datecell, .tbl td.datecell{ text-align:center; white-space:nowrap; }
@@ -820,6 +820,24 @@
 .inv-why b{ color:var(--navy); }
 @media(max-width:760px){ .inv-grp-h{ gap:7px; } .inv-bar{ width:80px; } }
 
+    /* ===== תמחור ומחירונים — אדמיניסטרטור בלבד ===== */
+    .nav-wrap[hidden]{ display:none !important; }
+    .prc-kpis{ display:flex; flex-wrap:wrap; gap:10px; margin:12px 0; }
+    .prc-kpi{ flex:1 1 150px; background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 12px; border-inline-start:3px solid var(--navy); }
+    .prc-kpi .k{ font-size:12.5px; color:#64748b; }
+    .prc-kpi .v{ font-size:20px; font-weight:800; color:var(--dark); margin-top:2px; }
+    .prc-kpi .s{ font-size:11.5px; color:#94a3b8; margin-top:2px; }
+    .prc-hist{ display:flex; align-items:center; gap:10px; padding:5px 12px; }
+    .prc-hist .lb{ width:112px; font-size:12.5px; color:#475569; }
+    .prc-hist .vl{ width:52px; text-align:left; font-weight:700; font-size:12.5px; }
+    .prc-hist .inv-bar{ flex:1; width:auto; }
+    .prc-chips{ display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; }
+    .prc-chip{ background:#fff; border:1px solid var(--line); border-radius:8px; padding:5px 10px; font-size:12.5px; color:#475569; }
+    .prc-chip b{ color:#94a3b8; font-weight:600; }
+    .prc-na{ color:#cbd5e1; }
+    .note.prc-warn{ border-inline-start:3px solid var(--amber); }
+    @media(max-width:760px){ .prc-hist .lb{ width:86px; } .prc-kpi{ flex:1 1 130px; } }
+
 /* ===== שכבת ההחלטה (6.8.0) — "מה לעשות עכשיו" ===== */
 .inv-hero{ display:grid; grid-template-columns:repeat(4,1fr); gap:9px; margin-bottom:12px; }
 .inv-hero .h{ background:#fff; border:1px solid var(--line); border-right:3px solid var(--navy); border-radius:12px; padding:11px 13px; }
@@ -893,7 +911,7 @@
         <span>מחירון ומלאי בזמן אמת</span>
         <span>הזמנות, התקנות והנהלת חשבונות</span>
       </div>
-      <div class="ver">גרסה 6.8.6</div>
+      <div class="ver">גרסה 6.9.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -967,6 +985,16 @@
         <button data-view="all"  onclick="gotoInv('all')">כל המק״טים</button>
       </div>
     </div>
+    <div class="nav-wrap" data-tabs="prc" id="nav-prc" hidden>
+      <button class="nav-item" data-tab="prc">תמחור ומחירונים <span class="nav-arrow"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span></button>
+      <div class="submenu">
+        <button data-view="db"   onclick="gotoPrc('db')">מאגר תמחור</button>
+        <button data-view="marg" onclick="gotoPrc('marg')">ניתוח מרווחים</button>
+        <button data-view="list" onclick="gotoPrc('list')">מחירון ללקוח</button>
+        <button data-view="side" onclick="gotoPrc('side')">עלויות נלוות</button>
+        <button data-view="exc"  onclick="gotoPrc('exc')">חריגים בתמחור</button>
+      </div>
+    </div>
     <div class="nav-wrap" data-tabs="pays">
       <button class="nav-item" data-tab="pays">הנהלת חשבונות <span class="nav-arrow"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span></button>
       <div class="submenu">
@@ -985,7 +1013,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.8.6</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.9.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1116,6 +1144,14 @@
     </section>
 
     <!-- מסמכים — פרוטוקולים, דוחות וחתימות (נטיבי) -->
+    <section id="tab-prc" class="hidden">
+      <div class="sku-tb">
+        <div class="tools-bar" id="prc-tools"></div>
+        <div id="prc-views" class="tools-bar"></div>
+      </div>
+      <div id="prc-body"></div>
+    </section>
+
     <section id="tab-docs" class="hidden">
       <div class="chips" id="doc-chips"></div>
       <div class="toolbar"><input id="docSearch" placeholder="חיפוש לפי לקוח או מס' הזמנה…"></div>
@@ -1573,6 +1609,7 @@ async function afterLogin(){
   setSideAva(prof.avatar_url, initials);
   $('#sideName').textContent = prof.full_name || prof.email;
   $('#sideRole').textContent = prof.job_title || roleHe;
+    prcGate();
   /* מכאן והלאה המשתמש כבר מחובר והמערכת מוצגת — כשל ברינדור הוא תקלת נתונים,
      לא תקלת התחברות, ואסור שיגלגל חריגה חזרה ל-boot() וישליך למסך ההתחברות. */
   try{ buildSetSubmenu(); }catch(e){ console.error('buildSetSubmenu', e); }
@@ -1590,15 +1627,16 @@ $('#logoutBtn').onclick = async ()=>{
    עד 6.1.0 הניווט התבצע דרך b.click() על כפתור התפריט, ולכן כל מסך היה חייב
    כפתור ראשי משלו בסרגל. משנכנסו שבעת מסכי ה-CRM תחת קטגוריית אב אחת, אין
    לכל מסך כפתור ראשי — ולכן הניווט עבר לפונקציה אחת שאינה תלויה ב-DOM. */
-const NAV_TABS = ['today','leads','deals','meets','customers','contacts','pays','tasks','orders','logi','skus','inv','docs','set'];
+const NAV_TABS = ['today','leads','deals','meets','customers','contacts','pays','tasks','orders','logi','skus','inv','prc','docs','set'];
 let CUR_TAB = 'today';
 /* התצוגה הפנימית הנוכחית של כל מסך שיש לו תתי-קטגוריות — לצורך סימון הפריט הפעיל */
 const NAV_VIEW = {
   /* 6.2.1 — רק לקטגוריות שיש להן באמת תת-מסכים. מסמכים / מק״טים / תשלומים
      מסוננים בתוך המסך ולכן אינם משתתפים בסימון התפריט הצף. */
-  logi: ()=>LOGI_VIEW, set: ()=>SET_VIEW, inv: ()=>INV_VIEW
+  logi: ()=>LOGI_VIEW, set: ()=>SET_VIEW, inv: ()=>INV_VIEW, prc: ()=>PRC_VIEW
 };
 function navMark(){
+  prcGate();
   let view = null;
   try{ if(NAV_VIEW[CUR_TAB]) view = NAV_VIEW[CUR_TAB](); }catch(_e){ view = null; }
   document.querySelectorAll('#side .nav-item').forEach(b=>{
@@ -1621,6 +1659,7 @@ window.gotoTab = t=>{
   navMark();
   if(t==='logi') renderLogi();
   if(t==='inv')  renderInv();
+  if(t==='prc')  renderPrc();
   if(t==='set') renderSettings();
   if(window.innerWidth<800) setSide(false);
 };
@@ -3165,6 +3204,7 @@ const INV_ST_CLS = { 'אדום':'red','כתום':'org','ירוק':'grn','אפו�
 const invPill = s => '<span class="inv-st ' + (INV_ST_CLS[s]||'gry') + '">' + esc(s||'—') + '</span>';
 const invN = v => (v==null||v==='') ? '—' : Number(v).toLocaleString('he-IL',{maximumFractionDigits:0});
 const invD = (v,d) => (v==null||v==='') ? '—' : Number(v).toLocaleString('he-IL',{minimumFractionDigits:d,maximumFractionDigits:d});
+const money = v => (v==null||v==='') ? '—' : shekel(v);
 const invSup = r => r.supplier_name || r.supplier_code || '';
 const invUnitCost = r => Number(r.cost) || Number(r.price) || 0;
 function invDate(d){ if(!d) return '—'; const t = String(d).slice(0,10).split('-'); return t.length===3 ? (t[2]+'/'+t[1]+'/'+t[0]) : '—'; }
@@ -3425,8 +3465,10 @@ function invIssues(rows){
   const noCost = src.filter(r=>Number(r.action_qty)>0 && !(Number(r.cost)>0));
   const flag   = src.filter(r=>r.not_managed && (Number(r.qty)>0 || r.has_open_po));
   const poLate = src.filter(r=>r.po_late);
-  const total  = new Set([].concat(neg,noSup,late,noEta,thin,noCost,flag,poLate).map(r=>r.partname)).size;
-  return { neg:neg, noSup:noSup, late:late, noEta:noEta, thin:thin, noLead:noLead, noCost:noCost, flag:flag, poLate:poLate, total:total };
+  const dead   = src.filter(r=>Number(r.qty)>0 && !(Number(r.demand_month)>0) && !r.not_managed);
+  const overSt = src.filter(r=>Number(r.qty)>0 && Number(r.demand_month)>0 && Number(r.cover_months)>24);
+  const total  = new Set([].concat(neg,noSup,late,noEta,thin,noCost,flag,poLate,dead,overSt).map(r=>r.partname)).size;
+  return { neg:neg, noSup:noSup, late:late, noEta:noEta, thin:thin, noLead:noLead, noCost:noCost, flag:flag, poLate:poLate, dead:dead, overSt:overSt, total:total };
 }
 
 function invLegend(){
@@ -3614,7 +3656,9 @@ function invExc(){
     ['שורות רכש באיחור', iss.late, false, 'תאריך האספקה שהובטח עבר ולא נקלטה סחורה. אלה השורות שדורשות בירור מול הספק.'],
     ['שורות רכש בלי תאריך', iss.noEta, false, 'אי אפשר לדעת מתי הסחורה מגיעה, ולכן אי אפשר לתזמן נכון את ההזמנה הבאה ולא לזהות איחור.'],
     ['פעולה בלי מחיר עלות', iss.noCost, false, 'העלות והחשיפה מוערכות לפי מחיר המכירה במקום לפי עלות אמיתית, ולכן המספרים מנופחים כלפי מעלה.'],
-    ['לא מנוהל אך יש מלאי או רכש', iss.flag, true, 'הסימון בפריוריטי סותר את המציאות בשטח. אפשר לכפות הכללה בתכנון מתוך הכרטיס, אך נכון לתקן במקור.']
+    ['לא מנוהל אך יש מלאי או רכש', iss.flag, true, 'הסימון בפריוריטי סותר את המציאות בשטח. אפשר לכפות הכללה בתכנון מתוך הכרטיס, אך נכון לתקן במקור.'],
+    ['מלאי ללא ביקוש — מועמדים לספירה או מבצע', iss.dead, false, 'יש יתרה במלאי אך אין ביקוש חודשי מדוד. זהו כסף שיושב על המדף בלי מחזוריות. הפעולה הנכונה היא ספירה פיזית לאימות היתרה, ואם היא נכונה — מבצע, מכירה מרוכזת או גריטה.'],
+    ['כיסוי מעל 24 חודשים — עודף מלאי', iss.overSt, false, 'הכמות שבמלאי מספיקה ליותר משנתיים לפי קצב המכירה הנוכחי. אין צורך לרכוש, וכדאי לשקול האטת רכש או האצת מכירה של המק״טים האלה.']
   ];
   if(INV_EXC >= B.length) INV_EXC = 0;
   let h = '<div class="inv-dq">' + B.map((b,i)=>'<div class="q' + (b[2]?' bad':'') + '" data-inv-act="exc" data-inv-val="' + i + '"'
@@ -3866,6 +3910,357 @@ window.createProtocol = async (orderId)=>{
   try{ await sb.schema('ord').from('audit_log').insert({ user_email:ME.email, action:'שליחת פרוטוקול לחתימה', entity:'הזמנה', entity_id:String(o.order_number), label:o.customer_name||'' }); }catch(_e){}
   renderDocs(); renderOps(); openOrd(orderId);
 };
+
+/* ===== תמחור ומחירונים — אדמיניסטרטור בלבד =====
+   מקור הנתונים היחיד הוא מסך המק״טים (ord.inv_items). אין משיכת נתונים נפרדת.
+   price אינו מחיר מכירה ואינו בשימוש כאן: המחיר הוא price_base (ללא מע״מ) ו-price_vat (כולל). */
+const PRC_COLS_SEL = 'partname,partdes,family,unit,barcode,erp_status,has_inventory,qty,'
+  + 'cost,price_base,price_vat,needs_install,install_price_iron,install_price_contractor,'
+  + 'install_price_contractor_vat,ship_price_single,weight_kg,length_cm,width_cm,height_cm,'
+  + 'pallet_load_factor,sold_3m,sold_6m';
+const PRC_VAT = 0.18;
+const PRC_GROUPS = ['אתר','פרטי־עסקי','עסקי','מסחרי','ארגוני','מוסדי','סיטונאי'];
+let PRC = [], PRC_LOADED = false, PRC_LOADING = false, PRC_TRIED = false, PRC_ERR = '';
+let PRC_VIEW = 'db', PRC_EXC = 0;
+const PRC_F = { q:'', fam:'', st:'', only:'' };
+
+function prcGate(){
+  try{
+    const n = document.getElementById('nav-prc');
+    if(n) n.hidden = !(ME && ME.role === 'admin');
+  }catch(e){ /* לפני טעינת המשתמש */ }
+}
+const prcAdmin = () => !!(ME && ME.role === 'admin');
+const prcCost = r => { const v = Number(r.cost);       return v > 0 ? v : null; };
+const prcEx   = r => { const v = Number(r.price_base); return v > 0 ? v : null; };
+const prcInc  = r => { const v = Number(r.price_vat); if(v > 0) return v; const e = prcEx(r); return e == null ? null : e * (1 + PRC_VAT); };
+function prcMargin(r){ const c = prcCost(r), p = prcEx(r); return (c == null || p == null) ? null : (p - c) / p; }
+function prcMult(r){   const c = prcCost(r), p = prcEx(r); return (c == null || p == null) ? null : p / c; }
+const prcPct   = v => v == null ? '—' : (v*100).toFixed(1) + '%';
+const prcMoney = v => (v == null || v === '') ? '—' : '₪' + Number(v).toLocaleString('he-IL',{minimumFractionDigits:2,maximumFractionDigits:2});
+const prcXf    = v => v == null ? '—' : '×' + Number(v).toLocaleString('he-IL',{minimumFractionDigits:2,maximumFractionDigits:2});
+const prcAct   = r => String(r.erp_status||'') === 'פעיל';
+function prcMCls(m){ return m == null ? 'gry' : m <= 0 ? 'red' : m < 0.20 ? 'org' : m > 0.95 ? 'blk' : 'grn'; }
+const prcMPill = m => '<span class="inv-st ' + prcMCls(m) + '">' + prcPct(m) + '</span>';
+function prcMed(a){ if(!a.length) return null; const s = a.slice().sort((x,y)=>x-y); const i = Math.floor(s.length/2);
+  return s.length % 2 ? s[i] : (s[i-1] + s[i]) / 2; }
+
+window.gotoPrc = v => { if(!prcAdmin()) return; PRC_VIEW = v || 'db'; gotoTab('prc'); };
+function renderPrcIfLoaded(){ if(PRC_LOADED) renderPrc(); }
+
+async function prcLoad(force){
+  if(!prcAdmin()) return;
+  if(PRC_LOADING) return;
+  if(PRC_LOADED && !force) return;
+  PRC_LOADING = true; PRC_TRIED = true; PRC_ERR = ''; prcBody();
+  try{
+    const res = await sb.schema('ord').from('inv_items')
+      .select(PRC_COLS_SEL).order('partname',{ascending:true}).limit(10000);
+    if(res.error) throw res.error;
+    PRC = res.data || [];
+    PRC_LOADED = true;
+  }catch(e){
+    PRC_ERR = 'שגיאה בטעינת נתוני התמחור: ' + (e && e.message ? e.message : String(e));
+  }
+  PRC_LOADING = false;
+  renderPrc();
+}
+
+function renderPrc(){
+  if(!prcAdmin()){
+    const b = $('#prc-body'); if(b) b.innerHTML = '<div class="empty">המסך פתוח למנהלי מערכת בלבד</div>';
+    const t = $('#prc-tools'); if(t) t.innerHTML = '';
+    const w = $('#prc-views'); if(w) w.innerHTML = '';
+    return;
+  }
+  prcTools(); prcViews(); prcBody();
+  if(!PRC_LOADED && !PRC_LOADING && !PRC_TRIED) prcLoad();
+}
+
+function prcTools(){
+  const el = $('#prc-tools'); if(!el) return;
+  const fams = [...new Set(PRC.map(r=>r.family).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),'he'));
+  const opt = (v,t,cur) => '<option value="' + esc(v) + '"' + (cur===v?' selected':'') + '>' + esc(t) + '</option>';
+  el.innerHTML =
+      '<div class="search"><input id="prc-q" type="search" placeholder="חיפוש מק״ט, תיאור או ברקוד…" value="' + esc(PRC_F.q) + '"></div>'
+    + '<select id="prc-st">'   + opt('','כל הסטטוסים',PRC_F.st) + opt('פעיל','פעיל',PRC_F.st) + opt('לא פעיל','לא פעיל',PRC_F.st) + '</select>'
+    + '<select id="prc-fam">'  + opt('','כל המשפחות',PRC_F.fam) + fams.map(f=>opt(f,f,PRC_F.fam)).join('') + '</select>'
+    + '<select id="prc-only">' + opt('','הכל',PRC_F.only) + opt('full','עלות ומחיר קיימים',PRC_F.only)
+                               + opt('nop','ללא מחיר מכירה',PRC_F.only) + opt('noc','ללא מחיר עלות',PRC_F.only) + '</select>'
+    + '<button class="tb-clear" id="prc-clear">נקה סינון</button>'
+    + '<button class="tb-clear" id="prc-xls">ייצוא לאקסל</button>'
+    + '<button class="tb-clear" id="prc-reload">רענון נתונים</button>';
+  const q = $('#prc-q'); if(q) q.oninput = e => { PRC_F.q = e.target.value; prcBody(); };
+  ['st','fam','only'].forEach(k=>{ const s = $('#prc-'+k); if(s) s.onchange = e => { PRC_F[k] = e.target.value; prcBody(); }; });
+  $('#prc-clear').onclick  = ()=>{ PRC_F.q=''; PRC_F.st=''; PRC_F.fam=''; PRC_F.only=''; renderPrc(); };
+  $('#prc-xls').onclick    = ()=> prcExport();
+  $('#prc-reload').onclick = ()=> prcLoad(true);
+}
+
+function prcViews(){
+  const el = $('#prc-views'); if(!el) return;
+  const exc = PRC_LOADED ? prcIssues(prcFiltered()).total : 0;
+  const V = [['db','מאגר תמחור',PRC.length],['marg','ניתוח מרווחים',null],['list','מחירון ללקוח',null],
+             ['side','עלויות נלוות',null],['exc','חריגים בתמחור',exc]];
+  el.innerHTML = V.map(v => '<button class="chip' + (PRC_VIEW===v[0]?' active':'') + '" data-prc-view="' + v[0] + '">' + v[1]
+    + (v[2]==null ? '' : ' <span class="n">' + fmtNum(v[2]) + '</span>') + '</button>').join('');
+  el.querySelectorAll('[data-prc-view]').forEach(b => b.onclick = ()=>{ PRC_VIEW = b.dataset.prcView; renderPrc(); navMark(); });
+}
+
+function prcFiltered(){
+  const q = PRC_F.q.trim().toLowerCase();
+  return PRC.filter(r=>{
+    if(PRC_F.st  && String(r.erp_status||'') !== PRC_F.st) return false;
+    if(PRC_F.fam && String(r.family||'')     !== PRC_F.fam) return false;
+    if(PRC_F.only === 'full' && !(prcCost(r) != null && prcEx(r) != null)) return false;
+    if(PRC_F.only === 'nop'  && prcEx(r)   != null) return false;
+    if(PRC_F.only === 'noc'  && prcCost(r) != null) return false;
+    if(q){
+      const hay = ((r.partname||'') + ' ' + (r.partdes||'') + ' ' + (r.family||'') + ' ' + (r.barcode||'')).toLowerCase();
+      if(hay.indexOf(q) === -1) return false;
+    }
+    return true;
+  });
+}
+
+function prcTable(rows, cols, key){
+  if(!rows.length) return '<div class="empty">אין שורות להצגה</div>';
+  const shown = rows.slice(0, pgLim(key));
+  let h = '<div class="tbl-wrap"><table class="tbl"><thead><tr>' + cols.map(c=>'<th>'+c.t+'</th>').join('') + '</tr></thead><tbody>';
+  shown.forEach(r=>{
+    h += '<tr data-pn="' + esc(r.partname) + '" style="cursor:pointer">' + cols.map(c=>{
+      const srt = c.s ? ' data-sort="' + esc(c.s(r)) + '"' : '';
+      return '<td' + (c.cls ? ' class="'+c.cls+'"' : '') + srt + '>' + c.f(r) + '</td>';
+    }).join('') + '</tr>';
+  });
+  h += '</tbody></table></div>' + pgFoot(key, rows.length, 'מק״טים');
+  return h;
+}
+
+function prcKpis(items){
+  return '<div class="prc-kpis">' + items.map(k=>'<div class="prc-kpi"><div class="k">' + esc(k[0]) + '</div><div class="v">' + k[1] + '</div>'
+    + (k[2] ? '<div class="s">' + esc(k[2]) + '</div>' : '') + '</div>').join('') + '</div>';
+}
+
+const PRC_DB_COLS = [
+  { t:'מק״ט',           f:r=>esc(r.partname), cls:'clip' },
+  { t:'תיאור',          f:r=>esc(r.partdes||'—'), cls:'td-desc' },
+  { t:'משפחה',          f:r=>esc(r.family||'—'), cls:'clip' },
+  { t:'סטטוס',          f:r=>'<span class="inv-st ' + (prcAct(r)?'grn':'gry') + '">' + esc(r.erp_status||'—') + '</span>', s:r=>prcAct(r)?0:1 },
+  { t:'עלות',           f:r=>prcMoney(prcCost(r)), s:r=>prcCost(r)||0 },
+  { t:'מחיר ללא מע״מ',  f:r=>prcMoney(prcEx(r)),   s:r=>prcEx(r)||0 },
+  { t:'מחיר כולל מע״מ', f:r=>prcMoney(prcInc(r)),  s:r=>prcInc(r)||0 },
+  { t:'מרווח',          f:r=>prcMPill(prcMargin(r)), s:r=>prcMargin(r)==null?-9:prcMargin(r) },
+  { t:'מכפלה',          f:r=>prcXf(prcMult(r)), s:r=>prcMult(r)||0 }
+];
+
+function prcDbView(){
+  const rows  = prcFiltered();
+  const withC = rows.filter(r=>prcCost(r)!=null).length;
+  const withP = rows.filter(r=>prcEx(r)!=null).length;
+  const both  = rows.filter(r=>prcCost(r)!=null && prcEx(r)!=null).length;
+  const ms    = rows.map(prcMargin).filter(v=>v!=null);
+  const avg   = ms.length ? ms.reduce((a,b)=>a+b,0)/ms.length : null;
+  const pc    = n => rows.length ? Math.round(n/rows.length*100) + '% מהמוצג' : '';
+  let h = prcKpis([
+    ['מק״טים בתצוגה', fmtNum(rows.length)],
+    ['עם מחיר מכירה', fmtNum(withP), pc(withP)],
+    ['עם מחיר עלות',  fmtNum(withC), pc(withC)],
+    ['ניתן לחשב מרווח', fmtNum(both), 'מרווח ממוצע ' + prcPct(avg)]
+  ]);
+  h += '<div class="note">כל השדות במסך נקראים ממסך המק״טים ואינם נמשכים בנפרד. העלות היא שדה העלות במק״ט, המחיר ללא מע״מ הוא מחיר הבסיס, והמחיר כולל מע״מ הוא השדה הייעודי או חישוב לפי ' + (PRC_VAT*100).toFixed(0) + '% כשהוא ריק. המרווח מחושב כרווח חלקי מחיר המכירה, ולא כמכפלה על העלות.</div>';
+  h += prcTable(rows, PRC_DB_COLS, 'prc-db');
+  return h;
+}
+
+const PRC_BUCKETS = [
+  ['הפסד (עד 0%)', m=> m<=0],
+  ['0%–20%',       m=> m>0    && m<0.20],
+  ['20%–40%',      m=> m>=0.20 && m<0.40],
+  ['40%–60%',      m=> m>=0.40 && m<0.60],
+  ['60%–75%',      m=> m>=0.60 && m<0.75],
+  ['75%–90%',      m=> m>=0.75 && m<0.90],
+  ['מעל 90%',      m=> m>=0.90]
+];
+
+function prcMargView(){
+  const rows = prcFiltered().filter(r=>prcMargin(r)!=null);
+  if(!rows.length) return '<div class="empty">אין מק״טים שיש להם גם עלות וגם מחיר בסינון הנוכחי</div>';
+  const ms  = rows.map(prcMargin);
+  const avg = ms.reduce((a,b)=>a+b,0)/ms.length;
+  let h = prcKpis([
+    ['מק״טים בניתוח', fmtNum(rows.length)],
+    ['מרווח ממוצע',  prcPct(avg)],
+    ['מרווח חציוני', prcPct(prcMed(ms))],
+    ['מרווח מזערי',  prcPct(Math.min.apply(null,ms))],
+    ['מרווח מרבי',   prcPct(Math.max.apply(null,ms))],
+    ['מתחת ל־20%',   fmtNum(rows.filter(r=>prcMargin(r)<0.20).length), 'מעל 95%: ' + fmtNum(rows.filter(r=>prcMargin(r)>0.95).length)]
+  ]);
+  const counts = PRC_BUCKETS.map(b=>ms.filter(b[1]).length);
+  const mx = Math.max.apply(null, counts) || 1;
+  h += '<div class="inv-sec"><div class="inv-sec-h">פיזור המרווחים</div>'
+     + PRC_BUCKETS.map((b,i)=>'<div class="prc-hist"><div class="lb">' + esc(b[0]) + '</div>'
+         + '<div class="inv-bar"><i style="width:' + (counts[i]/mx*100).toFixed(1) + '%"></i></div>'
+         + '<div class="vl">' + fmtNum(counts[i]) + '</div></div>').join('')
+     + '</div>';
+  const fam = {};
+  rows.forEach(r=>{ const k = r.family || 'ללא משפחה'; (fam[k] = fam[k] || []).push(prcMargin(r)); });
+  const fr = Object.keys(fam).map(k=>({ family:k, n:fam[k].length, avg:fam[k].reduce((a,b)=>a+b,0)/fam[k].length,
+      med:prcMed(fam[k]), mn:Math.min.apply(null,fam[k]), mx:Math.max.apply(null,fam[k]) })).sort((a,b)=>b.n-a.n);
+  h += '<div class="inv-sec"><div class="inv-sec-h">מרווח לפי משפחה <span class="sub">' + fmtNum(fr.length) + ' משפחות</span></div></div>'
+     + '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>משפחה</th><th>מק״טים</th><th>ממוצע</th><th>חציון</th><th>מזערי</th><th>מרבי</th></tr></thead><tbody>'
+     + fr.map(f=>'<tr><td class="clip">' + esc(f.family) + '</td><td>' + fmtNum(f.n) + '</td><td>' + prcMPill(f.avg) + '</td><td>'
+         + prcPct(f.med) + '</td><td>' + prcPct(f.mn) + '</td><td>' + prcPct(f.mx) + '</td></tr>').join('')
+     + '</tbody></table></div>';
+  return h;
+}
+
+function prcListView(){
+  const rows = prcFiltered();
+  const cols = [
+    { t:'מק״ט',      f:r=>esc(r.partname), cls:'clip' },
+    { t:'תיאור',     f:r=>esc(r.partdes||'—'), cls:'td-desc' },
+    { t:'עלות',      f:r=>prcMoney(prcCost(r)), s:r=>prcCost(r)||0 },
+    { t:'מחיר בסיס', f:r=>prcMoney(prcEx(r)),   s:r=>prcEx(r)||0 }
+  ].concat(PRC_GROUPS.map(g=>({ t:esc(g), f:()=>'<span class="prc-na">—</span>' })));
+  let h = '<div class="prc-chips">' + PRC_GROUPS.map(g=>'<div class="prc-chip">' + esc(g) + ' <b>טרם הוגדר</b></div>').join('') + '</div>';
+  h += '<div class="note prc-warn">המסך הזה מוצג במבנה בלבד ואינו מציג מספרים. מחירון לפי קבוצת לקוח דורש נתונים שאינם קיימים היום במסך המק״טים: אחוז מרווח לכל קבוצה, מטריצת קטגוריה ותת־קטגוריה, וחריגים ברמת מק״ט בודד. כל עוד הם לא הוגדרו — העמודות נשארות ריקות במכוון, כדי שלא יוצגו מחירים משוערים שאפשר לטעות ולשלוח ללקוח.</div>';
+  h += prcTable(rows, cols, 'prc-list');
+  return h;
+}
+
+const PRC_SIDE_COLS = [
+  { t:'מק״ט',           f:r=>esc(r.partname), cls:'clip' },
+  { t:'תיאור',          f:r=>esc(r.partdes||'—'), cls:'td-desc' },
+  { t:'דורש התקנה',     f:r=>r.needs_install ? '<span class="inv-st org">כן</span>' : '<span class="inv-st gry">לא</span>', s:r=>r.needs_install?0:1 },
+  { t:'התקנה — איירון', f:r=>prcMoney(Number(r.install_price_iron)>0 ? Number(r.install_price_iron) : null), s:r=>Number(r.install_price_iron)||0 },
+  { t:'התקנה — קבלן',   f:r=>prcMoney(Number(r.install_price_contractor)>0 ? Number(r.install_price_contractor) : null), s:r=>Number(r.install_price_contractor)||0 },
+  { t:'משלוח ליחידה',   f:r=>prcMoney(Number(r.ship_price_single)>0 ? Number(r.ship_price_single) : null), s:r=>Number(r.ship_price_single)||0 },
+  { t:'משקל (ק״ג)',     f:r=>Number(r.weight_kg)>0 ? invD(r.weight_kg,1) : '—', s:r=>Number(r.weight_kg)||0 },
+  { t:'מידות (ס״מ)',    f:r=>{ const a = [r.length_cm,r.width_cm,r.height_cm].map(v=>Number(v)>0?Math.round(Number(v)):null);
+      return a.every(v=>v==null) ? '—' : a.map(v=>v==null?'?':v).join(' × '); } },
+  { t:'מקדם משטח',      f:r=>Number(r.pallet_load_factor)>0 ? invD(r.pallet_load_factor,2) : '—', s:r=>Number(r.pallet_load_factor)||0 }
+];
+
+function prcSideView(){
+  const rows = prcFiltered();
+  const ic = rows.filter(r=>Number(r.install_price_contractor)>0).length;
+  let h = prcKpis([
+    ['דורשים התקנה',       fmtNum(rows.filter(r=>r.needs_install).length)],
+    ['מחיר התקנה איירון',  fmtNum(rows.filter(r=>Number(r.install_price_iron)>0).length)],
+    ['מחיר התקנה קבלן',    fmtNum(ic)],
+    ['מחיר משלוח ליחידה',  fmtNum(rows.filter(r=>Number(r.ship_price_single)>0).length)],
+    ['משקל מוגדר',         fmtNum(rows.filter(r=>Number(r.weight_kg)>0).length)]
+  ]);
+  if(!ic) h += '<div class="note prc-warn">מחיר התקנה לקבלן ריק בכל המק״טים במערכת. כל עוד השדה ריק אי אפשר להשוות את עלות ההתקנה החיצונית למחיר ההתקנה של איירון, ולכן אי אפשר לחשב את הרווח האמיתי על עבודת התקנה.</div>';
+  h += prcTable(rows, PRC_SIDE_COLS, 'prc-side');
+  return h;
+}
+
+function prcIssues(rows){
+  const src     = rows || PRC;
+  const noPrice = src.filter(r=>prcAct(r) && prcEx(r)==null);
+  const noCost  = src.filter(r=>prcEx(r)!=null && prcCost(r)==null);
+  const costNoP = src.filter(r=>prcCost(r)!=null && prcEx(r)==null);
+  const loss    = src.filter(r=>{ const m=prcMargin(r); return m!=null && m<=0; });
+  const lowM    = src.filter(r=>{ const m=prcMargin(r); return m!=null && m>0 && m<0.20; });
+  const hiM     = src.filter(r=>{ const m=prcMargin(r); return m!=null && m>0.95; });
+  const vatOff  = src.filter(r=>{ const e=prcEx(r), v=Number(r.price_vat); return e!=null && v>0 && Math.abs(v - e*(1+PRC_VAT)) > 0.02; });
+  const instNoP = src.filter(r=>r.needs_install && !(Number(r.install_price_iron)>0));
+  const stockNo = src.filter(r=>Number(r.qty)>0 && prcEx(r)==null);
+  const total   = new Set([].concat(noPrice,noCost,costNoP,loss,lowM,hiM,vatOff,instNoP,stockNo).map(r=>r.partname)).size;
+  return { noPrice:noPrice, noCost:noCost, costNoP:costNoP, loss:loss, lowM:lowM, hiM:hiM,
+           vatOff:vatOff, instNoP:instNoP, stockNo:stockNo, total:total };
+}
+
+const PRC_EXC_COLS = [
+  { t:'מק״ט',           f:r=>esc(r.partname), cls:'clip' },
+  { t:'תיאור',          f:r=>esc(r.partdes||'—'), cls:'td-desc' },
+  { t:'משפחה',          f:r=>esc(r.family||'—'), cls:'clip' },
+  { t:'סטטוס',          f:r=>'<span class="inv-st ' + (prcAct(r)?'grn':'gry') + '">' + esc(r.erp_status||'—') + '</span>', s:r=>prcAct(r)?0:1 },
+  { t:'יתרה',           f:r=>invN(r.qty), s:r=>Number(r.qty)||0 },
+  { t:'עלות',           f:r=>prcMoney(prcCost(r)), s:r=>prcCost(r)||0 },
+  { t:'מחיר ללא מע״מ',  f:r=>prcMoney(prcEx(r)), s:r=>prcEx(r)||0 },
+  { t:'מחיר כולל מע״מ', f:r=>prcMoney(Number(r.price_vat)>0 ? Number(r.price_vat) : null), s:r=>Number(r.price_vat)||0 },
+  { t:'מרווח',          f:r=>prcMPill(prcMargin(r)), s:r=>prcMargin(r)==null?-9:prcMargin(r) }
+];
+
+function prcExcView(){
+  const rows = prcFiltered(), iss = prcIssues(rows);
+  const B = [
+    ['מק״ט פעיל ללא מחיר מכירה', iss.noPrice, true, 'המק״ט פעיל בפריוריטי אך אין לו מחיר בסיס. אי אפשר להציע אותו ללקוח בלי לתמחר ידנית בכל פעם מחדש, וזה המקור הנפוץ ביותר לטעויות תמחור בשטח.'],
+    ['מחיר בלי מחיר עלות', iss.noCost, true, 'יש מחיר מכירה אך אין עלות, ולכן אי אפשר לדעת אם המכירה רווחית. כל דוח רווחיות שיכלול את המק״טים האלה יהיה חלקי.'],
+    ['עלות בלי מחיר מכירה', iss.costNoP, false, 'יש עלות אך לא נקבע מחיר. אלה המק״טים שהכי קל להשלים, כי חצי מהנתון כבר קיים.'],
+    ['מחיר מתחת לעלות', iss.loss, true, 'המחיר שווה לעלות או נמוך ממנה. כל מכירה כזו מפסידה כסף, אלא אם מדובר במוצר שנמכר במכוון כחלק מחבילה.'],
+    ['מרווח מתחת ל־20%', iss.lowM, true, 'מרווח נמוך משמעותית מהממוצע במערכת. שווה לבדוק אם העלות עודכנה ולא עודכן המחיר בעקבותיה.'],
+    ['מרווח מעל 95%', iss.hiM, false, 'מרווח גבוה באופן חריג. לרוב זה סימן שהעלות שגויה או חסרה בפריוריטי ולא שהמוצר באמת רווחי כל כך.'],
+    ['מחיר כולל מע״מ שאינו תואם', iss.vatOff, true, 'המחיר כולל מע״מ אינו שווה למחיר הבסיס כפול שיעור המע״מ. אחד משני השדות עודכן והשני לא, וזה גורם למחיר שונה בין מסמכים.'],
+    ['דורש התקנה בלי מחיר התקנה', iss.instNoP, false, 'המק״ט מסומן כדורש התקנה אך אין לו מחיר התקנה, ולכן ההצעה ללקוח תצא חסרה או תתומחר ידנית.'],
+    ['יש מלאי אך אין מחיר', iss.stockNo, true, 'סחורה יושבת במחסן בלי מחיר מכירה. זה כסף שאי אפשר למכור בלי החלטת תמחור.']
+  ];
+  if(PRC_EXC >= B.length) PRC_EXC = 0;
+  let h = '<div class="inv-dq">' + B.map((b,i)=>'<div class="q' + (b[2]?' bad':'') + '" data-prc-exc="' + i + '"'
+    + (PRC_EXC===i ? ' style="box-shadow:0 0 0 2px var(--navy) inset"' : '') + '>' + esc(b[0]) + ' <b>' + fmtNum(b[1].length) + '</b></div>').join('') + '</div>';
+  const sel = B[PRC_EXC];
+  h += '<div class="inv-sec"><div class="inv-sec-h">' + esc(sel[0]) + ' <span class="sub">' + fmtNum(sel[1].length) + ' מק״טים</span></div>'
+     + '<div class="note">' + esc(sel[3]) + '</div></div>'
+     + prcTable(sel[1], PRC_EXC_COLS, 'prc-exc' + PRC_EXC);
+  return h;
+}
+
+function prcBody(){
+  const el = $('#prc-body'); if(!el) return;
+  if(!prcAdmin()){ el.innerHTML = '<div class="empty">המסך פתוח למנהלי מערכת בלבד</div>'; return; }
+  if(PRC_LOADING){ el.innerHTML = '<div class="empty">טוען נתוני תמחור…</div>'; return; }
+  if(PRC_ERR){
+    el.innerHTML = '<div class="err">' + esc(PRC_ERR) + '</div>'
+      + '<div style="text-align:center;margin-top:12px"><button class="inv-btn" id="prc-retry">נסה שוב</button></div>';
+    const b = $('#prc-retry'); if(b) b.onclick = ()=> prcLoad(true);
+    return;
+  }
+  if(!PRC_LOADED){ el.innerHTML = '<div class="empty">אין נתונים להצגה</div>'; return; }
+  el.innerHTML = PRC_VIEW==='marg' ? prcMargView() : PRC_VIEW==='list' ? prcListView()
+               : PRC_VIEW==='side' ? prcSideView() : PRC_VIEW==='exc' ? prcExcView() : prcDbView();
+  el.onclick = ev=>{
+    const q = ev.target.closest('[data-prc-exc]');
+    if(q){ ev.stopPropagation(); PRC_EXC = Number(q.dataset.prcExc)||0; prcBody(); return; }
+    const row = ev.target.closest('[data-pn]');
+    if(row) openSku(row.dataset.pn);
+  };
+}
+
+function prcExport(){
+  if(!PRC_LOADED){ toast('הנתונים עדיין נטענים'); return; }
+  const rows = prcFiltered();
+  if(!rows.length){ toast('אין שורות לייצוא'); return; }
+  const nn = v => Number(v)>0 ? Number(v) : '';
+  const cols = [
+    ['מק״ט',            r=>r.partname||''],
+    ['תיאור',           r=>r.partdes||''],
+    ['משפחה',           r=>r.family||''],
+    ['יחידה',           r=>r.unit||''],
+    ['ברקוד',           r=>r.barcode||''],
+    ['סטטוס',           r=>r.erp_status||''],
+    ['יתרה',            r=>Number(r.qty)||0],
+    ['עלות',            r=>prcCost(r)==null?'':Number(prcCost(r).toFixed(2))],
+    ['מחיר ללא מע״מ',   r=>prcEx(r)==null?'':Number(prcEx(r).toFixed(2))],
+    ['מחיר כולל מע״מ',  r=>prcInc(r)==null?'':Number(prcInc(r).toFixed(2))],
+    ['מרווח באחוזים',   r=>prcMargin(r)==null?'':Number((prcMargin(r)*100).toFixed(1))],
+    ['מכפלה',           r=>prcMult(r)==null?'':Number(prcMult(r).toFixed(2))],
+    ['דורש התקנה',      r=>r.needs_install?'כן':'לא'],
+    ['התקנה איירון',    r=>nn(r.install_price_iron)],
+    ['התקנה קבלן',      r=>nn(r.install_price_contractor)],
+    ['משלוח ליחידה',    r=>nn(r.ship_price_single)],
+    ['משקל',            r=>nn(r.weight_kg)],
+    ['נמכר 3 חודשים',   r=>Number(r.sold_3m)||0],
+    ['נמכר 6 חודשים',   r=>Number(r.sold_6m)||0]
+  ];
+  const url = URL.createObjectURL(_skuXlsx(cols.map(c=>c[0]), rows.map(r=>cols.map(c=>c[1](r)))));
+  const a = document.createElement('a');
+  a.href = url; a.download = 'תמחור-' + new Date().toISOString().slice(0,10) + '.xlsx';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 8000);
+}
 
 /* ===== יומן סנכרון — הגדרות ← יומן סנכרון (אדמיניסטרטור בלבד) =====
    הטבלה ord.sync_log נעולה במסד לקריאת אדמיניסטרטור בלבד (מדיניות
@@ -4344,7 +4739,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.8.6</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.9.0</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
@@ -4491,7 +4886,7 @@ async function loadLeads(){
 }
 /* ציור כל המסכים מחדש — משמש גם במעבר בין תצוגת טבלה לכרטיסים (תיקון ממצא 24) */
 function renderAllViews(){
-  renderStats(); renderToday(); renderLeads(); renderCustomers(); renderTasks(); renderDeals(); renderMeets(); renderConts(); renderPays(); renderOrdersTools(); renderOrders(); renderSkuTools(); renderSkus(); renderLogi(); renderDocs(); renderInvIfLoaded(); renderOps();
+  renderStats(); renderToday(); renderLeads(); renderCustomers(); renderTasks(); renderDeals(); renderMeets(); renderConts(); renderPays(); renderOrdersTools(); renderOrders(); renderSkuTools(); renderSkus(); renderLogi(); renderDocs(); renderInvIfLoaded(); renderPrcIfLoaded(); renderOps();
 }
 /* עימוד — כפתור "הצג עוד" בכל מסכי הרשימות (הערת רומן 28/07) */
 const PGSTEP=300; const PGL={};
@@ -4913,7 +5308,7 @@ const CONTACT_STATUSES = ['טרם נוצר קשר','נוצר קשר ראשוני
 const CALL_STATUSES = ['חדש','תואם','הושלם'];
 const URGENCIES = ['רגילה','בינונית','משביתה'];
 const CALL_TYPES = ['תקלה','אחזקה','שירות','אחר'];
-/* 6.8.6 — צבע לכל משבצת זמן (בקשת רומן 01/08/2026): בוקר בגוונים קרים, צהריים בחמים */
+/* 6.9.0 — צבע לכל משבצת זמן (בקשת רומן 01/08/2026): בוקר בגוונים קרים, צהריים בחמים */
 const SLOT_COLORS = {'08:00-11:00':'#2f74d0','10:00-12:00':'#0e8fc4','11:00-13:00':'#0f9d8f','12:00-14:00':'#2e9e5b','13:00-15:00':'#a67c00','14:00-16:00':'#d97706','15:00-17:00':'#dd5f2b','יום מלא':'#002D48'};
 /* מפת צבעי הצוותים — אותם גוונים בדיוק כמו בלוח השנה, כדי שהטבלה והלוח ידברו באותה שפה */
 const teamColorMap = () => Object.fromEntries((OTEAMS||[]).map(t=>[t.name, t.color||'#64748b']));

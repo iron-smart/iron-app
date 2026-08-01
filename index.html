@@ -253,7 +253,7 @@
   .tbl th.stcell, .tbl td.stcell{ text-align:center; }
   .tbl td.stcell select.inline-edit{ display:inline-block; margin-inline:auto; text-align:center; text-align-last:center; }
   select.inline-edit.mdc{ color:#fff; border:none; border-radius:99px; font-weight:700; padding:5px 12px; font-size:12px; -webkit-appearance:none; appearance:none; }
-  /* 6.9.0 — עמודות צוות / שעות / תאריך בטבלאות (בקשת רומן 01/08/2026) */
+  /* 6.9.1 — עמודות צוות / שעות / תאריך בטבלאות (בקשת רומן 01/08/2026) */
   .tbl th.teamcell, .tbl td.teamcell, .tbl th.slotcell, .tbl td.slotcell{ text-align:center; }
   .tbl td.teamcell select.inline-edit, .tbl td.slotcell select.inline-edit{ display:inline-block; margin-inline:auto; text-align:center; text-align-last:center; }
   .tbl th.datecell, .tbl td.datecell{ text-align:center; white-space:nowrap; }
@@ -900,6 +900,20 @@
 <!-- ===== התחברות — עוצב מחדש בסבב 4 (28/07/2026) =====
      #login מוסתר מלכתחילה (class="hidden") ומוצג רק אחרי ש-boot() קבע שאין סשן תקף.
      בלי זה הכרטיס הובזק לרגע בכל טעינה ואז נעלם — מה שנראה כמו "מעביר אותי ישר פנימה". -->
+<style>
+/* ===== התחברות עם Microsoft 365 (נוסף 6.9.1) — RTL ===== */
+.ms-sep{display:flex;align-items:center;gap:10px;margin:14px 0 12px;color:#94a3b8;font-size:12px}
+.ms-sep::before,.ms-sep::after{content:"";flex:1;height:1px;background:var(--line)}
+.ms-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;
+  color:var(--dark);font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;
+  transition:background .15s,border-color .15s}
+.ms-btn:hover{background:#f8fafc;border-color:#cbd5e1}
+.ms-btn:disabled{opacity:.6;cursor:default}
+.ms-btn svg{flex:0 0 auto}
+/* display:flex גובר על .hidden שמוגדר קודם בגיליון — חובה ביטול מפורש */
+.ms-btn.hidden,.ms-sep.hidden{display:none !important}
+</style>
 <div id="login" class="hidden">
   <div class="card">
     <div class="brand">
@@ -911,7 +925,7 @@
         <span>מחירון ומלאי בזמן אמת</span>
         <span>הזמנות, התקנות והנהלת חשבונות</span>
       </div>
-      <div class="ver">גרסה 6.9.0</div>
+      <div class="ver">גרסה 6.9.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -925,6 +939,11 @@
         <button type="button" class="lnk" id="forgotBtn">שכחתי סיסמה</button>
       </div>
       <button class="btn" id="loginBtn">כניסה למערכת</button>
+      <div class="ms-sep" id="msSep"><span>או</span></div>
+      <button type="button" class="ms-btn" id="msBtn">
+        <svg viewBox="0 0 23 23" width="18" height="18" aria-hidden="true"><rect x="1" y="1" width="10" height="10" fill="#f25022"></rect><rect x="12" y="1" width="10" height="10" fill="#7fba00"></rect><rect x="1" y="12" width="10" height="10" fill="#00a4ef"></rect><rect x="12" y="12" width="10" height="10" fill="#ffb900"></rect></svg>
+        <span>התחברות עם Microsoft 365</span>
+      </button>
       <div class="err" id="loginErr"></div>
       <div class="ok" id="loginOk"></div>
       <div class="foot">איירון פיטנס בע"מ · מערכת פנימית<br>הגישה מותרת למשתמשים מורשים בלבד</div>
@@ -1013,7 +1032,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.9.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.9.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1426,6 +1445,7 @@ function showLogin(msg){
     try{
       $('#emailField').classList.remove('hidden');
       $('#loginRow2').classList.remove('hidden');
+      $('#msSep').classList.remove('hidden'); $('#msBtn').classList.remove('hidden');
       $('#pw2Field').classList.add('hidden');
       $('#pwLabel').textContent = 'סיסמה';
       $('#password').setAttribute('autocomplete','current-password');
@@ -1486,6 +1506,8 @@ function enterRecoveryMode(){
   $('#app').classList.add('hidden');
   $('#emailField').classList.add('hidden');
   $('#loginRow2').classList.add('hidden');
+  /* במצב איפוס סיסמה אין טעם בכפתור Microsoft */
+  $('#msSep').classList.add('hidden'); $('#msBtn').classList.add('hidden');
   $('#pw2Field').classList.remove('hidden');
   $('#pwLabel').textContent = 'סיסמה חדשה';
   $('#password').value = ''; $('#password2').value = '';
@@ -1565,6 +1587,25 @@ $('#pwEye').onclick = ()=>{
 };
 
 /* איפוס סיסמה בדוא"ל */
+/* התחברות והרשמה עם Microsoft 365 (Entra ID).
+   ההרשמה עצמה נוצרת אוטומטית ב-core.profiles בסטטוס "ממתין לאישור" דרך
+   הטריגר on_auth_user_created, ומנהל מאשר במסך ניהול משתמשים. */
+$('#msBtn').onclick = async ()=>{
+  const mb = $('#msBtn');
+  if(mb.disabled) return;
+  $('#loginErr').textContent=''; $('#loginOk').textContent='';
+  mb.disabled = true;
+  try{
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: 'azure',
+      options: { scopes: 'openid email profile', redirectTo: location.origin + location.pathname }
+    });
+    if(error){ $('#loginErr').textContent = 'ההתחברות ל-Microsoft נכשלה — פנו למנהל המערכת'; mb.disabled = false; }
+  }catch(e){
+    $('#loginErr').textContent = 'ההתחברות ל-Microsoft נכשלה — נסו שוב'; mb.disabled = false;
+  }
+};
+
 $('#forgotBtn').onclick = async ()=>{
   const fb = $('#forgotBtn');
   if(fb.disabled) return;
@@ -4739,7 +4780,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.9.0</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.9.1</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
@@ -5308,7 +5349,7 @@ const CONTACT_STATUSES = ['טרם נוצר קשר','נוצר קשר ראשוני
 const CALL_STATUSES = ['חדש','תואם','הושלם'];
 const URGENCIES = ['רגילה','בינונית','משביתה'];
 const CALL_TYPES = ['תקלה','אחזקה','שירות','אחר'];
-/* 6.9.0 — צבע לכל משבצת זמן (בקשת רומן 01/08/2026): בוקר בגוונים קרים, צהריים בחמים */
+/* 6.9.1 — צבע לכל משבצת זמן (בקשת רומן 01/08/2026): בוקר בגוונים קרים, צהריים בחמים */
 const SLOT_COLORS = {'08:00-11:00':'#2f74d0','10:00-12:00':'#0e8fc4','11:00-13:00':'#0f9d8f','12:00-14:00':'#2e9e5b','13:00-15:00':'#a67c00','14:00-16:00':'#d97706','15:00-17:00':'#dd5f2b','יום מלא':'#002D48'};
 /* מפת צבעי הצוותים — אותם גוונים בדיוק כמו בלוח השנה, כדי שהטבלה והלוח ידברו באותה שפה */
 const teamColorMap = () => Object.fromEntries((OTEAMS||[]).map(t=>[t.name, t.color||'#64748b']));

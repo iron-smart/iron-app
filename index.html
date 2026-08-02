@@ -988,7 +988,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.14.0</div>
+      <div class="ver">גרסה 6.15.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1086,7 +1086,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.14.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.15.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5239,7 +5239,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.14.0</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.15.0</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
@@ -6941,7 +6941,7 @@ if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN).catch(e=>{ console.er
       '<div style="font-weight:800;font-size:13.5px;margin-bottom:8px">💳 תשלום מקוון (פורטל לקוחות)</div>' +
       '<div id="paylinks" style="font-size:13px;color:#5b6b78">טוען…</div>' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">' +
-        '<button type="button" id="paylink-new" class="btn" style="width:auto;padding:9px 16px;font-size:13.5px">צור קישור תשלום</button>' +
+        '<select id="paylink-inst" style="border:1px solid #dbe3ec;border-radius:9px;padding:8px 10px;font-size:13px;font-family:inherit;background:#fff"><option value="1">תשלום אחד</option><option value="2">עד 2 תשלומים</option><option value="3">עד 3 תשלומים</option><option value="4">עד 4 תשלומים</option><option value="6">עד 6 תשלומים</option><option value="10">עד 10 תשלומים</option><option value="12">עד 12 תשלומים</option></select><button type="button" id="paylink-new" class="btn" style="width:auto;padding:9px 16px;font-size:13.5px">צור קישור תשלום</button>' +
       '</div>' +
       '<div id="paylink-msg" style="font-size:12.5px;margin-top:8px;color:#5b6b78">הסכום נמשך מפריוריטי ברגע היצירה וקפוא בקישור · תוקף 72 שעות · חד-פעמי</div>';
     sheet.appendChild(d);
@@ -6960,7 +6960,7 @@ if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN).catch(e=>{ console.er
       var url = 'https://portal.ironfitness.co.il/#pay=' + l.id;
       var row = '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:5px 0;border-bottom:1px solid #eef1f4">' +
         '<span class="pill ' + pillCls(l.status) + '">' + pesc(l.status) + '</span>' +
-        '<b>' + shk(l.amount) + '</b>' +
+        '<b>' + shk(l.amount) + '</b>' + (l.installments > 1 ? '<span style="color:#5b6b78">עד ' + l.installments + ' תשלומים</span>' : '') +
         '<span style="color:#8b98a3">נוצר ' + fdt(l.created_at) + (l.status==='ממתין' ? ' · בתוקף עד ' + fdt(l.expires_at) : '') + '</span>';
       if(l.status === 'ממתין'){
         row += '<button type="button" class="pl-copy" data-url="' + pesc(url) + '" style="border:1px solid #dbe3ec;background:#fff;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer">העתקה</button>' +
@@ -6987,7 +6987,7 @@ if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN).catch(e=>{ console.er
     }
     btn.dataset.arm = '';
     btn.disabled = true; btn.textContent = 'מושך סכום מפריוריטי…';
-    var r = await callPortal({ op:'create_pay_link', order_id: o.id, order_number: o.order_number }).catch(function(){ return null; });
+    var r = await callPortal({ op:'create_pay_link', order_id: o.id, order_number: o.order_number, installments: Number((document.querySelector('#payblk #paylink-inst')||{}).value)||1 }).catch(function(){ return null; });
     btn.disabled = false; btn.textContent = 'צור קישור תשלום';
     var msg = document.querySelector('#payblk #paylink-msg');
     if(!r || !r.ok){

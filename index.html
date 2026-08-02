@@ -824,6 +824,43 @@
 .inv-why b{ color:var(--navy); }
 @media(max-width:760px){ .inv-grp-h{ gap:7px; } .inv-bar{ width:80px; } }
 
+/* ===== הזמנות רכש — ספקי חו"ל (6.10.0) ===== */
+.po-cards{ display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:12px; }
+.po-card{ background:#fff; border:1px solid var(--line); border-right:4px solid var(--navy); border-radius:12px; padding:13px 15px; cursor:pointer; transition:box-shadow .15s; }
+.po-card:hover{ box-shadow:0 4px 14px rgba(0,45,72,.10); }
+.po-card .hd{ display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+.po-card .hd .num{ font-weight:800; color:var(--navy); font-size:14.5px; }
+.po-card .hd .sp{ flex:1; }
+.po-pri{ font-size:11.5px; color:#64748b; background:#eef2f6; border-radius:7px; padding:3px 8px; white-space:nowrap; }
+.po-st{ display:inline-block; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:700; white-space:nowrap; }
+.po-st.p1{ background:#eef2f6; color:#475569; }
+.po-st.p2{ background:#fef3e2; color:#a35a06; }
+.po-st.p3{ background:#e8f0fe; color:#1d4ed8; }
+.po-st.p4{ background:#f1f0fb; color:#6b5ca5; }
+.po-st.p5{ background:#e6f6ec; color:#177a3d; }
+.po-card .rw{ display:flex; justify-content:space-between; gap:8px; font-size:12.5px; padding:2.5px 0; }
+.po-card .rw .k{ color:#64748b; white-space:nowrap; }
+.po-card .rw .v{ color:#0f172a; font-weight:600; text-align:left; }
+.po-card .ft{ display:flex; flex-wrap:wrap; gap:6px; margin-top:9px; }
+.po-tag{ font-size:11.5px; background:#f8fafc; border:1px solid var(--line); border-radius:7px; padding:3px 8px; color:#475569; }
+.po-tag.warn{ background:#fef3e2; border-color:#fcd9a8; color:#a35a06; }
+.po-last{ font-size:12px; color:#94a3b8; align-self:center; }
+.po-kv{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:8px; margin:10px 0; }
+.po-kv .r{ background:#f8fafc; border-radius:9px; padding:7px 10px; }
+.po-kv .r .k{ font-size:11.5px; color:#64748b; display:block; }
+.po-kv .r .v{ font-size:13.5px; font-weight:700; color:var(--navy); }
+.po-form{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; margin:10px 0; }
+.po-form .field{ margin:0; }
+.po-form .full{ grid-column:1 / -1; }
+.po-lines{ width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-top:8px; }
+.po-lines th, .po-lines td{ border:1px solid var(--line); padding:7px 6px; font-size:12px; text-align:center; }
+.po-lines th{ background:#f8fafc; color:var(--navy); font-weight:800; }
+.po-lines td.r1{ text-align:right; }
+.po-sup-row{ display:flex; align-items:center; gap:10px; padding:8px 4px; border-bottom:1px solid var(--line); font-size:13px; }
+.po-sup-row .nm{ flex:1; color:#0f172a; }
+.po-sup-row .no{ color:#64748b; font-size:12px; }
+@media(max-width:760px){ .po-cards{ grid-template-columns:1fr; } }
+
     /* ===== תמחור ומחירונים — אדמיניסטרטור בלבד ===== */
     .nav-wrap[hidden]{ display:none !important; }
     .prc-kpis{ display:flex; flex-wrap:wrap; gap:10px; margin:12px 0; }
@@ -922,7 +959,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.9.5</div>
+      <div class="ver">גרסה 6.10.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -991,8 +1028,14 @@
          (רומן 29/07/2026). ללא חץ — חץ פירושו תמיד "יש כאן תת-קטגוריות". -->
     <button class="nav-item" data-tab="docs">מסמכים</button>
     <button class="nav-item" data-tab="skus">מקטים</button>
-    <!-- מלאי ורכש — התצוגות הן סינון בתוך המסך ולא תתי-קטגוריות (רומן, 02/08/2026) -->
-    <button class="nav-item" data-tab="inv">מלאי ורכש</button>
+    <!-- מלאי ורכש — שתי תת-קטגוריות אמיתיות: מעקב מלאי (המסך הקיים) והזמנות רכש (רומן, 02/08/2026) -->
+    <div class="nav-wrap" data-tabs="inv,po">
+      <button class="nav-item" data-tab="inv">מלאי ורכש <span class="nav-arrow"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span></button>
+      <div class="submenu">
+        <button data-tab="inv" onclick="gotoTab('inv')">מעקב מלאי</button>
+        <button data-tab="po" onclick="gotoTab('po')">הזמנות רכש</button>
+      </div>
+    </div>
     <div class="nav-wrap" data-tabs="prc" id="nav-prc" hidden>
       <button class="nav-item" data-tab="prc">תמחור ומחירונים</button>
     </div>
@@ -1014,7 +1057,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.9.5</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.10.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1144,6 +1187,15 @@
       <div id="inv-body"></div>
     </section>
 
+    <!-- הזמנות רכש — ספקי חו"ל, סנכרון ידני מפריוריטי (6.10.0) -->
+    <section id="tab-po" class="hidden">
+      <div class="sku-tb">
+        <div class="tools-bar" id="po-tools"></div>
+        <div id="po-views" class="tools-bar"></div>
+      </div>
+      <div id="po-body"></div>
+    </section>
+
     <!-- מסמכים — פרוטוקולים, דוחות וחתימות (נטיבי) -->
     <section id="tab-prc" class="hidden">
       <div class="sku-tb">
@@ -1224,6 +1276,16 @@
 <!-- מודל כרטיס מלאי ורכש -->
 <div class="modal hidden" id="invModal">
   <div class="sheet wide" id="invSheet"></div>
+</div>
+
+<!-- מודל כרטיס הזמנת רכש -->
+<div class="modal hidden" id="poModal">
+  <div class="sheet wide" id="poSheet"></div>
+</div>
+
+<!-- מודל ניהול ספקי רכש -->
+<div class="modal hidden" id="poSupModal">
+  <div class="sheet" id="poSupSheet"></div>
 </div>
 
 <!-- מודל כרטיס פגישה -->
@@ -1668,7 +1730,7 @@ $('#logoutBtn').onclick = async ()=>{
    עד 6.1.0 הניווט התבצע דרך b.click() על כפתור התפריט, ולכן כל מסך היה חייב
    כפתור ראשי משלו בסרגל. משנכנסו שבעת מסכי ה-CRM תחת קטגוריית אב אחת, אין
    לכל מסך כפתור ראשי — ולכן הניווט עבר לפונקציה אחת שאינה תלויה ב-DOM. */
-const NAV_TABS = ['today','leads','deals','meets','customers','contacts','pays','tasks','orders','logi','skus','inv','prc','docs','set'];
+const NAV_TABS = ['today','leads','deals','meets','customers','contacts','pays','tasks','orders','logi','skus','inv','po','prc','docs','set'];
 let CUR_TAB = 'today';
 /* התצוגה הפנימית הנוכחית של כל מסך שיש לו תתי-קטגוריות — לצורך סימון הפריט הפעיל */
 const NAV_VIEW = {
@@ -1700,6 +1762,7 @@ window.gotoTab = t=>{
   navMark();
   if(t==='logi') renderLogi();
   if(t==='inv')  renderInv();
+  if(t==='po')   renderPo();
   if(t==='prc')  renderPrc();
   if(t==='set') renderSettings();
   if(window.innerWidth<800) setSide(false);
@@ -3903,6 +3966,291 @@ function invExport(){
 
 
 
+/* ===== הזמנות רכש — ספקי חו"ל (6.10.0) =====
+   איפיון רומן 02/08/2026: משיכה מ-PORDERS עבור ספקים נבחרים בלבד (ord.po_suppliers),
+   סנכרון ידני בלבד בכפתור צד, סטטוס פנימי שלנו לצד סטטוס פריוריטי בכל כרטיס,
+   ושדות מילוי ידניים (עלות PI/CI, מקדמה CI, תשלום גמר, מכולה, תיק יבוא, ETA לנמל).
+   שדות המילוי לעולם אינם נדרסים — po-sync כותבת שדות פריוריטי בלבד. */
+let PO=[], PO_SUPS=[], PO_LOADED=false, PO_LOADING=false, PO_TRIED=false, PO_ERR='';
+let PO_VIEW='open';
+const PO_F = { q:'', sup:'' };
+const PO_STATUSES = ['הזמנה חדשה','בייצור','נשלחה','בנמל','הושלם'];
+const PO_ST_CLS = { 'הזמנה חדשה':'p1','בייצור':'p2','נשלחה':'p3','בנמל':'p4','הושלם':'p5' };
+const poMgr = () => ['admin','manager'].includes(ME.role);
+const poPill = s => '<span class="po-st ' + (PO_ST_CLS[s]||'p1') + '">' + esc(s||'—') + '</span>';
+/* מטבע לפי ההזמנה (איפיון): דולרית — $, שקלית — ₪ */
+const poCur = c => { c=String(c||''); if(c.indexOf('$')>=0 || /USD|דולר/i.test(c)) return '$'; if(c.indexOf('₪')>=0 || c.indexOf('ש')>=0) return '₪'; return c ? c+' ' : ''; };
+const poMoney = (v,c) => (v==null || v==='' || isNaN(Number(v))) ? '—'
+  : poCur(c) + Number(v).toLocaleString('he-IL',{maximumFractionDigits:2});
+const poDate = v => { const t=String(v||'').slice(0,10); if(!/^\d{4}-\d{2}-\d{2}$/.test(t)) return '—'; const p=t.split('-'); return (+p[2])+'/'+(+p[1])+'/'+p[0]; };
+const poDT = v => { if(!v) return ''; const d=new Date(v); return isNaN(d) ? '' : d.toLocaleDateString('he-IL')+' '+d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}); };
+const poCancelled = r => /בוטל|טיוט/.test(String(r.priority_status||''));
+
+async function poLoad(force){
+  if(PO_LOADING) return;
+  if(PO_LOADED && !force) return;
+  PO_LOADING = true; PO_TRIED = true; PO_ERR = '';
+  poBody();
+  try{
+    const a = await sb.schema('ord').from('purchase_orders').select('*')
+      .order('curdate',{ascending:false}).order('ordname',{ascending:false}).limit(3000);
+    if(a.error) throw a.error;
+    const b = await sb.schema('ord').from('po_suppliers').select('*').order('supplier_no');
+    if(b.error) throw b.error;
+    PO = a.data || []; PO_SUPS = b.data || [];
+    PO_LOADED = true;
+  }catch(e){ PO_ERR = (e && e.message) ? String(e.message) : 'טעינת הזמנות הרכש נכשלה'; }
+  PO_LOADING = false;
+  renderPo();
+}
+function renderPo(){
+  poTools(); poViews(); poBody();
+  if(!PO_LOADED && !PO_LOADING && !PO_TRIED) poLoad();
+}
+
+function poTools(){
+  const el = $('#po-tools'); if(!el) return;
+  const opt = (v,t,cur)=>'<option value="'+esc(v)+'"'+(cur===v?' selected':'')+'>'+esc(t)+'</option>';
+  let last = '';
+  PO.forEach(r=>{ if(r.synced_at && r.synced_at > last) last = r.synced_at; });
+  el.innerHTML =
+      '<div class="search"><input id="po-q" type="search" placeholder="חיפוש לפי מספר הזמנה, ספק, הזמנת ספק או מכולה…" value="'+esc(PO_F.q)+'"></div>'
+    + '<select id="po-sup-f">'+opt('','כל הספקים',PO_F.sup)
+      + PO_SUPS.map(s=>opt(s.supplier_no,(s.name||s.supplier_no),PO_F.sup)).join('')+'</select>'
+    + (poMgr() ? '<button class="inv-btn" id="po-sync">סנכרון מפריוריטי</button>'
+               + '<button class="inv-btn ghost" id="po-sups">ניהול ספקים</button>' : '')
+    + '<span class="po-last">'+(last ? 'סנכרון אחרון: '+esc(poDT(last)) : 'טרם סונכרן')+'</span>';
+  const q = $('#po-q');
+  if(q) q.oninput = e => { PO_F.q = e.target.value; poBody(); };
+  const sf = $('#po-sup-f');
+  if(sf) sf.onchange = e => { PO_F.sup = e.target.value; poBody(); };
+  const sy = $('#po-sync'); if(sy) sy.onclick = poSync;
+  const sp = $('#po-sups'); if(sp) sp.onclick = openPoSups;
+}
+
+function poViews(){
+  const el = $('#po-views'); if(!el) return;
+  const act = PO.filter(r=>!poCancelled(r));
+  const chips = [['open','בתהליך', act.filter(r=>r.our_status!=='הושלם').length]];
+  PO_STATUSES.forEach(s=>chips.push(['st:'+s, s, act.filter(r=>r.our_status===s).length]));
+  chips.push(['all','הכל · כולל מבוטלות', PO.length]);
+  el.innerHTML = chips.map(c=>'<button class="chip'+(PO_VIEW===c[0]?' active':'')+'" data-po-view="'+esc(c[0])+'">'
+    + esc(c[1]) + ' <span class="n">' + fmtNum(c[2]) + '</span></button>').join('');
+  el.querySelectorAll('[data-po-view]').forEach(b=>b.onclick = ()=>{ PO_VIEW = b.dataset.poView; poViews(); poBody(); });
+}
+
+function poFiltered(){
+  const q = PO_F.q.trim().toLowerCase();
+  return PO.filter(r=>{
+    if(PO_VIEW === 'open'){ if(poCancelled(r) || r.our_status === 'הושלם') return false; }
+    else if(PO_VIEW.indexOf('st:') === 0){ if(poCancelled(r) || r.our_status !== PO_VIEW.slice(3)) return false; }
+    if(PO_F.sup && r.supplier_no !== PO_F.sup) return false;
+    if(q){
+      const hay = (String(r.ordname||'')+' '+String(r.supplier_name||'')+' '+String(r.supplier_no||'')+' '
+        + String(r.supordnum||'')+' '+String(r.container_no||'')+' '+String(r.details||'')).toLowerCase();
+      if(hay.indexOf(q) < 0) return false;
+    }
+    return true;
+  });
+}
+
+function poBody(){
+  const el = $('#po-body'); if(!el) return;
+  if(PO_LOADING){ el.innerHTML = '<div class="empty">טוען הזמנות רכש…</div>'; return; }
+  if(PO_ERR){
+    el.innerHTML = '<div class="err">'+esc(PO_ERR)+'</div>'
+      + '<div style="text-align:center;margin-top:12px"><button class="inv-btn" id="po-retry">נסה שוב</button></div>';
+    const b = $('#po-retry'); if(b) b.onclick = ()=> poLoad(true);
+    return;
+  }
+  if(!PO_LOADED){ el.innerHTML = '<div class="empty">אין נתונים להצגה</div>'; return; }
+  const rows = poFiltered();
+  if(!rows.length){
+    el.innerHTML = '<div class="empty">אין הזמנות רכש להצגה'
+      + (PO.length ? '' : (poMgr() ? ' — לחצו על "סנכרון מפריוריטי" למשיכה ראשונה' : ' — טרם בוצע סנכרון'))
+      + '</div>';
+    return;
+  }
+  const today = new Date().toISOString().slice(0,10);
+  el.innerHTML = '<div class="po-cards">' + rows.map(r=>{
+    const rw = (k,v)=>'<div class="rw"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>';
+    const late = r.eta_port && r.eta_port < today && r.our_status !== 'הושלם';
+    return '<div class="po-card" data-po="'+esc(r.ordname)+'">'
+      + '<div class="hd"><span class="num">'+esc(r.ordname)+'</span>'+poPill(r.our_status)
+      + '<span class="sp"></span><span class="po-pri" title="סטטוס בפריוריטי">'+esc(r.priority_status||'—')+'</span></div>'
+      + rw('ספק', esc(r.supplier_name || r.supplier_no || '—'))
+      + rw('תאריך הזמנה', poDate(r.curdate))
+      + (r.supordnum ? rw('הזמנת ספק', esc(r.supordnum)) : '')
+      + rw('לפני מע"מ', poMoney(r.price_before_vat, r.currency))
+      + rw('כולל מע"מ', poMoney(r.price_incl_vat, r.currency))
+      + (Number(r.adv_balance) ? rw('יתרת מקדמה', poMoney(r.adv_balance, r.currency)) : '')
+      + (r.details ? rw('פרטים', esc(String(r.details).slice(0,60))) : '')
+      + '<div class="ft">'
+      + (r.eta_port ? '<span class="po-tag'+(late?' warn':'')+'">הגעה לנמל: '+poDate(r.eta_port)+(late?' · באיחור':'')+'</span>' : '')
+      + (r.container_no ? '<span class="po-tag">מכולה '+esc(r.container_no)+'</span>' : '')
+      + (r.has_import_file ? '<span class="po-tag">תיק יבוא'+(r.import_file_no ? ' '+esc(r.import_file_no) : '')+'</span>' : '')
+      + (r.impfnum ? '<span class="po-tag">תיק בפריוריטי: '+esc(r.impfnum)+'</span>' : '')
+      + '</div></div>';
+  }).join('') + '</div>';
+  el.onclick = ev=>{
+    const c = ev.target.closest('[data-po]');
+    if(c) openPo(c.dataset.po);
+  };
+}
+
+async function openPo(on){
+  const r = PO.find(x=>x.ordname===on); if(!r) return;
+  mountCard('poModal', ()=>openPo(on));
+  const sh = $('#poSheet');
+  const cur = poCur(r.currency) || '';
+  const kv = (k,v)=>'<div class="r"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>';
+  const fld = (id,lbl,val,type)=>'<div class="field"><label>'+lbl+'</label><input id="'+id+'" type="'+(type||'text')+'" value="'+esc(val==null?'':String(val))+'"></div>';
+  sh.innerHTML =
+      '<h3 style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">הזמנת רכש '+esc(r.ordname)
+    + poPill(r.our_status)+'<span class="po-pri">פריוריטי: '+esc(r.priority_status||'—')+'</span></h3>'
+    + '<div class="po-kv">'
+    + kv('ספק', esc(r.supplier_name||'—')+' · '+esc(r.supplier_no||''))
+    + kv('תאריך הזמנה', poDate(r.curdate))
+    + kv('הזמנת ספק', esc(r.supordnum||'—'))
+    + kv('מטבע', esc(r.currency||'—'))
+    + kv('מחיר לפני מע"מ', poMoney(r.price_before_vat, r.currency))
+    + kv('מחיר כולל מע"מ', poMoney(r.price_incl_vat, r.currency))
+    + kv('מע"מ', poMoney(r.vat_amount, r.currency))
+    + kv('יתרת מקדמה', poMoney(r.adv_balance, r.currency)+(Number(r.adv_percent)?' · '+Number(r.adv_percent)+'%':''))
+    + kv('תנאי תשלום', esc(r.paydes||'—'))
+    + kv('סה"כ כמות', fmtNum(r.totquant))
+    + kv('מחסן יעד', esc(r.warhsname||'—'))
+    + kv('תיק יבוא בפריוריטי', esc(r.impfnum||'—'))
+    + kv('לטיפול', esc(r.ownerlogin||'—'))
+    + (r.cordname ? kv('הזמנת לקוח מקושרת', esc(r.cordname)) : '')
+    + '</div>'
+    + (r.details ? '<div class="inv-why"><b>פרטים מפריוריטי:</b> '+esc(r.details)+'</div>' : '')
+    + '<h2 class="sec">מעקב שלנו</h2>'
+    + '<div class="po-form">'
+    + '<div class="field"><label>סטטוס</label><select id="po-f-st">'
+      + PO_STATUSES.map(s=>'<option'+(r.our_status===s?' selected':'')+'>'+s+'</option>').join('')+'</select></div>'
+    + fld('po-f-eta','תאריך הגעה משוער לנמל', r.eta_port||'', 'date')
+    + fld('po-f-pi','עלות PI ('+(cur||'מטבע ההזמנה')+')', r.pi_cost, 'number')
+    + fld('po-f-ci','עלות CI ('+(cur||'מטבע ההזמנה')+')', r.ci_cost, 'number')
+    + fld('po-f-adv','מקדמה CI ('+(cur||'מטבע ההזמנה')+')', r.ci_advance, 'number')
+    + fld('po-f-fin','תשלום גמר ('+(cur||'מטבע ההזמנה')+')', r.final_payment, 'number')
+    + fld('po-f-cont','מספר מכולה', r.container_no)
+    + '<div class="field"><label>תיק יבוא</label><select id="po-f-if"><option'+(r.has_import_file?'':' selected')+'>לא</option><option'+(r.has_import_file?' selected':'')+'>כן</option></select></div>'
+    + fld('po-f-ifn','מספר תיק ייבוא', r.import_file_no)
+    + '<div class="field full"><label>הערות</label><textarea id="po-f-notes" rows="2">'+esc(r.notes||'')+'</textarea></div>'
+    + '</div>'
+    + '<div class="actions"><button class="btn green" id="po-save">שמירה</button></div>'
+    + '<div class="err" id="po-err"></div>'
+    + '<h2 class="sec">שורות ההזמנה</h2>'
+    + '<div id="po-lines-wrap"><div class="empty">טוען שורות…</div></div>';
+  $('#po-save').onclick = ()=> poSave(on);
+  try{
+    const { data, error } = await sb.schema('ord').from('purchase_order_items')
+      .select('*').eq('ordname', on).order('ordi');
+    if(error) throw error;
+    const w = $('#po-lines-wrap'); if(!w) return;
+    if(!data || !data.length){ w.innerHTML = '<div class="empty">אין שורות להזמנה זו</div>'; return; }
+    w.innerHTML = '<table class="po-lines"><thead><tr>'
+      + '<th>מק"ט</th><th>תאור</th><th>כמות</th><th>יתרה לאספקה</th><th>מחיר ליח\'</th><th>סה"כ</th><th>אספקה צפויה</th><th>מצב</th>'
+      + '</tr></thead><tbody>'
+      + data.map(it=>'<tr>'
+        + '<td class="r1">'+esc(it.partname||'—')+'</td>'
+        + '<td class="r1">'+esc(it.pdes||'—')+'</td>'
+        + '<td>'+fmtNum(it.tquant)+'</td>'
+        + '<td>'+fmtNum(it.tbalance)+'</td>'
+        + '<td>'+poMoney(it.price, it.icode||r.currency)+'</td>'
+        + '<td>'+poMoney(it.qprice, it.icode||r.currency)+'</td>'
+        + '<td>'+poDate(it.duedate||it.reqdate)+'</td>'
+        + '<td>'+(it.closed?'סגורה':'פתוחה')+'</td>'
+        + '</tr>').join('')
+      + '</tbody></table>';
+  }catch(e){
+    const w = $('#po-lines-wrap');
+    if(w) w.innerHTML = '<div class="err">טעינת השורות נכשלה: '+esc((e&&e.message)||String(e))+'</div>';
+  }
+}
+
+async function poSave(on){
+  const r = PO.find(x=>x.ordname===on); if(!r) return;
+  const numOr = id => { const v = $(id).value; return v==='' ? null : Number(v); };
+  const upd = {
+    our_status: $('#po-f-st').value,
+    eta_port: $('#po-f-eta').value || null,
+    pi_cost: numOr('#po-f-pi'),
+    ci_cost: numOr('#po-f-ci'),
+    ci_advance: numOr('#po-f-adv'),
+    final_payment: numOr('#po-f-fin'),
+    container_no: $('#po-f-cont').value.trim(),
+    has_import_file: $('#po-f-if').value === 'כן',
+    import_file_no: $('#po-f-ifn').value.trim(),
+    notes: $('#po-f-notes').value.trim(),
+    updated_at: new Date().toISOString()
+  };
+  const err = $('#po-err'); if(err) err.textContent = '';
+  const { error } = await sb.schema('ord').from('purchase_orders').update(upd).eq('ordname', on);
+  if(error){ if(err) err.textContent = 'השמירה נכשלה: '+error.message; return; }
+  Object.assign(r, upd);
+  toast('הזמנת הרכש נשמרה');
+  poViews(); poBody();
+  openPo(on);
+}
+
+async function poSync(){
+  const b = $('#po-sync');
+  if(b){ b.disabled = true; b.textContent = 'מסנכרן…'; }
+  try{
+    const { data, error } = await sb.functions.invoke('po-sync', { body:{} });
+    if(error) throw error;
+    if(data && data.ok){
+      toast('סונכרנו '+fmtNum(data.orders_synced)+' הזמנות ו-'+fmtNum(data.items_synced)+' שורות'
+        + (data.errors && data.errors.length ? ' · חלק מהספקים נכשלו' : ''));
+    } else {
+      throw new Error((data && data.error) || 'הסנכרון נכשל');
+    }
+    await poLoad(true);
+  }catch(e){
+    toast('שגיאת סנכרון: '+((e && e.message) || String(e)));
+    renderPo();
+  }
+}
+
+/* ניהול הספקים הנבחרים — הוספה במספר ספק, הפעלה/השבתה. שם הספק מתמלא בסנכרון. */
+function openPoSups(){
+  mountCard('poSupModal', openPoSups);
+  const sh = $('#poSupSheet');
+  sh.innerHTML = '<h3>ספקי רכש נבחרים</h3>'
+    + '<p style="font-size:12.5px;color:#64748b;margin:4px 0 12px">המשיכה מפריוריטי מוגבלת לספקים הפעילים שברשימה. שם הספק מתמלא אוטומטית בסנכרון הבא.</p>'
+    + PO_SUPS.map(s=>'<div class="po-sup-row">'
+      + '<span class="nm">'+esc(s.name||'(שם יתמלא בסנכרון)')+'</span>'
+      + '<span class="no">'+esc(s.supplier_no)+'</span>'
+      + '<button class="inv-btn ghost" data-po-tg="'+esc(s.supplier_no)+'">'+(s.active?'פעיל ✓':'מושבת')+'</button>'
+      + '</div>').join('')
+    + '<div class="field" style="margin-top:12px"><label>הוספת ספק לפי מספר</label>'
+    + '<div style="display:flex;gap:8px"><input id="po-sup-new" placeholder="לדוגמה: 200016" style="flex:1">'
+    + '<button class="inv-btn" id="po-sup-add">הוספה</button></div></div>'
+    + '<div class="err" id="po-sup-err"></div>';
+  sh.querySelectorAll('[data-po-tg]').forEach(btn=>btn.onclick = async ()=>{
+    const no = btn.dataset.poTg;
+    const s = PO_SUPS.find(x=>x.supplier_no===no); if(!s) return;
+    const { error } = await sb.schema('ord').from('po_suppliers')
+      .update({ active: !s.active }).eq('supplier_no', no);
+    if(error){ $('#po-sup-err').textContent = error.message; return; }
+    s.active = !s.active;
+    openPoSups();
+  });
+  $('#po-sup-add').onclick = async ()=>{
+    const inp = $('#po-sup-new');
+    const no = (inp.value||'').trim();
+    if(!/^\d{3,}$/.test(no)){ $('#po-sup-err').textContent = 'יש להזין מספר ספק תקין (ספרות בלבד)'; return; }
+    if(PO_SUPS.some(s=>s.supplier_no===no)){ $('#po-sup-err').textContent = 'הספק כבר ברשימה'; return; }
+    const { error } = await sb.schema('ord').from('po_suppliers').insert({ supplier_no: no });
+    if(error){ $('#po-sup-err').textContent = error.message; return; }
+    PO_SUPS.push({ supplier_no: no, name:'', active:true });
+    toast('הספק נוסף — יימשך בסנכרון הבא');
+    openPoSups();
+  };
+}
+
 /* ===== מסמכים ופרוטוקולים — נטיבי (עמוד החתימה sign.html נשאר כמו שהוא) ===== */
 let DOC_FILTER='sent';
 const TOKEN_AB='abcdefghjkmnpqrstuvwxyz23456789';
@@ -4780,7 +5128,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.9.5</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.10.0</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>

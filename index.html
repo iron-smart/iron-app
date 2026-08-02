@@ -839,7 +839,7 @@
 .po-card .ft{ display:flex; flex-wrap:wrap; gap:6px; margin-top:9px; }
 .po-tag{ font-size:11.5px; background:#f8fafc; border:1px solid var(--line); border-radius:7px; padding:3px 8px; color:#475569; }
 .po-tag.warn{ background:#fef3e2; border-color:#fcd9a8; color:#a35a06; }
-.po-last{ font-size:12px; color:#94a3b8; align-self:center; }
+.po-last{ font-size:11.5px; color:#94a3b8; align-self:center; margin-inline-start:2px; white-space:nowrap; }
 .po-kv{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:8px; margin:10px 0; }
 .po-kv .r{ background:#f8fafc; border-radius:9px; padding:7px 10px; }
 .po-kv .r .k{ font-size:11.5px; color:#64748b; display:block; }
@@ -878,7 +878,7 @@
 .po-tbl td.r1{ text-align:right; }
 .po-tbl td.c-num{ font-weight:800; color:var(--navy); }
 .po-tbl td.c-money{ font-weight:600; }
-.po-tbl td.c-det{ max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#64748b; text-align:right; }
+/* c-det removed v6.13.1 */
 .po-late{ color:var(--red); font-weight:700; }
 .po-lines-scroll{ overflow-x:auto; border-radius:10px; }
 .po-lines td.nowr, .po-lines th.nowr{ white-space:nowrap; }
@@ -988,7 +988,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.13.0</div>
+      <div class="ver">גרסה 6.13.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1086,7 +1086,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.13.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.13.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -4077,8 +4077,8 @@ function poTools(){
       + curOpts.map(s=>opt(s,s,PO_F.cur)).join('')+'</select>' : '')
     + '<button class="tb-clear" id="po-clear">נקה סינון</button>'
     + (poMgr() ? '<button class="inv-btn" id="po-sync">סנכרון מפריוריטי</button>'
-               + '<button class="inv-btn ghost" id="po-sups">ניהול ספקים</button>' : '')
-    + '<span class="po-last">'+(last ? 'סנכרון אחרון: '+esc(poDT(last)) : 'טרם סונכרן')+'</span>';
+               + '<span class="po-last">'+(last ? 'סנכרון אחרון: '+esc(poDT(last)) : 'טרם סונכרן')+'</span>'
+               + '<button class="inv-btn ghost" id="po-sups">ניהול ספקים</button>' : '');
   const q = $('#po-q');
   if(q) q.oninput = e => { PO_F.q = e.target.value; poBody(); };
   const sf = $('#po-sup-f');
@@ -4144,8 +4144,8 @@ function poBody(){
   el.innerHTML = '<div class="tbl-wrap"><table class="tbl"><thead><tr>'
     + '<th class="rownum">#</th>'
     + '<th>מס\' הזמנה</th><th>ספק</th><th>תאריך</th><th>הזמנת ספק</th>'
-    + '<th>לפני מע"מ</th><th>כולל מע"מ</th><th>פרטים</th>'
-    + '<th>סטטוס</th><th>הגעה לנמל</th>'
+    + '<th>לפני מע"מ</th><th>כולל מע"מ</th>'
+    + '<th class="stcell">סטטוס</th><th>הגעה לנמל</th>'
     + '</tr></thead><tbody>'
     + rows.map((r,i)=>{
       const late = r.eta_port && r.eta_port < today && r.our_status !== 'הושלם';
@@ -4160,8 +4160,7 @@ function poBody(){
         + '<td dir="ltr">'+esc(r.supordnum||'—')+'</td>'
         + money(r.price_before_vat, r.currency)
         + money(r.price_incl_vat, r.currency)
-        + '<td class="c-det r1" title="'+esc(r.details||'')+'">'+esc(String(r.details||'—').slice(0,40))+'</td>'
-        + '<td>'+ieSel('po', r.ordname, 'our_status', PO_STATUSES, r.our_status, {mdColors:PO_ST_MD})+'</td>'
+        + '<td class="stcell">'+ieSel('po', r.ordname, 'our_status', PO_STATUSES, r.our_status, {mdColors:PO_ST_MD})+'</td>'
         + '<td class="datecell'+(late?' po-late':'')+'">'+eta+'</td>'
         + '</tr>';
     }).join('')
@@ -5240,7 +5239,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.13.0</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.13.1</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>

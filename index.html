@@ -922,7 +922,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.9.4</div>
+      <div class="ver">גרסה 6.9.5</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1014,7 +1014,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.9.4</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.9.5</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1385,7 +1385,7 @@ const mdPill = (v, colors) => {
       לא נדרשת סיסמה שוב — גם אחרי סגירת הדפדפן.
    התיקון: מסך טעינה (#bootsplash) חוסם את ההבזק עד שידוע אם יש סשן, וסשן שמור
    תקף רק בתוך אותה לשונית — אלא אם המשתמש סימן "השאר אותי מחובר". */
-const RMB_KEY = 'iron_remember', TAB_KEY = 'iron_tab_session', ALIVE_KEY = 'iron_alive';
+const RMB_KEY = 'iron_remember', TAB_KEY = 'iron_tab_session', ALIVE_KEY = 'iron_alive', OAUTH_KEY = 'iron_oauth_pending';
 /* בסגירת הדפדפן מוחקים את פעימת החיים, אחרת מי שיפתח את הדפדפן תוך 15 שניות
    יירש סשן של משתמש שלא ביקש "השאר אותי מחובר" (תחנה משותפת). */
 window.addEventListener('pagehide', ()=>{ try{ if(localStorage.getItem(RMB_KEY) !== '1') localStorage.removeItem(ALIVE_KEY); }catch(_){} });
@@ -1452,6 +1452,17 @@ async function boot(){
     if(!session){ showLogin(); return; }
     const remembered = localStorage.getItem(RMB_KEY) === '1';
     let   sameTab    = sessionStorage.getItem(TAB_KEY) === '1';
+    /* 6.9.5 — חזרה מהתחברות Microsoft. המעבר ל-login.microsoftonline.com וחזרה
+       נראה למנגנון "הדפדפן נסגר ונפתח מחדש" בדיוק כמו לשונית חדשה, ולכן הוא היה
+       מנתק (signOut) את הסשן שזה עתה נוצר ומחזיר למסך ההתחברות. הדגל ב-sessionStorage
+       נשמר לאורך ההפניה ומסמן שמדובר בהתחברות אמיתית ולא בפתיחת דפדפן מחדש. */
+    let viaOAuth = false;
+    try{
+      if(sessionStorage.getItem(OAUTH_KEY) === '1'){
+        viaOAuth = true; sameTab = true;
+        sessionStorage.removeItem(OAUTH_KEY);
+      }
+    }catch(_){}
     /* לשונית חדשה שנפתחה בזמן שהמערכת כבר פתוחה בלשונית אחרת נחשבת לאותו סשן.
        ALIVE_KEY מתעדכן כל 5 שניות כל עוד המערכת פתוחה, ולכן פער של 15 שניות
        מעיד על דפדפן שנסגר ונפתח מחדש. */
@@ -1464,7 +1475,7 @@ async function boot(){
       return;
     }
     /* חוסר פעילות ממושך — התחברות מחדש נדרשת גם אם הסשן עצמו עדיין תקף */
-    if(idleMs() > idleLimit()){ await forceRelogin(); return; }
+    if(!viaOAuth && idleMs() > idleLimit()){ await forceRelogin(); return; }
     sessionStorage.setItem(TAB_KEY, '1');
     touchAct();
     BOOT_BUSY = true;
@@ -1577,14 +1588,21 @@ $('#msBtn').onclick = async ()=>{
   if(mb.disabled) return;
   $('#loginErr').textContent=''; $('#loginOk').textContent='';
   mb.disabled = true;
+  /* 6.9.5 — לסמן שההפניה למיקרוסופט יצאה מכאן, כדי ש-boot() לא ינתק את הסשן בחזרה.
+     גם "השאר אותי מחובר" נשמר כאן, בדיוק כמו במסלול ההתחברות עם סיסמה. */
+  try{
+    sessionStorage.setItem(OAUTH_KEY,'1');
+    if($('#rememberMe') && $('#rememberMe').checked) localStorage.setItem(RMB_KEY,'1');
+    else localStorage.removeItem(RMB_KEY);
+  }catch(_){}
   try{
     const { error } = await sb.auth.signInWithOAuth({
       provider: 'azure',
       options: { scopes: 'openid email profile', redirectTo: location.origin + location.pathname }
     });
-    if(error){ $('#loginErr').textContent = 'ההתחברות ל-Microsoft נכשלה — פנו למנהל המערכת'; mb.disabled = false; }
+    if(error){ try{ sessionStorage.removeItem(OAUTH_KEY); }catch(_){} $('#loginErr').textContent = 'ההתחברות ל-Microsoft נכשלה — פנו למנהל המערכת'; mb.disabled = false; }
   }catch(e){
-    $('#loginErr').textContent = 'ההתחברות ל-Microsoft נכשלה — נסו שוב'; mb.disabled = false;
+    try{ sessionStorage.removeItem(OAUTH_KEY); }catch(_){} $('#loginErr').textContent = 'ההתחברות ל-Microsoft נכשלה — נסו שוב'; mb.disabled = false;
   }
 };
 
@@ -4762,7 +4780,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.9.4</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.9.5</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>

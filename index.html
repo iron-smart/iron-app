@@ -882,6 +882,11 @@
 .po-lines td.nowr, .po-lines th.nowr{ white-space:nowrap; }
 .po-lines tr.cl{ opacity:.55; }
 .inv-btn.del{ background:#fff; color:var(--red); border:1px solid #f2c7cd; }
+.po-sku-link{ color:var(--navy); font-weight:700; cursor:pointer; text-decoration:underline dotted; }
+.po-sku-link:hover{ color:var(--green); }
+.po-sku-missing{ color:var(--red); font-weight:600; }
+.po-sup-row{ flex-wrap:wrap; }
+.po-cur-sel{ font-size:12px; padding:5px 8px; border:1px solid var(--line); border-radius:8px; background:#fff; color:#0f172a; }
 
     /* ===== תמחור ומחירונים — אדמיניסטרטור בלבד ===== */
     .nav-wrap[hidden]{ display:none !important; }
@@ -981,7 +986,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.10.1</div>
+      <div class="ver">גרסה 6.11.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1079,7 +1084,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.10.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.11.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2185,11 +2190,13 @@ const IE_TABLES = {
   deal:  { schema:'crm', table:'deals',         arr:()=>DEALS, ent:'עסקה',         key:d=>d.name,         rerender:()=>{ renderDeals(); renderStats(); } },
   meet:  { schema:'crm', table:'meetings',      arr:()=>MEETS, ent:'פגישה',        key:m=>m.subject,      rerender:()=>{ renderMeets(); renderToday(); } },
   pay:   { schema:'crm', table:'payments',      arr:()=>PAYS,  ent:'תשלום',        key:p=>String(p.id).slice(0,8), rerender:()=>renderPays() },
+  po:    { schema:'ord', table:'purchase_orders', idCol:'ordname', arr:()=>PO, ent:'הזמנת רכש', key:o=>o.ordname, rerender:()=>{ if(typeof poBody==='function' && PO_LOADED) poBody(); } },
 };
 window.ieSave = async (el)=>{
   const [kind,id,field]=el.dataset.ie.split('|');
   const cfg=IE_TABLES[kind]; if(!cfg) return;
-  const rec=cfg.arr().find(x=>String(x.id)===id); if(!rec) return;
+  const idCol = cfg.idCol || 'id';
+  const rec=cfg.arr().find(x=>String(x[idCol])===id); if(!rec) return;
   const val = el.value===''?null:el.value;
   const patch={ [field]:val };
   if(kind==='task' && field==='status' && val==='הושלם') patch.closed_at=new Date().toISOString();
@@ -2199,7 +2206,7 @@ window.ieSave = async (el)=>{
     const r = await oldCall(cfg.bridge, { id, patch });
     error = r.error; row = r.data && r.data.row;
   }else{
-    ({ error } = await sb.schema(cfg.schema).from(cfg.table).update(patch).eq('id', id));
+    ({ error } = await sb.schema(cfg.schema).from(cfg.table).update(patch).eq(idCol, id));
   }
   if(error){ toast('שגיאה בשמירה: '+error.message); cfg.rerender(); return; }
   Object.assign(rec, row || patch);
@@ -3995,13 +4002,20 @@ function invExport(){
    שדות המילוי לעולם אינם נדרסים — po-sync כותבת שדות פריוריטי בלבד. */
 let PO=[], PO_SUPS=[], PO_LOADED=false, PO_LOADING=false, PO_TRIED=false, PO_ERR='';
 let PO_VIEW='open';
-const PO_F = { q:'', sup:'' };
+const PO_F = { q:'', sup:'', pri:'', cur:'' };
 const PO_STATUSES = ['הזמנה חדשה','בייצור','נשלחה','בנמל','הושלם'];
 const PO_ST_CLS = { 'הזמנה חדשה':'p1','בייצור':'p2','נשלחה':'p3','בנמל':'p4','הושלם':'p5' };
+const PO_ST_MD = { 'הזמנה חדשה':'#94a3b8','בייצור':'#d97706','נשלחה':'#2563eb','בנמל':'#7c6bb0','הושלם':'#16a34a' };
 const poMgr = () => ['admin','manager'].includes(ME.role);
 const poPill = s => '<span class="po-st ' + (PO_ST_CLS[s]||'p1') + '">' + esc(s||'—') + '</span>';
 /* מטבע לפי ההזמנה (איפיון): דולרית — $, שקלית — ₪ */
-const poCur = c => { c=String(c||''); if(c.indexOf('$')>=0 || /USD|דולר/i.test(c)) return '$'; if(c.indexOf('₪')>=0 || c.indexOf('ש')>=0) return '₪'; return c ? c+' ' : ''; };
+const poCur = c => { c=String(c||''); if(c.indexOf('$')>=0 || /USD|דולר/i.test(c)) return '$'; if(c.indexOf('€')>=0 || /EUR|אירו/i.test(c)) return '€'; if(c.indexOf('₪')>=0 || c.indexOf('ש')>=0 || /שקל|ILS/i.test(c)) return '₪'; return c ? c+' ' : ''; };
+/* מטבע התשלומים של הזמנה — לפי הספק אם הוגדר, אחרת לפי מטבע ההזמנה מפריוריטי */
+function poSupCur(sup_no, orderCur){
+  const s = PO_SUPS.find(x=>x.supplier_no===sup_no);
+  const c = s && s.currency ? String(s.currency) : '';
+  return poCur(c) || poCur(orderCur) || '';
+}
 const poMoney = (v,c) => (v==null || v==='' || isNaN(Number(v))) ? '—'
   : poCur(c) + Number(v).toLocaleString('he-IL',{maximumFractionDigits:2});
 const poDate = v => { const t=String(v||'').slice(0,10); if(!/^\d{4}-\d{2}-\d{2}$/.test(t)) return '—'; const p=t.split('-'); return (+p[2])+'/'+(+p[1])+'/'+p[0]; };
@@ -4018,6 +4032,8 @@ function poPriCls(s){
   return 'n';
 }
 const poPriPill = s => '<span class="po-pri-st '+poPriCls(s)+'">'+esc(s||'—')+'</span>';
+/* ניווט מכרטיס הזמנת רכש אל כרטיס הפריט במסך המק"טים (רומן 02/08/2026) */
+window.poGoSku = (pn)=>{ try{ closeCards(); }catch(_){} gotoTab('skus'); setTimeout(()=>{ try{ openSku(pn); }catch(_){} }, 80); };
 
 async function poLoad(force){
   if(PO_LOADING) return;
@@ -4046,10 +4062,17 @@ function poTools(){
   const opt = (v,t,cur)=>'<option value="'+esc(v)+'"'+(cur===v?' selected':'')+'>'+esc(t)+'</option>';
   let last = '';
   PO.forEach(r=>{ if(r.synced_at && r.synced_at > last) last = r.synced_at; });
+  const curOpts = [...new Set(PO.map(r=>r.currency).filter(Boolean))].sort();
+  const priOpts = [...new Set(PO.map(r=>r.priority_status).filter(Boolean))].sort();
   el.innerHTML =
       '<div class="search"><input id="po-q" type="search" placeholder="חיפוש לפי מספר הזמנה, ספק, הזמנת ספק או מכולה…" value="'+esc(PO_F.q)+'"></div>'
     + '<select id="po-sup-f">'+opt('','כל הספקים',PO_F.sup)
       + PO_SUPS.map(s=>opt(s.supplier_no,(s.name||s.supplier_no),PO_F.sup)).join('')+'</select>'
+    + '<select id="po-pri-f">'+opt('','כל סטטוסי פריוריטי',PO_F.pri)
+      + priOpts.map(s=>opt(s,s,PO_F.pri)).join('')+'</select>'
+    + (curOpts.length>1 ? '<select id="po-cur-f">'+opt('','כל המטבעות',PO_F.cur)
+      + curOpts.map(s=>opt(s,s,PO_F.cur)).join('')+'</select>' : '')
+    + '<button class="tb-clear" id="po-clear">נקה סינון</button>'
     + (poMgr() ? '<button class="inv-btn" id="po-sync">סנכרון מפריוריטי</button>'
                + '<button class="inv-btn ghost" id="po-sups">ניהול ספקים</button>' : '')
     + '<span class="po-last">'+(last ? 'סנכרון אחרון: '+esc(poDT(last)) : 'טרם סונכרן')+'</span>';
@@ -4057,6 +4080,12 @@ function poTools(){
   if(q) q.oninput = e => { PO_F.q = e.target.value; poBody(); };
   const sf = $('#po-sup-f');
   if(sf) sf.onchange = e => { PO_F.sup = e.target.value; poBody(); };
+  const pf = $('#po-pri-f');
+  if(pf) pf.onchange = e => { PO_F.pri = e.target.value; poBody(); };
+  const cf = $('#po-cur-f');
+  if(cf) cf.onchange = e => { PO_F.cur = e.target.value; poBody(); };
+  const cl = $('#po-clear');
+  if(cl) cl.onclick = ()=>{ PO_F.q=''; PO_F.sup=''; PO_F.pri=''; PO_F.cur=''; renderPo(); };
   const sy = $('#po-sync'); if(sy) sy.onclick = poSync;
   const sp = $('#po-sups'); if(sp) sp.onclick = openPoSups;
 }
@@ -4078,6 +4107,8 @@ function poFiltered(){
     if(PO_VIEW === 'open'){ if(poCancelled(r) || r.our_status === 'הושלם') return false; }
     else if(PO_VIEW.indexOf('st:') === 0){ if(poCancelled(r) || r.our_status !== PO_VIEW.slice(3)) return false; }
     if(PO_F.sup && r.supplier_no !== PO_F.sup) return false;
+    if(PO_F.pri && r.priority_status !== PO_F.pri) return false;
+    if(PO_F.cur && r.currency !== PO_F.cur) return false;
     if(q){
       const hay = (String(r.ordname||'')+' '+String(r.supplier_name||'')+' '+String(r.supplier_no||'')+' '
         + String(r.supordnum||'')+' '+String(r.container_no||'')+' '+String(r.details||'')).toLowerCase();
@@ -4105,24 +4136,31 @@ function poBody(){
     return;
   }
   const today = new Date().toISOString().slice(0,10);
-  el.innerHTML = '<div class="po-tbl-wrap"><table class="po-tbl"><thead><tr>'
+  const editEta = canIE();
+  const money = (v,c)=>{ const n = (v==null||v===''||isNaN(Number(v)))?'':String(Number(v)); return '<td class="c-money" data-sort="'+n+'">'+poMoney(v,c)+'</td>'; };
+  el.innerHTML = '<div class="tbl-wrap"><table class="tbl"><thead><tr>'
+    + '<th class="rownum">#</th>'
     + '<th>מס\' הזמנה</th><th>ספק</th><th>תאריך</th><th>הזמנת ספק</th>'
     + '<th>לפני מע"מ</th><th>כולל מע"מ</th><th>פרטים</th>'
     + '<th>פריוריטי</th><th>סטטוס שלנו</th><th>הגעה לנמל</th>'
     + '</tr></thead><tbody>'
-    + rows.map(r=>{
+    + rows.map((r,i)=>{
       const late = r.eta_port && r.eta_port < today && r.our_status !== 'הושלם';
+      const eta = editEta
+        ? '<div class="datewrap">'+ieDate('po', r.ordname, 'eta_port', r.eta_port)+'</div>'
+        : (r.eta_port ? '<span class="'+(late?'po-late':'')+'">'+poDate(r.eta_port)+'</span>' : '—');
       return '<tr data-po="'+esc(r.ordname)+'">'
-        + '<td class="c-num">'+esc(r.ordname)+'</td>'
+        + '<td class="rownum">'+(i+1)+'</td>'
+        + '<td class="c-num" dir="ltr">'+esc(r.ordname)+'</td>'
         + '<td class="r1">'+esc(r.supplier_name || r.supplier_no || '—')+'</td>'
-        + '<td>'+poDate(r.curdate)+'</td>'
-        + '<td>'+esc(r.supordnum||'—')+'</td>'
-        + '<td class="c-money">'+poMoney(r.price_before_vat, r.currency)+'</td>'
-        + '<td class="c-money">'+poMoney(r.price_incl_vat, r.currency)+'</td>'
-        + '<td class="c-det" title="'+esc(r.details||'')+'">'+esc(String(r.details||'—').slice(0,40))+'</td>'
-        + '<td>'+poPriPill(r.priority_status)+'</td>'
-        + '<td>'+poPill(r.our_status)+'</td>'
-        + '<td>'+(r.eta_port ? '<span class="'+(late?'po-late':'')+'">'+poDate(r.eta_port)+'</span>' : '—')+'</td>'
+        + '<td data-sort="'+esc(r.curdate||'')+'">'+poDate(r.curdate)+'</td>'
+        + '<td dir="ltr">'+esc(r.supordnum||'—')+'</td>'
+        + money(r.price_before_vat, r.currency)
+        + money(r.price_incl_vat, r.currency)
+        + '<td class="c-det r1" title="'+esc(r.details||'')+'">'+esc(String(r.details||'—').slice(0,40))+'</td>'
+        + '<td data-sort="'+esc(r.priority_status||'')+'">'+poPriPill(r.priority_status)+'</td>'
+        + '<td>'+ieSel('po', r.ordname, 'our_status', PO_STATUSES, r.our_status, {mdColors:PO_ST_MD})+'</td>'
+        + '<td class="datecell'+(late?' po-late':'')+'">'+eta+'</td>'
         + '</tr>';
     }).join('')
     + '</tbody></table></div>';
@@ -4136,42 +4174,46 @@ async function openPo(on){
   const r = PO.find(x=>x.ordname===on); if(!r) return;
   mountCard('poModal', ()=>openPo(on));
   const sh = $('#poSheet');
-  const cur = poCur(r.currency) || '';
-  const kv = (k,v)=>'<div class="r"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>';
+  const payCur = poSupCur(r.supplier_no, r.currency);
+  const kpi = (l,v)=>'<div class="sku-kpi"><span class="kl">'+l+'</span><span class="kv">'+v+'</span></div>';
   const fld = (id,lbl,val,type)=>'<div class="field"><label>'+lbl+'</label><input id="'+id+'" type="'+(type||'text')+'" value="'+esc(val==null?'':String(val))+'"></div>';
+  const payLbl = l => l+' ('+(payCur||'מטבע ההזמנה')+')';
   sh.innerHTML =
-      '<h3 style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">הזמנת רכש '+esc(r.ordname)
+      '<h3 style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">הזמנת רכש <span dir="ltr">'+esc(r.ordname)+'</span>'
     + poPill(r.our_status)+poPriPill(r.priority_status)+'</h3>'
-    + '<div class="po-kv">'
-    + kv('ספק', esc(r.supplier_name||'—')+' · '+esc(r.supplier_no||''))
-    + kv('תאריך הזמנה', poDate(r.curdate))
-    + kv('הזמנת ספק', esc(r.supordnum||'—'))
-    + kv('מטבע', esc(r.currency||'—'))
-    + kv('מחיר לפני מע"מ', poMoney(r.price_before_vat, r.currency))
-    + kv('מחיר כולל מע"מ', poMoney(r.price_incl_vat, r.currency))
-    + kv('יתרת מקדמה', poMoney(r.adv_balance, r.currency)+(Number(r.adv_percent)?' · '+Number(r.adv_percent)+'%':''))
-    + kv('תנאי תשלום', esc(r.paydes||'—'))
-    + kv('סה"כ כמות', fmtNum(r.totquant))
-    + kv('תיק יבוא בפריוריטי', esc(r.impfnum||'—'))
-    + (r.cordname ? kv('הזמנת לקוח מקושרת', esc(r.cordname)) : '')
-    + '</div>'
-    + (r.details ? '<div class="inv-why"><b>פרטים מפריוריטי:</b> '+esc(r.details)+'</div>' : '')
-    + '<h2 class="sec">מעקב שלנו</h2>'
+    + '<div class="sku-box"><div class="bx-t">פרטי ההזמנה</div><div class="sku-grid">'
+    + kpi('ספק', esc(r.supplier_name||'—'))
+    + kpi('מספר ספק', esc(r.supplier_no||'—'))
+    + kpi('תאריך הזמנה', poDate(r.curdate))
+    + kpi('הזמנת ספק', esc(r.supordnum||'—'))
+    + kpi('מטבע ההזמנה', esc(r.currency||'—'))
+    + kpi('תנאי תשלום', esc(r.paydes||'—'))
+    + kpi('סה"כ כמות', fmtNum(r.totquant))
+    + kpi('תיק יבוא בפריוריטי', esc(r.impfnum||'—'))
+    + (r.cordname ? kpi('הזמנת לקוח מקושרת', esc(r.cordname)) : '')
+    + '</div></div>'
+    + '<div class="sku-box"><div class="bx-t">סכומים (מטבע ההזמנה)</div><div class="sku-grid">'
+    + kpi('מחיר לפני מע"מ', poMoney(r.price_before_vat, r.currency))
+    + kpi('מחיר כולל מע"מ', poMoney(r.price_incl_vat, r.currency))
+    + kpi('יתרת מקדמה', poMoney(r.adv_balance, r.currency)+(Number(r.adv_percent)?' · '+Number(r.adv_percent)+'%':''))
+    + '</div></div>'
+    + (r.details ? '<div class="note"><b>פרטים מפריוריטי:</b> '+esc(r.details)+'</div>' : '')
+    + '<div class="sku-box"><div class="bx-t">מעקב ותשלומים — '+esc(payCur||'מטבע ההזמנה')+'</div>'
     + '<div class="po-form">'
     + '<div class="field"><label>סטטוס</label><select id="po-f-st">'
       + PO_STATUSES.map(s=>'<option'+(r.our_status===s?' selected':'')+'>'+s+'</option>').join('')+'</select></div>'
     + fld('po-f-eta','תאריך הגעה משוער לנמל', r.eta_port||'', 'date')
-    + fld('po-f-pi','עלות PI ('+(cur||'מטבע ההזמנה')+')', r.pi_cost, 'number')
-    + fld('po-f-ci','עלות CI ('+(cur||'מטבע ההזמנה')+')', r.ci_cost, 'number')
-    + fld('po-f-adv','מקדמה CI ('+(cur||'מטבע ההזמנה')+')', r.ci_advance, 'number')
-    + fld('po-f-fin','תשלום גמר ('+(cur||'מטבע ההזמנה')+')', r.final_payment, 'number')
+    + fld('po-f-pi',payLbl('עלות PI'), r.pi_cost, 'number')
+    + fld('po-f-ci',payLbl('עלות CI'), r.ci_cost, 'number')
+    + fld('po-f-adv',payLbl('מקדמה CI'), r.ci_advance, 'number')
+    + fld('po-f-fin',payLbl('תשלום גמר'), r.final_payment, 'number')
     + fld('po-f-cont','מספר מכולה', r.container_no)
     + '<div class="field"><label>תיק יבוא</label><select id="po-f-if"><option'+(r.has_import_file?'':' selected')+'>לא</option><option'+(r.has_import_file?' selected':'')+'>כן</option></select></div>'
     + fld('po-f-ifn','מספר תיק ייבוא', r.import_file_no)
     + '<div class="field full"><label>הערות</label><textarea id="po-f-notes" rows="2">'+esc(r.notes||'')+'</textarea></div>'
     + '</div>'
     + '<div class="actions"><button class="btn green" id="po-save">שמירה</button></div>'
-    + '<div class="err" id="po-err"></div>'
+    + '<div class="err" id="po-err"></div></div>'
     + '<h2 class="sec">שורות ההזמנה</h2>'
     + '<div id="po-lines-wrap"><div class="empty">טוען שורות…</div></div>';
   $('#po-save').onclick = ()=> poSave(on);
@@ -4181,19 +4223,27 @@ async function openPo(on){
     if(error) throw error;
     const w = $('#po-lines-wrap'); if(!w) return;
     if(!data || !data.length){ w.innerHTML = '<div class="empty">אין שורות להזמנה זו</div>'; return; }
-    w.innerHTML = '<div class="po-lines-scroll"><table class="po-lines"><thead><tr>'
-      + '<th class="nowr">מק"ט</th><th>תאור</th><th>כמות</th><th>יתרה</th><th class="nowr">מחיר יח\'</th><th class="nowr">סה"כ</th><th class="nowr">אספקה</th><th>מצב</th>'
+    const skuSet = (typeof SKUS!=='undefined' && SKUS && SKUS.length) ? new Set(SKUS.map(x=>String(x.partname))) : null;
+    w.innerHTML = '<div class="tbl-wrap"><table class="tbl"><thead><tr>'
+      + '<th>מק"ט</th><th>תאור</th><th>כמות</th><th>יתרה</th><th>מחיר יח\'</th><th>סה"כ</th><th>אספקה</th><th>מצב</th>'
       + '</tr></thead><tbody>'
-      + data.map(it=>'<tr'+(it.closed?' class="cl"':'')+'>'
-        + '<td class="r1 nowr">'+esc(it.partname||'—')+'</td>'
-        + '<td class="r1">'+esc(it.pdes||'—')+'</td>'
-        + '<td>'+fmtNum(it.tquant)+'</td>'
-        + '<td>'+fmtNum(it.tbalance)+'</td>'
-        + '<td class="nowr">'+poMoney(it.price, it.icode||r.currency)+'</td>'
-        + '<td class="nowr">'+poMoney(it.qprice, it.icode||r.currency)+'</td>'
-        + '<td class="nowr">'+poDate(it.duedate||it.reqdate)+'</td>'
-        + '<td>'+(it.closed?'סגורה':'פתוחה')+'</td>'
-        + '</tr>').join('')
+      + data.map(it=>{
+        const pn = String(it.partname||'');
+        const known = skuSet ? skuSet.has(pn) : true;
+        const pnCell = !pn ? '—'
+          : (known ? '<a class="po-sku-link" onclick="poGoSku(\'' + jsq(pn) + '\')">'+esc(pn)+'</a>'
+                   : '<span class="po-sku-missing" title="המק״ט אינו קיים במסך המק״טים">'+esc(pn)+' ⚠</span>');
+        return '<tr'+(it.closed?' class="cl"':'')+'>'
+          + '<td class="r1" dir="ltr">'+pnCell+'</td>'
+          + '<td class="r1">'+esc(it.pdes||'—')+'</td>'
+          + '<td>'+fmtNum(it.tquant)+'</td>'
+          + '<td>'+fmtNum(it.tbalance)+'</td>'
+          + '<td data-sort="'+(Number(it.price)||0)+'">'+poMoney(it.price, it.icode||r.currency)+'</td>'
+          + '<td data-sort="'+(Number(it.qprice)||0)+'">'+poMoney(it.qprice, it.icode||r.currency)+'</td>'
+          + '<td data-sort="'+esc(it.duedate||it.reqdate||'')+'">'+poDate(it.duedate||it.reqdate)+'</td>'
+          + '<td>'+(it.closed?'סגורה':'פתוחה')+'</td>'
+          + '</tr>';
+      }).join('')
       + '</tbody></table></div>';
   }catch(e){
     const w = $('#po-lines-wrap');
@@ -4254,6 +4304,10 @@ function openPoSups(){
     + PO_SUPS.map(s=>'<div class="po-sup-row">'
       + '<span class="nm">'+esc(s.name||'(שם יתמלא בסנכרון)')+'</span>'
       + '<span class="no">'+esc(s.supplier_no)+'</span>'
+      + '<select class="po-cur-sel" data-po-cur="'+esc(s.supplier_no)+'" title="מטבע התשלומים של הספק">'
+        + ['','₪','$','€'].map(cv=>'<option value="'+cv+'"'+((s.currency||'')===cv?' selected':'')
+            +'>'+(cv===''?'מטבע: לפי ההזמנה':(cv==='₪'?'₪ שקל':cv==='$'?'$ דולר':'€ אירו'))+'</option>').join('')
+        + '</select>'
       + '<button class="inv-btn ghost" data-po-tg="'+esc(s.supplier_no)+'">'+(s.active?'פעיל ✓':'מושבת')+'</button>'
       + '<button class="inv-btn del" data-po-del="'+esc(s.supplier_no)+'" title="מחיקת ספק">מחק</button>'
       + '</div>').join('')
@@ -4282,6 +4336,15 @@ function openPoSups(){
     PO_SUPS = PO_SUPS.filter(x=>x.supplier_no!==no);
     toast('הספק הוסר מרשימת הרכש');
     openPoSups();
+  });
+  sh.querySelectorAll('[data-po-cur]').forEach(sel=>sel.onchange = async ()=>{
+    const no = sel.dataset.poCur;
+    const s = PO_SUPS.find(x=>x.supplier_no===no); if(!s) return;
+    const val = sel.value;
+    const { error } = await sb.schema('ord').from('po_suppliers').update({ currency: val }).eq('supplier_no', no);
+    if(error){ $('#po-sup-err').textContent = error.message; return; }
+    s.currency = val;
+    toast('מטבע הספק עודכן — ישפיע על שדות התשלום בכרטיסי ההזמנה');
   });
   $('#po-sup-add').onclick = async ()=>{
     const inp = $('#po-sup-new');
@@ -5173,7 +5236,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.10.1</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.11.0</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>

@@ -866,6 +866,12 @@
 .po-pri-st.a{ background:#fef3e2; color:#a35a06; }
 .po-pri-st.r{ background:#fdecef; color:#9f1239; }
 .po-pri-st.n{ background:#eef2f6; color:#64748b; }
+.po-sup-header{ display:flex; align-items:baseline; gap:10px; margin:10px 0 4px; padding:2px 4px; border-bottom:1px solid var(--line); padding-bottom:10px; }
+.po-sup-no{ font-size:18px; font-weight:800; color:var(--navy); direction:ltr; letter-spacing:0.3px; }
+.po-sup-name{ font-size:16px; font-weight:600; color:#475569; }
+.po-form input[type="date"]{ font-size:14px; font-weight:700; color:var(--navy); padding:8px 12px; border-radius:9px; border:1px solid #e2e8f0; background:#f8fafc; letter-spacing:0.5px; }
+.po-form input[type="date"]:hover{ background:#fff; border-color:#cbd5e1; }
+.po-form input[type="date"]:focus{ background:#fff; border-color:#579bfc; outline:none; }
 .po-tbl-wrap{ overflow-x:auto; border:1px solid var(--line); border-radius:12px; background:#fff; }
 .po-tbl{ width:100%; border-collapse:collapse; font-size:12.5px; }
 .po-tbl th, .po-tbl td{ padding:9px 10px; text-align:center; border-bottom:1px solid var(--line); white-space:nowrap; }
@@ -986,7 +992,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.11.0</div>
+      <div class="ver">גרסה 6.12.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1084,7 +1090,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.11.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.12.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -4024,14 +4030,14 @@ const poCancelled = r => /בוטל|טיוט/.test(String(r.priority_status||''))
 /* צביעת סטטוס פריוריטי — לפי מילות מפתח, עמיד לערכים לא צפויים */
 function poPriCls(s){
   s = String(s||'');
-  if(/בוטל/.test(s)) return 'r';
-  if(/טיוט/.test(s)) return 'n';
-  if(/סגור|התקבל|הושלם/.test(s)) return 'g';
-  if(/אושר/.test(s)) return 'b';
-  if(/פתיח|בדרך|חוזר/.test(s)) return 'a';
-  return 'n';
+  if(/בוטל/.test(s)) return 'p-red';
+  if(/טיוט/.test(s)) return 'p-gray';
+  if(/סגור|התקבל|הושלם/.test(s)) return 'p-green';
+  if(/אושר/.test(s)) return 'p-blue';
+  if(/פתיח|בדרך|חוזר/.test(s)) return 'p-orange';
+  return 'p-gray';
 }
-const poPriPill = s => '<span class="po-pri-st '+poPriCls(s)+'">'+esc(s||'—')+'</span>';
+const poPriPill = s => s ? '<span class="pill '+poPriCls(s)+'">'+esc(s)+'</span>' : '';
 /* ניווט מכרטיס הזמנת רכש אל כרטיס הפריט במסך המק"טים (רומן 02/08/2026) */
 window.poGoSku = (pn)=>{ try{ closeCards(); }catch(_){} gotoTab('skus'); setTimeout(()=>{ try{ openSku(pn); }catch(_){} }, 80); };
 
@@ -4181,9 +4187,8 @@ async function openPo(on){
   sh.innerHTML =
       '<h3 style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">הזמנת רכש <span dir="ltr">'+esc(r.ordname)+'</span>'
     + poPill(r.our_status)+poPriPill(r.priority_status)+'</h3>'
+    + '<div class="po-sup-header"><span class="po-sup-no">'+esc(r.supplier_no||'')+'</span><span class="po-sup-name">'+esc(r.supplier_name||'—')+'</span></div>'
     + '<div class="sku-box"><div class="bx-t">פרטי ההזמנה</div><div class="sku-grid">'
-    + kpi('ספק', esc(r.supplier_name||'—'))
-    + kpi('מספר ספק', esc(r.supplier_no||'—'))
     + kpi('תאריך הזמנה', poDate(r.curdate))
     + kpi('הזמנת ספק', esc(r.supordnum||'—'))
     + kpi('מטבע ההזמנה', esc(r.currency||'—'))
@@ -5236,7 +5241,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.11.0</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.12.0</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>

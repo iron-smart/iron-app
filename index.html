@@ -988,7 +988,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.13.2</div>
+      <div class="ver">גרסה 6.14.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1086,7 +1086,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.13.2</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.14.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5239,7 +5239,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.13.2</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.14.0</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
@@ -6895,6 +6895,109 @@ const SIGN_TOKEN = new URLSearchParams(location.search).get('sign');
   else gsStart();
 })();
 if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN).catch(e=>{ console.error('sign', e); const b=document.getElementById('signbody'); if(b) b.innerHTML = '<div class="empty">שגיאה בטעינת המסמך — נסו שוב</div>'; }); } else { boot(); }
+</script>
+<script>
+/* ===== קישורי תשלום לפורטל הלקוחות (בלוק עצמאי; עוטף openOrd בלי לגעת בקוד קיים) ===== */
+(function(){
+  'use strict';
+  var PFN = 'https://hjibpfavkjqocjvffsbq.supabase.co/functions/v1/portal';
+  if (typeof window.openOrd !== 'function') { console.warn('paylink: openOrd לא נמצא'); return; }
+  var _origOpenOrd = window.openOrd;
+  window.openOrd = function(id){
+    _origOpenOrd(id);
+    try { injectPay(id); } catch(e) { console.error('paylink inject', e); }
+  };
+
+  function pesc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function fdt(d){ if(!d) return ''; var t=new Date(d); return isNaN(t)?'':t.toLocaleDateString('he-IL')+' '+t.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}); }
+  function shk(n){ return Number(n).toLocaleString('he-IL',{maximumFractionDigits:2})+' ₪'; }
+  function pillCls(st){ return st==='ממתין'?'p-yellow':st==='שולם'?'p-green':st==='פג'?'p-gray':'p-red'; }
+
+  async function callPortal(body){
+    var tok = null;
+    try { var s = await sb.auth.getSession(); tok = s && s.data && s.data.session ? s.data.session.access_token : null; } catch(e){}
+    if(!tok) return { ok:false, error:'אין התחברות פעילה' };
+    var r = await fetch(PFN, { method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+tok },
+      body: JSON.stringify(body) });
+    return await r.json();
+  }
+
+  function injectPay(id){
+    var list = (typeof ORDS !== 'undefined' && ORDS) || [];
+    var o = list.find(function(x){ return x.id === id; });
+    if(!o) return;
+    var role = (typeof ME !== 'undefined' && ME && ME.role) || '';
+    if(role !== 'admin' && role !== 'manager') return;
+    var sheet = document.querySelector('#ordSheet');
+    if(!sheet || sheet.querySelector('#payblk')) return;
+    if(['בוטל','מבוטלת'].indexOf(o.order_status) >= 0) return;
+
+    var d = document.createElement('div');
+    d.id = 'payblk';
+    d.style.cssText = 'margin-top:16px;padding:14px;border:1px solid #e2e8f0;border-radius:12px;background:#fbfcfd';
+    d.innerHTML =
+      '<div style="font-weight:800;font-size:13.5px;margin-bottom:8px">💳 תשלום מקוון (פורטל לקוחות)</div>' +
+      '<div id="paylinks" style="font-size:13px;color:#5b6b78">טוען…</div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">' +
+        '<button type="button" id="paylink-new" class="btn" style="width:auto;padding:9px 16px;font-size:13.5px">צור קישור תשלום</button>' +
+      '</div>' +
+      '<div id="paylink-msg" style="font-size:12.5px;margin-top:8px;color:#5b6b78">הסכום נמשך מפריוריטי ברגע היצירה וקפוא בקישור · תוקף 72 שעות · חד-פעמי</div>';
+    sheet.appendChild(d);
+
+    refreshLinks(o);
+    d.querySelector('#paylink-new').addEventListener('click', function(){ createLink(o, this); });
+  }
+
+  async function refreshLinks(o){
+    var box = document.querySelector('#payblk #paylinks');
+    if(!box) return;
+    var r = await callPortal({ op:'list_pay_links', order_id: o.id }).catch(function(){ return null; });
+    if(!r || !r.ok){ box.textContent = 'לא ניתן לטעון קישורים קיימים'; return; }
+    if(!r.links || !r.links.length){ box.textContent = 'אין קישורי תשלום להזמנה זו.'; return; }
+    box.innerHTML = r.links.map(function(l){
+      var url = 'https://portal.ironfitness.co.il/#pay=' + l.id;
+      var row = '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:5px 0;border-bottom:1px solid #eef1f4">' +
+        '<span class="pill ' + pillCls(l.status) + '">' + pesc(l.status) + '</span>' +
+        '<b>' + shk(l.amount) + '</b>' +
+        '<span style="color:#8b98a3">נוצר ' + fdt(l.created_at) + (l.status==='ממתין' ? ' · בתוקף עד ' + fdt(l.expires_at) : '') + '</span>';
+      if(l.status === 'ממתין'){
+        row += '<button type="button" class="pl-copy" data-url="' + pesc(url) + '" style="border:1px solid #dbe3ec;background:#fff;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer">העתקה</button>' +
+          '<a href="https://wa.me/?text=' + encodeURIComponent('לתשלום מאובטח עבור הזמנה ' + o.order_number + ': ' + url) + '" target="_blank" rel="noopener" style="font-size:12px">וואטסאפ</a>';
+      }
+      return row + '</div>';
+    }).join('');
+    box.querySelectorAll('.pl-copy').forEach(function(b){
+      b.addEventListener('click', function(){
+        var u = b.getAttribute('data-url');
+        (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(
+          function(){ b.textContent = 'הועתק ✓'; setTimeout(function(){ b.textContent='העתקה'; }, 1800); },
+          function(){ window.prompt('העתיקו את הקישור:', u); });
+      });
+    });
+  }
+
+  async function createLink(o, btn){
+    if(btn.dataset.arm !== '1'){
+      btn.dataset.arm = '1';
+      btn.textContent = 'למשוך סכום מפריוריטי וליצור? לחצו שוב לאישור';
+      setTimeout(function(){ btn.dataset.arm=''; btn.textContent='צור קישור תשלום'; }, 5000);
+      return;
+    }
+    btn.dataset.arm = '';
+    btn.disabled = true; btn.textContent = 'מושך סכום מפריוריטי…';
+    var r = await callPortal({ op:'create_pay_link', order_id: o.id, order_number: o.order_number }).catch(function(){ return null; });
+    btn.disabled = false; btn.textContent = 'צור קישור תשלום';
+    var msg = document.querySelector('#payblk #paylink-msg');
+    if(!r || !r.ok){
+      if(msg){ msg.style.color = '#a92f2f'; msg.textContent = (r && r.error) || 'שגיאה ביצירת הקישור'; }
+      return;
+    }
+    if(msg){ msg.style.color = '#006300'; msg.textContent = 'נוצר קישור על ' + shk(r.amount) + ' · קישור קודם שהמתין בוטל אוטומטית'; }
+    refreshLinks(o);
+  }
+})();
 </script>
 </body>
 </html>

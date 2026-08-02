@@ -993,7 +993,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.12.1</div>
+      <div class="ver">גרסה 6.12.2</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1091,7 +1091,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.12.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.12.2</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -4203,6 +4203,7 @@ async function openPo(on){
     + kpi('מחיר לפני מע"מ', poMoney(r.price_before_vat, r.currency))
     + kpi('מחיר כולל מע"מ', poMoney(r.price_incl_vat, r.currency))
     + kpi('יתרת מקדמה', poMoney(r.adv_balance, r.currency)+(Number(r.adv_percent)?' · '+Number(r.adv_percent)+'%':''))
+    + (function(){ var d=(Number(r.pi_cost)||0)-(Number(r.ci_cost)||0); return (r.pi_cost!=null&&r.ci_cost!=null)?kpi('הפרש PI/CI', poMoney(d, r.currency)):''; })()
     + '</div></div>'
     + (r.details ? '<div class="note"><b>פרטים מפריוריטי:</b> '+esc(r.details)+'</div>' : '')
     + '<div class="sku-box"><div class="bx-t">מעקב ותשלומים — '+esc(payCur||'מטבע ההזמנה')+'</div>'
@@ -4217,6 +4218,7 @@ async function openPo(on){
     + fld('po-f-cont','מספר מכולה', r.container_no)
     + '<div class="field"><label>תיק יבוא</label><select id="po-f-if"><option'+(r.has_import_file?'':' selected')+'>לא</option><option'+(r.has_import_file?' selected':'')+'>כן</option></select></div>'
     + fld('po-f-ifn','מספר תיק ייבוא', r.import_file_no)
+    + fld('po-f-cust-decl','מספר רשימון', r.customs_declaration_no)
     + '<div class="field full"><label>הערות</label><textarea id="po-f-notes" rows="2">'+esc(r.notes||'')+'</textarea></div>'
     + '</div>'
     + '<div class="actions"><button class="btn green" id="po-save">שמירה</button></div>'
@@ -4271,6 +4273,7 @@ async function poSave(on){
     container_no: $('#po-f-cont').value.trim(),
     has_import_file: $('#po-f-if').value === 'כן',
     import_file_no: $('#po-f-ifn').value.trim(),
+    customs_declaration_no: $('#po-f-cust-decl').value.trim(),
     notes: $('#po-f-notes').value.trim(),
     updated_at: new Date().toISOString()
   };
@@ -5243,7 +5246,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.12.1</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.12.2</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>

@@ -951,7 +951,7 @@
   .inv-row .end .q{ font-size:16px; }
 }
 
-/* ══════ 6.19.5 — שכבת מובייל וטאבלט מלאה · MOBILE-6160 · רומן 02/08/2026 ══════ */
+/* ══════ 6.19.6 — שכבת מובייל וטאבלט מלאה · MOBILE-6160 · רומן 02/08/2026 ══════ */
 
 @media(max-width:1024px){
   html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
@@ -1063,7 +1063,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.19.5</div>
+      <div class="ver">גרסה 6.19.6</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1161,7 +1161,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.19.5</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.19.6</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3350,22 +3350,25 @@ function _openSku(pn){
   mountCard('skuModal', ()=>openSku(pn));
   skuPlFill(pn);
 }
-/* ── מחירונים בכרטיס הפריט (6.18.0) — קריאה נקודתית מ-ord.price_list_items שסונכרן מראש;
+/* ── מחירונים בכרטיס הפריט (6.19.6) — קריאה נקודתית מ-ord.price_list_items שסונכרן מראש;
      אפס משיכות יזומות מפריוריטי. אותו מקור שמזין את "פריטים במחירון" ואת הפורטל. ── */
+let SKU_PL_REQ = 0;
 async function skuPlFill(pn){
   const box = $('#sku-pl-box'); if(!box) return;
+  const tok = ++SKU_PL_REQ;   /* הגנה ממרוץ בקשות בין כרטיסים (ממצא בקרה 03/08) */
   try{
     const res = await sb.schema('ord').from('price_list_items')
       .select('plname,price,percent,vat_price,dvat_price').eq('partname', String(pn));
     if(res.error) throw res.error;
+    if(tok !== SKU_PL_REQ) return;   /* כרטיס אחר כבר נפתח */
     const rows = res.data || [];
     if(!rows.length){ box.innerHTML = '<div class="note">הפריט אינו מופיע באף מחירון.</div>'; return; }
     rows.sort((a,b)=>String(a.plname).localeCompare(String(b.plname),'he'));
     const mny = v => Number(v)>0 ? shekel(v) : '—';
     box.innerHTML = '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>מחירון</th><th>מחיר מלא כולל מע"מ</th><th>% הנחה</th><th>מחיר סופי כולל מע"מ</th></tr></thead><tbody>'
-      + rows.map(x=>'<tr><td>'+esc(x.plname)+'</td><td>'+mny(x.vat_price)+'</td><td>'+(Number(x.percent)>0?fmtNum(x.percent)+'%':'—')+'</td><td><b>'+mny(Number(x.dvat_price)>0?x.dvat_price:x.vat_price)+'</b></td></tr>').join('')
+      + rows.map(x=>'<tr><td>'+esc(x.plname)+'</td><td>'+mny(x.vat_price)+'</td><td>'+(Number(x.percent)>0?fmtNum(x.percent)+'%':'—')+'</td><td><b>'+mny(Number(x.dvat_price)>0?x.dvat_price:(Number(x.vat_price)>0?Number(x.vat_price)*(1-(Number(x.percent)||0)/100):null))+'</b></td></tr>').join('')
       + '</tbody></table></div><div class="note">מסונכרן ממחירוני פריוריטי פעם ביום ב-07:00 — אותו מקור שמזין את מסך "פריטים במחירון" ואת פורטל הלקוחות.</div>';
-  }catch(e){ box.innerHTML = '<div class="note">טעינת המחירונים נכשלה: ' + esc((e && e.message) || String(e)) + '</div>'; }
+  }catch(e){ if(tok !== SKU_PL_REQ) return; box.innerHTML = '<div class="note">טעינת המחירונים נכשלה: ' + esc((e && e.message) || String(e)) + '</div>'; }
 }
 /* סבב 4 — צביעת הבורר וחישוב-עזר של המחיר כולל מע"מ */
 window.skuNeedTint = (el)=>{ el.classList.remove('yes','no'); if(el.value==='1') el.classList.add('yes'); else if(el.value==='0') el.classList.add('no'); };
@@ -4529,7 +4532,7 @@ function prcGate(){
   }catch(e){ /* לפני טעינת המשתמש */ }
 }
 const prcAdmin = () => !!(ME && ME.role === 'admin');
-/* ── מנוע העלות (6.18.0) — עלויות ידניות בלבד; הגנת מעגל והתפשטות null כמות שהן מ-v13 ── */
+/* ── מנוע העלות (6.19.6) — עלויות ידניות בלבד; הגנת מעגל והתפשטות null כמות שהן מ-v13 ── */
 const prcLF = e => { if(e && Number(e.load_override)>0) return Number(e.load_override);
   const s = PRC_SET||{}; const m = {'יבוא':s.load_import,'ייצור':s.load_manufacture,'מורכב':s.load_assembled,'קניה בארץ':s.load_local};
   const v = Number(e ? m[e.source] : 0); return v>0 ? v : 1; };
@@ -4547,7 +4550,8 @@ function prcCB_(pn, seen){
   const rate = Number((PRC_SET||{}).usd_rate) || 3.3;
   if(e.source==='מורכב'){
     const kids = PRC_BOM[pn] || [];
-    if(!kids.length) return null;
+    /* מורכב בלי עץ מוצר — נסיגה לעלות שקלית ידנית (סמנטיקת v13); ממצא בקרה 03/08 */
+    if(!kids.length) return Number(e.cost_ils)>0 ? Number(e.cost_ils) : null;
     let t = 0;
     for(const k of kids){
       const c = prcCB(k.child, seen);
@@ -4608,6 +4612,8 @@ async function prcLoad(force){
     PRC_EXT = {}; (re2.data||[]).forEach(x=>{ PRC_EXT[x.partname] = x; });
     PRC_BOM = {}; (rb.data||[]).forEach(x=>{ (PRC_BOM[x.parent] = PRC_BOM[x.parent]||[]).push(x); });
     PRC_LOADED = true;
+    if(PRC.length===10000 || (rp.data||[]).length===20000 || (re2.data||[]).length===10000 || (rb.data||[]).length===2000)
+      setTimeout(()=>toast('אזהרה: נתוני התמחור הגיעו לתקרת הטעינה — ייתכן שחלק מהשורות חסרות'), 300);
   }catch(e){
     PRC_ERR = 'שגיאה בטעינת נתוני התמחור: ' + (e && e.message ? e.message : String(e));
   }
@@ -4734,7 +4740,7 @@ const PRC_BUCKETS = [
 ];
 
 function prcPlMargTable(){
-  /* 6.18.0 — מרווח בפועל: מחיר המחירון האמיתי מול העלות הידנית המועמסת */
+  /* 6.19.6 — מרווח בפועל: מחיר המחירון האמיתי מול העלות הידנית המועמסת */
   if(!PRC_PL.length) return '';
   const exd = x => Number(x.dprice)>0 ? Number(x.dprice) : (Number(x.price)>0 ? Number(x.price)*(1-(Number(x.percent)||0)/100) : null);
   const agg = {};
@@ -4786,7 +4792,7 @@ function prcMargView(){
 }
 
 function prcListView(){
-  /* 6.18.0 — מחירוני פריוריטי האמיתיים מ-ord.price_list_items. שבע קבוצות v13 בוטלו. */
+  /* 6.19.6 — מחירוני פריוריטי האמיתיים מ-ord.price_list_items. שבע קבוצות v13 בוטלו. */
   if(!PRC_PL.length) return '<div class="empty">לא נטענו מחירונים. מסך "פריטים במחירון" מנהל את הסנכרון — פעם ביום ב-07:00 או בהפעלה ידנית.</div>';
   const names = PRC_PL.map(p=>p.plname);
   if(!PRC_LIST_PL || names.indexOf(PRC_LIST_PL)===-1) PRC_LIST_PL = names[0];
@@ -4794,6 +4800,8 @@ function prcListView(){
   Object.keys(PRC_PLI).forEach(pn=>PRC_PLI[pn].forEach(x=>{ cnt[x.plname]=(cnt[x.plname]||0)+1; }));
   let h = '<div class="prc-chips">' + PRC_PL.map(p=>'<button class="prc-chip'+(PRC_LIST_PL===p.plname?' active':'')+'" style="cursor:pointer;border:0'+(PRC_LIST_PL===p.plname?';box-shadow:0 0 0 2px var(--navy) inset':'')+'" onclick="prcPickPl(this.dataset.pl)" data-pl="'+esc(p.plname)+'">'+esc(p.plname)+' <b>'+fmtNum(cnt[p.plname]||0)+'</b></button>').join('') + '</div>';
   const exd = x => Number(x.dprice)>0 ? Number(x.dprice) : (Number(x.price)>0 ? Number(x.price)*(1-(Number(x.percent)||0)/100) : null);
+  /* מחיר סופי לתצוגה — מפעיל את אחוז ההנחה גם כשאין dvat_price מסונכרן (ממצא בקרה 03/08) */
+  const finP = x => Number(x.dvat_price)>0 ? Number(x.dvat_price) : (Number(x.vat_price)>0 ? Number(x.vat_price)*(1-(Number(x.percent)||0)/100) : null);
   const rows = prcFiltered().map(r=>{
     const x = (PRC_PLI[r.partname]||[]).find(y=>y.plname===PRC_LIST_PL);
     return x ? { r:r, x:x } : null;
@@ -4813,7 +4821,7 @@ function prcListView(){
     { t:'עלות',                 f:w=>prcMoney(prcCost(w.r)), s:w=>prcCost(w.r)||0 },
     { t:'מחיר מלא כולל מע״מ',   f:w=>prcMoney(Number(w.x.vat_price)>0?Number(w.x.vat_price):null), s:w=>Number(w.x.vat_price)||0 },
     { t:'% הנחה',               f:w=>Number(w.x.percent)>0 ? fmtNum(w.x.percent)+'%' : '—', s:w=>Number(w.x.percent)||0 },
-    { t:'מחיר סופי כולל מע״מ',  f:w=>prcMoney(Number(w.x.dvat_price)>0?Number(w.x.dvat_price):(Number(w.x.vat_price)>0?Number(w.x.vat_price):null)), s:w=>Number(w.x.dvat_price)||0 },
+    { t:'מחיר סופי כולל מע״מ',  f:w=>prcMoney(finP(w.x)), s:w=>finP(w.x)||0 },
     { t:'מרווח',                f:w=>{ const c=prcCost(w.r), e=exd(w.x); return prcMPill((c==null||e==null||e<=0)?null:(e-c)/e); }, s:w=>{ const c=prcCost(w.r), e=exd(w.x); return (c==null||e==null||e<=0)?-9:(e-c)/e; } }
   ];
   if(!rows.length) return h + '<div class="empty">אין פריטים מהסינון הנוכחי במחירון הזה</div>';
@@ -4913,7 +4921,7 @@ function prcExcView(){
 }
 
 function prcSetView(){
-  /* 6.18.0 — הגדרות תמחור ניתנות לעריכה (הכרעת רומן 03/08/2026) */
+  /* 6.19.6 — הגדרות תמחור ניתנות לעריכה (הכרעת רומן 03/08/2026) */
   const s = PRC_SET;
   if(!s) return '<div class="empty">הגדרות התמחור לא נטענו — נסה רענון נתונים</div>';
   const f = (id,l,v,hint) => '<div class="field"><label>'+esc(l)+'</label><input id="'+id+'" type="text" inputmode="decimal" dir="ltr" value="'+esc(v==null?'':String(v))+'">'+(hint?'<div class="auto-hint">'+esc(hint)+'</div>':'')+'</div>';
@@ -5472,7 +5480,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.19.5</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.19.6</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>

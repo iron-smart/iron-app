@@ -3150,5 +3150,40 @@ function watchForUpdates(){
 })();
 
 </script>
+<script>
+/* ===== קישוריות מק"ט מלוח התיאום אל כרטיס הפריט במערכת (הערת רומן 03/08/2026) =====
+   ללוח אין כרטיס פריט משלו, ולכן מק"ט בלוח נפתח בכרטיס הפריט של המערכת בלשונית חדשה
+   (אותו דומיין ואותה התחברות). קליטה בצד המערכת: קישור עמוק #sku=. */
+(function(){
+  'use strict';
+  var APP = 'https://app.ironfitness.co.il/';
+
+  var st = document.createElement('style');
+  st.textContent =
+    '.sku-code{cursor:pointer;text-decoration:underline dotted}' +
+    '.sku-code:hover{filter:brightness(1.25)}' +
+    'td.sku{cursor:pointer;text-decoration:underline dotted}' +
+    'td.sku:hover{filter:brightness(1.25)}';
+  document.head.appendChild(st);
+
+  function goSkuCard(pn){
+    pn = String(pn == null ? '' : pn).trim();
+    if(!pn) return;
+    try{ window.open(APP + '#sku=' + encodeURIComponent(pn), '_blank', 'noopener'); }
+    catch(e){ console.error('sku link', e); }
+  }
+
+  /* שלב הלכידה — כדי שלחיצה על המק"ט לא תפעיל גם את הגדלת התמונה של הכרטיסייה */
+  document.addEventListener('click', function(ev){
+    var t = ev.target;
+    if(!t || !t.closest) return;
+    var el = t.closest('.sku-code, td.sku');
+    if(!el) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    goSkuCard(el.textContent);
+  }, true);
+})();
+</script>
 </body>
 </html>

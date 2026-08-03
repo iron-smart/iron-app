@@ -965,7 +965,6 @@
   input:not([type=checkbox]):not([type=radio]),textarea{ font-size:16px !important; }
 }
 @media(max-width:900px){
-  #signview{ min-height:100dvh !important; }
   .frame-wrap{ height:calc(100dvh - 82px); }
   .cal-scroll{ height:auto !important; max-height:none !important; }
   .tbl-wrap:has(> table.tbl){ max-height:none !important; }
@@ -1065,17 +1064,6 @@
 </head>
 <body>
 
-<!-- ===== מסך חתימה ללקוח (ציבורי, דרך קישור עם טוקן) ===== -->
-<div id="signview" class="hidden" style="min-height:100vh;background:var(--bg);">
-  <div style="background:var(--navy);color:#fff;padding:18px 16px;text-align:center;">
-    <div style="font-size:20px;font-weight:800;">איירון פיטנס</div>
-    <div style="font-size:13px;opacity:.85;">אישור הצעת מחיר בחתימה דיגיטלית</div>
-  </div>
-  <div style="max-width:520px;margin:0 auto;padding:18px 16px;" id="signbody">
-    <div class="empty">טוען…</div>
-  </div>
-</div>
-
 <!-- מסך טעינה — חוסם את ההבזק של מסך ההתחברות עד שידוע אם קיים סשן (סבב 4) -->
 <div id="bootsplash"><div class="sp"></div></div>
 <!-- ===== התחברות — עוצב מחדש בסבב 4 (28/07/2026) =====
@@ -1099,7 +1087,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.22.0</div>
+      <div class="ver">גרסה 6.23.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1197,7 +1185,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.22.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.23.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -4568,8 +4556,8 @@ function openPoSups(){
 let DOC_FILTER='sent';
 /* 6.22.0 — סינון לפי קטגוריית מסמך, בנוסף לסינון לפי סטטוס חתימה. */
 let DOC_CAT='all';
-const TOKEN_AB='abcdefghjkmnpqrstuvwxyz23456789';
-function genToken(n=14){ const a=new Uint8Array(n); crypto.getRandomValues(a); return [...a].map(x=>TOKEN_AB[x%TOKEN_AB.length]).join(''); }
+/* 6.23.0 — מחולל האסימונים בדפדפן הוסר. אסימוני מסמכים נוצרים אך ורק
+   בשרת, ב-ord.gen_doc_token, ולעולם אינם מגיעים ל-DOM. */
 const signUrl = t => new URL('sign.html?t='+t, location.href).href;
 const viewUrl = t => new URL('sign.html?view='+t, location.href).href;
 function waLink(phone, text){ let d=digitsOf(phone); if(d.startsWith('0')) d='972'+d.slice(1); return 'https://wa.me/'+d+'?text='+encodeURIComponent(text); }
@@ -4600,20 +4588,126 @@ window.openDocLink = async (id, mode)=>{
   if(tab){ tab.location.href = (mode==='wa'&&p&&p.phone) ? waLink(p.phone, waProtocolMsg(p, url)) : url; return; }
   copyTxt(url);
 };
+/* 6.23.0 — בסיס הסינון של מסך המסמכים מכבד את מפתח ההרשאה של כל קטגוריה.
+   מסמך בקטגוריה שאין בה הרשאת צפייה אינו נספר בשבבים ואינו מוצג ברשימה.
+   השרת אוכף בדיוק את אותו הכלל בתצוגה ord.protocols_v — כאן זו רק שכבת
+   התצוגה, כדי שהמסך לא יראה אחרת ממה שהשרת מרשה. */
+function docsVisible(){ return PROTS.filter(p=>window.canView('docs.'+(p.category||'protocols'))); }
+
+/* ===== תמונות מהשטח · docs.media =====
+   הקבצים חיים בדלי הפרטי docs בנתיב media/<מזהה אב>/<מזהה קובץ>.<סיומת>,
+   והרשומה המקבילה יושבת ב-ord.doc_files. אין לקבצים כתובת ציבורית: כל
+   צפייה מפיקה קישור חתום לשעה, ולכן תמונה של לקוח לא יכולה לדלוף מחוץ
+   למערכת גם אם מישהו העתיק את הנתיב. */
+let DOCFILES = null, DOCFILES_BUSY = false;
+async function loadDocFiles(force){
+  if(DOCFILES && !force) return DOCFILES;
+  if(DOCFILES_BUSY) return DOCFILES || [];
+  DOCFILES_BUSY = true;
+  const { data, error } = await sb.schema('ord').from('doc_files')
+    .select('id,category,order_id,call_id,protocol_id,storage_path,file_name,mime_type,size_bytes,caption,uploaded_by,uploaded_at')
+    .order('uploaded_at',{ascending:false}).limit(5000);
+  DOCFILES_BUSY = false;
+  if(error){ console.error('טעינת תמונות מהשטח נכשלה', error); return DOCFILES || []; }
+  DOCFILES = data || [];
+  return DOCFILES;
+}
+function mediaParentLabel(f){
+  const o = f.order_id && ORDS.find(x=>x.id===f.order_id);
+  if(o) return (o.customer_name||'') + (o.order_number?' · '+o.order_number:'');
+  const c = f.call_id && SCALLS.find(x=>x.id===f.call_id);
+  if(c) return (c.customer_name||'') + (c.call_number?' · '+c.call_number:'');
+  return '—';
+}
+window.openMediaFile = async (id)=>{
+  const f = (DOCFILES||[]).find(x=>x.id===id); if(!f) return;
+  /* פותחים את הלשונית לפני ה-await, אחרת חוסם החלונות הקופצים בולע אותה. */
+  const tab = window.open('', '_blank');
+  const { data, error } = await sb.storage.from('docs').createSignedUrl(f.storage_path, 3600);
+  if(error || !data || !data.signedUrl){
+    if(tab){ try{ tab.close(); }catch(_e){} }
+    alert('פתיחת הקובץ נכשלה — ' + ((error&&error.message)||'אין לך הרשאה לקובץ הזה'));
+    return;
+  }
+  tab.location.href = data.signedUrl;
+};
+const MEDIA_EXT = ['jpg','jpeg','png','webp','pdf'];
+/* שם הקובץ באחסון נקבע תמיד על ידי המערכת ולעולם לא על ידי המשתמש: מדיניות
+   האחסון דורשת בדיוק את התבנית media/<uuid>/<uuid>.<סיומת>, ולכן שם מקורי
+   חריג אינו יכול לחרוג מתיקיית רשומת האב. השם שהמשתמש בחר נשמר ב-file_name. */
+window.uploadMedia = (kind, parentId)=>{
+  if(!window.canEdit('docs.media.upload')){ alert('אין לך הרשאה להעלות תמונות מהשטח.'); return; }
+  if(!parentId){ alert('אין רשומת אב לשיוך הקובץ.'); return; }
+  const inp = document.createElement('input');
+  inp.type='file'; inp.multiple=true; inp.accept='image/jpeg,image/png,image/webp,application/pdf';
+  inp.onchange = async ()=>{
+    const files = [...(inp.files||[])]; if(!files.length) return;
+    let okN=0; const bad=[];
+    for(const file of files){
+      const ext = (file.name.split('.').pop()||'').toLowerCase();
+      if(MEDIA_EXT.indexOf(ext)<0){ bad.push(file.name+' — סוג קובץ שאינו נתמך'); continue; }
+      if(file.size > 15*1024*1024){ bad.push(file.name+' — גדול מ-15 מגה'); continue; }
+      const path = 'media/'+parentId+'/'+crypto.randomUUID()+'.'+(ext==='jpeg'?'jpg':ext);
+      const up = await sb.storage.from('docs').upload(path, file, { contentType:file.type||undefined, upsert:false });
+      if(up.error){ bad.push(file.name+' — '+up.error.message); continue; }
+      const row = { category:'media', storage_path:path, file_name:file.name,
+                    mime_type:file.type||null, size_bytes:file.size,
+                    uploaded_by:(typeof ME!=='undefined' && ME && ME.email) || null };
+      row[kind==='call'?'call_id':'order_id'] = parentId;
+      const ins = await sb.schema('ord').from('doc_files').insert(row).select('id').single();
+      if(ins.error){ bad.push(file.name+' — '+ins.error.message); continue; }
+      okN++;
+    }
+    await loadDocFiles(true);
+    alert(bad.length ? ('הועלו '+okN+' קבצים.\nלא הועלו:\n'+bad.join('\n')) : ('הועלו '+okN+' קבצים ✓'));
+    try{ renderDocs(); }catch(_e){}
+    if(kind==='call') openScall(parentId); else openOrd(parentId,'sales');
+  };
+  inp.click();
+};
+/* 6.23.0 — בלוק תמונות מהשטח, משותף לכרטיס ההזמנה ולכרטיס קריאת השירות.
+   הוא מרונדר מיד ממה שכבר בזיכרון; אם רשימת הקבצים עדיין לא נטענה הוא
+   טוען אותה ברקע ומחליף רק את תוכן ה-div, בלי לרנדר מחדש את כל הכרטיס. */
+window.mediaBlock = (kind, parentId)=>{
+  if(!window.canView('docs.media')) return '';
+  const key = kind==='call' ? 'call_id' : 'order_id';
+  const boxId = 'media-box-'+parentId;
+  const rows = list => list.map(f=>`<div class="row"><span class="k">${esc(f.file_name||'קובץ')}</span><span class="v"><a href="#" onclick="event.preventDefault();openMediaFile('${f.id}')">🖼️ פתיחה</a>${f.uploaded_at?' · '+new Date(f.uploaded_at).toLocaleDateString('he-IL'):''}</span></div>`).join('') || '<div class="note">אין עדיין תמונות מהשטח.</div>';
+  if(DOCFILES===null){
+    loadDocFiles().then(()=>{ const el=document.getElementById(boxId); if(el) el.innerHTML = rows((DOCFILES||[]).filter(f=>f[key]===parentId)); });
+  }
+  const mine = (DOCFILES||[]).filter(f=>f[key]===parentId);
+  return `<h2 class="sec">🖼️ תמונות מהשטח (${DOCFILES===null?'…':mine.length})</h2>
+    <div id="${boxId}">${DOCFILES===null?'<div class="note">טוען…</div>':rows(mine)}</div>`+
+    (window.canEdit('docs.media.upload')?`<button class="ghost" style="margin-top:8px" onclick="uploadMedia('${kind}','${parentId}')">⬆️ העלאת תמונות מהשטח</button>`:'');
+};
+function mediaCard(f){
+  const isPdf = (f.mime_type||'').indexOf('pdf')>-1 || /\.pdf$/i.test(f.storage_path||'');
+  return `<div class="lead" style="cursor:pointer" onclick="openMediaFile('${f.id}')">
+    <div style="flex:1"><div class="nm">${isPdf?'📄':'🖼️'} ${esc(f.file_name||'קובץ')}</div>
+    <div class="meta">${esc(mediaParentLabel(f))} · ${f.uploaded_at?new Date(f.uploaded_at).toLocaleDateString('he-IL'):'—'}${f.uploaded_by?' · '+esc(f.uploaded_by):''}</div></div>
+    <span class="pill st-def">פתיחה</span></div>`;
+}
 function docChips(){
-  const base = PROTS.filter(p=>DOC_CAT==='all'||(p.category||'protocols')===DOC_CAT);
+  const vis = docsVisible();
+  const base = vis.filter(p=>DOC_CAT==='all'||(p.category||'protocols')===DOC_CAT);
   const sent=base.filter(p=>p.status!=='נחתם'), signed=base.filter(p=>p.status==='נחתם');
+  const mediaN = (DOCFILES||[]).length;
   $('#doc-chips').innerHTML = `
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
-      <button class="chip ${DOC_CAT==='all'?'active':''}" onclick="setDocCat('all')">כל הקטגוריות ${PROTS.length}</button>
-      ${DOC_CATS.map(([k,lb])=>`<button class="chip ${DOC_CAT===k?'active':''}" onclick="setDocCat('${k}')">${lb} ${PROTS.filter(p=>(p.category||'protocols')===k).length}</button>`).join('')}
+      <button class="chip ${DOC_CAT==='all'?'active':''}" onclick="setDocCat('all')">מסמכים לחתימה ${vis.length}</button>
+      ${DOC_CATS.filter(([k])=>window.canView('docs.'+k)).map(([k,lb])=>`<button class="chip ${DOC_CAT===k?'active':''}" onclick="setDocCat('${k}')">${lb} ${k==='media'?mediaN:vis.filter(p=>(p.category||'protocols')===k).length}</button>`).join('')}
     </div>
+    ${DOC_CAT==='media'?'':`
     <button class="chip ${DOC_FILTER==='sent'?'active':''}" onclick="setDocFilter('sent')">ממתינים לחתימה ${sent.length}</button>
     <button class="chip ${DOC_FILTER==='signed'?'active':''}" onclick="setDocFilter('signed')">נחתמו ${signed.length}</button>
-    <button class="chip ${DOC_FILTER==='all'?'active':''}" onclick="setDocFilter('all')">הכל ${base.length}</button>`;
+    <button class="chip ${DOC_FILTER==='all'?'active':''}" onclick="setDocFilter('all')">הכל ${base.length}</button>`}`;
 }
 window.setDocFilter=f=>{DOC_FILTER=f;renderDocs();navMark();};
-window.setDocCat=c=>{DOC_CAT=c;renderDocs();navMark();};
+window.setDocCat=c=>{
+  DOC_CAT=c; renderDocs(); navMark();
+  if(c==='media' && DOCFILES===null && window.canView('docs.media')) loadDocFiles().then(()=>renderDocs());
+};
 function docRow(p){
   const signed=p.status==='נחתם';
   const cat=p.category||'protocols';
@@ -4632,7 +4726,15 @@ function docRow(p){
 function renderDocs(){
   docChips();
   const q=($('#docSearch').value||'').trim();
-  let list = PROTS.filter(p=>DOC_CAT==='all'||(p.category||'protocols')===DOC_CAT);
+  if(DOC_CAT==='media'){
+    if(!window.canView('docs.media')){ $('#docs-list').innerHTML='<div class="empty">אין לך הרשאה לקטגוריה הזו</div>'; return; }
+    if(DOCFILES===null){ $('#docs-list').innerHTML='<div class="empty">טוען…</div>'; loadDocFiles().then(()=>renderDocs()); return; }
+    let ml = DOCFILES.slice();
+    if(q) ml = ml.filter(f=>(f.file_name||'').includes(q)||mediaParentLabel(f).includes(q));
+    $('#docs-list').innerHTML = capped(ml, f=>mediaCard(f), 'אין עדיין תמונות מהשטח');
+    return;
+  }
+  let list = docsVisible().filter(p=>DOC_CAT==='all'||(p.category||'protocols')===DOC_CAT);
   list = DOC_FILTER==='all'?list:(DOC_FILTER==='signed'?list.filter(p=>p.status==='נחתם'):list.filter(p=>p.status!=='נחתם'));
   if(q) list=list.filter(p=>(p.customer_name||'').includes(q)||(p.order_number||'').includes(q));
   $('#docs-list').innerHTML = capped(list, p=>docRow(p), 'אין מסמכים בסינון הזה');
@@ -6466,6 +6568,7 @@ window.openScall = (id)=>{
       <div><label>דדליין טיפול</label><input id="se-deadline" type="date" value="${esc(s.deadline||'')}"></div>
       <div class="span4"><label>הערות</label><textarea id="se-notes" rows="2">${esc(s.notes||'')}</textarea></div>
     </div>
+    ${window.mediaBlock('call', s.id)}
     <div class="modal-actions">
       ${editable?`<button class="btn btnw" onclick="saveScall('${s.id}')">💾 שמירה</button>`:'<div class="note">אין לך הרשאת עריכה לקריאות שירות.</div>'}
     </div>
@@ -6645,6 +6748,7 @@ window.openOrd = (id, ctx)=>{
       const ps=PROTS.filter(p=>p.order_id===o.id && window.canView('docs.'+(p.category||'protocols'))); return `<h2 class="sec">📄 מסמכים וחתימות (${ps.length})</h2>`+
       (ps.map(p=>`<div class="row"><span class="k">${esc(p.doc_type)}${p.sent_at?' · '+new Date(p.sent_at).toLocaleDateString('he-IL'):''}</span><span class="v">${p.status==='נחתם'?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','open')">📄 צפייה</a>`:(window.canEdit('docs.'+(p.category||'protocols'))?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','copy')">🔗 קישור</a>`:'<span style="color:#94a3b8">אין הרשאה לקישור</span>')} <span class="pill ${p.status==='נחתם'?'st-rel':'st-def'}">${esc(p.status)}</span></span></div>`).join(''))+
       ((window.canEdit('crm.orders.docs')&&window.canEdit('docs.protocols'))?`<button class="ghost" style="margin-top:8px" onclick="createProtocol('${o.id}')">➕ יצירת פרוטוקול הכנה לחתימה</button>`:''); })():''}
+    ${window.mediaBlock('order', o.id)}
     <div class="modal-actions">
       <button class="btn btnw hidden" id="oe-save" onclick="saveOrd('${o.id}')">💾 שמירה</button>
       <div class="note hidden" id="oe-nosave">אין לך הרשאת עריכה לשדות שבכרטיס זה.</div>
@@ -6833,9 +6937,6 @@ window.openDeal = async (id)=>{
     `:'<div class="empty" style="padding:10px">לא מקושרת ללקוח</div>'}
     ${contact?`<h2 class="sec">איש קשר</h2>
       <div class="row"><span class="k">${esc(contact.full_name)}</span><span class="v">${esc(contact.phone||contact.email||'—')}</span></div>`:''}
-    <h2 class="sec">חתימה דיגיטלית</h2>
-    <button class="btn" style="background:var(--navy)" onclick="createSignLink('${d.id}')">יצירת קישור חתימה ללקוח 🔗</button>
-    <div id="signlink-box"></div>
     <h2 class="sec">עדכון שלב וסטטוסים (רשימות המאנדיי)</h2>
     <div class="field"><label>שלב העסקה</label>
       <select id="d-stage" onchange="dealSubUI('${d.id}')">${STAGES.map(s=>`<option ${s===d.stage?'selected':''}>${s}</option>`).join('')}</select></div>
@@ -7253,73 +7354,9 @@ function numIn(raw){
   return isFinite(x) ? x : undefined;
 }
 
-/* ===== מסך חתימה ציבורי (?sign=TOKEN) ===== */
-const SIGN_FN = SB_URL + '/functions/v1/sign-quote';
-let signHasInk = false;
-async function renderSignView(token){
-  document.getElementById('login').classList.add('hidden');
-  document.getElementById('signview').classList.remove('hidden');
-  const body = document.getElementById('signbody');
-  let info;
-  try{ info = await (await fetch(SIGN_FN + '?token=' + encodeURIComponent(token))).json(); }
-  catch{ body.innerHTML = '<div class="empty">שגיאת תקשורת — נסו שוב</div>'; return; }
-  if(info.status === 'נחתם'){ body.innerHTML = `<div class="ok-box" style="text-align:center;font-size:16px;">✅ ההצעה כבר נחתמה<br><small>${new Date(info.signed_at).toLocaleString('he-IL')}</small></div>`; return; }
-  if(!info.ok){ body.innerHTML = `<div class="empty">${esc(info.error||'הקישור אינו תקין')}</div>`; return; }
-  const d = info.deal || {};
-  body.innerHTML = `
-    <div style="background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.08);">
-      <div class="row"><span class="k">לקוח</span><span class="v">${esc(d.customer_name||d.name||'—')}</span></div>
-      ${d.quote_id?`<div class="row"><span class="k">הצעת מחיר</span><span class="v">${esc(d.quote_id)}</span></div>`:''}
-      ${d.amount?`<div class="row"><span class="k">סכום (לפני מע"מ)</span><span class="v">₪${Number(d.amount).toLocaleString('he-IL')}</span></div>`:''}
-      <div class="field" style="margin-top:16px;"><label>שם מלא של החותם *</label><input id="sg-name"></div>
-      <label style="display:block;font-size:13px;color:#475569;margin-bottom:6px;">חתימה *</label>
-      <canvas id="sg-canvas" width="460" height="170" style="width:100%;height:170px;border:1.5px dashed var(--line);border-radius:10px;background:#fff;touch-action:none;"></canvas>
-      <button class="ghost" id="sg-clear" style="width:auto;padding:8px 14px;margin-top:8px;">ניקוי חתימה</button>
-      <div class="actions">
-        <button class="btn green" id="sg-submit">אישור ההצעה וחתימה</button>
-      </div>
-      <div class="err" id="sg-err"></div>
-      <div class="note">בלחיצה על הכפתור אני מאשר/ת את הצעת המחיר. החתימה נשמרת עם חותמת זמן ומזהה מסמך מאובטח.</div>
-    </div>`;
-  const cv = document.getElementById('sg-canvas'), ctx = cv.getContext('2d');
-  ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.strokeStyle = '#0b2239';
-  let drawing = false;
-  const pos = e => { const r = cv.getBoundingClientRect(); const p = e.touches? e.touches[0] : e;
-    return { x: (p.clientX - r.left) * (cv.width / r.width), y: (p.clientY - r.top) * (cv.height / r.height) }; };
-  const start = e => { drawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); };
-  const move = e => { if(!drawing) return; const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); signHasInk = true; e.preventDefault(); };
-  const end = () => { drawing = false; };
-  cv.addEventListener('mousedown', start); cv.addEventListener('mousemove', move); window.addEventListener('mouseup', end);
-  cv.addEventListener('touchstart', start, {passive:false}); cv.addEventListener('touchmove', move, {passive:false}); cv.addEventListener('touchend', end);
-  document.getElementById('sg-clear').onclick = () => { ctx.clearRect(0,0,cv.width,cv.height); signHasInk = false; };
-  document.getElementById('sg-submit').onclick = async () => {
-    const err = document.getElementById('sg-err'); err.textContent = '';
-    const name = document.getElementById('sg-name').value.trim();
-    if(!name){ err.textContent = 'נא למלא שם מלא'; return; }
-    if(!signHasInk){ err.textContent = 'נא לחתום במסגרת'; return; }
-    document.getElementById('sg-submit').disabled = true;
-    try{
-      const r = await (await fetch(SIGN_FN, { method:'POST', headers:{'content-type':'application/json'},
-        body: JSON.stringify({ token, signer_name: name, signature_data: cv.toDataURL('image/png') }) })).json();
-      if(!r.ok){ err.textContent = r.error || 'שגיאה בחתימה'; document.getElementById('sg-submit').disabled = false; return; }
-      body.innerHTML = `<div class="ok-box" style="text-align:center;font-size:16px;line-height:1.8;">✅ ההצעה אושרה ונחתמה בהצלחה!<br>תודה רבה, ניצור קשר בהמשך.<br><small style="color:#4d7c62;">מזהה מסמך: ${r.doc_hash.slice(0,16)}…</small></div>`;
-    }catch{ err.textContent = 'שגיאת תקשורת — נסו שוב'; document.getElementById('sg-submit').disabled = false; }
-  };
-}
-
-/* ===== יצירת קישור חתימה מכרטיס עסקה (צוות) ===== */
-window.createSignLink = async (dealId)=>{
-  const box = document.getElementById('signlink-box'); if(box) box.innerHTML = '<div class="note">יוצר קישור…</div>';
-  const { data, error } = await sb.schema('crm').from('sign_requests').insert({ deal_id: dealId, created_by: ME.id }).select('token').single();
-  if(error || !data){ if(box) box.innerHTML = '<div class="note" style="color:#c0392b">שגיאה ביצירת הקישור</div>'; console.error(error); return; }
-  const link = new URL('?sign=' + data.token, location.href).href;
-  if(box) box.innerHTML = `<div class="ok-box">🔗 קישור חתימה נוצר (תקף 14 יום):<br>
-    <input id="sl-url" readonly value="${esc(link)}" style="width:100%;margin-top:8px;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:13px;direction:ltr;">
-    <button class="ghost" style="margin-top:8px;padding:8px 14px;" onclick="navigator.clipboard.writeText(document.getElementById('sl-url').value).then(()=>this.textContent='הועתק ✓')">העתקת הקישור</button>
-    <div class="note" style="margin-top:8px;">שלחו את הקישור ללקוח בוואטסאפ/מייל. כשיחתום — העסקה תעבור אוטומטית ל"אושר ע"י לקוח ממתין לתשלום" ותיפתח רשומת גבייה.</div></div>`;
-};
-
-const SIGN_TOKEN = new URLSearchParams(location.search).get('sign');
+/* 6.23.0 — מסך החתימה הציבורי הישן הוסר. הוא נשען על crm.sign_requests
+   ועל פונקציית הקצה sign-quote, שתיהן מסלול הצעות מחיר שמעולם לא הופעל.
+   החתימה החיה עוברת דרך sign.html ופונקציית הקצה sign. */
 /* ===== מנוע מיון גנרי לכל טבלאות המערכת · סבב 4 (28/07/2026) =====
    רומן: "להוסיף לכל טבלה אפשרות מיון בלחיצה על השורה מלמטה למעלה או הפוך".
    במקום לשכתב שמונה פונקציות רינדור שונות, המנוע הזה פועל ברמת ה-DOM:
@@ -7517,7 +7554,7 @@ const SIGN_TOKEN = new URLSearchParams(location.search).get('sign');
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', gsStart);
   else gsStart();
 })();
-if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN).catch(e=>{ console.error('sign', e); const b=document.getElementById('signbody'); if(b) b.innerHTML = '<div class="empty">שגיאה בטעינת המסמך — נסו שוב</div>'; }); } else { boot(); }
+boot();
 </script>
 <script>
 /* ===== קישורי תשלום לפורטל הלקוחות (בלוק עצמאי; עוטף openOrd בלי לגעת בקוד קיים) ===== */

@@ -3312,6 +3312,11 @@ function _openSku(pn){
       <div class="note">הכמות כוללת גם מלאי שיצא בפועל וגם מלאי שהוזמן וטרם יצא.</div>
     </div>
 
+    <div class="sku-box">
+      <div class="bx-t">מחירונים ללקוח</div>
+      <div id="sku-pl-box"><div class="note">טוען מחירונים…</div></div>
+    </div>
+
     <div class="sku-box install">
       <div class="bx-t">נתוני התקנה, שילוח ומשטחים</div>
       ${mgr?`
@@ -3343,6 +3348,24 @@ function _openSku(pn){
 
     <div class="note">שדות פריוריטי (מחירון לפני וכולל מע"מ, מלאי, זמינות, מכירות, סטטוס פעיל) מסונכרנים אוטומטית כל יום ב-07:00, א׳–ו׳, ואינם ניתנים לעריכה כאן. שני המחירים נמשכים כמות שהם ממחירון הבסיס בפריוריטי — אף אחד מהם אינו מחושב.</div>`;
   mountCard('skuModal', ()=>openSku(pn));
+  skuPlFill(pn);
+}
+/* ── מחירונים בכרטיס הפריט (6.18.0) — קריאה נקודתית מ-ord.price_list_items שסונכרן מראש;
+     אפס משיכות יזומות מפריוריטי. אותו מקור שמזין את "פריטים במחירון" ואת הפורטל. ── */
+async function skuPlFill(pn){
+  const box = $('#sku-pl-box'); if(!box) return;
+  try{
+    const res = await sb.schema('ord').from('price_list_items')
+      .select('plname,price,percent,vat_price,dvat_price').eq('partname', String(pn));
+    if(res.error) throw res.error;
+    const rows = res.data || [];
+    if(!rows.length){ box.innerHTML = '<div class="note">הפריט אינו מופיע באף מחירון.</div>'; return; }
+    rows.sort((a,b)=>String(a.plname).localeCompare(String(b.plname),'he'));
+    const mny = v => Number(v)>0 ? shekel(v) : '—';
+    box.innerHTML = '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>מחירון</th><th>מחיר מלא כולל מע"מ</th><th>% הנחה</th><th>מחיר סופי כולל מע"מ</th></tr></thead><tbody>'
+      + rows.map(x=>'<tr><td>'+esc(x.plname)+'</td><td>'+mny(x.vat_price)+'</td><td>'+(Number(x.percent)>0?fmtNum(x.percent)+'%':'—')+'</td><td><b>'+mny(Number(x.dvat_price)>0?x.dvat_price:x.vat_price)+'</b></td></tr>').join('')
+      + '</tbody></table></div><div class="note">מסונכרן ממחירוני פריוריטי פעם ביום ב-07:00 — אותו מקור שמזין את מסך "פריטים במחירון" ואת פורטל הלקוחות.</div>';
+  }catch(e){ box.innerHTML = '<div class="note">טעינת המחירונים נכשלה: ' + esc((e && e.message) || String(e)) + '</div>'; }
 }
 /* סבב 4 — צביעת הבורר וחישוב-עזר של המחיר כולל מע"מ */
 window.skuNeedTint = (el)=>{ el.classList.remove('yes','no'); if(el.value==='1') el.classList.add('yes'); else if(el.value==='0') el.classList.add('no'); };
@@ -4487,14 +4510,14 @@ window.createProtocol = async (orderId)=>{
 };
 
 /* ===== תמחור ומחירונים — אדמיניסטרטור בלבד =====
-   מקור הנתונים היחיד הוא מסך המק״טים (ord.inv_items). אין משיכת נתונים נפרדת.
+   PRC-6180 · נתוני מק״טים מ-ord.inv_items · מחירוני פריוריטי מ-ord.price_lists/price_list_items (סונכרנו מראש — אפס משיכות יזומות מפריוריטי) · עלויות ידניות מ-ord.prc_item_ext/prc_bom/prc_settings. הכרעת רומן 03/08/2026: המערכת היא מקור האמת לעלות; עלות פריוריטי שגויה כרגע ומוצגת לתצוגה בלבד; בהמשך המערכת תדחוף עלויות אל פריוריטי.
    price אינו מחיר מכירה ואינו בשימוש כאן: המחיר הוא price_base (ללא מע״מ) ו-price_vat (כולל). */
 const PRC_COLS_SEL = 'partname,partdes,family,unit,barcode,erp_status,has_inventory,qty,'
   + 'cost,price_base,price_vat,needs_install,install_price_iron,install_price_contractor,'
   + 'install_price_contractor_vat,ship_price_single,weight_kg,length_cm,width_cm,height_cm,'
   + 'pallet_load_factor,sold_3m,sold_6m';
-const PRC_VAT = 0.18;
-const PRC_GROUPS = ['אתר','פרטי־עסקי','עסקי','מסחרי','ארגוני','מוסדי','סיטונאי'];
+let PRC_VAT = 0.18;
+let PRC_PL = [], PRC_PLI = {}, PRC_EXT = {}, PRC_BOM = {}, PRC_SET = null, PRC_LIST_PL = '';
 let PRC = [], PRC_LOADED = false, PRC_LOADING = false, PRC_TRIED = false, PRC_ERR = '';
 let PRC_VIEW = 'db', PRC_EXC = 0;
 const PRC_F = { q:'', fam:'', st:'', only:'' };
@@ -4506,7 +4529,40 @@ function prcGate(){
   }catch(e){ /* לפני טעינת המשתמש */ }
 }
 const prcAdmin = () => !!(ME && ME.role === 'admin');
-const prcCost = r => { const v = Number(r.cost);       return v > 0 ? v : null; };
+/* ── מנוע העלות (6.18.0) — עלויות ידניות בלבד; הגנת מעגל והתפשטות null כמות שהן מ-v13 ── */
+const prcLF = e => { if(e && Number(e.load_override)>0) return Number(e.load_override);
+  const s = PRC_SET||{}; const m = {'יבוא':s.load_import,'ייצור':s.load_manufacture,'מורכב':s.load_assembled,'קניה בארץ':s.load_local};
+  const v = Number(e ? m[e.source] : 0); return v>0 ? v : 1; };
+function prcCB(pn, seen){
+  seen = seen || {};
+  if(seen[pn]) return null;              /* הגנת מעגל בעץ המוצר */
+  seen[pn] = true;
+  const out = prcCB_(pn, seen);
+  delete seen[pn];                       /* מאפשר יהלום: שני אבות לאותו רכיב */
+  return out;
+}
+function prcCB_(pn, seen){
+  const e = PRC_EXT[pn];
+  if(!e) return null;
+  const rate = Number((PRC_SET||{}).usd_rate) || 3.3;
+  if(e.source==='מורכב'){
+    const kids = PRC_BOM[pn] || [];
+    if(!kids.length) return null;
+    let t = 0;
+    for(const k of kids){
+      const c = prcCB(k.child, seen);
+      if(c==null) return null;           /* רכיב חסר עלות ⇒ null לכל האב, במכוון */
+      t += c * (Number(k.qty)||1);
+    }
+    return t;
+  }
+  if(Number(e.cost_ils)>0) return Number(e.cost_ils);
+  if(Number(e.cost_usd)>0) return Number(e.cost_usd) * rate;
+  return null;
+}
+const prcCA = pn => { const c = prcCB(pn); return c==null ? null : c * prcLF(PRC_EXT[pn]); };
+const prcCost = r => { const m = prcCA(r.partname); if(m!=null) return m; const v = Number(r.cost); return v > 0 ? v : null; };
+const prcCostSrc = r => prcCA(r.partname)!=null ? 'ידני' : (Number(r.cost)>0 ? 'פריוריטי' : null);
 const prcEx   = r => { const v = Number(r.price_base); return v > 0 ? v : null; };
 const prcInc  = r => { const v = Number(r.price_vat); if(v > 0) return v; const e = prcEx(r); return e == null ? null : e * (1 + PRC_VAT); };
 function prcMargin(r){ const c = prcCost(r), p = prcEx(r); return (c == null || p == null) ? null : (p - c) / p; }
@@ -4529,10 +4585,23 @@ async function prcLoad(force){
   if(PRC_LOADED && !force) return;
   PRC_LOADING = true; PRC_TRIED = true; PRC_ERR = ''; prcBody();
   try{
-    const res = await sb.schema('ord').from('inv_items')
-      .select(PRC_COLS_SEL).order('partname',{ascending:true}).limit(10000);
-    if(res.error) throw res.error;
-    PRC = res.data || [];
+    const o = sb.schema('ord');
+    const [ri, rl, rp, rs, re2, rb] = await Promise.all([
+      o.from('inv_items').select(PRC_COLS_SEL).order('partname',{ascending:true}).limit(10000),
+      o.from('price_lists').select('plname,pldes,special,items_count').order('plname'),
+      o.from('price_list_items').select('plname,partname,price,percent,dprice,vat_price,dvat_price').limit(20000),
+      o.from('prc_settings').select('*').eq('id',1).maybeSingle(),
+      o.from('prc_item_ext').select('*').limit(10000),
+      o.from('prc_bom').select('parent,child,qty').limit(2000)
+    ]);
+    for(const r of [ri, rl, rp, rs, re2, rb]) if(r.error) throw r.error;
+    PRC = ri.data || [];
+    PRC_PL = rl.data || [];
+    PRC_PLI = {}; (rp.data||[]).forEach(x=>{ (PRC_PLI[x.partname] = PRC_PLI[x.partname]||[]).push(x); });
+    PRC_SET = rs.data || null;
+    if(PRC_SET && Number(PRC_SET.vat)>0) PRC_VAT = Number(PRC_SET.vat);
+    PRC_EXT = {}; (re2.data||[]).forEach(x=>{ PRC_EXT[x.partname] = x; });
+    PRC_BOM = {}; (rb.data||[]).forEach(x=>{ (PRC_BOM[x.parent] = PRC_BOM[x.parent]||[]).push(x); });
     PRC_LOADED = true;
   }catch(e){
     PRC_ERR = 'שגיאה בטעינת נתוני התמחור: ' + (e && e.message ? e.message : String(e));
@@ -4576,7 +4645,7 @@ function prcViews(){
   const el = $('#prc-views'); if(!el) return;
   const exc = PRC_LOADED ? prcIssues(prcFiltered()).total : 0;
   const V = [['db','מאגר תמחור',PRC.length],['marg','ניתוח מרווחים',null],['list','מחירון ללקוח',null],
-             ['side','עלויות נלוות',null],['exc','חריגים בתמחור',exc]];
+             ['side','עלויות נלוות',null],['exc','חריגים בתמחור',exc],['set','הגדרות תמחור',null]];
   el.innerHTML = V.map(v => '<button class="chip' + (PRC_VIEW===v[0]?' active':'') + '" data-prc-view="' + v[0] + '">' + v[1]
     + (v[2]==null ? '' : ' <span class="n">' + fmtNum(v[2]) + '</span>') + '</button>').join('');
   el.querySelectorAll('[data-prc-view]').forEach(b => b.onclick = ()=>{ PRC_VIEW = b.dataset.prcView; renderPrc(); navMark(); });
@@ -4625,6 +4694,7 @@ const PRC_DB_COLS = [
   { t:'עלות',           f:r=>prcMoney(prcCost(r)), s:r=>prcCost(r)||0 },
   { t:'מחיר ללא מע״מ',  f:r=>prcMoney(prcEx(r)),   s:r=>prcEx(r)||0 },
   { t:'מחיר כולל מע״מ', f:r=>prcMoney(prcInc(r)),  s:r=>prcInc(r)||0 },
+  { t:'מקור עלות',      f:r=>{ const cs=prcCostSrc(r); return cs==null ? '—' : '<span class="inv-st '+(cs==='ידני'?'grn':'org')+'">'+cs+'</span>'; }, s:r=>prcCostSrc(r)==='ידני'?0:1 },
   { t:'מרווח',          f:r=>prcMPill(prcMargin(r)), s:r=>prcMargin(r)==null?-9:prcMargin(r) },
   { t:'מכפלה',          f:r=>prcXf(prcMult(r)), s:r=>prcMult(r)||0 }
 ];
@@ -4643,7 +4713,7 @@ function prcDbView(){
     ['עם מחיר עלות',  fmtNum(withC), pc(withC)],
     ['ניתן לחשב מרווח', fmtNum(both), 'מרווח ממוצע ' + prcPct(avg)]
   ]);
-  h += '<div class="note">כל השדות במסך נקראים ממסך המק״טים ואינם נמשכים בנפרד. העלות היא שדה העלות במק״ט, המחיר ללא מע״מ הוא מחיר הבסיס, והמחיר כולל מע״מ הוא השדה הייעודי או חישוב לפי ' + (PRC_VAT*100).toFixed(0) + '% כשהוא ריק. המרווח מחושב כרווח חלקי מחיר המכירה, ולא כמכפלה על העלות.</div>';
+  h += '<div class="note">העלות המוצגת היא העלות הידנית שבמערכת — מקור האמת לפי הכרעת רומן 03/08/2026. כשאין עלות ידנית מוצגת עלות פריוריטי לתצוגה בלבד (עמודת "מקור עלות" מבחינה ביניהן), המחיר ללא מע״מ הוא מחיר הבסיס, והמחיר כולל מע״מ הוא השדה הייעודי או חישוב לפי ' + (PRC_VAT*100).toFixed(0) + '% כשהוא ריק. המרווח מחושב כרווח חלקי מחיר המכירה, ולא כמכפלה על העלות.</div>';
   h += prcTable(rows, PRC_DB_COLS, 'prc-db');
   return h;
 }
@@ -4658,6 +4728,26 @@ const PRC_BUCKETS = [
   ['מעל 90%',      m=> m>=0.90]
 ];
 
+function prcPlMargTable(){
+  /* 6.18.0 — מרווח בפועל: מחיר המחירון האמיתי מול העלות הידנית המועמסת */
+  if(!PRC_PL.length) return '';
+  const exd = x => Number(x.dprice)>0 ? Number(x.dprice) : (Number(x.price)>0 ? Number(x.price)*(1-(Number(x.percent)||0)/100) : null);
+  const agg = {};
+  prcFiltered().forEach(r=>{ (PRC_PLI[r.partname]||[]).forEach(x=>{
+    const e = exd(x), c = prcCost(r);
+    if(e==null || e<=0 || c==null) return;
+    (agg[x.plname] = agg[x.plname]||[]).push((e-c)/e);
+  }); });
+  const ks = Object.keys(agg); if(!ks.length) return '';
+  return '<div class="inv-sec"><div class="inv-sec-h">מרווח בפועל לפי מחירון <span class="sub">מחיר המחירון מול העלות שבמערכת</span></div></div>'
+    + '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>מחירון</th><th>פריטים עם עלות</th><th>ממוצע</th><th>חציון</th><th>מזערי</th><th>מרבי</th><th>הפסדיים</th></tr></thead><tbody>'
+    + PRC_PL.filter(p=>agg[p.plname]).map(p=>{ const a = agg[p.plname];
+        return '<tr><td class="clip">'+esc(p.plname)+'</td><td>'+fmtNum(a.length)+'</td><td>'+prcMPill(a.reduce((x,y)=>x+y,0)/a.length)
+          +'</td><td>'+prcPct(prcMed(a))+'</td><td>'+prcPct(Math.min.apply(null,a))+'</td><td>'+prcPct(Math.max.apply(null,a))
+          +'</td><td>'+fmtNum(a.filter(m=>m<=0).length)+'</td></tr>';
+      }).join('')
+    + '</tbody></table></div>';
+}
 function prcMargView(){
   const rows = prcFiltered().filter(r=>prcMargin(r)!=null);
   if(!rows.length) return '<div class="empty">אין מק״טים שיש להם גם עלות וגם מחיר בסינון הנוכחי</div>';
@@ -4691,18 +4781,46 @@ function prcMargView(){
 }
 
 function prcListView(){
-  const rows = prcFiltered();
+  /* 6.18.0 — מחירוני פריוריטי האמיתיים מ-ord.price_list_items. שבע קבוצות v13 בוטלו. */
+  if(!PRC_PL.length) return '<div class="empty">לא נטענו מחירונים. מסך "פריטים במחירון" מנהל את הסנכרון — פעם ביום ב-07:00 או בהפעלה ידנית.</div>';
+  const names = PRC_PL.map(p=>p.plname);
+  if(!PRC_LIST_PL || names.indexOf(PRC_LIST_PL)===-1) PRC_LIST_PL = names[0];
+  const cnt = {};
+  Object.keys(PRC_PLI).forEach(pn=>PRC_PLI[pn].forEach(x=>{ cnt[x.plname]=(cnt[x.plname]||0)+1; }));
+  let h = '<div class="prc-chips">' + PRC_PL.map(p=>'<button class="prc-chip'+(PRC_LIST_PL===p.plname?' active':'')+'" style="cursor:pointer;border:0'+(PRC_LIST_PL===p.plname?';box-shadow:0 0 0 2px var(--navy) inset':'')+'" onclick="prcPickPl(this.dataset.pl)" data-pl="'+esc(p.plname)+'">'+esc(p.plname)+' <b>'+fmtNum(cnt[p.plname]||0)+'</b></button>').join('') + '</div>';
+  const exd = x => Number(x.dprice)>0 ? Number(x.dprice) : (Number(x.price)>0 ? Number(x.price)*(1-(Number(x.percent)||0)/100) : null);
+  const rows = prcFiltered().map(r=>{
+    const x = (PRC_PLI[r.partname]||[]).find(y=>y.plname===PRC_LIST_PL);
+    return x ? { r:r, x:x } : null;
+  }).filter(Boolean);
+  const withM = rows.filter(w=>{ const c=prcCost(w.r), e=exd(w.x); return c!=null && e!=null && e>0; });
+  const ms = withM.map(w=>(exd(w.x)-prcCost(w.r))/exd(w.x));
+  h += prcKpis([
+    ['פריטים במחירון', fmtNum(rows.length)],
+    ['ניתן לחשב מרווח', fmtNum(withM.length)],
+    ['מרווח ממוצע', ms.length ? prcPct(ms.reduce((a,b)=>a+b,0)/ms.length) : '—'],
+    ['מרווח חציוני', ms.length ? prcPct(prcMed(ms)) : '—']
+  ]);
+  h += '<div class="note">המחירים נמשכים ממחירוני פריוריטי שסונכרנו מראש למערכת — אותו מקור שמזין את מסך "פריטים במחירון" ואת פורטל הלקוחות. המרווח מחושב מול העלות הידנית שבמערכת (מחיר סופי לפני מע״מ פחות עלות מועמסת, חלקי המחיר).</div>';
   const cols = [
-    { t:'מק״ט',      f:r=>esc(r.partname), cls:'clip' },
-    { t:'תיאור',     f:r=>esc(r.partdes||'—'), cls:'td-desc' },
-    { t:'עלות',      f:r=>prcMoney(prcCost(r)), s:r=>prcCost(r)||0 },
-    { t:'מחיר בסיס', f:r=>prcMoney(prcEx(r)),   s:r=>prcEx(r)||0 }
-  ].concat(PRC_GROUPS.map(g=>({ t:esc(g), f:()=>'<span class="prc-na">—</span>' })));
-  let h = '<div class="prc-chips">' + PRC_GROUPS.map(g=>'<div class="prc-chip">' + esc(g) + ' <b>טרם הוגדר</b></div>').join('') + '</div>';
-  h += '<div class="note prc-warn">המסך הזה מוצג במבנה בלבד ואינו מציג מספרים. מחירון לפי קבוצת לקוח דורש נתונים שאינם קיימים היום במסך המק״טים: אחוז מרווח לכל קבוצה, מטריצת קטגוריה ותת־קטגוריה, וחריגים ברמת מק״ט בודד. כל עוד הם לא הוגדרו — העמודות נשארות ריקות במכוון, כדי שלא יוצגו מחירים משוערים שאפשר לטעות ולשלוח ללקוח.</div>';
-  h += prcTable(rows, cols, 'prc-list');
+    { t:'מק״ט',                 f:w=>esc(w.r.partname), cls:'clip' },
+    { t:'תיאור',                f:w=>esc(w.r.partdes||'—'), cls:'td-desc' },
+    { t:'עלות',                 f:w=>prcMoney(prcCost(w.r)), s:w=>prcCost(w.r)||0 },
+    { t:'מחיר מלא כולל מע״מ',   f:w=>prcMoney(Number(w.x.vat_price)>0?Number(w.x.vat_price):null), s:w=>Number(w.x.vat_price)||0 },
+    { t:'% הנחה',               f:w=>Number(w.x.percent)>0 ? fmtNum(w.x.percent)+'%' : '—', s:w=>Number(w.x.percent)||0 },
+    { t:'מחיר סופי כולל מע״מ',  f:w=>prcMoney(Number(w.x.dvat_price)>0?Number(w.x.dvat_price):(Number(w.x.vat_price)>0?Number(w.x.vat_price):null)), s:w=>Number(w.x.dvat_price)||0 },
+    { t:'מרווח',                f:w=>{ const c=prcCost(w.r), e=exd(w.x); return prcMPill((c==null||e==null||e<=0)?null:(e-c)/e); }, s:w=>{ const c=prcCost(w.r), e=exd(w.x); return (c==null||e==null||e<=0)?-9:(e-c)/e; } }
+  ];
+  if(!rows.length) return h + '<div class="empty">אין פריטים מהסינון הנוכחי במחירון הזה</div>';
+  const shown = rows.slice(0, pgLim('prc-list'));
+  h += '<div class="tbl-wrap"><table class="tbl"><thead><tr>' + cols.map(c=>'<th>'+c.t+'</th>').join('') + '</tr></thead><tbody>';
+  shown.forEach(w=>{
+    h += '<tr data-pn="' + esc(w.r.partname) + '" style="cursor:pointer">' + cols.map(c=>'<td' + (c.cls?' class="'+c.cls+'"':'') + '>' + c.f(w) + '</td>').join('') + '</tr>';
+  });
+  h += '</tbody></table></div>' + pgFoot('prc-list', rows.length, 'פריטים');
   return h;
 }
+window.prcPickPl = pl => { PRC_LIST_PL = pl; prcBody(); };
 
 const PRC_SIDE_COLS = [
   { t:'מק״ט',           f:r=>esc(r.partname), cls:'clip' },
@@ -4740,12 +4858,16 @@ function prcIssues(rows){
   const loss    = src.filter(r=>{ const m=prcMargin(r); return m!=null && m<=0; });
   const lowM    = src.filter(r=>{ const m=prcMargin(r); return m!=null && m>0 && m<0.20; });
   const hiM     = src.filter(r=>{ const m=prcMargin(r); return m!=null && m>0.95; });
+  const exdI    = x => Number(x.dprice)>0 ? Number(x.dprice) : (Number(x.price)>0 ? Number(x.price)*(1-(Number(x.percent)||0)/100) : null);
+  const plNoC   = src.filter(r=>(PRC_PLI[r.partname]||[]).length && prcCost(r)==null);
+  const plLoss  = src.filter(r=>{ const c = prcCost(r); if(c==null) return false;
+    return (PRC_PLI[r.partname]||[]).some(x=>{ const e = exdI(x); return e!=null && e>0 && e<=c; }); });
   const vatOff  = src.filter(r=>{ const e=prcEx(r), v=Number(r.price_vat); return e!=null && v>0 && Math.abs(v - e*(1+PRC_VAT)) > 0.02; });
   const instNoP = src.filter(r=>r.needs_install && !(Number(r.install_price_iron)>0));
   const stockNo = src.filter(r=>Number(r.qty)>0 && prcEx(r)==null);
-  const total   = new Set([].concat(noPrice,noCost,costNoP,loss,lowM,hiM,vatOff,instNoP,stockNo).map(r=>r.partname)).size;
+  const total   = new Set([].concat(noPrice,noCost,costNoP,loss,lowM,hiM,vatOff,instNoP,stockNo,plNoC,plLoss).map(r=>r.partname)).size;
   return { noPrice:noPrice, noCost:noCost, costNoP:costNoP, loss:loss, lowM:lowM, hiM:hiM,
-           vatOff:vatOff, instNoP:instNoP, stockNo:stockNo, total:total };
+           vatOff:vatOff, instNoP:instNoP, stockNo:stockNo, plNoC:plNoC, plLoss:plLoss, total:total };
 }
 
 const PRC_EXC_COLS = [
@@ -4771,7 +4893,9 @@ function prcExcView(){
     ['מרווח מעל 95%', iss.hiM, false, 'מרווח גבוה באופן חריג. לרוב זה סימן שהעלות שגויה או חסרה בפריוריטי ולא שהמוצר באמת רווחי כל כך.'],
     ['מחיר כולל מע״מ שאינו תואם', iss.vatOff, true, 'המחיר כולל מע״מ אינו שווה למחיר הבסיס כפול שיעור המע״מ. אחד משני השדות עודכן והשני לא, וזה גורם למחיר שונה בין מסמכים.'],
     ['דורש התקנה בלי מחיר התקנה', iss.instNoP, false, 'המק״ט מסומן כדורש התקנה אך אין לו מחיר התקנה, ולכן ההצעה ללקוח תצא חסרה או תתומחר ידנית.'],
-    ['יש מלאי אך אין מחיר', iss.stockNo, true, 'סחורה יושבת במחסן בלי מחיר מכירה. זה כסף שאי אפשר למכור בלי החלטת תמחור.']
+    ['יש מלאי אך אין מחיר', iss.stockNo, true, 'סחורה יושבת במחסן בלי מחיר מכירה. זה כסף שאי אפשר למכור בלי החלטת תמחור.'],
+    ['במחירון ללקוח אך ללא עלות', iss.plNoC, true, 'הפריט נמכר ללקוחות דרך מחירון פריוריטי, אבל אין לו עלות ידנית במערכת — אי אפשר לדעת אם המכירה רווחית. אלה הפריטים הדחופים ביותר להשלמת עלות.'],
+    ['מחיר מחירון מתחת לעלות', iss.plLoss, true, 'לפחות באחד המחירונים המחיר הסופי ללקוח (לפני מע״מ) שווה לעלות המועמסת או נמוך ממנה — מכירה מפסידה בפועל, לא תיאורטית.']
   ];
   if(PRC_EXC >= B.length) PRC_EXC = 0;
   let h = '<div class="inv-dq">' + B.map((b,i)=>'<div class="q' + (b[2]?' bad':'') + '" data-prc-exc="' + i + '"'
@@ -4783,6 +4907,34 @@ function prcExcView(){
   return h;
 }
 
+function prcSetView(){
+  /* 6.18.0 — הגדרות תמחור ניתנות לעריכה (הכרעת רומן 03/08/2026) */
+  const s = PRC_SET;
+  if(!s) return '<div class="empty">הגדרות התמחור לא נטענו — נסה רענון נתונים</div>';
+  const f = (id,l,v,hint) => '<div class="field"><label>'+esc(l)+'</label><input id="'+id+'" type="text" inputmode="decimal" dir="ltr" value="'+esc(v==null?'':String(v))+'">'+(hint?'<div class="auto-hint">'+esc(hint)+'</div>':'')+'</div>';
+  return '<div class="note"><b>העלויות במערכת הן עלויות ידניות</b> — הכרעת רומן 03/08/2026. העלות שמגיעה מפריוריטי אינה מקור אמת (הערכים שם שגויים כרגע), ובהמשך המערכת תדחוף את העלויות אל פריוריטי — כיוון הזרימה של העלות הוא מהמערכת החוצה, הפוך מהמחירונים. שינוי כאן משפיע מיידית על כל חישובי המרווח במסך.</div>'
+    + '<div class="sku-box"><div class="bx-t">פרמטרים כלל-מערכתיים</div><div class="ig">'
+    + f('prc-usd','שער דולר', s.usd_rate, 'משמש להמרת עלות דולרית של מוצרי יבוא')
+    + f('prc-vatx','מע״מ (שבר עשרוני)', s.vat, 'לדוגמה 0.18')
+    + f('prc-l-imp','מקדם העמסה — יבוא', s.load_import)
+    + f('prc-l-man','מקדם העמסה — ייצור', s.load_manufacture)
+    + f('prc-l-asm','מקדם העמסה — מורכב', s.load_assembled)
+    + f('prc-l-loc','מקדם העמסה — קניה בארץ', s.load_local)
+    + '</div><button class="btn green" onclick="prcSetSave()">שמירה</button><div class="err" id="prc-set-err"></div></div>'
+    + '<div class="note">מקדם ההעמסה מוכפל בעלות לפי מקור המוצר (יבוא / ייצור / מורכב / קניה בארץ); עקיפה פרטנית למק״ט בודד נשמרת בנתוני הפריט. במערכת כרגע '+fmtNum(Object.keys(PRC_EXT).length)+' פריטים עם נתוני עלות ידניים ו-'+fmtNum(Object.keys(PRC_BOM).length)+' מוצרים מורכבים עם עץ מוצר.</div>';
+}
+window.prcSetSave = async ()=>{
+  const g = id => { const v = Number(String($(id).value).trim().replace(',','.')); return isFinite(v)&&v>0 ? v : null; };
+  const p = { usd_rate:g('#prc-usd'), vat:g('#prc-vatx'), load_import:g('#prc-l-imp'),
+              load_manufacture:g('#prc-l-man'), load_assembled:g('#prc-l-asm'), load_local:g('#prc-l-loc'),
+              updated_by:(ME && (ME.email||ME.full_name)) || null, updated_at:new Date().toISOString() };
+  for(const k of ['usd_rate','vat','load_import','load_manufacture','load_assembled','load_local'])
+    if(p[k]==null){ $('#prc-set-err').textContent = 'כל הערכים חייבים להיות מספרים חיוביים'; return; }
+  const res = await sb.schema('ord').from('prc_settings').update(p).eq('id',1).select().maybeSingle();
+  if(res.error){ $('#prc-set-err').textContent = 'השמירה נכשלה: ' + res.error.message; return; }
+  if(res.data){ PRC_SET = res.data; if(Number(PRC_SET.vat)>0) PRC_VAT = Number(PRC_SET.vat); }
+  toast('הגדרות התמחור נשמרו'); prcBody();
+};
 function prcBody(){
   const el = $('#prc-body'); if(!el) return;
   if(!prcAdmin()){ el.innerHTML = '<div class="empty">המסך פתוח למנהלי מערכת בלבד</div>'; return; }
@@ -4794,7 +4946,7 @@ function prcBody(){
     return;
   }
   if(!PRC_LOADED){ el.innerHTML = '<div class="empty">אין נתונים להצגה</div>'; return; }
-  el.innerHTML = PRC_VIEW==='marg' ? prcMargView() : PRC_VIEW==='list' ? prcListView()
+  el.innerHTML = PRC_VIEW==='set' ? prcSetView() : PRC_VIEW==='marg' ? (prcPlMargTable() + prcMargView()) : PRC_VIEW==='list' ? prcListView()
                : PRC_VIEW==='side' ? prcSideView() : PRC_VIEW==='exc' ? prcExcView() : prcDbView();
   el.onclick = ev=>{
     const q = ev.target.closest('[data-prc-exc]');
@@ -4818,6 +4970,7 @@ function prcExport(){
     ['סטטוס',           r=>r.erp_status||''],
     ['יתרה',            r=>Number(r.qty)||0],
     ['עלות',            r=>prcCost(r)==null?'':Number(prcCost(r).toFixed(2))],
+    ['מקור עלות',       r=>prcCostSrc(r)||''],
     ['מחיר ללא מע״מ',   r=>prcEx(r)==null?'':Number(prcEx(r).toFixed(2))],
     ['מחיר כולל מע״מ',  r=>prcInc(r)==null?'':Number(prcInc(r).toFixed(2))],
     ['מרווח באחוזים',   r=>prcMargin(r)==null?'':Number((prcMargin(r)*100).toFixed(1))],

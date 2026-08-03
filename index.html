@@ -1099,7 +1099,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.21.0</div>
+      <div class="ver">גרסה 6.22.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1197,7 +1197,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.21.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.22.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -4566,51 +4566,91 @@ function openPoSups(){
 
 /* ===== מסמכים ופרוטוקולים — נטיבי (עמוד החתימה sign.html נשאר כמו שהוא) ===== */
 let DOC_FILTER='sent';
+/* 6.22.0 — סינון לפי קטגוריית מסמך, בנוסף לסינון לפי סטטוס חתימה. */
+let DOC_CAT='all';
 const TOKEN_AB='abcdefghjkmnpqrstuvwxyz23456789';
 function genToken(n=14){ const a=new Uint8Array(n); crypto.getRandomValues(a); return [...a].map(x=>TOKEN_AB[x%TOKEN_AB.length]).join(''); }
 const signUrl = t => new URL('sign.html?t='+t, location.href).href;
 const viewUrl = t => new URL('sign.html?view='+t, location.href).href;
 function waLink(phone, text){ let d=digitsOf(phone); if(d.startsWith('0')) d='972'+d.slice(1); return 'https://wa.me/'+d+'?text='+encodeURIComponent(text); }
 window.copyTxt = async t=>{ try{ await navigator.clipboard.writeText(t); alert('הקישור הועתק ✓'); }catch(_e){ prompt('העתקה ידנית:', t); } };
+/* 6.22.0 — ארבע קטגוריות המסמכים. כל קטגוריה נשלטת במפתח הרשאה משלה
+   docs.quotes / docs.protocols / docs.reports / docs.media. */
+const DOC_CATS = [
+  ['quotes','הצעות מחיר'], ['protocols','פרוטוקולים'],
+  ['reports','דוחות תקינות'], ['media','תמונות מהשטח']
+];
+const docCatLabel = c => (DOC_CATS.find(x=>x[0]===c) || ['', c||'—'])[1];
+/* 6.22.0 — האסימון של המסמך הוא הרשאת חתימה לכל דבר: מי שמחזיק בו יכול
+   לחתום במקום הלקוח. לכן הוא כבר אינו נטען יחד עם הרשימה ואינו מגיע ל-DOM,
+   ונמשך מהשרת רק ברגע הלחיצה דרך ord.protocol_link — שמאמת can_view
+   לצפייה במסמך חתום ו-can_edit להפקת קישור חתימה. */
+window.openDocLink = async (id, mode)=>{
+  const p = PROTS.find(x=>x.id===id);
+  /* פותחים את הלשונית מיד עם הלחיצה, לפני ההמתנה לשרת. אחרת חוסם החלונות
+     הקופצים של הדפדפן יבלע אותה, כי אישור המשתמש פג במהלך ה-await. */
+  const tab = (mode==='open'||mode==='wa') ? window.open('', '_blank') : null;
+  const { data, error } = await sb.schema('ord').rpc('protocol_link', { p_id:id });
+  if(error || !data || !data.token){
+    if(tab){ try{ tab.close(); }catch(_e){} }
+    alert('הפקת הקישור נכשלה — ' + ((error&&error.message)||'אין לך הרשאה למסמך הזה'));
+    return;
+  }
+  const url = data.kind==='view' ? viewUrl(data.token) : signUrl(data.token);
+  if(tab){ tab.location.href = (mode==='wa'&&p&&p.phone) ? waLink(p.phone, waProtocolMsg(p, url)) : url; return; }
+  copyTxt(url);
+};
 function docChips(){
-  const sent=PROTS.filter(p=>p.status!=='נחתם'), signed=PROTS.filter(p=>p.status==='נחתם');
+  const base = PROTS.filter(p=>DOC_CAT==='all'||(p.category||'protocols')===DOC_CAT);
+  const sent=base.filter(p=>p.status!=='נחתם'), signed=base.filter(p=>p.status==='נחתם');
   $('#doc-chips').innerHTML = `
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+      <button class="chip ${DOC_CAT==='all'?'active':''}" onclick="setDocCat('all')">כל הקטגוריות ${PROTS.length}</button>
+      ${DOC_CATS.map(([k,lb])=>`<button class="chip ${DOC_CAT===k?'active':''}" onclick="setDocCat('${k}')">${lb} ${PROTS.filter(p=>(p.category||'protocols')===k).length}</button>`).join('')}
+    </div>
     <button class="chip ${DOC_FILTER==='sent'?'active':''}" onclick="setDocFilter('sent')">ממתינים לחתימה ${sent.length}</button>
     <button class="chip ${DOC_FILTER==='signed'?'active':''}" onclick="setDocFilter('signed')">נחתמו ${signed.length}</button>
-    <button class="chip ${DOC_FILTER==='all'?'active':''}" onclick="setDocFilter('all')">הכל ${PROTS.length}</button>`;
+    <button class="chip ${DOC_FILTER==='all'?'active':''}" onclick="setDocFilter('all')">הכל ${base.length}</button>`;
 }
 window.setDocFilter=f=>{DOC_FILTER=f;renderDocs();navMark();};
+window.setDocCat=c=>{DOC_CAT=c;renderDocs();navMark();};
 function docRow(p){
   const signed=p.status==='נחתם';
+  const cat=p.category||'protocols';
+  const mayLink=window.canEdit('docs.'+cat);
   return `<div class="lead" style="cursor:default">
     <div style="flex:1"><div class="nm">${esc(p.customer_name||'—')} <small style="color:#94a3b8;font-weight:400">· ${esc(p.doc_type)}${p.order_number?' · '+esc(p.order_number):''}</small></div>
-    <div class="meta">נשלח ${p.sent_at?new Date(p.sent_at).toLocaleDateString('he-IL'):'—'}${signed?' · נחתם '+new Date(p.signed_at).toLocaleDateString('he-IL')+(p.signer_name?' ע"י '+esc(p.signer_name):''):''}</div>
+    <div class="meta">${esc(docCatLabel(cat))} · נשלח ${p.sent_at?new Date(p.sent_at).toLocaleDateString('he-IL'):'—'}${signed?' · נחתם '+new Date(p.signed_at).toLocaleDateString('he-IL')+(p.signer_name?' ע"י '+esc(p.signer_name):''):''}</div>
     <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
-      ${signed?`<a class="chip" style="text-decoration:none" href="${viewUrl(p.token)}" target="_blank">📄 צפייה במסמך החתום</a>`
-        :`<button class="chip" onclick="copyTxt('${signUrl(p.token)}')">🔗 העתקת קישור</button>
-          ${p.phone?`<a class="chip" style="text-decoration:none" target="_blank" href="${waLink(p.phone, waProtocolMsg(p, signUrl(p.token)))}">💬 וואטסאפ</a>`:''}`}
+      ${signed?`<button class="chip" onclick="openDocLink('${p.id}','open')">📄 צפייה במסמך החתום</button>`
+        :(mayLink?`<button class="chip" onclick="openDocLink('${p.id}','copy')">🔗 העתקת קישור</button>
+          ${p.phone?`<button class="chip" onclick="openDocLink('${p.id}','wa')">💬 וואטסאפ</button>`:''}`
+        :`<span class="meta" style="color:#94a3b8">אין לך הרשאה להפיק קישור חתימה בקטגוריה הזו</span>`)}
     </div></div>
     <span class="pill ${signed?'st-rel':'st-def'}">${esc(p.status)}</span></div>`;
 }
 function renderDocs(){
   docChips();
   const q=($('#docSearch').value||'').trim();
-  let list = DOC_FILTER==='all'?PROTS:(DOC_FILTER==='signed'?PROTS.filter(p=>p.status==='נחתם'):PROTS.filter(p=>p.status!=='נחתם'));
+  let list = PROTS.filter(p=>DOC_CAT==='all'||(p.category||'protocols')===DOC_CAT);
+  list = DOC_FILTER==='all'?list:(DOC_FILTER==='signed'?list.filter(p=>p.status==='נחתם'):list.filter(p=>p.status!=='נחתם'));
   if(q) list=list.filter(p=>(p.customer_name||'').includes(q)||(p.order_number||'').includes(q));
-  $('#docs-list').innerHTML = capped(list, docRow, 'אין מסמכים בסינון הזה');
+  $('#docs-list').innerHTML = capped(list, p=>docRow(p), 'אין מסמכים בסינון הזה');
 }
 $('#docSearch').addEventListener('input', renderDocs);
+/* 6.22.0 — היצירה עברה לשרת. ord.protocol_create מייצר את האסימון, קובע את
+   הקטגוריה, בודק can_edit ורושם את היומן בעצמו. לכן אין כאן יותר לא ייצור
+   אסימון בדפדפן, לא כתיבה ישירה לטבלה ולא רישום יומן מצד הלקוח. */
 window.createProtocol = async (orderId)=>{
   const o = ORDS.find(x=>x.id===orderId); if(!o) return;
+  if(!window.canEdit('docs.protocols')){ alert('אין לך הרשאת עריכה בקטגוריית הפרוטוקולים.'); return; }
   if(!confirm('ליצור קישור חתימה לפרוטוקול הכנה עבור '+(o.customer_name||o.order_number)+'?')) return;
-  const token = genToken();
-  const row = { order_id:o.id, order_number:o.order_number, customer_name:o.customer_name, phone:o.phone,
-    doc_type:'פרוטוקול הכנה להתקנה', status:'נשלח', token, sent_by:ME.email };
-  const { error } = await sb.schema('ord').from('protocols').insert(row);
+  const { data, error } = await sb.schema('ord').rpc('protocol_create', {
+    p_order_id:o.id, p_call_id:null, p_deal_id:null,
+    p_category:'protocols', p_doc_type:'פרוטוקול הכנה להתקנה' });
   if(error){ alert('יצירת הפרוטוקול נכשלה: '+error.message); return; }
-  PROTS.unshift({...row, sent_at:new Date().toISOString()});
-  try{ await sb.schema('ord').from('audit_log').insert({ user_email:ME.email, action:'שליחת פרוטוקול לחתימה', entity:'הזמנה', entity_id:String(o.order_number), label:o.customer_name||'' }); }catch(_e){}
-  renderDocs(); renderOps(); openOrd(orderId);
+  if(data) PROTS.unshift(data);
+  renderDocs(); renderOps(); openOrd(orderId,'sales');
 };
 
 /* ===== תמחור ומחירונים — אדמיניסטרטור בלבד =====
@@ -5907,7 +5947,7 @@ async function loadLeads(){
     oldPart('service_calls'),   /* סכימת ord בפלטפורמה — מקור האמת */
     sb.schema('ord').from('teams').select('id,name,color,active,sort_order').order('sort_order',{ascending:true}),
     sb.schema('ord').from('inv_items').select(SKU_LIST_COLS).order('partname',{ascending:true}).limit(10000),
-    sb.schema('ord').from('protocols').select('id,order_id,call_id,order_number,customer_name,phone,doc_type,status,sent_at,signed_at,signer_name,token').order('sent_at',{ascending:false}).limit(10000),
+    sb.schema('ord').from('protocols_v').select('id,order_id,call_id,deal_id,order_number,customer_name,phone,doc_type,category,status,sent_at,signed_at,signer_name').order('sent_at',{ascending:false}).limit(10000),
     sb.schema('ord').from('settings').select('key,value').order('key',{ascending:true}),
     /* תמצית מצב הסנכרון — זמינה לכל אנשי הצוות. היומן המלא נשאר
        לאדמיניסטרטור בלבד (הגדרות ← יומן סנכרון). */
@@ -6600,9 +6640,11 @@ window.openOrd = (id, ctx)=>{
         return `<div class="other-row ${same?'same-addr':''}" onclick="goCard(()=>openOrd('${x.id}'${ctx?(",'"+ctx+"'"):''}))"><b>${esc(x.order_number)}</b><span>${fmtD(x.order_date)||'—'}</span><span>${x.items_count??'?'} פריטים</span>${x.address?`<span class="ob-note" title="כתובת משלוח: ${esc(x.address)}">${esc(String(x.address).slice(0,30))}</span>`:''}${same?'<span class="same-tag">אותה כתובת משלוח!</span>':''}</div>`;
       }).join('')}</div>`;
     })()}
-    ${(showSales && window.canView('crm.orders.docs'))?(()=>{ const ps=PROTS.filter(p=>p.order_id===o.id); return `<h2 class="sec">📄 מסמכים וחתימות (${ps.length})</h2>`+
-      (ps.map(p=>`<div class="row"><span class="k">${esc(p.doc_type)}${p.sent_at?' · '+new Date(p.sent_at).toLocaleDateString('he-IL'):''}</span><span class="v">${p.status==='נחתם'?`<a href="${viewUrl(p.token)}" target="_blank">📄 צפייה</a>`:`<a href="#" onclick="event.preventDefault();copyTxt('${signUrl(p.token)}')">🔗 קישור</a>`} <span class="pill ${p.status==='נחתם'?'st-rel':'st-def'}">${esc(p.status)}</span></span></div>`).join(''))+
-      (window.canEdit('crm.orders.docs')?`<button class="ghost" style="margin-top:8px" onclick="createProtocol('${o.id}')">➕ יצירת פרוטוקול הכנה לחתימה</button>`:''); })():''}
+    ${(showSales && window.canView('crm.orders.docs'))?(()=>{ /* 6.22.0 — הבלוק הזה הוא משטח חמישי למסמכים, ולכן הוא מצטלב: גם המפתח
+         crm.orders.docs וגם מפתח הקטגוריה docs.<category> חייבים לאשר. */
+      const ps=PROTS.filter(p=>p.order_id===o.id && window.canView('docs.'+(p.category||'protocols'))); return `<h2 class="sec">📄 מסמכים וחתימות (${ps.length})</h2>`+
+      (ps.map(p=>`<div class="row"><span class="k">${esc(p.doc_type)}${p.sent_at?' · '+new Date(p.sent_at).toLocaleDateString('he-IL'):''}</span><span class="v">${p.status==='נחתם'?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','open')">📄 צפייה</a>`:(window.canEdit('docs.'+(p.category||'protocols'))?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','copy')">🔗 קישור</a>`:'<span style="color:#94a3b8">אין הרשאה לקישור</span>')} <span class="pill ${p.status==='נחתם'?'st-rel':'st-def'}">${esc(p.status)}</span></span></div>`).join(''))+
+      ((window.canEdit('crm.orders.docs')&&window.canEdit('docs.protocols'))?`<button class="ghost" style="margin-top:8px" onclick="createProtocol('${o.id}')">➕ יצירת פרוטוקול הכנה לחתימה</button>`:''); })():''}
     <div class="modal-actions">
       <button class="btn btnw hidden" id="oe-save" onclick="saveOrd('${o.id}')">💾 שמירה</button>
       <div class="note hidden" id="oe-nosave">אין לך הרשאת עריכה לשדות שבכרטיס זה.</div>

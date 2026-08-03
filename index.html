@@ -951,7 +951,7 @@
   .inv-row .end .q{ font-size:16px; }
 }
 
-/* ══════ 6.18.0 — שכבת מובייל וטאבלט מלאה · MOBILE-6160 · רומן 02/08/2026 ══════ */
+/* ══════ 6.19.0 — שכבת מובייל וטאבלט מלאה · MOBILE-6160 · רומן 02/08/2026 ══════ */
 
 @media(max-width:1024px){
   html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
@@ -1063,7 +1063,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.18.0</div>
+      <div class="ver">גרסה 6.19.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1161,7 +1161,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.18.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.19.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5314,7 +5314,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.18.0</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.19.0</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
@@ -7354,6 +7354,118 @@ if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN).catch(e=>{ console.er
       '</body></html>';
     w.document.open(); w.document.write(html); w.document.close();
   }
+})();
+</script>
+<script>
+/* ===== קישוריות מק"ט רוחבית (בלוק עצמאי; הערת רומן 03/08/2026) =====
+   כל מק"ט שמוצג במערכת — בכרטיס ההזמנה, בפריטים במחירון, בכרטיס המלאי ובהזמנות הרכש —
+   לחיץ ומוביל לכרטיס הפריט, ומכרטיס הפריט אפשר לחזור אחורה למקום שממנו הגענו.
+   נשען על מסגרת הכרטיסים הקיימת (goCard / cardBack / closeCards) ולא מייצר מנגנון מקביל. */
+(function(){
+  'use strict';
+
+  /* --- עיצוב אחיד לקישורי מק"ט (מבוסס על .po-sku-link שכבר קיים) --- */
+  var st = document.createElement('style');
+  st.textContent =
+    '.sku-link{color:var(--navy);font-weight:700;cursor:pointer;text-decoration:underline dotted}' +
+    '.sku-link:hover{color:var(--green)}' +
+    '#orderItemsBox td.sku{cursor:pointer;color:var(--navy);text-decoration:underline dotted}' +
+    '#orderItemsBox td.sku:hover{color:var(--green)}' +
+    '#plb-overlay tbody td:first-child{cursor:pointer;color:#002D48;font-weight:700;text-decoration:underline dotted}' +
+    '#plb-overlay tbody td:first-child:hover{color:#0f9d6b}' +
+    '.sku-jump{border:1px solid #dbe3ec;background:#fff;border-radius:9px;padding:5px 11px;font-size:12.5px;' +
+      'cursor:pointer;font-family:inherit;color:var(--navy);font-weight:700;margin-bottom:12px}' +
+    '.sku-jump:hover{border-color:var(--green);color:var(--green)}';
+  document.head.appendChild(st);
+
+  function say(m){
+    try{ if(typeof toast === 'function'){ toast(m); return; } }catch(e){}
+    try{ window.alert(m); }catch(e){}
+  }
+  function known(pn){
+    try{ return (typeof SKUS !== 'undefined' && SKUS ? SKUS : []).some(function(s){ return String(s.partname) === pn; }); }
+    catch(e){ return false; }
+  }
+
+  /* --- הגשר: מכל מקום במערכת אל כרטיס הפריט, עם חזרה אוטומטית --- */
+  window.goSku = function(pn){
+    pn = String(pn == null ? '' : pn).trim();
+    if(!pn || typeof window.openSku !== 'function') return;
+    if(!known(pn)){ say('המק״ט ' + pn + ' אינו קיים במסך המק״טים'); return; }
+    var openCard = document.querySelector('.modal:not(.hidden)');
+    if(openCard && typeof window.goCard === 'function') window.goCard(function(){ window.openSku(pn); });
+    else window.openSku(pn);
+  };
+
+  /* --- כפתור חזרה מותאם בכרטיס הפריט, למסכים שאינם כרטיס (מסך המחירון) --- */
+  function skuBack(label, fn, tries){
+    tries = (tries == null) ? 40 : tries;
+    var modal = document.getElementById('skuModal');
+    var bar = (modal && !modal.classList.contains('hidden')) ? modal.querySelector('.card-bar') : null;
+    if(!bar){ if(tries > 0) setTimeout(function(){ skuBack(label, fn, tries - 1); }, 80); return; }
+    if(bar.querySelector('.sku-back-custom')) return;
+    var first = bar.firstElementChild;
+    if(first && first.tagName !== 'SPAN') return; /* כבר יש חזרה מובנית — לא נוגעים */
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'card-back sku-back-custom';
+    b.textContent = label;
+    b.addEventListener('click', function(ev){ ev.preventDefault(); fn(); });
+    if(first) bar.replaceChild(b, first);
+    else bar.insertBefore(b, bar.firstChild);
+  }
+
+  /* --- 1. כרטיס הזמנה — פירוט הפריטים מפריוריטי --- */
+  /* --- 2. פריטים במחירון — עמודת המק"ט --- */
+  document.addEventListener('click', function(ev){
+    var t = ev.target;
+    if(!t || !t.closest) return;
+    var td = t.closest('#orderItemsBox td.sku');
+    if(td){ ev.preventDefault(); window.goSku(td.textContent); return; }
+    var pl = t.closest('#plb-overlay tbody td:first-child');
+    if(pl){ ev.preventDefault(); plbJump(pl.textContent); return; }
+  });
+
+  function plbJump(pn){
+    pn = String(pn || '').trim();
+    if(!pn) return;
+    if(!known(pn)){ say('המק״ט ' + pn + ' אינו קיים במסך המק״טים'); return; }
+    var ov = document.getElementById('plb-overlay');
+    if(ov) ov.style.display = 'none';
+    window.openSku(pn);
+    skuBack('→ חזרה למחירון', function(){
+      try{ if(typeof window.closeCards === 'function') window.closeCards(); }catch(e){}
+      if(ov) ov.style.display = 'flex';
+    });
+  }
+
+  /* --- 3. כרטיס המלאי — קישור לכרטיס הפריט המלא --- */
+  if(typeof window.openInv === 'function'){
+    var _origOpenInv = window.openInv;
+    window.openInv = function(pn){
+      var r = _origOpenInv(pn);
+      try{ invSkuLink(pn); }catch(e){ console.error('sku link inv', e); }
+      return r;
+    };
+  }
+  function invSkuLink(pn){
+    var modal = document.getElementById('invModal');
+    if(!modal || modal.classList.contains('hidden')) return;
+    var sheet = modal.querySelector('.sheet');
+    if(!sheet || sheet.querySelector('.sku-jump')) return;
+    if(!known(String(pn))) return;
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'sku-jump';
+    b.textContent = 'לכרטיס הפריט המלא ←';
+    b.addEventListener('click', function(){ window.goSku(pn); });
+    var bar = sheet.querySelector('.card-bar');
+    if(bar && bar.nextSibling) sheet.insertBefore(b, bar.nextSibling);
+    else sheet.insertBefore(b, sheet.firstChild);
+  }
+
+  /* --- 4. הזמנות רכש — במקום לנתק לכרטיס בלי חזרה, ניווט כרטיס←כרטיס --- */
+  window.poGoSku = function(pn){ window.goSku(pn); };
 })();
 </script>
 </body>

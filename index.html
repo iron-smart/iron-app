@@ -951,7 +951,7 @@
   .inv-row .end .q{ font-size:16px; }
 }
 
-/* ══════ 6.19.2 — שכבת מובייל וטאבלט מלאה · MOBILE-6160 · רומן 02/08/2026 ══════ */
+/* ══════ 6.19.3 — שכבת מובייל וטאבלט מלאה · MOBILE-6160 · רומן 02/08/2026 ══════ */
 
 @media(max-width:1024px){
   html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
@@ -1063,7 +1063,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.19.2</div>
+      <div class="ver">גרסה 6.19.3</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1161,7 +1161,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.19.2</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.19.3</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5467,7 +5467,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.19.2</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.19.3</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
@@ -7401,13 +7401,14 @@ if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN).catch(e=>{ console.er
   };
 
   var YFN = SB_URL + '/functions/v1/yahav-send';
+  var YORIGIN = 'נעורים 37, פרדס חנה';   /* כתובת מוצא קבועה — מוגדרת גם בצד השרת */
   function yesc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
   function yfdt(d){ if(!d) return '—'; var t=new Date(d); return isNaN(t)?'—':t.toLocaleDateString('he-IL')+' '+t.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}); }
 
   async function injectYahav(id){
     var r = await sb.schema('ord').from('orders')
-      .select('id,order_number,delivery_method,customer_name,address,city,contact_name,phone,yahav_shipment_no,yahav_sent_at,yahav_status,yahav_status_at,yahav_packages,yahav_driver')
+      .select('id,order_number,delivery_method,customer_name,address,ship_addr1,ship_addr2,city,contact_name,phone,yahav_shipment_no,yahav_sent_at,yahav_status,yahav_status_at,yahav_packages,yahav_driver')
       .eq('id', id).maybeSingle();
     var o = r && r.data;
     if(!o || o.delivery_method !== 'יהב לוגיסטיקה') return;
@@ -7422,12 +7423,19 @@ if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN).catch(e=>{ console.er
     if(!o.yahav_shipment_no){
       d.innerHTML =
         '<div style="font-weight:800;font-size:13.5px;margin-bottom:8px">🚚 יהב לוגיסטיקה — שידור משלוח</div>' +
+        '<div style="font-size:12.5px;line-height:1.95;margin-bottom:10px;color:#243b4a">' +
+          '<div><span style="color:#5b6b78">מוצא:</span> <b>' + yesc(YORIGIN) + '</b></div>' +
+          '<div><span style="color:#5b6b78">כתובת למשלוח:</span> <b>' + yesc(o.ship_addr1 || o.address || '—') + '</b></div>' +
+          '<div><span style="color:#5b6b78">כתובת שורה 2:</span> ' + yesc(o.ship_addr2 || '—') + '</div>' +
+          '<div><span style="color:#5b6b78">עיר:</span> <b>' + yesc(o.city || '—') + '</b></div>' +
+        '</div>' +
         '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">' +
-          '<label style="font-size:13px">כמות חבילות:</label>' +
+          '<label style="font-size:13px">מספר קרטונים:</label>' +
           '<input id="yh-pkg" type="number" min="1" max="99" value="1" style="width:70px;padding:8px;border:1px solid #dbe3ec;border-radius:9px;font-size:13px;font-family:inherit;text-align:center">' +
           '<button type="button" id="yh-send" class="btn" style="width:auto;padding:9px 16px;font-size:13.5px">שדר ליהב</button>' +
         '</div>' +
-        '<div id="yh-msg" style="font-size:12.5px;margin-top:8px;color:#5b6b78">השידור פותח משלוח אצל יהב עם פרטי הלקוח והכתובת מההזמנה</div>';
+        '<textarea id="yh-note" rows="2" placeholder="הערות לשליח — יישלחו ליהב" style="width:100%;margin-top:9px;padding:8px 10px;border:1px solid #dbe3ec;border-radius:9px;font-size:13px;font-family:inherit;resize:vertical"></textarea>' +
+        '<div id="yh-msg" style="font-size:12.5px;margin-top:6px;color:#5b6b78">הכתובת נמשכת מפריוריטי ברגע השידור · שורה 2 וההערות נשלחות כהערות לשליח</div>';
       sheet.appendChild(d);
       d.querySelector('#yh-send').addEventListener('click', function(){ sendYahav(o, this); });
     } else {
@@ -7439,7 +7447,7 @@ if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN).catch(e=>{ console.er
           '<div>סטטוס: <b>' + yesc(o.yahav_status || 'שודר') + '</b>' +
             (o.yahav_status_at ? ' <span style="color:#8b98a3">(עודכן ' + yfdt(o.yahav_status_at) + ')</span>' : '') + '</div>' +
           (o.yahav_driver ? '<div>נהג: ' + yesc(o.yahav_driver) + '</div>' : '') +
-          '<div>חבילות: ' + yesc(o.yahav_packages || '—') + ' · שודר: ' + yfdt(o.yahav_sent_at) + '</div>' +
+          '<div>קרטונים: ' + yesc(o.yahav_packages || '—') + ' · שודר: ' + yfdt(o.yahav_sent_at) + '</div>' +
         '</div>' +
         '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">' +
           '<button type="button" id="yh-label" class="btn" style="width:auto;padding:9px 16px;font-size:13.5px">🏷️ הדפס מדבקה</button>' +
@@ -7458,8 +7466,10 @@ if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN).catch(e=>{ console.er
 
   async function sendYahav(o, btn){
     var pkg = parseInt((document.querySelector('#yh-pkg')||{}).value, 10);
+    var noteEl = document.querySelector('#yh-note');
+    var note = noteEl ? String(noteEl.value || '').trim() : '';
     var msg = document.querySelector('#yh-msg');
-    if(!pkg || pkg < 1){ if(msg){ msg.style.color='#a92f2f'; msg.textContent='יש להזין כמות חבילות'; } return; }
+    if(!pkg || pkg < 1){ if(msg){ msg.style.color='#a92f2f'; msg.textContent='יש להזין מספר קרטונים'; } return; }
     btn.disabled = true; btn.textContent = 'משדר ליהב…';
     var res = null;
     try{
@@ -7467,7 +7477,7 @@ if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN).catch(e=>{ console.er
       var tok = s && s.data && s.data.session ? s.data.session.access_token : null;
       var r = await fetch(YFN, { method:'POST',
         headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+tok, 'apikey': SB_KEY },
-        body: JSON.stringify({ op:'send', order_id: o.id, packages: pkg }) });
+        body: JSON.stringify({ op:'send', order_id: o.id, packages: pkg, remarks: note }) });
       res = await r.json();
     }catch(e){ res = { ok:false, error:'שגיאת תקשורת: ' + e }; }
     btn.disabled = false; btn.textContent = 'שדר ליהב';
@@ -7491,7 +7501,7 @@ if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN).catch(e=>{ console.er
         '<div class="row"><b>' + yesc(o.customer_name || '') + '</b></div>' +
         '<div class="row">' + yesc((o.address || '') + (o.city ? ', ' + o.city : '')) + '</div>' +
         (o.contact_name || o.phone ? '<div class="row">' + yesc((o.contact_name||'') + ' ' + (o.phone||'')) + '</div>' : '') +
-        '<div class="row">הזמנה: ' + yesc(o.order_number) + ' · חבילות: ' + yesc(o.yahav_packages || 1) + '</div>' +
+        '<div class="row">הזמנה: ' + yesc(o.order_number) + ' · קרטונים: ' + yesc(o.yahav_packages || 1) + '</div>' +
         '<svg id="bc"></svg>' +
         '<div class="row" style="text-align:center;font-weight:bold">' + yesc(o.yahav_shipment_no) + '</div>' +
       '</div>' +

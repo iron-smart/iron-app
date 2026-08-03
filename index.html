@@ -951,7 +951,7 @@
   .inv-row .end .q{ font-size:16px; }
 }
 
-/* ══════ 6.19.3 — שכבת מובייל וטאבלט מלאה · MOBILE-6160 · רומן 02/08/2026 ══════ */
+/* ══════ 6.19.4 — שכבת מובייל וטאבלט מלאה · MOBILE-6160 · רומן 02/08/2026 ══════ */
 
 @media(max-width:1024px){
   html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
@@ -1063,7 +1063,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.19.3</div>
+      <div class="ver">גרסה 6.19.4</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1161,7 +1161,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.19.3</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.19.4</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5467,7 +5467,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.19.3</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.19.4</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
@@ -7408,7 +7408,7 @@ if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN).catch(e=>{ console.er
 
   async function injectYahav(id){
     var r = await sb.schema('ord').from('orders')
-      .select('id,order_number,delivery_method,customer_name,address,ship_addr1,ship_addr2,city,contact_name,phone,yahav_shipment_no,yahav_sent_at,yahav_status,yahav_status_at,yahav_packages,yahav_driver')
+      .select('id,order_number,delivery_method,customer_name,address,ship_addr1,ship_addr2,city,contact_name,phone,order_notes,yahav_shipment_no,yahav_sent_at,yahav_status,yahav_status_at,yahav_packages,yahav_driver')
       .eq('id', id).maybeSingle();
     var o = r && r.data;
     if(!o || o.delivery_method !== 'יהב לוגיסטיקה') return;
@@ -7434,8 +7434,8 @@ if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN).catch(e=>{ console.er
           '<input id="yh-pkg" type="number" min="1" max="99" value="1" style="width:70px;padding:8px;border:1px solid #dbe3ec;border-radius:9px;font-size:13px;font-family:inherit;text-align:center">' +
           '<button type="button" id="yh-send" class="btn" style="width:auto;padding:9px 16px;font-size:13.5px">שדר ליהב</button>' +
         '</div>' +
-        '<textarea id="yh-note" rows="2" placeholder="הערות לשליח — יישלחו ליהב" style="width:100%;margin-top:9px;padding:8px 10px;border:1px solid #dbe3ec;border-radius:9px;font-size:13px;font-family:inherit;resize:vertical"></textarea>' +
-        '<div id="yh-msg" style="font-size:12.5px;margin-top:6px;color:#5b6b78">הכתובת נמשכת מפריוריטי ברגע השידור · שורה 2 וההערות נשלחות כהערות לשליח</div>';
+        '<textarea id="yh-note" rows="2" placeholder="הערות לשליח — יישלחו ליהב" style="width:100%;margin-top:9px;padding:8px 10px;border:1px solid #dbe3ec;border-radius:9px;font-size:13px;font-family:inherit;resize:vertical">' + yesc(o.order_notes || '') + '</textarea>' +
+        '<div id="yh-msg" style="font-size:12.5px;margin-top:6px;color:#5b6b78">ההערות מולאו מהערות ההזמנה — אפשר לערוך · הכתובת ושורה 2 נמשכות מפריוריטי ברגע השידור</div>';
       sheet.appendChild(d);
       d.querySelector('#yh-send').addEventListener('click', function(){ sendYahav(o, this); });
     } else {

@@ -951,7 +951,7 @@
   .inv-row .end .q{ font-size:16px; }
 }
 
-/* ══════ 6.17.0 — שכבת מובייל וטאבלט מלאה · MOBILE-6160 · רומן 02/08/2026 ══════ */
+/* ══════ 6.18.0 — שכבת מובייל וטאבלט מלאה · MOBILE-6160 · רומן 02/08/2026 ══════ */
 
 @media(max-width:1024px){
   html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
@@ -1063,7 +1063,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.17.0</div>
+      <div class="ver">גרסה 6.18.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1161,7 +1161,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.17.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.18.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5314,7 +5314,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.17.0</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.18.0</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
@@ -7232,6 +7232,127 @@ if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN).catch(e=>{ console.er
         else sheet.appendChild(row);
       }catch(e){ console.error('cust pricelist', e); }
     };
+  }
+})();
+</script>
+<script>
+/* ===== יהב לוגיסטיקה — שידור משלוח ומעקב (בלוק עצמאי; עוטף openOrd; החלטת רומן 03/08/2026) =====
+   שידור ידני בלחיצה (שלב טסטים) · סטטוס השילוח מוצג במערכת ובפורטל בלבד — לא נכנס לסטטוס ההזמנה. */
+(function(){
+  'use strict';
+  if (typeof window.openOrd !== 'function') { console.warn('yahav: openOrd לא נמצא'); return; }
+  var _origOpenOrd = window.openOrd;
+  window.openOrd = function(id){
+    _origOpenOrd(id);
+    try { injectYahav(id); } catch(e){ console.error('yahav inject', e); }
+  };
+
+  var YFN = SB_URL + '/functions/v1/yahav-send';
+  function yesc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function yfdt(d){ if(!d) return '—'; var t=new Date(d); return isNaN(t)?'—':t.toLocaleDateString('he-IL')+' '+t.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}); }
+
+  async function injectYahav(id){
+    var r = await sb.schema('ord').from('orders')
+      .select('id,order_number,delivery_method,customer_name,address,city,contact_name,phone,yahav_shipment_no,yahav_sent_at,yahav_status,yahav_status_at,yahav_packages,yahav_driver')
+      .eq('id', id).maybeSingle();
+    var o = r && r.data;
+    if(!o || o.delivery_method !== 'יהב לוגיסטיקה') return;
+    var sheet = document.querySelector('#ordSheet');
+    if(!sheet) return;
+    var old = sheet.querySelector('#yahavblk');
+    if(old) old.remove();
+
+    var d = document.createElement('div');
+    d.id = 'yahavblk';
+    d.style.cssText = 'margin-top:16px;padding:14px;border:1px solid #e2e8f0;border-radius:12px;background:#fbfcfd';
+    if(!o.yahav_shipment_no){
+      d.innerHTML =
+        '<div style="font-weight:800;font-size:13.5px;margin-bottom:8px">🚚 יהב לוגיסטיקה — שידור משלוח</div>' +
+        '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">' +
+          '<label style="font-size:13px">כמות חבילות:</label>' +
+          '<input id="yh-pkg" type="number" min="1" max="99" value="1" style="width:70px;padding:8px;border:1px solid #dbe3ec;border-radius:9px;font-size:13px;font-family:inherit;text-align:center">' +
+          '<button type="button" id="yh-send" class="btn" style="width:auto;padding:9px 16px;font-size:13.5px">שדר ליהב</button>' +
+        '</div>' +
+        '<div id="yh-msg" style="font-size:12.5px;margin-top:8px;color:#5b6b78">השידור פותח משלוח אצל יהב עם פרטי הלקוח והכתובת מההזמנה</div>';
+      sheet.appendChild(d);
+      d.querySelector('#yh-send').addEventListener('click', function(){ sendYahav(o, this); });
+    } else {
+      d.innerHTML =
+        '<div style="font-weight:800;font-size:13.5px;margin-bottom:8px">🚚 יהב לוגיסטיקה — משלוח</div>' +
+        '<div style="font-size:13px;line-height:2">' +
+          '<div>מספר משלוח: <b style="direction:ltr;display:inline-block">' + yesc(o.yahav_shipment_no) + '</b> ' +
+            '<button type="button" id="yh-copy" style="border:1px solid #dbe3ec;background:#fff;border-radius:8px;padding:3px 9px;font-size:12px;cursor:pointer;font-family:inherit">העתקה</button></div>' +
+          '<div>סטטוס: <b>' + yesc(o.yahav_status || 'שודר') + '</b>' +
+            (o.yahav_status_at ? ' <span style="color:#8b98a3">(עודכן ' + yfdt(o.yahav_status_at) + ')</span>' : '') + '</div>' +
+          (o.yahav_driver ? '<div>נהג: ' + yesc(o.yahav_driver) + '</div>' : '') +
+          '<div>חבילות: ' + yesc(o.yahav_packages || '—') + ' · שודר: ' + yfdt(o.yahav_sent_at) + '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">' +
+          '<button type="button" id="yh-label" class="btn" style="width:auto;padding:9px 16px;font-size:13.5px">🏷️ הדפס מדבקה</button>' +
+          '<a href="http://track.yahavlog.co.il/baldar/deliverystatus.aspx" target="_blank" rel="noopener" style="font-size:13px;align-self:center">מעקב באתר יהב (הזינו את מספר המשלוח)</a>' +
+        '</div>';
+      sheet.appendChild(d);
+      d.querySelector('#yh-copy').addEventListener('click', function(){
+        var b = this, u = String(o.yahav_shipment_no);
+        (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(
+          function(){ b.textContent = 'הועתק ✓'; setTimeout(function(){ b.textContent='העתקה'; }, 1800); },
+          function(){ window.prompt('מספר המשלוח:', u); });
+      });
+      d.querySelector('#yh-label').addEventListener('click', function(){ printLabel(o); });
+    }
+  }
+
+  async function sendYahav(o, btn){
+    var pkg = parseInt((document.querySelector('#yh-pkg')||{}).value, 10);
+    var msg = document.querySelector('#yh-msg');
+    if(!pkg || pkg < 1){ if(msg){ msg.style.color='#a92f2f'; msg.textContent='יש להזין כמות חבילות'; } return; }
+    if(btn.dataset.arm !== '1'){
+      btn.dataset.arm = '1';
+      btn.textContent = 'לשדר ' + pkg + ' חבילות ליהב? לחצו שוב לאישור';
+      setTimeout(function(){ btn.dataset.arm=''; btn.textContent='שדר ליהב'; }, 5000);
+      return;
+    }
+    btn.dataset.arm = '';
+    btn.disabled = true; btn.textContent = 'משדר ליהב…';
+    var res = null;
+    try{
+      var s = await sb.auth.getSession();
+      var tok = s && s.data && s.data.session ? s.data.session.access_token : null;
+      var r = await fetch(YFN, { method:'POST',
+        headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+tok, 'apikey': SB_KEY },
+        body: JSON.stringify({ op:'send', order_id: o.id, packages: pkg }) });
+      res = await r.json();
+    }catch(e){ res = { ok:false, error:'שגיאת תקשורת: ' + e }; }
+    btn.disabled = false; btn.textContent = 'שדר ליהב';
+    if(!res || !res.ok){
+      if(msg){ msg.style.color='#a92f2f'; msg.textContent = (res && res.error) || 'שגיאה בשידור'; }
+      return;
+    }
+    if(msg){ msg.style.color='#006300'; msg.textContent = 'שודר בהצלחה — מספר משלוח ' + res.shipment_no; }
+    injectYahav(o.id);
+  }
+
+  function printLabel(o){
+    var w = window.open('', '_blank', 'width=480,height=640');
+    if(!w){ alert('יש לאפשר חלונות קופצים להדפסת המדבקה'); return; }
+    var html = '<!DOCTYPE html><html dir="rtl" lang="he"><head><meta charset="utf-8"><title>מדבקה ' + yesc(o.yahav_shipment_no) + '</title>' +
+      '<style>body{font-family:Arial,sans-serif;margin:0;padding:14px}.lbl{border:2px solid #000;border-radius:8px;padding:14px;width:340px}' +
+      '.lbl h2{margin:0 0 6px;font-size:17px}.lbl .row{font-size:14px;margin:3px 0}.lbl svg{width:100%;height:70px;margin-top:8px}' +
+      '@media print{body{padding:0}}</style></head><body>' +
+      '<div class="lbl">' +
+        '<h2>איירון פיטנס ← יהב לוגיסטיקה</h2>' +
+        '<div class="row"><b>' + yesc(o.customer_name || '') + '</b></div>' +
+        '<div class="row">' + yesc((o.address || '') + (o.city ? ', ' + o.city : '')) + '</div>' +
+        (o.contact_name || o.phone ? '<div class="row">' + yesc((o.contact_name||'') + ' ' + (o.phone||'')) + '</div>' : '') +
+        '<div class="row">הזמנה: ' + yesc(o.order_number) + ' · חבילות: ' + yesc(o.yahav_packages || 1) + '</div>' +
+        '<svg id="bc"></svg>' +
+        '<div class="row" style="text-align:center;font-weight:bold">' + yesc(o.yahav_shipment_no) + '</div>' +
+      '</div>' +
+      '<scr'+'ipt src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></scr'+'ipt>' +
+      '<scr'+'ipt>window.onload=function(){try{JsBarcode("#bc", ' + JSON.stringify(String(o.yahav_shipment_no)) + ', {format:"CODE39",displayValue:false,margin:0});}catch(e){}setTimeout(function(){window.print();},400);};</scr'+'ipt>' +
+      '</body></html>';
+    w.document.open(); w.document.write(html); w.document.close();
   }
 })();
 </script>

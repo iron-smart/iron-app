@@ -951,7 +951,7 @@
   .inv-row .end .q{ font-size:16px; }
 }
 
-/* ══════ 6.19.4 — שכבת מובייל וטאבלט מלאה · MOBILE-6160 · רומן 02/08/2026 ══════ */
+/* ══════ 6.19.5 — שכבת מובייל וטאבלט מלאה · MOBILE-6160 · רומן 02/08/2026 ══════ */
 
 @media(max-width:1024px){
   html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
@@ -1063,7 +1063,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.19.4</div>
+      <div class="ver">גרסה 6.19.5</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1161,7 +1161,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.19.4</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.19.5</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -4556,6 +4556,11 @@ function prcCB_(pn, seen){
     }
     return t;
   }
+  if(e.source==='יבוא'){
+    /* תקדימות v13: עלות דולרית × שער קודם; שקלית רק כשאין דולרית */
+    if(Number(e.cost_usd)>0) return Number(e.cost_usd) * rate;
+    return Number(e.cost_ils)>0 ? Number(e.cost_ils) : null;
+  }
   if(Number(e.cost_ils)>0) return Number(e.cost_ils);
   if(Number(e.cost_usd)>0) return Number(e.cost_usd) * rate;
   return null;
@@ -5467,7 +5472,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.19.4</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.19.5</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
@@ -7417,12 +7422,21 @@ if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN).catch(e=>{ console.er
     var old = sheet.querySelector('#yahavblk');
     if(old) old.remove();
 
+    var prev = null;
+    try{
+      var pr = await sb.schema('ord').from('yahav_log')
+        .select('shipment_no,created_at,note').eq('order_id', id).eq('action', 'cancel')
+        .order('created_at', { ascending: false }).limit(1);
+      prev = pr && pr.data && pr.data[0];
+    }catch(e){ /* היומן הוא תוספת מידע בלבד */ }
+
     var d = document.createElement('div');
     d.id = 'yahavblk';
     d.style.cssText = 'margin-top:16px;padding:14px;border:1px solid #e2e8f0;border-radius:12px;background:#fbfcfd';
     if(!o.yahav_shipment_no){
       d.innerHTML =
         '<div style="font-weight:800;font-size:13.5px;margin-bottom:8px">🚚 יהב לוגיסטיקה — שידור משלוח</div>' +
+        (prev ? '<div style="font-size:12.5px;margin-bottom:9px;padding:7px 10px;border-radius:8px;background:#fdf2f3;color:#a92f2f">משלוח קודם <b style="direction:ltr;display:inline-block">' + yesc(prev.shipment_no) + '</b> בוטל במערכת · ' + yfdt(prev.created_at) + '</div>' : '') +
         '<div style="font-size:12.5px;line-height:1.95;margin-bottom:10px;color:#243b4a">' +
           '<div><span style="color:#5b6b78">מוצא:</span> <b>' + yesc(YORIGIN) + '</b></div>' +
           '<div><span style="color:#5b6b78">כתובת למשלוח:</span> <b>' + yesc(o.ship_addr1 || o.address || '—') + '</b></div>' +
@@ -7449,10 +7463,12 @@ if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN).catch(e=>{ console.er
           (o.yahav_driver ? '<div>נהג: ' + yesc(o.yahav_driver) + '</div>' : '') +
           '<div>קרטונים: ' + yesc(o.yahav_packages || '—') + ' · שודר: ' + yfdt(o.yahav_sent_at) + '</div>' +
         '</div>' +
-        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center">' +
           '<button type="button" id="yh-label" class="btn" style="width:auto;padding:9px 16px;font-size:13.5px">🏷️ הדפס מדבקה</button>' +
-          '<a href="http://track.yahavlog.co.il/baldar/deliverystatus.aspx" target="_blank" rel="noopener" style="font-size:13px;align-self:center">מעקב באתר יהב (הזינו את מספר המשלוח)</a>' +
-        '</div>';
+          '<button type="button" id="yh-cancel" style="width:auto;padding:9px 14px;font-size:13px;border:1px solid #f2c7cd;background:#fff;color:#a92f2f;border-radius:9px;cursor:pointer;font-family:inherit">בטל שידור במערכת</button>' +
+          '<a href="http://track.yahavlog.co.il/baldar/deliverystatus.aspx" target="_blank" rel="noopener" style="font-size:13px">מעקב באתר יהב</a>' +
+        '</div>' +
+        '<div id="yh-msg2" style="font-size:12px;margin-top:8px;color:#8b98a3">הביטול מול יהב נעשה מולם · הכפתור כאן משחרר את ההזמנה לשידור חוזר ושומר את המספר הקודם ביומן</div>';
       sheet.appendChild(d);
       d.querySelector('#yh-copy').addEventListener('click', function(){
         var b = this, u = String(o.yahav_shipment_no);
@@ -7461,6 +7477,7 @@ if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN).catch(e=>{ console.er
           function(){ window.prompt('מספר המשלוח:', u); });
       });
       d.querySelector('#yh-label').addEventListener('click', function(){ printLabel(o); });
+      d.querySelector('#yh-cancel').addEventListener('click', function(){ cancelYahav(o, this); });
     }
   }
 
@@ -7486,6 +7503,22 @@ if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN).catch(e=>{ console.er
       return;
     }
     if(msg){ msg.style.color='#006300'; msg.textContent = 'שודר בהצלחה — מספר משלוח ' + res.shipment_no; }
+    injectYahav(o.id);
+  }
+
+  async function cancelYahav(o, btn){
+    var msg = document.querySelector('#yh-msg2');
+    btn.disabled = true; btn.textContent = 'מבטל…';
+    var r = null;
+    try{
+      r = await sb.schema('ord').rpc('yahav_cancel', { p_order_id: o.id, p_reason: 'בוטל מול יהב' });
+    }catch(e){ r = { error: { message: String(e) } }; }
+    if(!r || r.error || !r.data || !r.data.ok){
+      btn.disabled = false; btn.textContent = 'בטל שידור במערכת';
+      if(msg){ msg.style.color = '#a92f2f';
+        msg.textContent = (r && r.error && r.error.message) || (r && r.data && r.data.error) || 'הביטול נכשל'; }
+      return;
+    }
     injectYahav(o.id);
   }
 

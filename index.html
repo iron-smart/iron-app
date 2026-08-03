@@ -951,7 +951,7 @@
   .inv-row .end .q{ font-size:16px; }
 }
 
-/* ══════ 6.16.0 — שכבת מובייל וטאבלט מלאה · MOBILE-6160 · רומן 02/08/2026 ══════ */
+/* ══════ 6.17.0 — שכבת מובייל וטאבלט מלאה · MOBILE-6160 · רומן 02/08/2026 ══════ */
 
 @media(max-width:1024px){
   html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
@@ -1063,7 +1063,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.16.0</div>
+      <div class="ver">גרסה 6.17.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1161,7 +1161,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.16.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.17.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5314,7 +5314,7 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.16.0</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.17.0</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
@@ -7071,6 +7071,167 @@ if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN).catch(e=>{ console.er
     }
     if(msg){ msg.style.color = '#006300'; msg.textContent = 'נוצר קישור על ' + shk(r.amount) + ' · קישור קודם שהמתין בוטל אוטומטית'; }
     refreshLinks(o);
+  }
+})();
+</script>
+<script>
+/* ===== פריטים במחירון (בלוק עצמאי; החלטת רומן 03/08/2026) =====
+   תת-קטגוריה תחת "תמחור ומחירונים", מסך עיון במחירוני פריוריטי שסונכרנו
+   ל-ord.price_lists / price_list_items / customer_price_lists, ושדה מחירון בכרטיס הלקוח. */
+(function(){
+  'use strict';
+
+  /* --- תת-תפריט תחת "תמחור ומחירונים" --- */
+  function initNav(){
+    var wrap = document.querySelector('#nav-prc');
+    if(!wrap || wrap.querySelector('.submenu')) return;
+    var btn = wrap.querySelector('.nav-item');
+    if(!btn) return;
+    btn.innerHTML = 'תמחור ומחירונים <span class="nav-arrow"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span>';
+    var sm = document.createElement('div');
+    sm.className = 'submenu';
+    sm.innerHTML = '<button type="button" onclick="gotoTab(\'prc\')">תמחור</button>' +
+      '<button type="button" onclick="openPLBrowser()">פריטים במחירון</button>';
+    wrap.appendChild(sm);
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initNav);
+  else initNav();
+  setTimeout(initNav, 1500); // ליתר ביטחון אם הסרגל נבנה מאוחר
+
+  /* --- מסך העיון --- */
+  var PLB = { lists: [], cur: null, items: [], q: '' };
+  function plShk(n){ return n == null ? '—' : Number(n).toLocaleString('he-IL', {maximumFractionDigits: 2}) + ' ₪'; }
+  function plEsc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+  window.openPLBrowser = async function(plname){
+    var old = document.querySelector('#plb-overlay');
+    if(old) old.remove();
+    var ov = document.createElement('div');
+    ov.id = 'plb-overlay';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(6,24,39,.55);z-index:80;display:flex;align-items:center;justify-content:center;padding:2vh 2vw';
+    ov.innerHTML =
+      '<div style="background:#fff;border-radius:16px;width:min(1000px,96vw);max-height:94vh;display:flex;flex-direction:column;overflow:hidden">' +
+        '<div style="background:linear-gradient(135deg,#002D48,#0b3f63);color:#fff;padding:14px 18px;display:flex;align-items:center;gap:12px">' +
+          '<b style="font-size:16px">פריטים במחירון</b>' +
+          '<span id="plb-sync" style="font-size:12px;opacity:.85"></span>' +
+          '<span style="flex:1"></span>' +
+          '<button type="button" id="plb-syncbtn" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:8px;padding:6px 12px;font-size:12.5px;cursor:pointer;font-family:inherit">🔄 סנכרן עכשיו</button>' +
+          '<button type="button" id="plb-x" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer">✕</button>' +
+        '</div>' +
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:12px 18px;border-bottom:1px solid #e2e8f0">' +
+          '<select id="plb-sel" style="padding:8px 10px;border:1px solid #dbe3ec;border-radius:9px;font-size:13px;font-family:inherit;background:#fff;max-width:320px"></select>' +
+          '<input id="plb-q" placeholder="חיפוש מק&quot;ט או תיאור…" style="flex:1;min-width:180px;padding:8px 12px;border:1px solid #dbe3ec;border-radius:9px;font-size:13px;font-family:inherit">' +
+          '<span id="plb-meta" style="font-size:12.5px;color:#5b6b78"></span>' +
+        '</div>' +
+        '<div id="plb-body" style="overflow:auto;padding:0 18px 18px;flex:1">טוען…</div>' +
+      '</div>';
+    document.body.appendChild(ov);
+    ov.addEventListener('click', function(e){ if(e.target === ov) ov.remove(); });
+    ov.querySelector('#plb-x').addEventListener('click', function(){ ov.remove(); });
+    ov.querySelector('#plb-sel').addEventListener('change', function(){ loadItems(this.value); });
+    ov.querySelector('#plb-q').addEventListener('input', function(){ PLB.q = this.value.trim(); renderItems(); });
+    ov.querySelector('#plb-syncbtn').addEventListener('click', runSync);
+    await loadLists(plname);
+  };
+
+  async function loadLists(preselect){
+    var r = await sb.schema('ord').from('price_lists').select('*').order('items_count', { ascending: false });
+    PLB.lists = r.data || [];
+    var sel = document.querySelector('#plb-sel');
+    if(!sel) return;
+    sel.innerHTML = PLB.lists.map(function(l){
+      return '<option value="' + plEsc(l.plname) + '">' + plEsc(l.pldes || l.plname) +
+        ' (' + (l.items_count || 0) + ' פריטים' + (l.special ? ' · מיוחד' : '') + ')</option>';
+    }).join('');
+    var first = preselect && PLB.lists.some(function(l){ return l.plname === preselect; }) ? preselect : (PLB.lists[0] && PLB.lists[0].plname);
+    if(PLB.lists.length){
+      var last = PLB.lists.map(function(l){ return l.synced_at; }).sort().pop();
+      var s = document.querySelector('#plb-sync');
+      if(s && last) s.textContent = 'סנכרון אחרון: ' + new Date(last).toLocaleString('he-IL', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    }
+    if(first){ sel.value = first; await loadItems(first); }
+    else { var b = document.querySelector('#plb-body'); if(b) b.textContent = 'אין מחירונים — הריצו סנכרון.'; }
+  }
+
+  async function loadItems(plname){
+    PLB.cur = plname;
+    var b = document.querySelector('#plb-body');
+    if(b) b.textContent = 'טוען…';
+    var r = await sb.schema('ord').from('price_list_items').select('partname,partdes,vat_price,percent,dvat_price').eq('plname', plname).order('partdes').limit(2000);
+    PLB.items = r.data || [];
+    var c = await sb.schema('ord').from('customer_price_lists').select('customer_number', { count: 'exact', head: true }).eq('plname', plname);
+    var meta = document.querySelector('#plb-meta');
+    if(meta) meta.textContent = PLB.items.length + ' פריטים · ' + (c.count || 0) + ' לקוחות משויכים';
+    renderItems();
+  }
+
+  function renderItems(){
+    var b = document.querySelector('#plb-body');
+    if(!b) return;
+    var q = PLB.q.toLowerCase();
+    var rows = PLB.items.filter(function(i){
+      return !q || String(i.partdes || '').toLowerCase().includes(q) || String(i.partname).toLowerCase().includes(q);
+    });
+    if(!rows.length){ b.innerHTML = '<div style="padding:30px;text-align:center;color:#5b6b78">אין פריטים להצגה</div>'; return; }
+    b.innerHTML = '<table class="tbl" style="width:100%"><thead><tr>' +
+      '<th>מק"ט</th><th>תיאור</th><th>מחיר מלא</th><th>% הנחה</th><th>מחיר סופי (כולל מע"מ)</th>' +
+      '</tr></thead><tbody>' + rows.map(function(i){
+        var pct = Number(i.percent) > 0 ? Number(i.percent) + '%' : '—';
+        return '<tr><td style="direction:ltr">' + plEsc(i.partname) + '</td>' +
+          '<td style="white-space:normal;text-align:start">' + plEsc(i.partdes) + '</td>' +
+          '<td>' + plShk(i.vat_price) + '</td><td>' + pct + '</td>' +
+          '<td><b>' + plShk(i.dvat_price != null ? i.dvat_price : i.vat_price) + '</b></td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+
+  async function runSync(){
+    var btn = document.querySelector('#plb-syncbtn');
+    if(!btn || btn.disabled) return;
+    btn.disabled = true; btn.textContent = 'מסנכרן מפריוריטי…';
+    try{
+      var s = await sb.auth.getSession();
+      var tok = s && s.data && s.data.session ? s.data.session.access_token : null;
+      var r = await fetch(SB_URL + '/functions/v1/pricelist-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok, 'apikey': SB_KEY },
+        body: JSON.stringify({ source: 'manual-ui', full: true })
+      });
+      var d = await r.json();
+      btn.textContent = d.ok ? '✓ סונכרן (' + (d.items_total || 0) + ' פריטים)' : 'שגיאה בסנכרון';
+      if(d.ok) await loadLists(PLB.cur);
+    }catch(e){ btn.textContent = 'שגיאה בסנכרון'; console.error('plb sync', e); }
+    setTimeout(function(){ btn.disabled = false; btn.textContent = '🔄 סנכרן עכשיו'; }, 4000);
+  }
+
+  /* --- מחירון בכרטיס הלקוח --- */
+  if(typeof window.openCust === 'function'){
+    var _origOpenCust = window.openCust;
+    window.openCust = async function(id){
+      await _origOpenCust(id);
+      try{
+        var c = (typeof CUSTS !== 'undefined' && CUSTS || []).find(function(x){ return x.id === id; });
+        var sheet = document.querySelector('#custSheet');
+        if(!sheet || sheet.querySelector('#cust-pl-row')) return;
+        var plname = null, pldes = null, assigned = false;
+        if(c && c.priority_id){
+          var lr = await sb.schema('ord').from('customer_price_lists').select('plname').eq('customer_number', String(c.priority_id).trim()).maybeSingle();
+          if(lr.data && lr.data.plname){
+            plname = lr.data.plname; assigned = true;
+            var pr = await sb.schema('ord').from('price_lists').select('pldes').eq('plname', plname).maybeSingle();
+            pldes = pr.data && pr.data.pldes;
+          }
+        }
+        var label = assigned ? (pldes || plname) : 'מחירון בסיס (ברירת מחדל)';
+        var target = assigned ? plname : 'בסיס';
+        var row = document.createElement('div');
+        row.className = 'row'; row.id = 'cust-pl-row';
+        row.innerHTML = '<span class="k">מחירון</span><span class="v"><a href="#" onclick="openPLBrowser(\'' + plEsc(target).replace(/'/g, "\\'") + '\');return false">' + plEsc(label) + '</a></span>';
+        var anchor = sheet.querySelector('.row');
+        if(anchor && anchor.parentNode) anchor.parentNode.insertBefore(row, anchor.nextSibling);
+        else sheet.appendChild(row);
+      }catch(e){ console.error('cust pricelist', e); }
+    };
   }
 })();
 </script>

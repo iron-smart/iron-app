@@ -1099,7 +1099,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.20.0</div>
+      <div class="ver">גרסה 6.21.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1197,7 +1197,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.20.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.21.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1461,14 +1461,16 @@ const sb = supabase.createClient(SB_URL, SB_KEY);
 /* ===== 6.0.0 — המערכת אוחדה: מקור האמת להזמנות הוא הפלטפורמה =====
    הפרויקט הישן אוחד לכאן ונמחק (29/07/2026). פריוריטי מסנכרן ישירות
    לסכימת ord, והמסכים קוראים וכותבים בלי גשר. שמות הפונקציות נשמרו
-   כדי לא לגעת בשאר הקוד. רשימת העמודות המותרות לעריכה נאכפת במסד
-   (column grants) — לא בצד הלקוח. */
+   כדי לא לגעת בשאר הקוד.
+   6.21.0 — הקריאה עוברת בתצוגות המסכה ord.orders_v ו-ord.service_calls_v,
+   והכתיבה ב-RPC ord.order_patch ו-ord.service_call_patch שאוכפים הרשאה לכל
+   עמודה ורושמים יומן בעצמם. הבדיקות בצד הלקוח הן שיקוף בלבד — האכיפה בשרת. */
 async function oldCall(op, payload){
   try{
     if(op === 'bootstrap'){
       const [o, sc] = await Promise.all([
-        sb.schema('ord').from('orders').select('*').order('order_date',{ascending:false}).limit(10000),
-        sb.schema('ord').from('service_calls').select('*').order('opened_date',{ascending:false}).limit(10000)
+        sb.schema('ord').from('orders_v').select('*').order('order_date',{ascending:false}).limit(10000),
+        sb.schema('ord').from('service_calls_v').select('*').order('opened_date',{ascending:false}).limit(10000)
       ]);
       const bad = [o,sc].find(x=>x.error);
       if(bad) return { data:null, error:bad.error };
@@ -1482,11 +1484,10 @@ async function oldCall(op, payload){
       return error ? { data:null, error } : { data:{ items:data||[] }, error:null };
     }
     if(op === 'update_order' || op === 'update_service_call'){
-      const table = op === 'update_order' ? 'orders' : 'service_calls';
+      const fn = op === 'update_order' ? 'order_patch' : 'service_call_patch';
       const patch = Object.assign({}, (payload && payload.patch) || {});
-      patch.updated_at = new Date().toISOString();
-      const { data, error } = await sb.schema('ord').from(table)
-        .update(patch).eq('id', payload.id).select('*').maybeSingle();
+      delete patch.updated_at;
+      const { data, error } = await sb.schema('ord').rpc(fn, { p_id: payload.id, p_patch: patch });
       if(error) return { data:null, error };
       if(!data) return { data:null, error:{ message:'הרשומה לא נמצאה' } };
       return { data:{ row:data }, error:null };
@@ -1650,7 +1651,7 @@ function showLogin(msg){
    כל עוד המפה לא נטענה (__loaded חסר) אין הגבלה בצד הלקוח — האכיפה
    האמיתית היא בשרת, ולכן כשל טעינה לא ינעל אף אחד מחוץ למערכת. */
 window.PERM = window.PERM || {};
-window.pLevel  = k => { const P=window.PERM; if(!P || !P.__loaded) return 2; return +P[k] || 0; };
+window.pLevel  = k => { const P=window.PERM; if(!P || !P.__loaded) return 2; if(typeof ME!=='undefined' && ME && ME.role==='admin') return 2; return +P[k] || 0; };
 window.canView = k => window.pLevel(k) >= 1;
 window.canEdit = k => window.pLevel(k) >= 2;
 
@@ -2340,17 +2341,43 @@ window.ieSave = async (el)=>{
   }
   if(error){ toast('שגיאה בשמירה: '+error.message); cfg.rerender(); return; }
   Object.assign(rec, row || patch);
-  if(cfg.schema==='ord'){
+  if(cfg.schema==='ord' && !cfg.bridge){ /* ord/scall נרשמים ביומן בתוך ה-RPC — כאן רק po */
     try{ await sb.schema('ord').from('audit_log').insert({ user_email:ME.email, action:'עריכה ישירה מהטבלה', entity:cfg.ent, entity_id:String(cfg.key(rec)||''), label:field }); }catch(_e){}
   }
   toast('נשמר ✓');
   cfg.rerender();
 };
-const canIE = ()=> ['admin','manager'].includes(ME.role);
+/* 6.21.0 — מפת שדה→מפתח הרשאה. תאום מדויק של המפה שבתוך ord.order_patch במסד.
+   שינוי כאן מחייב שינוי שם. שדה שאינו במפה = אינו ניתן לעריכה (חסום כברירת מחדל). */
+const ORD_FIELD_PERM = {
+  order_status:'logi.orders', address:'logi.orders', city:'logi.orders', region:'logi.orders',
+  team:'logi.orders.schedule', scheduled_date:'logi.orders.schedule', time_slot:'logi.orders.schedule',
+  days_count:'logi.orders.schedule', week_estimate:'logi.orders.schedule', friday_ok:'logi.orders.schedule',
+  equipment_list:'logi.orders.warehouse', warehouse_notes:'logi.orders.warehouse',
+  supply_days:'logi.orders.supply', supply_end_date:'logi.orders.supply',
+  deadline:'logi.orders.supply', delivery_method:'logi.orders.supply',
+  delivery_note:'crm.orders.invoice', invoice:'crm.orders.invoice',
+  internal_dialog:'crm.orders.dialog',
+  contact_status:'crm.orders', order_notes:'crm.orders'
+};
+window.ordFieldPerm = (kind, field)=> kind==='scall' ? 'logi.calls' : (ORD_FIELD_PERM[field] || null);
+/* 6.21.0 — מזהה האלמנט בכרטיס ההזמנה מול העמודה במסד. משמש גם לנעילה לפי שדה
+   בפתיחת הכרטיס וגם לבניית ה-patch בשמירה, כדי ששני המסלולים לא ייפרדו. */
+const ORD_CARD_FIELDS = [
+  ['oe-status','order_status'], ['oe-contact','contact_status'], ['oe-city','city'], ['oe-region','region'],
+  ['oe-team','team'], ['oe-date','scheduled_date'], ['oe-days','days_count'], ['oe-slot','time_slot'],
+  ['oe-friday','friday_ok'], ['oe-supdays','supply_days'], ['oe-supend','supply_end_date'],
+  ['oe-dnote','delivery_note'], ['oe-invoice','invoice'], ['oe-wnotes','warehouse_notes']
+];
+window.ordCardEditable = (col)=>{ const pk = window.ordFieldPerm('ord', col); return !!pk && window.canEdit(pk); };
+const canIE = (kind, field)=>{
+  if(kind==='ord' || kind==='scall'){ const pk = window.ordFieldPerm(kind, field); return !!pk && window.canEdit(pk); }
+  return ['admin','manager'].includes(ME.role);
+};
 /* select צבעוני בתא — צבעי הלוח (pilled) או צבעי מאנדיי (mdc) */
 function ieSel(kind,id,field,options,val,opts){
   opts=opts||{};
-  if(!canIE()) return opts.mdColors ? mdPill(val,opts.mdColors) : (STATUS_PILL[val]?`<span class="pill ${STATUS_PILL[val]}">${esc(val)}</span>`:`<span>${esc(val||'—')}</span>`);
+  if(!canIE(kind,field)) return opts.mdColors ? mdPill(val,opts.mdColors) : (STATUS_PILL[val]?`<span class="pill ${STATUS_PILL[val]}">${esc(val)}</span>`:`<span>${esc(val||'—')}</span>`);
   const list=(opts.allowEmpty?[['',opts.emptyLabel||'—']]:[]).concat([...new Set([...(options||[]), ...(val?[val]:[])])].map(o=>[o,o]));
   let cls='inline-edit', style='';
   if(opts.mdColors){ cls+=' mdc'; const _bg=opts.mdColors[val]||'#94a3b8'; style=`background:${_bg};color:${inkOn(_bg)}`; } /* תיקון ממצא 15 */
@@ -2358,7 +2385,7 @@ function ieSel(kind,id,field,options,val,opts){
   return `<select class="${cls}" style="${style}" data-ie="${kind}|${id}|${field}" onclick="event.stopPropagation()" onchange="ieSave(this)">${list.map(([v,l])=>`<option value="${esc(v)}" ${String(val||'')===v?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
 }
 function ieDate(kind,id,field,val){
-  if(!canIE()) return val?`<b>${fmtD(val)}</b>`:'<span class="note-preview">—</span>';
+  if(!canIE(kind,field)) return val?`<b>${fmtD(val)}</b>`:'<span class="note-preview">—</span>';
   return `<input type="date" class="inline-edit ie-date" data-ie="${kind}|${id}|${field}" value="${esc(val||'')}" onclick="event.stopPropagation()" onchange="ieSave(this)">`;
 }
 window.gotoPays = f=>{ PAY_FILTER=f||'open'; gotoTab('pays'); renderPays(); navMark(); };
@@ -2434,7 +2461,7 @@ function logiBulkBar(){
   const bar=$('#logi-bulk'); if(!bar) return;
   const c=LOGI_SEL.size;
   bar.classList.toggle('hidden', c===0);
-  if(c) bar.innerHTML = `<span>נבחרו <b>${c}</b> הזמנות</span> <button type="button" class="btn" onclick="ordBulkDone()">סמן כהושלם ✓</button> <button type="button" class="tb-clear" onclick="logiSelClear()">ניקוי בחירה</button>`;
+  if(c) bar.innerHTML = `<span>נבחרו <b>${c}</b> הזמנות</span> ${window.canEdit('logi.orders.bulk')?'<button type="button" class="btn" onclick="ordBulkDone()">סמן כהושלם ✓</button>':''} <button type="button" class="tb-clear" onclick="logiSelClear()">ניקוי בחירה</button>`;
 }
 document.addEventListener('change', function(e){
   const t=e.target; if(!t) return;
@@ -2450,25 +2477,46 @@ document.addEventListener('change', function(e){
     logiBulkBar();
   }
 });
+/* 6.21.0 — סגירה מרוכזת עוברת דרך ord.orders_close_bulk, שדורש logi.orders.bulk
+   ורושם את היומן בעצמו. אין יותר UPDATE ישיר על ord.orders מהלקוח ואין רישום יומן כאן.
+   ה-RPC מחזיר מונים בלבד, ולכן כשיש דילוגים מרעננים את השורות מהתצוגה במקום להניח סגירה. */
 async function ordCloseIds(ids){
   if(!ids.length) return;
-  const { error } = await sb.schema('ord').from('orders').update({ order_status:'הושלם' }).in('id', ids);
+  const { data, error } = await sb.schema('ord').rpc('orders_close_bulk', { p_ids: ids });
   if(error){ toast('שגיאה בסגירה: '+error.message); return; }
-  ids.forEach(id=>{ const r=ORDS.find(o=>String(o.id)===String(id)); if(r) r.order_status='הושלם'; });
-  try{ await sb.schema('ord').from('audit_log').insert(ids.map(id=>({ user_email:ME.email, action:'סגירה מהירה', entity:'הזמנה', entity_id:String(id), label:'הושלם' }))); }catch(_e){}
+  const upd = +((data&&data.updated)||0), skp = +((data&&data.skipped)||0);
   LOGI_SEL.clear();
-  toast('נסגרו '+ids.length+' הזמנות ✓');
+  if(skp > 0){
+    try{
+      const { data: rows } = await sb.schema('ord').from('orders_v').select('*').in('id', ids);
+      (rows||[]).forEach(nr=>{ const r=ORDS.find(o=>String(o.id)===String(nr.id)); if(r) Object.assign(r, nr); });
+    }catch(_e){}
+    toast('נסגרו '+upd+' הזמנות · '+skp+' לא נסגרו (הרשאה או סטטוס)');
+  } else {
+    ids.forEach(id=>{ const r=ORDS.find(o=>String(o.id)===String(id)); if(r) r.order_status='הושלם'; });
+    toast('נסגרו '+upd+' הזמנות ✓');
+  }
   renderLogi(); renderOrders();
 }
 window.ordBulkDone = async ()=>{
   const ids=[...LOGI_SEL];
   if(!ids.length) return;
+  if(!window.canEdit('logi.orders.bulk')){ toast('אין הרשאה לפעולה מרוכזת'); return; }
   if(!confirm('לסמן '+ids.length+' הזמנות כהושלמו?')) return;
   await ordCloseIds(ids);
 };
+/* סגירה בודדת אינה פעולה מרוכזת — היא זהה לשינוי הסטטוס מהטבלה, ולכן עוברת
+   ב-order_patch עם logi.orders ולא ב-orders_close_bulk. */
 window.ordQuickDone = async (id)=>{
+  if(!window.canEdit('logi.orders')){ toast('אין הרשאה לעדכון סטטוס'); return; }
   if(!confirm('לסמן את ההזמנה כהושלמה?')) return;
-  await ordCloseIds([id]);
+  const { data: res, error } = await oldCall('update_order', { id, patch:{ order_status:'הושלם' } });
+  if(error){ toast('שגיאה בסגירה: '+error.message); return; }
+  const r = ORDS.find(o=>String(o.id)===String(id));
+  if(r) Object.assign(r, (res && res.row) || { order_status:'הושלם' });
+  LOGI_SEL.delete(String(id));
+  toast('ההזמנה נסגרה ✓');
+  renderLogi(); renderOrders();
 };
 function renderLogi(){
   /* 6.2.1 — שורת השבבים העליונה הוסרה: המעבר בין שלוש התצוגות נעשה רק
@@ -2499,7 +2547,7 @@ function renderLogi(){
     list = window.ordSortList(list.slice());
     LOGI_SHOWN = list;
     const _ids=new Set(list.map(o=>String(o.id))); [...LOGI_SEL].forEach(id=>{ if(!_ids.has(id)) LOGI_SEL.delete(id); });
-    $('#logi-tbl').innerHTML = wideScreen() ? ordTable(list,{sel:true}) : capped(list, ordRow, 'אין הזמנות');
+    $('#logi-tbl').innerHTML = wideScreen() ? ordTable(list,{sel:true,ctx:'logi'}) : capped(list, o=>ordRow(o,'logi'), 'אין הזמנות');
     document.querySelectorAll('#logi-tbl .ordsel').forEach(cb=>{ cb.checked = LOGI_SEL.has(String(cb.dataset.oid)); });
     logiBulkBar();
   }
@@ -6263,9 +6311,12 @@ function waProtocolMsg(p,link){
   return waFill(waTpl('wa_protocol','שלום {שם}, נא לעבור על המסמך ולחתום עליו בקישור:\n{קישור}\nתודה, איירון פיטנס!'),
     { name:p.customer_name, link:link });
 }
-function ordRow(o){
+/* 6.21.0 — גם בתצוגת הכרטיסים (מסך צר) הכרטיס נפתח עם פרופיל המסך שממנו נלחץ,
+   אחרת כל הצמצום של שלב 4 היה נעלם מתחת ל-700 פיקסל. capped קורא ל-map ולכן
+   האתחול נעשה בעטיפת חץ באתר הקריאה, כדי שהאינדקס לא ייכנס בטעות כהקשר. */
+function ordRow(o, ctx){
   const when = o.scheduled_date ? ' · תואם ל-'+fmtD(o.scheduled_date)+(o.time_slot?' '+esc(o.time_slot):'') : '';
-  return `<div class="lead" onclick="openOrd('${o.id}')">
+  return `<div class="lead" onclick="openOrd('${o.id}'${ctx?(",'"+ctx+"'"):''})">
     <div><div class="nm">${esc(o.customer_name||'ללא שם')} <small style="color:#94a3b8;font-weight:400">· ${esc(o.order_number)}</small></div>
     <div class="meta">${fmtD(o.order_date)}${o.city?' · '+esc(o.city):''}${o.team?' · צוות '+esc(o.team):''}${when}</div></div>
     <span class="pill ${ordStClass(o.order_status)}">${esc(o.order_status||'—')}</span></div>`;
@@ -6343,7 +6394,9 @@ const selHtml = (id, vals, cur, allowEmpty) => `<select id="${id}" class="pilled
 
 window.openScall = (id)=>{
   const s = SCALLS.find(x=>x.id===id); if(!s) return;
-  const editable = ['admin','manager'].includes(ME.role);
+  /* 6.21.0 — הרשאה במקום תפקיד. כל שדות קריאת השירות נשלטים במפתח logi.calls,
+     בדיוק כמו במפה שבתוך ord.service_call_patch. */
+  const editable = window.canEdit('logi.calls');
   const L = !!s.erp_status; /* קריאה שסונכרנה מפריוריטי — שדות המקור נעולים ואפורים */
   const tag = L?SRC_TAG:'';
   const teamVals = [...new Set([...OTEAMS.filter(t=>t.active!==false).map(t=>t.name), ...uniqVals(SCALLS,'team',s.team)])];
@@ -6374,36 +6427,38 @@ window.openScall = (id)=>{
       <div class="span4"><label>הערות</label><textarea id="se-notes" rows="2">${esc(s.notes||'')}</textarea></div>
     </div>
     <div class="modal-actions">
-      ${editable?`<button class="btn btnw" onclick="saveScall('${s.id}')">💾 שמירה</button>`:'<div class="note">לעדכון נדרשת הרשאת מנהל.</div>'}
+      ${editable?`<button class="btn btnw" onclick="saveScall('${s.id}')">💾 שמירה</button>`:'<div class="note">אין לך הרשאת עריכה לקריאות שירות.</div>'}
     </div>
     <div class="err" id="se-err"></div>`;
   mountCard('ordModal', ()=>openScall(id));
   if(!editable) document.querySelectorAll('#ordSheet input,#ordSheet select,#ordSheet textarea').forEach(el=>el.disabled=true);
 };
+/* 6.21.0 — מזהה האלמנט בכרטיס קריאת השירות מול העמודה במסד, בדיוק כמו
+   ORD_CARD_FIELDS בהזמנות. כל שתים עשרה העמודות נשלטות במפתח logi.calls,
+   זהה למפה שבתוך ord.service_call_patch. */
+const SCALL_CARD_FIELDS = [
+  ['se-type','call_type'], ['se-warranty','warranty'], ['se-status','status'],
+  ['se-urgency','urgency'], ['se-city','city'], ['se-region','region'],
+  ['se-addr','address'], ['se-date','scheduled_date'], ['se-slot','time_slot'],
+  ['se-deadline','deadline'], ['se-team','team'], ['se-notes','notes']
+];
 window.saveScall = async (id)=>{
   const s = SCALLS.find(x=>x.id===id); if(!s) return;
-  const upd = {
-    call_type: $('#se-type').value, warranty: $('#se-warranty').value||null,
-    status: $('#se-status').value, urgency: $('#se-urgency').value,
-    city: $('#se-city').value||null, region: $('#se-region').value||null,
-    address: $('#se-addr').value||null,
-    scheduled_date: $('#se-date').value || null,
-    time_slot: $('#se-slot').value || null,
-    deadline: $('#se-deadline').value || null,
-    team: $('#se-team').value || null,
-    notes: $('#se-notes').value || null,
-  };
+  /* 6.21.0 — אותו דפוס כמו saveOrd: הרשאה לפי logi.calls, דיף מול השורה
+     שבזיכרון, ודילוג על שדה שאינו קיים בכרטיס. ord.service_call_patch רושם
+     את היומן בעצמו, ולכן אין כאן יותר רישום יומן מהלקוח. */
+  if(!window.canEdit('logi.calls')){ const eb=document.getElementById('se-err'); if(eb) eb.textContent='אין לך הרשאת עריכה לקריאות שירות.'; return; }
+  const upd = {};
+  SCALL_CARD_FIELDS.forEach(([elId, col])=>{
+    const el = document.getElementById(elId);
+    if(!el || el.disabled) return;
+    const nv = el.value === '' ? null : el.value;
+    if((nv ?? null) !== (s[col] ?? null)) upd[col] = nv;
+  });
+  if(!Object.keys(upd).length){ closeCards(); return; }
   const { data: res, error } = await oldCall('update_service_call', { id, patch: upd });
   if(error){ $('#se-err').textContent = 'השמירה נכשלה — ' + error.message; return; }
-  const changes = [];
-  for(const k of Object.keys(upd)) if((s[k]||null)!==(upd[k]||null)) changes.push(k);
   Object.assign(s, (res && res.row) || upd);
-  try{
-    await sb.schema('ord').from('audit_log').insert({
-      user_email: ME.email, action: 'עדכון קריאת שירות מהמערכת',
-      entity: 'קריאת שירות', entity_id: String(s.call_number||''), label: changes.join(', ') || 'ללא שינוי'
-    });
-  }catch(_e){}
   closeCards();
   renderOrders(); renderLogi(); renderCal();
 };
@@ -6442,19 +6497,22 @@ const ORD_COLS = [
   ['תאריך','scheduled_date','datecell'], ['שעות','time_slot','slotcell'], ['וואטסאפ','',''],
 ];
 function ordHead(sel){
-  return (sel?'<th class="selcol"><input type="checkbox" id="ordSelAll" title="בחירת הכל"></th>':'')+ORD_COLS.map(([lbl,key,cls])=>{
+  return (sel?('<th class="selcol">'+(window.canEdit('logi.orders.bulk')?'<input type="checkbox" id="ordSelAll" title="בחירת הכל">':'')+'</th>'):'')+ORD_COLS.map(([lbl,key,cls])=>{
     if(!key) return `<th class="${cls}">${lbl}</th>`;
     const on = OF.col===key;
     return `<th class="srt ${cls} ${on?'on':''}" data-sk="${key}" title="לחצו למיון לפי ${lbl}">${lbl}<span class="sar">${on?(OF.dir>0?'▲':'▼'):'⇅'}</span></th>`;
   }).join('');
 }
 function ordTable(list,opts){
-  const SEL = !!(opts&&opts.sel);
+  /* 6.21.0 — עמודת הבחירה נפתחת רק אם יש הרשאה לפחות לאחת משתי הפעולות שבה.
+     ordHead נקרא עם אותו SEL, ולכן הכותרת והגוף תמיד מסונכרנים במספר העמודות. */
+  const SEL = !!(opts&&opts.sel) && (window.canEdit('logi.orders') || window.canEdit('logi.orders.bulk'));
+  const CTX = (opts&&opts.ctx) || null;
   if(!list.length) return '<div class="empty">לא נמצאו הזמנות מתאימות</div>';
   const rows = list.slice(0,pgLim('orders')).map((o,i)=>{
     const wa = o.phone && o.scheduled_date ? waLink(o.phone, waCoordMsg(o)) : '';
-    return `<tr onclick="openOrd('${o.id}')">
-      ${SEL?`<td class="selcol" onclick="event.stopPropagation()"><input type="checkbox" class="ordsel" data-oid="${o.id}"><button type="button" class="qdone" title="סימון כהושלם" onclick="ordQuickDone('${o.id}')">✓</button></td>`:''}
+    return `<tr onclick="openOrd('${o.id}'${CTX?(",'"+CTX+"'"):''})">
+      ${SEL?`<td class="selcol" onclick="event.stopPropagation()">${window.canEdit('logi.orders.bulk')?`<input type="checkbox" class="ordsel" data-oid="${o.id}">`:''}${window.canEdit('logi.orders')?`<button type="button" class="qdone" title="סימון כהושלם" onclick="ordQuickDone('${o.id}')">✓</button>`:''}</td>`:''}
       <td class="rownum">${i+1}</td>
       <td class="odate">${fmtD(o.order_date)||'—'}</td>
       <td><b>${esc(o.order_number)}</b>${o.order_notes?`<div class="note-preview" title="${esc(o.order_notes)}">📝 ${esc(String(o.order_notes).slice(0,28))}${String(o.order_notes).length>28?'…':''}</div>`:''}</td>
@@ -6466,7 +6524,7 @@ function ordTable(list,opts){
       <td class="teamcell">${ieSel('ord',o.id,'team',OTEAMS.filter(t=>t.active!==false).map(t=>t.name),o.team,{allowEmpty:true,emptyLabel:'לא משויך',mdColors:teamColorMap()})}</td>
       <td class="datecell"><div class="datewrap">${ieDate('ord',o.id,'scheduled_date',o.scheduled_date)}${o.scheduled_date?`<span class="dw-day">${dayNameHe(o.scheduled_date)}${o.days_count>1?` · ${o.days_count} ימים`:''}</span>`:''}</div></td>
       <td class="slotcell">${ieSel('ord',o.id,'time_slot',TIME_SLOTS,o.time_slot,{allowEmpty:true,mdColors:SLOT_COLORS})}</td>
-      <td>${wa?`<a class="btn-wa2" href="${wa}" target="_blank" onclick="event.stopPropagation()">📱</a>`:''}</td>
+      <td>${(window.canView('logi.orders.whatsapp')&&wa)?`<a class="btn-wa2" href="${wa}" target="_blank" onclick="event.stopPropagation()">📱</a>`:''}</td>
     </tr>`;}).join('');
   return `<div class="tbl-wrap"><table class="tbl"><thead><tr>${ordHead(SEL)}</tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('orders',list.length,'הזמנות')}`;
 }
@@ -6479,14 +6537,19 @@ function renderOrders(){
     return;
   }
   const list = filteredOrders();
-  $('#orders-list').innerHTML = wideScreen() ? ordTable(list) : capped(list, ordRow, 'אין הזמנות בסינון הזה');
+  $('#orders-list').innerHTML = wideScreen() ? ordTable(list,{ctx:'sales'}) : capped(list, o=>ordRow(o,'sales'), 'אין הזמנות בסינון הזה');
 }
 /* כרטיס הזמנה מלא — כמו במערכת ההזמנות והתיאומים הישנה (הערות 20–21):
    שדות פריוריטי אפורים ונעולים, שדות תפעול לעריכה, פירוט פריטים אמיתי מפריוריטי */
-window.openOrd = (id)=>{
+/* 6.21.0 — הכרטיס מקבל פרופיל תצוגה: 'logi' ממסך ההזמנות והתיאומים, 'sales' ממסך
+   ההזמנות של ה-CRM, ו-null מכל כניסה אחרת (לוח מחוונים, לוח שנה, כרטיס לקוח, חיפוש)
+   שבה אין הקשר מסך. הפרופיל רק מצמצם תצוגה — מה שמותר לערוך נקבע בהרשאה בלבד. */
+window.openOrd = (id, ctx)=>{
   const o = ORDS.find(x=>x.id===id); if(!o) return;
+  ctx = (ctx==='logi' || ctx==='sales') ? ctx : null;
+  const showSales  = ctx !== 'logi';   /* מחיר, אימייל, דו שיח, חשבונית, מסמכים, כרטיס לקוח */
+  const showSupply = ctx !== 'sales';  /* אספקה והערות מחסן */
   const cust = CUSTS.find(c=> (c.priority_id && String(c.priority_id).trim()===String(o.customer_number||'').trim()) || (digitsOf(c.phone) && digitsOf(c.phone)===digitsOf(o.phone)) );
-  const editable = ['admin','manager'].includes(ME.role);
   const others = ORDS.filter(x=>x.id!==o.id && x.customer_name && x.customer_name===o.customer_name && !['הושלם','בוטל','מבוטלת'].includes(x.order_status));
   const teamVals = [...new Set([...OTEAMS.filter(t=>t.active!==false).map(t=>t.name), ...uniqVals(ORDS,'team',o.team)])];
   const norm=a=>String(a||'').trim().replace(/\s+/g,' ').toLowerCase();
@@ -6494,7 +6557,7 @@ window.openOrd = (id)=>{
   const hasSame=myAddr && others.some(x=>norm(x.address)===myAddr);
   $('#ordSheet').innerHTML = `
     <h3>📦 ${esc(o.order_number)} — ${esc(o.customer_name||'')}${o.erp_status?` <span class="pill p-violet" title="הסטטוס בפריוריטי — מתעדכן בסנכרון">${PRI_ICO}פריוריטי: ${esc(o.erp_status)}</span>`:''}</h3>
-    <div class="note" style="margin:4px 0 14px">הוזמן ב-${fmtD(o.order_date)||'—'}${o.erp_synced_at?' · סונכרן מפריוריטי '+new Date(o.erp_synced_at).toLocaleDateString('he-IL'):''}${o.erp_price?' · '+shekel(o.erp_price):''}</div>
+    <div class="note" style="margin:4px 0 14px">הוזמן ב-${fmtD(o.order_date)||'—'}${o.erp_synced_at?' · סונכרן מפריוריטי '+new Date(o.erp_synced_at).toLocaleDateString('he-IL'):''}${(showSales&&o.erp_price)?' · '+shekel(o.erp_price):''}</div>
     <div class="form-grid">
       <div><label>מס' הזמנה${SRC_TAG}</label>${roIn(o.order_number,{ltr:1})}</div>
       <div><label>תאריך הזמנה${SRC_TAG}</label>${roIn(fmtD(o.order_date),{ltr:1})}</div>
@@ -6505,8 +6568,8 @@ window.openOrd = (id)=>{
       <div><label>טלפון איש קשר${SRC_TAG} ${phBtns(o.contact_phone)}</label>${roIn(o.contact_phone,{ltr:1})}</div>
       <div><label>כמות פריטים${SRC_TAG}</label>${roIn(o.items_count)}</div>
       <div><label>אופן משלוח${SRC_TAG}</label>${roIn(o.delivery_method)}</div>
-      <div><label>אימייל לקוח${SRC_TAG}</label>${roIn(o.customer_email,{ltr:1})}</div>
-      <div><label>סכום (פריוריטי)${SRC_TAG}</label>${roIn(o.erp_price?shekel(o.erp_price):'')}</div>
+      ${showSales?`<div><label>אימייל לקוח${SRC_TAG}</label>${roIn(o.customer_email,{ltr:1})}</div>`:''}
+      ${showSales?`<div><label>סכום (פריוריטי)${SRC_TAG}</label>${roIn(o.erp_price?shekel(o.erp_price):'')}</div>`:''}
       <div class="span2"><label>הערות הזמנה${SRC_TAG}</label>${roIn(o.order_notes)}</div>
       <div class="span2"><label>🚚 כתובת משלוח${SRC_TAG} ${wazeBtn(o.address?(o.address+' '+(o.city||'')):'')}</label><input value="${esc(o.address||'')}" readonly class="ro" placeholder="לא הוזנה כתובת משלוח בהזמנה"></div>
       <div class="span2"><label>🏠 כתובת לקוח${SRC_TAG} ${wazeBtn(o.customer_address)}</label><input value="${esc(o.customer_address||'')}" readonly class="ro" placeholder="אין כתובת בכרטיס הלקוח"></div>
@@ -6519,13 +6582,13 @@ window.openOrd = (id)=>{
       <div><label>מספר ימים</label><input id="oe-days" type="number" min="1" value="${o.days_count||1}"></div>
       <div><label>משבצת זמן</label>${selHtml('oe-slot',TIME_SLOTS,o.time_slot,true)}</div>
       <div class="span2"><label class="chk-line" style="margin-top:18px"><input type="checkbox" id="oe-friday" ${o.friday_ok?'checked':''}> <b>לאשר עבודה ביום שישי בהזמנה זו</b></label></div>
-      <div class="form-sep">אספקה, מחסן ומסמכים</div>
-      <div><label>זמן אספקה (ימים)</label><input id="oe-supdays" type="number" value="${o.supply_days??''}"></div>
-      <div><label>תאריך סיום אספקה</label><input id="oe-supend" type="date" value="${esc(o.supply_end_date||'')}"></div>
-      <div><label>תעודת משלוח</label>${selHtml('oe-dnote',YESNO,o.delivery_note||'',true)}</div>
-      <div><label>חשבונית</label>${selHtml('oe-invoice',YESNO,o.invoice||'',true)}</div>
-      <div class="span2"><label>הערות למחסן</label><textarea id="oe-wnotes" rows="2">${esc(o.warehouse_notes||'')}</textarea></div>
-      <div class="span4"><label>דו שיח פנימי${SRC_TAG}</label><div class="dialog-box">${o.internal_dialog?esc(o.internal_dialog).replace(/\n/g,'<br>'):'<span class="dialog-empty">אין דו שיח פנימי בהזמנה זו</span>'}</div></div>
+      <div class="form-sep">${(showSupply&&showSales)?'אספקה, מחסן ומסמכים':(showSupply?'אספקה ומחסן':'מסמכים')}</div>
+      ${showSupply?`<div><label>זמן אספקה (ימים)</label><input id="oe-supdays" type="number" value="${o.supply_days??''}"></div>`:''}
+      ${showSupply?`<div><label>תאריך סיום אספקה</label><input id="oe-supend" type="date" value="${esc(o.supply_end_date||'')}"></div>`:''}
+      ${showSales?`<div><label>תעודת משלוח</label>${selHtml('oe-dnote',YESNO,o.delivery_note||'',true)}</div>`:''}
+      ${showSales?`<div><label>חשבונית</label>${selHtml('oe-invoice',YESNO,o.invoice||'',true)}</div>`:''}
+      ${showSupply?`<div class="span2"><label>הערות למחסן</label><textarea id="oe-wnotes" rows="2">${esc(o.warehouse_notes||'')}</textarea></div>`:''}
+      ${(showSales&&window.canView('crm.orders.dialog'))?`<div class="span4"><label>דו שיח פנימי${SRC_TAG}</label><div class="dialog-box">${o.internal_dialog?esc(o.internal_dialog).replace(/\n/g,'<br>'):'<span class="dialog-empty">אין דו שיח פנימי בהזמנה זו</span>'}</div></div>`:''}
       <div class="form-sep">📦 פירוט ההזמנה${SRC_TAG}</div>
       <div class="span4" id="orderItemsBox"><div class="items-loading">טוען פירוט הזמנה מפריוריטי…</div></div>
     </div>
@@ -6534,19 +6597,30 @@ window.openOrd = (id)=>{
       return `<div class="others-box"><div class="ob-title">📦 ללקוח יש עוד ${others.length===1?'הזמנה פתוחה':others.length+' הזמנות פתוחות'}:${hasSame?' <span class="same-tag">🚚 יש הזמנות לאותה כתובת משלוח — כדאי לשלב יחד!</span>':''}</div>
       ${others.map(x=>{
         const same=myAddr && norm(x.address)===myAddr;
-        return `<div class="other-row ${same?'same-addr':''}" onclick="goCard(()=>openOrd('${x.id}'))"><b>${esc(x.order_number)}</b><span>${fmtD(x.order_date)||'—'}</span><span>${x.items_count??'?'} פריטים</span>${x.address?`<span class="ob-note" title="כתובת משלוח: ${esc(x.address)}">${esc(String(x.address).slice(0,30))}</span>`:''}${same?'<span class="same-tag">אותה כתובת משלוח!</span>':''}</div>`;
+        return `<div class="other-row ${same?'same-addr':''}" onclick="goCard(()=>openOrd('${x.id}'${ctx?(",'"+ctx+"'"):''}))"><b>${esc(x.order_number)}</b><span>${fmtD(x.order_date)||'—'}</span><span>${x.items_count??'?'} פריטים</span>${x.address?`<span class="ob-note" title="כתובת משלוח: ${esc(x.address)}">${esc(String(x.address).slice(0,30))}</span>`:''}${same?'<span class="same-tag">אותה כתובת משלוח!</span>':''}</div>`;
       }).join('')}</div>`;
     })()}
-    ${(()=>{ const ps=PROTS.filter(p=>p.order_id===o.id); return `<h2 class="sec">📄 מסמכים וחתימות (${ps.length})</h2>`+
+    ${(showSales && window.canView('crm.orders.docs'))?(()=>{ const ps=PROTS.filter(p=>p.order_id===o.id); return `<h2 class="sec">📄 מסמכים וחתימות (${ps.length})</h2>`+
       (ps.map(p=>`<div class="row"><span class="k">${esc(p.doc_type)}${p.sent_at?' · '+new Date(p.sent_at).toLocaleDateString('he-IL'):''}</span><span class="v">${p.status==='נחתם'?`<a href="${viewUrl(p.token)}" target="_blank">📄 צפייה</a>`:`<a href="#" onclick="event.preventDefault();copyTxt('${signUrl(p.token)}')">🔗 קישור</a>`} <span class="pill ${p.status==='נחתם'?'st-rel':'st-def'}">${esc(p.status)}</span></span></div>`).join(''))+
-      (editable?`<button class="ghost" style="margin-top:8px" onclick="createProtocol('${o.id}')">➕ יצירת פרוטוקול הכנה לחתימה</button>`:''); })()}
+      (window.canEdit('crm.orders.docs')?`<button class="ghost" style="margin-top:8px" onclick="createProtocol('${o.id}')">➕ יצירת פרוטוקול הכנה לחתימה</button>`:''); })():''}
     <div class="modal-actions">
-      ${editable?`<button class="btn btnw" onclick="saveOrd('${o.id}')">💾 שמירה</button>`:'<div class="note">לעדכון ותיאום נדרשת הרשאת מנהל.</div>'}
-      ${cust?`<button class="ghost" style="width:auto;padding:11px 18px" onclick="goCard(()=>openCust('${cust.id}'))">לכרטיס הלקוח ←</button>`:''}
+      <button class="btn btnw hidden" id="oe-save" onclick="saveOrd('${o.id}')">💾 שמירה</button>
+      <div class="note hidden" id="oe-nosave">אין לך הרשאת עריכה לשדות שבכרטיס זה.</div>
+      ${(showSales&&cust)?`<button class="ghost" style="width:auto;padding:11px 18px" onclick="goCard(()=>openCust('${cust.id}'))">לכרטיס הלקוח ←</button>`:''}
     </div>
     <div class="err" id="oe-err"></div>`;
-  mountCard('ordModal', ()=>openOrd(id));
-  if(!editable) document.querySelectorAll('#ordSheet input,#ordSheet select,#ordSheet textarea').forEach(el=>el.disabled=true);
+  /* 6.21.0 — נעילה לפי שדה במקום נעילה גורפת לפי תפקיד. כל שדה נבדק מול מפתח
+     ההרשאה שלו — אותה מפה בדיוק שאוכפת ord.order_patch בשרת. שדה שלא הוצג כלל
+     בפרופיל התצוגה פשוט לא קיים ב-DOM ולכן מדולג. */
+  let anyEditable = false;
+  ORD_CARD_FIELDS.forEach(([elId, col])=>{
+    const el = document.getElementById(elId); if(!el) return;
+    if(window.ordCardEditable(col)) anyEditable = true; else el.disabled = true;
+  });
+  const bSave=document.getElementById('oe-save'), bNo=document.getElementById('oe-nosave');
+  if(bSave) bSave.classList.toggle('hidden', !anyEditable);
+  if(bNo)   bNo.classList.toggle('hidden', anyEditable);
+  mountCard('ordModal', ()=>openOrd(id, ctx));
   loadOrderItems(o.order_number);
 };
 /* פירוט הפריטים האמיתי מפריוריטי — ord.order_items (הערה 20) */
@@ -6585,38 +6659,48 @@ const uniqVals = (arr, field, current) => {
   return [...s];
 };
 const optHtml = (vals, cur) => vals.map(v=>`<option ${v===cur?'selected':''}>${esc(v)}</option>`).join('');
+/* 6.21.0 — השמירה נבנית מ-ORD_CARD_FIELDS ולא מרשימה קשיחה, ולכן:
+   1. שדה שלא הוצג בפרופיל התצוגה כלל אינו קיים ב-DOM ופשוט מדולג — אין יותר
+      קריסה על אלמנט חסר ואין דריסת ערך בשדה שלא נראה למשתמש.
+   2. שדה בלי הרשאת עריכה אינו נכנס ל-patch. ord.order_patch דוחה patch שלם
+      על מפתח אחד אסור, ולכן סינון מוקדם כאן שומר על שאר השינויים.
+   3. ההשוואה מנורמלת: days_count מוצג תמיד עם 1 כברירת מחדל ו-friday_ok הוא
+      checkbox, ובלי נרמול כל שמירה של כרטיס שלא נגעו בו הייתה כותבת 1 ו-false
+      על NULL ומזהמת את היומן.
+   4. אין רישום יומן מהלקוח — ord.order_patch רושם אותו בעצמו. */
 window.saveOrd = async (id)=>{
   const o = ORDS.find(x=>x.id===id); if(!o) return;
   const num = v => v===''||v==null ? null : parseInt(v);
-  const upd = {
-    order_status: $('#oe-status').value,
-    contact_status: $('#oe-contact').value,
-    city: $('#oe-city').value||null,
-    region: $('#oe-region').value||null,
-    team: $('#oe-team').value || null,
-    scheduled_date: $('#oe-date').value || null,
-    days_count: num($('#oe-days').value)||1,
-    time_slot: $('#oe-slot').value || null,
-    friday_ok: $('#oe-friday').checked,
-    supply_days: num($('#oe-supdays').value),
-    supply_end_date: $('#oe-supend').value || null,
-    delivery_note: $('#oe-dnote').value || null,
-    invoice: $('#oe-invoice').value || null,
-    warehouse_notes: $('#oe-wnotes').value || null,
+  const READ = {
+    order_status:    el => el.value,
+    contact_status:  el => el.value,
+    city:            el => el.value || null,
+    region:          el => el.value || null,
+    team:            el => el.value || null,
+    scheduled_date:  el => el.value || null,
+    days_count:      el => num(el.value) || 1,
+    time_slot:       el => el.value || null,
+    friday_ok:       el => !!el.checked,
+    supply_days:     el => num(el.value),
+    supply_end_date: el => el.value || null,
+    delivery_note:   el => el.value || null,
+    invoice:         el => el.value || null,
+    warehouse_notes: el => el.value || null
   };
-  /* עדכון חלקי — רק שדות שהשתנו, כדי לא לדרוס עדכונים מקבילים */
-  const changed={};
-  for(const k in upd){ if((upd[k]??null)!==(o[k]??null)) changed[k]=upd[k]; }
+  const CUR = { days_count: r => (r.days_count ?? 1), friday_ok: r => !!r.friday_ok };
+  const changed = {};
+  ORD_CARD_FIELDS.forEach(([elId, col])=>{
+    const el = document.getElementById(elId);
+    if(!el || el.disabled || !READ[col]) return;
+    if(!window.ordCardEditable(col)) return;
+    const nv = READ[col](el);
+    const cv = CUR[col] ? CUR[col](o) : (o[col] ?? null);
+    if((nv ?? null) !== (cv ?? null)) changed[col] = nv;
+  });
   if(!Object.keys(changed).length){ closeCards(); return; }
   const { data: res, error } = await oldCall('update_order', { id, patch: changed });
-  if(error){ $('#oe-err').textContent = 'השמירה נכשלה — ' + error.message; return; }
-  Object.assign(o, (res && res.row) || changed);   /* מקבלים בחזרה את השורה כפי שהיא בישן */
-  try{
-    await sb.schema('ord').from('audit_log').insert({
-      user_email: ME.email, action: 'עדכון הזמנה מהמערכת',
-      entity: 'הזמנה', entity_id: String(o.order_number), label: Object.keys(changed).join(', ')
-    });
-  }catch(_e){}
+  if(error){ const eb=document.getElementById('oe-err'); if(eb) eb.textContent = 'השמירה נכשלה — ' + error.message; return; }
+  Object.assign(o, (res && res.row) || changed);
   closeCards();
   renderOrders(); renderLogi(); renderCal(); renderOps();
 };
@@ -7676,7 +7760,7 @@ if (SIGN_TOKEN) { killSplash(); renderSignView(SIGN_TOKEN).catch(e=>{ console.er
   function yfdt(d){ if(!d) return '—'; var t=new Date(d); return isNaN(t)?'—':t.toLocaleDateString('he-IL')+' '+t.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}); }
 
   async function injectYahav(id){
-    var r = await sb.schema('ord').from('orders')
+    var r = await sb.schema('ord').from('orders_v')
       .select('id,order_number,delivery_method,customer_name,address,ship_addr1,ship_addr2,city,contact_name,phone,order_notes,yahav_shipment_no,yahav_sent_at,yahav_status,yahav_status_at,yahav_packages,yahav_driver')
       .eq('id', id).maybeSingle();
     var o = r && r.data;

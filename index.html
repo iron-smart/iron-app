@@ -1124,7 +1124,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.24.11</div>
+      <div class="ver">גרסה 6.24.12</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1222,7 +1222,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.11</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.12</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2644,14 +2644,18 @@ window.logiView = ()=> renderLogi();
 /* 6.5.0 — הזמנות שאינן דורשות תיאום: היקף תצוגה בלוח + סגירה מהירה */
 let LOGI_SCOPE='sched';
 let LOGI_F = { status:[], team:'', region:'', contact:'' };
-let SC_F   = { status:'', urgency:'', team:'', region:'' };
+let SC_F   = { status:[], urgency:'', team:'', region:'' };
+function scDefLoad(){ try{ const r=JSON.parse(localStorage.getItem('iron_calls_default_v1')||'null'); return (r&&typeof r==='object')?r:null; }catch(_e){ return null; } }
+function scDefExists(){ return !!scDefLoad(); }
+window.scDefSave = ()=>{ try{ localStorage.setItem('iron_calls_default_v1', JSON.stringify(SC_F)); toast('התצוגה נשמרה כברירת מחדל ✓'); renderScFilters(); }catch(_e){ toast('הדפדפן חוסם שמירת ברירת מחדל'); } };
+window.scDefClear = ()=>{ try{ localStorage.removeItem('iron_calls_default_v1'); }catch(_e){} toast('ברירת המחדל נמחקה'); renderScFilters(); };
 let LOGI_INIT=false;
 /* 6.24.6 — שמירת תצוגת ברירת מחדל למסך ההזמנות (per-browser, localStorage) */
 function logiDefLoad(){ try{ const r=JSON.parse(localStorage.getItem('iron_logi_default_v1')||'null'); return (r&&typeof r==='object')?r:null; }catch(_e){ return null; } }
 function logiDefExists(){ return !!logiDefLoad(); }
 window.logiDefSave = ()=>{ try{ localStorage.setItem('iron_logi_default_v1', JSON.stringify({scope:LOGI_SCOPE, f:LOGI_F})); toast('התצוגה נשמרה כברירת מחדל ✓'); renderLogiFilters(); }catch(_e){ toast('הדפדפן חוסם שמירת ברירת מחדל'); } };
 window.logiDefClear = ()=>{ try{ localStorage.removeItem('iron_logi_default_v1'); }catch(_e){} toast('ברירת המחדל נמחקה'); renderLogiFilters(); };
-function logiInit(){ if(LOGI_INIT) return; LOGI_INIT=true; const d=logiDefLoad(); if(d){ if(d.scope) LOGI_SCOPE=d.scope; if(d.f&&typeof d.f==='object'){ LOGI_F=Object.assign({status:[],team:'',region:'',contact:''}, d.f); if(!Array.isArray(LOGI_F.status)) LOGI_F.status = LOGI_F.status?[LOGI_F.status]:[]; } } }
+function logiInit(){ if(LOGI_INIT) return; LOGI_INIT=true; const d=logiDefLoad(); if(d){ if(d.scope) LOGI_SCOPE=d.scope; if(d.f&&typeof d.f==='object'){ LOGI_F=Object.assign({status:[],team:'',region:'',contact:''}, d.f); if(!Array.isArray(LOGI_F.status)) LOGI_F.status = LOGI_F.status?[LOGI_F.status]:[]; } } const cd=scDefLoad(); if(cd&&typeof cd==='object'){ SC_F=Object.assign({status:[],urgency:'',team:'',region:''}, cd); if(!Array.isArray(SC_F.status)) SC_F.status = SC_F.status?[SC_F.status]:[]; } }
 const LOGI_SEL=new Set();
 let LOGI_SHOWN=[];
 const needsSched = o => o.needs_scheduling !== false;
@@ -2689,20 +2693,26 @@ function renderLogiFilters(){
 }
 /* 6.24.6 — סינון מסך קריאות השירות */
 window.scFilter = (k,v)=>{ SC_F[k]=v; renderScFilters(); logiRenderTable(); };
-window.scFilterClear = ()=>{ SC_F={status:'',urgency:'',team:'',region:''}; renderScFilters(); logiRenderTable(); };
-function scFilterActive(){ return !!(SC_F.status||SC_F.urgency||SC_F.team||SC_F.region); }
+window.scStatusToggle = (st,on)=>{ const set=new Set(SC_F.status||[]); on?set.add(st):set.delete(st); SC_F.status=[...set]; logiRenderTable(); renderScFilters(); const d=document.querySelector('#logi-filters-calls .lf-multi'); if(d) d.open=true; };
+window.scFilterClear = ()=>{ SC_F={status:[],urgency:'',team:'',region:''}; renderScFilters(); logiRenderTable(); };
+function scFilterActive(){ return !!((SC_F.status&&SC_F.status.length)||SC_F.urgency||SC_F.team||SC_F.region); }
 function renderScFilters(){
   const box=$('#logi-filters-calls'); if(!box) return;
   const teams=[...new Set(SCALLS.map(s=>s.team).filter(Boolean))].sort();
   const opt=(v,cur)=>`<option value="${esc(v)}" ${String(cur)===String(v)?'selected':''}>${esc(v)}</option>`;
   const sel=(k,ph,vals)=>`<select class="lf-sel ${SC_F[k]?'lf-on':''}" onchange="scFilter('${k}',this.value)"><option value="">${ph}</option>${vals.map(v=>opt(v,SC_F[k])).join('')}</select>`;
+  const stSel=(SC_F.status||[]);
+  const stItems=CALL_STATUSES.map(st=>`<label class="lf-opt"><input type="checkbox" ${stSel.includes(st)?'checked':''} onchange="scStatusToggle('${st}',this.checked)"><span class="pill ${STATUS_PILL[st]||'p-gray'}">${esc(st)}</span></label>`).join('');
+  const statusMulti=`<details class="lf-multi ${stSel.length?'lf-on':''}"><summary>${stSel.length?`סטטוס (${stSel.length})`:'סטטוס — הכל'}</summary><div class="lf-menu">${stItems}</div></details>`;
   box.innerHTML =
     (window.canEdit('logi.calls')?`<button type="button" class="lf-new" onclick="openNewScall()">＋ קריאת שירות חדשה</button>`:'')+
-    sel('status','סטטוס — הכל',CALL_STATUSES)+
+    statusMulti+
     sel('urgency','דחיפות — הכל',URGENCIES)+
     sel('team','צוות — הכל',teams)+
     sel('region','אזור — הכל',REGIONS)+
-    (scFilterActive()?`<button type="button" class="lf-clear" onclick="scFilterClear()">✕ ניקוי סינון</button>`:'');
+    (scFilterActive()?`<button type="button" class="lf-clear" onclick="scFilterClear()">✕ ניקוי סינון</button>`:'')+
+    `<button type="button" class="lf-save" onclick="scDefSave()" title="שמירת הסינון הנוכחי כברירת מחדל בדפדפן זה">★ שמור כברירת מחדל</button>`+
+    (scDefExists()?`<button type="button" class="lf-clear" onclick="scDefClear()">↺ אפס ברירת מחדל</button>`:'');
 }
 function logiBulkBar(){
   const bar=$('#logi-bulk'); if(!bar) return;
@@ -2791,10 +2801,11 @@ function logiRenderTable(){
   if(isCalls){
     const q=($('#logiSearchCalls').value||'').trim();
     const _scDone=['הושלם','הושלמה','בוטלה','סגורה'];
-    let list = SC_F.status ? SCALLS.slice() : SCALLS.filter(s=>!_scDone.includes(s.status));
+    const stF=(SC_F.status||[]);
+    let list = stF.some(x=>_scDone.includes(x)) ? SCALLS.slice() : SCALLS.filter(s=>!_scDone.includes(s.status));
     if(q) list = list.filter(s=>[s.customer_name,s.call_number,s.city,s.product,s.address,s.team,s.phone]
       .some(v=>String(v||'').includes(q)));
-    if(SC_F.status)  list = list.filter(s=>s.status===SC_F.status);
+    if(stF.length)   list = list.filter(s=>stF.includes(s.status));
     if(SC_F.urgency) list = list.filter(s=>(s.urgency||'רגילה')===SC_F.urgency);
     if(SC_F.team)    list = list.filter(s=>s.team===SC_F.team);
     if(SC_F.region)  list = list.filter(s=>s.region===SC_F.region);

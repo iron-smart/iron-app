@@ -118,6 +118,20 @@
   .lf-sel{ font-size:12.5px; padding:6px 10px; border:1px solid var(--line); border-radius:10px; background:#fff; color:#334155; font-family:inherit; cursor:pointer; max-width:190px; }
   .lf-sel.lf-on{ border-color:var(--navy); background:#eef4ff; color:var(--navy); font-weight:700; }
   .lf-clear{ font-size:12.5px; padding:6px 12px; border:1px solid #f0bcbc; background:#fbe0e0; color:#a92f2f; border-radius:10px; cursor:pointer; font-family:inherit; font-weight:700; }
+  /* 6.24.6 — רב-בחירת סטטוסים, שמירת ברירת מחדל, פתיחת קריאה חדשה */
+  .lf-multi{ position:relative; display:inline-block; }
+  .lf-multi>summary{ list-style:none; cursor:pointer; font-size:12.5px; padding:6px 10px; border:1px solid var(--line); border-radius:10px; background:#fff; color:#334155; max-width:210px; white-space:nowrap; user-select:none; }
+  .lf-multi>summary::-webkit-details-marker{ display:none; }
+  .lf-multi>summary::after{ content:' ▾'; opacity:.5; }
+  .lf-multi.lf-on>summary{ border-color:var(--navy); background:#eef4ff; color:var(--navy); font-weight:700; }
+  .lf-menu{ position:absolute; z-index:60; top:calc(100% + 4px); inset-inline-start:0; background:#fff; border:1px solid var(--line); border-radius:12px; box-shadow:0 8px 24px rgba(6,24,39,.14); padding:8px; min-width:220px; max-height:300px; overflow:auto; }
+  .lf-opt{ display:flex; align-items:center; gap:8px; padding:5px 6px; border-radius:8px; cursor:pointer; }
+  .lf-opt:hover{ background:#f1f5f9; }
+  .lf-opt input{ width:16px; height:16px; flex:none; }
+  .lf-save{ font-size:12.5px; padding:6px 12px; border:1px solid #cdd8e8; background:#f4f8ff; color:#1c3d6e; border-radius:10px; cursor:pointer; font-family:inherit; font-weight:700; }
+  .lf-save:hover{ background:#e8f0ff; }
+  .lf-new{ font-size:12.5px; padding:6px 14px; border:1px solid var(--navy); background:var(--navy); color:#fff; border-radius:10px; cursor:pointer; font-family:inherit; font-weight:800; }
+  .lf-new:hover{ filter:brightness(1.1); }
   .more{ text-align:center; color:#64748b; font-size:13px; padding:10px; }
 
   /* מודל */
@@ -1097,7 +1111,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.24.5</div>
+      <div class="ver">גרסה 6.24.6</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1195,7 +1209,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.5</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.6</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1297,6 +1311,7 @@
         </div>
         <div class="chips" id="logi-scope"></div>
         <div class="logi-filters hidden" id="logi-filters"></div>
+        <div class="logi-filters hidden" id="logi-filters-calls"></div>
         <div id="logi-bulk" class="toolbar hidden"></div>
         <div id="logi-tbl"></div>
       </div>
@@ -2615,7 +2630,15 @@ window.logiMode = v=>{ LOGI_VIEW=v; renderLogi(); navMark(); };
 window.logiView = ()=> renderLogi();
 /* 6.5.0 — הזמנות שאינן דורשות תיאום: היקף תצוגה בלוח + סגירה מהירה */
 let LOGI_SCOPE='sched';
-let LOGI_F = { status:'', team:'', region:'', contact:'' };
+let LOGI_F = { status:[], team:'', region:'', contact:'' };
+let SC_F   = { status:'', urgency:'', team:'', region:'' };
+let LOGI_INIT=false;
+/* 6.24.6 — שמירת תצוגת ברירת מחדל למסך ההזמנות (per-browser, localStorage) */
+function logiDefLoad(){ try{ const r=JSON.parse(localStorage.getItem('iron_logi_default_v1')||'null'); return (r&&typeof r==='object')?r:null; }catch(_e){ return null; } }
+function logiDefExists(){ return !!logiDefLoad(); }
+window.logiDefSave = ()=>{ try{ localStorage.setItem('iron_logi_default_v1', JSON.stringify({scope:LOGI_SCOPE, f:LOGI_F})); toast('התצוגה נשמרה כברירת מחדל ✓'); renderLogiFilters(); }catch(_e){ toast('הדפדפן חוסם שמירת ברירת מחדל'); } };
+window.logiDefClear = ()=>{ try{ localStorage.removeItem('iron_logi_default_v1'); }catch(_e){} toast('ברירת המחדל נמחקה'); renderLogiFilters(); };
+function logiInit(){ if(LOGI_INIT) return; LOGI_INIT=true; const d=logiDefLoad(); if(d){ if(d.scope) LOGI_SCOPE=d.scope; if(d.f&&typeof d.f==='object'){ LOGI_F=Object.assign({status:[],team:'',region:'',contact:''}, d.f); if(!Array.isArray(LOGI_F.status)) LOGI_F.status = LOGI_F.status?[LOGI_F.status]:[]; } } }
 const LOGI_SEL=new Set();
 let LOGI_SHOWN=[];
 const needsSched = o => o.needs_scheduling !== false;
@@ -2629,21 +2652,44 @@ function renderLogiScope(){
   box.innerHTML = [['sched','לתיאום'],['ship','משלוחים'],['all','הכל']]
     .map(([k,l])=>`<button type="button" class="chip ${LOGI_SCOPE===k?'active':''}" onclick="logiScope('${k}')">${l} <b>${n[k]}</b></button>`).join('');
 }
-/* 6.24.4 — סינון בתצוגה הטבלאית של מסך ההזמנות (הנחיית רומן 04/08) */
-window.logiFilter = (k,v)=>{ LOGI_F[k]=v; renderLogi(); };
-window.logiFilterClear = ()=>{ LOGI_F={status:'',team:'',region:'',contact:''}; renderLogi(); };
-function logiFilterActive(){ return !!(LOGI_F.status||LOGI_F.team||LOGI_F.region||LOGI_F.contact); }
+/* 6.24.6 — סינון בתצוגה הטבלאית: רב-בחירת סטטוסים, סינון קריאות שירות, ושמירת ברירת מחדל */
+window.logiFilter = (k,v)=>{ LOGI_F[k]=v; logiRenderTable(); renderLogiFilters(); };
+window.logiStatusToggle = (st,on)=>{ const set=new Set(LOGI_F.status||[]); on?set.add(st):set.delete(st); LOGI_F.status=[...set]; logiRenderTable(); renderLogiFilters(); const d=document.querySelector('#logi-filters .lf-multi'); if(d) d.open=true; };
+window.logiFilterClear = ()=>{ LOGI_F={status:[],team:'',region:'',contact:''}; renderLogiFilters(); logiRenderTable(); };
+function logiFilterActive(){ return !!((LOGI_F.status&&LOGI_F.status.length)||LOGI_F.team||LOGI_F.region||LOGI_F.contact); }
 function renderLogiFilters(){
   const box=$('#logi-filters'); if(!box) return;
   const teams=[...new Set(ORDS.map(o=>o.team).filter(Boolean))].sort();
   const opt=(v,cur)=>`<option value="${esc(v)}" ${String(cur)===String(v)?'selected':''}>${esc(v)}</option>`;
   const sel=(k,ph,vals,extra)=>`<select class="lf-sel ${LOGI_F[k]?'lf-on':''}" onchange="logiFilter('${k}',this.value)"><option value="">${ph}</option>${extra||''}${vals.map(v=>opt(v,LOGI_F[k])).join('')}</select>`;
+  const stSel=(LOGI_F.status||[]);
+  const stItems=ORDER_STATUSES.map(st=>`<label class="lf-opt"><input type="checkbox" ${stSel.includes(st)?'checked':''} onchange="logiStatusToggle('${st}',this.checked)"><span class="pill ${STATUS_PILL[st]||'p-gray'}">${esc(st)}</span></label>`).join('');
+  const statusMulti=`<details class="lf-multi ${stSel.length?'lf-on':''}"><summary>${stSel.length?`סטטוס לוגיסטי (${stSel.length})`:'סטטוס לוגיסטי — הכל'}</summary><div class="lf-menu">${stItems}</div></details>`;
   box.innerHTML =
-    sel('status','סטטוס לוגיסטי — הכל',ORDER_STATUSES)+
+    statusMulti+
     sel('contact','יצרנו קשר? — הכל',CONTACT_STATUSES)+
     sel('team','צוות — הכל',teams,`<option value="__none__" ${LOGI_F.team==='__none__'?'selected':''}>לא משויך</option>`)+
     sel('region','אזור — הכל',REGIONS)+
-    (logiFilterActive()?`<button type="button" class="lf-clear" onclick="logiFilterClear()">✕ ניקוי סינון</button>`:'');
+    (logiFilterActive()?`<button type="button" class="lf-clear" onclick="logiFilterClear()">✕ ניקוי סינון</button>`:'')+
+    `<button type="button" class="lf-save" onclick="logiDefSave()" title="שמירת הסינון וההיקף הנוכחיים כברירת מחדל בדפדפן זה">★ שמור כברירת מחדל</button>`+
+    (logiDefExists()?`<button type="button" class="lf-clear" onclick="logiDefClear()">↺ אפס ברירת מחדל</button>`:'');
+}
+/* 6.24.6 — סינון מסך קריאות השירות */
+window.scFilter = (k,v)=>{ SC_F[k]=v; renderScFilters(); logiRenderTable(); };
+window.scFilterClear = ()=>{ SC_F={status:'',urgency:'',team:'',region:''}; renderScFilters(); logiRenderTable(); };
+function scFilterActive(){ return !!(SC_F.status||SC_F.urgency||SC_F.team||SC_F.region); }
+function renderScFilters(){
+  const box=$('#logi-filters-calls'); if(!box) return;
+  const teams=[...new Set(SCALLS.map(s=>s.team).filter(Boolean))].sort();
+  const opt=(v,cur)=>`<option value="${esc(v)}" ${String(cur)===String(v)?'selected':''}>${esc(v)}</option>`;
+  const sel=(k,ph,vals)=>`<select class="lf-sel ${SC_F[k]?'lf-on':''}" onchange="scFilter('${k}',this.value)"><option value="">${ph}</option>${vals.map(v=>opt(v,SC_F[k])).join('')}</select>`;
+  box.innerHTML =
+    (window.canEdit('logi.calls')?`<button type="button" class="lf-new" onclick="openNewScall()">＋ קריאת שירות חדשה</button>`:'')+
+    sel('status','סטטוס — הכל',CALL_STATUSES)+
+    sel('urgency','דחיפות — הכל',URGENCIES)+
+    sel('team','צוות — הכל',teams)+
+    sel('region','אזור — הכל',REGIONS)+
+    (scFilterActive()?`<button type="button" class="lf-clear" onclick="scFilterClear()">✕ ניקוי סינון</button>`:'');
 }
 function logiBulkBar(){
   const bar=$('#logi-bulk'); if(!bar) return;
@@ -2709,6 +2755,7 @@ window.ordQuickDone = async (id)=>{
 function renderLogi(){
   /* 6.2.1 — שורת השבבים העליונה הוסרה: המעבר בין שלוש התצוגות נעשה רק
      מהתפריט הצף בסרגל הצד (רומן 29/07/2026). */
+  logiInit();
   if(!$('#cal-wrap')) return;
   const isCal = LOGI_VIEW==='cal', isCalls = LOGI_VIEW==='calls';
   $('#cal-wrap').classList.toggle('hidden', !isCal);
@@ -2720,19 +2767,30 @@ function renderLogi(){
   $('#logiSearchCalls').classList.toggle('hidden', !isCalls);
   if($('#logi-scope')) $('#logi-scope').classList.toggle('hidden', isCalls);
   if($('#logi-filters')) $('#logi-filters').classList.toggle('hidden', isCalls);
-  if(!isCalls){ renderLogiScope(); renderLogiFilters(); } else { LOGI_SEL.clear(); logiBulkBar(); }
+  if($('#logi-filters-calls')) $('#logi-filters-calls').classList.toggle('hidden', !isCalls);
+  if(!isCalls){ renderLogiScope(); renderLogiFilters(); } else { renderScFilters(); LOGI_SEL.clear(); logiBulkBar(); }
+  logiRenderTable();
+}
+/* 6.24.6 — ציור גוף הטבלה בלבד, בלי בניית שורת הסינון — כדי שרב-הבחירה יישאר פתוח */
+function logiRenderTable(){
+  if(!$('#logi-tbl')) return;
+  const isCalls = LOGI_VIEW==='calls';
   if(isCalls){
     const q=($('#logiSearchCalls').value||'').trim();
     let list = SCALLS.filter(s=>!['הושלם','הושלמה','בוטלה','סגורה'].includes(s.status));
     if(q) list = list.filter(s=>[s.customer_name,s.call_number,s.city,s.product,s.address,s.team,s.phone]
       .some(v=>String(v||'').includes(q)));
+    if(SC_F.status)  list = list.filter(s=>s.status===SC_F.status);
+    if(SC_F.urgency) list = list.filter(s=>(s.urgency||'רגילה')===SC_F.urgency);
+    if(SC_F.team)    list = list.filter(s=>s.team===SC_F.team);
+    if(SC_F.region)  list = list.filter(s=>s.region===SC_F.region);
     $('#logi-tbl').innerHTML = wideScreen() ? scTable(list) : capped(list, scRow, 'אין קריאות שירות');
   } else {
     const q=($('#logiSearchOrders').value||'').trim();
     let list = ORDS.filter(o=>!['הושלם','בוטל'].includes(o.order_status));
     if(q) list = list.filter(o=>[o.customer_name,o.order_number,o.city,o.address,o.team,o.phone]
       .some(v=>String(v||'').includes(q)));
-    if(LOGI_F.status)  list = list.filter(o=>o.order_status===LOGI_F.status);
+    if(LOGI_F.status && LOGI_F.status.length) list = list.filter(o=>LOGI_F.status.includes(o.order_status));
     if(LOGI_F.contact) list = list.filter(o=>o.contact_status===LOGI_F.contact);
     if(LOGI_F.team)    list = list.filter(o=> LOGI_F.team==='__none__' ? !o.team : o.team===LOGI_F.team);
     if(LOGI_F.region)  list = list.filter(o=>o.region===LOGI_F.region);
@@ -6839,6 +6897,67 @@ window.saveScall = async (id)=>{
   if(error){ $('#se-err').textContent = 'השמירה נכשלה — ' + error.message; return; }
   Object.assign(s, (res && res.row) || upd);
   closeCards();
+  renderOrders(); renderLogi(); renderCal();
+};
+/* 6.24.6 — פתיחת קריאת שירות חדשה מהמערכת. קריאות שירות אינן מגיעות מפריוריטי,
+   ולכן כאן כל השדות פתוחים לעריכה. השמירה עוברת ב-ord.service_call_create
+   (SECURITY DEFINER, שער core.can_edit('logi.calls')). */
+window.openNewScall = ()=>{
+  if(!window.canEdit('logi.calls')){ toast('אין לך הרשאת עריכה לקריאות שירות'); return; }
+  const teamVals = OTEAMS.filter(t=>t.active!==false).map(t=>t.name);
+  const today = todayStr();
+  $('#ordSheet').innerHTML = `
+    <h3>🛠️ פתיחת קריאת שירות חדשה</h3>
+    <div class="note" style="margin:4px 0 14px">קריאה שנפתחת ידנית במערכת (לא מפריוריטי). מלאו את השדות הרלוונטיים — מס' קריאה יווצר אוטומטית אם יישאר ריק.</div>
+    <div class="form-grid">
+      <div><label>מס' קריאה</label><input id="ne-call" dir="ltr" placeholder="יווצר אוטומטית אם ריק"></div>
+      <div><label>תאריך פתיחה</label><input id="ne-opened" type="date" value="${esc(today)}"></div>
+      <div><label>מס' לקוח</label><input id="ne-custnum" dir="ltr"></div>
+      <div><label>שם לקוח</label><input id="ne-custname"></div>
+      <div><label>טלפון</label><input id="ne-phone" dir="ltr"></div>
+      <div><label>אימייל לקוח</label><input id="ne-email" dir="ltr"></div>
+      <div><label>מהות הקריאה</label>${selHtml('ne-type',CALL_TYPES,'',true)}</div>
+      <div><label>באחריות?</label>${selHtml('ne-warranty',YESNO,'',true)}</div>
+      <div class="span2"><label>מוצר / תיאור</label><input id="ne-product"></div>
+      <div class="span2"><label>🏠 כתובת לקוח</label><input id="ne-custaddr"></div>
+      <div class="span4"><label>פרטי התקלה</label><textarea id="ne-fault" rows="2"></textarea></div>
+      <div><label>סטטוס</label>${selHtml('ne-status',CALL_STATUSES,'חדש')}</div>
+      <div><label>רמת דחיפות</label>${selHtml('ne-urgency',URGENCIES,'רגילה')}</div>
+      <div><label>עיר</label><input id="ne-city"></div>
+      <div><label>אזור גיאוגרפי</label>${selHtml('ne-region',REGIONS,'',true)}</div>
+      <div class="span2"><label>🚚 כתובת הגעה לקריאה</label><input id="ne-addr" placeholder="לאן הצוות מגיע"></div>
+      <div><label>צוות</label>${selHtml('ne-team',teamVals,'',true)}</div>
+      <div><label>תאריך מתואם</label><input id="ne-date" type="date"></div>
+      <div><label>משבצת זמן</label>${selHtml('ne-slot',TIME_SLOTS,'',true)}</div>
+      <div><label>דדליין טיפול</label><input id="ne-deadline" type="date"></div>
+      <div class="span4"><label>הערות</label><textarea id="ne-notes" rows="2"></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btnw" onclick="saveNewScall()">💾 פתיחת קריאה</button>
+    </div>
+    <div class="err" id="ne-err"></div>`;
+  mountCard('ordModal', ()=>openNewScall());
+};
+const NEW_SCALL_FIELDS = [
+  ['ne-call','call_number'],['ne-opened','opened_date'],['ne-custnum','customer_number'],
+  ['ne-custname','customer_name'],['ne-phone','phone'],['ne-email','customer_email'],
+  ['ne-type','call_type'],['ne-warranty','warranty'],['ne-product','product'],
+  ['ne-custaddr','customer_address'],['ne-fault','fault_details'],['ne-status','status'],
+  ['ne-urgency','urgency'],['ne-city','city'],['ne-region','region'],['ne-addr','address'],
+  ['ne-team','team'],['ne-date','scheduled_date'],['ne-slot','time_slot'],['ne-deadline','deadline'],
+  ['ne-notes','notes']
+];
+window.saveNewScall = async ()=>{
+  const eb=document.getElementById('ne-err'); if(eb) eb.textContent='';
+  if(!window.canEdit('logi.calls')){ if(eb) eb.textContent='אין לך הרשאת עריכה לקריאות שירות.'; return; }
+  const patch={};
+  NEW_SCALL_FIELDS.forEach(([elId,col])=>{ const el=document.getElementById(elId); if(!el) return; const v=(el.value||'').trim(); if(v!=='') patch[col]=v; });
+  if(!patch.customer_name && !patch.product && !patch.fault_details){ if(eb) eb.textContent='יש למלא לפחות שם לקוח, מוצר או תיאור תקלה.'; return; }
+  const { data, error } = await sb.schema('ord').rpc('service_call_create', { p_patch: patch });
+  if(error){ if(eb) eb.textContent='הפתיחה נכשלה — '+error.message; return; }
+  if(data && data.id) SCALLS.unshift(data);
+  closeCards();
+  toast('קריאת שירות נפתחה ✓');
   renderOrders(); renderLogi(); renderCal();
 };
 const wideScreen = ()=> window.matchMedia('(min-width:700px)').matches;

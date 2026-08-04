@@ -1097,7 +1097,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.24.4</div>
+      <div class="ver">גרסה 6.24.5</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1195,7 +1195,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.4</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.5</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2507,7 +2507,16 @@ window.ieSave = async (el)=>{
     try{ await sb.schema('ord').from('audit_log').insert({ user_email:ME.email, action:'עריכה ישירה מהטבלה', entity:cfg.ent, entity_id:String(cfg.key(rec)||''), label:field }); }catch(_e){}
   }
   toast('נשמר ✓');
+  /* 6.24.5 — שמירת מיקום הגלילה: rerender בונה מחדש את כל ה-innerHTML של הטבלה
+     ולכן גלילת העמוד וגלילת הטבלה (RTL, אופקית) מתאפסות והמסך "קופץ" בשינוי סטטוס.
+     שומרים את שתי הגלילות לפני הבנייה ומחזירים אחריה. */
+  const _sx=window.scrollX, _sy=window.scrollY;
+  const _wrap=el.closest('.tbl-wrap');
+  const _host=(_wrap&&_wrap.parentElement&&_wrap.parentElement.id)?_wrap.parentElement.id:'';
+  const _wl=_wrap?_wrap.scrollLeft:0, _wt=_wrap?_wrap.scrollTop:0;
   cfg.rerender();
+  if(_host){ const _nw=document.querySelector('#'+_host+' .tbl-wrap'); if(_nw){ _nw.scrollLeft=_wl; _nw.scrollTop=_wt; } }
+  window.scrollTo(_sx,_sy);
 };
 /* 6.21.0 — מפת שדה→מפתח הרשאה. תאום מדויק של המפה שבתוך ord.order_patch במסד.
    שינוי כאן מחייב שינוי שם. שדה שאינו במפה = אינו ניתן לעריכה (חסום כברירת מחדל). */

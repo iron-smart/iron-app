@@ -132,6 +132,19 @@
   .lf-save:hover{ background:#e8f0ff; }
   .lf-new{ font-size:12.5px; padding:6px 14px; border:1px solid var(--navy); background:var(--navy); color:#fff; border-radius:10px; cursor:pointer; font-family:inherit; font-weight:800; }
   .lf-new:hover{ filter:brightness(1.1); }
+  /* 6.24.10 — חיפוש-השלמה לבחירת לקוח/מוצר והצעת הזמנה מוצלבת */
+  .ac-wrap{ position:relative; }
+  .ac-menu{ position:absolute; z-index:70; top:100%; inset-inline-start:0; inset-inline-end:0; background:#fff; border:1px solid var(--line); border-radius:10px; box-shadow:0 10px 28px rgba(6,24,39,.18); max-height:260px; overflow:auto; margin-top:3px; }
+  .ac-item{ display:flex; flex-direction:column; align-items:flex-start; gap:1px; width:100%; text-align:start; background:none; border:none; border-bottom:1px solid #f1f5f9; padding:8px 12px; cursor:pointer; font-family:inherit; }
+  .ac-item:last-child{ border-bottom:none; }
+  .ac-item:hover{ background:#eef4ff; }
+  .ac-item b{ font-size:13.5px; color:#0f172a; font-weight:700; }
+  .ac-item span{ font-size:12px; color:#64748b; }
+  .ac-empty{ padding:10px 12px; color:#94a3b8; font-size:12.5px; }
+  .xref-box{ background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:8px 12px; font-size:12.5px; color:#1e3a8a; }
+  .xref-chip{ background:#fff; border:1px solid #93c5fd; color:#1d4ed8; border-radius:8px; padding:3px 9px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; margin:2px; }
+  .xref-chip:hover{ background:#dbeafe; }
+  .xref-hint{ color:#64748b; font-weight:400; }
   .more{ text-align:center; color:#64748b; font-size:13px; padding:10px; }
 
   /* מודל */
@@ -1111,7 +1124,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.24.9</div>
+      <div class="ver">גרסה 6.24.10</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1209,7 +1222,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.9</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.10</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -6909,36 +6922,38 @@ window.saveScall = async (id)=>{
 /* 6.24.6 — פתיחת קריאת שירות חדשה מהמערכת. קריאות שירות אינן מגיעות מפריוריטי,
    ולכן כאן כל השדות פתוחים לעריכה. השמירה עוברת ב-ord.service_call_create
    (SECURITY DEFINER, שער core.can_edit('logi.calls')). */
+let NE_CUST=null, NE_SKU=null;
 window.openNewScall = ()=>{
   if(!window.canEdit('logi.calls')){ toast('אין לך הרשאת עריכה לקריאות שירות'); return; }
+  NE_CUST=null; NE_SKU=null;
   const teamVals = OTEAMS.filter(t=>t.active!==false).map(t=>t.name);
   const today = todayStr();
   $('#ordSheet').innerHTML = `
     <h3>🛠️ פתיחת קריאת שירות חדשה</h3>
-    <div class="note" style="margin:4px 0 14px">קריאה שנפתחת ידנית במערכת (לא מפריוריטי). מלאו את השדות הרלוונטיים — מס' קריאה יווצר אוטומטית אם יישאר ריק.</div>
+    <div class="note" style="margin:4px 0 14px">קריאה שנפתחת ידנית במערכת (לא מפריוריטי). בחרו לקוח מהמאגר — הפרטים האפורים יתמלאו אוטומטית; מס' קריאה מוקצה אוטומטית ברצף.</div>
     <div class="form-grid">
-      <div class="span2"><label>בחירת לקוח מהמאגר</label><input id="ne-custpick" list="ne-cust-list" placeholder="הקלד שם לקוח / טלפון / מספר לקוח…" onchange="neCustPick()"><datalist id="ne-cust-list">${CUSTS.map(c=>`<option value="${esc(c.name||'')}">${esc([c.phone,c.priority_id].filter(Boolean).join(' · '))}</option>`).join('')}</datalist></div>
+      <div class="span2 ac-wrap"><label>בחירת לקוח מהמאגר</label><input id="ne-custpick" autocomplete="off" placeholder="הקלד שם / טלפון / מספר לקוח…" oninput="neCustSearch(this.value)" onfocus="neCustSearch(this.value)" onblur="setTimeout(()=>{const b=document.getElementById('ne-cust-results'); if(b) b.hidden=true;},150)"><div id="ne-cust-results" class="ac-menu" hidden></div></div>
       <div><label>מס' קריאה</label><input value="יוקצה אוטומטית — המספר הבא ברצף" readonly class="ro" title="מספר הקריאה מוקצה אוטומטית ברצף רץ (SC…) ואינו ניתן לעריכה"></div>
       <div><label>תאריך פתיחה</label><input id="ne-opened" type="date" value="${esc(today)}"></div>
-      <div><label>מס' לקוח</label><input id="ne-custnum" dir="ltr"></div>
-      <div><label>שם לקוח</label><input id="ne-custname"></div>
-      <div><label>טלפון</label><input id="ne-phone" dir="ltr"></div>
-      <div><label>אימייל לקוח</label><input id="ne-email" dir="ltr"></div>
+      <div><label>מס' לקוח</label><input id="ne-custnum" class="ro" readonly dir="ltr"></div>
+      <div><label>שם לקוח</label><input id="ne-custname" class="ro" readonly></div>
+      <div><label>טלפון</label><input id="ne-phone" class="ro" readonly dir="ltr"></div>
+      <div><label>אימייל לקוח</label><input id="ne-email" class="ro" readonly dir="ltr"></div>
+      <div class="span4"><label>🏠 כתובת לקוח</label><input id="ne-custaddr" class="ro" readonly></div>
+      <div class="span2 ac-wrap"><label>מוצר / תיאור</label><input id="ne-prodpick" autocomplete="off" placeholder="חיפוש מכרטיסי הפריט או הקלדה חופשית…" oninput="neProdSearch(this.value)" onfocus="neProdSearch(this.value)" onblur="setTimeout(()=>{const b=document.getElementById('ne-prod-results'); if(b) b.hidden=true;},150)"><div id="ne-prod-results" class="ac-menu" hidden></div></div>
       <div><label>מהות הקריאה</label>${selHtml('ne-type',CALL_TYPES,'',true)}</div>
       <div><label>באחריות?</label>${selHtml('ne-warranty',YESNO,'',true)}</div>
-      <div class="span2"><label>מוצר / תיאור</label><input id="ne-product" list="ne-prod-list" placeholder="בחר מכרטיסי פריט או הקלד חופשי"><datalist id="ne-prod-list">${[...new Set(SKUS.map(s=>s.partdes).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),'he')).map(d=>`<option value="${esc(d)}"></option>`).join('')}</datalist></div>
-      <div class="span2"><label>🏠 כתובת לקוח</label><input id="ne-custaddr"></div>
+      <div class="span4" id="ne-order-suggest" hidden></div>
       <div class="span4"><label>פרטי התקלה</label><textarea id="ne-fault" rows="2"></textarea></div>
       <div><label>סטטוס</label>${selHtml('ne-status',CALL_STATUSES,'חדש')}</div>
       <div><label>רמת דחיפות</label>${selHtml('ne-urgency',URGENCIES,'רגילה')}</div>
-      <div><label>עיר</label><input id="ne-city"></div>
-      <div><label>אזור גיאוגרפי</label>${selHtml('ne-region',REGIONS,'',true)}</div>
-      <div class="span2"><label>🚚 כתובת הגעה לקריאה</label><input id="ne-addr" placeholder="לאן הצוות מגיע"></div>
+      <div class="span2"><label>🚚 כתובת הגעה לקריאה</label><input id="ne-addr" placeholder="השאירו ריק אם זהה לכתובת הלקוח"></div>
       <div><label>צוות</label>${selHtml('ne-team',teamVals,'',true)}</div>
       <div><label>תאריך מתואם</label><input id="ne-date" type="date"></div>
       <div><label>משבצת זמן</label>${selHtml('ne-slot',TIME_SLOTS,'',true)}</div>
       <div><label>דדליין טיפול</label><input id="ne-deadline" type="date"></div>
-      <div class="span4"><label>הערות</label><textarea id="ne-notes" rows="2"></textarea></div>
+      <div><label>עיר</label><input id="ne-city"></div>
+      <div><label>אזור גיאוגרפי</label>${selHtml('ne-region',REGIONS,'',true)}</div>
     </div>
     <div class="modal-actions">
       <button class="btn btnw" onclick="saveNewScall()">💾 פתיחת קריאה</button>
@@ -6946,27 +6961,79 @@ window.openNewScall = ()=>{
     <div class="err" id="ne-err"></div>`;
   mountCard('ordModal', ()=>openNewScall());
 };
-window.neCustPick = ()=>{
-  const el=document.getElementById('ne-custpick'); if(!el) return;
-  const v=(el.value||'').trim(); if(!v) return;
-  const dig=digitsOf(v);
-  let c = CUSTS.find(x=>String(x.name||'').trim()===v);
-  if(!c && dig) c = CUSTS.find(x=>digitsOf(x.phone)===dig || String(x.priority_id||'').trim()===v);
-  if(!c) return;
-  const set=(id,val)=>{ const f=document.getElementById(id); if(f) f.value = val||''; };
-  set('ne-custname', c.name); set('ne-custnum', c.priority_id); set('ne-phone', c.phone);
-  set('ne-email', c.email); set('ne-custaddr', c.address); set('ne-city', c.city);
-  const reg=document.getElementById('ne-region'); if(reg && c.region) reg.value=c.region;
-  el.value = c.name||v;
+window.neCustSearch = (q)=>{
+  NE_CUST=null; const os=document.getElementById('ne-order-suggest'); if(os){ os.hidden=true; os.innerHTML=''; }
+  const box=document.getElementById('ne-cust-results'); if(!box) return;
+  q=(q||'').trim();
+  if(!q){ box.hidden=true; box.innerHTML=''; return; }
+  const ql=q.toLowerCase(), dig=q.replace(/\D/g,'');
+  const res = CUSTS.filter(c=>{
+    if(String(c.name||'').toLowerCase().includes(ql)) return true;
+    if(String(c.city||'').toLowerCase().includes(ql)) return true;
+    if(dig){ if(String(c.phone||'').replace(/\D/g,'').includes(dig)) return true; if(String(c.priority_id||'').includes(dig)) return true; }
+    return false;
+  }).slice(0,30);
+  box.innerHTML = res.length
+    ? res.map(c=>`<button type="button" class="ac-item" onmousedown="event.preventDefault()" onclick="neCustChoose('${c.id}')"><b>${esc(c.name||'ללא שם')}</b><span>${esc([c.phone,c.priority_id,c.city].filter(Boolean).join(' · '))}</span></button>`).join('')
+    : '<div class="ac-empty">לא נמצאו לקוחות תואמים</div>';
+  box.hidden=false;
+};
+window.neCustChoose = (id)=>{
+  const c = CUSTS.find(x=>String(x.id)===String(id)); if(!c) return;
+  NE_CUST=c;
+  const set=(eid,val)=>{ const f=document.getElementById(eid); if(f) f.value=val||''; };
+  set('ne-custpick', c.name); set('ne-custname', c.name); set('ne-custnum', c.priority_id);
+  set('ne-phone', c.phone); set('ne-email', c.email); set('ne-custaddr', c.address);
+  const city=document.getElementById('ne-city'); if(city && !city.value.trim()) city.value=c.city||'';
+  const reg=document.getElementById('ne-region'); if(reg && !reg.value.trim() && c.region) reg.value=c.region;
+  const box=document.getElementById('ne-cust-results'); if(box){ box.hidden=true; box.innerHTML=''; }
+  neXref();
+};
+window.neProdSearch = (q)=>{
+  NE_SKU=null; const os=document.getElementById('ne-order-suggest'); if(os){ os.hidden=true; os.innerHTML=''; }
+  const box=document.getElementById('ne-prod-results'); if(!box) return;
+  q=(q||'').trim();
+  if(!q){ box.hidden=true; box.innerHTML=''; return; }
+  const ql=q.toLowerCase();
+  const res = SKUS.filter(s=> String(s.partdes||'').toLowerCase().includes(ql) || String(s.partname||'').toLowerCase().includes(ql)).slice(0,30);
+  box.innerHTML = res.length
+    ? res.map(s=>`<button type="button" class="ac-item" onmousedown="event.preventDefault()" onclick="neProdChoose('${esc(String(s.partname))}')"><b>${esc(s.partdes||s.partname)}</b><span dir="ltr">${esc(s.partname||'')}</span></button>`).join('')
+    : '<div class="ac-empty">לא נמצאו פריטים — ניתן להקליד חופשי</div>';
+  box.hidden=false;
+};
+window.neProdChoose = (pn)=>{
+  const s = SKUS.find(x=>String(x.partname)===String(pn)); if(!s) return;
+  NE_SKU = String(s.partname);
+  const el=document.getElementById('ne-prodpick'); if(el) el.value = s.partdes||s.partname;
+  const box=document.getElementById('ne-prod-results'); if(box){ box.hidden=true; box.innerHTML=''; }
+  neXref();
+};
+async function neXref(){
+  const box=document.getElementById('ne-order-suggest'); if(!box) return;
+  if(!NE_CUST || !NE_SKU){ box.hidden=true; box.innerHTML=''; return; }
+  try{
+    const { data, error } = await sb.schema('ord').rpc('orders_for_customer_product', {
+      p_customer_number: String(NE_CUST.priority_id||''), p_customer_name: String(NE_CUST.name||''), p_partname: String(NE_SKU) });
+    if(error || !data || !data.length){ box.hidden=true; box.innerHTML=''; return; }
+    box.innerHTML = '<div class="xref-box"><b>הזמנות של הלקוח עם מוצר זה:</b> ' +
+      data.map(r=>`<button type="button" class="xref-chip" onclick="neXrefPick('${esc(r.order_number)}')">${esc(r.order_number)}${r.order_date?' · '+fmtD(r.order_date):''}${r.order_status?' · '+esc(r.order_status):''}</button>`).join(' ') +
+      ' <span class="xref-hint">לחצו כדי לצרף לפרטי התקלה</span></div>';
+    box.hidden=false;
+  }catch(_e){ box.hidden=true; box.innerHTML=''; }
+}
+window.neXrefPick = (on)=>{
+  const f=document.getElementById('ne-fault'); if(!f) return;
+  const pre=(f.value||'').trim();
+  if(pre.includes('הזמנה מקושרת: '+on)) return;
+  f.value = (pre? pre+' · ':'') + 'הזמנה מקושרת: '+on;
 };
 const NEW_SCALL_FIELDS = [
   ['ne-opened','opened_date'],['ne-custnum','customer_number'],
   ['ne-custname','customer_name'],['ne-phone','phone'],['ne-email','customer_email'],
-  ['ne-type','call_type'],['ne-warranty','warranty'],['ne-product','product'],
+  ['ne-type','call_type'],['ne-warranty','warranty'],['ne-prodpick','product'],
   ['ne-custaddr','customer_address'],['ne-fault','fault_details'],['ne-status','status'],
   ['ne-urgency','urgency'],['ne-city','city'],['ne-region','region'],['ne-addr','address'],
-  ['ne-team','team'],['ne-date','scheduled_date'],['ne-slot','time_slot'],['ne-deadline','deadline'],
-  ['ne-notes','notes']
+  ['ne-team','team'],['ne-date','scheduled_date'],['ne-slot','time_slot'],['ne-deadline','deadline']
 ];
 window.saveNewScall = async ()=>{
   const eb=document.getElementById('ne-err'); if(eb) eb.textContent='';
@@ -7107,7 +7174,7 @@ window.openOrd = (id, ctx)=>{
       ${showSales?`<div><label>תעודת משלוח</label>${selHtml('oe-dnote',YESNO,o.delivery_note||'',true)}</div>`:''}
       ${showSales?`<div><label>חשבונית</label>${selHtml('oe-invoice',YESNO,o.invoice||'',true)}</div>`:''}
       ${showSupply?`<div class="span2"><label>הערות למחסן</label><textarea id="oe-wnotes" rows="2">${esc(o.warehouse_notes||'')}</textarea></div>`:''}
-      ${(showSales&&window.canView('crm.orders.dialog'))?`<div class="span4"><label>דו שיח פנימי${SRC_TAG}</label><div class="dialog-box">${o.internal_dialog?esc(o.internal_dialog).replace(/\n/g,'<br>'):'<span class="dialog-empty">אין דו שיח פנימי בהזמנה זו</span>'}</div></div>`:''}
+      <div class="span4"><label>דו שיח פנימי${SRC_TAG}</label><div class="dialog-box">${o.internal_dialog?esc(o.internal_dialog).replace(/\n/g,'<br>'):'<span class="dialog-empty">אין דו שיח פנימי בהזמנה זו</span>'}</div>
       <div class="form-sep">📦 פירוט ההזמנה${SRC_TAG}</div>
       <div class="span4" id="orderItemsBox"><div class="items-loading">טוען פירוט הזמנה מפריוריטי…</div></div>
     </div>

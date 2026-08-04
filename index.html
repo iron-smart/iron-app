@@ -1087,7 +1087,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.24.1</div>
+      <div class="ver">גרסה 6.24.2</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1185,7 +1185,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.2</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1934,6 +1934,14 @@ async function afterLogin(){
     }catch(e){ console.error('my_perms attempt '+att, e); if(att<3) await new Promise(r=>setTimeout(r, 500*att)); }
   }
   if(!permOk){ window.PERM = {}; killSplash(); showPermFail(); return; }
+  /* 6.24.2 — שם קבוצת ההרשאות לתצוגה בלבד. core.perm_groups חסומה בפני המשתמש
+     וכך צריך להישאר, ולכן השם מגיע דרך core.my_perm_group() המחזירה שם אחד —
+     של המשתמש עצמו. כשל כאן אינו חוסם דבר; התווית נופלת חזרה לתווית התפקיד. */
+  try{
+    const { data:pg, error:pgErr } = await sb.schema('core').rpc('my_perm_group');
+    if(pgErr) throw pgErr;
+    ME.perm_group = (typeof pg === 'string' && pg.trim()) ? pg : null;
+  }catch(e){ console.error('my_perm_group', e); ME.perm_group = null; }
   killSplash();
   /* פעימת חיים — מאפשרת ללשונית חדשה באותו דפדפן להיחשב לאותו סשן (ראו boot) */
   try{
@@ -1946,7 +1954,9 @@ async function afterLogin(){
   /* שם המשתמש וההרשאה מוצגים בפאנל הימני בלבד — הצ'יפ שהיה בסרגל העליון הוסר
      בסבב 4 לבקשת רומן ("גם ככה יש בפאנל הימני"). */
   const initials = (prof.full_name||prof.email||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('');
-  const roleHe = ({admin:'אדמיניסטרטור',manager:'מנהל מכירות',rep:'נציג',viewer:'צפייה'})[prof.role] || prof.role;
+  /* 6.24.2 — התווית מציגה את קבוצת ההרשאות בפועל. תווית "מנהל מכירות" הישנה
+     שהוצמדה ל-role='manager' הייתה מטעה: role אינו קובע עוד הרשאות. */
+  const roleHe = ME.perm_group || ({admin:'אדמיניסטרטור',manager:'מנהל',rep:'נציג',viewer:'צפייה'})[prof.role] || prof.role;
   setSideAva(prof.avatar_url, initials);
   $('#sideName').textContent = prof.full_name || prof.email;
   $('#sideRole').textContent = prof.job_title || roleHe;
@@ -2252,7 +2262,7 @@ try{
 /* ===== אזור אישי — 6.3.0 (רומן 30/07/2026) =====
    פרטים אישיים ניתנים לעריכה עצמית דרך core.update_my_profile (SECURITY DEFINER),
    כדי שמשתמש לא יוכל לשנות לעצמו הרשאה או דשבורד. הרשאה ודשבורד לצפייה בלבד. */
-const ROLE_HE = {admin:'אדמיניסטרטור',manager:'מנהל מכירות',rep:'נציג',viewer:'צפייה'};
+const ROLE_HE = {admin:'אדמיניסטרטור',manager:'מנהל',rep:'נציג',viewer:'צפייה'};
 const DASH_HE = {sales:'מכירות',logistics:'לוגיסטיקה',combined:'משולב'};
 const initOf = u => (u.full_name||u.email||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('');
 function setSideAva(url, init){
@@ -2315,7 +2325,7 @@ window.pfSave = async (btn)=>{
   if(row) ME = {...ME, ...row};
   PF_AVA = null;
   $('#sideName').textContent = ME.full_name || ME.email;
-  $('#sideRole').textContent = ME.job_title || ROLE_HE[ME.role] || ME.role;
+  $('#sideRole').textContent = ME.job_title || ME.perm_group || ROLE_HE[ME.role] || ME.role;
   setSideAva(ME.avatar_url, initOf(ME));
   toast('נשמר ✓');
 };
@@ -2398,7 +2408,7 @@ window.openProfile = ()=>{
         <h4>${esc(ME.full_name||'—')}</h4>
         <div class="em">${esc(ME.email||'')}</div>
         <div class="pf-tags">
-          <span class="pf-tag">${esc(ROLE_HE[ME.role]||ME.role||'—')}</span>
+          <span class="pf-tag">${esc(ME.perm_group||ROLE_HE[ME.role]||ME.role||'—')}</span>
           <span class="pf-tag">${esc(DASH_HE[ME.dashboard]||'דשבורד לפי הרשאה')}</span>
           ${ME.department?`<span class="pf-tag">${esc(ME.department)}</span>`:''}
         </div>
@@ -2413,7 +2423,7 @@ window.openProfile = ()=>{
           <div class="pf-f"><label for="pfDept">מחלקה</label><input id="pfDept" value="${esc(ME.department||'')}" placeholder="לדוגמה: לוגיסטיקה"></div>
           <div class="pf-f"><label for="pfPhone">טלפון</label><input id="pfPhone" dir="ltr" inputmode="tel" value="${esc(ME.phone||'')}" placeholder="050-0000000"></div>
           <div class="pf-f"><label for="pfEmail">דוא"ל</label><input id="pfEmail" dir="ltr" readonly value="${esc(ME.email||'')}" title="שינוי דוא&quot;ל מתבצע על ידי מנהל המערכת"></div>
-          <div class="pf-f"><label>הרשאה</label><input readonly value="${esc(ROLE_HE[ME.role]||ME.role||'')}"></div>
+          <div class="pf-f"><label>הרשאה</label><input readonly value="${esc(ME.perm_group||ROLE_HE[ME.role]||ME.role||'')}"></div>
           <div class="pf-f"><label>דשבורד</label><input readonly value="${esc(DASH_HE[ME.dashboard]||'לפי הרשאה')}"></div>
         </div>
         <p class="pf-note">הרשאה, דשבורד ודוא"ל נקבעים על ידי מנהל המערכת ואינם ניתנים לעריכה עצמית.</p>
@@ -7770,8 +7780,9 @@ boot();
     var list = (typeof ORDS !== 'undefined' && ORDS) || [];
     var o = list.find(function(x){ return x.id === id; });
     if(!o) return;
-    var role = (typeof ME !== 'undefined' && ME && ME.role) || '';
-    if(role !== 'admin' && role !== 'manager') return;
+    /* 6.24.2 — השער עבר מתפקיד למפתח הרשאה. חיוב לקוח הוא acc.pays ברמת עריכה,
+       בדיוק כמו השער שבמסד (portal.create_payment_link). ראו §6.18.8. */
+    if(typeof canEdit !== 'function' || !canEdit('acc.pays')) return;
     var sheet = document.querySelector('#ordSheet');
     if(!sheet || sheet.querySelector('#payblk')) return;
     if(['בוטל','מבוטלת'].indexOf(o.order_status) >= 0) return;

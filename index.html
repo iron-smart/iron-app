@@ -1111,7 +1111,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.24.8</div>
+      <div class="ver">גרסה 6.24.9</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1209,7 +1209,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.8</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.9</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -6917,6 +6917,7 @@ window.openNewScall = ()=>{
     <h3>🛠️ פתיחת קריאת שירות חדשה</h3>
     <div class="note" style="margin:4px 0 14px">קריאה שנפתחת ידנית במערכת (לא מפריוריטי). מלאו את השדות הרלוונטיים — מס' קריאה יווצר אוטומטית אם יישאר ריק.</div>
     <div class="form-grid">
+      <div class="span2"><label>בחירת לקוח מהמאגר</label><input id="ne-custpick" list="ne-cust-list" placeholder="הקלד שם לקוח / טלפון / מספר לקוח…" onchange="neCustPick()"><datalist id="ne-cust-list">${CUSTS.map(c=>`<option value="${esc(c.name||'')}">${esc([c.phone,c.priority_id].filter(Boolean).join(' · '))}</option>`).join('')}</datalist></div>
       <div><label>מס' קריאה</label><input value="יוקצה אוטומטית — המספר הבא ברצף" readonly class="ro" title="מספר הקריאה מוקצה אוטומטית ברצף רץ (SC…) ואינו ניתן לעריכה"></div>
       <div><label>תאריך פתיחה</label><input id="ne-opened" type="date" value="${esc(today)}"></div>
       <div><label>מס' לקוח</label><input id="ne-custnum" dir="ltr"></div>
@@ -6925,7 +6926,7 @@ window.openNewScall = ()=>{
       <div><label>אימייל לקוח</label><input id="ne-email" dir="ltr"></div>
       <div><label>מהות הקריאה</label>${selHtml('ne-type',CALL_TYPES,'',true)}</div>
       <div><label>באחריות?</label>${selHtml('ne-warranty',YESNO,'',true)}</div>
-      <div class="span2"><label>מוצר / תיאור</label><input id="ne-product"></div>
+      <div class="span2"><label>מוצר / תיאור</label><input id="ne-product" list="ne-prod-list" placeholder="בחר מכרטיסי פריט או הקלד חופשי"><datalist id="ne-prod-list">${[...new Set(SKUS.map(s=>s.partdes).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),'he')).map(d=>`<option value="${esc(d)}"></option>`).join('')}</datalist></div>
       <div class="span2"><label>🏠 כתובת לקוח</label><input id="ne-custaddr"></div>
       <div class="span4"><label>פרטי התקלה</label><textarea id="ne-fault" rows="2"></textarea></div>
       <div><label>סטטוס</label>${selHtml('ne-status',CALL_STATUSES,'חדש')}</div>
@@ -6944,6 +6945,19 @@ window.openNewScall = ()=>{
     </div>
     <div class="err" id="ne-err"></div>`;
   mountCard('ordModal', ()=>openNewScall());
+};
+window.neCustPick = ()=>{
+  const el=document.getElementById('ne-custpick'); if(!el) return;
+  const v=(el.value||'').trim(); if(!v) return;
+  const dig=digitsOf(v);
+  let c = CUSTS.find(x=>String(x.name||'').trim()===v);
+  if(!c && dig) c = CUSTS.find(x=>digitsOf(x.phone)===dig || String(x.priority_id||'').trim()===v);
+  if(!c) return;
+  const set=(id,val)=>{ const f=document.getElementById(id); if(f) f.value = val||''; };
+  set('ne-custname', c.name); set('ne-custnum', c.priority_id); set('ne-phone', c.phone);
+  set('ne-email', c.email); set('ne-custaddr', c.address); set('ne-city', c.city);
+  const reg=document.getElementById('ne-region'); if(reg && c.region) reg.value=c.region;
+  el.value = c.name||v;
 };
 const NEW_SCALL_FIELDS = [
   ['ne-opened','opened_date'],['ne-custnum','customer_number'],

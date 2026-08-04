@@ -1087,7 +1087,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.24.0</div>
+      <div class="ver">גרסה 6.24.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1185,7 +1185,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2985,7 +2985,8 @@ const SKU_F = { q:'', qx:'', fams:[], famMode:'in', act:'', stock:'', sup:'', im
                 pmin:'', pmax:'', qmin:'', qmax:'', sort:'partname', dir:'asc' };
 let SKU_VIEWS = [], SKU_VIEW_ID = '', SKU_ADV = false, _skuViewsLoaded = false;
 let SKU_EXP_COLS = ['partname','partdes','family','erp_status','price_base','price_vat'];
-const skuMgr = () => ['admin','manager'].includes(ME.role);
+/* 6.24.1 — הרשאת עריכה לפי מפתח ולא לפי תפקיד (אדמין מקבל 2 דרך pLevel) */
+const skuMgr = () => { try{ return canEdit('sku.cards'); }catch(_e){ return false; } };
 
 /* מקור אחד לכל שדה — כותרת, סוג, מיון וייצוא (סעיפים 2, 8, 9, 10, 12) */
 const SKU_COLS = [
@@ -3674,7 +3675,7 @@ const INV_COLS = 'partname,partdes,family,erp_status,has_inventory,image_url,sup
 let INV = [], INV_LOADED = false, INV_LOADING = false, INV_TRIED = false, INV_ERR = '';
 let INV_VIEW = 'act', INV_EXC = 0, INV_ACT = '';
 const INV_F = { q:'', st:'', sup:'', abc:'', fam:'' };
-const invMgr = () => ['admin','manager'].includes(ME.role);
+const invMgr = () => { try{ return canEdit('inv.stock'); }catch(_e){ return false; } };
 const INV_STATUSES = ['אדום','כתום','ירוק','אפור','רדום','חסום','לא מנוהל'];
 const INV_ST_CLS = { 'אדום':'red','כתום':'org','ירוק':'grn','אפור':'gry','רדום':'slp','חסום':'blk','לא מנוהל':'non' };
 const invPill = s => '<span class="inv-st ' + (INV_ST_CLS[s]||'gry') + '">' + esc(s||'—') + '</span>';
@@ -4349,7 +4350,7 @@ const PO_F = { q:'', sup:'', pri:'', cur:'' };
 const PO_STATUSES = ['הזמנה חדשה','בייצור','נשלחה','בנמל','הושלם'];
 const PO_ST_CLS = { 'הזמנה חדשה':'p-gray','בייצור':'p-orange','נשלחה':'p-blue','בנמל':'p-violet','הושלם':'p-green' };
 const PO_ST_MD = { 'הזמנה חדשה':'#e2e8f0','בייצור':'#ffedd5','נשלחה':'#dbeafe','בנמל':'#ede9fe','הושלם':'#dcfce7' };
-const poMgr = () => ['admin','manager'].includes(ME.role);
+const poMgr = () => { try{ return canEdit('inv.po'); }catch(_e){ return false; } };
 const poPill = s => '<span class="pill ' + (PO_ST_CLS[s]||'p-gray') + '">' + esc(s||'—') + '</span>';
 /* מטבע לפי ההזמנה (איפיון): דולרית — $, שקלית — ₪ */
 const poCur = c => { c=String(c||''); if(c.indexOf('$')>=0 || /USD|דולר/i.test(c)) return '$'; if(c.indexOf('€')>=0 || /EUR|אירו/i.test(c)) return '€'; if(c.indexOf('₪')>=0 || c.indexOf('ש')>=0 || /שקל|ILS/i.test(c)) return '₪'; return c ? c+' ' : ''; };
@@ -4919,13 +4920,19 @@ let PRC = [], PRC_LOADED = false, PRC_LOADING = false, PRC_TRIED = false, PRC_ER
 let PRC_VIEW = 'db', PRC_EXC = 0;
 const PRC_F = { q:'', fam:'', st:'', only:'' };
 
+/* 6.24.1 — מסך התמחור עבר מהרשאת תפקיד להרשאת מפתח. כל תת-מסך נגזר ממפתח משלו:
+   "מחירון ללקוח" מ-prc.lists, ויתר התצוגות מ-prc.pricing. אדמין מקבל 2 דרך pLevel. */
+window.PRC_VIEW_PERM  = { db:'prc.pricing', marg:'prc.pricing', side:'prc.pricing', exc:'prc.pricing', set:'prc.pricing', list:'prc.lists' };
+window.PRC_VIEW_ORDER = ['db','marg','list','side','exc','set'];
+window.prcAllowedViews = ()=>{ try{ return PRC_VIEW_ORDER.filter(v=>canView(PRC_VIEW_PERM[v]||'prc')); }catch(_e){ return []; } };
 function prcGate(){
   try{
     const n = document.getElementById('nav-prc');
-    if(n) n.hidden = !((ME && ME.role === 'admin') || (typeof canView==='function' && canView('prc')));
+    if(n) n.hidden = !prcAdmin();
   }catch(e){ /* לפני טעינת המשתמש */ }
 }
-const prcAdmin = () => !!(ME && ME.role === 'admin');
+const prcAdmin = () => prcAllowedViews().length > 0;
+const prcEdit  = () => { try{ return canEdit('prc.pricing'); }catch(_e){ return false; } };
 /* ── מנוע העלות (6.19.5) — עלויות ידניות בלבד; הגנת מעגל והתפשטות null כמות שהן מ-v13 ── */
 const prcLF = e => { if(e && Number(e.load_override)>0) return Number(e.load_override);
   const s = PRC_SET||{}; const m = {'יבוא':s.load_import,'ייצור':s.load_manufacture,'מורכב':s.load_assembled,'קניה בארץ':s.load_local};
@@ -4979,7 +4986,7 @@ const prcMPill = m => '<span class="inv-st ' + prcMCls(m) + '">' + prcPct(m) + '
 function prcMed(a){ if(!a.length) return null; const s = a.slice().sort((x,y)=>x-y); const i = Math.floor(s.length/2);
   return s.length % 2 ? s[i] : (s[i-1] + s[i]) / 2; }
 
-window.gotoPrc = v => { if(!prcAdmin()) return; PRC_VIEW = v || 'db'; gotoTab('prc'); };
+window.gotoPrc = v => { const av = prcAllowedViews(); if(!av.length){ try{ toast('אין לך הרשאה למסך התמחור'); }catch(_e){} return; } v = v || PRC_VIEW; if(!av.includes(v)) v = av[0]; PRC_VIEW = v; gotoTab('prc'); };
 function renderPrcIfLoaded(){ if(PRC_LOADED) renderPrc(); }
 
 async function prcLoad(force){
@@ -5017,7 +5024,7 @@ async function prcLoad(force){
 
 function renderPrc(){
   if(!prcAdmin()){
-    const b = $('#prc-body'); if(b) b.innerHTML = '<div class="empty">המסך פתוח למנהלי מערכת בלבד</div>';
+    const b = $('#prc-body'); if(b) b.innerHTML = '<div class="empty">אין לך הרשאה למסך התמחור</div>';
     const t = $('#prc-tools'); if(t) t.innerHTML = '';
     const w = $('#prc-views'); if(w) w.innerHTML = '';
     return;
@@ -5049,8 +5056,9 @@ function prcTools(){
 function prcViews(){
   const el = $('#prc-views'); if(!el) return;
   const exc = PRC_LOADED ? prcIssues(prcFiltered()).total : 0;
+  const av = prcAllowedViews();
   const V = [['db','מאגר תמחור',PRC.length],['marg','ניתוח מרווחים',null],['list','מחירון ללקוח',null],
-             ['side','עלויות נלוות',null],['exc','חריגים בתמחור',exc],['set','הגדרות תמחור',null]];
+             ['side','עלויות נלוות',null],['exc','חריגים בתמחור',exc],['set','הגדרות תמחור',null]].filter(v=>av.includes(v[0]));
   el.innerHTML = V.map(v => '<button class="chip' + (PRC_VIEW===v[0]?' active':'') + '" data-prc-view="' + v[0] + '">' + v[1]
     + (v[2]==null ? '' : ' <span class="n">' + fmtNum(v[2]) + '</span>') + '</button>').join('');
   el.querySelectorAll('[data-prc-view]').forEach(b => b.onclick = ()=>{ PRC_VIEW = b.dataset.prcView; renderPrc(); navMark(); });
@@ -5327,10 +5335,11 @@ function prcSetView(){
     + f('prc-l-man','מקדם העמסה — ייצור', s.load_manufacture)
     + f('prc-l-asm','מקדם העמסה — מורכב', s.load_assembled)
     + f('prc-l-loc','מקדם העמסה — קניה בארץ', s.load_local)
-    + '</div><button class="btn green" onclick="prcSetSave()">שמירה</button><div class="err" id="prc-set-err"></div></div>'
+    + '</div>' + (prcEdit() ? '<button class="btn green" onclick="prcSetSave()">שמירה</button>' : '<div class="note">צפייה בלבד — אין לך הרשאת עריכה להגדרות התמחור</div>') + '<div class="err" id="prc-set-err"></div></div>'
     + '<div class="note">מקדם ההעמסה מוכפל בעלות לפי מקור המוצר (יבוא / ייצור / מורכב / קניה בארץ); עקיפה פרטנית למק״ט בודד נשמרת בנתוני הפריט. במערכת כרגע '+fmtNum(Object.keys(PRC_EXT).length)+' פריטים עם נתוני עלות ידניים ו-'+fmtNum(Object.keys(PRC_BOM).length)+' מוצרים מורכבים עם עץ מוצר.</div>';
 }
 window.prcSetSave = async ()=>{
+  if(!prcEdit()){ try{ toast('אין לך הרשאת עריכה להגדרות התמחור'); }catch(_e){} return; }
   const g = id => { const v = Number(String($(id).value).trim().replace(',','.')); return isFinite(v)&&v>0 ? v : null; };
   const p = { usd_rate:g('#prc-usd'), vat:g('#prc-vatx'), load_import:g('#prc-l-imp'),
               load_manufacture:g('#prc-l-man'), load_assembled:g('#prc-l-asm'), load_local:g('#prc-l-loc'),
@@ -5344,7 +5353,9 @@ window.prcSetSave = async ()=>{
 };
 function prcBody(){
   const el = $('#prc-body'); if(!el) return;
-  if(!prcAdmin()){ el.innerHTML = '<div class="empty">המסך פתוח למנהלי מערכת בלבד</div>'; return; }
+  const av = prcAllowedViews();
+  if(!av.length){ el.innerHTML = '<div class="empty">אין לך הרשאה למסך התמחור</div>'; return; }
+  if(!av.includes(PRC_VIEW)) PRC_VIEW = av[0];
   if(PRC_LOADING){ el.innerHTML = '<div class="empty">טוען נתוני תמחור…</div>'; return; }
   if(PRC_ERR){
     el.innerHTML = '<div class="err">' + esc(PRC_ERR) + '</div>'
@@ -5581,7 +5592,7 @@ const intAgo = h => {
   if(n < 24) return 'לפני ' + Math.round(n) + ' שעות';
   return 'לפני ' + Math.round(n/24) + ' ימים';
 };
-const intAdmin = () => ['admin','manager'].includes(ME.role);
+const intAdmin = () => { try{ return canEdit('set.conn'); }catch(_e){ return false; } };
 
 /* הודעת שגיאה שמסבירה את עצמה — אותה גישה כמו במסך המלאי. */
 function intErrText(e, verb){

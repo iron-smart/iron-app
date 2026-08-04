@@ -111,7 +111,13 @@
   .chips{ display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; margin-bottom:12px; -webkit-overflow-scrolling:touch; }
   .chip{ flex:none; border:1px solid var(--line); background:#fff; border-radius:20px; padding:8px 14px; font-size:13px; color:#475569; }
   .chip.active{ background:var(--navy); color:#fff; border-color:var(--navy); font-weight:600; }
+  .chip{ transition:background .12s, color .12s, transform .08s; }
+  .chip:active{ transform:translateY(1px); }
   .chip small{ opacity:.75; }
+  .logi-filters{ display:flex; flex-wrap:wrap; gap:8px; margin:6px 0 10px; align-items:center; }
+  .lf-sel{ font-size:12.5px; padding:6px 10px; border:1px solid var(--line); border-radius:10px; background:#fff; color:#334155; font-family:inherit; cursor:pointer; max-width:190px; }
+  .lf-sel.lf-on{ border-color:var(--navy); background:#eef4ff; color:var(--navy); font-weight:700; }
+  .lf-clear{ font-size:12.5px; padding:6px 12px; border:1px solid #f0bcbc; background:#fbe0e0; color:#a92f2f; border-radius:10px; cursor:pointer; font-family:inherit; font-weight:700; }
   .more{ text-align:center; color:#64748b; font-size:13px; padding:10px; }
 
   /* מודל */
@@ -261,7 +267,7 @@
   .tbl th.teamcell, .tbl td.teamcell, .tbl th.slotcell, .tbl td.slotcell{ text-align:center; }
   .tbl td.teamcell select.inline-edit, .tbl td.slotcell select.inline-edit{ display:inline-block; margin-inline:auto; text-align:center; text-align-last:center; }
   .tbl th.datecell, .tbl td.datecell{ text-align:center; white-space:nowrap; }
-  .datewrap{ display:inline-flex; flex-direction:column; align-items:center; gap:3px; }
+  .datewrap{ display:inline-flex; flex-direction:row; align-items:center; gap:6px; justify-content:center; }
   .datewrap .inline-edit.ie-date{ max-width:128px; font-family:'Heebo',sans-serif; font-size:13px; font-weight:800; color:var(--navy); background:linear-gradient(135deg,#f8fafc,#fff); border:1.5px solid #cbd5e1; border-radius:10px; padding:6px 8px; text-align:center; box-shadow:0 1px 2px rgba(0,0,0,.04); transition:all .2s; }
   .datewrap .inline-edit.ie-date:hover{ background:linear-gradient(135deg,#fff,#f0f4ff); border-color:#93c5fd; box-shadow:0 2px 4px rgba(59,130,246,.1); }
   .datewrap .ie-date::-webkit-calendar-picker-indicator{ opacity:.4; padding:0; margin:0; }
@@ -1091,7 +1097,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.24.3</div>
+      <div class="ver">גרסה 6.24.4</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1189,7 +1195,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.3</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.4</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1290,6 +1296,7 @@
           <input id="logiSearchCalls" class="hidden" placeholder="חיפוש קריאת שירות — לקוח, מספר קריאה, עיר או מוצר…">
         </div>
         <div class="chips" id="logi-scope"></div>
+        <div class="logi-filters hidden" id="logi-filters"></div>
         <div id="logi-bulk" class="toolbar hidden"></div>
         <div id="logi-tbl"></div>
       </div>
@@ -1564,10 +1571,12 @@ function onWhite(bg){
   }
   return '#' + c.map(v=>('0'+Math.max(0,Math.min(255,v)).toString(16)).slice(-2)).join('');
 }
+/* 6.24.4 — גוון בהיר של צבע בסיס, לשבב פסטל אחיד בכל המערכת (הנחיית רומן 04/08) */
+function tint(bg, k){ const c=_rgbOf(bg); if(!c) return '#f1f5f9'; const m=x=>Math.round(x+(255-x)*k); return `rgb(${m(c[0])},${m(c[1])},${m(c[2])})`; }
 const mdPill = (v, colors) => {
   if(!v) return '';
   const bg = (colors && colors[v]) || '';
-  return bg ? `<span class="pill" style="background:${bg};color:${inkOn(bg)}">${esc(v)}</span>`
+  return bg ? `<span class="pill" style="background:${tint(bg,.85)};color:${onWhite(bg)};border:1px solid ${tint(bg,.68)}">${esc(v)}</span>`
             : `<span class="pill" style="background:#f1f5f9;color:#475569">${esc(v)}</span>`;
 };
 
@@ -2533,7 +2542,7 @@ function ieSel(kind,id,field,options,val,opts){
   if(!canIE(kind,field)) return opts.mdColors ? mdPill(val,opts.mdColors) : (STATUS_PILL[val]?`<span class="pill ${STATUS_PILL[val]}">${esc(val)}</span>`:`<span>${esc(val||'—')}</span>`);
   const list=(opts.allowEmpty?[['',opts.emptyLabel||'—']]:[]).concat([...new Set([...(options||[]), ...(val?[val]:[])])].map(o=>[o,o]));
   let cls='inline-edit', style='';
-  if(opts.mdColors){ cls+=' mdc'; const _bg=opts.mdColors[val]||'#94a3b8'; style=`background:${_bg};color:${inkOn(_bg)}`; } /* תיקון ממצא 15 */
+  if(opts.mdColors){ cls+=' mdc'; const _bg=opts.mdColors[val]||'#94a3b8'; style=`background:${tint(_bg,.85)};color:${onWhite(_bg)};border:1px solid ${tint(_bg,.68)}`; } /* 6.24.4 — שבב פסטל אחיד */
   else if(STATUS_PILL[val]) cls+=` pilled ${STATUS_PILL[val]}`;
   return `<select class="${cls}" style="${style}" data-ie="${kind}|${id}|${field}" onclick="event.stopPropagation()" onchange="ieSave(this)">${list.map(([v,l])=>`<option value="${esc(v)}" ${String(val||'')===v?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
 }
@@ -2597,6 +2606,7 @@ window.logiMode = v=>{ LOGI_VIEW=v; renderLogi(); navMark(); };
 window.logiView = ()=> renderLogi();
 /* 6.5.0 — הזמנות שאינן דורשות תיאום: היקף תצוגה בלוח + סגירה מהירה */
 let LOGI_SCOPE='sched';
+let LOGI_F = { status:'', team:'', region:'', contact:'' };
 const LOGI_SEL=new Set();
 let LOGI_SHOWN=[];
 const needsSched = o => o.needs_scheduling !== false;
@@ -2608,7 +2618,23 @@ function renderLogiScope(){
   const base = ORDS.filter(o=>!['הושלם','בוטל'].includes(o.order_status));
   const n = { sched: base.filter(needsSched).length, ship: base.filter(o=>!needsSched(o)).length, all: base.length };
   box.innerHTML = [['sched','לתיאום'],['ship','משלוחים'],['all','הכל']]
-    .map(([k,l])=>`<button type="button" class="chip ${LOGI_SCOPE===k?'on':''}" onclick="logiScope('${k}')">${l} <b>${n[k]}</b></button>`).join('');
+    .map(([k,l])=>`<button type="button" class="chip ${LOGI_SCOPE===k?'active':''}" onclick="logiScope('${k}')">${l} <b>${n[k]}</b></button>`).join('');
+}
+/* 6.24.4 — סינון בתצוגה הטבלאית של מסך ההזמנות (הנחיית רומן 04/08) */
+window.logiFilter = (k,v)=>{ LOGI_F[k]=v; renderLogi(); };
+window.logiFilterClear = ()=>{ LOGI_F={status:'',team:'',region:'',contact:''}; renderLogi(); };
+function logiFilterActive(){ return !!(LOGI_F.status||LOGI_F.team||LOGI_F.region||LOGI_F.contact); }
+function renderLogiFilters(){
+  const box=$('#logi-filters'); if(!box) return;
+  const teams=[...new Set(ORDS.map(o=>o.team).filter(Boolean))].sort();
+  const opt=(v,cur)=>`<option value="${esc(v)}" ${String(cur)===String(v)?'selected':''}>${esc(v)}</option>`;
+  const sel=(k,ph,vals,extra)=>`<select class="lf-sel ${LOGI_F[k]?'lf-on':''}" onchange="logiFilter('${k}',this.value)"><option value="">${ph}</option>${extra||''}${vals.map(v=>opt(v,LOGI_F[k])).join('')}</select>`;
+  box.innerHTML =
+    sel('status','סטטוס לוגיסטי — הכל',ORDER_STATUSES)+
+    sel('contact','יצרנו קשר? — הכל',CONTACT_STATUSES)+
+    sel('team','צוות — הכל',teams,`<option value="__none__" ${LOGI_F.team==='__none__'?'selected':''}>לא משויך</option>`)+
+    sel('region','אזור — הכל',REGIONS)+
+    (logiFilterActive()?`<button type="button" class="lf-clear" onclick="logiFilterClear()">✕ ניקוי סינון</button>`:'');
 }
 function logiBulkBar(){
   const bar=$('#logi-bulk'); if(!bar) return;
@@ -2684,7 +2710,8 @@ function renderLogi(){
   $('#logiSearchOrders').classList.toggle('hidden', isCalls);
   $('#logiSearchCalls').classList.toggle('hidden', !isCalls);
   if($('#logi-scope')) $('#logi-scope').classList.toggle('hidden', isCalls);
-  if(!isCalls) renderLogiScope(); else { LOGI_SEL.clear(); logiBulkBar(); }
+  if($('#logi-filters')) $('#logi-filters').classList.toggle('hidden', isCalls);
+  if(!isCalls){ renderLogiScope(); renderLogiFilters(); } else { LOGI_SEL.clear(); logiBulkBar(); }
   if(isCalls){
     const q=($('#logiSearchCalls').value||'').trim();
     let list = SCALLS.filter(s=>!['הושלם','הושלמה','בוטלה','סגורה'].includes(s.status));
@@ -2696,6 +2723,10 @@ function renderLogi(){
     let list = ORDS.filter(o=>!['הושלם','בוטל'].includes(o.order_status));
     if(q) list = list.filter(o=>[o.customer_name,o.order_number,o.city,o.address,o.team,o.phone]
       .some(v=>String(v||'').includes(q)));
+    if(LOGI_F.status)  list = list.filter(o=>o.order_status===LOGI_F.status);
+    if(LOGI_F.contact) list = list.filter(o=>o.contact_status===LOGI_F.contact);
+    if(LOGI_F.team)    list = list.filter(o=> LOGI_F.team==='__none__' ? !o.team : o.team===LOGI_F.team);
+    if(LOGI_F.region)  list = list.filter(o=>o.region===LOGI_F.region);
     list = list.filter(scopeOk);
     list = window.ordSortList(list.slice());
     LOGI_SHOWN = list;
@@ -6680,7 +6711,7 @@ function scTable(list){
       <td>${ieSel('scall',s.id,'status',CALL_STATUSES,s.status)}</td>
       <td>${ieSel('scall',s.id,'urgency',URGENCIES,s.urgency||'רגילה')}</td>
       <td class="teamcell">${ieSel('scall',s.id,'team',OTEAMS.filter(t=>t.active!==false).map(t=>t.name),s.team,{allowEmpty:true,emptyLabel:'לא משויך',mdColors:teamColorMap()})}</td>
-      <td class="datecell"><div class="datewrap">${ieDate('scall',s.id,'scheduled_date',s.scheduled_date)}${s.scheduled_date?`<span class="dw-day">${dayNameHe(s.scheduled_date)}</span>`:''}</div></td>
+      <td class="datecell"><div class="datewrap">${ieDate('scall',s.id,'scheduled_date',s.scheduled_date)}</div></td>
       <td class="slotcell">${ieSel('scall',s.id,'time_slot',TIME_SLOTS,s.time_slot,{allowEmpty:true,mdColors:SLOT_COLORS})}</td>
       <td>${wa?`<a class="btn-wa2" href="${wa}" target="_blank" onclick="event.stopPropagation()">📱</a>`:''}</td>
     </tr>`;}).join('');
@@ -6861,7 +6892,7 @@ function ordTable(list,opts){
       <td class="stcell">${ieSel('ord',o.id,'order_status',ORDER_STATUSES,o.order_status)}</td>
       <td class="stcell">${ieSel('ord',o.id,'contact_status',CONTACT_STATUSES,o.contact_status)}</td>
       <td class="teamcell">${ieSel('ord',o.id,'team',OTEAMS.filter(t=>t.active!==false).map(t=>t.name),o.team,{allowEmpty:true,emptyLabel:'לא משויך',mdColors:teamColorMap()})}</td>
-      <td class="datecell"><div class="datewrap">${ieDate('ord',o.id,'scheduled_date',o.scheduled_date)}${o.scheduled_date?`<span class="dw-day">${dayNameHe(o.scheduled_date)}${o.days_count>1?` · ${o.days_count} ימים`:''}</span>`:''}</div></td>
+      <td class="datecell"><div class="datewrap">${ieDate('ord',o.id,'scheduled_date',o.scheduled_date)}${(o.scheduled_date&&o.days_count>1)?`<span class="dw-day">${o.days_count} ימים</span>`:''}</div></td>
       <td class="slotcell">${ieSel('ord',o.id,'time_slot',TIME_SLOTS,o.time_slot,{allowEmpty:true,mdColors:SLOT_COLORS})}</td>
       <td>${(window.canView('logi.orders.whatsapp')&&wa)?`<a class="btn-wa2" href="${wa}" target="_blank" onclick="event.stopPropagation()">📱</a>`:''}</td>
     </tr>`;}).join('');

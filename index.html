@@ -1124,7 +1124,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.24.10</div>
+      <div class="ver">גרסה 6.24.11</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1222,7 +1222,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.10</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.11</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -6784,11 +6784,22 @@ function scRow(s){
     <div class="meta">${fmtD(s.opened_date)}${s.product?' · '+esc(s.product):''}${s.city?' · '+esc(s.city):''}${s.urgency&&s.urgency!=='רגילה'?' · <b style="color:#c0392b">'+esc(s.urgency)+'</b>':''}</div></div>
     <span class="pill ${scStClass(s.status)}">${esc(s.status||'—')}</span></div>`;
 }
+window.scQuickDone = async (id)=>{
+  if(!window.canEdit('logi.calls')){ toast('אין הרשאה לעדכון קריאת שירות'); return; }
+  if(!confirm('לסמן את הקריאה כהושלמה?')) return;
+  const { data: res, error } = await oldCall('update_service_call', { id, patch:{ status:'הושלם' } });
+  if(error){ toast('שגיאה: '+error.message); return; }
+  const s = SCALLS.find(x=>String(x.id)===String(id));
+  if(s) Object.assign(s, (res&&res.row)||{ status:'הושלם' });
+  toast('הקריאה סומנה כהושלמה ✓');
+  renderOrders(); renderLogi(); renderCal();
+};
 function scTable(list){
   if(!list.length) return '<div class="empty">אין קריאות שירות בסינון הזה</div>';
   const rows = list.slice(0,pgLim('calls')).map((s,i)=>{
     const wa=s.phone?waLink(s.phone, s.scheduled_date?waServiceMsg(s):('שלום '+(s.customer_name||'')+', בנוגע לקריאת השירות')):'';
     return `<tr onclick="openScall('${s.id}')">
+      <td class="selcol" onclick="event.stopPropagation()">${window.canEdit('logi.calls')?`<button type="button" class="qdone" title="סימון כהושלם" onclick="scQuickDone('${s.id}')">✓</button>`:''}</td>
       <td class="rownum">${i+1}</td>
       <td dir="ltr"><b>${esc(s.call_number||'')}</b></td>
       <td><b>${esc(s.customer_name||'')}</b></td>
@@ -6803,7 +6814,7 @@ function scTable(list){
       <td>${wa?`<a class="btn-wa2" href="${wa}" target="_blank" onclick="event.stopPropagation()">📱</a>`:''}</td>
     </tr>`;}).join('');
   return `<div class="tbl-wrap"><table class="tbl"><thead><tr>
-    <th class="rownum">#</th><th>קריאה</th><th>לקוח</th><th>טלפון</th><th>מוצר</th><th>עיר / אזור</th><th>סטטוס</th><th>דחיפות</th><th class="teamcell">צוות</th><th class="datecell">תאריך</th><th class="slotcell">שעות</th><th>וואטסאפ</th>
+    <th class="selcol"></th><th class="rownum">#</th><th>קריאה</th><th>לקוח</th><th>טלפון</th><th>מוצר</th><th>עיר / אזור</th><th>סטטוס</th><th>דחיפות</th><th class="teamcell">צוות</th><th class="datecell">תאריך</th><th class="slotcell">שעות</th><th>וואטסאפ</th>
   </tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('calls',list.length,'קריאות')}`;
 }
 /* קבועי הלוח הישן — כרטיסים מלאים (הערות 21–22) */
@@ -6922,18 +6933,31 @@ window.saveScall = async (id)=>{
 /* 6.24.6 — פתיחת קריאת שירות חדשה מהמערכת. קריאות שירות אינן מגיעות מפריוריטי,
    ולכן כאן כל השדות פתוחים לעריכה. השמירה עוברת ב-ord.service_call_create
    (SECURITY DEFINER, שער core.can_edit('logi.calls')). */
-let NE_CUST=null, NE_SKU=null;
+let NE_CUST=null, NE_SKU=null, CUST_LOOKUP=null, SKU_LOOKUP=null, _lkLoading=false;
+function custSrc(){ return (typeof CUSTS!=='undefined' && CUSTS && CUSTS.length)?CUSTS:(CUST_LOOKUP||[]); }
+function prodSrc(){ return (typeof SKUS!=='undefined' && SKUS && SKUS.length)?SKUS:(SKU_LOOKUP||[]); }
+async function neEnsureLookups(){
+  if(_lkLoading) return;
+  const needC=!(CUSTS&&CUSTS.length)&&!CUST_LOOKUP, needS=!(SKUS&&SKUS.length)&&!SKU_LOOKUP;
+  if(!needC && !needS) return;
+  _lkLoading=true;
+  try{
+    if(needC){ const {data}=await sb.schema('ord').rpc('lookup_customers'); CUST_LOOKUP=data||[]; }
+    if(needS){ const {data}=await sb.schema('ord').rpc('lookup_skus'); SKU_LOOKUP=data||[]; }
+  }catch(_e){}
+  _lkLoading=false;
+}
 window.openNewScall = ()=>{
   if(!window.canEdit('logi.calls')){ toast('אין לך הרשאת עריכה לקריאות שירות'); return; }
-  NE_CUST=null; NE_SKU=null;
+  NE_CUST=null; NE_SKU=null; neEnsureLookups();
   const teamVals = OTEAMS.filter(t=>t.active!==false).map(t=>t.name);
   const today = todayStr();
   $('#ordSheet').innerHTML = `
     <h3>🛠️ פתיחת קריאת שירות חדשה</h3>
     <div class="note" style="margin:4px 0 14px">קריאה שנפתחת ידנית במערכת (לא מפריוריטי). בחרו לקוח מהמאגר — הפרטים האפורים יתמלאו אוטומטית; מס' קריאה מוקצה אוטומטית ברצף.</div>
     <div class="form-grid">
-      <div class="span2 ac-wrap"><label>בחירת לקוח מהמאגר</label><input id="ne-custpick" autocomplete="off" placeholder="הקלד שם / טלפון / מספר לקוח…" oninput="neCustSearch(this.value)" onfocus="neCustSearch(this.value)" onblur="setTimeout(()=>{const b=document.getElementById('ne-cust-results'); if(b) b.hidden=true;},150)"><div id="ne-cust-results" class="ac-menu" hidden></div></div>
       <div><label>מס' קריאה</label><input value="יוקצה אוטומטית — המספר הבא ברצף" readonly class="ro" title="מספר הקריאה מוקצה אוטומטית ברצף רץ (SC…) ואינו ניתן לעריכה"></div>
+      <div class="span2 ac-wrap"><label>בחירת לקוח מהמאגר</label><input id="ne-custpick" autocomplete="off" placeholder="הקלד שם / טלפון / מספר לקוח…" oninput="neCustSearch(this.value)" onfocus="neCustSearch(this.value)" onblur="setTimeout(()=>{const b=document.getElementById('ne-cust-results'); if(b) b.hidden=true;},150)"><div id="ne-cust-results" class="ac-menu" hidden></div></div>
       <div><label>תאריך פתיחה</label><input id="ne-opened" type="date" value="${esc(today)}"></div>
       <div><label>מס' לקוח</label><input id="ne-custnum" class="ro" readonly dir="ltr"></div>
       <div><label>שם לקוח</label><input id="ne-custname" class="ro" readonly></div>
@@ -6967,7 +6991,7 @@ window.neCustSearch = (q)=>{
   q=(q||'').trim();
   if(!q){ box.hidden=true; box.innerHTML=''; return; }
   const ql=q.toLowerCase(), dig=q.replace(/\D/g,'');
-  const res = CUSTS.filter(c=>{
+  const res = custSrc().filter(c=>{
     if(String(c.name||'').toLowerCase().includes(ql)) return true;
     if(String(c.city||'').toLowerCase().includes(ql)) return true;
     if(dig){ if(String(c.phone||'').replace(/\D/g,'').includes(dig)) return true; if(String(c.priority_id||'').includes(dig)) return true; }
@@ -6979,7 +7003,7 @@ window.neCustSearch = (q)=>{
   box.hidden=false;
 };
 window.neCustChoose = (id)=>{
-  const c = CUSTS.find(x=>String(x.id)===String(id)); if(!c) return;
+  const c = custSrc().find(x=>String(x.id)===String(id)); if(!c) return;
   NE_CUST=c;
   const set=(eid,val)=>{ const f=document.getElementById(eid); if(f) f.value=val||''; };
   set('ne-custpick', c.name); set('ne-custname', c.name); set('ne-custnum', c.priority_id);
@@ -6995,14 +7019,14 @@ window.neProdSearch = (q)=>{
   q=(q||'').trim();
   if(!q){ box.hidden=true; box.innerHTML=''; return; }
   const ql=q.toLowerCase();
-  const res = SKUS.filter(s=> String(s.partdes||'').toLowerCase().includes(ql) || String(s.partname||'').toLowerCase().includes(ql)).slice(0,30);
+  const res = prodSrc().filter(s=> String(s.partdes||'').toLowerCase().includes(ql) || String(s.partname||'').toLowerCase().includes(ql)).slice(0,30);
   box.innerHTML = res.length
     ? res.map(s=>`<button type="button" class="ac-item" onmousedown="event.preventDefault()" onclick="neProdChoose('${esc(String(s.partname))}')"><b>${esc(s.partdes||s.partname)}</b><span dir="ltr">${esc(s.partname||'')}</span></button>`).join('')
     : '<div class="ac-empty">לא נמצאו פריטים — ניתן להקליד חופשי</div>';
   box.hidden=false;
 };
 window.neProdChoose = (pn)=>{
-  const s = SKUS.find(x=>String(x.partname)===String(pn)); if(!s) return;
+  const s = prodSrc().find(x=>String(x.partname)===String(pn)); if(!s) return;
   NE_SKU = String(s.partname);
   const el=document.getElementById('ne-prodpick'); if(el) el.value = s.partdes||s.partname;
   const box=document.getElementById('ne-prod-results'); if(box){ box.hidden=true; box.innerHTML=''; }

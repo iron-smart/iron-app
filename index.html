@@ -1111,7 +1111,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.24.6</div>
+      <div class="ver">גרסה 6.24.7</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1209,7 +1209,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.6</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.7</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2648,8 +2648,8 @@ window.logiSelClear = () => { LOGI_SEL.clear(); renderLogi(); };
 function renderLogiScope(){
   const box=$('#logi-scope'); if(!box) return;
   const base = ORDS.filter(o=>!['הושלם','בוטל'].includes(o.order_status));
-  const n = { sched: base.filter(needsSched).length, ship: base.filter(o=>!needsSched(o)).length, all: base.length };
-  box.innerHTML = [['sched','לתיאום'],['ship','משלוחים'],['all','הכל']]
+  const n = { sched: base.filter(needsSched).length, ship: base.filter(o=>!needsSched(o)).length, all: base.length, done: ORDS.filter(o=>o.order_status==='הושלם').length };
+  box.innerHTML = [['sched','לתיאום'],['ship','משלוחים'],['all','הכל'],['done','הושלמו']]
     .map(([k,l])=>`<button type="button" class="chip ${LOGI_SCOPE===k?'active':''}" onclick="logiScope('${k}')">${l} <b>${n[k]}</b></button>`).join('');
 }
 /* 6.24.6 — סינון בתצוגה הטבלאית: רב-בחירת סטטוסים, סינון קריאות שירות, ושמירת ברירת מחדל */
@@ -2777,7 +2777,8 @@ function logiRenderTable(){
   const isCalls = LOGI_VIEW==='calls';
   if(isCalls){
     const q=($('#logiSearchCalls').value||'').trim();
-    let list = SCALLS.filter(s=>!['הושלם','הושלמה','בוטלה','סגורה'].includes(s.status));
+    const _scDone=['הושלם','הושלמה','בוטלה','סגורה'];
+    let list = SC_F.status ? SCALLS.slice() : SCALLS.filter(s=>!_scDone.includes(s.status));
     if(q) list = list.filter(s=>[s.customer_name,s.call_number,s.city,s.product,s.address,s.team,s.phone]
       .some(v=>String(v||'').includes(q)));
     if(SC_F.status)  list = list.filter(s=>s.status===SC_F.status);
@@ -2787,14 +2788,20 @@ function logiRenderTable(){
     $('#logi-tbl').innerHTML = wideScreen() ? scTable(list) : capped(list, scRow, 'אין קריאות שירות');
   } else {
     const q=($('#logiSearchOrders').value||'').trim();
-    let list = ORDS.filter(o=>!['הושלם','בוטל'].includes(o.order_status));
+    const stF = LOGI_F.status||[];
+    const doneScope = LOGI_SCOPE==='done';
+    let list = ORDS.filter(o=>{
+      if(o.order_status==='הושלם') return doneScope || stF.includes('הושלם');
+      if(o.order_status==='בוטל')  return stF.includes('בוטל');
+      return !doneScope;
+    });
     if(q) list = list.filter(o=>[o.customer_name,o.order_number,o.city,o.address,o.team,o.phone]
       .some(v=>String(v||'').includes(q)));
-    if(LOGI_F.status && LOGI_F.status.length) list = list.filter(o=>LOGI_F.status.includes(o.order_status));
+    if(stF.length) list = list.filter(o=>stF.includes(o.order_status));
     if(LOGI_F.contact) list = list.filter(o=>o.contact_status===LOGI_F.contact);
     if(LOGI_F.team)    list = list.filter(o=> LOGI_F.team==='__none__' ? !o.team : o.team===LOGI_F.team);
     if(LOGI_F.region)  list = list.filter(o=>o.region===LOGI_F.region);
-    list = list.filter(scopeOk);
+    if(!doneScope) list = list.filter(scopeOk);
     list = window.ordSortList(list.slice());
     LOGI_SHOWN = list;
     const _ids=new Set(list.map(o=>String(o.id))); [...LOGI_SEL].forEach(id=>{ if(!_ids.has(id)) LOGI_SEL.delete(id); });

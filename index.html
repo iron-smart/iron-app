@@ -1087,7 +1087,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.23.0</div>
+      <div class="ver">גרסה 6.24.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1185,7 +1185,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.23.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1639,7 +1639,26 @@ function showLogin(msg){
    כל עוד המפה לא נטענה (__loaded חסר) אין הגבלה בצד הלקוח — האכיפה
    האמיתית היא בשרת, ולכן כשל טעינה לא ינעל אף אחד מחוץ למערכת. */
 window.PERM = window.PERM || {};
-window.pLevel  = k => { const P=window.PERM; if(!P || !P.__loaded) return 2; if(typeof ME!=='undefined' && ME && ME.role==='admin') return 2; return +P[k] || 0; };
+window.pLevel  = k => { const P=window.PERM; if(typeof ME!=='undefined' && ME && ME.role==='admin') return 2; if(!P || !P.__loaded) return 0; return +P[k] || 0; };
+/* 6.24.0 — כשל סגור: כל עוד המפה לא נטענה pLevel מחזיר 0. זה בטוח רק משום
+   שהמערכת אינה מוצגת כלל עד שטעינת ההרשאות הצליחה (שלושה ניסיונות ואז מסך
+   חסימה עם "נסה שוב" ו"יציאה"), ולכן אין מצב של נעילה שקטה. אדמין עוקף. */
+window.TAB_PERM = {
+  today:'home.today', tasks:'crm.tasks', leads:'crm.leads', deals:'crm.deals',
+  customers:'crm.customers', contacts:'crm.contacts', meets:'crm.meets', orders:'crm.orders',
+  skus:'sku.cards', docs:'docs', inv:'inv.stock', po:'inv.po', prc:'prc', pays:'acc.pays'
+};
+window.LOGI_PERM = { orders:'logi.orders', calls:'logi.calls', cal:'logi.cal' };
+window.SET_PERM  = { users:'set.users', teams:'set.teams', texts:'set.texts', conn:'set.conn', synclog:'set.synclog', general:'set.general' };
+window.LOGI_VIEWS = ['orders','calls','cal'];
+window.navCanTab = t=>{
+  if(t==='logi') return LOGI_VIEWS.some(v=>canView(LOGI_PERM[v]));
+  if(t==='set')  return settingsCats().length > 0;
+  const k = TAB_PERM[t];
+  return k ? canView(k) : true;
+};
+window.NAV_LAND_ORDER = ['today','tasks','leads','deals','customers','contacts','meets','orders','logi','docs','skus','inv','po','pays','prc','set'];
+window.navLanding = ()=> NAV_LAND_ORDER.find(t=>navCanTab(t)) || null;
 window.canView = k => window.pLevel(k) >= 1;
 window.canEdit = k => window.pLevel(k) >= 2;
 
@@ -1690,6 +1709,65 @@ async function boot(){
    עד סבב 4ב הקישור מהדוא"ל היה מבוי סתום: Supabase המיר אותו לסשן זמני,
    הטוקן נשרף, והמשתמש או חזר לטופס ההתחברות או נכנס למערכת בלי להחליף סיסמה.
    כאן הקישור מעביר את המסך למצב "בחירת סיסמה חדשה" וקורא ל-updateUser. */
+/* ══════ 6.24.0 — מסכי חסימה: החלפת סיסמה ראשונה וכשל טעינת הרשאות ══════ */
+function blockOverlay(id, html){
+  let o=document.getElementById(id);
+  if(!o){
+    o=document.createElement('div'); o.id=id;
+    o.style.cssText='position:fixed;inset:0;z-index:9999;background:#0f172a;display:flex;align-items:center;justify-content:center;padding:18px;direction:rtl';
+    document.body.appendChild(o);
+  }
+  o.innerHTML='<div style="background:#fff;border-radius:16px;max-width:440px;width:100%;padding:26px;box-shadow:0 18px 50px rgba(0,0,0,.35);font-family:inherit">'+html+'</div>';
+  o.style.display='flex';
+  return o;
+}
+function hideOverlay(id){ const o=document.getElementById(id); if(o) o.style.display='none'; }
+window.forceLogout = async ()=>{
+  try{ localStorage.removeItem(RMB_KEY); localStorage.removeItem(ALIVE_KEY); localStorage.removeItem(ACT_KEY); sessionStorage.removeItem(TAB_KEY); }catch(_){}
+  try{ await sb.auth.signOut({ scope:'local' }); }catch(_){}
+  location.reload();
+};
+window.showPermFail = ()=>{ blockOverlay('permFail',
+  '<h2 style="margin:0 0 8px">טעינת ההרשאות נכשלה</h2>'+
+  '<div style="color:#64748b;line-height:1.7;margin-bottom:16px">לא הצלחנו לטעון את ההרשאות שלך מהשרת. אין זו חסימה — זו תקלת תקשורת. נסו שוב, ואם התקלה חוזרת פנו למנהל המערכת.</div>'+
+  '<div style="display:flex;gap:8px"><button class="chip" onclick="permRetry()">נסה שוב</button>'+
+  '<button class="chip" onclick="forceLogout()">יציאה</button></div>'); };
+window.permRetry = async ()=>{ hideOverlay('permFail'); try{ await afterLogin(); }catch(e){ console.error('permRetry', e); showPermFail(); } };
+window.showForcePw = ()=>{ blockOverlay('forcePw',
+  '<h2 style="margin:0 0 8px">החלפת סיסמה נדרשת</h2>'+
+  '<div style="color:#64748b;line-height:1.7;margin-bottom:14px">זו הכניסה הראשונה שלך עם הסיסמה שמסר לך מנהל המערכת. כדי להמשיך יש לבחור סיסמה אישית — לפחות 10 תווים, הכוללים אות וספרה.</div>'+
+  '<input id="fp-cur" type="password" dir="ltr" placeholder="הסיסמה הנוכחית" autocomplete="current-password" style="width:100%;padding:10px;margin-bottom:8px;border:1px solid #cbd5e1;border-radius:9px;font-family:inherit">'+
+  '<input id="fp-new" type="password" dir="ltr" placeholder="סיסמה חדשה" autocomplete="new-password" style="width:100%;padding:10px;margin-bottom:8px;border:1px solid #cbd5e1;border-radius:9px;font-family:inherit">'+
+  '<input id="fp-new2" type="password" dir="ltr" placeholder="אימות הסיסמה החדשה" autocomplete="new-password" style="width:100%;padding:10px;margin-bottom:6px;border:1px solid #cbd5e1;border-radius:9px;font-family:inherit">'+
+  '<div id="fp-err" style="color:#c0392b;min-height:18px;font-size:13px;margin-bottom:10px"></div>'+
+  '<div style="display:flex;gap:8px"><button class="chip" id="fp-btn" onclick="submitForcePw()">עדכון הסיסמה</button>'+
+  '<button class="chip" onclick="forceLogout()">יציאה</button></div>');
+  setTimeout(()=>{ try{ document.getElementById('fp-cur').focus(); }catch(_){} }, 60); };
+window.submitForcePw = async ()=>{
+  const err=document.getElementById('fp-err'), btn=document.getElementById('fp-btn');
+  err.textContent='';
+  const cur=document.getElementById('fp-cur').value, p1=document.getElementById('fp-new').value, p2=document.getElementById('fp-new2').value;
+  if(!cur){ err.textContent='יש להזין את הסיסמה הנוכחית'; return; }
+  if(p1.length<10 || !/[A-Za-z]/.test(p1) || !/[0-9]/.test(p1)){ err.textContent='הסיסמה החדשה חייבת להכיל לפחות 10 תווים, אות וספרה'; return; }
+  if(p1!==p2){ err.textContent='שתי הסיסמאות אינן זהות'; return; }
+  if(p1===cur){ err.textContent='הסיסמה החדשה חייבת להיות שונה מהנוכחית'; return; }
+  btn.disabled=true; btn.textContent='מעדכן…';
+  try{
+    const { data:{ session } } = await sb.auth.getSession();
+    const r = await fetch(SB_URL+'/functions/v1/set-my-password', {
+      method:'POST',
+      headers:{ 'authorization':'Bearer '+session.access_token, 'apikey':SB_KEY, 'content-type':'application/json' },
+      body: JSON.stringify({ current_password: cur, new_password: p1 })
+    });
+    const j = await r.json();
+    if(!r.ok || j.error){ err.textContent = j.error || ('עדכון הסיסמה נכשל ('+r.status+')'); return; }
+    hideOverlay('forcePw');
+    try{ await sb.auth.signInWithPassword({ email: ME.email, password: p1 }); }catch(_e){}
+    await afterLogin();
+  }catch(e){ console.error('submitForcePw', e); err.textContent='שגיאת רשת — נסו שוב'; }
+  finally{ btn.disabled=false; btn.textContent='עדכון הסיסמה'; }
+};
+
 let PW_RECOVERY = false;
 
 function enterRecoveryMode(){
@@ -1718,13 +1796,20 @@ try{
 async function doSetPassword(){
   const btn = $('#loginBtn');
   const p1 = $('#password').value, p2 = $('#password2').value;
-  if(p1.length < 8){ $('#loginErr').textContent = 'הסיסמה חייבת להכיל לפחות 8 תווים'; return; }
+  if(p1.length < 10 || !/[A-Za-z]/.test(p1) || !/[0-9]/.test(p1)){ $('#loginErr').textContent = 'הסיסמה חייבת להכיל לפחות 10 תווים, אות וספרה'; return; }
   if(p1 !== p2){ $('#loginErr').textContent = 'שתי הסיסמאות אינן זהות'; return; }
   btn.disabled = true; btn.textContent = 'מעדכן…';
   try{
     const { error } = await sb.auth.updateUser({ password: p1 });
     if(error){ $('#loginErr').textContent = 'עדכון הסיסמה נכשל — בקשו קישור חדש'; return; }
     PW_RECOVERY = false;
+    /* 6.24.0 — ניקוי דגל חובת החלפת הסיסמה, אם מנהל המערכת סימן אותו, כדי שלא יתבקש פעמיים */
+    try{
+      const { data:{ session } } = await sb.auth.getSession();
+      if(session) await fetch(SB_URL+'/functions/v1/set-my-password', { method:'POST',
+        headers:{ 'authorization':'Bearer '+session.access_token, 'apikey':SB_KEY, 'content-type':'application/json' },
+        body: JSON.stringify({ clear_only:true, current_password:p1 }) });
+    }catch(_e){}
     $('#loginOk').textContent = 'הסיסמה עודכנה — נכנסים למערכת…';
     try{ sessionStorage.setItem(TAB_KEY,'1'); }catch(_){}
     await afterLogin();
@@ -1828,7 +1913,7 @@ $('#forgotBtn').onclick = async ()=>{
 async function afterLogin(){
   const { data:{ user } = {}, error:uErr } = await sb.auth.getUser();
   if(uErr || !user){ try{ await sb.auth.signOut({ scope:'local' }); }catch(_){} showLogin('פג תוקף ההתחברות — התחברו שוב'); return; }
-  const { data: prof, error:pErr } = await sb.schema('core').from('profiles').select('full_name,role,email,dashboard,job_title,phone,department,avatar_url').eq('id',user.id).maybeSingle();
+  const { data: prof, error:pErr } = await sb.schema('core').from('profiles').select('full_name,role,email,dashboard,job_title,phone,department,avatar_url,must_change_password').eq('id',user.id).maybeSingle();
   /* הפרדה בין "אין פרופיל" (ממתין לאישור) לבין תקלת שאילתה — קודם כל תקלה
      דווחה כ"ממתין לאישור מנהל", וזו הודעה שמובילה לאבחון שגוי. */
   if(pErr){ console.error('profile', pErr); try{ await sb.auth.signOut({ scope:'local' }); }catch(_){} showLogin('שגיאה בטעינת הפרופיל — פנו למנהל המערכת'); return; }
@@ -1837,11 +1922,18 @@ async function afterLogin(){
   /* 6.20.0 — מפת ההרשאות של המשתמש, נטענת פעם אחת בכניסה.
      __loaded מבדיל בין "אין הרשאה" לבין "הטעינה נכשלה": כשל טעינה לא יחסום
      מסכים (אין עדיין אכיפה בצד הלקוח), אך גם לא יעניק דבר בצד השרת. */
-  try{
-    const { data:pmap, error:pmErr } = await sb.schema('core').rpc('my_perms');
-    window.PERM = pmap || {};
-    if(!pmErr) window.PERM.__loaded = true;
-  }catch(e){ console.error('my_perms', e); window.PERM = {}; }
+  /* 6.24.0 — החלפת סיסמה בכניסה הראשונה */
+  if(prof.must_change_password){ killSplash(); showForcePw(); return; }
+  /* 6.24.0 — טעינת ההרשאות עם שלושה ניסיונות; כשל אינו נועל בשקט */
+  let permOk=false;
+  for(let att=1; att<=3 && !permOk; att++){
+    try{
+      const { data:pmap, error:pmErr } = await sb.schema('core').rpc('my_perms');
+      if(pmErr) throw pmErr;
+      window.PERM = pmap || {}; window.PERM.__loaded = true; permOk = true;
+    }catch(e){ console.error('my_perms attempt '+att, e); if(att<3) await new Promise(r=>setTimeout(r, 500*att)); }
+  }
+  if(!permOk){ window.PERM = {}; killSplash(); showPermFail(); return; }
   killSplash();
   /* פעימת חיים — מאפשרת ללשונית חדשה באותו דפדפן להיחשב לאותו סשן (ראו boot) */
   try{
@@ -1862,6 +1954,11 @@ async function afterLogin(){
   /* מכאן והלאה המשתמש כבר מחובר והמערכת מוצגת — כשל ברינדור הוא תקלת נתונים,
      לא תקלת התחברות, ואסור שיגלגל חריגה חזרה ל-boot() וישליך למסך ההתחברות. */
   try{ buildSetSubmenu(); }catch(e){ console.error('buildSetSubmenu', e); }
+  try{
+    navApplyPerms();
+    const land = navLanding();
+    if(land){ gotoTab(land); } else { showNoAccess(); }
+  }catch(e){ console.error('navApplyPerms', e); }
   try{ applyDashboard(); await loadLeads(); }
   catch(e){ console.error('afterLogin render', e); }
 }
@@ -1901,19 +1998,73 @@ function navMark(){
     b.classList.toggle('on', !!(okTab && okView));
   });
 }
+/* 6.24.0 — הסתרת פריטי ניווט לפי מפת ההרשאות. האכיפה האמיתית היא ב-RLS;
+   כאן זו רק חוויית משתמש — שלא יראה מסכים שיחזירו לו טבלאות ריקות. */
+window.navApplyPerms = ()=>{
+  try{
+    document.querySelectorAll('#side .nav-item').forEach(b=>{
+      const t=b.dataset.tab; if(!t) return;
+      const wrap=b.closest('.nav-wrap');
+      if(wrap){
+        const tabs=(wrap.dataset.tabs||'').split(',').filter(Boolean);
+        const any=tabs.some(x=>navCanTab(x));
+        if(wrap.id!=='nav-prc') wrap.hidden = !any;
+        b.hidden = false;
+      }else{ b.hidden = !navCanTab(t); }
+    });
+    document.querySelectorAll('#side .submenu button').forEach(b=>{
+      let ok=true;
+      if(b.dataset.tab!==undefined) ok=navCanTab(b.dataset.tab);
+      else if(b.dataset.view!==undefined){
+        const wrap=b.closest('.nav-wrap');
+        const tabs=wrap?(wrap.dataset.tabs||'').split(',').filter(Boolean):[];
+        if(tabs.includes('logi')) ok=canView(LOGI_PERM[b.dataset.view]||'logi');
+      }
+      b.hidden = !ok;
+    });
+    prcGate();
+  }catch(e){ console.error('navApplyPerms', e); }
+};
+window.showNoAccess = ()=>{
+  try{
+    NAV_TABS.forEach(x=>{ const s=$('#tab-'+x); if(s) s.classList.add('hidden'); });
+    let box=document.getElementById('noAccessBox');
+    if(!box){
+      box=document.createElement('div'); box.id='noAccessBox';
+      box.style.cssText='margin:40px auto;max-width:520px;text-align:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:28px;direction:rtl';
+      box.innerHTML='<h2 style="margin:0 0 10px">אין לך הרשאה לאף מסך</h2><div style="color:#64748b;line-height:1.7">החשבון נוצר אך טרם שויכה לו קבוצת הרשאות. פנו למנהל המערכת.</div>';
+      const host = ($('#tab-today') && $('#tab-today').parentNode) || document.body;
+      host.appendChild(box);
+    }
+    box.hidden=false;
+  }catch(e){ console.error('showNoAccess', e); }
+};
 window.gotoTab = t=>{
   if(!NAV_TABS.includes(t)) return;
+  if(!navCanTab(t)){ try{ toast('אין לך הרשאה למסך זה'); }catch(_e){ } return; }
+  const nb=document.getElementById('noAccessBox'); if(nb) nb.hidden=true;
   CUR_TAB = t;
   NAV_TABS.forEach(x=>{ const s=$('#tab-'+x); if(s) s.classList.toggle('hidden', x!==t); });
   navMark();
-  if(t==='logi') renderLogi();
+  if(t==='logi'){
+    if(!canView(LOGI_PERM[LOGI_VIEW]||'')) LOGI_VIEW = LOGI_VIEWS.find(v=>canView(LOGI_PERM[v])) || LOGI_VIEW;
+    renderLogi();
+  }
   if(t==='inv')  renderInv();
   if(t==='po')   renderPo();
   if(t==='prc')  renderPrc();
   if(t==='set') renderSettings();
   if(window.innerWidth<800) setSide(false);
 };
-document.querySelectorAll('#side .nav-item').forEach(b=> b.onclick=()=> gotoTab(b.dataset.tab));
+document.querySelectorAll('#side .nav-item').forEach(b=> b.onclick=()=>{
+  let t=b.dataset.tab;
+  const wrap=b.closest('.nav-wrap');
+  if(wrap && !navCanTab(t)){
+    const tabs=(wrap.dataset.tabs||'').split(',').filter(Boolean);
+    t = tabs.find(x=>navCanTab(x)) || t;
+  }
+  gotoTab(t);
+});
 /* פתיחה/סגירה של הפאנל — כולל לשונית פתיחה כשהוא מוסתר (הערה 6) */
 window.setSide = open=>{
   $('#side').classList.toggle('closed', !open);
@@ -2378,7 +2529,7 @@ function ieDate(kind,id,field,val){
 }
 window.gotoPays = f=>{ PAY_FILTER=f||'open'; gotoTab('pays'); renderPays(); navMark(); };
 window.gotoDocs = f=>{ DOC_FILTER=f||'sent'; gotoTab('docs'); renderDocs(); navMark(); };
-window.gotoSet  = v=>{ SET_VIEW=v||'general'; gotoTab('set'); };
+window.gotoSet  = v=>{ const cats=settingsCats(); if(!cats.length){ try{ toast('אין לך הרשאה למסך זה'); }catch(_e){} return; } v = v||'general'; if(!cats.some(c=>c[0]===v)) v = cats[0][0]; SET_VIEW=v; gotoTab('set'); };
 window.gotoSkuView = id=>{ gotoTab('skus'); if(id) applySkuView(id); else clearSkuView(); };
 /* ===== דשבורד אחד, מותאם לתפקיד — נטיבי לגמרי ===== */
 function applyDashboard(){
@@ -2426,7 +2577,7 @@ function renderOps(){
 }
 /* לוגיסטיקה — שלוש תצוגות בתוך אותו מסך, בלי לקפוץ לקטגוריה אחרת (הערה 19) */
 let LOGI_VIEW='cal';
-window.gotoLogi = v=>{ LOGI_VIEW=v||'cal'; gotoTab('logi'); };
+window.gotoLogi = v=>{ v = v||'cal'; if(!canView(LOGI_PERM[v]||'logi')){ v = LOGI_VIEWS.find(x=>canView(LOGI_PERM[x])); if(!v){ try{ toast('אין לך הרשאה למסך זה'); }catch(_e){} return; } } LOGI_VIEW=v; gotoTab('logi'); };
 window.gotoCalls = ()=> gotoLogi('calls');
 window.logiMode = v=>{ LOGI_VIEW=v; renderLogi(); navMark(); };
 window.logiView = ()=> renderLogi();
@@ -4771,7 +4922,7 @@ const PRC_F = { q:'', fam:'', st:'', only:'' };
 function prcGate(){
   try{
     const n = document.getElementById('nav-prc');
-    if(n) n.hidden = !(ME && ME.role === 'admin');
+    if(n) n.hidden = !((ME && ME.role === 'admin') || (typeof canView==='function' && canView('prc')));
   }catch(e){ /* לפני טעינת המשתמש */ }
 }
 const prcAdmin = () => !!(ME && ME.role === 'admin');
@@ -5381,12 +5532,10 @@ let SET_VIEW='users', SET_USERS=null;
 window.setMode = v=>{ SET_VIEW=v; renderSettings(); navMark(); };
 /* מקור אחד לתתי-הקטגוריות של ההגדרות — משמש גם את המסך וגם את התפריט הצף בסרגל */
 function settingsCats(){
-  const isAdmin = ME && ME.role==='admin';
-  /* ללא אימוג׳ים — רומן 29/07/2026 */
-  return [ ...(isAdmin?[['users','משתמשים והרשאות']]:[]),
-    ['teams','צוותי לוגיסטיקה'], ['texts','טקסטים ומסמכים'],
-    ['conn','חיבורים'],
-    ...(isAdmin?[['synclog','יומן סנכרון']]:[]), ['general','כללי'] ];
+  /* 6.24.0 — התפריט נגזר ממפתחות ההרשאה set.*, לא מתפקיד המשתמש.
+     ללא אימוג׳ים — רומן 29/07/2026 */
+  const all = [['users','משתמשים והרשאות'],['teams','צוותי לוגיסטיקה'],['texts','טקסטים ומסמכים'],['conn','חיבורים'],['synclog','יומן סנכרון'],['general','כללי']];
+  try{ return all.filter(c=> canView(SET_PERM[c[0]])); }catch(_e){ return []; }
 }
 /* תפריט ההגדרות בסרגל נבנה לפי ההרשאה בפועל — פריטי אדמין אינם מוצגים למי שאינו אדמין */
 window.buildSetSubmenu = ()=>{
@@ -5665,24 +5814,28 @@ function renderSettings(){
   const admin=['admin','manager'].includes(ME.role);
   const isAdmin=ME.role==='admin';
   const cats=settingsCats();
+  if(!cats.length){ el.innerHTML='<div class="empty">אין לך הרשאה למסך ההגדרות</div>'; return; }
   if(!cats.some(c=>c[0]===SET_VIEW)) SET_VIEW=cats[0][0];
+  const uEdit = canEdit('set.users');
   let body='';
-  if(SET_VIEW==='users' && isAdmin){
+  if(SET_VIEW==='users' && canView('set.users')){
     body = `<h2 class="sec" style="margin-top:0">ניהול משתמשים</h2>
       <div class="note">כניסה אחת לכל המערכת. הרשאה קובעת מה מותר; דשבורד קובע מה רואים בכניסה; תפקיד — הגדרת התפקיד בחברה.</div>
       <div id="usersBox" class="tbl-wrap" style="padding:12px"><div class="empty">טוען משתמשים…</div></div>
-      <h2 class="sec">➕ הוספת משתמש חדש</h2>
+      ${uEdit?`<h2 class="sec">➕ הוספת משתמש חדש</h2>
+      <div class="note">הקלידו סיסמה ראשונית ומסרו אותה למשתמש. המערכת תחייב אותו להחליף אותה בכניסה הראשונה. כתובת הדואר האלקטרוני חייבת להיות בדומיין ironfitness.co.il, והרשאת מנהל מערכת מוענקת בנפרד לאחר היצירה.</div>
       <div class="tbl-wrap" style="padding:12px">
         <div class="usr-row" style="border:none">
           <input id="nu-name" placeholder="שם מלא">
-          <input id="nu-email" placeholder="אימייל" dir="ltr">
-          <input id="nu-pass" placeholder="סיסמה (8 תווים+)" dir="ltr">
+          <input id="nu-email" placeholder="אימייל (ironfitness.co.il)" dir="ltr">
+          <input id="nu-pass" placeholder="סיסמה ראשונית (10 תווים, אות וספרה)" dir="ltr">
           <select id="nu-job"><option value="">— תפקיד —</option>${JOB_TITLES.map(j=>`<option>${j}</option>`).join('')}</select>
-          <select id="nu-role">${ROLE_OPTS.filter(r=>r[0]!=='pending').map(([v,l])=>`<option value="${v}" ${v==='rep'?'selected':''}>${l}</option>`).join('')}</select>
-          <button class="chip" onclick="createUser()">יצירה</button>
+          <select id="nu-role">${ROLE_OPTS.filter(r=>r[0]!=='pending'&&r[0]!=='admin').map(([v,l])=>`<option value="${v}" ${v==='rep'?'selected':''}>${l}</option>`).join('')}</select>
+          <select id="nu-group"><option value="">— ללא קבוצת הרשאות —</option></select>
+          <button class="chip" id="nu-btn" onclick="createUser()">יצירה</button>
         </div>
         <div class="err" id="nu-err"></div>
-      </div>
+      </div>`:''}
       <h2 class="sec">🧩 קבוצות הרשאות</h2>
       <div class="note">קבוצה היא תבנית: שיוך משתמש לקבוצה משכפל אליו את ההרשאות שלה. אחרי השכפול ההרשאות אישיות לגמרי — אפשר לחרוג בהן לכל משתמש בנפרד. שינוי מאוחר בקבוצה אינו זולג מעצמו; לשם כך יש "שכפול לכל החברים".</div>
       <div id="pmGroups" class="tbl-wrap" style="padding:12px"><div class="empty">טוען קבוצות…</div></div>
@@ -5721,7 +5874,7 @@ function renderSettings(){
     body = `<h2 class="sec" style="margin-top:0">טקסטים ומסמכים — מקובץ לפי קטגוריה</h2>`+(gHtml||'<div class="empty">אין טקסטים מוגדרים</div>');
   } else if(SET_VIEW==='conn'){
     body = integHtml();
-  } else if(SET_VIEW==='synclog' && isAdmin){
+  } else if(SET_VIEW==='synclog' && canView('set.synclog')){
     body = syncLogHtml();
   } else {
     const lastSync = $('#lastSync').textContent || '—';
@@ -5738,8 +5891,8 @@ function renderSettings(){
     <div class="set-nav">${cats.map(([v,l])=>`<button class="${SET_VIEW===v?'active':''}" onclick="setMode('${v}')">${l}<span class="nav-arrow" style="color:#94a3b8"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span></button>`).join('')}</div>
     <div class="set-body">${body}</div>
   </div>`;
-  if(SET_VIEW==='users' && isAdmin) renderUsers();
-  if(SET_VIEW==='synclog' && isAdmin) loadSyncLog();
+  if(SET_VIEW==='users' && canView('set.users')) renderUsers();
+  if(SET_VIEW==='synclog' && canView('set.synclog')) loadSyncLog();
   if(SET_VIEW==='conn') loadIntegrations();
 }
 async function renderUsers(){
@@ -5752,16 +5905,19 @@ async function renderUsers(){
   await pmLoad(true);
   const gs=(PM_STATE&&PM_STATE.groups)||[];
   const gOpts=u=>`<option value="">— ללא קבוצה —</option>`+gs.map(g=>`<option value="${g.id}" ${g.id===u.perm_group_id?'selected':''}>${esc(g.name)}</option>`).join('');
+  /* 6.24.0 — מילוי רשימת קבוצות ההרשאות בטופס יצירת המשתמש */
+  try{ const ng=$('#nu-group'); if(ng) ng.innerHTML='<option value="">— ללא קבוצת הרשאות —</option>'+gs.map(g=>`<option value="${g.id}">${esc(g.name)}</option>`).join(''); }catch(_e){}
+  const uEdit = canEdit('set.users');
   box.innerHTML = `<div class="usr-row" style="font-weight:800;color:var(--navy);border-bottom:2px solid var(--line)">
       <span>משתמש</span><span>הרשאה</span><span>דשבורד</span><span>תפקיד</span><span>קבוצת הרשאות</span><span>פעיל</span><span></span></div>` +
     SET_USERS.map(u=>`<div class="usr-row">
       <span><b>${esc(u.full_name||'—')}</b><br><small style="color:#94a3b8" dir="ltr">${esc(u.email)}</small></span>
-      <select id="ur-${u.id}">${ROLE_OPTS.map(([v,l])=>`<option value="${v}" ${v===u.role?'selected':''}>${l}</option>`).join('')}</select>
-      <select id="ud-${u.id}">${DASH_OPTS.map(([v,l])=>`<option value="${v}" ${v===(u.dashboard||'')?'selected':''}>${l}</option>`).join('')}</select>
-      <select id="uj-${u.id}"><option value="">—</option>${JOB_TITLES.map(j=>`<option ${j===u.job_title?'selected':''}>${j}</option>`).join('')}</select>
-      <span class="pm-gcell"><select id="ug-${u.id}" onchange="pmApplyGroup('${u.id}')">${gOpts(u)}</select>${pmDiffBadge(u.id)}</span>
-      <label style="display:flex;align-items:center;gap:4px;font-size:12px"><input type="checkbox" id="ua-${u.id}" ${u.active!==false?'checked':''}>פעיל</label>
-      <span style="display:flex;gap:5px;flex-wrap:wrap">
+      <select id="ur-${u.id}" ${uEdit?'':'disabled'}>${ROLE_OPTS.map(([v,l])=>`<option value="${v}" ${v===u.role?'selected':''}>${l}</option>`).join('')}</select>
+      <select id="ud-${u.id}" ${uEdit?'':'disabled'}>${DASH_OPTS.map(([v,l])=>`<option value="${v}" ${v===(u.dashboard||'')?'selected':''}>${l}</option>`).join('')}</select>
+      <select id="uj-${u.id}" ${uEdit?'':'disabled'}><option value="">—</option>${JOB_TITLES.map(j=>`<option ${j===u.job_title?'selected':''}>${j}</option>`).join('')}</select>
+      <span class="pm-gcell"><select id="ug-${u.id}" ${uEdit?'':'disabled'} onchange="pmApplyGroup('${u.id}')">${gOpts(u)}</select>${pmDiffBadge(u.id)}</span>
+      <label style="display:flex;align-items:center;gap:4px;font-size:12px"><input type="checkbox" id="ua-${u.id}" ${uEdit?'':'disabled'} ${u.active!==false?'checked':''}>פעיל</label>
+      <span style="display:flex;gap:5px;flex-wrap:wrap" ${uEdit?'':'hidden'}>
         <button class="chip" onclick="pmOpenUser('${u.id}')" title="מטריצת הרשאות אישית">🔐 הרשאות</button>
         <button class="chip" onclick="saveUser('${u.id}')">שמירה</button>
         <button class="chip" onclick="resetUserPass('${u.id}')" title="איפוס סיסמה">🔑</button>
@@ -5975,16 +6131,31 @@ async function adminUsersFn(body){
     body: JSON.stringify(body) });
   return r.json();
 }
+/* 6.24.0 — יצירת משתמש עוברת דרך admin-create-user: ההזמנה נרשמת במסד בשם
+   הקורא (ולכן can_edit('set.users') נאכף שם), הסיסמה הראשונית נקבעת על ידי
+   המנהל ומועברת ידנית, והמערכת מסמנת must_change_password לכניסה הראשונה. */
 window.createUser = async ()=>{
   const err=$('#nu-err'); err.textContent='';
-  const full_name=$('#nu-name').value.trim(), email=$('#nu-email').value.trim(), password=$('#nu-pass').value;
-  if(!email.includes('@')||password.length<8){ err.textContent='נדרשים אימייל תקין וסיסמה של 8 תווים לפחות'; return; }
-  const j = await adminUsersFn({ action:'create-user', email, password, full_name, role: $('#nu-role').value==='admin'?'admin':'manager' });
-  if(j.error){ err.textContent=j.error; return; }
-  /* עדכון הפרופיל המאוחד: הרשאה, תפקיד */
-  try{ await sb.schema('core').from('profiles').update({ role:$('#nu-role').value, job_title:$('#nu-job').value||null, full_name, active:true }).eq('id', j.user_id); }catch(_e){}
-  alert('המשתמש נוצר ✓');
-  renderUsers(); $('#nu-name').value=''; $('#nu-email').value=''; $('#nu-pass').value='';
+  const full_name=$('#nu-name').value.trim(), email=$('#nu-email').value.trim().toLowerCase(), password=$('#nu-pass').value;
+  const role=$('#nu-role').value, group=($('#nu-group')&&$('#nu-group').value)||'';
+  if(!/@ironfitness\.co\.il$/.test(email)){ err.textContent='כתובת הדואר האלקטרוני חייבת להיות בדומיין ironfitness.co.il'; return; }
+  if(password.length<10 || !/[A-Za-z]/.test(password) || !/[0-9]/.test(password)){ err.textContent='הסיסמה הראשונית חייבת להכיל לפחות 10 תווים, אות וספרה'; return; }
+  const btn=$('#nu-btn'); if(btn){ btn.disabled=true; btn.textContent='יוצר…'; }
+  try{
+    const { data:{ session } } = await sb.auth.getSession();
+    const r = await fetch(SB_URL+'/functions/v1/admin-create-user', {
+      method:'POST',
+      headers:{ 'authorization':'Bearer '+session.access_token, 'apikey':SB_KEY, 'content-type':'application/json' },
+      body: JSON.stringify({ email, full_name, role, perm_group_id: group||null, password })
+    });
+    const j = await r.json();
+    if(!r.ok || j.error){ err.textContent = j.error || ('יצירת המשתמש נכשלה ('+r.status+')'); return; }
+    try{ await sb.schema('core').from('profiles').update({ job_title:$('#nu-job').value||null }).eq('id', j.user_id); }catch(_e){}
+    alert('המשתמש נוצר ✓ — מסרו לו את הסיסמה הראשונית. המערכת תדרוש ממנו להחליף אותה בכניסה הראשונה.');
+    $('#nu-name').value=''; $('#nu-email').value=''; $('#nu-pass').value='';
+    renderUsers();
+  }catch(e){ console.error('createUser', e); err.textContent='שגיאת רשת ביצירת המשתמש'; }
+  finally{ if(btn){ btn.disabled=false; btn.textContent='יצירה'; } }
 };
 window.resetUserPass = async id=>{
   const u=(SET_USERS||[]).find(x=>x.id===id);

@@ -1124,7 +1124,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.24.12</div>
+      <div class="ver">גרסה 6.24.13</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1222,7 +1222,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.12</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.13</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5242,12 +5242,14 @@ function prcKpis(items){
     + (k[2] ? '<div class="s">' + esc(k[2]) + '</div>' : '') + '</div>').join('') + '</div>';
 }
 
+const prcUsd = r => { const e=PRC_EXT[r.partname]; return (e && Number(e.cost_usd)>0) ? Number(e.cost_usd) : null; };
 const PRC_DB_COLS = [
   { t:'מק״ט',           f:r=>esc(r.partname), cls:'clip' },
   { t:'תיאור',          f:r=>esc(r.partdes||'—'), cls:'td-desc' },
   { t:'משפחה',          f:r=>esc(r.family||'—'), cls:'clip' },
   { t:'סטטוס',          f:r=>'<span class="inv-st ' + (prcAct(r)?'grn':'gry') + '">' + esc(r.erp_status||'—') + '</span>', s:r=>prcAct(r)?0:1 },
   { t:'עלות',           f:r=>prcMoney(prcCost(r)), s:r=>prcCost(r)||0 },
+  { t:'עלות דולרית ($)',f:r=>{ const u=prcUsd(r); return u==null?'—':('$'+u.toFixed(2)); }, s:r=>prcUsd(r)||0 },
   { t:'מחיר ללא מע״מ',  f:r=>prcMoney(prcEx(r)),   s:r=>prcEx(r)||0 },
   { t:'מחיר כולל מע״מ', f:r=>prcMoney(prcInc(r)),  s:r=>prcInc(r)||0 },
   { t:'מקור עלות',      f:r=>{ const cs=prcCostSrc(r); return cs==null ? '—' : '<span class="inv-st '+(cs==='ידני'?'grn':'org')+'">'+cs+'</span>'; }, s:r=>prcCostSrc(r)==='ידני'?0:1 },
@@ -6982,12 +6984,12 @@ window.openNewScall = ()=>{
       <div class="span4"><label>פרטי התקלה</label><textarea id="ne-fault" rows="2"></textarea></div>
       <div><label>סטטוס</label>${selHtml('ne-status',CALL_STATUSES,'חדש')}</div>
       <div><label>רמת דחיפות</label>${selHtml('ne-urgency',URGENCIES,'רגילה')}</div>
-      <div class="span2"><label>🚚 כתובת הגעה לקריאה</label><input id="ne-addr" placeholder="השאירו ריק אם זהה לכתובת הלקוח"></div>
+      <div class="span2"><label>🚚 כתובת הגעה לקריאה</label><input id="ne-addr" placeholder="מלאו רק אם כתובת הלקוח אינה נכונה — היא גוברת" oninput="neCityReflect()"></div>
       <div><label>צוות</label>${selHtml('ne-team',teamVals,'',true)}</div>
       <div><label>תאריך מתואם</label><input id="ne-date" type="date"></div>
       <div><label>משבצת זמן</label>${selHtml('ne-slot',TIME_SLOTS,'',true)}</div>
       <div><label>דדליין טיפול</label><input id="ne-deadline" type="date"></div>
-      <div><label>עיר</label><input id="ne-city"></div>
+      <div><label>עיר <span class="note" style="font-weight:400">(משוקפת)</span></label><input id="ne-city" class="ro" readonly title="העיר משוקפת מכתובת הלקוח, או מכתובת ההגעה לקריאה כשהיא ממולאת (היא גוברת)"></div>
       <div><label>אזור גיאוגרפי</label>${selHtml('ne-region',REGIONS,'',true)}</div>
     </div>
     <div class="modal-actions">
@@ -7019,8 +7021,8 @@ window.neCustChoose = (id)=>{
   const set=(eid,val)=>{ const f=document.getElementById(eid); if(f) f.value=val||''; };
   set('ne-custpick', c.name); set('ne-custname', c.name); set('ne-custnum', c.priority_id);
   set('ne-phone', c.phone); set('ne-email', c.email); set('ne-custaddr', c.address);
-  const city=document.getElementById('ne-city'); if(city && !city.value.trim()) city.value=c.city||'';
   const reg=document.getElementById('ne-region'); if(reg && !reg.value.trim() && c.region) reg.value=c.region;
+  neCityReflect();
   const box=document.getElementById('ne-cust-results'); if(box){ box.hidden=true; box.innerHTML=''; }
   neXref();
 };
@@ -7062,6 +7064,10 @@ window.neXrefPick = (on)=>{
   if(pre.includes('הזמנה מקושרת: '+on)) return;
   f.value = (pre? pre+' · ':'') + 'הזמנה מקושרת: '+on;
 };
+const BUILTIN_CITIES = ['תל אביב','תל אביב-יפו','ירושלים','חיפה','ראשון לציון','פתח תקווה','אשדוד','נתניה','באר שבע','בני ברק','חולון','רמת גן','אשקלון','רחובות','בת ים','כפר סבא','הרצליה','חדרה','מודיעין','מודיעין מכבים רעות','נצרת','לוד','רמלה','רעננה','גבעתיים','הוד השרון','קרית אתא','קרית גת','נהריה','קרית מוצקין','קרית ביאליק','קרית ים','אילת','ראש העין','עפולה','אור יהודה','יבנה','נס ציונה','דימונה','טבריה','קרית מלאכי','יהוד','נשר','כרמיאל','מגדל העמק','שדרות','טירת כרמל','אריאל','בית שמש','מודיעין עילית','גבעת שמואל','אור עקיבא','יקנעם','טירה','טייבה','אום אל-פחם','רהט','מעלה אדומים','ביתר עילית'];
+function knownCities(){ const s=new Set(BUILTIN_CITIES); custSrc().forEach(c=>{ if(c&&c.city) s.add(String(c.city).trim()); }); return s; }
+function cityFromAddr(addr){ addr=String(addr||'').trim(); if(!addr) return ''; const ks=knownCities(); const w=addr.split(/\s+/); for(let n=Math.min(3,w.length); n>=1; n--){ const cand=w.slice(w.length-n).join(' '); if(ks.has(cand)) return cand; } if(addr.includes(',')) return addr.split(',').pop().trim(); return ''; }
+window.neCityReflect = ()=>{ const el=document.getElementById('ne-city'); if(!el) return; const addr=((document.getElementById('ne-addr')||{}).value)||''; el.value = addr.trim() ? cityFromAddr(addr) : ((NE_CUST&&NE_CUST.city)||''); };
 const NEW_SCALL_FIELDS = [
   ['ne-opened','opened_date'],['ne-custnum','customer_number'],
   ['ne-custname','customer_name'],['ne-phone','phone'],['ne-email','customer_email'],

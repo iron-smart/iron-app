@@ -663,7 +663,23 @@
   .form-grid .span4{ grid-column:span 4; }
   @media(max-width:760px){ .form-grid{ grid-template-columns:repeat(2,1fr); } .form-grid .span4{ grid-column:span 2; } }
   @media(max-width:430px){ .form-grid{ grid-template-columns:1fr; } .form-grid .span2,.form-grid .span4{ grid-column:span 1; } }
-  .form-grid > div{ display:flex; flex-direction:column; justify-content:flex-end; min-width:0; }
+  .form-grid > div{ display:flex; flex-direction:column; justify-content:flex-start; min-width:0; position:relative; }
+  .form-grid .td-hint{ margin:3px 0 0; font-size:11px; line-height:1.35; }
+  .src-tag{ display:inline-flex !important; width:fit-content; max-width:100%; vertical-align:middle; }
+  .form-sep{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .form-sep.sep-items{ border-bottom:0; padding-bottom:0; margin-bottom:0; }
+  .chk-line.chk-compact{ width:fit-content; max-width:100%; padding:6px 10px; font-size:13px; }
+  .form-grid .is-empty{ border-bottom:2px dashed #94a3b8 !important; }
+  .ob-title{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+  #ordModal .form-grid{ gap:10px; }
+  #ordModal .form-grid label{ font-size:11.5px; margin-bottom:3px; }
+  #ordModal .form-grid input, #ordModal .form-grid select, #ordModal .form-grid textarea{ padding:7px 9px; font-size:13px; }
+  #ordModal .ord-bottom{ gap:14px; }
+  #ordModal .ord-bottom .ob-card{ border:1px solid var(--line); border-radius:10px; background:#fff; padding:12px 14px; }
+  #ordModal .ord-bottom .ob-card h2.sec{ margin:0 0 10px; font-size:14px; }
+  #ordModal .ord-bottom .others-box{ margin-top:0; }
+  #ordModal .modal-actions.ord-actions{ padding-top:10px; margin-top:14px; gap:8px; }
+  #ordModal .modal-actions.ord-actions .btn, #ordModal .modal-actions.ord-actions .ghost{ padding:8px 16px !important; font-size:13.5px; width:auto !important; }
   .form-grid label{ display:flex; align-items:center; flex-wrap:wrap; gap:4px 5px; min-height:19px; font-size:12px; color:#475569; margin-bottom:4px; font-weight:600; line-height:1.45; }
   .form-grid label .ph-btn, .form-grid label .waze-btn, .form-grid label .src-tag{ flex:none; }
   .form-grid input,.form-grid select,.form-grid textarea{ width:100%; padding:9px 10px; border:1px solid var(--line); border-radius:8px; font-size:14px; font-family:inherit; box-sizing:border-box; }
@@ -1184,7 +1200,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.25.0</div>
+      <div class="ver">גרסה 6.25.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1282,7 +1298,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.25.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.25.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3101,6 +3117,16 @@ const crewChip = (ds,team)=>{ const ns=tdNames(ds,team); return ns.length?`<span
 
 /* רמז "מי עובד בנתיב הזה ביום הזה" בתוך כרטיס הזמנה או קריאת שירות.
    נטען אסינכרונית כדי שכרטיס לא יחכה לרשת. */
+window.markEmpty = (rootId)=>{
+  const root=document.getElementById(rootId); if(!root) return;
+  const upd = el=>{ if(el.type==='checkbox'||el.type==='hidden') return;
+    if(el.disabled||el.readOnly||el.classList.contains('ro')){ el.classList.remove('is-empty'); return; }
+    el.classList.toggle('is-empty', !String(el.value||'').trim()); };
+  root.querySelectorAll('.form-grid input,.form-grid select,.form-grid textarea').forEach(upd);
+  if(!root.dataset.emptyBound){ root.dataset.emptyBound='1';
+    ['input','change'].forEach(ev=>root.addEventListener(ev, e=>{ if(e.target&&e.target.matches&&e.target.matches('input,select,textarea')) upd(e.target); }));
+  }
+};
 window.tdHint = (ds, team, id)=>{
   setTimeout(()=>tdFillHint(id, ds, team), 0);
   return `<div class="note td-hint" id="${id}"></div>`;
@@ -5615,14 +5641,14 @@ window.mediaBlock = (kind, parentId)=>{
   if(!window.canView('docs.media')) return '';
   const key = kind==='call' ? 'call_id' : 'order_id';
   const boxId = 'media-box-'+parentId;
-  const rows = list => list.map(f=>`<div class="row"><span class="k">${esc(f.file_name||'קובץ')}</span><span class="v"><a href="#" onclick="event.preventDefault();openMediaFile('${f.id}')">🖼️ פתיחה</a>${f.uploaded_at?' · '+new Date(f.uploaded_at).toLocaleDateString('he-IL'):''}</span></div>`).join('') || '<div class="note">אין עדיין תמונות מהשטח.</div>';
+  const rows = list => list.map(f=>`<div class="row"><span class="k">${esc(f.file_name||'קובץ')}</span><span class="v"><a href="#" onclick="event.preventDefault();openMediaFile('${f.id}')">פתיחה</a>${f.uploaded_at?' · '+new Date(f.uploaded_at).toLocaleDateString('he-IL'):''}</span></div>`).join('') || '<div class="note">אין עדיין תמונות מהשטח.</div>';
   if(DOCFILES===null){
     loadDocFiles().then(()=>{ const el=document.getElementById(boxId); if(el) el.innerHTML = rows((DOCFILES||[]).filter(f=>f[key]===parentId)); });
   }
   const mine = (DOCFILES||[]).filter(f=>f[key]===parentId);
-  return `<h2 class="sec">🖼️ תמונות מהשטח (${DOCFILES===null?'…':mine.length})</h2>
+  return `<section class="ob-card"><h2 class="sec">תמונות מהשטח (${DOCFILES===null?'…':mine.length})</h2>
     <div id="${boxId}">${DOCFILES===null?'<div class="note">טוען…</div>':rows(mine)}</div>`+
-    (window.canEdit('docs.media.upload')?`<button class="ghost" style="margin-top:8px" onclick="uploadMedia('${kind}','${parentId}')">⬆️ העלאת תמונות מהשטח</button>`:'');
+    (window.canEdit('docs.media.upload')?`<button class="ghost" style="margin-top:8px" onclick="uploadMedia('${kind}','${parentId}')">העלאת תמונות מהשטח</button>`:'')+'</section>';
 };
 function mediaCard(f){
   const isPdf = (f.mime_type||'').indexOf('pdf')>-1 || /\.pdf$/i.test(f.storage_path||'');
@@ -7559,7 +7585,7 @@ window.openScall = (id)=>{
       ${editable?`<button class="btn btnw" onclick="saveScall('${s.id}')">💾 שמירה</button>`:'<div class="note">אין לך הרשאת עריכה לקריאות שירות.</div>'}
     </div>
     <div class="err" id="se-err"></div>`;
-  mountCard('ordModal', ()=>openScall(id));
+  mountCard('ordModal', ()=>openScall(id)); window.markEmpty('ordModal');
   if(!editable) document.querySelectorAll('#ordSheet input,#ordSheet select,#ordSheet textarea').forEach(el=>el.disabled=true);
 };
 /* 6.21.0 — מזהה האלמנט בכרטיס קריאת השירות מול העמודה במסד, בדיוק כמו
@@ -7881,13 +7907,13 @@ window.openOrd = (id, ctx)=>{
       <div><label>תאריך מתואם</label><input id="oe-date" type="date" value="${esc(o.scheduled_date||'')}"></div>
       <div><label>מספר ימים</label><input id="oe-days" type="number" min="1" value="${o.days_count||1}"></div>
       <div><label>משבצת זמן</label>${selHtml('oe-slot',TIME_SLOTS,o.time_slot,true)}</div>
-      <div class="span4"><label class="chk-line" style="margin-top:18px"><input type="checkbox" id="oe-friday" ${o.friday_ok?'checked':''}> <b>לאשר עבודה ביום שישי בהזמנה זו</b></label></div>
+      <div class="span2"><label class="chk-line chk-compact" style="margin-top:4px"><input type="checkbox" id="oe-friday" ${o.friday_ok?'checked':''}> <b>לאשר עבודה ביום שישי בהזמנה זו</b></label></div>
       ${showSupply?`<div class="form-sep">אספקה ומחסן</div>`:''}
       ${showSupply?`<div><label>זמן אספקה (ימים)</label><input id="oe-supdays" type="number" value="${o.supply_days??''}"></div>`:''}
       ${showSupply?`<div><label>תאריך סיום אספקה</label><input id="oe-supend" type="date" value="${esc(o.supply_end_date||'')}"></div>`:''}
       ${showSupply?`<div class="span2"><label>הערות למחסן</label><textarea id="oe-wnotes" rows="2">${esc(o.warehouse_notes||'')}</textarea></div>`:''}
       <div class="span4"><label>דו שיח פנימי${SRC_TAG}</label><div class="dialog-box">${o.internal_dialog?esc(o.internal_dialog).replace(/\n/g,'<br>'):'<span class="dialog-empty">אין דו שיח פנימי בהזמנה זו</span>'}</div></div>
-      <div class="form-sep">פירוט ההזמנה${SRC_TAG}</div>
+      <div class="form-sep sep-items">פירוט ההזמנה${SRC_TAG}</div>
       <div class="span4" id="orderItemsBox"><div class="items-loading">טוען פירוט הזמנה מפריוריטי…</div></div>
     </div>
     <div class="ord-bottom">
@@ -7895,15 +7921,15 @@ window.openOrd = (id, ctx)=>{
       if(!others.length) return '';
       return `<div class="others-box"><div class="ob-title">ללקוח יש עוד ${others.length===1?'הזמנה פתוחה':others.length+' הזמנות פתוחות'}:${hasSame?' <span class="same-tag">יש הזמנות לאותה כתובת משלוח — כדאי לשלב יחד!</span>':''}</div>
       ${others.map(x=>{
-        const same=myAddr && norm(x.address)===myAddr;
+        const same=myAddr && norm(shipAddrOnly(x))===myAddr;
         return `<div class="other-row ${same?'same-addr':''}" onclick="goCard(()=>openOrd('${x.id}'${ctx?(",'"+ctx+"'"):''}))"><b>${esc(x.order_number)}</b><span>${fmtD(x.order_date)||'—'}</span><span>${x.items_count??'?'} פריטים</span>${x.address?`<span class="ob-note" title="כתובת משלוח: ${esc(x.address)}">${esc(String(x.address).slice(0,30))}</span>`:''}${same?'<span class="same-tag">אותה כתובת משלוח!</span>':''}</div>`;
       }).join('')}</div>`;
     })()}
     ${(showSales && window.canView('crm.orders.docs'))?(()=>{ /* 6.22.0 — הבלוק הזה הוא משטח חמישי למסמכים, ולכן הוא מצטלב: גם המפתח
          crm.orders.docs וגם מפתח הקטגוריה docs.<category> חייבים לאשר. */
-      const ps=PROTS.filter(p=>p.order_id===o.id && window.canView('docs.'+(p.category||'protocols'))); return `<h2 class="sec">מסמכים וחתימות (${ps.length})</h2>`+
+      const ps=PROTS.filter(p=>p.order_id===o.id && window.canView('docs.'+(p.category||'protocols'))); return `<section class="ob-card"><h2 class="sec">מסמכים וחתימות (${ps.length})</h2>`+
       (ps.map(p=>`<div class="row"><span class="k">${esc(p.doc_type)}${p.sent_at?' · '+new Date(p.sent_at).toLocaleDateString('he-IL'):''}</span><span class="v">${p.status==='נחתם'?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','open')">צפייה</a>`:(window.canEdit('docs.'+(p.category||'protocols'))?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','copy')">קישור</a>`:'<span style="color:#94a3b8">אין הרשאה לקישור</span>')} <span class="pill ${p.status==='נחתם'?'st-rel':'st-def'}">${esc(p.status)}</span></span></div>`).join(''))+
-      ((window.canEdit('crm.orders.docs')&&window.canEdit('docs.protocols'))?`<button class="ghost" style="margin-top:8px" onclick="createProtocol('${o.id}')">יצירת פרוטוקול הכנה לחתימה</button>`:''); })():''}
+      ((window.canEdit('crm.orders.docs')&&window.canEdit('docs.protocols'))?`<button class="ghost" style="margin-top:8px" onclick="createProtocol('${o.id}')">יצירת פרוטוקול הכנה לחתימה</button>`:'')+'</section>'; })():''}
     ${window.mediaBlock('order', o.id)}
     </div>
     <div class="modal-actions ord-actions">
@@ -7925,6 +7951,7 @@ window.openOrd = (id, ctx)=>{
   if(bNo)   bNo.classList.toggle('hidden', anyEditable);
   mountCard('ordModal', ()=>openOrd(id, ctx));
   loadOrderItems(o.order_number);
+  window.markEmpty('ordModal');
 };
 /* פירוט הפריטים האמיתי מפריוריטי — ord.order_items (הערה 20) */
 async function loadOrderItems(orderNumber){

@@ -1124,7 +1124,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.24.14</div>
+      <div class="ver">גרסה 6.24.15</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1222,7 +1222,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.14</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.15</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -6976,7 +6976,8 @@ window.openNewScall = ()=>{
       <div><label>שם לקוח</label><input id="ne-custname" class="ro" readonly></div>
       <div><label>טלפון</label><input id="ne-phone" class="ro" readonly dir="ltr"></div>
       <div><label>אימייל לקוח</label><input id="ne-email" class="ro" readonly dir="ltr"></div>
-      <div class="span4"><label>🏠 כתובת לקוח</label><input id="ne-custaddr" class="ro" readonly></div>
+      <div class="span3"><label>🏠 כתובת לקוח</label><input id="ne-custaddr" class="ro" readonly></div>
+      <div><label>עיר <span class="note" style="font-weight:400">(משוקפת)</span></label><input id="ne-city" class="ro" readonly title="נמשכת מכתובת הלקוח (פריוריטי), או מכתובת ההגעה לקריאה כשהיא ממולאת (היא גוברת)"></div>
       <div class="span2 ac-wrap"><label>מק״ט / שם מוצר</label><input id="ne-prodpick" autocomplete="off" placeholder="חיפוש מכרטיסי הפריט או הקלדה חופשית…" oninput="neProdSearch(this.value)" onfocus="neProdSearch(this.value)" onblur="setTimeout(()=>{const b=document.getElementById('ne-prod-results'); if(b) b.hidden=true;},150)"><div id="ne-prod-results" class="ac-menu" hidden></div></div>
       <div><label>מהות הקריאה</label>${selHtml('ne-type',CALL_TYPES,'',true)}</div>
       <div><label>באחריות?</label>${selHtml('ne-warranty',YESNO,'',true)}</div>
@@ -6989,7 +6990,6 @@ window.openNewScall = ()=>{
       <div><label>תאריך מתואם</label><input id="ne-date" type="date"></div>
       <div><label>משבצת זמן</label>${selHtml('ne-slot',TIME_SLOTS,'',true)}</div>
       <div><label>דדליין טיפול</label><input id="ne-deadline" type="date"></div>
-      <div><label>עיר <span class="note" style="font-weight:400">(משוקפת)</span></label><input id="ne-city" class="ro" readonly title="העיר משוקפת מכתובת הלקוח, או מכתובת ההגעה לקריאה כשהיא ממולאת (היא גוברת)"></div>
       <div><label>אזור גיאוגרפי</label>${selHtml('ne-region',REGIONS,'',true)}</div>
     </div>
     <div class="modal-actions">
@@ -7032,7 +7032,7 @@ window.neProdSearch = (q)=>{
   q=(q||'').trim();
   if(!q){ box.hidden=true; box.innerHTML=''; return; }
   const ql=q.toLowerCase();
-  const res = prodSrc().filter(s=> String(s.partdes||'').toLowerCase().includes(ql) || String(s.partname||'').toLowerCase().includes(ql)).slice(0,30);
+  const res = prodSrc().filter(s=> String(s.erp_status||'')!=='לא פעיל' && (String(s.partdes||'').toLowerCase().includes(ql) || String(s.partname||'').toLowerCase().includes(ql))).slice(0,30);
   box.innerHTML = res.length
     ? res.map(s=>`<button type="button" class="ac-item" onmousedown="event.preventDefault()" onclick="neProdChoose('${esc(String(s.partname))}')"><b>${esc(s.partdes||s.partname)}</b><span dir="ltr">${esc(s.partname||'')}</span></button>`).join('')
     : '<div class="ac-empty">לא נמצאו פריטים — ניתן להקליד חופשי</div>';

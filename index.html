@@ -1168,7 +1168,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.24.19</div>
+      <div class="ver">גרסה 6.24.20</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1266,7 +1266,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.19</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.20</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3174,7 +3174,7 @@ function tdRender(){
   sh.innerHTML = `
     <h3>👷 שיבוץ יומי — ${esc(dayNameHe(TD_DATE))}, ${esc(fmtD(TD_DATE))}</h3>
     ${tdSegHtml()}
-    <div class="note" style="margin:4px 0 12px">מי מאנשי הצוות עבד בכל נתיב ביום הזה. הנתיבים עצמם (משאית, סקודו, קבלן) מוגדרים בהגדרות הצוותים.</div>
+    <div class="note" style="margin:4px 0 12px">מי מאנשי הצוות עבד בכל נתיב ביום הזה. הנתיבים עצמם (משאית, סקודו, קבלן) מוגדרים בהגדרות הצוותים. לשיבוץ מוצעים טכנאים ומנהלי לוגיסטיקה בלבד.</div>
     <div class="td-bar">
       <button class="nav-b" onclick="tdGo(-1)" title="יום קודם">▸</button>
       <input type="date" id="tdDate" value="${esc(TD_DATE)}" onchange="openTeamDay(this.value)">
@@ -3199,7 +3199,7 @@ function tdRender(){
           ? `<div class="note">העבודה בנתיב הזה מבוצעת על ידי קבלן משנה — אין רישום של אנשי החברה.</div>`
           : (staff.length
               ? `<div class="td-people">${staff.map(p=>`<label class="td-chk ${sel.indexOf(p.profile_id)>=0?'on':''}"><input type="checkbox" ${ed?'':'disabled'} ${sel.indexOf(p.profile_id)>=0?'checked':''} onchange="tdToggle('${l.team_id}','${p.profile_id}',this.checked,this)">${esc(p.full_name)}${p.job_title?`<span class="td-jt">${esc(p.job_title)}</span>`:''}</label>`).join('')}</div>`
-              : `<div class="note">אין משתמשים פעילים לשיבוץ. פתחו משתמשים במסך המשתמשים.</div>`)}
+              : `<div class="note">בשיבוץ היומי משתתפים טכנאים ומנהלי לוגיסטיקה בלבד, ואין כרגע משתמש פעיל המשויך לאחת מהקבוצות האלה. שייכו משתמש לקבוצת הרשאות מתאימה במסך המשתמשים.</div>`)}
       </div>`;
     }).join('')}
     ${lanes.length?'':'<div class="empty">לא הוגדרו נתיבי עבודה. הוסיפו צוותים בהגדרות.</div>'}
@@ -3495,7 +3495,9 @@ window.tdSave = async ()=>{
   }
   if(failed){
     console.error('שמירת השיבוץ נכשלה', failed);
-    const msg = (failed.message && /הרשאה/.test(failed.message))
+    /* 6.24.20 — הודעות השרת על שיבוץ (חוסר הרשאה או קבוצה שאינה בת-שיבוץ)
+       מוצגות כלשונן, כדי שהמשתמש יראה בשם את מי לא ניתן לשבץ ומדוע. */
+    const msg = (failed.message && /(הרשאה|לא ניתן לשבץ)/.test(failed.message))
       ? failed.message
       : (changed ? 'חלק מהשיבוץ נשמר והשאר נכשל — המסך נטען מחדש. בדקו ונסו שוב.' : 'שמירת השיבוץ נכשלה. נסו שוב.');
     tdInvalidate(ds);
@@ -3529,7 +3531,14 @@ window.tdCopyFrom = async ()=>{
   try{ renderCal(); }catch(e){}
   await tdLoadBoard();
   const e2 = document.getElementById('td-err');
-  if(e2){ e2.style.color='#166534'; e2.textContent = 'הועתקו ' + ((r.data&&r.data.copied)||0) + ' רישומים מ-' + src + '.'; try{ e2.scrollIntoView({block:'nearest'}); }catch(e){} }
+  /* 6.24.20 — team_day_copy מדלגת על מי שאינו בר-שיבוץ ומחזירה skipped. שקיפות: מדווחים. */
+  const sk = (r.data && r.data.skipped) || 0;
+  if(e2){
+    e2.style.color = sk ? '#92400e' : '#166534';
+    e2.textContent = 'הועתקו ' + ((r.data&&r.data.copied)||0) + ' רישומים מ-' + src +
+      (sk ? '. ' + sk + ' רישומים לא הועתקו — הם שייכים למשתמשים שאינם ברי-שיבוץ.' : '.');
+    try{ e2.scrollIntoView({block:'nearest'}); }catch(e){}
+  }
 };
 
 window.calGoDay = ds=>{ CAL_D=new Date(ds+'T12:00:00'); CAL_VIEW='day'; renderCal(); };

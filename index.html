@@ -2685,14 +2685,14 @@ function logiInit(){ if(LOGI_INIT) return; LOGI_INIT=true; const d=logiDefLoad()
 const LOGI_SEL=new Set();
 let LOGI_SHOWN=[];
 const needsSched = o => o.needs_scheduling !== false;
-const scopeOk = o => LOGI_SCOPE==='all' ? true : (LOGI_SCOPE==='ship' ? !needsSched(o) : needsSched(o));
+const scopeOk = o => (LOGI_SCOPE==='all'||LOGI_SCOPE==='every') ? true : (LOGI_SCOPE==='ship' ? !needsSched(o) : needsSched(o));
 window.logiScope = v => { LOGI_SCOPE=v; LOGI_SEL.clear(); renderLogi(); };
 window.logiSelClear = () => { LOGI_SEL.clear(); renderLogi(); };
 function renderLogiScope(){
   const box=$('#logi-scope'); if(!box) return;
   const base = ORDS.filter(o=>!['הושלם','בוטל'].includes(o.order_status));
-  const n = { sched: base.filter(needsSched).length, ship: base.filter(o=>!needsSched(o)).length, all: base.length, done: ORDS.filter(o=>o.order_status==='הושלם').length };
-  box.innerHTML = [['sched','לתיאום'],['ship','משלוחים'],['all','הכל'],['done','הושלמו']]
+  const n = { sched: base.filter(needsSched).length, ship: base.filter(o=>!needsSched(o)).length, all: base.length, done: ORDS.filter(o=>o.order_status==='הושלם').length, every: ORDS.length };
+  box.innerHTML = [['sched','לתיאום'],['ship','משלוחים'],['all','לטיפול'],['done','הושלמו'],['every','הכל']]
     .map(([k,l])=>`<button type="button" class="chip ${LOGI_SCOPE===k?'active':''}" onclick="logiScope('${k}')">${l} <b>${n[k]}</b></button>`).join('');
 }
 /* 6.24.6 — סינון בתצוגה הטבלאית: רב-בחירת סטטוסים, סינון קריאות שירות, ושמירת ברירת מחדל */
@@ -2840,7 +2840,9 @@ function logiRenderTable(){
     const q=($('#logiSearchOrders').value||'').trim();
     const stF = LOGI_F.status||[];
     const doneScope = LOGI_SCOPE==='done';
+    const everyScope = LOGI_SCOPE==='every';
     let list = ORDS.filter(o=>{
+      if(everyScope) return true;
       if(o.order_status==='הושלם') return doneScope || stF.includes('הושלם');
       if(o.order_status==='בוטל')  return stF.includes('בוטל');
       return !doneScope;

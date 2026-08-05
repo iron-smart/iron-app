@@ -9029,7 +9029,7 @@ boot();
           function(){ b.textContent = 'הועתק ✓'; setTimeout(function(){ b.textContent='העתקה'; }, 1800); },
           function(){ window.prompt('מספר המשלוח:', u); });
       });
-      d.querySelector('#yh-label').addEventListener('click', function(){ printLabel(o); });
+      d.querySelector('#yh-label').addEventListener('click', async function(){ try{ var _lg = await sb.schema('ord').from('yahav_log').select('request').eq('order_id', o.id).eq('action','send').order('created_at',{ascending:false}).limit(1); if(_lg && _lg.data && _lg.data[0] && _lg.data[0].request){ o._remarks = _lg.data[0].request.shippingRemarks || ''; } }catch(e){} printLabel(o); });
       d.querySelector('#yh-cancel').addEventListener('click', function(){ cancelYahav(o, this); });
     }
   }
@@ -9083,11 +9083,11 @@ boot();
       '.lbl h2{margin:0 0 6px;font-size:17px}.lbl .row{font-size:14px;margin:3px 0}.lbl svg{width:100%;height:70px;margin-top:8px}' +
       '@media print{body{padding:0}}</style></head><body>' +
       '<div class="lbl">' +
-        '<h2>איירון פיטנס ← יהב לוגיסטיקה</h2>' +
+        '<h2>איירון פיטנס ← יהב לוגיסטיקה</h2>' + '<div class="row" style="color:#333">מוצא: ' + yesc(YORIGIN) + '</div>' +
         '<div class="row"><b>' + yesc(o.customer_name || '') + '</b></div>' +
         '<div class="row">' + yesc((o.address || '') + (o.city ? ', ' + o.city : '')) + '</div>' +
         (o.contact_name || o.phone ? '<div class="row">' + yesc((o.contact_name||'') + ' ' + (o.phone||'')) + '</div>' : '') +
-        '<div class="row">הזמנה: ' + yesc(o.order_number) + ' · קרטונים: ' + yesc(o.yahav_packages || 1) + '</div>' +
+        '<div class="row">הזמנה: ' + yesc(o.order_number) + ' · קרטונים: ' + yesc(o.yahav_packages || 1) + '</div>' + '<div class="row">תאריך הוצאה: ' + yfdt(o.yahav_sent_at) + '</div>' + (o._remarks ? '<div class="row">הערות: ' + yesc(o._remarks) + '</div>' : '') +
         '<svg id="bc"></svg>' +
         '<div class="row" style="text-align:center;font-weight:bold">' + yesc(o.yahav_shipment_no) + '</div>' +
       '</div>' +

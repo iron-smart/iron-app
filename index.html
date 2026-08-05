@@ -1124,7 +1124,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.24.16</div>
+      <div class="ver">גרסה 6.24.17</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1222,7 +1222,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.16</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.17</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2592,10 +2592,18 @@ window.gotoDocs = f=>{ DOC_FILTER=f||'sent'; gotoTab('docs'); renderDocs(); navM
 window.gotoSet  = v=>{ const cats=settingsCats(); if(!cats.length){ try{ toast('אין לך הרשאה למסך זה'); }catch(_e){} return; } v = v||'general'; if(!cats.some(c=>c[0]===v)) v = cats[0][0]; SET_VIEW=v; gotoTab('set'); };
 window.gotoSkuView = id=>{ gotoTab('skus'); if(id) applySkuView(id); else clearSkuView(); };
 /* ===== דשבורד אחד, מותאם לתפקיד — נטיבי לגמרי ===== */
+/* 6.24.17 — ברירת המחדל אינה עוד 'sales'. מיפוי role→dashboard הישן הסתיר את
+   דשבורד הלוגיסטיקה מכל משתמש שלא הוגדר לו dashboard במפורש — כולל מנהלת
+   הלוגיסטיקה עצמה, שראתה דשבורד מכירות. מעתה ברירת המחדל היא 'combined',
+   וכל בלוק נחשף רק אם למשתמש יש הרשאת צפייה למודול שלו: סינון לפי הרשאה
+   ולא לפי role. ההרשאות כבר נטענו בשלב זה (טעינה כושלת עוצרת קודם לכן). */
 function applyDashboard(){
-  const d = ME.dashboard || ({rep:'sales', manager:'sales', viewer:'sales'}[ME.role] || 'combined');
-  $('#dash-board-wrap').classList.toggle('hidden', !(d==='logistics'||d==='combined'));
-  $('#dash-sales').classList.toggle('hidden', d==='logistics');
+  const d = ME.dashboard || 'combined';
+  const ops = $('#dash-board-wrap'), sal = $('#dash-sales');
+  const showOps   = (d==='logistics' || d==='combined') && canView('logi');
+  const showSales = (d==='sales'     || d==='combined') && canView('crm');
+  if(ops) ops.classList.toggle('hidden', !showOps);
+  if(sal) sal.classList.toggle('hidden', !showSales);
 }
 function renderOps(){
   const el=$('#dash-board-wrap'); if(!el) return;

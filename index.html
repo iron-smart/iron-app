@@ -1124,7 +1124,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.24.15</div>
+      <div class="ver">גרסה 6.24.16</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1222,7 +1222,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.15</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.16</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -6946,10 +6946,11 @@ window.saveScall = async (id)=>{
 /* 6.24.6 — פתיחת קריאת שירות חדשה מהמערכת. קריאות שירות אינן מגיעות מפריוריטי,
    ולכן כאן כל השדות פתוחים לעריכה. השמירה עוברת ב-ord.service_call_create
    (SECURITY DEFINER, שער core.can_edit('logi.calls')). */
-let NE_CUST=null, NE_SKU=null, CUST_LOOKUP=null, SKU_LOOKUP=null, _lkLoading=false;
+let NE_CUST=null, NE_SKU=null, CUST_LOOKUP=null, SKU_LOOKUP=null, _lkLoading=false, CITY_REGION={}, _crLoaded=false;
 function custSrc(){ return (typeof CUSTS!=='undefined' && CUSTS && CUSTS.length)?CUSTS:(CUST_LOOKUP||[]); }
 function prodSrc(){ return (typeof SKUS!=='undefined' && SKUS && SKUS.length)?SKUS:(SKU_LOOKUP||[]); }
 async function neEnsureLookups(){
+  if(!_crLoaded){ try{ const cr=await sb.schema('ord').rpc('lookup_city_regions'); (cr.data||[]).forEach(r=>{ if(r&&r.city) CITY_REGION[String(r.city).trim()]=r.region; }); _crLoaded=true; }catch(_e){} }
   if(_lkLoading) return;
   const needC=!(CUSTS&&CUSTS.length)&&!CUST_LOOKUP, needS=!(SKUS&&SKUS.length)&&!SKU_LOOKUP;
   if(!needC && !needS) return;
@@ -6972,12 +6973,12 @@ window.openNewScall = ()=>{
       <div><label>מס' קריאה</label><input value="יוקצה אוטומטית — המספר הבא ברצף" readonly class="ro" title="מספר הקריאה מוקצה אוטומטית ברצף רץ (SC…) ואינו ניתן לעריכה"></div>
       <div class="span2 ac-wrap"><label>בחירת לקוח מהמאגר</label><input id="ne-custpick" autocomplete="off" placeholder="הקלד שם / טלפון / מספר לקוח…" oninput="neCustSearch(this.value)" onfocus="neCustSearch(this.value)" onblur="setTimeout(()=>{const b=document.getElementById('ne-cust-results'); if(b) b.hidden=true;},150)"><div id="ne-cust-results" class="ac-menu" hidden></div></div>
       <div><label>תאריך פתיחה</label><input id="ne-opened" type="date" value="${esc(today)}"></div>
-      <div><label>מס' לקוח</label><input id="ne-custnum" class="ro" readonly dir="ltr"></div>
-      <div><label>שם לקוח</label><input id="ne-custname" class="ro" readonly></div>
-      <div><label>טלפון</label><input id="ne-phone" class="ro" readonly dir="ltr"></div>
-      <div><label>אימייל לקוח</label><input id="ne-email" class="ro" readonly dir="ltr"></div>
-      <div class="span3"><label>🏠 כתובת לקוח</label><input id="ne-custaddr" class="ro" readonly></div>
-      <div><label>עיר <span class="note" style="font-weight:400">(משוקפת)</span></label><input id="ne-city" class="ro" readonly title="נמשכת מכתובת הלקוח (פריוריטי), או מכתובת ההגעה לקריאה כשהיא ממולאת (היא גוברת)"></div>
+      <div><label>מס' לקוח ${SRC_TAG}</label><input id="ne-custnum" class="ro" readonly dir="ltr"></div>
+      <div><label>שם לקוח ${SRC_TAG}</label><input id="ne-custname" class="ro" readonly></div>
+      <div><label>טלפון ${SRC_TAG}</label><input id="ne-phone" class="ro" readonly dir="ltr"></div>
+      <div><label>אימייל לקוח ${SRC_TAG}</label><input id="ne-email" class="ro" readonly dir="ltr"></div>
+      <div class="span3"><label>🏠 כתובת לקוח ${SRC_TAG}</label><input id="ne-custaddr" class="ro" readonly></div>
+      <div><label>עיר ${SRC_TAG}</label><input id="ne-custcity" class="ro" readonly title="עיר הלקוח מפריוריטי. אם היא ריקה — מלאו כתובת הגעה לקריאה למטה"></div>
       <div class="span2 ac-wrap"><label>מק״ט / שם מוצר</label><input id="ne-prodpick" autocomplete="off" placeholder="חיפוש מכרטיסי הפריט או הקלדה חופשית…" oninput="neProdSearch(this.value)" onfocus="neProdSearch(this.value)" onblur="setTimeout(()=>{const b=document.getElementById('ne-prod-results'); if(b) b.hidden=true;},150)"><div id="ne-prod-results" class="ac-menu" hidden></div></div>
       <div><label>מהות הקריאה</label>${selHtml('ne-type',CALL_TYPES,'',true)}</div>
       <div><label>באחריות?</label>${selHtml('ne-warranty',YESNO,'',true)}</div>
@@ -6990,7 +6991,8 @@ window.openNewScall = ()=>{
       <div><label>תאריך מתואם</label><input id="ne-date" type="date"></div>
       <div><label>משבצת זמן</label>${selHtml('ne-slot',TIME_SLOTS,'',true)}</div>
       <div><label>דדליין טיפול</label><input id="ne-deadline" type="date"></div>
-      <div><label>אזור גיאוגרפי</label>${selHtml('ne-region',REGIONS,'',true)}</div>
+      <div><label>עיר <span class="note" style="font-weight:400">(לגזירת אזור)</span></label><input id="ne-city" class="ro" readonly title="העיר לגזירת האזור הגיאוגרפי — מעיר הלקוח, או מכתובת ההגעה כשהיא ממולאת (גוברת)"></div>
+      <div><label>אזור גיאוגרפי <span class="note" style="font-weight:400">(נגזר מהעיר)</span></label>${selHtml('ne-region',REGIONS,'',true)}</div>
     </div>
     <div class="modal-actions">
       <button class="btn btnw" onclick="saveNewScall()">💾 פתיחת קריאה</button>
@@ -7021,7 +7023,6 @@ window.neCustChoose = (id)=>{
   const set=(eid,val)=>{ const f=document.getElementById(eid); if(f) f.value=val||''; };
   set('ne-custpick', c.name); set('ne-custname', c.name); set('ne-custnum', c.priority_id);
   set('ne-phone', c.phone); set('ne-email', c.email); set('ne-custaddr', c.address);
-  const reg=document.getElementById('ne-region'); if(reg && !reg.value.trim() && c.region) reg.value=c.region;
   neCityReflect();
   const box=document.getElementById('ne-cust-results'); if(box){ box.hidden=true; box.innerHTML=''; }
   neXref();
@@ -7067,7 +7068,15 @@ window.neXrefPick = (on)=>{
 const BUILTIN_CITIES = ['תל אביב','תל אביב-יפו','ירושלים','חיפה','ראשון לציון','פתח תקווה','אשדוד','נתניה','באר שבע','בני ברק','חולון','רמת גן','אשקלון','רחובות','בת ים','כפר סבא','הרצליה','חדרה','מודיעין','מודיעין מכבים רעות','נצרת','לוד','רמלה','רעננה','גבעתיים','הוד השרון','קרית אתא','קרית גת','נהריה','קרית מוצקין','קרית ביאליק','קרית ים','אילת','ראש העין','עפולה','אור יהודה','יבנה','נס ציונה','דימונה','טבריה','קרית מלאכי','יהוד','נשר','כרמיאל','מגדל העמק','שדרות','טירת כרמל','אריאל','בית שמש','מודיעין עילית','גבעת שמואל','אור עקיבא','יקנעם','טירה','טייבה','אום אל-פחם','רהט','מעלה אדומים','ביתר עילית'];
 function knownCities(){ const s=new Set(BUILTIN_CITIES); custSrc().forEach(c=>{ if(c&&c.city) s.add(String(c.city).trim()); }); return s; }
 function cityFromAddr(addr){ addr=String(addr||'').trim(); if(!addr) return ''; const ks=knownCities(); const w=addr.split(/\s+/); for(let n=Math.min(3,w.length); n>=1; n--){ const cand=w.slice(w.length-n).join(' '); if(ks.has(cand)) return cand; } if(addr.includes(',')) return addr.split(',').pop().trim(); return ''; }
-window.neCityReflect = ()=>{ const el=document.getElementById('ne-city'); if(!el) return; const addr=((document.getElementById('ne-addr')||{}).value)||''; el.value = addr.trim() ? cityFromAddr(addr) : ((NE_CUST&&NE_CUST.city)||''); };
+window.neCityReflect = ()=>{
+  const priCity = (NE_CUST && NE_CUST.city) ? String(NE_CUST.city).trim() : '';
+  const top=document.getElementById('ne-custcity'); if(top) top.value = priCity;
+  const addr=((document.getElementById('ne-addr')||{}).value)||'';
+  const eff = addr.trim() ? cityFromAddr(addr) : priCity;
+  const bot=document.getElementById('ne-city'); if(bot) bot.value = eff;
+  const regEl=document.getElementById('ne-region');
+  if(regEl){ let r = CITY_REGION[eff] || ''; if(!r && !addr.trim() && NE_CUST && NE_CUST.region) r = String(NE_CUST.region).trim(); if(r) regEl.value = r; }
+};
 const NEW_SCALL_FIELDS = [
   ['ne-opened','opened_date'],['ne-custnum','customer_number'],
   ['ne-custname','customer_name'],['ne-phone','phone'],['ne-email','customer_email'],

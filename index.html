@@ -262,6 +262,10 @@
   #sideBackdrop{ display:none; position:fixed; inset:52px 0 0 0; background:rgba(6,24,39,.45); z-index:28; }
   @media(min-width:801px){ #sideBackdrop{ display:none !important; } }
   .tbl tbody tr{ cursor:pointer; background:#fff; }
+  /* 6.26.0 — סימון רשומה שנכנסה ב-24 השעות האחרונות (תצוגה טבלאית בלבד) */
+  .tbl tbody tr.row-new, .tbl tbody tr.row-new:nth-child(even){ background:#fff7e6 !important; box-shadow:inset -4px 0 0 #f0b45f; }
+  .tbl tbody tr.row-new:hover{ background:#fdf0d6 !important; }
+  .new-chip{ display:inline-block; margin-inline-start:6px; background:#f0b45f; color:#3d2a00; border-radius:99px; padding:1px 8px; font-size:10.5px; font-weight:800; white-space:nowrap; vertical-align:middle; }
   .tbl tbody tr:nth-child(even){ background:#f7f9fb; }
   .tbl tbody tr:hover{ background:#eaf1f6; }
   .tbl tbody tr:last-child td{ border-bottom:none; }
@@ -1201,7 +1205,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.25.2</div>
+      <div class="ver">גרסה 6.26.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1299,7 +1303,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.25.2</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.26.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3118,6 +3122,18 @@ const crewChip = (ds,team)=>{ const ns=tdNames(ds,team); return ns.length?`<span
 
 /* רמז "מי עובד בנתיב הזה ביום הזה" בתוך כרטיס הזמנה או קריאת שירות.
    נטען אסינכרונית כדי שכרטיס לא יחכה לרשת. */
+/* 6.26.0 — הזמנה או קריאת שירות שנכנסה למערכת ב-NEW_MARK_HOURS השעות האחרונות
+   מסומנת בטבלה ברקע כתום דהוי + צ'יפ טקסטואלי. הסימון כבה מעצמו כשהחלון עובר.
+   מקור הזמן: created_at בפלטפורמה (ולא תאריך הפתיחה בפריוריטי), כדי שרשומות
+   שנקלטו בייבוא היסטורי לא ייצבעו. הסף יעבור להגדרות עם תת-הקטגוריה "שירות ותיאומים". */
+window.NEW_MARK_HOURS = 24;
+window.isNewRec = (r)=>{
+  const t = (r && r.created_at) ? Date.parse(r.created_at) : 0;
+  if(!t) return false;
+  const d = Date.now() - t;
+  return d >= -3600000 && d < window.NEW_MARK_HOURS*3600000;
+};
+window.newChip = (r)=> window.isNewRec(r) ? '<span class="new-chip">חדש · נכנס היום</span>' : '';
 window.markEmpty = (rootId)=>{
   const root=document.getElementById(rootId); if(!root) return;
   const upd = el=>{ if(el.type==='checkbox'||el.type==='hidden') return;
@@ -7486,10 +7502,10 @@ function scTable(list){
   if(!list.length) return '<div class="empty">אין קריאות שירות בסינון הזה</div>';
   const rows = list.slice(0,pgLim('calls')).map((s,i)=>{
     const wa=s.phone?waLink(s.phone, s.scheduled_date?waServiceMsg(s):('שלום '+(s.customer_name||'')+', בנוגע לקריאת השירות')):'';
-    return `<tr onclick="openScall('${s.id}')">
+    return `<tr class="${window.isNewRec(s)?'row-new':''}" onclick="openScall('${s.id}')">
       <td class="selcol" onclick="event.stopPropagation()">${window.canEdit('logi.calls')?`<button type="button" class="qdone" title="סימון כהושלם" onclick="scQuickDone('${s.id}')">✓</button>`:''}</td>
       <td class="rownum">${i+1}</td>
-      <td dir="ltr"><b>${esc(s.call_number||'')}</b></td>
+      <td dir="ltr"><b>${esc(s.call_number||'')}</b>${window.newChip(s)}</td>
       <td><b>${esc(s.customer_name||'')}</b></td>
       <td dir="ltr">${esc(s.phone||'')}</td>
       <td title="${esc(s.product||'')}">${esc(String(s.product||'').slice(0,30))}</td>
@@ -7833,11 +7849,11 @@ function ordTable(list,opts){
   if(!list.length) return '<div class="empty">לא נמצאו הזמנות מתאימות</div>';
   const rows = list.slice(0,pgLim('orders')).map((o,i)=>{
     const wa = o.phone && o.scheduled_date ? waLink(o.phone, waCoordMsg(o)) : '';
-    return `<tr onclick="openOrd('${o.id}'${CTX?(",'"+CTX+"'"):''})">
+    return `<tr class="${window.isNewRec(o)?'row-new':''}" onclick="openOrd('${o.id}'${CTX?(",'"+CTX+"'"):''})">
       ${SEL?`<td class="selcol" onclick="event.stopPropagation()">${window.canEdit('logi.orders.bulk')?`<input type="checkbox" class="ordsel" data-oid="${o.id}">`:''}${window.canEdit('logi.orders')?`<button type="button" class="qdone" title="סימון כהושלם" onclick="ordQuickDone('${o.id}')">✓</button>`:''}</td>`:''}
       <td class="rownum">${i+1}</td>
       <td class="odate">${fmtD(o.order_date)||'—'}</td>
-      <td><b>${esc(o.order_number)}</b>${o.order_notes?`<div class="note-preview" title="${esc(o.order_notes)}">📝 ${esc(String(o.order_notes).slice(0,28))}${String(o.order_notes).length>28?'…':''}</div>`:''}</td>
+      <td><b>${esc(o.order_number)}</b>${window.newChip(o)}${o.order_notes?`<div class="note-preview" title="${esc(o.order_notes)}">📝 ${esc(String(o.order_notes).slice(0,28))}${String(o.order_notes).length>28?'…':''}</div>`:''}</td>
       <td title="${esc(o.customer_name||'')}">${esc(o.customer_name||'')}</td>
       <td dir="ltr">${esc(o.phone||'')}</td>
       <td>${ordCityCell(o)}</td>

@@ -643,6 +643,22 @@
   /* ===== כרטיסי הזמנה/קריאה מלאים — עיצוב הלוח הישן (הערות 20–22) ===== */
   .modal .sheet.wide{ max-width:960px; }
   .form-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+  /* 6.25.0 — שורת הכתובות: חמישה שדות באותה שורה, מצטמצמת לפי רוחב המסך */
+  .form-grid .addr-row{ grid-column:span 4; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; }
+  .form-grid .addr-row > div{ display:flex; flex-direction:column; justify-content:flex-end; min-width:0; }
+  .form-grid .addr-row label{ font-size:11.5px; gap:3px 4px; }
+  .form-grid .addr-row input{ padding:8px 8px; font-size:13px; }
+  @media(max-width:1180px){ .form-grid .addr-row{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
+  @media(max-width:760px){ .form-grid .addr-row{ grid-column:span 2; grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  @media(max-width:430px){ .form-grid .addr-row{ grid-column:span 1; grid-template-columns:1fr; } }
+  /* 6.25.0 — חיוג + וואטסאפ תמיד באותה שורה */
+  .ph-group{ display:inline-flex; align-items:center; gap:5px; flex-wrap:nowrap; flex:none; }
+  /* 6.25.0 — סידור החלק התחתון של כרטיס ההזמנה */
+  .ord-bottom{ display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:16px; align-items:start; margin-top:16px; }
+  .ord-bottom > *{ min-width:0; }
+  .ord-bottom .others-box,.ord-bottom h2.sec{ margin-top:0; }
+  .modal-actions.ord-actions{ border-top:1px solid var(--line); padding-top:14px; margin-top:18px; }
+  @media(max-width:640px){ .ord-bottom{ grid-template-columns:1fr; } .modal-actions.ord-actions{ flex-direction:column; align-items:stretch; } .modal-actions.ord-actions > *{ width:100%; } }
   .form-grid .span2{ grid-column:span 2; }
   .form-grid .span4{ grid-column:span 4; }
   @media(max-width:760px){ .form-grid{ grid-template-columns:repeat(2,1fr); } .form-grid .span4{ grid-column:span 2; } }
@@ -1168,7 +1184,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.24.22</div>
+      <div class="ver">גרסה 6.25.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1266,7 +1282,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.22</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.25.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2608,10 +2624,10 @@ window.ordFieldPerm = (kind, field)=> kind==='scall' ? 'logi.calls' : (ORD_FIELD
 /* 6.21.0 — מזהה האלמנט בכרטיס ההזמנה מול העמודה במסד. משמש גם לנעילה לפי שדה
    בפתיחת הכרטיס וגם לבניית ה-patch בשמירה, כדי ששני המסלולים לא ייפרדו. */
 const ORD_CARD_FIELDS = [
-  ['oe-status','order_status'], ['oe-contact','contact_status'], ['oe-city','city'], ['oe-region','region'],
+  ['oe-status','order_status'], ['oe-contact','contact_status'], ['oe-region','region'],
   ['oe-team','team'], ['oe-date','scheduled_date'], ['oe-days','days_count'], ['oe-slot','time_slot'],
   ['oe-friday','friday_ok'], ['oe-supdays','supply_days'], ['oe-supend','supply_end_date'],
-  ['oe-dnote','delivery_note'], ['oe-invoice','invoice'], ['oe-wnotes','warehouse_notes']
+  ['oe-wnotes','warehouse_notes']
 ];
 window.ordCardEditable = (col)=>{ const pk = window.ordFieldPerm('ord', col); return !!pk && window.canEdit(pk); };
 const canIE = (kind, field)=>{
@@ -7496,7 +7512,7 @@ const phDigits = p => { let d=digitsOf(p); if(d.startsWith('00')) d=d.slice(2); 
 const phOk = p => { const d=phDigits(p); return d.length>=9 && d.length<=15; };
 const telUrl = p => 'tel:+' + (phDigits(p).startsWith('972') ? phDigits(p) : '972'+phDigits(p).replace(/^0/,''));
 const waUrl  = p => 'https://wa.me/' + (phDigits(p).startsWith('972') ? phDigits(p) : '972'+phDigits(p).replace(/^0/,''));
-const phBtns = p => phOk(p) ? `<a class="ph-btn call" href="${telUrl(p)}" title="חיוג אל ${esc(p)}" onclick="event.stopPropagation()">📞 חיוג</a> <a class="ph-btn wa" target="_blank" rel="noopener" href="${waUrl(p)}" title="פתיחת וואטסאפ עם ${esc(p)}" onclick="event.stopPropagation()">${WA_SVG} וואטסאפ</a>` : '';
+const phBtns = p => phOk(p) ? `<span class="ph-group"><a class="ph-btn call" href="${telUrl(p)}" title="חיוג אל ${esc(p)}" onclick="event.stopPropagation()">חיוג</a> <a class="ph-btn wa" target="_blank" rel="noopener" href="${waUrl(p)}" title="פתיחת וואטסאפ עם ${esc(p)}" onclick="event.stopPropagation()">${WA_SVG} וואטסאפ</a></span>` : '';
 const evPh = p => phOk(p)
   ? `<span class="ev-ph"><a href="${telUrl(p)}" dir="ltr" onclick="event.stopPropagation()" title="חיוג אל ${esc(p)}">📞 ${esc(p)}</a><a class="wa-ico" target="_blank" rel="noopener" href="${waUrl(p)}" onclick="event.stopPropagation()" title="וואטסאפ עם ${esc(p)}">${WA_SVG}</a></span>`
   : `<span dir="ltr">📞 ${esc(p||'')}</span>`;
@@ -7753,18 +7769,20 @@ function billCity(a){ if(!a) return ''; const p=String(a).split(','); return p.l
 /* היררכיית העיר: עיר משלוח מנצחת, אחריה העיר השמורה, ורק כשאין כתובת משלוח ואין עיר משלוח — מכתובת החיוב */
 function effCity(o){ const sc=String(o.ship_city||'').trim(); if(sc) return sc;
   const c=String(o.city||'').trim(); if(c) return c;
-  if(!String(o.address||'').trim()) return billCity(o.customer_address); return ''; }
+  if(!shipAddrOnly(o)) return billCity(o.customer_address); return ''; }
 /* יעד הניווט: כתובת המשלוח תמיד מנצחת את כתובת החיוב */
-function shipNav(o){ const a=([o.ship_addr1,o.ship_addr2].filter(Boolean).join(' ').trim())||String(o.address||'').trim(); if(!a) return '';
+function shipAddrOnly(o){ return ([o.ship_addr1,o.ship_addr2,o.ship_addr3].filter(Boolean).join(' ').trim())||String(o.address||'').trim(); }
+function shipNav(o){ const a=shipAddrOnly(o); if(!a) return '';
   return (a + ' ' + (String(o.ship_city||'').trim() || String(o.city||'').trim())).trim(); }
 function ordCityCell(o){
   const ship = shipNav(o);
   const home = o.customer_address || '';
   const nav  = ship || home;
-  const sub  = o.address ? `<div class="note-preview" title="כתובת משלוח: ${esc(o.address)}">${esc(String(o.address).slice(0,22))}</div>`
+  const sa   = shipAddrOnly(o);
+  const sub  = sa ? `<div class="note-preview" title="כתובת משלוח: ${esc(sa)}">${esc(String(sa).slice(0,22))}</div>`
              : (home ? `<div class="note-preview" title="כתובת חיוב: ${esc(home)}">${esc(String(home).slice(0,22))}</div>`
              : (o.region ? `<div class="note-preview">${esc(o.region)}</div>` : ''));
-  return `<div class="addr-cell"><div class="ac-txt">${esc(o.city||'')}${sub}</div>${wazeIco(nav)}</div>`;
+  return `<div class="addr-cell"><div class="ac-txt">${esc(effCity(o))}${sub}</div>${wazeIco(nav)}</div>`;
 }
 /* עמודות טבלת ההזמנות: [כותרת, שדה למיון ('' = לא ניתן למיון), מחלקה] */
 const ORD_COLS = [
@@ -7830,10 +7848,10 @@ window.openOrd = (id, ctx)=>{
   const others = ORDS.filter(x=>x.id!==o.id && x.customer_name && x.customer_name===o.customer_name && !['הושלם','בוטל','מבוטלת'].includes(x.order_status));
   const teamVals = [...new Set([...OTEAMS.filter(t=>t.active!==false).map(t=>t.name), ...uniqVals(ORDS,'team',o.team)])];
   const norm=a=>String(a||'').trim().replace(/\s+/g,' ').toLowerCase();
-  const myAddr=norm(o.address);
-  const hasSame=myAddr && others.some(x=>norm(x.address)===myAddr);
+  const myAddr=norm(shipAddrOnly(o));
+  const hasSame=myAddr && others.some(x=>norm(shipAddrOnly(x))===myAddr);
   $('#ordSheet').innerHTML = `
-    <h3>📦 ${esc(o.order_number)} — ${esc(o.customer_name||'')}${o.erp_status?` <span class="pill p-violet" title="הסטטוס בפריוריטי — מתעדכן בסנכרון">${PRI_ICO}פריוריטי: ${esc(o.erp_status)}</span>`:''}${o.erp_synced_at?`<span class="pill" style="font-weight:400">סונכרן מפריוריטי ${new Date(o.erp_synced_at).toLocaleDateString('he-IL')}</span>`:''}</h3>
+    <h3>${esc(o.order_number)} — ${esc(o.customer_name||'')}${o.erp_status?` <span class="pill p-violet" title="הסטטוס בפריוריטי — מתעדכן בסנכרון">${PRI_ICO}פריוריטי: ${esc(o.erp_status)}</span>`:''}${o.erp_synced_at?`<span class="pill" style="font-weight:400">סונכרן מפריוריטי ${new Date(o.erp_synced_at).toLocaleDateString('he-IL')}</span>`:''}</h3>
     <div style="height:10px"></div>
     <div class="form-grid">
       <div><label>מס' הזמנה${SRC_TAG}</label>${roIn(o.order_number,{ltr:1})}</div>
@@ -7847,13 +7865,15 @@ window.openOrd = (id, ctx)=>{
       <div><label>אופן משלוח${SRC_TAG}</label>${roIn(o.delivery_method)}</div>
       ${showSales?`<div><label>אימייל לקוח${SRC_TAG}</label>${roIn(o.customer_email,{ltr:1})}</div>`:''}
       ${showSales?`<div><label>סכום (פריוריטי)${SRC_TAG}</label>${roIn(o.erp_price?shekel(o.erp_price):'')}</div>`:''}
-      <div><label>🚚 כתובת משלוח${SRC_TAG} ${wazeBtn(shipNav(o))}</label><input value="${esc(o.ship_addr1||o.address||'')}" readonly class="ro" placeholder="—"></div>
-      <div><label>🚚 כתובת משלוח2${SRC_TAG}</label><input value="${esc(o.ship_addr2||'')}" readonly class="ro" placeholder="—"></div>
-      <div><label>🚚 כתובת משלוח3${SRC_TAG}</label><input value="${esc(o.ship_addr3||'')}" readonly class="ro" placeholder="—"></div>
-      <div><label>🚚 עיר${SRC_TAG}</label><input id="oe-city" value="${esc(effCity(o))}"></div>
-      <div class="span2"><label>🏠 כתובת חיוב${SRC_TAG} ${wazeBtn(o.customer_address)}</label><input value="${esc(o.customer_address||'')}" readonly class="ro" placeholder="אין כתובת חיוב בכרטיס הלקוח"></div>
+      <div class="addr-row">
+      <div><label>כתובת משלוח${SRC_TAG} ${wazeBtn(shipNav(o))}</label><input value="${esc(o.ship_addr1||o.address||'')}" readonly class="ro" placeholder="—"></div>
+      <div><label>כתובת משלוח2${SRC_TAG}</label><input value="${esc(o.ship_addr2||'')}" readonly class="ro" placeholder="—"></div>
+      <div><label>כתובת משלוח3${SRC_TAG}</label><input value="${esc(o.ship_addr3||'')}" readonly class="ro" placeholder="—"></div>
+      <div><label>עיר${SRC_TAG}</label><input value="${esc(effCity(o))}" readonly class="ro" placeholder="—"></div>
+      <div><label>כתובת חיוב${SRC_TAG} ${wazeBtn(o.customer_address)}</label><input value="${esc(o.customer_address||'')}" readonly class="ro" placeholder="—"${o.customer_address?'':' title="אין כתובת חיוב בכרטיס הלקוח"'}></div>
+      </div>
       <div class="span2"><label>הערות הזמנה${SRC_TAG}</label>${roIn(o.order_notes)}</div>
-      <div class="span2" style="border-top:1px solid #dfe3ea;margin:12px 0 2px;padding-top:10px;font-weight:700;color:#5b6472;font-size:13px">שדות למילוי</div>
+      <div class="form-sep" style="margin-top:16px">שדות למילוי</div>
       <div><label>סטטוס הזמנה</label>${selHtml('oe-status',ORDER_STATUSES,o.order_status)}</div>
       <div><label>יצרנו קשר?</label>${selHtml('oe-contact',CONTACT_STATUSES,o.contact_status)}</div>
       <div><label>אזור גיאוגרפי</label>${selHtml('oe-region',REGIONS,o.region,true)}</div>
@@ -7861,20 +7881,19 @@ window.openOrd = (id, ctx)=>{
       <div><label>תאריך מתואם</label><input id="oe-date" type="date" value="${esc(o.scheduled_date||'')}"></div>
       <div><label>מספר ימים</label><input id="oe-days" type="number" min="1" value="${o.days_count||1}"></div>
       <div><label>משבצת זמן</label>${selHtml('oe-slot',TIME_SLOTS,o.time_slot,true)}</div>
-      <div class="span2"><label class="chk-line" style="margin-top:18px"><input type="checkbox" id="oe-friday" ${o.friday_ok?'checked':''}> <b>לאשר עבודה ביום שישי בהזמנה זו</b></label></div>
-      <div class="form-sep">${(showSupply&&showSales)?'אספקה, מחסן ומסמכים':(showSupply?'אספקה ומחסן':'מסמכים')}</div>
+      <div class="span4"><label class="chk-line" style="margin-top:18px"><input type="checkbox" id="oe-friday" ${o.friday_ok?'checked':''}> <b>לאשר עבודה ביום שישי בהזמנה זו</b></label></div>
+      ${showSupply?`<div class="form-sep">אספקה ומחסן</div>`:''}
       ${showSupply?`<div><label>זמן אספקה (ימים)</label><input id="oe-supdays" type="number" value="${o.supply_days??''}"></div>`:''}
       ${showSupply?`<div><label>תאריך סיום אספקה</label><input id="oe-supend" type="date" value="${esc(o.supply_end_date||'')}"></div>`:''}
-      ${showSales?`<div><label>תעודת משלוח</label>${selHtml('oe-dnote',YESNO,o.delivery_note||'',true)}</div>`:''}
-      ${showSales?`<div><label>חשבונית</label>${selHtml('oe-invoice',YESNO,o.invoice||'',true)}</div>`:''}
       ${showSupply?`<div class="span2"><label>הערות למחסן</label><textarea id="oe-wnotes" rows="2">${esc(o.warehouse_notes||'')}</textarea></div>`:''}
-      <div class="span4"><label>דו שיח פנימי${SRC_TAG}</label><div class="dialog-box">${o.internal_dialog?esc(o.internal_dialog).replace(/\n/g,'<br>'):'<span class="dialog-empty">אין דו שיח פנימי בהזמנה זו</span>'}</div>
-      <div class="form-sep">📦 פירוט ההזמנה${SRC_TAG}</div>
+      <div class="span4"><label>דו שיח פנימי${SRC_TAG}</label><div class="dialog-box">${o.internal_dialog?esc(o.internal_dialog).replace(/\n/g,'<br>'):'<span class="dialog-empty">אין דו שיח פנימי בהזמנה זו</span>'}</div></div>
+      <div class="form-sep">פירוט ההזמנה${SRC_TAG}</div>
       <div class="span4" id="orderItemsBox"><div class="items-loading">טוען פירוט הזמנה מפריוריטי…</div></div>
     </div>
+    <div class="ord-bottom">
     ${(function(){
       if(!others.length) return '';
-      return `<div class="others-box"><div class="ob-title">📦 ללקוח יש עוד ${others.length===1?'הזמנה פתוחה':others.length+' הזמנות פתוחות'}:${hasSame?' <span class="same-tag">🚚 יש הזמנות לאותה כתובת משלוח — כדאי לשלב יחד!</span>':''}</div>
+      return `<div class="others-box"><div class="ob-title">ללקוח יש עוד ${others.length===1?'הזמנה פתוחה':others.length+' הזמנות פתוחות'}:${hasSame?' <span class="same-tag">יש הזמנות לאותה כתובת משלוח — כדאי לשלב יחד!</span>':''}</div>
       ${others.map(x=>{
         const same=myAddr && norm(x.address)===myAddr;
         return `<div class="other-row ${same?'same-addr':''}" onclick="goCard(()=>openOrd('${x.id}'${ctx?(",'"+ctx+"'"):''}))"><b>${esc(x.order_number)}</b><span>${fmtD(x.order_date)||'—'}</span><span>${x.items_count??'?'} פריטים</span>${x.address?`<span class="ob-note" title="כתובת משלוח: ${esc(x.address)}">${esc(String(x.address).slice(0,30))}</span>`:''}${same?'<span class="same-tag">אותה כתובת משלוח!</span>':''}</div>`;
@@ -7882,12 +7901,13 @@ window.openOrd = (id, ctx)=>{
     })()}
     ${(showSales && window.canView('crm.orders.docs'))?(()=>{ /* 6.22.0 — הבלוק הזה הוא משטח חמישי למסמכים, ולכן הוא מצטלב: גם המפתח
          crm.orders.docs וגם מפתח הקטגוריה docs.<category> חייבים לאשר. */
-      const ps=PROTS.filter(p=>p.order_id===o.id && window.canView('docs.'+(p.category||'protocols'))); return `<h2 class="sec">📄 מסמכים וחתימות (${ps.length})</h2>`+
-      (ps.map(p=>`<div class="row"><span class="k">${esc(p.doc_type)}${p.sent_at?' · '+new Date(p.sent_at).toLocaleDateString('he-IL'):''}</span><span class="v">${p.status==='נחתם'?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','open')">📄 צפייה</a>`:(window.canEdit('docs.'+(p.category||'protocols'))?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','copy')">🔗 קישור</a>`:'<span style="color:#94a3b8">אין הרשאה לקישור</span>')} <span class="pill ${p.status==='נחתם'?'st-rel':'st-def'}">${esc(p.status)}</span></span></div>`).join(''))+
-      ((window.canEdit('crm.orders.docs')&&window.canEdit('docs.protocols'))?`<button class="ghost" style="margin-top:8px" onclick="createProtocol('${o.id}')">➕ יצירת פרוטוקול הכנה לחתימה</button>`:''); })():''}
+      const ps=PROTS.filter(p=>p.order_id===o.id && window.canView('docs.'+(p.category||'protocols'))); return `<h2 class="sec">מסמכים וחתימות (${ps.length})</h2>`+
+      (ps.map(p=>`<div class="row"><span class="k">${esc(p.doc_type)}${p.sent_at?' · '+new Date(p.sent_at).toLocaleDateString('he-IL'):''}</span><span class="v">${p.status==='נחתם'?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','open')">צפייה</a>`:(window.canEdit('docs.'+(p.category||'protocols'))?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','copy')">קישור</a>`:'<span style="color:#94a3b8">אין הרשאה לקישור</span>')} <span class="pill ${p.status==='נחתם'?'st-rel':'st-def'}">${esc(p.status)}</span></span></div>`).join(''))+
+      ((window.canEdit('crm.orders.docs')&&window.canEdit('docs.protocols'))?`<button class="ghost" style="margin-top:8px" onclick="createProtocol('${o.id}')">יצירת פרוטוקול הכנה לחתימה</button>`:''); })():''}
     ${window.mediaBlock('order', o.id)}
-    <div class="modal-actions">
-      <button class="btn btnw hidden" id="oe-save" onclick="saveOrd('${o.id}')">💾 שמירה</button>
+    </div>
+    <div class="modal-actions ord-actions">
+      <button class="btn btnw hidden" id="oe-save" onclick="saveOrd('${o.id}')">שמירה</button>
       <div class="note hidden" id="oe-nosave">אין לך הרשאת עריכה לשדות שבכרטיס זה.</div>
       ${(showSales&&cust)?`<button class="ghost" style="width:auto;padding:11px 18px" onclick="goCard(()=>openCust('${cust.id}'))">לכרטיס הלקוח ←</button>`:''}
     </div>
@@ -9000,7 +9020,7 @@ boot();
     d.style.cssText = 'margin-top:16px;padding:14px;border:1px solid #e2e8f0;border-radius:12px;background:#fbfcfd';
     if(!o.yahav_shipment_no){
       d.innerHTML =
-        '<div style="font-weight:800;font-size:13.5px;margin-bottom:8px">🚚 יהב לוגיסטיקה — שידור משלוח</div>' +
+        '<div style="font-weight:800;font-size:13.5px;margin-bottom:8px">יהב לוגיסטיקה — שידור משלוח</div>' +
         (prev ? '<div style="font-size:12.5px;margin-bottom:9px;padding:7px 10px;border-radius:8px;background:#fdf2f3;color:#a92f2f">משלוח קודם <b style="direction:ltr;display:inline-block">' + yesc(prev.shipment_no) + '</b> בוטל במערכת · ' + yfdt(prev.created_at) + '</div>' : '') +
         '<div style="font-size:12.5px;line-height:1.95;margin-bottom:10px;color:#243b4a">' +
           '<div><span style="color:#5b6b78">מוצא:</span> <b>' + yesc(YORIGIN) + '</b></div>' +
@@ -9019,7 +9039,7 @@ boot();
       d.querySelector('#yh-send').addEventListener('click', function(){ sendYahav(o, this); });
     } else {
       d.innerHTML =
-        '<div style="font-weight:800;font-size:13.5px;margin-bottom:8px">🚚 יהב לוגיסטיקה — משלוח</div>' +
+        '<div style="font-weight:800;font-size:13.5px;margin-bottom:8px">יהב לוגיסטיקה — משלוח</div>' +
         '<div style="font-size:13px;line-height:2">' +
           '<div>מספר משלוח: <b style="direction:ltr;display:inline-block">' + yesc(o.yahav_shipment_no) + '</b> ' +
             '<button type="button" id="yh-copy" style="border:1px solid #dbe3ec;background:#fff;border-radius:8px;padding:3px 9px;font-size:12px;cursor:pointer;font-family:inherit">העתקה</button></div>' +

@@ -563,6 +563,24 @@
   .ev-done{ color:#166534; font-size:10.5px; font-weight:700; }
   .ev-foot{ margin-top:3px; align-items:center; }
   .teamchip{ color:#fff; border-radius:99px; padding:1px 9px; font-size:10.5px; font-weight:700; }
+  /* ===== 6.24.18 — רישום יומי (מי עובד בכל נתיב) ===== */
+  .crewchip{ background:#eef4f1; border:1px solid #cfe0d7; color:#1f5f43; border-radius:99px; padding:0 7px; font-size:10.5px; font-weight:700; white-space:nowrap; }
+  .td-open{ width:auto !important; padding:0 12px !important; gap:5px; font-size:12.5px !important; }
+  .td-hint{ margin-top:5px; font-size:12px; color:#1f5f43; }
+  .td-hint.empty{ color:#8a8f95; }
+  .td-bar{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:2px 0 14px; }
+  .td-bar input[type=date]{ width:auto; }
+  .td-lane{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin-bottom:10px; box-shadow:0 1px 3px rgba(6,24,39,.06); }
+  .td-lane-h{ display:flex; align-items:center; gap:9px; margin-bottom:8px; flex-wrap:wrap; }
+  .td-count{ font-size:12px; color:#64748b; font-weight:700; }
+  .td-people{ display:flex; flex-wrap:wrap; gap:7px; }
+  .td-chk{ display:flex; align-items:center; gap:6px; border:1px solid var(--line); border-radius:99px; padding:4px 11px; font-size:13px; cursor:pointer; background:#fbfcfb; }
+  .td-chk:hover{ background:#f2f6f4; }
+  .td-chk input{ width:auto; margin:0; }
+  .td-chk.on{ background:#eaf5ef; border-color:#9ecfb5; }
+  .td-jt{ color:#8a8f95; font-size:11px; }
+  .td-warn{ background:#fff7e6; border:1px solid #f0d9a8; color:#7a5a12; border-radius:10px; padding:8px 12px; font-size:12.5px; margin-bottom:12px; }
+  .td-lock{ background:#f5f6f7; border:1px solid var(--line); color:#5b6167; border-radius:10px; padding:8px 12px; font-size:12.5px; margin-bottom:12px; }
   .teamchip.nochip{ background:#fbe0e0; color:#a92f2f; }
   .month-grid{ display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:8px; }
   .month-grid .mh{ font-size:13px; font-weight:800; color:var(--navy); text-align:center; padding:6px 0; background:#e9eff3; border-radius:8px; }
@@ -1124,7 +1142,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.24.17</div>
+      <div class="ver">גרסה 6.24.18</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1222,7 +1240,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.17</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.24.18</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2931,7 +2949,7 @@ function tgChip(e){
   const line2=[ref, o.city, o.address].filter(Boolean).map(x=>esc(String(x))).join(' · ');
   return `<div class="tg-chip" style="border-inline-start-color:${col};${evDone(e)?'opacity:.55':''}" onclick="${evOpen(e)}" title="${esc(o.customer_name||'')} · ${esc(o.time_slot||'ללא שעה')} · ${esc(evStatus(e)||'')} · ${esc(o.team||'ללא צוות')}${o.phone?' · '+esc(o.phone):''}">
     <div class="c1"><span class="tm">${esc(o.time_slot||'ללא שעה')}</span>${e.kind==='svc'?'🛠️':''}<span style="overflow:hidden;text-overflow:ellipsis">${esc(o.customer_name||'')}</span>${mark?`<span style="color:${col};font-size:10.5px;flex:none">${mark}</span>`:''}</div>
-    <div class="c2">${line2||'—'}${o.team?` · <span class="team">${esc(o.team)}</span>`:''}${o.phone?` · ${evPh(o.phone)}`:''}</div>
+    <div class="c2">${line2||'—'}${o.team?` · <span class="team">${esc(o.team)}</span>`:''}${(tdNames(e.ds,o.team).length?` · 👷 ${esc(tdNames(e.ds,o.team).map(tdShort).join(', '))}`:'')}${o.phone?` · ${evPh(o.phone)}`:''}</div>
   </div>`;
 }
 function tgNowLine(ds){
@@ -2964,9 +2982,9 @@ function eventsOn(ds){
     if(ds<o.scheduled_date) continue;
     if(o.needs_scheduling===false) continue;
     const idx=dayIndexOf(o,ds);
-    if(idx) evs.push({kind:'order',o,dayIdx:idx,dayTotal:Math.max(1,o.days_count||1)});
+    if(idx) evs.push({kind:'order',o,ds,dayIdx:idx,dayTotal:Math.max(1,o.days_count||1)});
   }
-  for(const c of SCALLS){ if(c.scheduled_date===ds && c.status!=='בוטלה') evs.push({kind:'svc',o:c}); }
+  for(const c of SCALLS){ if(c.scheduled_date===ds && c.status!=='בוטלה') evs.push({kind:'svc',o:c,ds}); }
   const out = CAL_Q ? evs.filter(e=>evMatch(e,CAL_Q)) : evs;
   /* 6.2.5 — מיון לפי שעה אמיתית ולא לפי טקסט: "8:00" חייב לבוא לפני "14:00" */
   return out.sort((a,b)=>evSortKey(a)-evSortKey(b));
@@ -2986,9 +3004,243 @@ function evCard(e, compact){
     <div class="s">${e.kind==='svc'?esc(String(o.product||'').slice(0,30)):esc(o.order_number||'')}${o.items_count?` · ${o.items_count} פר'`:''}</div>
     ${o.city||o.address?`<div class="s">📍 ${esc(o.city||'')}${o.address?`, ${esc(String(o.address).slice(0,24))}`:''}</div>`:''}
     ${o.phone?`<div class="s" style="text-align:right">${evPh(o.phone)}</div>`:''}
-    <div class="s ev-foot">${teamChip(o.team,teamColor(o.team))}${e.kind==='order'&&e.dayTotal>1?`<span class="tagx">${e.dayIdx>1?'המשך · ':''}יום ${e.dayIdx} מתוך ${e.dayTotal}</span>`:''}${e.kind==='order'&&o.friday_ok?'<span class="tagx" title="אושרה עבודה ביום שישי">🗓️ שישי</span>':''}${e.kind==='order'&&o.order_notes?`<span class="tagx" title="${esc(o.order_notes)}">📝</span>`:''}</div>
+    <div class="s ev-foot">${teamChip(o.team,teamColor(o.team))}${crewChip(e.ds,o.team)}${e.kind==='order'&&e.dayTotal>1?`<span class="tagx">${e.dayIdx>1?'המשך · ':''}יום ${e.dayIdx} מתוך ${e.dayTotal}</span>`:''}${e.kind==='order'&&o.friday_ok?'<span class="tagx" title="אושרה עבודה ביום שישי">🗓️ שישי</span>':''}${e.kind==='order'&&o.order_notes?`<span class="tagx" title="${esc(o.order_notes)}">📝</span>`:''}</div>
   </div>`;
 }
+/* ================= 6.24.18 — רישום יומי של אנשי הצוות =================
+   הצוותים בלוח התיאומים הם נתיבי עבודה (משאית, סקודו, קבלן) ולא רשימת אנשים
+   קבועה. מי עבד בכל נתיב משתנה מיום ליום, ולכן הרישום מוחזק ב-ord.team_days
+   לפי (תאריך, נתיב, עובד). המסך כאן קורא וכותב דרך ארבע פונקציות שרת בלבד:
+   team_days_map (מפה לטווח), team_day_board (יום אחד), team_day_set (שמירה)
+   ו-team_day_copy (העתקה מיום ליום). כל בדיקות ההרשאה נעשות בשרת. */
+let TD_MAP = {};              /* "2026-08-06": { "משאית":[{profile_id,full_name,member_role}] } */
+const TD_HAVE = new Set();    /* תאריכים שכבר נטענו — כולל ימים ריקים, כדי לא לטעון שוב */
+let TD_BUSY = false, TD_ERR = false;
+
+async function loadTeamDays(from, to){
+  if(!from || !to) return;
+  TD_BUSY = true;
+  try{
+    const r = await sb.schema('ord').rpc('team_days_map', { p_from: from, p_to: to });
+    if(r.error){ TD_ERR = true; console.error('טעינת השיבוץ היומי נכשלה', r.error); return; }
+    TD_ERR = false;
+    const m = (r && r.data) || {};
+    for(let d=from; d<=to; d=addDaysIso(d,1)){
+      if(m[d]) TD_MAP[d] = m[d]; else delete TD_MAP[d];
+    }
+  }catch(e){ TD_ERR = true; console.error('טעינת השיבוץ היומי נכשלה', e); }
+  finally{
+    /* מסמנים את הטווח כנטען בכל מקרה — גם בכישלון — כדי שלא ייווצר לולאת ציור */
+    for(let d=from; d<=to; d=addDaysIso(d,1)) TD_HAVE.add(d);
+    TD_BUSY = false;
+  }
+}
+/* איפוס יום אחד אחרי שמירה, כדי שהלוח יציג מיד את השיבוץ המעודכן */
+function tdInvalidate(ds){ TD_HAVE.delete(ds); delete TD_MAP[ds]; }
+function teamPeople(ds, name){
+  const d = TD_MAP[ds];
+  if(!d || !name) return [];
+  return d[name] || [];
+}
+const tdNames  = (ds,name)=> teamPeople(ds,name).map(p=>p.full_name).filter(Boolean);
+/* "אברהם שמעון" → "אברהם ש׳" — כדי שהשמות ייכנסו לכרטיס בלוח */
+const tdShort  = n => { const a=String(n||'').trim().split(/\s+/); return a.length>1 ? a[0]+' '+a[1].charAt(0)+'׳' : a[0]; };
+const crewChip = (ds,team)=>{ const ns=tdNames(ds,team); return ns.length?`<span class="crewchip" title="${esc(ns.join(' · '))}">👷 ${esc(ns.map(tdShort).join(', '))}</span>`:''; };
+
+/* רמז "מי עובד בנתיב הזה ביום הזה" בתוך כרטיס הזמנה או קריאת שירות.
+   נטען אסינכרונית כדי שכרטיס לא יחכה לרשת. */
+window.tdHint = (ds, team, id)=>{
+  setTimeout(()=>tdFillHint(id, ds, team), 0);
+  return `<div class="note td-hint" id="${id}"></div>`;
+};
+async function tdFillHint(id, ds, team){
+  const el0 = document.getElementById(id); if(!el0) return;
+  const k = (ds||'') + '|' + (team||'');
+  el0.dataset.k = k;
+  if(!ds || !team){ el0.className='note td-hint empty'; el0.textContent=''; return; }
+  el0.className='note td-hint'; el0.textContent='👷 טוען שיבוץ…';
+  let ns = tdNames(ds, team), ok = true;
+  if(!TD_HAVE.has(ds)){
+    try{
+      const r = await sb.schema('ord').rpc('team_day_who', { p_date: ds, p_team_name: team });
+      if(r.error){ ok=false; console.error('שליפת השיבוץ לנתיב נכשלה', r.error); }
+      else if(r.data && r.data.people) ns = r.data.people.map(p=>p.full_name).filter(Boolean);
+    }catch(e){ ok=false; console.error('שליפת השיבוץ לנתיב נכשלה', e); }
+  }
+  const el = document.getElementById(id); if(!el) return;
+  /* בין תחילת השליפה לסופה ייתכן שהמשתמש שינה צוות או תאריך — לא לדרוס תשובה חדשה יותר */
+  if(el.dataset.k !== k) return;
+  if(!ok){ el.className='note td-hint empty'; el.textContent='👷 טעינת השיבוץ נכשלה'; return; }
+  if(ns.length){ el.className='note td-hint'; el.innerHTML = '👷 ' + esc(ns.join(' · ')); }
+  else{ el.className='note td-hint empty'; el.textContent = '👷 טרם נרשם מי עובד בנתיב הזה בתאריך הזה'; }
+}
+/* הרמז בכרטיס ההזמנה ובכרטיס קריאת השירות מתעדכן כשמחליפים צוות או תאריך */
+document.addEventListener('change', e=>{
+  const t = e.target; if(!t || !t.id) return;
+  if(t.id==='oe-team' || t.id==='oe-date'){
+    const d=document.getElementById('oe-date'), s=document.getElementById('oe-team');
+    tdFillHint('oeTdHint', d&&d.value, s&&s.value);
+  } else if(t.id==='se-team' || t.id==='se-date'){
+    const d=document.getElementById('se-date'), s=document.getElementById('se-team');
+    tdFillHint('seTdHint', d&&d.value, s&&s.value);
+  }
+});
+
+/* ---------- מסך השיבוץ היומי ---------- */
+let TD_DATE = null, TD_BOARD = null, TD_SEL = {};
+window.openTeamDay = async (ds)=>{
+  TD_DATE = ds || isoD(new Date());
+  const sh = $('#ordSheet'); if(!sh) return;
+  sh.innerHTML = `<h3>👷 שיבוץ יומי</h3><div class="note">טוען…</div>`;
+  mountCard('ordModal', ()=>openTeamDay(TD_DATE));
+  await tdLoadBoard();
+};
+async function tdLoadBoard(){
+  const ds = TD_DATE;
+  let r;
+  try{ r = await sb.schema('ord').rpc('team_day_board', { p_date: ds }); }
+  catch(e){ r = { error: e }; }
+  if(ds !== TD_DATE) return;   /* המשתמש כבר עבר ליום אחר — התשובה הזו מיושנת */
+  const sh = $('#ordSheet'); if(!sh) return;
+  if(!r || r.error){
+    console.error('טעינת השיבוץ היומי נכשלה', r && r.error);
+    sh.innerHTML = `<h3>👷 שיבוץ יומי</h3><div class="err" style="display:block">טעינת השיבוץ נכשלה. נסו שוב או רעננו את הדף.</div>`;
+    mountCard('ordModal', ()=>openTeamDay(TD_DATE));
+    return;
+  }
+  TD_BOARD = r.data || {};
+  TD_SEL = {};
+  (TD_BOARD.lanes||[]).forEach(l=>{ TD_SEL[l.team_id] = (l.people||[]).map(p=>p.profile_id); });
+  tdRender();
+}
+function tdConflicts(){
+  const byP = {};
+  (TD_BOARD.lanes||[]).forEach(l=>{
+    (TD_SEL[l.team_id]||[]).forEach(pid=>{ (byP[pid]=byP[pid]||[]).push(l.name); });
+  });
+  const names = {};
+  (TD_BOARD.staff||[]).forEach(s=>{ names[s.profile_id]=s.full_name; });
+  return Object.keys(byP).filter(pid=>byP[pid].length>1)
+    .map(pid=>({ full_name: names[pid]||'—', lanes: byP[pid] }));
+}
+const tdCountTxt = n => n ? (n===1 ? 'אדם אחד' : n+' אנשים') : 'טרם נרשם אף אחד';
+const tdWarnHtml = cf => cf.length
+  ? `<div class="td-warn">⚠️ שימו לב — ${cf.map(c=>`${esc(c.full_name)} רשום גם ב-${esc(c.lanes.join(' וגם ב-'))}`).join('; ')}. אפשר לשמור כך אם זה מכוון.</div>`
+  : '';
+function tdRender(){
+  const b = TD_BOARD; if(!b) return;
+  const sh = $('#ordSheet'); if(!sh) return;
+  const ed = !!b.can_edit, staff = b.staff||[], lanes = b.lanes||[];
+  const cf = tdConflicts();
+  const total = lanes.reduce((a,l)=>a+((TD_SEL[l.team_id]||[]).length),0);
+  sh.innerHTML = `
+    <h3>👷 שיבוץ יומי — ${esc(dayNameHe(TD_DATE))}, ${esc(fmtD(TD_DATE))}</h3>
+    <div class="note" style="margin:4px 0 12px">מי מאנשי הצוות עבד בכל נתיב ביום הזה. הנתיבים עצמם (משאית, סקודו, קבלן) מוגדרים בהגדרות הצוותים.</div>
+    <div class="td-bar">
+      <button class="nav-b" onclick="tdGo(-1)" title="יום קודם">▸</button>
+      <input type="date" id="tdDate" value="${esc(TD_DATE)}" onchange="openTeamDay(this.value)">
+      <button class="nav-b" onclick="tdGo(1)" title="יום הבא">◂</button>
+      <button class="ghost" style="width:auto;padding:5px 12px" onclick="openTeamDay('${isoD(new Date())}')">היום</button>
+      <span class="grow" style="flex:1"></span>
+      ${ed?`<span style="font-size:12.5px;color:#64748b">העתקה מיום:</span>
+      <input type="date" id="tdSrc" value="${esc(addDaysIso(TD_DATE,-1))}">
+      <button class="ghost" style="width:auto;padding:5px 12px" onclick="tdCopyFrom()">📋 העתקה</button>`:''}
+    </div>
+    ${ed?'':'<div class="td-lock">אין לך הרשאת עריכה ללוח התיאום, ולכן השיבוץ מוצג לצפייה בלבד.</div>'}
+    <div id="tdWarnWrap">${tdWarnHtml(cf)}</div>
+    ${lanes.map(l=>{
+      const sel = TD_SEL[l.team_id]||[];
+      const col = esc(l.color||'#64748b');
+      return `<div class="td-lane" style="border-inline-start:5px solid ${col}">
+        <div class="td-lane-h">
+          <span class="teamchip" style="background:${col}">${esc(l.name)}</span>
+          ${l.kind==='contractor'?'<span class="td-count">קבלן משנה</span>':`<span class="td-count" id="tdc_${l.team_id}">${tdCountTxt(sel.length)}</span>`}
+        </div>
+        ${l.kind==='contractor'
+          ? `<div class="note">העבודה בנתיב הזה מבוצעת על ידי קבלן משנה — אין רישום של אנשי החברה.</div>`
+          : (staff.length
+              ? `<div class="td-people">${staff.map(p=>`<label class="td-chk ${sel.indexOf(p.profile_id)>=0?'on':''}"><input type="checkbox" ${ed?'':'disabled'} ${sel.indexOf(p.profile_id)>=0?'checked':''} onchange="tdToggle('${l.team_id}','${p.profile_id}',this.checked,this)">${esc(p.full_name)}${p.job_title?`<span class="td-jt">${esc(p.job_title)}</span>`:''}</label>`).join('')}</div>`
+              : `<div class="note">אין משתמשים פעילים לשיבוץ. פתחו משתמשים במסך המשתמשים.</div>`)}
+      </div>`;
+    }).join('')}
+    ${lanes.length?'':'<div class="empty">לא הוגדרו נתיבי עבודה. הוסיפו צוותים בהגדרות.</div>'}
+    <div class="modal-actions">
+      ${ed?`<button class="btn btnw" id="tdSaveBtn" onclick="tdSave()">💾 שמירת השיבוץ (${total})</button>`:''}
+    </div>
+    <div class="err" id="td-err"></div>`;
+  mountCard('ordModal', ()=>openTeamDay(TD_DATE));
+}
+window.tdGo = n=>{ openTeamDay(addDaysIso(TD_DATE, n)); };
+/* עדכון נקודתי בלבד — ציור מחדש של כל הגיליון היה מחזיר את הגלילה לראש
+   הכרטיס בכל סימון תיבה. */
+window.tdToggle = (teamId, pid, on, inp)=>{
+  const a = TD_SEL[teamId] || (TD_SEL[teamId]=[]);
+  const i = a.indexOf(pid);
+  if(on && i<0) a.push(pid);
+  if(!on && i>=0) a.splice(i,1);
+  if(inp && inp.closest){ const lb=inp.closest('.td-chk'); if(lb) lb.classList.toggle('on', !!on); }
+  const c = document.getElementById('tdc_'+teamId);
+  if(c) c.textContent = tdCountTxt(a.length);
+  const w = document.getElementById('tdWarnWrap');
+  if(w) w.innerHTML = tdWarnHtml(tdConflicts());
+  const b = document.getElementById('tdSaveBtn');
+  if(b && !b.disabled) b.textContent = '💾 שמירת השיבוץ (' + (TD_BOARD.lanes||[]).reduce((x,l)=>x+((TD_SEL[l.team_id]||[]).length),0) + ')';
+};
+window.tdSave = async ()=>{
+  if(!TD_BOARD || !TD_BOARD.can_edit) return;
+  const btn = document.getElementById('tdSaveBtn'), eb = document.getElementById('td-err');
+  if(eb){ eb.style.color=''; eb.textContent=''; }
+  if(btn){ btn.disabled=true; btn.textContent='שומר…'; }
+  let changed = 0, failed = null;
+  for(const l of (TD_BOARD.lanes||[])){
+    if(l.kind==='contractor') continue;
+    const before = (l.people||[]).map(p=>p.profile_id).slice().sort().join(',');
+    const now    = (TD_SEL[l.team_id]||[]).slice().sort().join(',');
+    if(before===now) continue;
+    let r;
+    try{ r = await sb.schema('ord').rpc('team_day_set', { p_date: TD_DATE, p_team: l.team_id, p_people: (TD_SEL[l.team_id]||[]) }); }
+    catch(e){ r = { error: e }; }
+    if(r && r.error){ failed = r.error; break; }
+    changed++;
+  }
+  if(failed){
+    console.error('שמירת השיבוץ נכשלה', failed);
+    const msg = (failed.message && /הרשאה/.test(failed.message))
+      ? failed.message
+      : (changed ? 'חלק מהשיבוץ נשמר והשאר נכשל — המסך נטען מחדש. בדקו ונסו שוב.' : 'שמירת השיבוץ נכשלה. נסו שוב.');
+    tdInvalidate(TD_DATE);
+    await loadTeamDays(TD_DATE, TD_DATE);
+    try{ renderCal(); }catch(e){}
+    await tdLoadBoard();
+    const e3 = document.getElementById('td-err');
+    if(e3){ e3.style.color=''; e3.textContent = msg; try{ e3.scrollIntoView({block:'nearest'}); }catch(e){} }
+    return;
+  }
+  tdInvalidate(TD_DATE);
+  await loadTeamDays(TD_DATE, TD_DATE);
+  try{ renderCal(); }catch(e){}
+  await tdLoadBoard();
+  if(changed){ const e2=document.getElementById('td-err'); if(e2){ e2.style.color='#166534'; e2.textContent='השיבוץ נשמר.'; try{ e2.scrollIntoView({block:'nearest'}); }catch(e){} } }
+};
+window.tdCopyFrom = async ()=>{
+  if(!TD_BOARD || !TD_BOARD.can_edit) return;
+  const si = document.getElementById('tdSrc'), eb = document.getElementById('td-err');
+  const src = si ? String(si.value||'').trim() : '';
+  if(eb){ eb.style.color=''; eb.textContent=''; }
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(src)){ if(eb) eb.textContent='בחרו תאריך מקור להעתקה.'; return; }
+  if(src===TD_DATE){ if(eb) eb.textContent='תאריך המקור זהה ליום המוצג.'; return; }
+  let r;
+  try{ r = await sb.schema('ord').rpc('team_day_copy', { p_from: src, p_to: TD_DATE }); }
+  catch(e){ r = { error: e }; }
+  if(!r || r.error){ console.error('העתקת השיבוץ נכשלה', r && r.error); if(eb) eb.textContent='העתקת השיבוץ נכשלה.'; return; }
+  tdInvalidate(TD_DATE);
+  await loadTeamDays(TD_DATE, TD_DATE);
+  try{ renderCal(); }catch(e){}
+  await tdLoadBoard();
+  const e2 = document.getElementById('td-err');
+  if(e2){ e2.style.color='#166534'; e2.textContent = 'הועתקו ' + ((r.data&&r.data.copied)||0) + ' רישומים מ-' + src + '.'; try{ e2.scrollIntoView({block:'nearest'}); }catch(e){} }
+};
+
 window.calGoDay = ds=>{ CAL_D=new Date(ds+'T12:00:00'); CAL_VIEW='day'; renderCal(); };
 function renderCal(){
   const el = $('#cal-wrap'); if(!el) return;
@@ -3016,7 +3268,7 @@ function renderCal(){
           ${shown.map(e=>{ const o=e.o, col=evColor(e), done=evDone(e), ok=evOk(e), st=evStatus(e);
             return `<div class="mini-ev" style="border-inline-start-color:${col};${done?'opacity:.5':''}" title="${esc(o.customer_name||'')} · ${esc(o.time_slot||'ללא שעה')} · ${esc(st||'ללא סטטוס')} · ${esc(o.team||'ללא צוות')}${o.city?' · '+esc(o.city):''}">
               <div class="me-line1"><span class="me-time">${esc(slotShort(o.time_slot))||'—'}</span><b>${e.kind==='svc'?'🛠️':''}${esc(o.customer_name||'')}</b>${ok?`<span class="me-ok" style="color:${col}">✓</span>`:''}</div>
-              <div class="me-line2"><span class="me-dot" style="background:${col}"></span>${esc(o.team||'ללא צוות')}${o.city?` · ${esc(o.city)}`:''}</div>
+              <div class="me-line2"><span class="me-dot" style="background:${col}"></span>${esc(o.team||'ללא צוות')}${(tdNames(d,o.team).length?` · 👷 ${esc(tdNames(d,o.team).map(tdShort).join(', '))}`:'')}${o.city?` · ${esc(o.city)}`:''}</div>
             </div>`;}).join('')}
           ${evs.length>3?`<div class="mini-more">+${evs.length-3} נוספים…</div>`:''}
         </div>`;}).join('')}
@@ -3061,6 +3313,7 @@ function renderCal(){
   el.innerHTML = `<div class="cal-topbar">
       <span class="cal-title">${title}</span>
       <span class="grow"></span>
+      <button class="nav-b td-open" onclick="openTeamDay('${cd}')" title="מי עובד בכל נתיב ביום שנבחר">👷 שיבוץ יומי${TD_ERR?' <span style="color:#a92f2f" title="טעינת השיבוץ נכשלה">⚠️</span>':''}</button>
       <div class="cal-seg">
         <button class="${CAL_VIEW==='day'?'on':''}" onclick="calMode('day')">יומי</button>
         <button class="${CAL_VIEW==='week'?'on':''}" onclick="calMode('week')">שבועי</button>
@@ -3074,6 +3327,13 @@ function renderCal(){
     </div>
     ${body}
     <div class="cal-legend">${legend}</div>`;
+  /* 6.24.18 — השיבוץ היומי נטען בעצלתיים לטווח המוצג בלבד, ואחריו ציור אחד נוסף.
+     כל תאריך בטווח מסומן כנטען גם כשהשליפה נכשלה, ולכן אין לולאת ציור. */
+  const _tdMiss = scope.filter(d=>!TD_HAVE.has(d));
+  if(_tdMiss.length && !TD_BUSY){
+    const _a = _tdMiss.slice().sort();
+    loadTeamDays(_a[0], _a[_a.length-1]).then(()=>{ if($('#cal-wrap')) renderCal(); });
+  }
   /* 6.2.2 — מונה תוצאות בטווח המוצג. ריק כשאין חיפוש פעיל. */
   const info=$('#cal-qinfo');
   if(info){
@@ -6908,7 +7168,7 @@ window.openScall = (id)=>{
       <div><label>עיר</label><input id="se-city" value="${esc(s.city||'')}"></div>
       <div><label>אזור גיאוגרפי</label>${selHtml('se-region',REGIONS,s.region,true)}</div>
       <div class="span2"><label>🚚 כתובת הגעה לקריאה ${wazeBtn(s.address?(s.address+' '+(s.city||'')):'')}</label><input id="se-addr" value="${esc(s.address||'')}" placeholder="לאן הצוות מגיע (ניתן לעריכה)"></div>
-      <div><label>צוות</label>${selHtml('se-team',teamVals,s.team,true)}</div>
+      <div><label>צוות</label>${selHtml('se-team',teamVals,s.team,true)}${window.tdHint(s.scheduled_date,s.team,'seTdHint')}</div>
       <div><label>תאריך מתואם</label><input id="se-date" type="date" value="${esc(s.scheduled_date||'')}"></div>
       <div><label>משבצת זמן</label>${selHtml('se-slot',TIME_SLOTS,s.time_slot,true)}</div>
       <div><label>דדליין טיפול</label><input id="se-deadline" type="date" value="${esc(s.deadline||'')}"></div>
@@ -7221,7 +7481,7 @@ window.openOrd = (id, ctx)=>{
       <div><label>יצרנו קשר?</label>${selHtml('oe-contact',CONTACT_STATUSES,o.contact_status)}</div>
       <div><label>עיר</label><input id="oe-city" value="${esc(o.city||'')}"></div>
       <div><label>אזור גיאוגרפי</label>${selHtml('oe-region',REGIONS,o.region,true)}</div>
-      <div><label>צוות</label>${selHtml('oe-team',teamVals,o.team,true)}</div>
+      <div><label>צוות</label>${selHtml('oe-team',teamVals,o.team,true)}${window.tdHint(o.scheduled_date,o.team,'oeTdHint')}</div>
       <div><label>תאריך מתואם</label><input id="oe-date" type="date" value="${esc(o.scheduled_date||'')}"></div>
       <div><label>מספר ימים</label><input id="oe-days" type="number" min="1" value="${o.days_count||1}"></div>
       <div><label>משבצת זמן</label>${selHtml('oe-slot',TIME_SLOTS,o.time_slot,true)}</div>

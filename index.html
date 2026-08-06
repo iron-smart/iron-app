@@ -1205,7 +1205,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.28.0</div>
+      <div class="ver">גרסה 6.28.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1303,7 +1303,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.28.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.28.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -6259,6 +6259,9 @@ function renderPrcInner(){
 }
 function renderBody(){
   const m = document.getElementById('prc-body'); if(!m) return;
+  if(!SITE && !siteLoading && !siteErr && state.allGroups && window.PRC_VIEW!=='list' && window.PRC_VIEW!=='miss' && window.PRC_VIEW!=='set'){
+    siteLoad().then(()=>{ try{ renderBody(); }catch(_){} }, ()=>{ try{ renderBody(); }catch(_){} });
+  }
   if(window.PRC_VIEW==='list') renderClient(m);
   else if(window.PRC_VIEW==='miss') renderMiss(m);
   else if(window.PRC_VIEW==='set') renderSettings(m);
@@ -6327,6 +6330,7 @@ function renderPricing(m){
   } else if(state.allGroups){
     html = '<div class="pv-tblwrap"><table><thead><tr>'+
       '<th class="pv-imgtd">תמונה</th><th>מק״ט</th><th class="pv-name">שם מוצר</th><th>קטגוריה · תת קטגוריה</th><th class="pv-num">עלות בש״ח</th>'+
+      '<th class="pv-num">מחיר אתר כיום<br><small style="font-weight:400;color:var(--pv-muted)">כולל מע״מ</small></th>'+
       GROUPS.map(x=>'<th class="pv-num" style="border-bottom:3px solid '+gcol(x)+'"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+gcol(x)+';margin-inline-end:5px"></span>'+esc(x)+'<br><small style="font-weight:400;color:var(--pv-muted)">כולל מע״מ</small></th>').join('')+
       '</tr></thead><tbody>';
     rows.forEach(p=>{
@@ -6334,6 +6338,7 @@ function renderPricing(m){
       if(ca==null) noCost++; else priced++;
       html+='<tr class="'+(p.status!=='פעיל'?'pv-inactive':'')+'"><td class="pv-imgtd">'+imgCell(p)+'</td>'+skuTd(p.sku)+'<td class="pv-name">'+esc(p.name)+'</td><td class="pv-catcell">'+esc(p.cat)+(p.sub?' · '+esc(p.sub):'')+'</td>'+
         '<td class="pv-num pv-cost">'+(ca==null?'<span class="pv-nocost">חסר עלות</span>':fmt(ca)+' ₪')+'</td>'+
+        (function(){ const sp=sitePrice(p.sku); return '<td class="pv-num">'+(sp===undefined?'<span class="pv-noprice">'+(siteErr?'שגיאה':'…')+'</span>':(sp==null?'<span class="pv-noprice">—</span>':fmt(sp)+' ₪'))+'</td>'; })()+
         GROUPS.map(x=>{ const inc=priceInc(p.sku,x); return '<td class="pv-num">'+(inc==null?'<span class="pv-noprice">—</span>':fmt(inc)+' ₪')+'</td>'; }).join('')+'</tr>';
     });
     html+='</tbody></table></div>';
@@ -6545,6 +6550,37 @@ function upBadge(sku, group, base){
   const em = effMargin(sku, group);
   if(em==null || base==null || Math.abs(em-base) < 0.001) return '';
   return '<span class="pv-badge up" title="מרווח בפועל בזכות רצפת השער/המע״מ">בפועל '+pc(em)+'</span>';
+}
+
+/* ---------- מחירי האתר כיום (מחירון הבסיס כולל מע״מ מפריוריטי) ---------- */
+/* המקור: ord.inv_items.price_vat — בדיוק השדה שמוצג בכרטיס הפריט כ"מחירון כולל מע"מ".
+   נטען פעם אחת ומוצג לצד עמודות המחירונים כדי לאפשר השוואה שורה-שורה. */
+let SITE = null, siteLoading = false, siteErr = null, sitePromise = null;
+async function siteLoad(force){
+  if(SITE && !force) return;
+  if(sitePromise) return sitePromise;
+  siteLoading = true; siteErr = null;
+  sitePromise = (async ()=>{
+    try{
+      const m = {}; const PAGE = 1000;
+      for(let from=0; from<20000; from+=PAGE){
+        const r = await sb.schema('ord').from('inv_items')
+          .select('partname,price_vat').order('partname',{ascending:true}).range(from, from+PAGE-1);
+        if(r.error) throw r.error;
+        const d = r.data||[];
+        d.forEach(x=>{ if(x && x.partname!=null) m[String(x.partname).trim()] = (x.price_vat==null?null:Number(x.price_vat)); });
+        if(d.length < PAGE) break;
+      }
+      SITE = m;
+    }catch(e){ siteErr = e; throw e; }
+    finally { siteLoading = false; sitePromise = null; }
+  })();
+  return sitePromise;
+}
+function sitePrice(sku){
+  if(!SITE) return undefined;
+  const v = SITE[String(sku).trim()];
+  return (v==null || !isFinite(v)) ? null : v;
 }
 
 /* ---------- תצוגת מק״טים שאינם בתמחור ---------- */
@@ -7053,7 +7089,8 @@ function download(name, text, type){
 }
 const csvq = s => '"'+String(s==null?'':s).replace(/"/g,'""')+'"';
 
-PV.exportCSV = ()=>{
+PV.exportCSV = async ()=>{
+  if(!SITE && state.allGroups){ try{ await siteLoad(); }catch(_){ } }
   const rows = filteredProducts();
   let out;
   if(state.catalog){
@@ -7068,9 +7105,10 @@ PV.exportCSV = ()=>{
     return;
   }
   if(state.allGroups){
-    out = [['מק״ט','שם מוצר','קטגוריה','תת קטגוריה','מקור','עלות אחרי העמסה',...GROUPS.map(g=>g+' כולל מע״מ')].map(csvq).join(',')];
+    out = [['מק״ט','שם מוצר','קטגוריה','תת קטגוריה','מקור','עלות אחרי העמסה','מחיר אתר כיום כולל מע״מ',...GROUPS.map(g=>g+' כולל מע״מ')].map(csvq).join(',')];
     rows.forEach(p=>{
-      out.push([p.sku,p.name,p.cat,p.sub,p.source, costAfter(p.sku)??'',
+      const sp0=sitePrice(p.sku);
+      out.push([p.sku,p.name,p.cat,p.sub,p.source, costAfter(p.sku)??'', (sp0==null?'':sp0.toFixed(2)),
         ...GROUPS.map(g=>{ const v=priceInc(p.sku,g); return v==null?'':v.toFixed(2); })].map(csvq).join(','));
     });
   } else {
@@ -7216,7 +7254,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'prc-v13-skulink-miss-floors-2026-08-06';
+const BUILD_ID = 'prc-v13-siteprice-2026-08-06';
 
 window.renderPrc = async function(){
   pvInjectCss();

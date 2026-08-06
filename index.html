@@ -5741,508 +5741,1236 @@ window.createProtocol = async (orderId)=>{
   renderDocs(); renderOps(); openOrd(orderId,'sales');
 };
 
-/* ===== תמחור ומחירונים — אדמיניסטרטור בלבד =====
-   PRC-6180 · נתוני מק״טים מ-ord.inv_items · מחירוני פריוריטי מ-ord.price_lists/price_list_items (סונכרנו מראש — אפס משיכות יזומות מפריוריטי) · עלויות ידניות מ-ord.prc_item_ext/prc_bom/prc_settings. הכרעת רומן 03/08/2026: המערכת היא מקור האמת לעלות; עלות פריוריטי שגויה כרגע ומוצגת לתצוגה בלבד; בהמשך המערכת תדחוף עלויות אל פריוריטי.
-   price אינו מחיר מכירה ואינו בשימוש כאן: המחיר הוא price_base (ללא מע״מ) ו-price_vat (כולל). */
-const PRC_COLS_SEL = 'partname,partdes,family,unit,barcode,erp_status,has_inventory,qty,'
-  + 'cost,price_base,price_vat,needs_install,install_price_iron,install_price_contractor,'
-  + 'install_price_contractor_vat,ship_price_single,weight_kg,length_cm,width_cm,height_cm,'
-  + 'pallet_load_factor,sold_3m,sold_6m';
-let PRC_VAT = 0.18;
-let PRC_PL = [], PRC_PLI = {}, PRC_EXT = {}, PRC_BOM = {}, PRC_SET = null, PRC_LIST_PL = '';
-let PRC = [], PRC_LOADED = false, PRC_LOADING = false, PRC_TRIED = false, PRC_ERR = '';
-let PRC_VIEW = 'db', PRC_EXC = 0;
-const PRC_F = { q:'', fam:'', st:'', only:'' };
+/* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
+   מחליף את מודול התמחור הקודם במלואו. המנוע, המסכים וההתנהגות זהים לקובץ ה-HTML
+   העצמאי שרומן סיפק; העיצוב הוסב לצבעי ואלמנטי הפלטפורמה בלבד.
+   הנתונים נקראים ונכתבים אך ורק ל-ord.prc_* דרך לקוח ה-supabase של הפלטפורמה (sb)
+   ותחת RLS; בלוק סנכרון הענן והשמירה המקומית של v13 לא הועתקו במכוון.
+   כל ה-CSS מוזרק פעם אחת ל-<style id="pv-css"> וממודר תחת #tab-prc. */
 
-/* 6.24.1 — מסך התמחור עבר מהרשאת תפקיד להרשאת מפתח. כל תת-מסך נגזר ממפתח משלו:
-   "מחירון ללקוח" מ-prc.lists, ויתר התצוגות מ-prc.pricing. אדמין מקבל 2 דרך pLevel. */
-window.PRC_VIEW_PERM  = { db:'prc.pricing', marg:'prc.pricing', side:'prc.pricing', exc:'prc.pricing', set:'prc.pricing', list:'prc.lists' };
-window.PRC_VIEW_ORDER = ['db','marg','list','side','exc','set'];
-window.prcAllowedViews = ()=>{ try{ return PRC_VIEW_ORDER.filter(v=>canView(PRC_VIEW_PERM[v]||'prc')); }catch(_e){ return []; } };
-function prcGate(){
-  try{
-    const n = document.getElementById('nav-prc');
-    if(n) n.hidden = !prcAdmin();
-  }catch(e){ /* לפני טעינת המשתמש */ }
+/* ===== תמחור ומחירונים — פורט מלא של אפליקציית התמחור (v13) — אדמיניסטרטור בלבד ===== */
+(function(){
+'use strict';
+
+/* ---------- עיצוב (מותאם לצבעי ואלמנטי הפלטפורמה) ---------- */
+const PV_CSS = `
+#tab-prc{ --pv-brand:#002D48; --pv-dark:#061827; --pv-accent:#6A9F85; --pv-ink:#061827; --pv-ink2:#33455a;
+  --pv-card:#fff; --pv-line:#e2e8f0; --pv-muted:#6d7c8c; --pv-green:#6A9F85; --pv-amber:#d97706; --pv-blue:#002D48; --pv-red:#c0392b; }
+#tab-prc .pv-bar{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; width:100% }
+#tab-prc .pv-chips{ display:flex; gap:6px; flex-wrap:wrap }
+#tab-prc .pv-chip{ border:1.5px solid var(--pv-line); background:#fff; border-radius:20px; padding:6px 13px; cursor:pointer; font-size:13px; color:var(--pv-ink2); display:inline-flex; align-items:center; gap:7px; font-family:inherit }
+#tab-prc .pv-chip .pv-dot{ width:9px; height:9px; border-radius:50%; display:inline-block; flex:none }
+#tab-prc .pv-chip:hover{ filter:brightness(.97) }
+#tab-prc .pv-chip.on{ color:var(--pv-ink); font-weight:700 }
+#tab-prc .pv-chip.all.on{ background:var(--pv-dark); border-color:var(--pv-dark); color:#fff }
+#tab-prc .pv-gtag{ display:inline-flex; align-items:center; gap:7px; border-radius:20px; padding:4px 13px; font-weight:700; font-size:13px; color:var(--pv-ink) }
+#tab-prc .pv-gtag .pv-dot{ width:9px; height:9px; border-radius:50%; display:inline-block }
+#tab-prc .pv-sep{ width:1px; height:26px; background:var(--pv-line) }
+#tab-prc input[type=search].pv-q{ border:1.5px solid var(--pv-line); border-radius:8px; padding:7px 12px; width:220px; font-family:inherit; font-size:13px }
+#tab-prc select.pv-f{ border:1.5px solid var(--pv-line); border-radius:8px; padding:7px 8px; background:#fff; font-family:inherit; font-size:13px }
+#tab-prc label.pv-tgl{ display:flex; align-items:center; gap:5px; color:var(--pv-ink2); font-size:12.5px; cursor:pointer }
+#tab-prc .pv-vbtn{ background:#fff; border:1.5px solid var(--pv-line); border-radius:8px; padding:7px 14px; cursor:pointer; font-size:13px; color:var(--pv-ink2); font-family:inherit }
+#tab-prc .pv-vbtn:hover{ background:#f4f6f8 }
+#tab-prc .pv-vbtn.on{ background:var(--pv-brand); border-color:var(--pv-brand); color:#fff; font-weight:600 }
+#tab-prc .pv-stats{ display:flex; gap:14px; margin:12px 0; flex-wrap:wrap }
+#tab-prc .pv-stat{ background:var(--pv-card); border:1px solid var(--pv-line); border-radius:10px; padding:10px 16px; min-width:130px }
+#tab-prc .pv-stat .v{ font-size:19px; font-weight:700 }
+#tab-prc .pv-stat .l{ font-size:11.5px; color:var(--pv-muted); margin-top:2px }
+#tab-prc .pv-tblwrap{ background:var(--pv-card); border:1px solid var(--pv-line); border-radius:12px; overflow:auto; max-height:calc(100vh - 300px) }
+#tab-prc .pv-tblwrap table{ border-collapse:separate; border-spacing:0; width:100%; min-width:900px }
+#tab-prc .pv-tblwrap thead th{ position:sticky; top:0; background:#fafbfc; border-bottom:2px solid var(--pv-line); padding:5px 7px; font-size:11.5px; color:var(--pv-ink2); text-align:center; white-space:nowrap; z-index:5 }
+#tab-prc .pv-tblwrap tbody td{ padding:2px 7px; border-bottom:1px solid #eef0f3; white-space:nowrap; font-variant-numeric:tabular-nums; text-align:center; font-size:13px; line-height:1.25 }
+#tab-prc .pv-tblwrap tbody tr:hover{ background:#f8f9fb }
+#tab-prc td.pv-name, #tab-prc th.pv-name{ white-space:normal; min-width:165px; max-width:300px; text-align:right }
+#tab-prc td.pv-num, #tab-prc th.pv-num{ text-align:center }
+#tab-prc .pv-sku{ font-family:ui-monospace,Consolas,monospace; font-size:12px; color:var(--pv-ink2); direction:ltr }
+#tab-prc .pv-catcell{ color:var(--pv-muted); font-size:11.5px }
+#tab-prc .pv-price{ font-weight:700 }
+#tab-prc .pv-price.vat{ color:var(--pv-dark) }
+#tab-prc .pv-cost{ color:var(--pv-muted) }
+#tab-prc .pv-mult{ color:#3f7a5e; font-size:12.5px }
+#tab-prc .pv-badge{ display:inline-block; font-size:10px; border-radius:4px; padding:0 5px; margin-inline-start:4px; vertical-align:1px }
+#tab-prc .pv-badge.ov{ background:#e3ecf3; color:var(--pv-brand) }
+#tab-prc .pv-badge.mx{ background:#e8f2ed; color:#3f7a5e }
+#tab-prc .pv-badge.df{ background:#eef0f3; color:var(--pv-muted) }
+#tab-prc .pv-mcell{ cursor:pointer; border-radius:6px }
+#tab-prc .pv-mcell:hover{ background:#eef2f8; outline:1.5px dashed #b9c4d8 }
+#tab-prc .pv-mcell input{ width:64px; border:1.5px solid var(--pv-blue); border-radius:6px; padding:3px 6px; direction:ltr; text-align:left }
+#tab-prc .pv-nocost{ color:var(--pv-red); font-size:12px }
+#tab-prc .pv-noprice{ color:var(--pv-muted); font-style:italic; font-size:12.5px }
+#tab-prc tr.pv-inactive td{ opacity:.5 }
+#tab-prc .pv-src{ font-size:10.5px; border-radius:4px; padding:1px 6px; background:#eef0f3; color:var(--pv-ink2) }
+#tab-prc .pv-src.s1{ background:#e3ecf3; color:var(--pv-brand) }
+#tab-prc .pv-src.s2{ background:#e8f2ed; color:#3f7a5e }
+#tab-prc .pv-src.s3{ background:#eee9f8; color:#6a4fa3 }
+#tab-prc .pv-panelgrid{ display:grid; grid-template-columns:340px 1fr; gap:16px; align-items:start }
+#tab-prc .pv-panel{ background:var(--pv-card); border:1px solid var(--pv-line); border-radius:12px; padding:18px }
+#tab-prc .pv-panel h3{ font-size:14.5px; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--pv-line) }
+#tab-prc .pv-frow{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:9px }
+#tab-prc .pv-frow label{ color:var(--pv-ink2); font-size:13px }
+#tab-prc .pv-frow input{ border:1.5px solid var(--pv-line); border-radius:7px; padding:6px 9px; width:90px; direction:ltr; text-align:left }
+#tab-prc .pv-frow input:focus{ border-color:var(--pv-brand); outline:none }
+#tab-prc .pv-mtx{ overflow:auto; max-height:60vh }
+#tab-prc .pv-mtx table{ min-width:0 }
+#tab-prc .pv-mtx td input{ width:58px; border:1px solid transparent; background:none; border-radius:5px; padding:3px 5px; direction:ltr; text-align:left }
+#tab-prc .pv-mtx td input:hover{ border-color:var(--pv-line); background:#fff }
+#tab-prc .pv-mtx td input:focus{ border-color:var(--pv-brand); background:#fff; outline:none }
+#tab-prc .pv-hint{ font-size:12px; color:var(--pv-muted); margin-top:10px; line-height:1.5 }
+#tab-prc .pv-clientbar{ display:flex; gap:10px; align-items:center; margin-bottom:14px; flex-wrap:wrap }
+#tab-prc .pv-clientbar input, #tab-prc .pv-clientbar select{ border:1.5px solid var(--pv-line); border-radius:8px; padding:7px 10px; font-family:inherit }
+#tab-prc .pv-btn{ background:var(--pv-brand); color:#fff; border:none; border-radius:8px; padding:8px 16px; cursor:pointer; font-size:13px; font-weight:600; font-family:inherit }
+#tab-prc .pv-btn:hover{ background:var(--pv-dark) }
+#tab-prc .pv-btn.ghost{ background:#fff; color:var(--pv-ink); border:1.5px solid var(--pv-line) }
+#tab-prc .pv-btn.ghost:hover{ background:#f4f6f8 }
+#tab-prc .pv-pricelist{ background:#fff; border:1px solid var(--pv-line); border-radius:12px; padding:34px 40px; max-width:860px }
+#tab-prc .pv-plhead{ display:flex; justify-content:space-between; align-items:flex-start; border-bottom:3px solid var(--pv-brand); padding-bottom:14px; margin-bottom:6px }
+#tab-prc .pv-pllogo{ font-family:Heebo,sans-serif; font-weight:800; font-size:24px; letter-spacing:2px; color:var(--pv-brand); line-height:1 }
+#tab-prc .pv-pllogo small{ display:block; font-size:11px; font-weight:500; letter-spacing:1px; color:var(--pv-accent); margin-top:3px }
+#tab-prc .pv-plhead .pv-meta{ text-align:left; color:var(--pv-muted); font-size:12.5px; line-height:1.6 }
+#tab-prc .pv-pltitle{ font-size:15px; color:var(--pv-ink2); margin:10px 0 4px }
+#tab-prc .pv-plcat{ margin-top:20px }
+#tab-prc .pv-plcat h4{ background:var(--pv-brand); color:#fff; padding:7px 12px; border-radius:6px 6px 0 0; font-size:13.5px }
+#tab-prc .pv-plcat table{ width:100%; border-collapse:separate; border-spacing:0 }
+#tab-prc .pv-plcat th{ background:#f2f3f5; font-size:11.5px; padding:6px 12px; text-align:right; color:var(--pv-ink2) }
+#tab-prc .pv-plcat td{ padding:2px 10px; border-bottom:1px solid #eef0f3; font-size:13px }
+#tab-prc .pv-plcat td:last-child, #tab-prc .pv-plcat th:last-child{ text-align:center; font-weight:600; white-space:nowrap; width:130px }
+#tab-prc .pv-plfoot{ margin-top:26px; padding-top:12px; border-top:1px solid var(--pv-line); color:var(--pv-muted); font-size:11.5px; line-height:1.6 }
+#tab-prc .pv-dbbar{ display:flex; gap:10px; align-items:center; margin-bottom:12px; flex-wrap:wrap }
+#tab-prc .pv-addform{ background:var(--pv-card); border:1.5px solid var(--pv-brand); border-radius:12px; padding:16px 18px; margin-bottom:14px }
+#tab-prc .pv-addform h3{ font-size:14px; margin-bottom:12px; color:var(--pv-brand) }
+#tab-prc .pv-afgrid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px }
+#tab-prc .pv-afgrid label{ display:block; font-size:11.5px; color:var(--pv-muted); margin-bottom:3px }
+#tab-prc .pv-afgrid input, #tab-prc .pv-afgrid select{ width:100%; border:1.5px solid var(--pv-line); border-radius:7px; padding:7px 9px; font-family:inherit }
+#tab-prc .pv-afgrid input:focus, #tab-prc .pv-afgrid select:focus{ border-color:var(--pv-brand); outline:none }
+#tab-prc .pv-afactions{ display:flex; gap:8px; margin-top:12px; align-items:center }
+#tab-prc .pv-aferr{ color:var(--pv-red); font-size:12.5px }
+#tab-prc .pv-rowbtn{ border:1px solid var(--pv-line); background:#fff; border-radius:6px; padding:1px 6px; cursor:pointer; font-size:11.5px; color:var(--pv-ink2); font-family:inherit }
+#tab-prc .pv-rowbtn:hover{ background:#eef2f6; border-color:#c2ccd6 }
+#tab-prc .pv-rowbtn.danger{ color:var(--pv-red) }
+#tab-prc .pv-rowbtn.danger.arm{ background:var(--pv-red); color:#fff; border-color:var(--pv-red) }
+#tab-prc .pv-rowbtn.primary{ background:var(--pv-brand); color:#fff; border-color:var(--pv-brand) }
+#tab-prc td .pv-edin{ border:1.5px solid var(--pv-brand); border-radius:6px; padding:4px 6px; width:110px; font-family:inherit }
+#tab-prc td .pv-edin.wide{ width:230px }
+#tab-prc td .pv-edin.narrow{ width:70px; direction:ltr; text-align:left }
+#tab-prc .pv-bomrow td{ background:#f4f8fb !important; border-bottom:2px solid var(--pv-brand) !important }
+#tab-prc .pv-bomedit{ padding:10px 6px }
+#tab-prc .pv-bomedit h4{ font-size:13px; margin-bottom:8px; color:var(--pv-brand) }
+#tab-prc .pv-bomedit table{ min-width:0; width:auto; border-collapse:separate; border-spacing:0 }
+#tab-prc .pv-bomedit td, #tab-prc .pv-bomedit th{ padding:4px 8px; font-size:12.5px }
+#tab-prc .pv-bomedit input{ border:1px solid var(--pv-line); border-radius:6px; padding:4px 6px; font-family:inherit }
+@media (max-width:900px){ #tab-prc .pv-panelgrid{ grid-template-columns:1fr } #tab-prc .pv-pricelist{ padding:18px } }
+@media print{
+  body.pv-print *{ visibility:hidden !important }
+  body.pv-print .pv-pricelist, body.pv-print .pv-pricelist *{ visibility:visible !important }
+  body.pv-print .pv-pricelist{ position:absolute; inset-inline:0; top:0; border:none; padding:10px; max-width:none; box-shadow:none }
+  body.pv-print .pv-plcat{ break-inside:avoid-page }
+}`;
+
+function pvInjectCss(){
+  if(document.getElementById('pv-css')) return;
+  const st=document.createElement('style'); st.id='pv-css'; st.textContent=PV_CSS;
+  document.head.appendChild(st);
 }
+
+/* ---------- namespace עבור מטפלי onclick (נפתרים בהיקף הגלובלי) ---------- */
+const PV = window.prcV13 = {};
+
+/* ---------- הרשאות ---------- */
+/* כל שלוש התצוגות נשענות על אותן טבלאות (ord.prc_*) שמדיניות ה-SELECT שלהן דורשת
+   can_view('prc.pricing'); לכן גם "מחירון ללקוח" נשען על ההרשאה הזו — אחרת המסך ייפתח ריק.
+   'prc.lists' ממשיך לשלוט במסך "פריטים במחירון" (מחירוני פריוריטי) שהוא בלוק נפרד. */
+window.PRC_VIEW_PERM  = { db:'prc.pricing', list:'prc.pricing', set:'prc.pricing' };
+window.PRC_VIEW_ORDER = ['db','list','set'];
+const VIEW_LABEL = { db:'תמחור וניהול מאגר', list:'מחירון ללקוח', set:'הגדרות ומקדמים' };
+window.prcAllowedViews = ()=>{ try{ return PRC_VIEW_ORDER.filter(v=>canView(PRC_VIEW_PERM[v]||'prc')); }catch(_e){ return []; } };
 const prcAdmin = () => prcAllowedViews().length > 0;
 const prcEdit  = () => { try{ return canEdit('prc.pricing'); }catch(_e){ return false; } };
-/* ── מנוע העלות (6.19.5) — עלויות ידניות בלבד; הגנת מעגל והתפשטות null כמות שהן מ-v13 ── */
-const prcLF = e => { if(e && Number(e.load_override)>0) return Number(e.load_override);
-  const s = PRC_SET||{}; const m = {'יבוא':s.load_import,'ייצור':s.load_manufacture,'מורכב':s.load_assembled,'קניה בארץ':s.load_local};
-  const v = Number(e ? m[e.source] : 0); return v>0 ? v : 1; };
-function prcCB(pn, seen){
-  seen = seen || {};
-  if(seen[pn]) return null;              /* הגנת מעגל בעץ המוצר */
-  seen[pn] = true;
-  const out = prcCB_(pn, seen);
-  delete seen[pn];                       /* מאפשר יהלום: שני אבות לאותו רכיב */
-  return out;
-}
-function prcCB_(pn, seen){
-  const e = PRC_EXT[pn];
-  if(!e) return null;
-  const rate = Number((PRC_SET||{}).usd_rate) || 3.3;
-  if(e.source==='מורכב'){
-    const kids = PRC_BOM[pn] || [];
-    /* מורכב בלי עץ מוצר — נסיגה לעלות שקלית ידנית (סמנטיקת v13); ממצא בקרה 03/08 */
-    if(!kids.length) return Number(e.cost_ils)>0 ? Number(e.cost_ils) : null;
-    let t = 0;
-    for(const k of kids){
-      const c = prcCB(k.child, seen);
-      if(c==null) return null;           /* רכיב חסר עלות ⇒ null לכל האב, במכוון */
-      t += c * (Number(k.qty)||1);
-    }
-    return t;
-  }
-  if(e.source==='יבוא'){
-    /* תקדימות v13: עלות דולרית × שער קודם; שקלית רק כשאין דולרית */
-    if(Number(e.cost_usd)>0) return Number(e.cost_usd) * rate;
-    return Number(e.cost_ils)>0 ? Number(e.cost_ils) : null;
-  }
-  if(Number(e.cost_ils)>0) return Number(e.cost_ils);
-  if(Number(e.cost_usd)>0) return Number(e.cost_usd) * rate;
-  return null;
-}
-const prcCA = pn => { const c = prcCB(pn); return c==null ? null : c * prcLF(PRC_EXT[pn]); };
-const prcCost = r => { const m = prcCA(r.partname); if(m!=null) return m; const v = Number(r.cost); return v > 0 ? v : null; };
-const prcCostSrc = r => prcCA(r.partname)!=null ? 'ידני' : (Number(r.cost)>0 ? 'פריוריטי' : null);
-const prcEx   = r => { const v = Number(r.price_base); return v > 0 ? v : null; };
-const prcInc  = r => { const v = Number(r.price_vat); if(v > 0) return v; const e = prcEx(r); return e == null ? null : e * (1 + PRC_VAT); };
-function prcMargin(r){ const c = prcCost(r), p = prcEx(r); return (c == null || p == null) ? null : (p - c) / p; }
-function prcMult(r){   const c = prcCost(r), p = prcEx(r); return (c == null || p == null) ? null : p / c; }
-const prcPct   = v => v == null ? '—' : (v*100).toFixed(1) + '%';
-const prcMoney = v => (v == null || v === '') ? '—' : '₪' + Number(v).toLocaleString('he-IL',{minimumFractionDigits:2,maximumFractionDigits:2});
-const prcXf    = v => v == null ? '—' : '×' + Number(v).toLocaleString('he-IL',{minimumFractionDigits:2,maximumFractionDigits:2});
-const prcAct   = r => String(r.erp_status||'') === 'פעיל';
-function prcMCls(m){ return m == null ? 'gry' : m <= 0 ? 'red' : m < 0.20 ? 'org' : m > 0.95 ? 'blk' : 'grn'; }
-const prcMPill = m => '<span class="inv-st ' + prcMCls(m) + '">' + prcPct(m) + '</span>';
-function prcMed(a){ if(!a.length) return null; const s = a.slice().sort((x,y)=>x-y); const i = Math.floor(s.length/2);
-  return s.length % 2 ? s[i] : (s[i-1] + s[i]) / 2; }
+/* #nav-prc מארח שני מסכים: "תמחור" (הבלוק הזה, prc.pricing) ו-"פריטים במחירון"
+   (בלוק עצמאי על ord.price_lists, prc.lists). לכן אסור להסתיר את כל הכניסה
+   בתפריט לפי prc.pricing בלבד — משתמש עם prc.lists היה מאבד גישה למסך שלו. */
+const prcLists = () => { try{ return canView('prc.lists'); }catch(_e){ return false; } };
+window.prcGate = function(){
+  try{
+    const n = document.getElementById('nav-prc');
+    if(!n) return;
+    n.hidden = !(prcAdmin() || prcLists());
+    const bPrc = n.querySelector('.submenu button[onclick*="gotoTab"]');
+    if(bPrc) bPrc.hidden = !prcAdmin();
+    const bLst = n.querySelector('.submenu button[onclick*="openPLBrowser"]');
+    if(bLst) bLst.hidden = !prcLists();
+  }catch(e){}
+};
+if(typeof window.PRC_VIEW==='undefined' || !PRC_VIEW_ORDER.includes(window.PRC_VIEW)) window.PRC_VIEW='db';
+window.gotoPrc = v => { const av=prcAllowedViews(); if(!av.length) return; window.PRC_VIEW = av.includes(v)? v : av[0]; gotoTab('prc'); };
 
-window.gotoPrc = v => { const av = prcAllowedViews(); if(!av.length){ try{ toast('אין לך הרשאה למסך התמחור'); }catch(_e){} return; } v = v || PRC_VIEW; if(!av.includes(v)) v = av[0]; PRC_VIEW = v; gotoTab('prc'); };
-function renderPrcIfLoaded(){ if(PRC_LOADED) renderPrc(); }
+/* ---------- מצב ---------- */
+const DATA = { settings:{}, groups:[], matrix:[], products:[], bom:[], overrides:{}, excluded:{} };
+let S = DATA.settings;
+let GROUPS = [];
+const byy = {};
+const bomByParent = {};
+let state = { group:'מסחרי', allGroups:false, catalog:false };
+let PRC_LOADED = false, prcLoading = false;
+let dbEditSku=null, dbBomSku=null, dbAddOpen=false, dbArm=null, afDraft=null;
+let plRound=1, plCName='';
+
+const GROUP_COLORS = {
+  'אתר':'#2a78d6', 'פרטי-עסקי':'#eb6834', 'עסקי':'#1baf7a', 'מסחרי':'#eda100',
+  'ארגוני':'#e87ba4', 'מוסדי':'#008300', 'סיטונאי':'#4a3aa7'
+};
+/* צבע הקבוצה מגיע מהמסד (ord.prc_groups.colour) ומוזרק לתוך אטריביוט style.
+   מסננים לצורת hex בלבד כדי שערך זדוני לא יוכל לפרוץ מהאטריביוט. */
+/* 6 ספרות בדיוק: הקוד מוסיף סיומת אלפא ('22' / '1e') לצבע, וקיצור כמו #abc
+   היה יוצר '#abc22' — ערך לא חוקי שגורם לרקע שקוף. */
+const HEXCOL = /^#[0-9a-fA-F]{6}$/;
+const gcol = g => {
+  const c = (DATA.groups.find(x=>x.key===g)||{}).colour;
+  if(c && HEXCOL.test(String(c).trim())) return String(c).trim();
+  return GROUP_COLORS[g] || '#52514e';
+};
+
+const SRC_IMPORT='יבוא', SRC_MAKE='ייצור', SRC_ASM='מורכב', SRC_LOCAL='קניה בארץ';
+const SRC_LIST = [SRC_IMPORT, SRC_MAKE, SRC_ASM, SRC_LOCAL];
+const SRC_CLS = { [SRC_IMPORT]:'s1', [SRC_MAKE]:'s2', [SRC_ASM]:'s3' };
+const LF_COL = { [SRC_IMPORT]:'load_import', [SRC_MAKE]:'load_manufacture', [SRC_ASM]:'load_assembled', [SRC_LOCAL]:'load_local' };
+
+/* ---------- טעינת נתונים מהמסד ---------- */
+const num = x => (x==null || Number(x)<=0) ? null : Number(x);
+
+function rebuildIndexes(){
+  Object.keys(byy).forEach(k=>delete byy[k]);
+  DATA.products.forEach(p=>byy[p.sku]=p);
+  Object.keys(bomByParent).forEach(k=>delete bomByParent[k]);
+  DATA.bom.forEach(b=>{ (bomByParent[b.parent] ||= []).push(b); });
+}
 
 async function prcLoad(force){
-  if(!prcAdmin()) return;
-  if(PRC_LOADING) return;
   if(PRC_LOADED && !force) return;
-  PRC_LOADING = true; PRC_TRIED = true; PRC_ERR = ''; prcBody();
+  if(prcLoading) return;
+  prcLoading = true;
   try{
     const o = sb.schema('ord');
-    const [ri, rl, rp, rs, re2, rb] = await Promise.all([
-      o.from('inv_items').select(PRC_COLS_SEL).order('partname',{ascending:true}).limit(10000),
-      o.from('price_lists').select('plname,pldes,special,items_count').order('plname'),
-      o.from('price_list_items').select('plname,partname,price,percent,dprice,vat_price,dvat_price').limit(20000),
+    const [it, bm, st, gr, mx, ov, ex] = await Promise.all([
+      o.from('prc_item_ext').select('partname,name,cat,sub,source,cost_usd,cost_ils,load_override,prc_status,notes,img,img_full,sort,v13_updated').order('sort',{ascending:true}).limit(5000),
+      o.from('prc_bom').select('parent,child,qty').limit(5000),
       o.from('prc_settings').select('*').eq('id',1).maybeSingle(),
-      o.from('prc_item_ext').select('*').limit(10000),
-      o.from('prc_bom').select('parent,child,qty').limit(2000)
+      o.from('prc_groups').select('key,margin,descr,colour,sort').order('sort',{ascending:true}),
+      o.from('prc_matrix').select('cat,sub,margins').limit(2000),
+      o.from('prc_overrides').select('partname,grp,margin').limit(20000),
+      o.from('prc_excluded').select('partname,grp').limit(20000)
     ]);
-    for(const r of [ri, rl, rp, rs, re2, rb]) if(r.error) throw r.error;
-    PRC = ri.data || [];
-    PRC_PL = rl.data || [];
-    PRC_PLI = {}; (rp.data||[]).forEach(x=>{ (PRC_PLI[x.partname] = PRC_PLI[x.partname]||[]).push(x); });
-    PRC_SET = rs.data || null;
-    if(PRC_SET && Number(PRC_SET.vat)>0) PRC_VAT = Number(PRC_SET.vat);
-    PRC_EXT = {}; (re2.data||[]).forEach(x=>{ PRC_EXT[x.partname] = x; });
-    PRC_BOM = {}; (rb.data||[]).forEach(x=>{ (PRC_BOM[x.parent] = PRC_BOM[x.parent]||[]).push(x); });
+    const bad = [it,bm,st,gr,mx,ov,ex].find(r=>r && r.error);
+    if(bad) throw bad.error;
+
+    const s = st.data || {};
+    DATA.settings = S = {
+      usdRate: Number(s.usd_rate ?? 3.3),
+      vat: Number(s.vat ?? 0.18),
+      loadFactors: {
+        [SRC_IMPORT]: Number(s.load_import ?? 1.2),
+        [SRC_MAKE]:   Number(s.load_manufacture ?? 1.05),
+        [SRC_ASM]:    Number(s.load_assembled ?? 1.15),
+        [SRC_LOCAL]:  Number(s.load_local ?? 1)
+      }
+    };
+    DATA.groups = (gr.data||[]).map(g=>({ key:g.key, margin:Number(g.margin), desc:g.descr||'', colour:g.colour||null }));
+    GROUPS = DATA.groups.map(g=>g.key);
+    if(!GROUPS.includes(state.group)) state.group = GROUPS[0] || '';
+
+    DATA.matrix = (mx.data||[]).map(r=>{
+      const row = { cat:r.cat, sub:r.sub||'' };
+      const mg = r.margins||{};
+      GROUPS.forEach(g=>{ row[g] = (mg[g]==null? null : Number(mg[g])); });
+      return row;
+    });
+
+    DATA.products = (it.data||[]).map(r=>{
+      const p = {
+        sku:r.partname, name:r.name||'', cat:r.cat||'', sub:r.sub||'',
+        source:r.source||'', cost:num(r.cost_usd), costILS:num(r.cost_ils),
+        status:r.prc_status||'', notes:r.notes||'', updated:(r.v13_updated||'')
+      };
+      if(r.img) p.img = r.img;
+      if(r.img_full) p.imgFull = r.img_full;
+      if(r.load_override!=null) p.loadOv = Number(r.load_override);
+      return p;
+    });
+
+    DATA.bom = (bm.data||[]).map(b=>({ parent:b.parent, child:b.child, qty:Number(b.qty) }));
+
+    DATA.overrides = {};
+    (ov.data||[]).forEach(r=>{ (DATA.overrides[r.partname] ||= {})[r.grp] = Number(r.margin); });
+    DATA.excluded = {};
+    (ex.data||[]).forEach(r=>{ (DATA.excluded[r.grp] ||= {})[r.partname] = true; });
+
+    rebuildIndexes();
     PRC_LOADED = true;
-    if(PRC.length===10000 || (rp.data||[]).length===20000 || (re2.data||[]).length===10000 || (rb.data||[]).length===2000)
-      setTimeout(()=>toast('אזהרה: נתוני התמחור הגיעו לתקרת הטעינה — ייתכן שחלק מהשורות חסרות'), 300);
-  }catch(e){
-    PRC_ERR = 'שגיאה בטעינת נתוני התמחור: ' + (e && e.message ? e.message : String(e));
+
+    /* אזהרת תקרה: אם אחת השאילתות החזירה בדיוק את המכסה, ייתכן שהנתונים נחתכו
+       והמחירון שמוצג חלקי. עדיף להתריע מאשר להציג מחירים שגויים בשקט. */
+    const caps = [[it,5000,'פריטים'],[bm,5000,'שורות BOM'],[mx,2000,'שורות מטריצה'],
+                  [ov,20000,'אחוזים ידניים'],[ex,20000,'החרגות']];
+    const hit = caps.filter(c => ((c[0] && c[0].data) ? c[0].data.length : 0) >= c[1]).map(c=>c[2]);
+    if(hit.length) toast('אזהרה: נטענה כמות מרבית של '+hit.join(', ')+' — ייתכן שהנתונים חלקיים');
+  } finally {
+    prcLoading = false;
   }
-  PRC_LOADING = false;
-  renderPrc();
 }
 
-function renderPrc(){
-  if(!prcAdmin()){
-    const b = $('#prc-body'); if(b) b.innerHTML = '<div class="empty">אין לך הרשאה למסך התמחור</div>';
-    const t = $('#prc-tools'); if(t) t.innerHTML = '';
-    const w = $('#prc-views'); if(w) w.innerHTML = '';
-    return;
+/* ---------- מנוע התמחור (זהה למקור) ---------- */
+function loadFactor(p){ return p.loadOv ?? S.loadFactors[p.source] ?? 1; }
+
+function costBefore(sku, stack){
+  const p = byy[sku]; if(!p) return null;
+  stack = stack || new Set();
+  if(stack.has(sku)) return null;          /* הגנת מעגליות */
+  stack.add(sku);
+  if(p.source===SRC_IMPORT){
+    if(p.cost!=null) return p.cost * S.usdRate;
+    return p.costILS ?? null;
   }
-  prcTools(); prcViews(); prcBody();
-  if(!PRC_LOADED && !PRC_LOADING && !PRC_TRIED) prcLoad();
-}
-
-function prcTools(){
-  const el = $('#prc-tools'); if(!el) return;
-  const fams = [...new Set(PRC.map(r=>r.family).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),'he'));
-  const opt = (v,t,cur) => '<option value="' + esc(v) + '"' + (cur===v?' selected':'') + '>' + esc(t) + '</option>';
-  el.innerHTML =
-      '<div class="search"><input id="prc-q" type="search" placeholder="חיפוש מק״ט, תיאור או ברקוד…" value="' + esc(PRC_F.q) + '"></div>'
-    + '<select id="prc-st">'   + opt('','כל הסטטוסים',PRC_F.st) + opt('פעיל','פעיל',PRC_F.st) + opt('לא פעיל','לא פעיל',PRC_F.st) + '</select>'
-    + '<select id="prc-fam">'  + opt('','כל המשפחות',PRC_F.fam) + fams.map(f=>opt(f,f,PRC_F.fam)).join('') + '</select>'
-    + '<select id="prc-only">' + opt('','הכל',PRC_F.only) + opt('full','עלות ומחיר קיימים',PRC_F.only)
-                               + opt('nop','ללא מחיר מכירה',PRC_F.only) + opt('noc','ללא מחיר עלות',PRC_F.only) + '</select>'
-    + '<button class="tb-clear" id="prc-clear">נקה סינון</button>'
-    + '<button class="tb-clear" id="prc-xls">ייצוא לאקסל</button>'
-    + '<button class="tb-clear" id="prc-reload">רענון נתונים</button>';
-  const q = $('#prc-q'); if(q) q.oninput = e => { PRC_F.q = e.target.value; prcBody(); };
-  ['st','fam','only'].forEach(k=>{ const s = $('#prc-'+k); if(s) s.onchange = e => { PRC_F[k] = e.target.value; prcBody(); }; });
-  $('#prc-clear').onclick  = ()=>{ PRC_F.q=''; PRC_F.st=''; PRC_F.fam=''; PRC_F.only=''; renderPrc(); };
-  $('#prc-xls').onclick    = ()=> prcExport();
-  $('#prc-reload').onclick = ()=> prcLoad(true);
-}
-
-function prcViews(){
-  const el = $('#prc-views'); if(!el) return;
-  const exc = PRC_LOADED ? prcIssues(prcFiltered()).total : 0;
-  const av = prcAllowedViews();
-  const V = [['db','מאגר תמחור',PRC.length],['marg','ניתוח מרווחים',null],['list','מחירון ללקוח',null],
-             ['side','עלויות נלוות',null],['exc','חריגים בתמחור',exc],['set','הגדרות תמחור',null]].filter(v=>av.includes(v[0]));
-  el.innerHTML = V.map(v => '<button class="chip' + (PRC_VIEW===v[0]?' active':'') + '" data-prc-view="' + v[0] + '">' + v[1]
-    + (v[2]==null ? '' : ' <span class="n">' + fmtNum(v[2]) + '</span>') + '</button>').join('');
-  el.querySelectorAll('[data-prc-view]').forEach(b => b.onclick = ()=>{ PRC_VIEW = b.dataset.prcView; renderPrc(); navMark(); });
-}
-
-function prcFiltered(){
-  const q = PRC_F.q.trim().toLowerCase();
-  return PRC.filter(r=>{
-    if(PRC_F.st  && String(r.erp_status||'') !== PRC_F.st) return false;
-    if(PRC_F.fam && String(r.family||'')     !== PRC_F.fam) return false;
-    if(PRC_F.only === 'full' && !(prcCost(r) != null && prcEx(r) != null)) return false;
-    if(PRC_F.only === 'nop'  && prcEx(r)   != null) return false;
-    if(PRC_F.only === 'noc'  && prcCost(r) != null) return false;
-    if(q){
-      const hay = ((r.partname||'') + ' ' + (r.partdes||'') + ' ' + (r.family||'') + ' ' + (r.barcode||'')).toLowerCase();
-      if(hay.indexOf(q) === -1) return false;
+  if(p.source===SRC_ASM){
+    const kids = bomByParent[sku];
+    if(kids && kids.length){
+      let sum=0, ok=false;
+      for(const k of kids){
+        const c = costBefore(k.child, stack);
+        if(c!=null){ sum += c*k.qty; ok=true; } else return null;
+      }
+      return ok? sum : null;
     }
+    return p.costILS ?? null;
+  }
+  return p.costILS ?? p.cost ?? null;
+}
+function costAfter(sku){
+  const c = costBefore(sku);
+  const p = byy[sku];
+  return c==null? null : c * loadFactor(p);
+}
+function matrixMargin(p, group){
+  let row = DATA.matrix.find(m=>m.cat===p.cat && m.sub===p.sub);
+  if(!row) row = DATA.matrix.find(m=>m.cat===p.cat && (!m.sub || m.sub===''));
+  if(!row) return null;
+  const v = row[group];
+  return (v==null)? null : v;
+}
+function marginFor(sku, group){
+  const p = byy[sku]; if(!p) return {v:null, src:null};
+  const ov = DATA.overrides[sku]?.[group];
+  if(ov!=null) return {v:ov, src:'ov'};
+  const mx = matrixMargin(p, group);
+  if(mx!=null) return {v:mx, src:'mx'};
+  const g = DATA.groups.find(x=>x.key===group);
+  return {v:g? g.margin:null, src:'df'};
+}
+function priceEx(sku, group){
+  const ca = costAfter(sku); if(ca==null) return null;
+  const m = marginFor(sku, group);
+  if(m.v==null || m.v<=0 || m.v>=1) return null;   /* 0 = לא מוגדר → "לפי הצעה" */
+  return ca/(1-m.v);
+}
+function priceInc(sku, group){
+  const ex = priceEx(sku, group);
+  return ex==null? null : ex*(1+S.vat);
+}
+function multiple(sku, group){
+  const inc = priceInc(sku, group), cb = costBefore(sku);
+  return (inc==null||!cb)? null : inc/cb;
+}
+
+/* ---------- עזרים ---------- */
+const fmt = (n,d)=> n==null? '' : n.toLocaleString('he-IL',{minimumFractionDigits:(d==null?2:d),maximumFractionDigits:(d==null?2:d)});
+const pc = n=> n==null? '' : (n*100).toLocaleString('he-IL',{maximumFractionDigits:1})+'%';
+const isIncluded = (sku,g)=> !(DATA.excluded[g] && DATA.excluded[g][sku]);
+const gtag = g => '<span class="pv-gtag" style="background:'+gcol(g)+'22; border:1.5px solid '+gcol(g)+'"><span class="pv-dot" style="background:'+gcol(g)+'"></span>'+esc(g)+'</span>';
+/* q1 מיועד אך ורק לערך שנכנס למחרוזת JS בתוך אטריביוט on* של HTML.
+   סדר הבריחה חובה: קודם בריחת JS (\ ואז ') ורק אחר כך בריחת HTML —
+   מפרש ה-HTML מפענח את האטריביוט לפני שמנוע ה-JS רואה אותו, ולכן
+   &#39; חוזר להיות ' אחרי שכבר הוקדם לו backslash. בלי esc, מק״ט
+   שמכיל " (למשל 'מוט 45"') היה שובר את האטריביוט ומאפשר הזרקת סקריפט. */
+const q1 = s => esc(String(s??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"));
+function rawCost(p){ return p.source===SRC_IMPORT? p.cost : p.source===SRC_ASM? costBefore(p.sku) : (p.costILS ?? p.cost); }
+function noEdit(){ toast('אין לך הרשאת עריכה במסך התמחור'); }
+
+function imgCell(p, size){
+  size = size || 47;
+  if(!p.img) return '<span class="pv-catcell" style="opacity:.4">🖼</span>';
+  const u100 = p.img.includes('-350x350') ? p.img.replace('-350x350','-100x100') : p.img;
+  return '<a href="'+esc(p.imgFull||p.img)+'" target="_blank" rel="noopener" title="לחץ לתמונה מלאה" style="display:inline-block;line-height:0"><img src="'+esc(u100)+'" data-fb="'+esc(p.img)+'" onerror="prcV13.imgFb(this)" loading="lazy" style="height:'+size+'px;width:'+size+'px;object-fit:contain;border-radius:6px;border:1px solid var(--pv-line);background:#fff;display:block"></a>';
+}
+PV.imgFb = function(el){
+  const fbs = (el.dataset.fb||'').split('|').filter(Boolean);
+  if(!fbs.length){ el.parentElement.outerHTML = '<span class="pv-catcell" style="opacity:.4">🖼</span>'; return; }
+  el.src = fbs.shift();
+  el.dataset.fb = fbs.join('|');
+};
+
+const gv = id => { const e=document.getElementById(id); return e? e.value : ''; };
+function filteredProducts(){
+  const q = gv('pv-q').trim().toLowerCase();
+  const fc = gv('pv-fcat'), fs = gv('pv-fsub'), fr = gv('pv-fsrc'), st = gv('pv-fstatus');
+  const ocEl = document.getElementById('pv-onlycost');
+  const oc = ocEl? ocEl.checked : false;
+  return DATA.products.filter(p=>{
+    if(st && p.status!==st) return false;
+    if(fc && p.cat!==fc) return false;
+    if(fs && p.sub!==fs) return false;
+    if(fr && p.source!==fr) return false;
+    if(oc && costAfter(p.sku)==null) return false;
+    if(q && !(p.sku.toLowerCase().includes(q) || (p.name||'').toLowerCase().includes(q))) return false;
     return true;
   });
 }
 
-function prcTable(rows, cols, key){
-  if(!rows.length) return '<div class="empty">אין שורות להצגה</div>';
-  const shown = rows.slice(0, pgLim(key));
-  let h = '<div class="tbl-wrap"><table class="tbl"><thead><tr>' + cols.map(c=>'<th>'+c.t+'</th>').join('') + '</tr></thead><tbody>';
-  shown.forEach(r=>{
-    h += '<tr data-pn="' + esc(r.partname) + '" style="cursor:pointer">' + cols.map(c=>{
-      const srt = c.s ? ' data-sort="' + esc(c.s(r)) + '"' : '';
-      return '<td' + (c.cls ? ' class="'+c.cls+'"' : '') + srt + '>' + c.f(r) + '</td>';
-    }).join('') + '</tr>';
-  });
-  h += '</tbody></table></div>' + pgFoot(key, rows.length, 'מק״טים');
-  return h;
-}
-
-function prcKpis(items){
-  return '<div class="prc-kpis">' + items.map(k=>'<div class="prc-kpi"><div class="k">' + esc(k[0]) + '</div><div class="v">' + k[1] + '</div>'
-    + (k[2] ? '<div class="s">' + esc(k[2]) + '</div>' : '') + '</div>').join('') + '</div>';
-}
-
-const prcUsd = r => { const e=PRC_EXT[r.partname]; return (e && Number(e.cost_usd)>0) ? Number(e.cost_usd) : null; };
-const PRC_DB_COLS = [
-  { t:'מק״ט',           f:r=>esc(r.partname), cls:'clip' },
-  { t:'תיאור',          f:r=>esc(r.partdes||'—'), cls:'td-desc' },
-  { t:'משפחה',          f:r=>esc(r.family||'—'), cls:'clip' },
-  { t:'סטטוס',          f:r=>'<span class="inv-st ' + (prcAct(r)?'grn':'gry') + '">' + esc(r.erp_status||'—') + '</span>', s:r=>prcAct(r)?0:1 },
-  { t:'עלות',           f:r=>prcMoney(prcCost(r)), s:r=>prcCost(r)||0 },
-  { t:'עלות דולרית ($)',f:r=>{ const u=prcUsd(r); return u==null?'—':('$'+u.toFixed(2)); }, s:r=>prcUsd(r)||0 },
-  { t:'מחיר ללא מע״מ',  f:r=>prcMoney(prcEx(r)),   s:r=>prcEx(r)||0 },
-  { t:'מחיר כולל מע״מ', f:r=>prcMoney(prcInc(r)),  s:r=>prcInc(r)||0 },
-  { t:'מקור עלות',      f:r=>{ const cs=prcCostSrc(r); return cs==null ? '—' : '<span class="inv-st '+(cs==='ידני'?'grn':'org')+'">'+cs+'</span>'; }, s:r=>prcCostSrc(r)==='ידני'?0:1 },
-  { t:'מרווח',          f:r=>prcMPill(prcMargin(r)), s:r=>prcMargin(r)==null?-9:prcMargin(r) },
-  { t:'מכפלה',          f:r=>prcXf(prcMult(r)), s:r=>prcMult(r)||0 }
-];
-
-function prcDbView(){
-  const rows  = prcFiltered();
-  const withC = rows.filter(r=>prcCost(r)!=null).length;
-  const withP = rows.filter(r=>prcEx(r)!=null).length;
-  const both  = rows.filter(r=>prcCost(r)!=null && prcEx(r)!=null).length;
-  const ms    = rows.map(prcMargin).filter(v=>v!=null);
-  const avg   = ms.length ? ms.reduce((a,b)=>a+b,0)/ms.length : null;
-  const pc    = n => rows.length ? Math.round(n/rows.length*100) + '% מהמוצג' : '';
-  let h = prcKpis([
-    ['מק״טים בתצוגה', fmtNum(rows.length)],
-    ['עם מחיר מכירה', fmtNum(withP), pc(withP)],
-    ['עם מחיר עלות',  fmtNum(withC), pc(withC)],
-    ['ניתן לחשב מרווח', fmtNum(both), 'מרווח ממוצע ' + prcPct(avg)]
-  ]);
-  h += '<div class="note">העלות המוצגת היא העלות הידנית שבמערכת — מקור האמת לפי הכרעת רומן 03/08/2026. כשאין עלות ידנית מוצגת עלות פריוריטי לתצוגה בלבד (עמודת "מקור עלות" מבחינה ביניהן), המחיר ללא מע״מ הוא מחיר הבסיס, והמחיר כולל מע״מ הוא השדה הייעודי או חישוב לפי ' + (PRC_VAT*100).toFixed(0) + '% כשהוא ריק. המרווח מחושב כרווח חלקי מחיר המכירה, ולא כמכפלה על העלות.</div>';
-  h += prcTable(rows, PRC_DB_COLS, 'prc-db');
-  return h;
-}
-
-const PRC_BUCKETS = [
-  ['הפסד (עד 0%)', m=> m<=0],
-  ['0%–20%',       m=> m>0    && m<0.20],
-  ['20%–40%',      m=> m>=0.20 && m<0.40],
-  ['40%–60%',      m=> m>=0.40 && m<0.60],
-  ['60%–75%',      m=> m>=0.60 && m<0.75],
-  ['75%–90%',      m=> m>=0.75 && m<0.90],
-  ['מעל 90%',      m=> m>=0.90]
-];
-
-function prcPlMargTable(){
-  /* 6.19.5 — מרווח בפועל: מחיר המחירון האמיתי מול העלות הידנית המועמסת */
-  if(!PRC_PL.length) return '';
-  const exd = x => Number(x.dprice)>0 ? Number(x.dprice) : (Number(x.price)>0 ? Number(x.price)*(1-(Number(x.percent)||0)/100) : null);
-  const agg = {};
-  prcFiltered().forEach(r=>{ (PRC_PLI[r.partname]||[]).forEach(x=>{
-    const e = exd(x), c = prcCost(r);
-    if(e==null || e<=0 || c==null) return;
-    (agg[x.plname] = agg[x.plname]||[]).push((e-c)/e);
-  }); });
-  const ks = Object.keys(agg); if(!ks.length) return '';
-  return '<div class="inv-sec"><div class="inv-sec-h">מרווח בפועל לפי מחירון <span class="sub">מחיר המחירון מול העלות שבמערכת</span></div></div>'
-    + '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>מחירון</th><th>פריטים עם עלות</th><th>ממוצע</th><th>חציון</th><th>מזערי</th><th>מרבי</th><th>הפסדיים</th></tr></thead><tbody>'
-    + PRC_PL.filter(p=>agg[p.plname]).map(p=>{ const a = agg[p.plname];
-        return '<tr><td class="clip">'+esc(p.plname)+'</td><td>'+fmtNum(a.length)+'</td><td>'+prcMPill(a.reduce((x,y)=>x+y,0)/a.length)
-          +'</td><td>'+prcPct(prcMed(a))+'</td><td>'+prcPct(Math.min.apply(null,a))+'</td><td>'+prcPct(Math.max.apply(null,a))
-          +'</td><td>'+fmtNum(a.filter(m=>m<=0).length)+'</td></tr>';
-      }).join('')
-    + '</tbody></table></div>';
-}
-function prcMargView(){
-  const rows = prcFiltered().filter(r=>prcMargin(r)!=null);
-  if(!rows.length) return '<div class="empty">אין מק״טים שיש להם גם עלות וגם מחיר בסינון הנוכחי</div>';
-  const ms  = rows.map(prcMargin);
-  const avg = ms.reduce((a,b)=>a+b,0)/ms.length;
-  let h = prcKpis([
-    ['מק״טים בניתוח', fmtNum(rows.length)],
-    ['מרווח ממוצע',  prcPct(avg)],
-    ['מרווח חציוני', prcPct(prcMed(ms))],
-    ['מרווח מזערי',  prcPct(Math.min.apply(null,ms))],
-    ['מרווח מרבי',   prcPct(Math.max.apply(null,ms))],
-    ['מתחת ל־20%',   fmtNum(rows.filter(r=>prcMargin(r)<0.20).length), 'מעל 95%: ' + fmtNum(rows.filter(r=>prcMargin(r)>0.95).length)]
-  ]);
-  const counts = PRC_BUCKETS.map(b=>ms.filter(b[1]).length);
-  const mx = Math.max.apply(null, counts) || 1;
-  h += '<div class="inv-sec"><div class="inv-sec-h">פיזור המרווחים</div>'
-     + PRC_BUCKETS.map((b,i)=>'<div class="prc-hist"><div class="lb">' + esc(b[0]) + '</div>'
-         + '<div class="inv-bar"><i style="width:' + (counts[i]/mx*100).toFixed(1) + '%"></i></div>'
-         + '<div class="vl">' + fmtNum(counts[i]) + '</div></div>').join('')
-     + '</div>';
-  const fam = {};
-  rows.forEach(r=>{ const k = r.family || 'ללא משפחה'; (fam[k] = fam[k] || []).push(prcMargin(r)); });
-  const fr = Object.keys(fam).map(k=>({ family:k, n:fam[k].length, avg:fam[k].reduce((a,b)=>a+b,0)/fam[k].length,
-      med:prcMed(fam[k]), mn:Math.min.apply(null,fam[k]), mx:Math.max.apply(null,fam[k]) })).sort((a,b)=>b.n-a.n);
-  h += '<div class="inv-sec"><div class="inv-sec-h">מרווח לפי משפחה <span class="sub">' + fmtNum(fr.length) + ' משפחות</span></div></div>'
-     + '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>משפחה</th><th>מק״טים</th><th>ממוצע</th><th>חציון</th><th>מזערי</th><th>מרבי</th></tr></thead><tbody>'
-     + fr.map(f=>'<tr><td class="clip">' + esc(f.family) + '</td><td>' + fmtNum(f.n) + '</td><td>' + prcMPill(f.avg) + '</td><td>'
-         + prcPct(f.med) + '</td><td>' + prcPct(f.mn) + '</td><td>' + prcPct(f.mx) + '</td></tr>').join('')
-     + '</tbody></table></div>';
-  return h;
-}
-
-function prcListView(){
-  /* 6.19.5 — מחירוני פריוריטי האמיתיים מ-ord.price_list_items. שבע קבוצות v13 בוטלו. */
-  if(!PRC_PL.length) return '<div class="empty">לא נטענו מחירונים. מסך "פריטים במחירון" מנהל את הסנכרון — פעם ביום ב-07:00 או בהפעלה ידנית.</div>';
-  const names = PRC_PL.map(p=>p.plname);
-  if(!PRC_LIST_PL || names.indexOf(PRC_LIST_PL)===-1) PRC_LIST_PL = names[0];
-  const cnt = {};
-  Object.keys(PRC_PLI).forEach(pn=>PRC_PLI[pn].forEach(x=>{ cnt[x.plname]=(cnt[x.plname]||0)+1; }));
-  let h = '<div class="prc-chips">' + PRC_PL.map(p=>'<button class="prc-chip'+(PRC_LIST_PL===p.plname?' active':'')+'" style="cursor:pointer;border:0'+(PRC_LIST_PL===p.plname?';box-shadow:0 0 0 2px var(--navy) inset':'')+'" onclick="prcPickPl(this.dataset.pl)" data-pl="'+esc(p.plname)+'">'+esc(p.plname)+' <b>'+fmtNum(cnt[p.plname]||0)+'</b></button>').join('') + '</div>';
-  const exd = x => Number(x.dprice)>0 ? Number(x.dprice) : (Number(x.price)>0 ? Number(x.price)*(1-(Number(x.percent)||0)/100) : null);
-  /* מחיר סופי לתצוגה — מפעיל את אחוז ההנחה גם כשאין dvat_price מסונכרן (ממצא בקרה 03/08) */
-  const finP = x => Number(x.dvat_price)>0 ? Number(x.dvat_price) : (Number(x.vat_price)>0 ? Number(x.vat_price)*(1-(Number(x.percent)||0)/100) : null);
-  const rows = prcFiltered().map(r=>{
-    const x = (PRC_PLI[r.partname]||[]).find(y=>y.plname===PRC_LIST_PL);
-    return x ? { r:r, x:x } : null;
-  }).filter(Boolean);
-  const withM = rows.filter(w=>{ const c=prcCost(w.r), e=exd(w.x); return c!=null && e!=null && e>0; });
-  const ms = withM.map(w=>(exd(w.x)-prcCost(w.r))/exd(w.x));
-  h += prcKpis([
-    ['פריטים במחירון', fmtNum(rows.length)],
-    ['ניתן לחשב מרווח', fmtNum(withM.length)],
-    ['מרווח ממוצע', ms.length ? prcPct(ms.reduce((a,b)=>a+b,0)/ms.length) : '—'],
-    ['מרווח חציוני', ms.length ? prcPct(prcMed(ms)) : '—']
-  ]);
-  h += '<div class="note">המחירים נמשכים ממחירוני פריוריטי שסונכרנו מראש למערכת — אותו מקור שמזין את מסך "פריטים במחירון" ואת פורטל הלקוחות. המרווח מחושב מול העלות הידנית שבמערכת (מחיר סופי לפני מע״מ פחות עלות מועמסת, חלקי המחיר).</div>';
-  const cols = [
-    { t:'מק״ט',                 f:w=>esc(w.r.partname), cls:'clip' },
-    { t:'תיאור',                f:w=>esc(w.r.partdes||'—'), cls:'td-desc' },
-    { t:'עלות',                 f:w=>prcMoney(prcCost(w.r)), s:w=>prcCost(w.r)||0 },
-    { t:'מחיר מלא כולל מע״מ',   f:w=>prcMoney(Number(w.x.vat_price)>0?Number(w.x.vat_price):null), s:w=>Number(w.x.vat_price)||0 },
-    { t:'% הנחה',               f:w=>Number(w.x.percent)>0 ? fmtNum(w.x.percent)+'%' : '—', s:w=>Number(w.x.percent)||0 },
-    { t:'מחיר סופי כולל מע״מ',  f:w=>prcMoney(finP(w.x)), s:w=>finP(w.x)||0 },
-    { t:'מרווח',                f:w=>{ const c=prcCost(w.r), e=exd(w.x); return prcMPill((c==null||e==null||e<=0)?null:(e-c)/e); }, s:w=>{ const c=prcCost(w.r), e=exd(w.x); return (c==null||e==null||e<=0)?-9:(e-c)/e; } }
-  ];
-  if(!rows.length) return h + '<div class="empty">אין פריטים מהסינון הנוכחי במחירון הזה</div>';
-  const shown = rows.slice(0, pgLim('prc-list'));
-  h += '<div class="tbl-wrap"><table class="tbl"><thead><tr>' + cols.map(c=>'<th>'+c.t+'</th>').join('') + '</tr></thead><tbody>';
-  shown.forEach(w=>{
-    h += '<tr data-pn="' + esc(w.r.partname) + '" style="cursor:pointer">' + cols.map(c=>'<td' + (c.cls?' class="'+c.cls+'"':'') + '>' + c.f(w) + '</td>').join('') + '</tr>';
-  });
-  h += '</tbody></table></div>' + pgFoot('prc-list', rows.length, 'פריטים');
-  return h;
-}
-window.prcPickPl = pl => { PRC_LIST_PL = pl; prcBody(); };
-
-const PRC_SIDE_COLS = [
-  { t:'מק״ט',           f:r=>esc(r.partname), cls:'clip' },
-  { t:'תיאור',          f:r=>esc(r.partdes||'—'), cls:'td-desc' },
-  { t:'דורש התקנה',     f:r=>r.needs_install ? '<span class="inv-st org">כן</span>' : '<span class="inv-st gry">לא</span>', s:r=>r.needs_install?0:1 },
-  { t:'התקנה — איירון', f:r=>prcMoney(Number(r.install_price_iron)>0 ? Number(r.install_price_iron) : null), s:r=>Number(r.install_price_iron)||0 },
-  { t:'התקנה — קבלן',   f:r=>prcMoney(Number(r.install_price_contractor)>0 ? Number(r.install_price_contractor) : null), s:r=>Number(r.install_price_contractor)||0 },
-  { t:'משלוח ליחידה',   f:r=>prcMoney(Number(r.ship_price_single)>0 ? Number(r.ship_price_single) : null), s:r=>Number(r.ship_price_single)||0 },
-  { t:'משקל (ק״ג)',     f:r=>Number(r.weight_kg)>0 ? invD(r.weight_kg,1) : '—', s:r=>Number(r.weight_kg)||0 },
-  { t:'מידות (ס״מ)',    f:r=>{ const a = [r.length_cm,r.width_cm,r.height_cm].map(v=>Number(v)>0?Math.round(Number(v)):null);
-      return a.every(v=>v==null) ? '—' : a.map(v=>v==null?'?':v).join(' × '); } },
-  { t:'מקדם משטח',      f:r=>Number(r.pallet_load_factor)>0 ? invD(r.pallet_load_factor,2) : '—', s:r=>Number(r.pallet_load_factor)||0 }
-];
-
-function prcSideView(){
-  const rows = prcFiltered();
-  const ic = rows.filter(r=>Number(r.install_price_contractor)>0).length;
-  let h = prcKpis([
-    ['דורשים התקנה',       fmtNum(rows.filter(r=>r.needs_install).length)],
-    ['מחיר התקנה איירון',  fmtNum(rows.filter(r=>Number(r.install_price_iron)>0).length)],
-    ['מחיר התקנה קבלן',    fmtNum(ic)],
-    ['מחיר משלוח ליחידה',  fmtNum(rows.filter(r=>Number(r.ship_price_single)>0).length)],
-    ['משקל מוגדר',         fmtNum(rows.filter(r=>Number(r.weight_kg)>0).length)]
-  ]);
-  if(!ic) h += '<div class="note prc-warn">מחיר התקנה לקבלן ריק בכל המק״טים במערכת. כל עוד השדה ריק אי אפשר להשוות את עלות ההתקנה החיצונית למחיר ההתקנה של איירון, ולכן אי אפשר לחשב את הרווח האמיתי על עבודת התקנה.</div>';
-  h += prcTable(rows, PRC_SIDE_COLS, 'prc-side');
-  return h;
-}
-
-function prcIssues(rows){
-  const src     = rows || PRC;
-  const noPrice = src.filter(r=>prcAct(r) && prcEx(r)==null);
-  const noCost  = src.filter(r=>prcEx(r)!=null && prcCost(r)==null);
-  const costNoP = src.filter(r=>prcCost(r)!=null && prcEx(r)==null);
-  const loss    = src.filter(r=>{ const m=prcMargin(r); return m!=null && m<=0; });
-  const lowM    = src.filter(r=>{ const m=prcMargin(r); return m!=null && m>0 && m<0.20; });
-  const hiM     = src.filter(r=>{ const m=prcMargin(r); return m!=null && m>0.95; });
-  const exdI    = x => Number(x.dprice)>0 ? Number(x.dprice) : (Number(x.price)>0 ? Number(x.price)*(1-(Number(x.percent)||0)/100) : null);
-  const plNoC   = src.filter(r=>(PRC_PLI[r.partname]||[]).length && prcCost(r)==null);
-  const plLoss  = src.filter(r=>{ const c = prcCost(r); if(c==null) return false;
-    return (PRC_PLI[r.partname]||[]).some(x=>{ const e = exdI(x); return e!=null && e>0 && e<=c; }); });
-  const vatOff  = src.filter(r=>{ const e=prcEx(r), v=Number(r.price_vat); return e!=null && v>0 && Math.abs(v - e*(1+PRC_VAT)) > 0.02; });
-  const instNoP = src.filter(r=>r.needs_install && !(Number(r.install_price_iron)>0));
-  const stockNo = src.filter(r=>Number(r.qty)>0 && prcEx(r)==null);
-  const total   = new Set([].concat(noPrice,noCost,costNoP,loss,lowM,hiM,vatOff,instNoP,stockNo,plNoC,plLoss).map(r=>r.partname)).size;
-  return { noPrice:noPrice, noCost:noCost, costNoP:costNoP, loss:loss, lowM:lowM, hiM:hiM,
-           vatOff:vatOff, instNoP:instNoP, stockNo:stockNo, plNoC:plNoC, plLoss:plLoss, total:total };
-}
-
-const PRC_EXC_COLS = [
-  { t:'מק״ט',           f:r=>esc(r.partname), cls:'clip' },
-  { t:'תיאור',          f:r=>esc(r.partdes||'—'), cls:'td-desc' },
-  { t:'משפחה',          f:r=>esc(r.family||'—'), cls:'clip' },
-  { t:'סטטוס',          f:r=>'<span class="inv-st ' + (prcAct(r)?'grn':'gry') + '">' + esc(r.erp_status||'—') + '</span>', s:r=>prcAct(r)?0:1 },
-  { t:'יתרה',           f:r=>invN(r.qty), s:r=>Number(r.qty)||0 },
-  { t:'עלות',           f:r=>prcMoney(prcCost(r)), s:r=>prcCost(r)||0 },
-  { t:'מחיר ללא מע״מ',  f:r=>prcMoney(prcEx(r)), s:r=>prcEx(r)||0 },
-  { t:'מחיר כולל מע״מ', f:r=>prcMoney(Number(r.price_vat)>0 ? Number(r.price_vat) : null), s:r=>Number(r.price_vat)||0 },
-  { t:'מרווח',          f:r=>prcMPill(prcMargin(r)), s:r=>prcMargin(r)==null?-9:prcMargin(r) }
-];
-
-function prcExcView(){
-  const rows = prcFiltered(), iss = prcIssues(rows);
-  const B = [
-    ['מק״ט פעיל ללא מחיר מכירה', iss.noPrice, true, 'המק״ט פעיל בפריוריטי אך אין לו מחיר בסיס. אי אפשר להציע אותו ללקוח בלי לתמחר ידנית בכל פעם מחדש, וזה המקור הנפוץ ביותר לטעויות תמחור בשטח.'],
-    ['מחיר בלי מחיר עלות', iss.noCost, true, 'יש מחיר מכירה אך אין עלות, ולכן אי אפשר לדעת אם המכירה רווחית. כל דוח רווחיות שיכלול את המק״טים האלה יהיה חלקי.'],
-    ['עלות בלי מחיר מכירה', iss.costNoP, false, 'יש עלות אך לא נקבע מחיר. אלה המק״טים שהכי קל להשלים, כי חצי מהנתון כבר קיים.'],
-    ['מחיר מתחת לעלות', iss.loss, true, 'המחיר שווה לעלות או נמוך ממנה. כל מכירה כזו מפסידה כסף, אלא אם מדובר במוצר שנמכר במכוון כחלק מחבילה.'],
-    ['מרווח מתחת ל־20%', iss.lowM, true, 'מרווח נמוך משמעותית מהממוצע במערכת. שווה לבדוק אם העלות עודכנה ולא עודכן המחיר בעקבותיה.'],
-    ['מרווח מעל 95%', iss.hiM, false, 'מרווח גבוה באופן חריג. לרוב זה סימן שהעלות שגויה או חסרה בפריוריטי ולא שהמוצר באמת רווחי כל כך.'],
-    ['מחיר כולל מע״מ שאינו תואם', iss.vatOff, true, 'המחיר כולל מע״מ אינו שווה למחיר הבסיס כפול שיעור המע״מ. אחד משני השדות עודכן והשני לא, וזה גורם למחיר שונה בין מסמכים.'],
-    ['דורש התקנה בלי מחיר התקנה', iss.instNoP, false, 'המק״ט מסומן כדורש התקנה אך אין לו מחיר התקנה, ולכן ההצעה ללקוח תצא חסרה או תתומחר ידנית.'],
-    ['יש מלאי אך אין מחיר', iss.stockNo, true, 'סחורה יושבת במחסן בלי מחיר מכירה. זה כסף שאי אפשר למכור בלי החלטת תמחור.'],
-    ['במחירון ללקוח אך ללא עלות', iss.plNoC, true, 'הפריט נמכר ללקוחות דרך מחירון פריוריטי, אבל אין לו עלות ידנית במערכת — אי אפשר לדעת אם המכירה רווחית. אלה הפריטים הדחופים ביותר להשלמת עלות.'],
-    ['מחיר מחירון מתחת לעלות', iss.plLoss, true, 'לפחות באחד המחירונים המחיר הסופי ללקוח (לפני מע״מ) שווה לעלות המועמסת או נמוך ממנה — מכירה מפסידה בפועל, לא תיאורטית.']
-  ];
-  if(PRC_EXC >= B.length) PRC_EXC = 0;
-  let h = '<div class="inv-dq">' + B.map((b,i)=>'<div class="q' + (b[2]?' bad':'') + '" data-prc-exc="' + i + '"'
-    + (PRC_EXC===i ? ' style="box-shadow:0 0 0 2px var(--navy) inset"' : '') + '>' + esc(b[0]) + ' <b>' + fmtNum(b[1].length) + '</b></div>').join('') + '</div>';
-  const sel = B[PRC_EXC];
-  h += '<div class="inv-sec"><div class="inv-sec-h">' + esc(sel[0]) + ' <span class="sub">' + fmtNum(sel[1].length) + ' מק״טים</span></div>'
-     + '<div class="note">' + esc(sel[3]) + '</div></div>'
-     + prcTable(sel[1], PRC_EXC_COLS, 'prc-exc' + PRC_EXC);
-  return h;
-}
-
-function prcSetView(){
-  /* 6.19.5 — הגדרות תמחור ניתנות לעריכה (הכרעת רומן 03/08/2026) */
-  const s = PRC_SET;
-  if(!s) return '<div class="empty">הגדרות התמחור לא נטענו — נסה רענון נתונים</div>';
-  const f = (id,l,v,hint) => '<div class="field"><label>'+esc(l)+'</label><input id="'+id+'" type="text" inputmode="decimal" dir="ltr" value="'+esc(v==null?'':String(v))+'">'+(hint?'<div class="auto-hint">'+esc(hint)+'</div>':'')+'</div>';
-  return '<div class="note"><b>העלויות במערכת הן עלויות ידניות</b> — הכרעת רומן 03/08/2026. העלות שמגיעה מפריוריטי אינה מקור אמת (הערכים שם שגויים כרגע), ובהמשך המערכת תדחוף את העלויות אל פריוריטי — כיוון הזרימה של העלות הוא מהמערכת החוצה, הפוך מהמחירונים. שינוי כאן משפיע מיידית על כל חישובי המרווח במסך.</div>'
-    + '<div class="sku-box"><div class="bx-t">פרמטרים כלל-מערכתיים</div><div class="ig">'
-    + f('prc-usd','שער דולר', s.usd_rate, 'משמש להמרת עלות דולרית של מוצרי יבוא')
-    + f('prc-vatx','מע״מ (שבר עשרוני)', s.vat, 'לדוגמה 0.18')
-    + f('prc-l-imp','מקדם העמסה — יבוא', s.load_import)
-    + f('prc-l-man','מקדם העמסה — ייצור', s.load_manufacture)
-    + f('prc-l-asm','מקדם העמסה — מורכב', s.load_assembled)
-    + f('prc-l-loc','מקדם העמסה — קניה בארץ', s.load_local)
-    + '</div>' + (prcEdit() ? '<button class="btn green" onclick="prcSetSave()">שמירה</button>' : '<div class="note">צפייה בלבד — אין לך הרשאת עריכה להגדרות התמחור</div>') + '<div class="err" id="prc-set-err"></div></div>'
-    + '<div class="note">מקדם ההעמסה מוכפל בעלות לפי מקור המוצר (יבוא / ייצור / מורכב / קניה בארץ); עקיפה פרטנית למק״ט בודד נשמרת בנתוני הפריט. במערכת כרגע '+fmtNum(Object.keys(PRC_EXT).length)+' פריטים עם נתוני עלות ידניים ו-'+fmtNum(Object.keys(PRC_BOM).length)+' מוצרים מורכבים עם עץ מוצר.</div>';
-}
-window.prcSetSave = async ()=>{
-  if(!prcEdit()){ try{ toast('אין לך הרשאת עריכה להגדרות התמחור'); }catch(_e){} return; }
-  const g = id => { const v = Number(String($(id).value).trim().replace(',','.')); return isFinite(v)&&v>0 ? v : null; };
-  const p = { usd_rate:g('#prc-usd'), vat:g('#prc-vatx'), load_import:g('#prc-l-imp'),
-              load_manufacture:g('#prc-l-man'), load_assembled:g('#prc-l-asm'), load_local:g('#prc-l-loc'),
-              updated_by:(ME && (ME.email||ME.full_name)) || null, updated_at:new Date().toISOString() };
-  for(const k of ['usd_rate','vat','load_import','load_manufacture','load_assembled','load_local'])
-    if(p[k]==null){ $('#prc-set-err').textContent = 'כל הערכים חייבים להיות מספרים חיוביים'; return; }
-  const res = await sb.schema('ord').from('prc_settings').update(p).eq('id',1).select().maybeSingle();
-  if(res.error){ $('#prc-set-err').textContent = 'השמירה נכשלה: ' + res.error.message; return; }
-  if(res.data){ PRC_SET = res.data; if(Number(PRC_SET.vat)>0) PRC_VAT = Number(PRC_SET.vat); }
-  toast('הגדרות התמחור נשמרו'); prcBody();
-};
-function prcBody(){
-  const el = $('#prc-body'); if(!el) return;
+/* ---------- סרגלי הכלים ---------- */
+function buildViewBar(){
+  const el = document.getElementById('prc-views'); if(!el) return;
   const av = prcAllowedViews();
-  if(!av.length){ el.innerHTML = '<div class="empty">אין לך הרשאה למסך התמחור</div>'; return; }
-  if(!av.includes(PRC_VIEW)) PRC_VIEW = av[0];
-  if(PRC_LOADING){ el.innerHTML = '<div class="empty">טוען נתוני תמחור…</div>'; return; }
-  if(PRC_ERR){
-    el.innerHTML = '<div class="err">' + esc(PRC_ERR) + '</div>'
-      + '<div style="text-align:center;margin-top:12px"><button class="inv-btn" id="prc-retry">נסה שוב</button></div>';
-    const b = $('#prc-retry'); if(b) b.onclick = ()=> prcLoad(true);
+  let h = '<div class="pv-bar">';
+  av.forEach(v=>{ h += '<button class="pv-vbtn'+(window.PRC_VIEW===v?' on':'')+'" onclick="prcV13.setView(\''+v+'\')">'+VIEW_LABEL[v]+'</button>'; });
+  h += '<span class="pv-sep"></span>';
+  h += '<button class="pv-vbtn" onclick="prcV13.exportCSV()">⤓ CSV</button>';
+  h += '<button class="pv-vbtn" onclick="prcV13.exportJSON()">שמירת גיבוי</button>';
+  if(prcEdit()) h += '<button class="pv-vbtn" onclick="document.getElementById(\'pv-imp\').click()">טעינת גיבוי</button><input type="file" id="pv-imp" accept="application/json" style="display:none" onchange="prcV13.importJSON(this)">';
+  h += '<button class="pv-vbtn" onclick="prcV13.reload()">↻ רענון</button>';
+  h += '</div>';
+  el.innerHTML = h;
+}
+
+function buildToolbar(){
+  const el = document.getElementById('prc-tools'); if(!el) return;
+  if(!document.getElementById('pv-q')){
+    el.innerHTML = '<div class="pv-bar">'+
+      '<div class="pv-chips" id="pv-chips"></div>'+
+      '<span class="pv-sep"></span>'+
+      '<input type="search" class="pv-q" id="pv-q" placeholder="חיפוש מק״ט או שם מוצר…" oninput="prcV13.render()">'+
+      '<select class="pv-f" id="pv-fcat" onchange="prcV13.onCat()"></select>'+
+      '<select class="pv-f" id="pv-fsub" onchange="prcV13.render()"></select>'+
+      '<select class="pv-f" id="pv-fsrc" onchange="prcV13.render()"><option value="">כל המקורות</option>'+SRC_LIST.map(s=>'<option>'+s+'</option>').join('')+'</select>'+
+      '<select class="pv-f" id="pv-fstatus" onchange="prcV13.render()"><option value="">כל הסטטוסים</option><option>פעיל</option><option>בהמתנה</option><option>לא פעיל</option></select>'+
+      '<label class="pv-tgl"><input type="checkbox" id="pv-onlycost" onchange="prcV13.render()"> רק עם עלות</label>'+
+    '</div>';
+    fillCatFilter();
+  }
+  buildChips();
+}
+
+function buildChips(){
+  const el = document.getElementById('pv-chips'); if(!el) return;
+  el.innerHTML='';
+  const cat=document.createElement('button');
+  cat.className='pv-chip all'+(state.catalog?' on':'');
+  cat.textContent='📦 מאגר כללי';
+  cat.title='כל המק״טים, ללא מרווחים ומחירים — ניהול ההכללה בכל המחירונים';
+  cat.onclick=()=>{ state.catalog=!state.catalog; if(state.catalog){ state.allGroups=false; const f=document.getElementById('pv-fstatus'); if(f) f.value=''; } buildChips(); renderBody(); };
+  el.appendChild(cat);
+  GROUPS.forEach(g=>{
+    const b=document.createElement('button');
+    const on = !state.allGroups && !state.catalog && state.group===g;
+    const c = gcol(g);
+    b.className='pv-chip'+(on?' on':'');
+    b.innerHTML='<span class="pv-dot" style="background:'+c+'"></span>'+esc(g);
+    b.style.borderColor=c;
+    if(on){ b.style.background=c+'1e'; b.style.boxShadow='inset 0 0 0 1px '+c; }
+    b.onclick=()=>{ state.group=g; state.allGroups=false; state.catalog=false; buildChips(); renderBody(); };
+    el.appendChild(b);
+  });
+  const all=document.createElement('button');
+  all.className='pv-chip all'+(state.allGroups?' on':'');
+  all.textContent='השוואת כולם';
+  all.onclick=()=>{ state.allGroups=!state.allGroups; state.catalog=false; buildChips(); renderBody(); };
+  el.appendChild(all);
+}
+function fillCatFilter(){
+  const sel=document.getElementById('pv-fcat'); if(!sel) return;
+  const keep = sel.value;
+  const cats=[...new Set(DATA.products.map(p=>p.cat).filter(Boolean))];
+  sel.innerHTML='<option value="">כל הקטגוריות</option>'+cats.map(c=>'<option>'+esc(c)+'</option>').join('');
+  if(keep && cats.includes(keep)) sel.value = keep;
+  fillSubFilter();
+}
+function fillSubFilter(){
+  const sel=document.getElementById('pv-fsub'); if(!sel) return;
+  const fc=gv('pv-fcat');
+  const subs=[...new Set(DATA.products.filter(p=>!fc||p.cat===fc).map(p=>p.sub).filter(Boolean))];
+  sel.innerHTML='<option value="">כל תתי הקטגוריות</option>'+subs.map(s=>'<option>'+esc(s)+'</option>').join('');
+}
+PV.onCat = ()=>{ fillSubFilter(); renderBody(); };
+PV.render = ()=> renderBody();
+PV.setView = v => { window.PRC_VIEW = v; renderPrcInner(); };
+PV.reload = async ()=>{ try{ await prcLoad(true); toast('הנתונים נטענו מחדש'); }catch(e){ toast('שגיאה בטעינה: '+(e.message||e)); } fillCatFilter(); renderPrcInner(); };
+
+/* ---------- ניתוב תצוגות ---------- */
+function renderPrcInner(){
+  const av = prcAllowedViews();
+  if(!av.length){ const b=document.getElementById('prc-body'); if(b) b.innerHTML='<div class="pv-hint" style="padding:20px">אין לך הרשאה לצפות במסך התמחור.</div>'; return; }
+  if(!av.includes(window.PRC_VIEW)) window.PRC_VIEW = av[0];
+  buildViewBar();
+  const tools = document.getElementById('prc-tools');
+  if(window.PRC_VIEW==='set'){ if(tools) tools.style.display='none'; }
+  else { if(tools) tools.style.display=''; buildToolbar(); }
+  renderBody();
+}
+function renderBody(){
+  const m = document.getElementById('prc-body'); if(!m) return;
+  if(window.PRC_VIEW==='list') renderClient(m);
+  else if(window.PRC_VIEW==='set') renderSettings(m);
+  else renderPricing(m);
+}
+
+/* ---------- תצוגת תמחור וניהול מאגר ---------- */
+function renderPricing(m){
+  const ed = prcEdit();
+  let rows = filteredProducts();
+  let priced=0, noCost=0;
+  const g = state.group;
+  const cats=[...new Set(DATA.products.map(p=>p.cat).filter(Boolean))];
+  const subs=[...new Set(DATA.products.map(p=>p.sub).filter(Boolean))];
+  let top='<div class="pv-dbbar">'+
+    (ed? '<button class="pv-btn" onclick="prcV13.toggleAdd()">＋ הוספת מק״ט חדש</button>':'')+
+    '<span class="pv-hint" style="margin:0">סה״כ במאגר: <b>'+DATA.products.length+'</b> מק״טים · כל שינוי נשמר במסד מיד ✓ — "שמירת גיבוי" מפיק קובץ להעברה ולארכיון</span>'+
+  '</div>'+
+  '<datalist id="pv-dlCats">'+cats.map(c=>'<option value="'+esc(c)+'">').join('')+'</datalist>'+
+  '<datalist id="pv-dlSubs">'+subs.map(s=>'<option value="'+esc(s)+'">').join('')+'</datalist>'+
+  '<datalist id="pv-dlSkus">'+DATA.products.map(p=>'<option value="'+esc(p.sku)+'">').join('')+'</datalist>';
+
+  if(dbAddOpen && ed){
+    const f=afDraft||{};
+    top+='<div class="pv-addform"><h3>מק״ט חדש</h3><div class="pv-afgrid">'+
+      '<div><label>מק״ט *</label><input id="pv-af-sku" value="'+esc(f.sku)+'" style="direction:ltr;text-align:left"></div>'+
+      '<div><label>שם מוצר *</label><input id="pv-af-name" value="'+esc(f.name)+'"></div>'+
+      '<div><label>קטגוריה *</label><input id="pv-af-cat" list="pv-dlCats" value="'+esc(f.cat)+'"></div>'+
+      '<div><label>תת קטגוריה</label><input id="pv-af-sub" list="pv-dlSubs" value="'+esc(f.sub)+'"></div>'+
+      '<div><label>מקור *</label><select id="pv-af-src">'+SRC_LIST.map(s=>'<option '+(f.source===s?'selected':'')+'>'+s+'</option>').join('')+'</select></div>'+
+      '<div><label>עלות (₪ / $ לפי מקור, מורכב = מ-BOM)</label><input id="pv-af-cost" type="number" step="0.01" value="'+(f.costRaw??'')+'" style="direction:ltr;text-align:left"></div>'+
+      '<div><label>מקדם העמסה ידני (ריק = לפי מקור)</label><input id="pv-af-lov" type="number" step="0.01" value="'+(f.loadOv??'')+'" style="direction:ltr;text-align:left"></div>'+
+      '<div><label>סטטוס</label><select id="pv-af-st">'+['פעיל','בהמתנה','לא פעיל'].map(s=>'<option '+((f.status||'פעיל')===s?'selected':'')+'>'+s+'</option>').join('')+'</select></div>'+
+      '<div><label>הערות</label><input id="pv-af-notes" value="'+esc(f.notes)+'"></div>'+
+    '</div><div class="pv-afactions">'+
+      '<button class="pv-btn" onclick="prcV13.addSku()">שמירת מק״ט</button>'+
+      '<button class="pv-btn ghost" onclick="prcV13.closeAdd()">ביטול</button>'+
+      '<span class="pv-aferr" id="pv-af-err"></span>'+
+    '</div></div>';
+  }
+
+  let html='';
+  if(state.catalog){
+    html = '<div class="pv-tblwrap" style="border-top:3px solid var(--pv-dark)"><table><thead><tr>'+
+      '<th>תמונה</th><th>מק״ט</th><th class="pv-name">שם מוצר</th><th>קטגוריה · תת קטגוריה</th><th>מקור</th>'+
+      '<th class="pv-num">עלות מקור</th><th class="pv-num">עלות בש״ח</th><th>סטטוס</th>'+
+      GROUPS.map(x=>'<th style="border-bottom:3px solid '+gcol(x)+'"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+gcol(x)+';margin-inline-end:4px"></span>'+esc(x)+'</th>').join('')+
+      '<th>פעולות</th></tr></thead><tbody>';
+    rows.forEach(p=>{
+      const ca=costAfter(p.sku);
+      if(ca==null) noCost++; else priced++;
+      if(dbEditSku===p.sku && ed){ html += editFormRow(p, 99); return; }
+      html+='<tr class="'+(p.status!=='פעיל'?'pv-inactive':'')+'">'+
+        '<td>'+imgCell(p)+'</td>'+
+        '<td class="pv-sku">'+esc(p.sku)+'</td><td class="pv-name">'+esc(p.name)+'</td>'+
+        '<td class="pv-catcell">'+esc(p.cat)+(p.sub?' · '+esc(p.sub):'')+'</td>'+
+        '<td><span class="pv-src '+(SRC_CLS[p.source]||'')+'">'+esc(p.source||'—')+'</span></td>'+
+        '<td class="pv-num pv-cost">'+(p.source===SRC_ASM?'<span class="pv-catcell">BOM</span>':(rawCost(p)==null?'<span class="pv-nocost">חסר</span>':fmt(rawCost(p))+(p.source===SRC_IMPORT?' $':' ₪')))+'</td>'+
+        '<td class="pv-num pv-cost" '+(p.loadOv?'title="מקדם העמסה ידני: '+p.loadOv+'"':'')+'>'+(ca==null?'<span class="pv-nocost">—</span>':fmt(ca)+' ₪'+(p.loadOv?' <span style="color:var(--pv-amber)">*</span>':''))+'</td>'+
+        '<td style="font-size:12px">'+esc(p.status)+'</td>'+
+        GROUPS.map(x=>'<td><input type="checkbox" style="width:15px;height:15px;cursor:pointer;accent-color:'+gcol(x)+'" '+(isIncluded(p.sku,x)?'checked':'')+' '+(ed?'':'disabled')+' onchange="prcV13.toggleInclude(\''+q1(p.sku)+'\',\''+q1(x)+'\')" title="כלול במחירון '+esc(x)+'"></td>').join('')+
+        '<td style="white-space:nowrap">'+rowActions(p, ed)+'</td></tr>';
+      if(dbBomSku===p.sku) html+=bomEditor(p, ed);
+    });
+    html+='</tbody></table></div>';
+  } else if(state.allGroups){
+    html = '<div class="pv-tblwrap"><table><thead><tr>'+
+      '<th>תמונה</th><th>מק״ט</th><th class="pv-name">שם מוצר</th><th>קטגוריה · תת קטגוריה</th><th class="pv-num">עלות בש״ח</th>'+
+      GROUPS.map(x=>'<th class="pv-num" style="border-bottom:3px solid '+gcol(x)+'"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+gcol(x)+';margin-inline-end:5px"></span>'+esc(x)+'<br><small style="font-weight:400;color:var(--pv-muted)">כולל מע״מ</small></th>').join('')+
+      '</tr></thead><tbody>';
+    rows.forEach(p=>{
+      const ca=costAfter(p.sku);
+      if(ca==null) noCost++; else priced++;
+      html+='<tr class="'+(p.status!=='פעיל'?'pv-inactive':'')+'"><td>'+imgCell(p)+'</td><td class="pv-sku">'+esc(p.sku)+'</td><td class="pv-name">'+esc(p.name)+'</td><td class="pv-catcell">'+esc(p.cat)+(p.sub?' · '+esc(p.sub):'')+'</td>'+
+        '<td class="pv-num pv-cost">'+(ca==null?'<span class="pv-nocost">חסר עלות</span>':fmt(ca)+' ₪')+'</td>'+
+        GROUPS.map(x=>{ const inc=priceInc(p.sku,x); return '<td class="pv-num">'+(inc==null?'<span class="pv-noprice">—</span>':fmt(inc)+' ₪')+'</td>'; }).join('')+'</tr>';
+    });
+    html+='</tbody></table></div>';
+  } else {
+    rows = rows.filter(p=>isIncluded(p.sku,g));
+    html = '<div class="pv-tblwrap" style="border-top:3px solid '+gcol(g)+'"><table><thead><tr>'+
+      '<th>תמונה</th><th>מק״ט</th><th class="pv-name">שם מוצר</th><th>קטגוריה · תת קטגוריה</th><th>מקור</th>'+
+      '<th class="pv-num">עלות מקור</th><th class="pv-num">עלות בש״ח</th>'+
+      '<th class="pv-num">% מרווח</th><th class="pv-num">מחיר ללא מע״מ</th><th class="pv-num">מחיר כולל מע״מ</th><th class="pv-num">מכפלה</th><th>סטטוס</th><th>פעולות</th>'+
+      '</tr></thead><tbody>';
+    rows.forEach(p=>{
+      const editing = (dbEditSku===p.sku) && ed;
+      const ca=costAfter(p.sku);
+      const mg=marginFor(p.sku,g);
+      const ex=priceEx(p.sku,g), inc=priceInc(p.sku,g), mult=multiple(p.sku,g);
+      if(inc!=null) priced++; if(ca==null) noCost++;
+      if(editing){
+        html+='<tr style="background:#f0f6fb">'+
+          '<td>'+imgCell(p)+'</td>'+
+          '<td class="pv-sku">'+esc(p.sku)+'</td>'+
+          '<td class="pv-name"><input class="pv-edin wide" id="pv-ed-name" value="'+esc(p.name)+'"><br><input class="pv-edin wide" id="pv-ed-notes" value="'+esc(p.notes)+'" placeholder="הערות" style="margin-top:4px"></td>'+
+          '<td><input class="pv-edin" id="pv-ed-cat" list="pv-dlCats" value="'+esc(p.cat)+'" placeholder="קטגוריה"><br><input class="pv-edin" id="pv-ed-sub" list="pv-dlSubs" value="'+esc(p.sub)+'" placeholder="תת קטגוריה" style="margin-top:4px"></td>'+
+          '<td><select class="pv-edin" id="pv-ed-src">'+SRC_LIST.map(s=>'<option '+(p.source===s?'selected':'')+'>'+s+'</option>').join('')+'</select></td>'+
+          '<td class="pv-num"><input class="pv-edin narrow" id="pv-ed-cost" type="number" step="0.01" value="'+(p.source===SRC_ASM?'':(rawCost(p)??''))+'" '+(p.source===SRC_ASM?'disabled title="מחושב מ-BOM"':'')+'></td>'+
+          '<td class="pv-num"><input class="pv-edin narrow" id="pv-ed-lov" type="number" step="0.01" value="'+(p.loadOv??'')+'" placeholder="מקדם" title="מקדם העמסה ידני"></td>'+
+          '<td class="pv-num pv-cost">'+(mg.v==null?'—':pc(mg.v))+'</td>'+
+          '<td class="pv-num pv-cost">'+(ex==null?'':fmt(ex)+' ₪')+'</td>'+
+          '<td class="pv-num pv-cost">'+(inc==null?'':fmt(inc)+' ₪')+'</td>'+
+          '<td></td>'+
+          '<td><select class="pv-edin" id="pv-ed-st">'+['פעיל','בהמתנה','לא פעיל'].map(s=>'<option '+(p.status===s?'selected':'')+'>'+s+'</option>').join('')+'</select></td>'+
+          '<td style="white-space:nowrap"><button class="pv-rowbtn primary" onclick="prcV13.saveEdit(\''+q1(p.sku)+'\')">שמור</button> <button class="pv-rowbtn" onclick="prcV13.setEdit(null)">ביטול</button></td></tr>';
+      } else {
+        const badge = mg.src==='ov'?'<span class="pv-badge ov">ידני</span>'
+                    : mg.src==='mx'?'<span class="pv-badge mx">קטגוריה</span>'
+                    : '<span class="pv-badge df">כללי</span>';
+        html+='<tr class="'+(p.status!=='פעיל'?'pv-inactive':'')+'">'+
+          '<td>'+imgCell(p)+'</td>'+
+          '<td class="pv-sku">'+esc(p.sku)+'</td><td class="pv-name">'+esc(p.name)+'</td>'+
+          '<td class="pv-catcell">'+esc(p.cat)+(p.sub?' · '+esc(p.sub):'')+'</td>'+
+          '<td><span class="pv-src '+(SRC_CLS[p.source]||'')+'">'+esc(p.source||'—')+'</span></td>'+
+          '<td class="pv-num pv-cost">'+(p.source===SRC_ASM?'<span class="pv-catcell">BOM</span>':(rawCost(p)==null?'<span class="pv-nocost">חסר</span>':fmt(rawCost(p))+(p.source===SRC_IMPORT?' $':' ₪')))+'</td>'+
+          '<td class="pv-num pv-cost" '+(p.loadOv?'title="מקדם העמסה ידני: '+p.loadOv+'"':'')+'>'+(ca==null?'<span class="pv-nocost">—</span>':fmt(ca)+' ₪'+(p.loadOv?' <span style="color:var(--pv-amber)">*</span>':''))+'</td>'+
+          '<td class="pv-num'+(ed?' pv-mcell':'')+'" '+(ed?'onclick="prcV13.editMargin(this,\''+q1(p.sku)+'\')" title="לחץ לעריכה"':'')+'>'+(mg.v==null?'—':pc(mg.v))+badge+'</td>'+
+          '<td class="pv-num pv-price">'+(ex==null?'<span class="pv-noprice">'+(mg.v===0?'לפי הצעה':'—')+'</span>':fmt(ex)+' ₪')+'</td>'+
+          '<td class="pv-num pv-price vat">'+(inc==null?'':fmt(inc)+' ₪')+'</td>'+
+          '<td class="pv-num pv-mult">'+(mult==null?'':fmt(mult,2)+'×')+'</td>'+
+          '<td style="font-size:12px">'+esc(p.status)+'</td>'+
+          '<td style="white-space:nowrap">'+rowActions(p, ed)+'</td></tr>';
+        if(dbBomSku===p.sku) html+=bomEditor(p, ed);
+      }
+    });
+    html+='</tbody></table></div>';
+  }
+
+  m.innerHTML = top + '<div class="pv-stats">'+
+    '<div class="pv-stat"><div class="v">'+rows.length+'</div><div class="l">מוצרים בתצוגה</div></div>'+
+    '<div class="pv-stat"><div class="v">'+priced+'</div><div class="l">עם מחיר מחושב</div></div>'+
+    '<div class="pv-stat"><div class="v">'+noCost+'</div><div class="l">חסרי עלות</div></div>'+
+    '<div class="pv-stat"><div class="v">'+(state.catalog?'📦 מאגר כללי':state.allGroups?'כל הקבוצות':gtag(state.group))+'</div><div class="l">'+(state.catalog?'ללא מרווחים ומחירים':'קבוצת לקוח')+'</div></div>'+
+    '<div class="pv-stat"><div class="v">'+fmt(S.usdRate,2)+' ₪</div><div class="l">שער דולר</div></div>'+
+    '<div class="pv-stat"><div class="v">'+pc(S.vat)+'</div><div class="l">מע״מ</div></div>'+
+  '</div>'+html;
+}
+
+function rowActions(p, ed){
+  /* גם בצפייה בלבד מציגים את מציג ה-BOM: הנתון קריא ממילא למי שעבר את
+     can_view('prc.pricing'), והמציג עצמו לא חושף כפתורי עריכה. */
+  if(!ed) return p.source===SRC_ASM
+    ? '<button class="pv-rowbtn" onclick="prcV13.setBom(\''+q1(p.sku)+'\')">BOM</button>'
+    : '<span class="pv-catcell">—</span>';
+  return '<button class="pv-rowbtn" onclick="prcV13.setEdit(\''+q1(p.sku)+'\')">✎ עריכה</button>'+
+    (p.source===SRC_ASM?' <button class="pv-rowbtn" onclick="prcV13.setBom(\''+q1(p.sku)+'\')">BOM</button>':'')+
+    ' <button class="pv-rowbtn" onclick="prcV13.dupSku(\''+q1(p.sku)+'\')">שכפול</button>'+
+    ' <button class="pv-rowbtn danger '+(dbArm===p.sku?'arm':'')+'" onclick="prcV13.delSku(\''+q1(p.sku)+'\')">'+(dbArm===p.sku?'לחץ לאישור':'מחיקה')+'</button>';
+}
+
+function editFormRow(p, span){
+  return '<tr><td colspan="'+span+'" style="background:#f0f6fb"><div class="pv-addform" style="margin:8px 0"><h3>עריכת '+esc(p.sku)+'</h3><div class="pv-afgrid">'+
+    '<div><label>שם מוצר</label><input id="pv-ed-name" value="'+esc(p.name)+'"></div>'+
+    '<div><label>קטגוריה</label><input id="pv-ed-cat" list="pv-dlCats" value="'+esc(p.cat)+'"></div>'+
+    '<div><label>תת קטגוריה</label><input id="pv-ed-sub" list="pv-dlSubs" value="'+esc(p.sub)+'"></div>'+
+    '<div><label>מקור</label><select id="pv-ed-src">'+SRC_LIST.map(s=>'<option '+(p.source===s?'selected':'')+'>'+s+'</option>').join('')+'</select></div>'+
+    '<div><label>עלות ('+(p.source===SRC_IMPORT?'$':'₪')+')</label><input id="pv-ed-cost" type="number" step="0.01" value="'+(p.source===SRC_ASM?'':(rawCost(p)??''))+'" '+(p.source===SRC_ASM?'disabled':'')+' style="direction:ltr;text-align:left"></div>'+
+    '<div><label>מקדם העמסה ידני</label><input id="pv-ed-lov" type="number" step="0.01" value="'+(p.loadOv??'')+'" style="direction:ltr;text-align:left"></div>'+
+    '<div><label>סטטוס</label><select id="pv-ed-st">'+['פעיל','בהמתנה','לא פעיל'].map(s=>'<option '+(p.status===s?'selected':'')+'>'+s+'</option>').join('')+'</select></div>'+
+    '<div><label>הערות</label><input id="pv-ed-notes" value="'+esc(p.notes)+'"></div>'+
+  '</div><div class="pv-afactions">'+
+    '<button class="pv-btn" onclick="prcV13.saveEdit(\''+q1(p.sku)+'\')">שמור</button>'+
+    '<button class="pv-btn ghost" onclick="prcV13.setEdit(null)">ביטול</button>'+
+  '</div></div></td></tr>';
+}
+
+function bomEditor(p, ed){
+  const kids=bomByParent[p.sku]||[];
+  const rows=kids.map((k,i)=>{
+    const c=byy[k.child];
+    const cost=costBefore(k.child);
+    return '<tr><td class="pv-sku">'+esc(k.child)+'</td><td>'+esc(c?c.name:'⚠ לא נמצא במאגר')+'</td>'+
+      '<td><input type="number" step="1" min="0" style="width:60px;direction:ltr" value="'+k.qty+'" '+(ed?'':'disabled')+' onchange="prcV13.bomQty(\''+q1(p.sku)+'\','+i+',this.value)"></td>'+
+      '<td class="pv-num">'+(cost==null?'—':fmt(cost)+' ₪')+'</td>'+
+      '<td class="pv-num">'+(cost==null?'—':fmt(cost*k.qty)+' ₪')+'</td>'+
+      '<td>'+(ed?'<button class="pv-rowbtn danger" onclick="prcV13.bomDel(\''+q1(p.sku)+'\','+i+')">הסר</button>':'')+'</td></tr>';
+  }).join('');
+  const total=costBefore(p.sku);
+  return '<tr class="pv-bomrow"><td colspan="99"><div class="pv-bomedit">'+
+    '<h4>רכיבי BOM — '+esc(p.name)+'</h4>'+
+    '<table><thead><tr><th>מק״ט בן</th><th>שם</th><th>כמות</th><th class="pv-num">עלות יח׳</th><th class="pv-num">סה״כ</th><th></th></tr></thead>'+
+    '<tbody>'+rows+'</tbody></table>'+
+    '<div style="display:flex; gap:8px; align-items:center; margin-top:8px">'+
+      (ed? '<input id="pv-bom-new-sku" list="pv-dlSkus" placeholder="מק״ט בן להוספה" style="direction:ltr">'+
+      '<input id="pv-bom-new-qty" type="number" value="1" min="1" style="width:60px;direction:ltr">'+
+      '<button class="pv-rowbtn primary" onclick="prcV13.bomAdd(\''+q1(p.sku)+'\')">＋ הוסף רכיב</button>':'')+
+      '<span style="margin-inline-start:auto; font-weight:700">עלות כוללת לפני העמסה: '+(total==null?'—':fmt(total)+' ₪')+'</span>'+
+    '</div></div></td></tr>';
+}
+
+/* ---------- תצוגת מחירון ללקוח ---------- */
+function renderClient(m){
+  const g = state.allGroups? (GROUPS.includes('מסחרי')?'מסחרי':GROUPS[0]) : state.group;
+  const rows = filteredProducts().filter(p=>priceInc(p.sku,g)!=null && isIncluded(p.sku,g));
+  const cats = {};
+  rows.forEach(p=>{ (cats[p.cat] ||= []).push(p); });
+  const round = plRound;
+  const rf = v=> round<=1? fmt(v) : fmt(Math.ceil(v/round)*round, 0);
+  const today = new Date().toLocaleDateString('he-IL');
+  let body='';
+  Object.keys(cats).forEach(c=>{
+    body += '<div class="pv-plcat"><h4>'+esc(c)+'</h4><table><thead><tr><th style="width:58px">תמונה</th><th style="width:110px">מק״ט</th><th>מוצר</th><th style="width:130px">מחיר כולל מע״מ</th></tr></thead><tbody>';
+    cats[c].forEach(p=>{
+      body += '<tr><td>'+imgCell(p)+'</td><td class="pv-sku">'+esc(p.sku)+'</td><td>'+esc(p.name)+'</td><td>'+rf(priceInc(p.sku,g))+' ₪</td></tr>';
+    });
+    body += '</tbody></table></div>';
+  });
+  m.innerHTML =
+  '<div class="pv-clientbar">'+
+    '<span style="font-weight:700">מחירון ללקוח</span> '+gtag(g)+
+    '<input type="text" id="pv-cname" placeholder="שם לקוח (אופציונלי)" value="'+esc(plCName)+'" oninput="prcV13.setCName(this.value)">'+
+    '<select onchange="prcV13.setRound(this.value)">'+
+      '<option value="1" '+(round===1?'selected':'')+'>ללא עיגול</option>'+
+      '<option value="5" '+(round===5?'selected':'')+'>עיגול ל־₪5</option>'+
+      '<option value="10" '+(round===10?'selected':'')+'>עיגול ל־₪10</option>'+
+    '</select>'+
+    '<button class="pv-btn" onclick="prcV13.print()">🖨 הדפסה / PDF</button>'+
+    '<span class="pv-hint" style="margin:0">הסינון והחיפוש בסרגל העליון חלים גם כאן — סנן לפני הדפסה.</span>'+
+  '</div>'+
+  '<div class="pv-pricelist">'+
+    '<div class="pv-plhead">'+
+      '<div>'+
+        '<div class="pv-pllogo">IRON FITNESS<small>ציוד כושר מקצועי</small></div>'+
+        '<div class="pv-pltitle" style="display:flex; align-items:center; gap:8px">מחירון '+gtag(g)+'<span id="pv-pl-cname" style="font-weight:700">'+(plCName? ' — '+esc(plCName):'')+'</span></div>'+
+      '</div>'+
+      '<div class="pv-meta">תאריך: '+today+'<br>המחירים כוללים מע״מ ('+pc(S.vat)+')<br>'+rows.length+' פריטים</div>'+
+    '</div>'+
+    body+
+    '<div class="pv-plfoot">המחירים בתוקף למועד הפקת המחירון בלבד וניתנים לשינוי ללא הודעה מוקדמת · אספקה, הובלה והתקנה יתומחרו בנפרד · איירון פיטנס</div>'+
+  '</div>';
+}
+
+PV.setCName = v => {
+  plCName = v;
+  const t = document.getElementById('pv-pl-cname');
+  if(t) t.textContent = plCName? ' — '+plCName : '';
+};
+PV.setRound = v => { plRound = parseFloat(v)||1; renderBody(); };
+PV.print = () => {
+  const cn = document.getElementById('pv-pl-cname');
+  if(cn) cn.textContent = plCName? ' — '+plCName : '';
+  document.body.classList.add('pv-print');
+  const off = ()=>{ document.body.classList.remove('pv-print'); window.removeEventListener('afterprint', off); };
+  window.addEventListener('afterprint', off);
+  setTimeout(()=>{ window.print(); setTimeout(off, 1500); }, 30);
+};
+
+/* ---------- תצוגת הגדרות ומקדמים ---------- */
+function renderSettings(m){
+  const ed = prcEdit();
+  const dis = ed? '' : ' disabled';
+  const gRows = DATA.groups.map((g,i)=>
+    '<div class="pv-frow"><label><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:'+gcol(g.key)+';margin-inline-end:6px"></span>'+esc(g.key)+' <small style="color:var(--pv-muted)">'+esc(g.desc||'')+'</small></label>'+
+    '<input type="number" step="1" value="'+(g.margin*100).toFixed(1)+'"'+dis+' onchange="prcV13.setG('+i+',this.value)"></div>').join('');
+  const mtxHead = '<tr><th>קטגוריה</th><th>תת קטגוריה</th>'+GROUPS.map(g=>'<th class="pv-num" style="border-bottom:3px solid '+gcol(g)+'">'+esc(g)+'</th>').join('')+'</tr>';
+  const mtxRows = DATA.matrix.map((r,i)=>'<tr><td>'+esc(r.cat)+'</td><td class="pv-catcell">'+esc(r.sub||'—')+'</td>'+
+    GROUPS.map(g=>'<td class="pv-num"><input type="number" step="0.5" value="'+(r[g]!=null?(r[g]*100).toFixed(1):'')+'"'+dis+
+      ' onchange="prcV13.setMx('+i+',\''+q1(g)+'\',this.value)"></td>').join('')+'</tr>').join('');
+  m.innerHTML = '<div class="pv-panelgrid">'+
+    '<div>'+
+      '<div class="pv-panel">'+
+        '<h3>הגדרות גלובליות</h3>'+
+        '<div class="pv-frow"><label>שער חליפין USD→ILS</label><input type="number" step="0.01" value="'+S.usdRate+'"'+dis+' onchange="prcV13.setUsd(this.value)"></div>'+
+        '<div class="pv-frow"><label>מע״מ %</label><input type="number" step="1" value="'+(S.vat*100).toFixed(0)+'"'+dis+' onchange="prcV13.setVat(this.value)"></div>'+
+        '<h3 style="margin-top:18px">מקדמי העמסה (עלות → עלות נחיתה)</h3>'+
+        Object.keys(S.loadFactors).map(k=>'<div class="pv-frow"><label>'+esc(k)+'</label><input type="number" step="0.01" value="'+S.loadFactors[k]+'"'+dis+' onchange="prcV13.setLF(\''+q1(k)+'\',this.value)"></div>').join('')+
+      '</div>'+
+      '<div class="pv-panel" style="margin-top:16px">'+
+        '<h3>אחוזי רווח כלליים לפי קבוצה</h3>'+
+        gRows+
+        '<div class="pv-hint">משמשים רק כשאין מקדם קטגוריה ואין אחוז ידני למק״ט.<br>סדר עדיפות: <b>אחוז ידני למק״ט</b> ← <b>מקדם קטגוריה</b> ← <b>אחוז כללי</b>.</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="pv-panel">'+
+      '<h3>מקדמי רווח לפי קטגוריה ותת־קטגוריה (%)</h3>'+
+      '<div class="pv-mtx"><table><thead>'+mtxHead+'</thead><tbody>'+mtxRows+'</tbody></table></div>'+
+      '<div class="pv-hint">ערך 0 או ריק = אין מחיר קבוע לקבוצה זו (יוצג "לפי הצעה"). כל שינוי כאן מחשב מחדש את כל המחירון מיידית. כל שינוי נשמר במסד מיד ✓.</div>'+
+      (ed? '' : '<div class="pv-hint" style="color:var(--pv-amber)">מצב צפייה בלבד — אין לך הרשאת עריכה.</div>')+
+    '</div>'+
+  '</div>';
+}
+
+/* ---------- שכבת כתיבה למסד ---------- */
+const O = () => sb.schema('ord');
+const meNow = () => { try{ return (typeof ME!=='undefined' && ME && ME.email)? ME.email : null; }catch(_e){ return null; } };
+const nowIso = () => new Date().toISOString();
+const today10 = () => new Date().toISOString().slice(0,10);
+
+async function dbw(fn, okMsg){
+  try{
+    const r = await fn();
+    if(r && r.error) throw r.error;
+    if(okMsg) toast(okMsg);
+    return true;
+  }catch(e){
+    toast('שגיאה בשמירה: '+(e && e.message? e.message : e));
+    try{ await prcLoad(true); }catch(_e){}
+    fillCatFilter(); renderPrcInner();
+    return false;
+  }
+}
+
+/* ---------- הכללה/החרגה ממחירון ---------- */
+PV.toggleInclude = async (sku, g)=>{
+  if(!prcEdit()) return noEdit();
+  const inc = isIncluded(sku, g);
+  if(inc){
+    (DATA.excluded[g] ||= {})[sku] = true;
+    renderBody();
+    await dbw(()=>O().from('prc_excluded').upsert({partname:sku, grp:g, updated_by:meNow(), updated_at:nowIso()},{onConflict:'partname,grp'}),
+      'המק״ט הוסר ממחירון '+g+' בלבד — נשאר במאגר');
+  } else {
+    if(DATA.excluded[g]) delete DATA.excluded[g][sku];
+    renderBody();
+    await dbw(()=>O().from('prc_excluded').delete().eq('partname',sku).eq('grp',g),
+      'המק״ט הוחזר למחירון '+g);
+  }
+};
+
+/* ---------- עריכת אחוז מרווח ידני בתא ---------- */
+PV.editMargin = function(td, sku){
+  if(!prcEdit()) return noEdit();
+  if(td.querySelector('input')) return;
+  const g = state.group;
+  const cur = marginFor(sku, g).v;
+  td.innerHTML = '<input type="number" step="0.5" min="0" max="99" value="'+(cur!=null?(cur*100).toFixed(1):'')+'">';
+  const inp = td.querySelector('input');
+  inp.focus(); inp.select();
+  let closed = false;
+  const done = async (save)=>{
+    if(closed) return; closed = true; inp.onblur = null;
+    if(save){
+      const raw = inp.value.trim();
+      if(raw===''){
+        if(DATA.overrides[sku]) delete DATA.overrides[sku][g];
+        renderBody();
+        await dbw(()=>O().from('prc_overrides').delete().eq('partname',sku).eq('grp',g),
+          'הוסרה דריסה — חוזר למקדם קטגוריה/כללי');
+        return;
+      }
+      const v = parseFloat(raw)/100;
+      if(!isNaN(v) && v>=0 && v<1){
+        (DATA.overrides[sku] ||= {})[g] = v;
+        renderBody();
+        await dbw(()=>O().from('prc_overrides').upsert({partname:sku, grp:g, margin:v, updated_by:meNow(), updated_at:nowIso()},{onConflict:'partname,grp'}),
+          'אחוז המרווח עודכן ונשמר ✓');
+        return;
+      }
+      toast('ערך לא חוקי — יש להזין אחוז בין 0 ל-99');
+    }
+    renderBody();
+  };
+  inp.onkeydown = e=>{ if(e.key==='Enter') done(true); if(e.key==='Escape') done(false); };
+  inp.onblur = ()=>done(true);
+};
+
+/* ---------- BOM ---------- */
+PV.setBom = sku => { dbBomSku = (dbBomSku===sku? null : sku); renderBody(); };
+PV.setEdit = sku => { dbEditSku = sku; if(sku) dbAddOpen=false; renderBody(); };
+
+PV.bomQty = async (parent, i, v)=>{
+  if(!prcEdit()) return noEdit();
+  const rec = (bomByParent[parent]||[])[i]; if(!rec) return;
+  const q = Math.max(0, parseFloat(v)||0);
+  rec.qty = q;
+  const gi = DATA.bom.find(b=>b.parent===parent && b.child===rec.child);
+  if(gi) gi.qty = q;
+  renderBody();
+  await dbw(()=>O().from('prc_bom').update({qty:q, updated_by:meNow(), updated_at:nowIso()}).eq('parent',parent).eq('child',rec.child));
+};
+
+PV.bomDel = async (parent, i)=>{
+  if(!prcEdit()) return noEdit();
+  const rec = (bomByParent[parent]||[])[i]; if(!rec) return;
+  const child = rec.child;
+  bomByParent[parent].splice(i,1);
+  const gi = DATA.bom.findIndex(b=>b.parent===parent && b.child===child);
+  if(gi>-1) DATA.bom.splice(gi,1);
+  renderBody();
+  await dbw(()=>O().from('prc_bom').delete().eq('parent',parent).eq('child',child), 'הרכיב הוסר');
+};
+
+PV.bomAdd = async (parent)=>{
+  if(!prcEdit()) return noEdit();
+  const sku = gv('pv-bom-new-sku').trim();
+  const qty = Math.max(1, parseFloat(gv('pv-bom-new-qty'))||1);
+  if(!sku) return;
+  if(!byy[sku]){ toast('מק״ט "'+sku+'" לא נמצא במאגר'); return; }
+  if(sku===parent){ toast('מוצר לא יכול להכיל את עצמו'); return; }
+  if((bomByParent[parent]||[]).some(b=>b.child===sku)){ toast('הרכיב כבר קיים — עדכן את הכמות בשורה'); return; }
+  const rec = { parent, child:sku, qty };
+  DATA.bom.push(rec); (bomByParent[parent] ||= []).push(rec);
+  renderBody();
+  await dbw(()=>O().from('prc_bom').upsert({parent, child:sku, qty, updated_by:meNow(), updated_at:nowIso()},{onConflict:'parent,child'}), 'רכיב נוסף');
+};
+
+/* ---------- עריכת מק״ט ---------- */
+PV.saveEdit = async (sku)=>{
+  if(!prcEdit()) return noEdit();
+  const p = byy[sku]; if(!p) return;
+  const name = gv('pv-ed-name').trim(), cat = gv('pv-ed-cat').trim(), sub = gv('pv-ed-sub').trim();
+  const src = gv('pv-ed-src').trim();
+  const costRaw = gv('pv-ed-cost').trim();
+  const lov = gv('pv-ed-lov').trim();
+  const status = gv('pv-ed-st').trim(), notes = gv('pv-ed-notes').trim();
+  if(!SRC_LIST.includes(src)){ toast('מקור לא חוקי — יש לבחור מתוך הרשימה'); return; }
+  const row = {
+    name: name||null, cat: cat||null, sub: sub||null, source: src,
+    prc_status: status||null, notes: notes||null,
+    load_override: lov===''? null : parseFloat(lov),
+    v13_updated: today10(), updated_by: meNow(), updated_at: nowIso()
+  };
+  if(src===SRC_IMPORT){ row.cost_usd = costRaw===''? null : parseFloat(costRaw); row.cost_ils = null; }
+  else if(src===SRC_ASM){ /* עלות נגזרת מ-BOM — לא נוגעים בעמודות העלות */ }
+  else { row.cost_ils = costRaw===''? null : parseFloat(costRaw); row.cost_usd = null; }
+
+  p.name=name; p.cat=cat; p.sub=sub; p.source=src; p.status=status; p.notes=notes; p.updated=row.v13_updated;
+  if(src===SRC_IMPORT){ p.cost=num(row.cost_usd); p.costILS=null; }
+  else if(src!==SRC_ASM){ p.costILS=num(row.cost_ils); p.cost=null; }
+  if(row.load_override==null || isNaN(row.load_override)){ delete p.loadOv; row.load_override=null; }
+  else p.loadOv = row.load_override;
+
+  dbEditSku = null;
+  fillCatFilter(); renderBody();
+  await dbw(()=>O().from('prc_item_ext').update(row).eq('partname',sku), 'המק״ט עודכן ונשמר ✓');
+};
+
+/* ---------- הוספת מק״ט ---------- */
+PV.toggleAdd = ()=>{
+  if(!prcEdit()) return noEdit();
+  dbAddOpen = !dbAddOpen;
+  if(dbAddOpen) dbEditSku = null; else afDraft = null;
+  renderBody();
+};
+PV.closeAdd = ()=>{ dbAddOpen=false; afDraft=null; renderBody(); };
+
+PV.addSku = async ()=>{
+  if(!prcEdit()) return noEdit();
+  const err = document.getElementById('pv-af-err');
+  const setErr = t => { if(err) err.textContent = t; };
+  const sku = gv('pv-af-sku').trim(), name = gv('pv-af-name').trim(), cat = gv('pv-af-cat').trim();
+  if(!sku || !name || !cat){ setErr('מק״ט, שם וקטגוריה הם שדות חובה'); return; }
+  if(byy[sku]){ setErr('מק״ט "'+sku+'" כבר קיים במאגר'); return; }
+  const src = gv('pv-af-src').trim();
+  if(!SRC_LIST.includes(src)){ setErr('מקור לא חוקי'); return; }
+  const costRaw = gv('pv-af-cost').trim(), lov = gv('pv-af-lov').trim();
+  const sub = gv('pv-af-sub').trim(), status = gv('pv-af-st').trim(), notes = gv('pv-af-notes').trim();
+  const row = {
+    partname: sku, name, cat, sub: sub||null, source: src,
+    cost_usd: (src===SRC_IMPORT && costRaw!=='')? parseFloat(costRaw) : null,
+    cost_ils: ((src===SRC_MAKE||src===SRC_LOCAL) && costRaw!=='')? parseFloat(costRaw) : null,
+    load_override: lov===''? null : parseFloat(lov),
+    prc_status: status||'פעיל', notes: notes||null,
+    sort: DATA.products.length+1, v13_updated: today10(),
+    updated_by: meNow(), updated_at: nowIso()
+  };
+  const p = {
+    sku, name, cat, sub, source:src, cost:num(row.cost_usd), costILS:num(row.cost_ils),
+    status: row.prc_status, notes: notes, updated: row.v13_updated
+  };
+  if(row.load_override!=null && !isNaN(row.load_override)) p.loadOv = row.load_override; else row.load_override = null;
+  DATA.products.push(p); byy[sku] = p;
+  dbAddOpen = false; afDraft = null;
+  const q = document.getElementById('pv-q'); if(q) q.value = sku;
+  fillCatFilter(); renderBody();
+  await dbw(()=>O().from('prc_item_ext').insert(row),
+    src===SRC_ASM? 'המק״ט נוסף — כעת הוסף רכיבי BOM בכפתור BOM בשורה' : 'המק״ט נוסף ונשמר ✓');
+};
+
+PV.dupSku = (sku)=>{
+  if(!prcEdit()) return noEdit();
+  const p = byy[sku]; if(!p) return;
+  afDraft = { sku:p.sku+'-COPY', name:p.name, cat:p.cat, sub:p.sub, source:p.source,
+    status:p.status, notes:p.notes, loadOv:p.loadOv, costRaw:rawCost(p) };
+  dbAddOpen = true; dbEditSku = null;
+  renderBody();
+  toast('הטופס מולא מנתוני '+sku+' — שנה מק״ט ושמור');
+};
+
+PV.delSku = async (sku)=>{
+  if(!prcEdit()) return noEdit();
+  if(dbArm!==sku){
+    dbArm = sku; renderBody();
+    setTimeout(()=>{ if(dbArm===sku){ dbArm=null; renderBody(); } }, 3000);
     return;
   }
-  if(!PRC_LOADED){ el.innerHTML = '<div class="empty">אין נתונים להצגה</div>'; return; }
-  el.innerHTML = PRC_VIEW==='set' ? prcSetView() : PRC_VIEW==='marg' ? (prcPlMargTable() + prcMargView()) : PRC_VIEW==='list' ? prcListView()
-               : PRC_VIEW==='side' ? prcSideView() : PRC_VIEW==='exc' ? prcExcView() : prcDbView();
-  el.onclick = ev=>{
-    const q = ev.target.closest('[data-prc-exc]');
-    if(q){ ev.stopPropagation(); PRC_EXC = Number(q.dataset.prcExc)||0; prcBody(); return; }
-    const row = ev.target.closest('[data-pn]');
-    if(row) openSku(row.dataset.pn);
+  dbArm = null;
+  const usedIn = DATA.bom.filter(b=>b.child===sku).map(b=>b.parent);
+  if(usedIn.length){ toast('לא ניתן למחוק — משמש כרכיב BOM ב: '+[...new Set(usedIn)].join(', ')); renderBody(); return; }
+  const ok = await dbw(async ()=>{
+    let r = await O().from('prc_overrides').delete().eq('partname',sku); if(r.error) return r;
+    r = await O().from('prc_excluded').delete().eq('partname',sku);      if(r.error) return r;
+    r = await O().from('prc_bom').delete().eq('parent',sku);             if(r.error) return r;
+    return await O().from('prc_item_ext').delete().eq('partname',sku);
+  }, 'המק״ט נמחק ✓');
+  if(!ok) return;
+  const i = DATA.products.findIndex(p=>p.sku===sku);
+  if(i>-1) DATA.products.splice(i,1);
+  delete byy[sku];
+  DATA.bom = DATA.bom.filter(b=>b.parent!==sku);
+  delete bomByParent[sku];
+  delete DATA.overrides[sku];
+  GROUPS.forEach(g=>{ if(DATA.excluded[g]) delete DATA.excluded[g][sku]; });
+  if(dbBomSku===sku) dbBomSku=null;
+  if(dbEditSku===sku) dbEditSku=null;
+  fillCatFilter(); renderBody();
+};
+
+/* ---------- הגדרות ומקדמים ---------- */
+/* upsert ולא update: ord.prc_settings היא שורת סינגלטון (CHECK id=1). אם השורה
+   חסרה, update היה מתאים ל-0 שורות בלי לזרוק שגיאה — ההודעה "נשמר" הייתה מוצגת
+   והערך היה חוזר לברירת המחדל בטעינה הבאה. */
+async function saveSettings(patch){
+  const row = Object.assign({
+    id: 1,
+    usd_rate: Number(S.usdRate), vat: Number(S.vat),
+    load_import: Number(S.loadFactors[SRC_IMPORT]), load_manufacture: Number(S.loadFactors[SRC_MAKE]),
+    load_assembled: Number(S.loadFactors[SRC_ASM]), load_local: Number(S.loadFactors[SRC_LOCAL]),
+    updated_by: meNow(), updated_at: nowIso()
+  }, patch);
+  return dbw(()=>O().from('prc_settings').upsert(row, {onConflict:'id'}), 'ההגדרה נשמרה ✓');
+}
+PV.setUsd = async v => {
+  if(!prcEdit()) return noEdit();
+  const n = parseFloat(v); if(isNaN(n) || n<=0){ toast('שער חליפין לא חוקי'); return; }
+  S.usdRate = n; renderBody();
+  await saveSettings({ usd_rate:n });
+};
+PV.setVat = async v => {
+  if(!prcEdit()) return noEdit();
+  const n = parseFloat(v); if(isNaN(n) || n<0 || n>=100){ toast('אחוז מע״מ לא חוקי'); return; }
+  S.vat = n/100; renderBody();
+  await saveSettings({ vat:n/100 });
+};
+PV.setLF = async (k, v) => {
+  if(!prcEdit()) return noEdit();
+  const col = LF_COL[k]; if(!col){ toast('מקור לא מוכר'); return; }
+  const n = parseFloat(v); if(isNaN(n) || n<=0){ toast('מקדם העמסה לא חוקי'); return; }
+  S.loadFactors[k] = n; renderBody();
+  await saveSettings({ [col]:n });
+};
+PV.setG = async (i, v) => {
+  if(!prcEdit()) return noEdit();
+  const g = DATA.groups[i]; if(!g) return;
+  const n = parseFloat(v); if(isNaN(n) || n<0 || n>=100){ toast('אחוז לא חוקי'); return; }
+  g.margin = n/100; renderBody();
+  await dbw(()=>O().from('prc_groups').update({margin:n/100, updated_by:meNow(), updated_at:nowIso()}).eq('key',g.key), 'אחוז הרווח הכללי נשמר ✓');
+};
+PV.setMx = async (i, g, v) => {
+  if(!prcEdit()) return noEdit();
+  const r = DATA.matrix[i]; if(!r) return;
+  const raw = String(v==null?'':v).trim();
+  if(raw===''){ r[g] = null; }
+  else {
+    const n = parseFloat(raw);
+    if(isNaN(n) || n<0 || n>=100){ toast('אחוז לא חוקי'); return; }
+    r[g] = n/100;
+  }
+  renderBody();
+  const margins = {};
+  GROUPS.forEach(k=>{ if(r[k]!=null) margins[k] = r[k]; });
+  await dbw(()=>O().from('prc_matrix').upsert({cat:r.cat, sub:r.sub||'', margins, updated_by:meNow(), updated_at:nowIso()},{onConflict:'cat,sub'}), 'מקדם הקטגוריה נשמר ✓');
+};
+
+/* ---------- ייצוא ---------- */
+function download(name, text, type){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([type==='csv'? '﻿'+text : text], {type: type==='csv'? 'text/csv' : 'application/json'}));
+  a.download = name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+}
+const csvq = s => '"'+String(s==null?'':s).replace(/"/g,'""')+'"';
+
+PV.exportCSV = ()=>{
+  const rows = filteredProducts();
+  let out;
+  if(state.catalog){
+    out = [['מק״ט','שם מוצר','קטגוריה','תת קטגוריה','מקור','עלות מקור','עלות בש״ח','סטטוס',...GROUPS.map(g=>'במחירון '+g)].map(csvq).join(',')];
+    rows.forEach(p=>{
+      const ca = costAfter(p.sku);
+      out.push([p.sku,p.name,p.cat,p.sub,p.source, rawCost(p)??'', ca!=null?ca.toFixed(2):'', p.status,
+        ...GROUPS.map(g=>isIncluded(p.sku,g)?'כן':'לא')].map(csvq).join(','));
+    });
+    download('מאגר-כללי.csv', out.join('\n'), 'csv');
+    toast('קובץ CSV של המאגר ירד למחשב');
+    return;
+  }
+  if(state.allGroups){
+    out = [['מק״ט','שם מוצר','קטגוריה','תת קטגוריה','מקור','עלות אחרי העמסה',...GROUPS.map(g=>g+' כולל מע״מ')].map(csvq).join(',')];
+    rows.forEach(p=>{
+      out.push([p.sku,p.name,p.cat,p.sub,p.source, costAfter(p.sku)??'',
+        ...GROUPS.map(g=>{ const v=priceInc(p.sku,g); return v==null?'':v.toFixed(2); })].map(csvq).join(','));
+    });
+  } else {
+    const g = state.group;
+    out = [['מק״ט','שם מוצר','קטגוריה','תת קטגוריה','מקור','עלות בש״ח (לפני העמסה)','עלות בש״ח (אחרי העמסה)','% מרווח','מחיר ללא מע״מ','מחיר כולל מע״מ'].map(csvq).join(',')];
+    rows.filter(p=>isIncluded(p.sku,g)).forEach(p=>{
+      const mg = marginFor(p.sku,g), cb = costBefore(p.sku), ca = costAfter(p.sku);
+      const ex = priceEx(p.sku,g), inc = priceInc(p.sku,g);
+      out.push([p.sku,p.name,p.cat,p.sub,p.source, cb??'', ca!=null?ca.toFixed(2):'',
+        mg.v!=null?(mg.v*100).toFixed(1)+'%':'', ex!=null?ex.toFixed(2):'', inc!=null?inc.toFixed(2):''].map(csvq).join(','));
+    });
+  }
+  download('מחירון-'+(state.allGroups?'כל-הקבוצות':state.group)+'.csv', out.join('\n'), 'csv');
+  toast('קובץ CSV ירד למחשב');
+};
+
+function buildSnapshot(){
+  return {
+    meta: { source:'iron-fitness-platform', build:BUILD_ID, exported:nowIso() },
+    settings: S,
+    groups: DATA.groups.map(g=>({ key:g.key, margin:g.margin, desc:g.desc, colour:g.colour })),
+    matrix: DATA.matrix,
+    products: DATA.products,
+    bom: DATA.bom,
+    overrides: DATA.overrides,
+    excluded: DATA.excluded
   };
 }
+PV.exportJSON = ()=>{
+  download('ironfitness-pricing-backup-'+today10()+'.json', JSON.stringify(buildSnapshot()), 'json');
+  toast('גיבוי נשמר כקובץ במחשב');
+};
 
-function prcExport(){
-  if(!PRC_LOADED){ toast('הנתונים עדיין נטענים'); return; }
-  const rows = prcFiltered();
-  if(!rows.length){ toast('אין שורות לייצוא'); return; }
-  const nn = v => Number(v)>0 ? Number(v) : '';
-  const cols = [
-    ['מק״ט',            r=>r.partname||''],
-    ['תיאור',           r=>r.partdes||''],
-    ['משפחה',           r=>r.family||''],
-    ['יחידה',           r=>r.unit||''],
-    ['ברקוד',           r=>r.barcode||''],
-    ['סטטוס',           r=>r.erp_status||''],
-    ['יתרה',            r=>Number(r.qty)||0],
-    ['עלות',            r=>prcCost(r)==null?'':Number(prcCost(r).toFixed(2))],
-    ['מקור עלות',       r=>prcCostSrc(r)||''],
-    ['מחיר ללא מע״מ',   r=>prcEx(r)==null?'':Number(prcEx(r).toFixed(2))],
-    ['מחיר כולל מע״מ',  r=>prcInc(r)==null?'':Number(prcInc(r).toFixed(2))],
-    ['מרווח באחוזים',   r=>prcMargin(r)==null?'':Number((prcMargin(r)*100).toFixed(1))],
-    ['מכפלה',           r=>prcMult(r)==null?'':Number(prcMult(r).toFixed(2))],
-    ['דורש התקנה',      r=>r.needs_install?'כן':'לא'],
-    ['התקנה איירון',    r=>nn(r.install_price_iron)],
-    ['התקנה קבלן',      r=>nn(r.install_price_contractor)],
-    ['משלוח ליחידה',    r=>nn(r.ship_price_single)],
-    ['משקל',            r=>nn(r.weight_kg)],
-    ['נמכר 3 חודשים',   r=>Number(r.sold_3m)||0],
-    ['נמכר 6 חודשים',   r=>Number(r.sold_6m)||0]
-  ];
-  const url = URL.createObjectURL(_skuXlsx(cols.map(c=>c[0]), rows.map(r=>cols.map(c=>c[1](r)))));
-  const a = document.createElement('a');
-  a.href = url; a.download = 'תמחור-' + new Date().toISOString().slice(0,10) + '.xlsx';
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url), 8000);
+/* ---------- טעינת גיבוי ---------- */
+PV.importJSON = function(inp){
+  const f = inp.files && inp.files[0];
+  inp.value = '';
+  if(!f) return;
+  if(!prcEdit()) return noEdit();
+  const rd = new FileReader();
+  rd.onload = async ()=>{
+    let d;
+    try{
+      d = JSON.parse(rd.result);
+      if(!d || !Array.isArray(d.products) || !d.settings) throw 0;
+    }catch(_e){ toast('קובץ לא תקין'); return; }
+    /* הניסוח מדויק בכוונה: הפעולה היא מיזוג ולא החלפה מלאה — היא דורסת את
+       הנתונים של המק״טים שבקובץ בלבד, ומק״ט שקיים במסד ואינו בקובץ יישאר. */
+    if(!confirm('טעינת הגיבוי תדרוס את נתוני התמחור של '+d.products.length+' המק״טים שבקובץ, וכן את ההגדרות, הקבוצות ומטריצת המקדמים.\n\nמק״ט שקיים במסד ואינו בקובץ יישאר ללא שינוי — זו אינה החלפה מלאה של המאגר.\n\nלהמשיך?')) return;
+    if(!confirm('אישור אחרון — הפעולה משנה את המסד עבור כל המשתמשים. לבצע?')) return;
+    try{
+      await importSnapshot(d);
+      await prcLoad(true);
+      fillCatFilter(); renderPrcInner();
+      toast('הגיבוי נטען ונשמר במסד ✓');
+    }catch(e){
+      toast('שגיאה בטעינת הגיבוי: '+(e && e.message? e.message : e));
+      try{ await prcLoad(true); }catch(_e){}
+      fillCatFilter(); renderPrcInner();
+    }
+  };
+  rd.readAsText(f);
+};
+
+async function importSnapshot(d){
+  const by = meNow(), at = nowIso();
+  const chk = r => { if(r && r.error) throw r.error; return r; };
+  async function delIn(table, col, list){
+    for(let i=0;i<list.length;i+=100) chk(await O().from(table).delete().in(col, list.slice(i,i+100)));
+  }
+  const s = d.settings || {};
+  const lf = s.loadFactors || {};
+  chk(await O().from('prc_settings').upsert({
+    id: 1,
+    usd_rate: Number(s.usdRate ?? S.usdRate),
+    vat: Number(s.vat ?? S.vat),
+    load_import: Number(lf[SRC_IMPORT] ?? S.loadFactors[SRC_IMPORT]),
+    load_manufacture: Number(lf[SRC_MAKE] ?? S.loadFactors[SRC_MAKE]),
+    load_assembled: Number(lf[SRC_ASM] ?? S.loadFactors[SRC_ASM]),
+    load_local: Number(lf[SRC_LOCAL] ?? S.loadFactors[SRC_LOCAL]),
+    updated_by: by, updated_at: at
+  }, {onConflict:'id'}));
+
+  if(Array.isArray(d.groups) && d.groups.length){
+    chk(await O().from('prc_groups').upsert(d.groups.map((g,i)=>({
+      key:g.key, margin:Number(g.margin)||0, descr:g.desc||g.descr||null,
+      colour:g.colour||null, sort:(g.sort!=null?g.sort:i+1), updated_by:by, updated_at:at
+    })),{onConflict:'key'}));
+  }
+
+  const gkeys = (d.groups||DATA.groups).map(g=>g.key);
+  if(Array.isArray(d.matrix) && d.matrix.length){
+    chk(await O().from('prc_matrix').upsert(d.matrix.map(r=>{
+      const margins = {};
+      gkeys.forEach(k=>{ if(r[k]!=null) margins[k]=Number(r[k]); });
+      return { cat:r.cat, sub:r.sub||'', margins, updated_by:by, updated_at:at };
+    }),{onConflict:'cat,sub'}));
+  }
+
+  const prods = d.products.filter(p=>p && p.sku);
+  for(let i=0;i<prods.length;i+=200){
+    chk(await O().from('prc_item_ext').upsert(prods.slice(i,i+200).map((p,j)=>({
+      partname:p.sku, name:p.name||null, cat:p.cat||null, sub:p.sub||null,
+      source: SRC_LIST.includes(p.source)? p.source : SRC_IMPORT,
+      cost_usd: p.cost==null? null : Number(p.cost),
+      cost_ils: p.costILS==null? null : Number(p.costILS),
+      load_override: p.loadOv==null? null : Number(p.loadOv),
+      prc_status: p.status||null, notes: p.notes||null,
+      sort: i+j+1, v13_updated: p.updated||today10(),
+      updated_by:by, updated_at:at
+    })),{onConflict:'partname'}));
+  }
+
+  const skus = new Set(prods.map(p=>p.sku));
+  const skuList = [...skus];
+  const bom = (d.bom||[]).filter(b=>b && skus.has(b.parent) && skus.has(b.child));
+  await delIn('prc_bom','parent',skuList);
+  if(bom.length) chk(await O().from('prc_bom').upsert(bom.map(b=>({parent:b.parent, child:b.child, qty:Number(b.qty)||1, updated_by:by, updated_at:at})),{onConflict:'parent,child'}));
+
+  const ovRows = [];
+  Object.keys(d.overrides||{}).forEach(sku=>{
+    if(!skus.has(sku)) return;
+    Object.keys(d.overrides[sku]||{}).forEach(g=>{
+      const v = d.overrides[sku][g];
+      if(v!=null) ovRows.push({partname:sku, grp:g, margin:Number(v), updated_by:by, updated_at:at});
+    });
+  });
+  await delIn('prc_overrides','partname',skuList);
+  for(let i=0;i<ovRows.length;i+=500) chk(await O().from('prc_overrides').upsert(ovRows.slice(i,i+500),{onConflict:'partname,grp'}));
+
+  const exRows = [];
+  Object.keys(d.excluded||{}).forEach(g=>{
+    Object.keys(d.excluded[g]||{}).forEach(sku=>{
+      if(d.excluded[g][sku] && skus.has(sku)) exRows.push({partname:sku, grp:g, updated_by:by, updated_at:at});
+    });
+  });
+  await delIn('prc_excluded','partname',skuList);
+  for(let i=0;i<exRows.length;i+=500) chk(await O().from('prc_excluded').upsert(exRows.slice(i,i+500),{onConflict:'partname,grp'}));
 }
+
+/* ---------- כניסה למסך ---------- */
+const BUILD_ID = 'prc-v13-port-2026-08-06';
+
+window.renderPrc = async function(){
+  pvInjectCss();
+  const b = document.getElementById('prc-body');
+  if(!prcAdmin()){
+    if(b) b.innerHTML = '<div class="pv-hint" style="padding:20px">אין לך הרשאה לצפות במסך התמחור.</div>';
+    return;
+  }
+  if(!PRC_LOADED){
+    if(b) b.innerHTML = '<div class="pv-hint" style="padding:20px">טוען נתוני תמחור…</div>';
+    try{ await prcLoad(); }
+    catch(e){
+      if(b) b.innerHTML = '<div class="pv-hint" style="padding:20px; color:var(--pv-red)">שגיאה בטעינת נתוני התמחור: '+esc(e && e.message? e.message : String(e))+'</div>';
+      return;
+    }
+    fillCatFilter();
+  }
+  renderPrcInner();
+};
+window.renderPrcIfLoaded = function(){ if(PRC_LOADED) renderPrcInner(); };
+
+try{ if(document.readyState!=='loading') pvInjectCss(); else document.addEventListener('DOMContentLoaded', pvInjectCss); }catch(_e){}
+
+})();
 
 /* ===== יומן סנכרון — הגדרות ← יומן סנכרון (אדמיניסטרטור בלבד) =====
    הטבלה ord.sync_log נעולה במסד לקריאת אדמיניסטרטור בלבד (מדיניות

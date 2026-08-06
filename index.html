@@ -1205,7 +1205,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.28.2</div>
+      <div class="ver">גרסה 6.28.3</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1303,7 +1303,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.28.2</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.28.3</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5791,6 +5791,15 @@ const PV_CSS = `
 #tab-prc .pv-tblwrap tbody tr{ height:60px }
 /* חריג: טבלת עץ המוצר המקוננת נשארת קומפקטית */
 #tab-prc .pv-bomedit td, #tab-prc .pv-bomedit tr, #tab-prc .pv-bomedit th{ height:auto }
+/* עריכה קומפקטית בתוך השורה — סעיף 12 */
+#tab-prc .pv-tblwrap tbody tr.pv-edrow, #tab-prc .pv-tblwrap tbody tr.pv-edrow td{ background:#f0f6fb }
+#tab-prc .pv-tblwrap tbody tr.pv-edrow2 td{ height:auto; padding:4px 8px; background:#f0f6fb; border-bottom:2px solid var(--pv-brand); text-align:start; white-space:normal }
+#tab-prc .pv-edx{ display:flex; flex-wrap:wrap; gap:8px; align-items:center }
+#tab-prc .pv-edx label{ font-size:11.5px; color:var(--pv-muted); margin-inline-end:2px }
+#tab-prc td .pv-edin.long{ width:240px }
+/* הבהוב אישור על השורה שנשמרה — סעיף 13 */
+#tab-prc .pv-tblwrap tbody tr.pv-flash td{ animation:pvflash 1.6s ease-out 1 }
+@keyframes pvflash{ 0%{ background:#d5f2e2 } 100%{ background:transparent } }
 #tab-prc .pv-tblwrap tbody tr:nth-child(even){ background:#f7f9fb }
 #tab-prc .pv-tblwrap tbody tr:hover{ background:#eaf1f6 }
 /* גובה שורה אחיד: תא התמונה תמיד בגודל קבוע, גם כשאין תמונה */
@@ -6263,6 +6272,32 @@ function renderPrcInner(){
   renderBody();
 }
 function renderBody(){
+  /* סעיף 13 — שמירת מיקום הגלילה: renderBodyInner בונה מחדש את .pv-tblwrap
+     שהיא עצמה אזור הגלילה, ולכן בלי שחזור מפורש המסך קופץ לראש הטבלה. */
+  const _w = document.querySelector('#prc-body .pv-tblwrap');
+  const _t = _w ? _w.scrollTop : null, _l = _w ? _w.scrollLeft : 0;
+  const _sx = window.scrollX || window.pageXOffset || 0, _sy = window.scrollY || window.pageYOffset || 0;
+  renderBodyInner();
+  if(_t != null){
+    const _n = document.querySelector('#prc-body .pv-tblwrap');
+    if(_n){ _n.scrollTop = _t; _n.scrollLeft = _l; }
+  }
+  try{ window.scrollTo(_sx, _sy); }catch(_e){}
+}
+function flashRow(sku){
+  try{
+    const cells = document.querySelectorAll('#prc-body .pv-tblwrap td.pv-sku');
+    for(let i=0;i<cells.length;i++){
+      if(cells[i].textContent.trim() === String(sku).trim()){
+        const tr = cells[i].parentElement; if(!tr) return;
+        tr.classList.add('pv-flash');
+        setTimeout(()=>{ try{ tr.classList.remove('pv-flash'); }catch(_e){} }, 1700);
+        return;
+      }
+    }
+  }catch(_e){}
+}
+function renderBodyInner(){
   const m = document.getElementById('prc-body'); if(!m) return;
   if(!SITE && !siteLoading && !siteErr && state.allGroups && window.PRC_VIEW!=='list' && window.PRC_VIEW!=='miss' && window.PRC_VIEW!=='set'){
     siteLoad().then(()=>{ try{ renderBody(); }catch(_){} }, ()=>{ try{ renderBody(); }catch(_){} });
@@ -6318,7 +6353,7 @@ function renderPricing(m){
     rows.forEach(p=>{
       const ca=costAfter(p.sku);
       if(ca==null) noCost++; else priced++;
-      if(dbEditSku===p.sku && ed){ html += editFormRow(p, 99); return; }
+      if(dbEditSku===p.sku && ed){ html += catEditRow(p); return; }
       html+='<tr class="'+(p.status!=='פעיל'?'pv-inactive':'')+'">'+
         '<td class="pv-imgtd">'+imgCell(p)+'</td>'+
         ''+skuTd(p.sku)+'<td class="pv-name">'+esc(p.name)+'</td>'+
@@ -6361,10 +6396,10 @@ function renderPricing(m){
       const ex=priceEx(p.sku,g), inc=priceInc(p.sku,g), mult=multiple(p.sku,g);
       if(inc!=null) priced++; if(ca==null) noCost++;
       if(editing){
-        html+='<tr style="background:#f0f6fb">'+
+        html+='<tr class="pv-edrow">'+
           '<td class="pv-imgtd">'+imgCell(p)+'</td>'+
           ''+skuTd(p.sku)+''+
-          '<td class="pv-name"><input class="pv-edin wide" id="pv-ed-name" value="'+esc(p.name)+'"><br><input class="pv-edin wide" id="pv-ed-notes" value="'+esc(p.notes)+'" placeholder="הערות" style="margin-top:4px"></td>'+
+          '<td class="pv-name"><input class="pv-edin wide" id="pv-ed-name" value="'+esc(p.name)+'" placeholder="שם מוצר"></td>'+
           '<td><input class="pv-edin" id="pv-ed-cat" list="pv-dlCats" value="'+esc(p.cat)+'" placeholder="קטגוריה"><br><input class="pv-edin" id="pv-ed-sub" list="pv-dlSubs" value="'+esc(p.sub)+'" placeholder="תת קטגוריה" style="margin-top:4px"></td>'+
           '<td><select class="pv-edin" id="pv-ed-src">'+SRC_LIST.map(s=>'<option '+(p.source===s?'selected':'')+'>'+s+'</option>').join('')+'</select></td>'+
           '<td class="pv-num"><input class="pv-edin narrow" id="pv-ed-cost" type="number" step="0.01" value="'+(p.source===SRC_ASM?'':(rawCost(p)??''))+'" '+(p.source===SRC_ASM?'disabled title="מחושב מ-BOM"':'')+'></td>'+
@@ -6374,7 +6409,7 @@ function renderPricing(m){
           '<td class="pv-num pv-cost">'+(inc==null?'':fmt(inc)+' ₪')+'</td>'+
           '<td></td>'+
           '<td><select class="pv-edin" id="pv-ed-st">'+['פעיל','בהמתנה','לא פעיל'].map(s=>'<option '+(p.status===s?'selected':'')+'>'+s+'</option>').join('')+'</select></td>'+
-          '<td style="white-space:nowrap"><button class="pv-rowbtn primary" onclick="prcV13.saveEdit(\''+q1(p.sku)+'\')">שמור</button> <button class="pv-rowbtn" onclick="prcV13.setEdit(null)">ביטול</button></td></tr>';
+          '<td style="white-space:nowrap"><button class="pv-rowbtn primary" onclick="prcV13.saveEdit(\''+q1(p.sku)+'\')">שמור</button> <button class="pv-rowbtn" onclick="prcV13.setEdit(null)">ביטול</button></td></tr>'+edExtraRow(p);
       } else {
         const badge = mg.src==='ov'?'<span class="pv-badge ov">ידני</span>'
                     : mg.src==='mx'?'<span class="pv-badge mx">קטגוריה</span>'
@@ -6420,20 +6455,29 @@ function rowActions(p, ed){
     ' <button class="pv-rowbtn danger '+(dbArm===p.sku?'arm':'')+'" onclick="prcV13.delSku(\''+q1(p.sku)+'\')">'+(dbArm===p.sku?'לחץ לאישור':'מחיקה')+'</button>';
 }
 
-function editFormRow(p, span){
-  return '<tr><td colspan="'+span+'" style="background:#f0f6fb"><div class="pv-addform" style="margin:8px 0"><h3>עריכת '+esc(p.sku)+'</h3><div class="pv-afgrid">'+
-    '<div><label>שם מוצר</label><input id="pv-ed-name" value="'+esc(p.name)+'"></div>'+
-    '<div><label>קטגוריה</label><input id="pv-ed-cat" list="pv-dlCats" value="'+esc(p.cat)+'"></div>'+
-    '<div><label>תת קטגוריה</label><input id="pv-ed-sub" list="pv-dlSubs" value="'+esc(p.sub)+'"></div>'+
-    '<div><label>מקור</label><select id="pv-ed-src">'+SRC_LIST.map(s=>'<option '+(p.source===s?'selected':'')+'>'+s+'</option>').join('')+'</select></div>'+
-    '<div><label>עלות ('+(p.source===SRC_IMPORT?'$':'₪')+')</label><input id="pv-ed-cost" type="number" step="0.01" value="'+(p.source===SRC_ASM?'':(rawCost(p)??''))+'" '+(p.source===SRC_ASM?'disabled':'')+' style="direction:ltr;text-align:left"></div>'+
-    '<div><label>מקדם העמסה ידני</label><input id="pv-ed-lov" type="number" step="0.01" value="'+(p.loadOv??'')+'" style="direction:ltr;text-align:left"></div>'+
-    '<div><label>סטטוס</label><select id="pv-ed-st">'+['פעיל','בהמתנה','לא פעיל'].map(s=>'<option '+(p.status===s?'selected':'')+'>'+s+'</option>').join('')+'</select></div>'+
-    '<div><label>הערות</label><input id="pv-ed-notes" value="'+esc(p.notes)+'"></div>'+
-  '</div><div class="pv-afactions">'+
-    '<button class="pv-btn" onclick="prcV13.saveEdit(\''+q1(p.sku)+'\')">שמור</button>'+
-    '<button class="pv-btn ghost" onclick="prcV13.setEdit(null)">ביטול</button>'+
-  '</div></div></td></tr>';
+function edExtraRow(p){
+  return '<tr class="pv-edrow2"><td colspan="99"><div class="pv-edx">'+
+    '<label>הערות</label><input class="pv-edin long" id="pv-ed-notes" value="'+esc(p.notes)+'">'+
+    '<label>כתובת תמונה</label><input class="pv-edin long" id="pv-ed-img" value="'+esc(p.img||'')+'" style="direction:ltr;text-align:left" placeholder="https://...">'+
+    '<label>תמונה מלאה</label><input class="pv-edin long" id="pv-ed-imgf" value="'+esc(p.imgFull||'')+'" style="direction:ltr;text-align:left" placeholder="https://...">'+
+  '</div></td></tr>';
+}
+
+/* סעיף 12 — עריכה בתוך השורה במסך "מאגר כללי": כל שדה מתחת לעמודה שלו,
+   המק״ט נשאר לקריאה בלבד, והשדות הארוכים יורדים לשורת המשך צרה. */
+function catEditRow(p){
+  return '<tr class="pv-edrow">'+
+    '<td class="pv-imgtd">'+imgCell(p)+'</td>'+
+    skuTd(p.sku)+
+    '<td class="pv-name"><input class="pv-edin wide" id="pv-ed-name" value="'+esc(p.name)+'" placeholder="שם מוצר"></td>'+
+    '<td><input class="pv-edin" id="pv-ed-cat" list="pv-dlCats" value="'+esc(p.cat)+'" placeholder="קטגוריה"><br><input class="pv-edin" id="pv-ed-sub" list="pv-dlSubs" value="'+esc(p.sub)+'" placeholder="תת קטגוריה" style="margin-top:4px"></td>'+
+    '<td><select class="pv-edin" id="pv-ed-src">'+SRC_LIST.map(s=>'<option '+(p.source===s?'selected':'')+'>'+s+'</option>').join('')+'</select></td>'+
+    '<td class="pv-num"><input class="pv-edin narrow" id="pv-ed-cost" type="number" step="0.01" value="'+(p.source===SRC_ASM?'':(rawCost(p)??''))+'" '+(p.source===SRC_ASM?'disabled title="מחושב מ-BOM"':'')+'></td>'+
+    '<td class="pv-num"><input class="pv-edin narrow" id="pv-ed-lov" type="number" step="0.01" value="'+(p.loadOv??'')+'" placeholder="מקדם" title="מקדם העמסה ידני"></td>'+
+    '<td><select class="pv-edin" id="pv-ed-st">'+['פעיל','בהמתנה','לא פעיל'].map(s=>'<option '+(p.status===s?'selected':'')+'>'+s+'</option>').join('')+'</select></td>'+
+    GROUPS.map(x=>'<td><input type="checkbox" style="width:15px;height:15px" '+(isIncluded(p.sku,x)?'checked':'')+' disabled title="לשינוי שיוך מחירון — יש לסיים את העריכה"></td>').join('')+
+    '<td style="white-space:nowrap"><button class="pv-rowbtn primary" onclick="prcV13.saveEdit(\''+q1(p.sku)+'\')">שמור</button> <button class="pv-rowbtn" onclick="prcV13.setEdit(null)">ביטול</button></td>'+
+  '</tr>'+edExtraRow(p);
 }
 
 function bomEditor(p, ed){
@@ -6897,10 +6941,12 @@ PV.saveEdit = async (sku)=>{
   const costRaw = gv('pv-ed-cost').trim();
   const lov = gv('pv-ed-lov').trim();
   const status = gv('pv-ed-st').trim(), notes = gv('pv-ed-notes').trim();
+  const imgU = gv('pv-ed-img').trim(), imgF = gv('pv-ed-imgf').trim();
   if(!SRC_LIST.includes(src)){ toast('מקור לא חוקי — יש לבחור מתוך הרשימה'); return; }
   const row = {
     name: name||null, cat: cat||null, sub: sub||null, source: src,
     prc_status: status||null, notes: notes||null,
+    img: imgU||null, img_full: imgF||null,
     load_override: lov===''? null : parseFloat(lov),
     v13_updated: today10(), updated_by: meNow(), updated_at: nowIso()
   };
@@ -6909,6 +6955,8 @@ PV.saveEdit = async (sku)=>{
   else { row.cost_ils = costRaw===''? null : parseFloat(costRaw); row.cost_usd = null; }
 
   p.name=name; p.cat=cat; p.sub=sub; p.source=src; p.status=status; p.notes=notes; p.updated=row.v13_updated;
+  if(imgU) p.img=imgU; else delete p.img;
+  if(imgF) p.imgFull=imgF; else delete p.imgFull;
   if(src===SRC_IMPORT){ p.cost=num(row.cost_usd); p.costILS=null; }
   else if(src!==SRC_ASM){ p.costILS=num(row.cost_ils); p.cost=null; }
   if(row.load_override==null || isNaN(row.load_override)){ delete p.loadOv; row.load_override=null; }
@@ -6916,7 +6964,8 @@ PV.saveEdit = async (sku)=>{
 
   dbEditSku = null;
   fillCatFilter(); renderBody();
-  await dbw(()=>O().from('prc_item_ext').update(row).eq('partname',sku), 'המק״ט עודכן ונשמר ✓');
+  const okw = await dbw(()=>O().from('prc_item_ext').update(row).eq('partname',sku), 'המק״ט עודכן ונשמר ✓');
+  if(okw) flashRow(sku);
 };
 
 /* ---------- הוספת מק״ט ---------- */
@@ -7259,7 +7308,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'prc-v13-rowheight-2026-08-06';
+const BUILD_ID = 'prc-v13-editall-2026-08-06';
 
 window.renderPrc = async function(){
   pvInjectCss();

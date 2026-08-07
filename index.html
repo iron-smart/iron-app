@@ -1205,7 +1205,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.31.0</div>
+      <div class="ver">גרסה 6.32.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1303,7 +1303,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.31.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.32.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1446,11 +1446,14 @@
 
     <!-- מסמכים — פרוטוקולים, דוחות וחתימות (נטיבי) -->
     <section id="tab-prc" class="hidden">
-      <div class="sku-tb">
-        <div class="tools-bar" id="prc-tools"></div>
+      <div class="sku-tb pv-shell">
         <div id="prc-views" class="tools-bar"></div>
+        <div id="prc-ctx" class="pv-ctxrow">
+          <div class="tools-bar" id="prc-tools"></div>
+          <div class="tools-bar" id="prc-ctx2"></div>
+        </div>
       </div>
-      <div id="prc-body"></div>
+      <div id="prc-body" role="tabpanel" aria-labelledby="prc-views"></div>
     </section>
 
     <section id="tab-docs" class="hidden">
@@ -5775,10 +5778,11 @@ const PV_CSS = `
 #tab-prc .pv-vbtn{ background:#fff; border:1px solid var(--pv-line); border-radius:9px; padding:7px 14px; cursor:pointer; font-size:12.5px; font-weight:600; color:var(--pv-ink2); white-space:nowrap }
 #tab-prc .pv-vbtn:hover{ background:#f1f5f9 }
 #tab-prc .pv-vbtn.on{ background:var(--pv-brand); border-color:var(--pv-brand); color:#fff; font-weight:700 }
-#tab-prc .pv-stats{ display:flex; gap:10px; margin:12px 0; flex-wrap:wrap }
-#tab-prc .pv-stat{ flex:1 1 150px; min-width:140px; background:#fff; border:1px solid var(--pv-line); border-radius:10px; padding:10px 12px; border-inline-start:3px solid var(--pv-brand) }
-#tab-prc .pv-stat .v{ font-size:20px; font-weight:800; color:var(--pv-dark) }
-#tab-prc .pv-stat .l{ font-size:12.5px; color:var(--pv-muted); margin-top:2px }
+/* פס סטטיסטיקות קומפקטי — כל שורה שהוא חוסך היא שורת טבלה שנראית. */
+#tab-prc .pv-stats{ display:flex; gap:8px; margin:10px 0; flex-wrap:wrap; align-items:stretch }
+#tab-prc .pv-stat{ flex:0 1 auto; background:#fff; border:1px solid var(--pv-line); border-radius:9px; padding:5px 11px; border-inline-start:3px solid var(--pv-brand); display:flex; align-items:baseline; gap:7px }
+#tab-prc .pv-stat .v{ font-size:15px; font-weight:800; color:var(--pv-dark) }
+#tab-prc .pv-stat .l{ font-size:12px; color:var(--pv-muted); margin-top:0 }
 #tab-prc .pv-tblwrap{ background:#fff; border:1px solid var(--pv-line); border-radius:12px; overflow:auto; max-height:calc(100vh - 300px) }
 #tab-prc .pv-tblwrap table{ border-collapse:collapse; width:100%; min-width:900px; font-size:13.5px; background:#fff }
 #tab-prc .pv-tblwrap thead, #tab-prc .pv-tblwrap thead tr{ background:var(--pv-brand) }
@@ -5862,6 +5866,25 @@ const PV_CSS = `
 #tab-prc .pv-bomedit.nested{ border-inline-start:3px solid var(--pv-accent); background:#fbfdfe; border-radius:8px; margin:4px 0 2px }
 #tab-prc .pv-tblwrap .pv-nestrow > td{ background:#fbfdfe !important; padding:0 0 6px 0 !important; border-bottom:none !important }
 #tab-prc .pv-tblwrap tbody tr.pv-openrow, #tab-prc .pv-tblwrap tbody tr.pv-openrow:nth-child(even){ background:#eef4f9 }
+/* מעטפת קבועה: שורת ניווט למעלה, שורת הקשר מתחתיה שלעולם אינה נעלמת. */
+#tab-prc .pv-shell{ position:relative; z-index:5 }
+#tab-prc .pv-ctxrow{ min-height:38px; margin-top:9px; padding-top:9px; border-top:1px solid var(--pv-line) }
+#tab-prc .pv-ctxrow > .tools-bar{ margin-bottom:0 }
+#tab-prc .pv-subtab{ background:#eef2f6; border:1px solid transparent; border-radius:20px; padding:6px 14px; cursor:pointer; font-size:12.5px; font-weight:600; color:var(--pv-ink2); white-space:nowrap }
+#tab-prc .pv-subtab:hover{ background:#dce8f2 }
+#tab-prc .pv-subtab.on{ background:#fff; border-color:var(--pv-brand); color:var(--pv-brand); font-weight:800; box-shadow:inset 0 0 0 1px var(--pv-brand) }
+#tab-prc .pv-vbtn:focus-visible, #tab-prc .pv-subtab:focus-visible, #tab-prc .pv-chip:focus-visible{ outline:2px solid var(--pv-brand); outline-offset:2px }
+#tab-prc .pv-menu{ position:relative; display:inline-block }
+#tab-prc .pv-menu > summary{ list-style:none; display:inline-block }
+#tab-prc .pv-menu > summary::-webkit-details-marker{ display:none }
+#tab-prc .pv-menupop{ position:absolute; inset-inline-start:0; top:calc(100% + 6px); background:#fff; border:1px solid var(--pv-line); border-radius:10px; box-shadow:0 6px 20px rgba(15,23,42,.12); padding:6px; z-index:20; min-width:170px; display:flex; flex-direction:column; gap:4px }
+#tab-prc .pv-menupop .pv-vbtn{ border:none; text-align:start; width:100% }
+#tab-prc details.pv-warn{ padding:0 }
+#tab-prc details.pv-warn > summary{ cursor:pointer; padding:8px 12px; font-weight:700; list-style:none }
+#tab-prc details.pv-warn > summary::-webkit-details-marker{ display:none }
+#tab-prc details.pv-warn > summary::before{ content:'▾ '; display:inline-block; transition:transform .12s }
+#tab-prc details.pv-warn[open] > summary::before{ transform:rotate(180deg) }
+#tab-prc details.pv-warn > div{ padding:0 12px 10px }
 #tab-prc .pv-panelgrid{ display:grid; grid-template-columns:340px 1fr; gap:16px; align-items:start }
 #tab-prc .pv-panel{ background:#fff; border:1px solid var(--pv-line); border-radius:12px; padding:18px }
 #tab-prc .pv-panel h3{ font-size:15px; font-weight:800; color:var(--pv-brand); margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--pv-line) }
@@ -6278,19 +6301,42 @@ function filteredProducts(){
 }
 
 /* ---------- סרגלי הכלים ---------- */
+/* שורת הניווט הראשית — העוגן היחיד של המסך. היא הראשונה במעטפת ואינה
+   מוסתרת לעולם, כדי שמעבר בין תצוגות לא יזיז שום דבר אנכית. */
 function buildViewBar(){
   const el = document.getElementById('prc-views'); if(!el) return;
   const av = prcAllowedViews();
-  let h = '<div class="pv-bar">';
-  av.forEach(v=>{ h += '<button class="pv-vbtn'+(window.PRC_VIEW===v?' on':'')+'" onclick="prcV13.setView(\''+v+'\')">'+VIEW_LABEL[v]+'</button>'; });
+  let h = '<div class="pv-bar" role="tablist" aria-label="תצוגות מסך התמחור" onkeydown="prcV13.tabKeys(event)">';
+  av.forEach(v=>{ const on = (window.PRC_VIEW===v);
+    h += '<button class="pv-vbtn'+(on?' on':'')+'" role="tab" aria-selected="'+(on?'true':'false')+'" tabindex="'+(on?'0':'-1')+'" onclick="prcV13.setView(\''+v+'\')">'+VIEW_LABEL[v]+'</button>'; });
   h += '<span class="pv-sep"></span>';
   h += '<button class="pv-vbtn" onclick="prcV13.exportCSV()">⤓ CSV</button>';
-  h += '<button class="pv-vbtn" onclick="prcV13.exportJSON()">שמירת גיבוי</button>';
-  if(prcEdit()) h += '<button class="pv-vbtn" onclick="document.getElementById(\'pv-imp\').click()">טעינת גיבוי</button><input type="file" id="pv-imp" accept="application/json" style="display:none" onchange="prcV13.importJSON(this)">';
-  h += '<button class="pv-vbtn" onclick="prcV13.reload()">↻ רענון</button>';
+  h += '<details class="pv-menu"><summary class="pv-vbtn" title="גיבוי ושחזור">⋯</summary><div class="pv-menupop">'+
+       '<button class="pv-vbtn" onclick="this.closest(\'details\').open=false; prcV13.exportJSON()">שמירת גיבוי</button>'+
+       (prcEdit()? '<button class="pv-vbtn" onclick="this.closest(\'details\').open=false; document.getElementById(\'pv-imp\').click()">טעינת גיבוי</button><input type="file" id="pv-imp" accept="application/json" style="display:none" onchange="prcV13.importJSON(this)">' : '')+
+       '</div></details>';
+  h += '<button class="pv-vbtn" onclick="prcV13.reload()" title="טעינה מחדש של כל נתוני התמחור">↻ רענון</button>';
   h += '</div>';
   el.innerHTML = h;
+  if(pvFocusTab){ pvFocusTab = false; const b = el.querySelector('.pv-vbtn.on'); if(b) try{ b.focus(); }catch(_e){} }
 }
+/* ניווט בחצים בין הלשוניות, כמקובל בתבנית tablist. */
+PV.tabKeys = ev => {
+  const k = ev.key;
+  if(k!=='ArrowRight' && k!=='ArrowLeft' && k!=='Home' && k!=='End') return;
+  const av = prcAllowedViews(); if(!av.length) return;
+  const i = av.indexOf(window.PRC_VIEW);
+  let j = i;
+  /* המסך RTL: חץ שמאלה מתקדם ברשימה וחץ ימינה חוזר. */
+  if(k==='ArrowLeft')  j = (i+1) % av.length;
+  if(k==='ArrowRight') j = (i-1+av.length) % av.length;
+  if(k==='Home') j = 0;
+  if(k==='End')  j = av.length-1;
+  if(j===i) return;
+  ev.preventDefault();
+  pvFocusTab = true;
+  PV.setView(av[j]);
+};
 
 function buildToolbar(){
   const el = document.getElementById('prc-tools'); if(!el) return;
@@ -6315,7 +6361,7 @@ function buildChips(){
   el.innerHTML='';
   const cat=document.createElement('button');
   cat.className='pv-chip all'+(state.catalog?' on':'');
-  cat.textContent='📦 מאגר כללי';
+  cat.innerHTML='<span class="pv-dot" style="background:var(--pv-dark)"></span>מאגר כללי';
   cat.title='כל המק״טים, ללא מרווחים ומחירים — ניהול ההכללה בכל המחירונים';
   cat.onclick=()=>{ state.catalog=!state.catalog; if(state.catalog){ state.allGroups=false; const f=document.getElementById('pv-fstatus'); if(f) f.value=''; } buildChips(); renderBody(); };
   el.appendChild(cat);
@@ -6352,19 +6398,45 @@ function fillSubFilter(){
 }
 PV.onCat = ()=>{ fillSubFilter(); renderBody(); };
 PV.render = ()=> renderBody();
+let pvFocusTab = false;
 PV.setView = v => { window.PRC_VIEW = v; renderPrcInner(); };
-PV.reload = async ()=>{ try{ await prcLoad(true); toast('הנתונים נטענו מחדש'); }catch(e){ toast('שגיאה בטעינה: '+(e.message||e)); } fillCatFilter(); renderPrcInner(); };
+/* כפתור רענון אחד לכל המסך — בתצוגת "מק״טים שאינם בתמחור" הוא מרענן גם
+   את הרשימה החיצונית, כדי שלא יידרשו שני כפתורי רענון באותו מסך. */
+PV.reload = async ()=>{
+  try{
+    await prcLoad(true);
+    if(window.PRC_VIEW==='miss'){ try{ await missLoad(true); }catch(_e){} }
+    toast('הנתונים נטענו מחדש');
+  }catch(e){ toast('שגיאה בטעינה: '+(e.message||e)); }
+  fillCatFilter(); renderPrcInner();
+};
 
 /* ---------- ניתוב תצוגות ---------- */
 function renderPrcInner(){
   const av = prcAllowedViews();
-  if(!av.length){ const b=document.getElementById('prc-body'); if(b) b.innerHTML='<div class="pv-hint" style="padding:20px">אין לך הרשאה לצפות במסך התמחור.</div>'; return; }
+  if(!av.length){
+    const b=document.getElementById('prc-body'); if(b) b.innerHTML='<div class="pv-hint" style="padding:20px">אין לך הרשאה לצפות במסך התמחור.</div>';
+    const sh=document.querySelector('#tab-prc .pv-shell'); if(sh) sh.style.display='none';
+    return;
+  }
   if(!av.includes(window.PRC_VIEW)) window.PRC_VIEW = av[0];
   buildViewBar();
-  const tools = document.getElementById('prc-tools');
-  if(window.PRC_VIEW==='set' || window.PRC_VIEW==='miss' || window.PRC_VIEW==='bom'){ if(tools) tools.style.display='none'; }
-  else { if(tools) tools.style.display=''; buildToolbar(); }
   renderBody();
+}
+/* שורת ההקשר — קיימת בכל התצוגות ורק מחליפה תוכן. סרגל הפילטרים של המאגר
+   נשמר חי ב-DOM (ולא נבנה מחדש) כדי שערכי החיפוש והסינון לא יאבדו במעבר. */
+function buildCtx(){
+  const t = document.getElementById('prc-tools');
+  const c = document.getElementById('prc-ctx2');
+  const v = window.PRC_VIEW;
+  const isDb = (v==='db' || v==='list');
+  if(t){ t.style.display = isDb? '' : 'none'; if(isDb) buildToolbar(); }
+  if(!c) return;
+  c.style.display = isDb? 'none' : '';
+  if(v==='bom')       c.innerHTML = bomTabsBar();
+  else if(v==='miss') c.innerHTML = missBar();
+  else if(v==='set')  c.innerHTML = '<span class="pv-hint" style="margin:0">מקדמי המחירונים, שער הדולר, המע״מ ומקדמי ההעמסה. כל שינוי כאן משפיע על כל המק״טים בבת אחת.</span>';
+  else c.innerHTML = '';
 }
 function renderBody(){
   /* סעיף 13 — שמירת מיקום הגלילה: renderBodyInner בונה מחדש את .pv-tblwrap
@@ -6372,6 +6444,10 @@ function renderBody(){
   const _w = document.querySelector('#prc-body .pv-tblwrap');
   const _t = _w ? _w.scrollTop : null, _l = _w ? _w.scrollLeft : 0;
   const _sx = window.scrollX || window.pageXOffset || 0, _sy = window.scrollY || window.pageYOffset || 0;
+  /* שורת ההקשר נבנית בכל רינדור ולא רק במעבר תצוגה, אחרת הלשונית המסומנת
+     והמונים שלה נשארים על המצב הקודם אחרי לחיצה על לשונית משנה או אחרי
+     עריכת רכיב שמשנה את הספירה. */
+  buildCtx();
   renderBodyInner();
   if(_t != null){
     const _n = document.querySelector('#prc-body .pv-tblwrap');
@@ -6540,7 +6616,7 @@ function renderPricing(m){
     '<div class="pv-stat"><div class="v">'+rows.length+'</div><div class="l">מוצרים בתצוגה</div></div>'+
     '<div class="pv-stat"><div class="v">'+priced+'</div><div class="l">עם מחיר מחושב</div></div>'+
     '<div class="pv-stat"><div class="v">'+noCost+'</div><div class="l">חסרי עלות</div></div>'+
-    '<div class="pv-stat"><div class="v">'+(state.catalog?'📦 מאגר כללי':state.allGroups?'כל הקבוצות':gtag(state.group))+'</div><div class="l">'+(state.catalog?'ללא מרווחים ומחירים':'קבוצת לקוח')+'</div></div>'+
+    '<div class="pv-stat"><div class="v">'+(state.catalog?'מאגר כללי':state.allGroups?'כל הקבוצות':gtag(state.group))+'</div><div class="l">'+(state.catalog?'ללא מרווחים ומחירים':'קבוצת לקוח')+'</div></div>'+
     '<div class="pv-stat"><div class="v">'+fmt(S.usdRate,2)+' ₪</div><div class="l">שער דולר'+(usdEff()!==S.usdRate?' · מחיר לפי רצפה '+fmt(usdEff(),2):'')+'</div></div>'+
     '<div class="pv-stat"><div class="v">'+pc(S.vat)+'</div><div class="l">מע״מ'+(vatEff()!==S.vat?' · מחיר לפי רצפה '+pc(vatEff()):'')+'</div></div>'+
   '</div>'+html;
@@ -6682,10 +6758,9 @@ function skuChips(list, max){
 function bomGroupsOf(sku){
   try{ return GROUPS.filter(g=>isIncluded(sku,g) && priceInc(sku,g)!=null); }catch(_e){ return []; }
 }
-const bomTabBtn = (t,l,n)=> '<button class="pv-vbtn'+(bomTab===t?' on':'')+'" onclick="prcV13.bomTab(\''+t+'\')">'+l+(n==null?'':' ('+n+')')+'</button>';
-
-function renderBom(m){
-  const ed = prcEdit();
+const bomTabBtn = (t,l,n)=> '<button class="pv-subtab'+(bomTab===t?' on':'')+'" role="tab" aria-selected="'+(bomTab===t?'true':'false')+'" onclick="prcV13.bomTab(\''+t+'\')">'+l+(n==null?'':' ('+n+')')+'</button>';
+/* המונים מחושבים במקום אחד ומשמשים גם את שורת ההקשר וגם את גוף המסך. */
+function bomCounts(){
   const parents  = DATA.products.filter(p=>treeKids(p.sku));
   const childSet = {}; DATA.bom.forEach(b=>{ childSet[b.child]=1; });
   const children = Object.keys(childSet);
@@ -6693,16 +6768,26 @@ function renderBom(m){
   const badParents = parents.filter(p=>costBefore(p.sku)==null);
   const noCost = DATA.products.filter(p=>!treeKids(p.sku) && costBefore(p.sku)==null);
   const partsInLists = DATA.products.filter(p=>p.role===ROLE_PART && bomGroupsOf(p.sku).length);
+  return { parents, children, asmNoTree, badParents, noCost, partsInLists };
+}
+function bomTabsBar(){
+  try{
+    const c = bomCounts();
+    return '<div class="pv-bar" role="tablist" aria-label="לשוניות עצי מוצר ורכיבים">'+
+      bomTabBtn('parents','עצי מוצר', c.parents.length)+
+      bomTabBtn('comps','רכיבים', c.children.length)+
+      bomTabBtn('gaps','פערים', c.asmNoTree.length + c.noCost.length)+
+      bomTabBtn('lf','דוח סמנטיקת העמסה')+
+    '</div>';
+  }catch(_e){ return ''; }
+}
 
-  let top = '<div class="pv-missbar">'+
-    bomTabBtn('parents','עצי מוצר', parents.length)+
-    bomTabBtn('comps','רכיבים', children.length)+
-    bomTabBtn('gaps','פערים', asmNoTree.length + noCost.length)+
-    bomTabBtn('lf','דוח סמנטיקת העמסה')+
-    '<span class="pv-sep"></span>'+
-    '<button class="pv-vbtn" onclick="prcV13.reload()">↻ רענון</button>'+
-  '</div>'+
-  '<div class="pv-stats">'+
+function renderBom(m){
+  const ed = prcEdit();
+  const { parents, children, asmNoTree, badParents, noCost, partsInLists } = bomCounts();
+
+  /* לשוניות המשנה עלו לשורת ההקשר במעטפת, וכפתור הרענון הכפול הוסר. */
+  let top = '<div class="pv-stats">'+
     bstat(parents.length,'עצי מוצר פעילים')+
     bstat(asmNoTree.length,'מוגדרים מורכב ללא עץ',true)+
     bstat(badParents.length,'אבות ללא עלות מחושבת',true)+
@@ -6710,7 +6795,7 @@ function renderBom(m){
     bstat(noCost.length,'מק״טים ללא עלות',true)+
     bstat(partsInLists.length,'רכיבים פנימיים שעדיין במחירונים',true)+
   '</div>'+
-  '<div class="pv-warn">עץ מוצר נקבע לפי קיום רכיבים ולא לפי המקור: כל מק״ט — יבוא, יצור, מורכב או קניה בארץ — יכול להיות אב. כאשר קיים עץ, העלות מחושבת מהרכיבים ושדה העלות הידני נעול. רכיב שחסרה לו עלות מאפס את כל שרשרת האבות שמעליו.</div>'+
+  '<details class="pv-warn"><summary>איך נקבע עץ מוצר, ומתי רכיב מאפס את האב</summary><div>עץ מוצר נקבע לפי קיום רכיבים ולא לפי המקור: כל מק״ט — יבוא, יצור, מורכב או קניה בארץ — יכול להיות אב. כאשר קיים עץ, העלות מחושבת מהרכיבים ושדה העלות הידני נעול. רכיב שחסרה לו עלות מאפס את כל שרשרת האבות שמעליו.</div></details>'+
   '<datalist id="pv-dlSkus">'+DATA.products.map(p=>'<option value="'+esc(p.sku)+'">').join('')+'</datalist>';
 
   /* הגענו למסך עצי המוצר — כפתור "חזרה" במאגר הכללי כבר לא רלוונטי. */
@@ -7156,25 +7241,18 @@ function renderMiss(m){
   const ed = prcEdit();
   if(!MISS){
     m.innerHTML = '<div class="pv-hint" style="padding:20px">טוען מק״טים…</div>';
-    missLoad().then(()=>renderBody()).catch(e=>{ m.innerHTML='<div class="pv-hint" style="padding:20px;color:var(--pv-red)">שגיאה בטעינה: '+esc(e.message||e)+'</div>'; });
+    missLoad().then(()=>renderBody()).catch(e=>{
+      m.innerHTML='<div class="pv-hint" style="padding:20px;color:var(--pv-red)">שגיאה בטעינה: '+esc(e.message||e)+'</div>';
+      /* MISS נשאר null, ולכן missBar היה חוזר ל"טוען…" — כותבים את השגיאה ישירות. */
+      const c=document.getElementById('prc-ctx2');
+      if(c) c.innerHTML='<span class="pv-hint" style="margin:0;color:var(--pv-red)">שגיאה בטעינת הרשימה — נסה ↻ רענון</span>';
+    });
     return;
   }
   const rows = missRows();
-  const fams = [...new Set((MISS||[]).map(x=>x.fam).filter(Boolean))].sort();
-  const selN = rows.filter(r=>missState.sel[r.sku]).length;
 
-  let top = '<div class="pv-missbar">'+
-    '<input type="search" class="pv-q" id="pv-missq" value="'+esc(missState.q)+'" placeholder="חיפוש מק״ט או שם…" oninput="prcV13.missSet(\'q\',this.value)">'+
-    '<select class="pv-f" onchange="prcV13.missSet(\'fam\',this.value)"><option value="">כל המשפחות</option>'+
-      fams.map(f=>'<option '+(missState.fam===f?'selected':'')+'>'+esc(f)+'</option>').join('')+'</select>'+
-    '<label class="pv-tgl"><input type="checkbox" class="pv-chk" '+(missState.activeOnly?'checked':'')+' onchange="prcV13.missSet(\'activeOnly\',this.checked)"> פעילים בלבד</label>'+
-    '<label class="pv-tgl"><input type="checkbox" class="pv-chk" '+(missState.soldOnly?'checked':'')+' onchange="prcV13.missSet(\'soldOnly\',this.checked)"> נמכרו בחצי שנה</label>'+
-    '<label class="pv-tgl"><input type="checkbox" class="pv-chk" '+(missState.stockOnly?'checked':'')+' onchange="prcV13.missSet(\'stockOnly\',this.checked)"> במלאי</label>'+
-    '<span class="pv-sep"></span>'+
-    (ed? '<button class="pv-btn" '+(selN?'':'disabled style="opacity:.5;cursor:default"')+' onclick="prcV13.missAddSel()">הוספת המסומנים לתמחור ('+selN+')</button>' : '')+
-    '<button class="pv-vbtn" onclick="prcV13.missReload()">↻ רענון</button>'+
-  '</div>'+
-  '<div class="pv-stats">'+
+  /* סרגל הסינון של המסך הזה עלה לשורת ההקשר במעטפת. */
+  let top = '<div class="pv-stats">'+
     '<div class="pv-stat"><div class="v">'+(MISS.length)+'</div><div class="l">מק״טים שאינם בתמחור</div></div>'+
     '<div class="pv-stat"><div class="v">'+rows.length+'</div><div class="l">בתצוגה הנוכחית</div></div>'+
     '<div class="pv-stat"><div class="v">'+rows.filter(r=>r.sold>0).length+'</div><div class="l">נמכרו בחצי שנה</div></div>'+
@@ -7212,19 +7290,39 @@ function renderMiss(m){
   html += '<div class="pv-hint">סימון המחירונים קובע לאילו מחירונים המק״ט ישויך עם הוספתו. המק״ט נכנס למאגר ללא עלות — '+
     'עלות פריוריטי מוצגת לעיון בלבד ואינה מועתקת, כי התמחור אינו מחובר לפריוריטי בשלב זה. השלמת העלות נעשית במסך התמחור.</div>';
   m.innerHTML = top + html;
-  /* renderBody מחליף את כל ה-innerHTML, כולל תיבת החיפוש עצמה — בלי זה
-     הפוקוס אבד בכל תו והמשתמש נאלץ ללחוץ מחדש. */
-  if(missState._focusQ){
+}
+
+/* סרגל הסינון של "מק״טים שאינם בתמחור" — נבנה לשורת ההקשר במעטפת. */
+function missBar(){
+  if(!MISS) return '<span class="pv-hint" style="margin:0">טוען מק״טים…</span>';
+  const ed = prcEdit();
+  const rows = missRows();
+  const fams = [...new Set((MISS||[]).map(x=>x.fam).filter(Boolean))].sort();
+  const selN = rows.filter(r=>missState.sel[r.sku]).length;
+  return '<div class="pv-bar">'+
+    '<input type="search" class="pv-q" id="pv-missq" value="'+esc(missState.q)+'" placeholder="חיפוש מק״ט או שם…" oninput="prcV13.missSet(\'q\',this.value)">'+
+    '<select class="pv-f" onchange="prcV13.missSet(\'fam\',this.value)"><option value="">כל המשפחות</option>'+
+      fams.map(f=>'<option '+(missState.fam===f?'selected':'')+'>'+esc(f)+'</option>').join('')+'</select>'+
+    '<label class="pv-tgl"><input type="checkbox" class="pv-chk" '+(missState.activeOnly?'checked':'')+' onchange="prcV13.missSet(\'activeOnly\',this.checked)"> פעילים בלבד</label>'+
+    '<label class="pv-tgl"><input type="checkbox" class="pv-chk" '+(missState.soldOnly?'checked':'')+' onchange="prcV13.missSet(\'soldOnly\',this.checked)"> נמכרו בחצי שנה</label>'+
+    '<label class="pv-tgl"><input type="checkbox" class="pv-chk" '+(missState.stockOnly?'checked':'')+' onchange="prcV13.missSet(\'stockOnly\',this.checked)"> במלאי</label>'+
+    '<span class="pv-sep"></span>'+
+    (ed? '<button class="pv-btn" '+(selN?'':'disabled style="opacity:.5;cursor:default"')+' onclick="prcV13.missAddSel()">הוספת המסומנים לתמחור ('+selN+')</button>' : '')+
+  '</div>';
+}
+/* שינוי סינון משפיע גם על הגוף וגם על מוני הסרגל, ולכן שניהם נבנים מחדש;
+   הפוקוס והסמן בתיבת החיפוש משוחזרים מיד אחרי הבנייה. */
+function missRefresh(focusQ){
+  renderBody();
+  if(focusQ){
     const qi = document.getElementById('pv-missq');
     if(qi){ qi.focus(); try{ qi.setSelectionRange(qi.value.length, qi.value.length); }catch(_e){} }
   }
 }
-
-PV.missSet = (k,v)=>{ missState[k]=v; missState._focusQ = (k==='q'); renderBody(); };
-PV.missSel = (sku,on)=>{ if(on) missState.sel[sku]=true; else delete missState.sel[sku]; renderBody(); };
-PV.missAll = on =>{ missRows().forEach(r=>{ if(on) missState.sel[r.sku]=true; else delete missState.sel[r.sku]; }); renderBody(); };
-PV.missGrp = (sku,g,on)=>{ (missState.grp[sku] ||= {})[g] = !!on; renderBody(); };
-PV.missReload = async ()=>{ try{ await missLoad(true); toast('הרשימה רעננה'); }catch(e){ toast('שגיאה: '+(e.message||e)); } renderBody(); };
+PV.missSet = (k,v)=>{ missState[k]=v; missRefresh(k==='q'); };
+PV.missSel = (sku,on)=>{ if(on) missState.sel[sku]=true; else delete missState.sel[sku]; missRefresh(false); };
+PV.missAll = on =>{ missRows().forEach(r=>{ if(on) missState.sel[r.sku]=true; else delete missState.sel[r.sku]; }); missRefresh(false); };
+PV.missGrp = (sku,g,on)=>{ (missState.grp[sku] ||= {})[g] = !!on; missRefresh(false); };
 PV.missAdd = sku => missDo([sku]);
 PV.missAddSel = ()=> missDo(Object.keys(missState.sel));
 
@@ -7819,13 +7917,14 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'prc-v13-tree-accordion-2026-08-07';
+const BUILD_ID = 'prc-v13-shell-2026-08-07';
 
 window.renderPrc = async function(){
   pvInjectCss();
   const b = document.getElementById('prc-body');
   if(!prcAdmin()){
     if(b) b.innerHTML = '<div class="pv-hint" style="padding:20px">אין לך הרשאה לצפות במסך התמחור.</div>';
+    const sh=document.querySelector('#tab-prc .pv-shell'); if(sh) sh.style.display='none';
     return;
   }
   if(!PRC_LOADED){

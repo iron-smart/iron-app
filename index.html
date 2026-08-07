@@ -1205,7 +1205,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.38.0</div>
+      <div class="ver">גרסה 6.39.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1303,7 +1303,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.38.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.39.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5789,15 +5789,33 @@ const PV_CSS = `
 #tab-prc .pv-tblwrap thead th{ position:sticky; top:0; background:var(--pv-brand); color:#fff; font-weight:700; font-size:12.5px; padding:9px 7px; text-align:center; vertical-align:middle; white-space:nowrap; z-index:5; box-shadow:inset 0 -1px 0 rgba(255,255,255,.14) }
 #tab-prc .pv-tblwrap thead th + th{ border-inline-start:1px solid rgba(255,255,255,.08) }
 #tab-prc .pv-tblwrap tbody td{ padding:6px 7px; border-bottom:1px solid #eef1f4; white-space:nowrap; font-variant-numeric:tabular-nums; text-align:center; vertical-align:middle; font-size:13.5px; line-height:1.35 }
-#tab-prc .pv-tblwrap tbody tr{ background:#fff }
+/* ---- מודל צביעה אחיד (6.39.0) ----
+   עד כה כל רקע של שורה נצבע על ה-tr. תא sticky אינו יורש את רקע ה-tr, ולכן
+   עמודה מוקפאת הייתה שקופה והתוכן שנגלל היה זולג מתחתיה. מעכשיו כל צבע עובר
+   דרך שני משתנים: --row-bg נקבע ברמת השורה, --cell-bg דורס אותו בתא בודד,
+   והצביעה עצמה נעשית פעם אחת על ה-td. כל כלל שצובע tr ישירות נשבר כאן —
+   ולכן אין להחזיר אף אחד מהם.
+   הבוררים משתמשים ב-> בכוונה: בלעדיו הפסים והריחוף דלפו גם לטבלאות
+   המקוננות של עץ המוצר ומדרגות הייצור. */
+#tab-prc .pv-tblwrap > table > tbody > tr{ --row-bg:#fff }
+#tab-prc .pv-tblwrap > table > tbody > tr:nth-child(even){ --row-bg:#f7f9fb }
+#tab-prc .pv-tblwrap > table > tbody > tr.pv-rev,
+#tab-prc .pv-tblwrap > table > tbody > tr.pv-rev:nth-child(even){ --row-bg:#eef7f1 }
+#tab-prc .pv-tblwrap > table > tbody > tr.pv-edrow{ --row-bg:#f0f6fb }
+#tab-prc .pv-tblwrap > table > tbody > tr:hover{ --row-bg:#eaf1f6 }
+#tab-prc .pv-tblwrap > table > tbody > tr.pv-rev:hover{ --row-bg:#e0efe7 }
+#tab-prc .pv-tblwrap > table > tbody > tr.pv-edrow:hover{ --row-bg:#f0f6fb }
+#tab-prc .pv-tblwrap > table > tbody > tr > td{ background:var(--cell-bg, var(--row-bg, #fff)) }
+/* הטבלאות המקוננות מקבלות פסים משלהן, במקום אלה שדלפו אליהן */
+#tab-prc .pv-bomedit tbody tr:nth-child(even) > td,
+#tab-prc .pv-mfg tbody tr:nth-child(even) > td{ background:#f7f9fb }
 /* גובה שורה אחיד — לא תלוי בתמונה: גם מק״ט בלי תמונה וגם תמונה שנכשלה בטעינה */
 #tab-prc .pv-tblwrap tbody td{ height:60px }
 #tab-prc .pv-tblwrap tbody tr{ height:60px }
 /* חריג: טבלת עץ המוצר המקוננת נשארת קומפקטית */
 #tab-prc .pv-bomedit td, #tab-prc .pv-bomedit tr, #tab-prc .pv-bomedit th{ height:auto }
 /* עריכה קומפקטית בתוך השורה — סעיף 12 */
-#tab-prc .pv-tblwrap tbody tr.pv-edrow, #tab-prc .pv-tblwrap tbody tr.pv-edrow td{ background:#f0f6fb }
-#tab-prc .pv-tblwrap tbody tr.pv-edrow2 td{ height:auto; padding:4px 8px; background:#f0f6fb; border-bottom:2px solid var(--pv-brand); text-align:start; white-space:normal }
+#tab-prc .pv-tblwrap tbody tr.pv-edrow2 td{ height:auto; padding:4px 8px; --cell-bg:#f0f6fb; border-bottom:2px solid var(--pv-brand); text-align:start; white-space:normal }
 /* שורת העריכה: כל שדה נושא תווית קטנה משלו, כדי שלא צריך להרים עיניים
    לכותרת הטבלה ולנחש איזה תא זה. */
 #tab-prc .pv-edf{ display:inline-flex; flex-direction:column; gap:2px; align-items:stretch; text-align:start }
@@ -5811,17 +5829,50 @@ const PV_CSS = `
 #tab-prc td .pv-edin.long{ width:230px }
 #tab-prc td .pv-edin.mid{ width:150px }
 #tab-prc .pv-edcalc{ font-size:12.5px; font-weight:700; color:var(--pv-ink2); white-space:nowrap }
-/* הבהוב אישור על השורה שנשמרה — סעיף 13 */
-#tab-prc .pv-tblwrap tbody tr.pv-flash td{ animation:pvflash 1.6s ease-out 1 }
-@keyframes pvflash{ 0%{ background:#d5f2e2 } 100%{ background:transparent } }
-#tab-prc .pv-tblwrap tbody tr:nth-child(even){ background:#f7f9fb }
-#tab-prc .pv-tblwrap tbody tr:hover{ background:#eaf1f6 }
+/* הבהוב אישור על השורה שנשמרה — סעיף 13.
+   מ-6.39.0 זו טבעת ולא רקע: רקע ירוק על שורה שכבר צבועה ירוק (מק״ט שנסקר)
+   נתן ניגודיות 1.09:1 ולא נראה כלל, ורקע גם נדרס על ידי תא sticky. טבעת
+   inset נצבעת בתוך כל תא בנפרד ולכן נראית מעל כל רקע ובכל עמודה. */
+#tab-prc .pv-tblwrap tbody tr.pv-flash > td{ animation:pvflash 1.6s ease-out 1 }
+@keyframes pvflash{
+  0%{   box-shadow: inset 0 2px 0 0 rgba(0,45,72,.55), inset 0 -2px 0 0 rgba(0,45,72,.55) }
+  100%{ box-shadow: inset 0 2px 0 0 rgba(0,45,72,0),   inset 0 -2px 0 0 rgba(0,45,72,0) }
+}
 /* גובה שורה אחיד: תא התמונה תמיד בגודל קבוע, גם כשאין תמונה */
 #tab-prc td.pv-imgtd, #tab-prc th.pv-imgtd{ width:62px; padding-inline:6px }
 #tab-prc .pv-imgbox{ width:47px; height:47px; min-width:47px; min-height:47px; flex:0 0 auto; border-radius:6px; border:1px solid var(--pv-line); background:#fff; display:inline-flex; align-items:center; justify-content:center; overflow:hidden; box-sizing:border-box; vertical-align:middle }
 #tab-prc .pv-imgbox img{ max-width:100%; max-height:100%; object-fit:contain; display:block }
 #tab-prc .pv-imgbox.empty{ border-style:dashed; border-color:#dde4ec; color:#c3ccd6; font-size:15px; background:#fbfcfd }
 #tab-prc td.pv-name, #tab-prc th.pv-name{ white-space:normal; min-width:165px; max-width:300px; text-align:right }
+/* ---- ארבע העמודות הפותחות מוקפאות (6.39.0) ----
+   טבלת ההשוואה רחבה 19 עמודות, ותא בקצה הנגלל היה מנותק מזהות המק״ט.
+   ההקפאה חלה רק על שלוש טבלאות התמחור (pv-frz) ולא על "מק״טים שאינם
+   בתמחור", שבה עמודת הסימון המותנית מזיזה את סדר העמודות.
+   הרוחבים קבועים במכוון — היסטים של sticky חייבים להיות ידועים מראש. */
+#tab-prc .pv-frz > table > thead > tr > th:nth-child(-n+4){ position:sticky; z-index:7 }
+#tab-prc .pv-frz > table > tbody > tr:not(.pv-bomrow):not(.pv-edrow2):not(.pv-nestrow) > td:nth-child(-n+4){ position:sticky; z-index:3 }
+#tab-prc .pv-frz > table > thead > tr > th:nth-child(1),
+#tab-prc .pv-frz > table > tbody > tr:not(.pv-bomrow):not(.pv-edrow2):not(.pv-nestrow) > td:nth-child(1){ inset-inline-start:0;     width:34px;  min-width:34px;  max-width:34px }
+#tab-prc .pv-frz > table > thead > tr > th:nth-child(2),
+#tab-prc .pv-frz > table > tbody > tr:not(.pv-bomrow):not(.pv-edrow2):not(.pv-nestrow) > td:nth-child(2){ inset-inline-start:34px;  width:62px;  min-width:62px;  max-width:62px }
+#tab-prc .pv-frz > table > thead > tr > th:nth-child(3),
+#tab-prc .pv-frz > table > tbody > tr:not(.pv-bomrow):not(.pv-edrow2):not(.pv-nestrow) > td:nth-child(3){ inset-inline-start:96px;  width:120px; min-width:120px; max-width:120px; overflow:hidden; text-overflow:ellipsis }
+#tab-prc .pv-frz > table > thead > tr > th:nth-child(4),
+#tab-prc .pv-frz > table > tbody > tr:not(.pv-bomrow):not(.pv-edrow2):not(.pv-nestrow) > td:nth-child(4){ inset-inline-start:216px; width:180px; min-width:180px; max-width:180px }
+/* צל שמפריד את הגוש הקפוא מהתוכן שנגלל תחתיו. הכיוון פיזי ולא לוגי, והמסך
+   כולו RTL — ולכן ההיסט שלילי. */
+#tab-prc .pv-frz > table > tbody > tr:not(.pv-bomrow):not(.pv-edrow2):not(.pv-nestrow) > td:nth-child(4){ box-shadow:-9px 0 12px -10px rgba(6,24,39,.30) }
+#tab-prc .pv-frz > table > tbody > tr.pv-flash:not(.pv-bomrow):not(.pv-edrow2) > td:nth-child(4){ box-shadow:none }
+#tab-prc .pv-frz > table > thead > tr > th:nth-child(4){ box-shadow:inset 0 -1px 0 rgba(255,255,255,.14), -9px 0 12px -10px rgba(6,24,39,.30) }
+@media (max-width:1100px){
+  /* במסך צר גוש קפוא של 386 פיקסלים גוזל יותר מדי — משאירים מק״ט ושם בלבד */
+  #tab-prc .pv-frz > table > thead > tr > th:nth-child(-n+2),
+  #tab-prc .pv-frz > table > tbody > tr > td:nth-child(-n+2){ position:static }
+  #tab-prc .pv-frz > table > thead > tr > th:nth-child(3),
+  #tab-prc .pv-frz > table > tbody > tr:not(.pv-bomrow):not(.pv-edrow2):not(.pv-nestrow) > td:nth-child(3){ inset-inline-start:0 }
+  #tab-prc .pv-frz > table > thead > tr > th:nth-child(4),
+  #tab-prc .pv-frz > table > tbody > tr:not(.pv-bomrow):not(.pv-edrow2):not(.pv-nestrow) > td:nth-child(4){ inset-inline-start:120px }
+}
 #tab-prc td.pv-num, #tab-prc th.pv-num{ text-align:center }
 #tab-prc .pv-sku{ font-family:ui-monospace,Consolas,monospace; font-size:12px; color:var(--pv-ink2); direction:ltr }
 #tab-prc .pv-catcell{ color:var(--pv-muted); font-size:11.5px }
@@ -5834,11 +5885,16 @@ const PV_CSS = `
 #tab-prc .pv-badge.mx{ background:#e8f2ed; color:#3f7a5e }
 #tab-prc .pv-badge.df{ background:#eef1f4; color:var(--pv-muted) }
 #tab-prc .pv-mcell{ cursor:pointer; border-radius:6px }
-#tab-prc .pv-mcell:hover{ background:#eaf1f6; outline:1.5px dashed #b9c4d8 }
+#tab-prc .pv-mcell:hover{ --cell-bg:#eaf1f6; outline:1.5px dashed #b9c4d8 }
+#tab-prc .pv-mcell:focus-visible{ outline:2px solid var(--pv-brand); outline-offset:-2px }
+#tab-prc .pv-cmpmg.ed:focus-visible{ outline:2px solid var(--pv-brand); outline-offset:1px; border-radius:6px }
 #tab-prc .pv-mcell input{ width:64px; border:1.5px solid var(--pv-brand); border-radius:8px; padding:4px 6px; direction:ltr; text-align:left; font-size:12.5px }
 #tab-prc .pv-nocost{ color:var(--pv-red); font-size:12px; font-weight:600 }
 #tab-prc .pv-noprice{ color:var(--pv-muted); font-style:italic; font-size:12.5px }
-#tab-prc tr.pv-inactive td{ opacity:.5 }
+#tab-prc .pv-tblwrap > table > tbody > tr.pv-inactive{ --row-bg:#fbfcfd }
+#tab-prc .pv-tblwrap > table > tbody > tr.pv-inactive:nth-child(even){ --row-bg:#f4f6f8 }
+#tab-prc .pv-tblwrap tbody tr.pv-inactive > td{ color:#99a3af }
+#tab-prc .pv-tblwrap tbody tr.pv-inactive > td > *{ opacity:.62 }
 #tab-prc .pv-src{ font-size:10.5px; font-weight:700; border-radius:5px; padding:2px 7px; background:#eef1f4; color:var(--pv-ink2) }
 #tab-prc .pv-src.s1{ background:#e8effa; color:var(--pv-brand) }
 #tab-prc .pv-src.s2{ background:#e8f2ed; color:#3f7a5e }
@@ -5869,7 +5925,7 @@ const PV_CSS = `
 #tab-prc .pv-skuin{ direction:ltr; display:inline-block; font-weight:600; letter-spacing:.2px }
 #tab-prc .pv-kidn{ font-size:10px; font-weight:700; background:#eef1f4; color:var(--pv-muted); border-radius:20px; padding:1px 6px; margin-inline-start:5px }
 #tab-prc .pv-bomedit.nested{ border-inline-start:3px solid var(--pv-accent); background:#fbfdfe; border-radius:8px; margin:4px 0 2px }
-#tab-prc .pv-tblwrap .pv-nestrow > td{ background:#fbfdfe !important; padding:0 0 6px 0 !important; border-bottom:none !important }
+#tab-prc .pv-tblwrap .pv-nestrow > td{ background:#fbfdfe; padding:0 0 6px 0 !important; border-bottom:none !important }
 /* מעטפת קבועה: שורת ניווט למעלה, שורת הקשר מתחתיה שלעולם אינה נעלמת. */
 #tab-prc .pv-shell{ position:relative; z-index:5 }
 #tab-prc .pv-ctxrow{ min-height:38px; margin-top:9px; padding-top:9px; border-top:1px solid var(--pv-line) }
@@ -5891,21 +5947,22 @@ const PV_CSS = `
 /* מספור שורות, מיון בכותרות, סימון סקירה ומווסת מקדם ההעמסה — 6.35.0 */
 #tab-prc .pv-tblwrap th.pv-rn, #tab-prc .pv-tblwrap td.pv-rn{ width:34px; min-width:34px; text-align:center; color:var(--pv-muted); font-size:11.5px; font-weight:600; padding-inline:4px }
 #tab-prc .pv-tblwrap th.pv-so{ cursor:pointer; user-select:none; white-space:nowrap }
-#tab-prc .pv-tblwrap th.pv-so:hover{ background:#e6edf3 }
-#tab-prc .pv-tblwrap th.pv-so:focus-visible{ outline:2px solid var(--pv-brand); outline-offset:-2px }
-#tab-prc .pv-tblwrap th.pv-so .pv-ar{ margin-inline-start:5px; font-size:10px; color:var(--pv-muted); font-weight:700 }
-#tab-prc .pv-tblwrap th.pv-so.on{ color:var(--pv-brand) }
-#tab-prc .pv-tblwrap th.pv-so.on .pv-ar{ color:var(--pv-brand) }
-#tab-prc .pv-tblwrap tbody tr.pv-rev, #tab-prc .pv-tblwrap tbody tr.pv-rev:nth-child(even){ background:#eef7f1 }
-#tab-prc .pv-tblwrap tbody tr.pv-rev td{ border-bottom-color:#d8ebe0 }
+/* כותרת הטבלה כהה, ולכן צביעת העמודה הממוינת בצבע המותג הפכה אותה לבלתי
+   נראית לגמרי (ניגודיות 1.0:1). מ-6.39.0 הסימון נעשה בלבן ובקו תחתון. */
+#tab-prc .pv-tblwrap th.pv-so:hover{ background:rgba(255,255,255,.10) }
+#tab-prc .pv-tblwrap th.pv-so:focus-visible{ outline:2px solid #fff; outline-offset:-3px }
+#tab-prc .pv-tblwrap th.pv-so .pv-ar{ margin-inline-start:5px; font-size:10px; color:rgba(255,255,255,.74); font-weight:700 }
+#tab-prc .pv-tblwrap th.pv-so.on{ color:#fff; box-shadow:inset 0 -3px 0 0 #fff }
+#tab-prc .pv-tblwrap th.pv-so.on .pv-ar{ color:#fff }
+#tab-prc .pv-tblwrap tbody tr.pv-rev > td{ border-bottom-color:#d8ebe0 }
 #tab-prc .pv-tblwrap td.pv-revtd{ text-align:center; white-space:nowrap }
 #tab-prc .pv-tblwrap td.pv-revtd input{ width:16px; height:16px; cursor:pointer; accent-color:#3f7a5e }
 #tab-prc .pv-revd{ display:block; font-size:10.5px; color:#3f7a5e; font-weight:700; margin-top:2px }
 #tab-prc .pv-tblwrap th.pv-revh{ white-space:nowrap; text-align:center }
-#tab-prc .pv-revso{ cursor:pointer; user-select:none }
-#tab-prc .pv-revso:hover{ color:var(--pv-brand) }
-#tab-prc .pv-revso.on{ color:var(--pv-brand) }
-#tab-prc .pv-revso:focus-visible{ outline:2px solid var(--pv-brand); outline-offset:2px }
+#tab-prc .pv-revso{ cursor:pointer; user-select:none; color:#fff }
+#tab-prc .pv-revso:hover{ color:#fff; text-decoration:underline }
+#tab-prc .pv-revso.on{ color:#fff; box-shadow:inset 0 -3px 0 0 #fff }
+#tab-prc .pv-revso:focus-visible{ outline:2px solid #fff; outline-offset:2px }
 #tab-prc .pv-revall{ display:block; margin:3px auto 0; background:#fff; border:1px solid var(--pv-line); border-radius:14px; padding:1px 8px; font-size:10.5px; font-weight:700; color:var(--pv-ink2); cursor:pointer; font-family:inherit }
 #tab-prc .pv-revall:hover{ background:#eef7f1; border-color:#3f7a5e; color:#3f7a5e }
 #tab-prc .pv-step{ display:inline-flex; align-items:center; gap:4px }
@@ -5931,8 +5988,7 @@ const PV_CSS = `
 #tab-prc .pv-mfg input{ border:1px solid var(--pv-line); border-radius:8px; padding:5px 7px; font-size:12.5px; font-family:inherit }
 #tab-prc .pv-mfgin{ width:92px; direction:ltr; text-align:center }
 #tab-prc .pv-mfgin.wide{ width:150px; text-align:start }
-#tab-prc .pv-mfg tbody tr.pv-mfgon{ background:#eef7f1 }
-#tab-prc .pv-mfg tbody tr.pv-mfgon td{ font-weight:600 }
+#tab-prc .pv-mfg tbody tr.pv-mfgon > td{ background:#eaf4ee; font-weight:600 }
 #tab-prc .pv-mfgadd{ display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap }
 #tab-prc .pv-mfgadd input{ width:120px; direction:ltr }
 #tab-prc .pv-sup{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:9px }
@@ -5948,12 +6004,16 @@ const PV_CSS = `
 #tab-prc .pv-discrow{ display:inline-flex; align-items:center; gap:3px }
 #tab-prc .pv-discrow .pct{ font-size:11px; color:var(--pv-muted); font-weight:700 }
 #tab-prc .pv-dprice{ font-size:13px; font-weight:800; color:var(--pv-ink); margin-top:3px }
-#tab-prc .pv-dmg{ font-size:11px; font-weight:800; border-radius:12px; padding:1px 7px; display:inline-block; margin-top:2px; white-space:nowrap }
-#tab-prc .pv-dmg.ok{ background:#eef7f1; color:#3f7a5e }
+/* קו מתאר דק — בלעדיו התג נבלע בשורה צבועה (מק״ט שנסקר, או תא באזהרה) */
+#tab-prc .pv-dmg{ font-size:11px; font-weight:800; border-radius:12px; padding:1px 7px; display:inline-block; margin-top:2px; white-space:nowrap; border:1px solid rgba(6,24,39,.10) }
+#tab-prc .pv-dmg.ok{ background:#dcefe4; color:#2f6b50; border-color:rgba(47,107,80,.30) }
 #tab-prc .pv-dmg.warn{ background:#fdf0d9; color:#8a5b12 }
 #tab-prc .pv-dmg.bad{ background:#fdeaea; color:#a13030 }
-#tab-prc .pv-tblwrap td.pv-disctd.warn{ background:#fefaf1 }
-#tab-prc .pv-tblwrap td.pv-disctd.bad{ background:#fdf3f3 }
+#tab-prc .pv-tblwrap td.pv-disctd.warn{ --cell-bg:#fefaf1 }
+#tab-prc .pv-tblwrap td.pv-disctd.bad{ --cell-bg:#fdf3f3 }
+/* בהקשר RTL סימן שקדם לספרות נדחף לצדן השני והוצג כ-"12%+". בידוד דו-כיווני
+   מחזיר אותו למקומו. */
+#tab-prc .pv-sdiff, #tab-prc .pv-diff{ unicode-bidi:isolate; direction:ltr }
 #tab-prc .pv-sdiff{ font-size:10.5px; font-weight:800; border-radius:10px; padding:1px 6px; margin-inline-start:5px; white-space:nowrap }
 #tab-prc .pv-sdiff.up{ background:#eef7f1; color:#3f7a5e }
 #tab-prc .pv-sdiff.dn{ background:#fdeaea; color:#a13030 }
@@ -6027,9 +6087,11 @@ const PV_CSS = `
 #tab-prc .pv-rowbtn.primary{ background:var(--pv-brand); color:#fff; border-color:var(--pv-brand); font-weight:700 }
 #tab-prc td .pv-edin{ border:1px solid var(--pv-brand); border-radius:8px; padding:5px 7px; width:110px; font-size:12.5px }
 #tab-prc td .pv-edin:focus{ outline:none; box-shadow:0 0 0 3px rgba(0,45,72,.10) }
+#tab-prc td .pv-edin:focus-visible, #tab-prc .pv-mfgin:focus-visible, #tab-prc .pv-discin:focus-visible,
+#tab-prc .pv-rowbtn:focus-visible, #tab-prc .pv-btn:focus-visible{ outline:2px solid var(--pv-brand); outline-offset:2px }
 #tab-prc td .pv-edin.wide{ width:230px }
 #tab-prc td .pv-edin.narrow{ width:70px; direction:ltr; text-align:left }
-#tab-prc .pv-bomrow td{ background:#f4f8fb !important; border-bottom:2px solid var(--pv-brand) !important }
+#tab-prc .pv-bomrow td{ --cell-bg:#f4f8fb; border-bottom:2px solid var(--pv-brand) !important }
 #tab-prc .pv-bomedit{ padding:10px 6px }
 #tab-prc .pv-bomedit h4{ font-size:13px; font-weight:800; margin-bottom:8px; color:var(--pv-brand) }
 #tab-prc .pv-bomedit table{ min-width:0; width:auto; border-collapse:collapse }
@@ -6048,7 +6110,12 @@ const PV_CSS = `
   body.pv-print *{ visibility:hidden !important }
   body.pv-print .pv-pricelist, body.pv-print .pv-pricelist *{ visibility:visible !important }
   body.pv-print .pv-pricelist{ position:absolute; inset-inline:0; top:0; border:none; padding:10px; max-width:none; box-shadow:none }
-  body.pv-print .pv-plcat{ break-inside:avoid-page }
+  body.pv-print .pv-plcat{ break-inside:avoid }
+  /* ברירת המחדל של הדפדפן היא לא להדפיס רקעים, ולכן כותרת הקטגוריה —
+     לבן על כחול — יצאה לבן על לבן. בהדפסה היא הופכת לטקסט כהה עם קו. */
+  body.pv-print .pv-plcat h4{ background:none !important; color:var(--pv-brand) !important; border-bottom:2px solid var(--pv-brand); border-radius:0; padding:6px 0 }
+  body.pv-print .pv-pricelist{ print-color-adjust:exact; -webkit-print-color-adjust:exact }
+  body.pv-print .pv-plcat tr{ break-inside:avoid }
 }`;
 
 function pvInjectCss(){
@@ -6496,7 +6563,7 @@ function soTh(key, label, cls, style){
   const on = (sortState.key===key);
   const ar = on? (sortState.dir>0? '▲':'▼') : '⇅';
   return '<th class="pv-so'+(cls? ' '+cls : '')+(on? ' on':'')+'"'+(style? ' style="'+style+'"' : '')+
-    ' onclick="prcV13.sortBy(\''+q1(key)+'\')" role="button" tabindex="0" aria-sort="'+(on? (sortState.dir>0?'ascending':'descending') : 'none')+'"'+
+    ' onclick="prcV13.sortBy(\''+q1(key)+'\')" tabindex="0" aria-sort="'+(on? (sortState.dir>0?'ascending':'descending') : 'none')+'"'+
     ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();prcV13.sortBy(\''+q1(key)+'\')}"'+
     ' title="מיון לפי עמודה זו">'+label+'<span class="pv-ar">'+ar+'</span></th>';
 }
@@ -6522,7 +6589,7 @@ const MARKS = [
 function markDef(k){ return MARKS.find(m=>m.k===k) || null; }
 function markTh(m, ed){
   const on = (sortState.key===m.k);
-  return '<th class="pv-revh" title="'+m.thTtl+'">'+
+  return '<th class="pv-revh" aria-sort="'+(on? (sortState.dir>0?'ascending':'descending') : 'none')+'" title="'+m.thTtl+'">'+
     '<span class="pv-revso'+(on?' on':'')+'" role="button" tabindex="0" onclick="prcV13.sortBy(\''+m.k+'\')"'+
     ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();prcV13.sortBy(\''+m.k+'\')}"'+
     ' title="מיון לפי עמודה זו">'+m.lbl+'<span class="pv-ar">'+(on? (sortState.dir>0?'▲':'▼') : '⇅')+'</span></span>'+
@@ -6533,7 +6600,7 @@ function markTd(p, m, ed){
   const v = p[m.at], on = !!v;
   return '<td class="pv-revtd '+m.cls+'">'+
     '<input type="checkbox" '+(on?'checked':'')+' '+(ed?'':'disabled')+
-      ' onchange="prcV13.setMark(\''+q1(p.sku)+'\',\''+m.k+'\',this.checked)" title="'+(on? m.on+revDate(v)+(p[m.by]? ' על ידי '+esc(p[m.by]):'') : m.off)+'">'+
+      ' data-fk="mk:'+esc(p.sku)+':'+m.k+'" onchange="prcV13.setMark(\''+q1(p.sku)+'\',\''+m.k+'\',this.checked)" title="'+(on? m.on+revDate(v)+(p[m.by]? ' על ידי '+esc(p[m.by]):'') : m.off)+'">'+
     (on? '<span class="pv-revd '+m.cls+'">'+revDate(v)+'</span>' : '')+
   '</td>';
 }
@@ -6679,7 +6746,7 @@ function buildToolbar(){
     el.innerHTML = '<div class="pv-bar">'+
       '<div class="pv-chips" id="pv-chips"></div>'+
       '<span class="pv-sep"></span>'+
-      '<input type="search" class="pv-q" id="pv-q" placeholder="חיפוש מק״ט או שם מוצר…" oninput="prcV13.render()">'+
+      '<input type="search" class="pv-q" id="pv-q" placeholder="חיפוש מק״ט או שם מוצר…" oninput="prcV13.qInput()" onkeydown="if(event.key===\'Enter\'){event.preventDefault();prcV13.qFlush()}" onsearch="prcV13.qFlush()">'+
       '<select class="pv-f" id="pv-fcat" onchange="prcV13.onCat()"></select>'+
       '<select class="pv-f" id="pv-fsub" onchange="prcV13.render()"></select>'+
       '<select class="pv-f" id="pv-fsrc" onchange="prcV13.render()"><option value="">כל המקורות</option>'+SRC_LIST.map(s=>'<option>'+s+'</option>').join('')+'</select>'+
@@ -6775,11 +6842,49 @@ function buildCtx(){
   else if(v==='set')  c.innerHTML = '<span class="pv-hint" style="margin:0">מקדמי המחירונים, שער הדולר, המע״מ ומקדמי ההעמסה. כל שינוי כאן משפיע על כל המק״טים בבת אחת.</span>';
   else c.innerHTML = '';
 }
+/* ---------- שמירת פוקוס בין רינדורים (6.39.0) ----------
+   כל שמירה בונה מחדש את כל הטבלה, ולכן השדה שבו עמד הסמן נהרס והפוקוס חזר
+   ל-body. בעבודה רציפה על מאות שורות זה חייב קליק עכבר אחרי כל הקלדה.
+   כאן נשמר מזהה יציב של הפקד (data-fk, או id) יחד עם מיקום הסמן, ומוחזר
+   אחרי הבנייה. */
+function fkSel(k){ return '#tab-prc [data-fk="'+String(k).replace(/["\\]/g,'\\$&')+'"]'; }
+function focusSnap(){
+  try{
+    const el = document.activeElement;
+    if(!el || el===document.body || !el.closest || !el.closest('#tab-prc')) return null;
+    const k = el.getAttribute && el.getAttribute('data-fk');
+    const id = (!k && el.id)? el.id : null;
+    if(!k && !id) return null;
+    const s = { k:k, id:id };
+    try{ s.a = el.selectionStart; s.b = el.selectionEnd; }catch(_e){}
+    return s;
+  }catch(_e){ return null; }
+}
+function focusRestore(s){
+  if(!s) return;
+  try{
+    const el = s.id? document.getElementById(s.id) : document.querySelector(fkSel(s.k));
+    if(!el || el===document.activeElement) return;
+    el.focus({preventScroll:true});
+    if(s.a!=null && el.setSelectionRange){ try{ el.setSelectionRange(s.a, s.b); }catch(_e){} }
+  }catch(_e){}
+}
+/* חיפוש עם השהיה: כל הקשה בנתה מחדש כ-11,500 תאים. Enter מדלג על ההשהיה. */
+let qTimer = null, qLast = null;
+PV.qInput = ()=>{ if(qTimer) clearTimeout(qTimer); qTimer = setTimeout(()=>{ qTimer = null; qLast = gv('pv-q'); renderBody(); }, 160); };
+PV.qFlush = ()=>{
+  if(qTimer){ clearTimeout(qTimer); qTimer = null; }
+  /* Enter מפעיל גם keydown וגם onsearch — בלי ההשוואה הזאת נבנו שתי טבלאות. */
+  const v = gv('pv-q');
+  if(v === qLast) return;
+  qLast = v; renderBody();
+};
 function renderBody(){
   /* סעיף 13 — שמירת מיקום הגלילה: renderBodyInner בונה מחדש את .pv-tblwrap
      שהיא עצמה אזור הגלילה, ולכן בלי שחזור מפורש המסך קופץ לראש הטבלה. */
   const _w = document.querySelector('#prc-body .pv-tblwrap');
   const _t = _w ? _w.scrollTop : null, _l = _w ? _w.scrollLeft : 0;
+  const _f = focusSnap();
   const _sx = window.scrollX || window.pageXOffset || 0, _sy = window.scrollY || window.pageYOffset || 0;
   /* שורת ההקשר נבנית בכל רינדור ולא רק במעבר תצוגה, אחרת הלשונית המסומנת
      והמונים שלה נשארים על המצב הקודם אחרי לחיצה על לשונית משנה או אחרי
@@ -6791,18 +6896,19 @@ function renderBody(){
     if(_n){ _n.scrollTop = _t; _n.scrollLeft = _l; }
   }
   try{ window.scrollTo(_sx, _sy); }catch(_e){}
+  focusRestore(_f);
+}
+/* איתור שורה לפי data-sku ולא לפי השוואת טקסט בתא — טקסט התא עלול להיות
+   קישור, ולהשתנות בכל שינוי עיצוב. */
+function rowEl(sku){
+  try{ return document.querySelector('#prc-body .pv-tblwrap > table > tbody > tr[data-sku="'+String(sku).replace(/["\\]/g,'\\$&')+'"]'); }
+  catch(_e){ return null; }
 }
 function flashRow(sku){
   try{
-    const cells = document.querySelectorAll('#prc-body .pv-tblwrap td.pv-sku');
-    for(let i=0;i<cells.length;i++){
-      if(cells[i].textContent.trim() === String(sku).trim()){
-        const tr = cells[i].parentElement; if(!tr) return;
-        tr.classList.add('pv-flash');
-        setTimeout(()=>{ try{ tr.classList.remove('pv-flash'); }catch(_e){} }, 1700);
-        return;
-      }
-    }
+    const tr = rowEl(sku); if(!tr) return;
+    tr.classList.add('pv-flash');
+    setTimeout(()=>{ try{ tr.classList.remove('pv-flash'); }catch(_e){} }, 1700);
   }catch(_e){}
 }
 function renderBodyInner(){
@@ -6856,7 +6962,7 @@ function renderPricing(m){
 
   let html='';
   if(state.catalog){
-    html = '<div class="pv-tblwrap" style="border-top:3px solid var(--pv-dark)"><table><thead><tr>'+
+    html = '<div class="pv-tblwrap pv-frz" style="border-top:3px solid var(--pv-dark)"><table><thead><tr>'+
       '<th class="pv-rn" title="מספר שורה בתצוגה הנוכחית">#</th>'+
       '<th class="pv-imgtd">תמונה</th>'+soTh('sku','מק״ט')+soTh('name','שם מוצר','pv-name')+soTh('cat','קטגוריה · תת קטגוריה')+soTh('src','מקור')+
       soTh('cost','עלות מקור','pv-num')+soTh('ca','עלות בש״ח','pv-num')+soTh('st','סטטוס')+
@@ -6866,7 +6972,7 @@ function renderPricing(m){
       const ca=costAfter(p.sku);
       if(ca==null) noCost++; else priced++;
       if(dbEditSku===p.sku && ed){ html += catEditRow(p, i); return; }
-      html+='<tr class="'+rowCls(p)+'">'+
+      html+='<tr data-sku="'+esc(p.sku)+'" class="'+rowCls(p)+'">'+
         '<td class="pv-rn">'+(i+1)+'</td>'+
         '<td class="pv-imgtd">'+imgCell(p)+'</td>'+
         ''+skuTd(p.sku)+'<td class="pv-name">'+esc(p.name)+'</td>'+
@@ -6887,7 +6993,7 @@ function renderPricing(m){
        על אותו בסיס. מחיר האתר מוצג ללא מע״מ בשורה הראשית וכולל מע״מ מתחתיו,
        כי הוא נשמר בפריוריטי כמחיר כולל מע״מ. שולי הרווח מוצגים מתחת לכל מחיר
        וניתנים לעריכה במקום — זהו מסך העבודה להחלטת ההנחה לכל מוצר בכל מחירון. */
-    html = '<div class="pv-tblwrap"><table><thead><tr>'+
+    html = '<div class="pv-tblwrap pv-frz"><table><thead><tr>'+
       '<th class="pv-rn" title="מספר שורה בתצוגה הנוכחית">#</th>'+
       '<th class="pv-imgtd">תמונה</th>'+soTh('sku','מק״ט')+soTh('name','שם מוצר','pv-name')+soTh('cat','קטגוריה · תת קטגוריה')+soTh('ca','עלות בש״ח','pv-num')+
       soTh('site','מחיר אתר כיום<small class="pv-sub2">ללא מע״מ · הפרש מול שלנו</small>','pv-num')+
@@ -6897,7 +7003,7 @@ function renderPricing(m){
     rows.forEach((p,i)=>{
       const ca=costAfter(p.sku);
       if(ca==null) noCost++; else priced++;
-      html+='<tr class="'+rowCls(p)+'"><td class="pv-rn">'+(i+1)+'</td><td class="pv-imgtd">'+imgCell(p)+'</td>'+skuTd(p.sku)+'<td class="pv-name">'+esc(p.name)+'</td><td class="pv-catcell">'+esc(p.cat)+(p.sub?' · '+esc(p.sub):'')+'</td>'+
+      html+='<tr data-sku="'+esc(p.sku)+'" class="'+rowCls(p)+'"><td class="pv-rn">'+(i+1)+'</td><td class="pv-imgtd">'+imgCell(p)+'</td>'+skuTd(p.sku)+'<td class="pv-name">'+esc(p.name)+'</td><td class="pv-catcell">'+esc(p.cat)+(p.sub?' · '+esc(p.sub):'')+'</td>'+
         '<td class="pv-num pv-cost">'+(ca==null?'<span class="pv-nocost">חסר עלות</span>':fmt(ca)+' ₪')+'</td>'+
         siteCmpCell(p.sku)+
         discGroups().map(g=>discCell(p, g, ed)).join('')+
@@ -6906,7 +7012,7 @@ function renderPricing(m){
     html+='</tbody></table></div>'+discSummary(rows, ed);
   } else {
     rows = rows.filter(p=>isIncluded(p.sku,g));
-    html = '<div class="pv-tblwrap" style="border-top:3px solid '+gcol(g)+'"><table><thead><tr>'+
+    html = '<div class="pv-tblwrap pv-frz" style="border-top:3px solid '+gcol(g)+'"><table><thead><tr>'+
       '<th class="pv-rn" title="מספר שורה בתצוגה הנוכחית">#</th>'+
       '<th class="pv-imgtd">תמונה</th>'+soTh('sku','מק״ט')+soTh('name','שם מוצר','pv-name')+soTh('cat','קטגוריה · תת קטגוריה')+soTh('src','מקור')+
       soTh('cost','עלות מקור','pv-num')+soTh('ca','עלות בש״ח','pv-num')+
@@ -6941,7 +7047,7 @@ function renderPricing(m){
         const badge = mg.src==='ov'?'<span class="pv-badge ov">ידני</span>'
                     : mg.src==='mx'?'<span class="pv-badge mx">קטגוריה</span>'
                     : '<span class="pv-badge df">כללי</span>';
-        html+='<tr class="'+rowCls(p)+'">'+
+        html+='<tr data-sku="'+esc(p.sku)+'" class="'+rowCls(p)+'">'+
           '<td class="pv-rn">'+(i+1)+'</td>'+
           '<td class="pv-imgtd">'+imgCell(p)+'</td>'+
           ''+skuTd(p.sku)+'<td class="pv-name">'+esc(p.name)+'</td>'+
@@ -6949,7 +7055,7 @@ function renderPricing(m){
           '<td><span class="pv-src '+(SRC_CLS[p.source]||'')+'">'+esc(p.source||'—')+'</span>'+roleTag(p)+'</td>'+
           '<td class="pv-num pv-cost">'+costSrcCell(p)+'</td>'+
           '<td class="pv-num pv-cost" '+(p.loadOv?'title="מקדם העמסה ידני: '+p.loadOv+'"':'')+'>'+(ca==null?'<span class="pv-nocost">—</span>':fmt(ca)+' ₪'+(p.loadOv?' <span style="color:var(--pv-amber)">*</span>':''))+'</td>'+
-          '<td class="pv-num'+(ed?' pv-mcell':'')+'" '+(ed?'onclick="prcV13.editMargin(this,\''+q1(p.sku)+'\')" title="לחץ לעריכה"':'')+'>'+(mg.v==null?'—':pc(mg.v))+badge+upBadge(p.sku,g,mg.v)+'</td>'+
+          '<td class="pv-num'+(ed?' pv-mcell':'')+'" '+(ed?'tabindex="0" role="button" onclick="prcV13.editMargin(this,\''+q1(p.sku)+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();prcV13.editMargin(this,\''+q1(p.sku)+'\')}" title="לחץ או Enter לעריכה"':'')+'>'+(mg.v==null?'—':pc(mg.v))+badge+upBadge(p.sku,g,mg.v)+'</td>'+
           '<td class="pv-num pv-price">'+(ex==null?'<span class="pv-noprice">'+(mg.v===0?'לפי הצעה':'—')+'</span>':fmt(ex)+' ₪')+'</td>'+
           '<td class="pv-num pv-price vat">'+(inc==null?'':fmt(inc)+' ₪')+'</td>'+
           '<td class="pv-num pv-mult">'+(mult==null?'':fmt(mult,2)+'×')+'</td>'+
@@ -7111,6 +7217,7 @@ function paintName(sku){
 }
 function mfgNumIn(sku, qty, field, v){
   return '<input class="pv-mfgin" type="number" step="0.01" min="0" value="'+(v==null?'':v)+'"'+
+    ' data-fk="mfg:'+esc(sku)+':'+qty+':'+field+'"'+
     ' onchange="prcV13.mfgSet(\''+q1(sku)+'\','+qty+',\''+field+'\',this.value)">';
 }
 function mfgPanel(p, ed){
@@ -7510,6 +7617,7 @@ function discCell(p, grp, ed){
   const shown = (d==null? '' : String(Math.round(d*10000)/100));
   const inp = ed
     ? '<span class="pv-discrow"><input class="pv-discin" type="number" min="0" max="99" step="0.5" value="'+shown+'" placeholder="0"'+
+      ' data-fk="disc:'+esc(p.sku)+':'+esc(grp)+'"'+
       ' title="הנחה באחוזים מהמחיר באתר לפני מע״מ — הקלד ישירות. ריק או 0 = ללא הנחה"'+
       ' onchange="prcV13.setDisc(\''+q1(p.sku)+'\',\''+q1(grp)+'\',this.value,this)"><span class="pct">%</span></span>'
     : '<span class="pv-discrow"><b>'+(d==null?'—':pc(d))+'</b></span>';
@@ -7571,7 +7679,7 @@ function cmpCell(p, grp, ed){
     : '<div class="pv-cmpmain">'+fmt(ex)+' ₪</div>';
   const mgTxt = (mg.v==null? '—' : pc(mg.v));
   const mgCell = '<div class="pv-cmpmg'+(ed?' ed':'')+'" '+
-    (ed? 'onclick="prcV13.editMargin(this,\''+q1(p.sku)+'\',\''+q1(grp)+'\')" title="לחץ לעריכת שולי הרווח במחירון '+esc(grp)+' — '+ttl+'"' : 'title="'+ttl+'"')+
+    (ed? 'tabindex="0" role="button" onclick="prcV13.editMargin(this,\''+q1(p.sku)+'\',\''+q1(grp)+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();prcV13.editMargin(this,\''+q1(p.sku)+'\',\''+q1(grp)+'\')}" title="לחץ או Enter לעריכת שולי הרווח במחירון '+esc(grp)+' — '+ttl+'"' : 'title="'+ttl+'"')+
     '><span class="pv-mgdot '+cls+'"></span>'+mgTxt+'</div>';
   return '<td class="pv-num">'+price+mgCell+(inc?'':'<div class="pv-outg" title="המק״ט מוחרג מהמחירון הזה ולא יופיע ללקוח">מחוץ למחירון</div>')+'</td>';
 }
@@ -8599,7 +8707,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'prc-v13-disc-2026-08-07';
+const BUILD_ID = 'prc-v13-ux1-2026-08-07';
 
 window.renderPrc = async function(){
   pvInjectCss();

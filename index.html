@@ -1205,7 +1205,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.29.0</div>
+      <div class="ver">גרסה 6.30.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1303,7 +1303,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.29.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.30.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5841,6 +5841,18 @@ const PV_CSS = `
 #tab-prc .pv-diff.up{ color:var(--pv-red); font-weight:700 }
 #tab-prc .pv-diff.dn{ color:#3f7a5e; font-weight:700 }
 #tab-prc select.pv-rolesel{ font-size:11.5px; border:1px solid var(--pv-line); border-radius:6px; padding:2px 4px; background:#fff }
+#tab-prc .pv-sub2{ font-weight:400; color:var(--pv-muted); font-size:10.5px; display:block; margin-top:2px }
+#tab-prc .pv-cmpmain{ font-weight:700 }
+#tab-prc .pv-cmpsub{ font-size:11px; color:var(--pv-muted); margin-top:1px }
+#tab-prc .pv-cmpmg{ font-size:11.5px; color:var(--pv-ink2); margin-top:3px; display:inline-flex; align-items:center; gap:4px; border-radius:6px; padding:1px 6px; line-height:1.5 }
+#tab-prc .pv-cmpmg.ed{ cursor:pointer; background:#eef2f6; border:1px solid #e2e8f0 }
+#tab-prc .pv-cmpmg.ed:hover{ background:#dce8f2; border-color:var(--pv-brand) }
+#tab-prc .pv-cmpmg input{ width:56px; border:1.5px solid var(--pv-brand); border-radius:6px; padding:2px 4px; direction:ltr; text-align:left; font-size:11.5px }
+#tab-prc .pv-mgdot{ width:6px; height:6px; border-radius:50%; display:inline-block; flex:0 0 auto }
+#tab-prc .pv-mgdot.ov{ background:var(--pv-brand) }
+#tab-prc .pv-mgdot.mx{ background:#3f7a5e }
+#tab-prc .pv-mgdot.df{ background:#c3ccd8 }
+#tab-prc .pv-outg{ font-size:10px; font-weight:700; color:#8a6100; background:#fdf1e0; border-radius:5px; padding:1px 5px; display:block; width:fit-content; margin:3px auto 0 }
 #tab-prc .pv-panelgrid{ display:grid; grid-template-columns:340px 1fr; gap:16px; align-items:start }
 #tab-prc .pv-panel{ background:#fff; border:1px solid var(--pv-line); border-radius:12px; padding:18px }
 #tab-prc .pv-panel h3{ font-size:15px; font-weight:800; color:var(--pv-brand); margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--pv-line) }
@@ -6442,18 +6454,22 @@ function renderPricing(m){
     });
     html+='</tbody></table></div>';
   } else if(state.allGroups){
+    /* טבלת ההשוואה — כל המחירונים זה לצד זה, הכול ללא מע״מ כדי שההשוואה תהיה
+       על אותו בסיס. מחיר האתר מוצג ללא מע״מ בשורה הראשית וכולל מע״מ מתחתיו,
+       כי הוא נשמר בפריוריטי כמחיר כולל מע״מ. שולי הרווח מוצגים מתחת לכל מחיר
+       וניתנים לעריכה במקום — זהו מסך העבודה להחלטת ההנחה לכל מוצר בכל מחירון. */
     html = '<div class="pv-tblwrap"><table><thead><tr>'+
       '<th class="pv-imgtd">תמונה</th><th>מק״ט</th><th class="pv-name">שם מוצר</th><th>קטגוריה · תת קטגוריה</th><th class="pv-num">עלות בש״ח</th>'+
-      '<th class="pv-num">מחיר אתר כיום<br><small style="font-weight:400;color:var(--pv-muted)">כולל מע״מ</small></th>'+
-      GROUPS.map(x=>'<th class="pv-num" style="border-bottom:3px solid '+gcol(x)+'"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+gcol(x)+';margin-inline-end:5px"></span>'+esc(x)+'<br><small style="font-weight:400;color:var(--pv-muted)">כולל מע״מ</small></th>').join('')+
+      '<th class="pv-num">מחיר אתר כיום<small class="pv-sub2">ללא מע״מ · כולל מע״מ</small></th>'+
+      GROUPS.map(x=>'<th class="pv-num" style="border-bottom:3px solid '+gcol(x)+'"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+gcol(x)+';margin-inline-end:5px"></span>'+esc(x)+'<small class="pv-sub2">ללא מע״מ · שולי רווח</small></th>').join('')+
       '</tr></thead><tbody>';
     rows.forEach(p=>{
       const ca=costAfter(p.sku);
       if(ca==null) noCost++; else priced++;
       html+='<tr class="'+(p.status!=='פעיל'?'pv-inactive':'')+'"><td class="pv-imgtd">'+imgCell(p)+'</td>'+skuTd(p.sku)+'<td class="pv-name">'+esc(p.name)+'</td><td class="pv-catcell">'+esc(p.cat)+(p.sub?' · '+esc(p.sub):'')+'</td>'+
         '<td class="pv-num pv-cost">'+(ca==null?'<span class="pv-nocost">חסר עלות</span>':fmt(ca)+' ₪')+'</td>'+
-        (function(){ const sp=sitePrice(p.sku); return '<td class="pv-num">'+(sp===undefined?'<span class="pv-noprice">'+(siteErr?'שגיאה':'…')+'</span>':(sp==null?'<span class="pv-noprice">—</span>':fmt(sp)+' ₪'))+'</td>'; })()+
-        GROUPS.map(x=>{ const inc=priceInc(p.sku,x); return '<td class="pv-num">'+(inc==null?'<span class="pv-noprice">—</span>':fmt(inc)+' ₪')+'</td>'; }).join('')+'</tr>';
+        siteCmpCell(p.sku)+
+        GROUPS.map(x=>cmpCell(p, x, ed)).join('')+'</tr>';
     });
     html+='</tbody></table></div>';
   } else {
@@ -6962,6 +6978,32 @@ PV.openCard = pn => {
   }catch(_e){}
 };
 
+/* ---------- תאי טבלת ההשוואה (תצוגת כל הקבוצות) ---------- */
+/* מחיר האתר נשמר בפריוריטי ככולל מע״מ. ההפשטה נעשית לפי המע״מ האמיתי S.vat
+   ולא לפי רצפת המע״מ — הרצפה משמשת לבניית מחיר כלפי מעלה, ולא לפירוק מחיר קיים. */
+function siteCmpCell(sku){
+  const sp = sitePrice(sku);
+  if(sp===undefined) return '<td class="pv-num"><span class="pv-noprice">'+(siteErr?'שגיאה':'…')+'</span></td>';
+  if(sp==null) return '<td class="pv-num"><span class="pv-noprice">—</span></td>';
+  return '<td class="pv-num"><div class="pv-cmpmain">'+fmt(sp/(1+S.vat))+' ₪</div>'+
+    '<div class="pv-cmpsub" title="מחיר האתר כפי שנשמר בפריוריטי — כולל מע״מ">'+fmt(sp)+' ₪ כולל</div></td>';
+}
+function cmpCell(p, grp, ed){
+  const ex = priceEx(p.sku, grp);
+  const mg = marginFor(p.sku, grp);
+  const cls = mg.src==='ov'? 'ov' : mg.src==='mx'? 'mx' : 'df';
+  const ttl = mg.src==='ov'? 'דריסה ידנית למק״ט הזה' : mg.src==='mx'? 'מקדם קטגוריה' : 'מקדם כללי של המחירון';
+  const inc = isIncluded(p.sku, grp);
+  const price = (ex==null)
+    ? '<div class="pv-cmpmain"><span class="pv-noprice">'+(mg.v===0?'לפי הצעה':'—')+'</span></div>'
+    : '<div class="pv-cmpmain">'+fmt(ex)+' ₪</div>';
+  const mgTxt = (mg.v==null? '—' : pc(mg.v));
+  const mgCell = '<div class="pv-cmpmg'+(ed?' ed':'')+'" '+
+    (ed? 'onclick="prcV13.editMargin(this,\''+q1(p.sku)+'\',\''+q1(grp)+'\')" title="לחץ לעריכת שולי הרווח במחירון '+esc(grp)+' — '+ttl+'"' : 'title="'+ttl+'"')+
+    '><span class="pv-mgdot '+cls+'"></span>'+mgTxt+'</div>';
+  return '<td class="pv-num">'+price+mgCell+(inc?'':'<div class="pv-outg" title="המק״ט מוחרג מהמחירון הזה ולא יופיע ללקוח">מחוץ למחירון</div>')+'</td>';
+}
+
 /* ---------- תג מרווח אפקטיבי (רצפות) ---------- */
 function upBadge(sku, group, base){
   if(!floorsOn()) return '';
@@ -7225,10 +7267,13 @@ PV.toggleInclude = async (sku, g)=>{
 };
 
 /* ---------- עריכת אחוז מרווח ידני בתא ---------- */
-PV.editMargin = function(td, sku){
+/* עריכת שולי רווח בתוך תא. הפרמטר grp נוסף כדי שאותה פונקציה תשמש גם את
+   תצוגת המחירון הבודד (שם הקבוצה היא state.group) וגם את טבלת ההשוואה,
+   שבה כל עמודה היא מחירון אחר. */
+PV.editMargin = function(td, sku, grp){
   if(!prcEdit()) return noEdit();
   if(td.querySelector('input')) return;
-  const g = state.group;
+  const g = grp || state.group;
   const cur = marginFor(sku, g).v;
   td.innerHTML = '<input type="number" step="0.5" min="0" max="99" value="'+(cur!=null?(cur*100).toFixed(1):'')+'">';
   const inp = td.querySelector('input');
@@ -7238,19 +7283,25 @@ PV.editMargin = function(td, sku){
     if(closed) return; closed = true; inp.onblur = null;
     if(save){
       const raw = inp.value.trim();
+      /* לחיצה שלא שינתה את הערך לא תיצור דריסה ידנית ולא תשלח כתיבה למסד.
+         בטבלת ההשוואה החשיפה למקרה הזה גדולה פי שבע, כי כל שורה נושאת
+         שבעה תגי מרווח לחיצים. */
       if(raw===''){
+        if(marginFor(sku,g).src!=='ov'){ renderBody(); return; }
         if(DATA.overrides[sku]) delete DATA.overrides[sku][g];
         renderBody();
-        await dbw(()=>O().from('prc_overrides').delete().eq('partname',sku).eq('grp',g),
-          'הוסרה דריסה — חוזר למקדם קטגוריה/כללי');
+        if(await dbw(()=>O().from('prc_overrides').delete().eq('partname',sku).eq('grp',g),
+          'הוסרה דריסה — חוזר למקדם קטגוריה/כללי')) flashRow(sku);
         return;
       }
       const v = parseFloat(raw)/100;
       if(!isNaN(v) && v>=0 && v<1){
+        /* הסבילות מכסה את עיגול התצוגה ל-toFixed(1) ונמוכה בהרבה מהצעד 0.5. */
+        if(cur!=null && Math.abs(v-cur) < 5e-5){ renderBody(); return; }
         (DATA.overrides[sku] ||= {})[g] = v;
         renderBody();
-        await dbw(()=>O().from('prc_overrides').upsert({partname:sku, grp:g, margin:v, updated_by:meNow(), updated_at:nowIso()},{onConflict:'partname,grp'}),
-          'אחוז המרווח עודכן ונשמר ✓');
+        if(await dbw(()=>O().from('prc_overrides').upsert({partname:sku, grp:g, margin:v, updated_by:meNow(), updated_at:nowIso()},{onConflict:'partname,grp'}),
+          'שולי הרווח עודכנו ונשמרו ✓ · '+g)) flashRow(sku);
         return;
       }
       toast('ערך לא חוקי — יש להזין אחוז בין 0 ל-99');
@@ -7335,8 +7386,6 @@ PV.saveEdit = async (sku)=>{
     if(src===SRC_IMPORT){ p.cost=num(row.cost_usd); p.costILS=null; }
     else { p.costILS=num(row.cost_ils); p.cost=null; }
   }
-  if(row.load_override==null || isNaN(row.load_override)){ delete p.loadOv; row.load_override=null; }
-  else p.loadOv = row.load_override;
   if(row.load_override==null || isNaN(row.load_override)){ delete p.loadOv; row.load_override=null; }
   else p.loadOv = row.load_override;
 
@@ -7540,16 +7589,21 @@ PV.exportCSV = async ()=>{
     return;
   }
   if(state.allGroups){
-    out = [['מק״ט','שם מוצר','קטגוריה','תת קטגוריה','מקור','עלות אחרי העמסה','מחיר אתר כיום כולל מע״מ',...GROUPS.map(g=>g+' כולל מע״מ')].map(csvq).join(',')];
+    /* אותו בסיס בדיוק כמו המסך: הכול ללא מע״מ, ולכל מחירון גם עמודת שולי רווח. */
+    out = [['מק״ט','שם מוצר','קטגוריה','תת קטגוריה','מקור','עלות אחרי העמסה','מחיר אתר ללא מע״מ','מחיר אתר כולל מע״מ',
+      ...GROUPS.flatMap(g=>[g+' ללא מע״מ', g+' שולי רווח'])].map(csvq).join(',')];
     rows.forEach(p=>{
       const sp0=sitePrice(p.sku);
-      out.push([p.sku,p.name,p.cat,p.sub,p.source, costAfter(p.sku)??'', (sp0==null?'':sp0.toFixed(2)),
-        ...GROUPS.map(g=>{ const v=priceInc(p.sku,g); return v==null?'':v.toFixed(2); })].map(csvq).join(','));
+      out.push([p.sku,p.name,p.cat,p.sub,p.source, costAfter(p.sku)??'',
+        (sp0==null?'':(sp0/(1+S.vat)).toFixed(2)), (sp0==null?'':sp0.toFixed(2)),
+        ...GROUPS.flatMap(g=>{ const v=priceEx(p.sku,g), mv=marginFor(p.sku,g).v;
+          return [v==null?'':v.toFixed(2), mv==null?'':(mv*100).toFixed(1)+'%']; })].map(csvq).join(','));
     });
   } else {
     const g = state.group;
+    /* חוב 139 — רכיב פנימי אינו נכלל בייצוא מחירון הלקוח, בדיוק כמו בתצוגה. */
     out = [['מק״ט','שם מוצר','קטגוריה','תת קטגוריה','מקור','עלות בש״ח (לפני העמסה)','עלות בש״ח (אחרי העמסה)','% מרווח','מחיר ללא מע״מ','מחיר כולל מע״מ'].map(csvq).join(',')];
-    rows.filter(p=>isIncluded(p.sku,g)).forEach(p=>{
+    rows.filter(p=>!isPart(p.sku) && isIncluded(p.sku,g)).forEach(p=>{
       const mg = marginFor(p.sku,g), cb = costBefore(p.sku), ca = costAfter(p.sku);
       const ex = priceEx(p.sku,g), inc = priceInc(p.sku,g);
       out.push([p.sku,p.name,p.cat,p.sub,p.source, cb??'', ca!=null?ca.toFixed(2):'',
@@ -7689,7 +7743,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'prc-v13-bomtrees-2026-08-06';
+const BUILD_ID = 'prc-v13-compare-2026-08-07';
 
 window.renderPrc = async function(){
   pvInjectCss();

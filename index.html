@@ -1205,7 +1205,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.35.0</div>
+      <div class="ver">גרסה 6.36.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1303,7 +1303,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.35.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.36.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5915,6 +5915,13 @@ const PV_CSS = `
 #tab-prc .pv-lovtag{ font-size:10.5px; font-weight:700; border-radius:12px; padding:2px 8px; white-space:nowrap }
 #tab-prc .pv-lovtag.df{ background:#eef2f6; color:var(--pv-ink2) }
 #tab-prc .pv-lovtag.ov{ background:#fdf0d9; color:#8a5b12 }
+/* שלוש עמודות הסימון — נסקר / שונה במחירון / שונה באתר (6.36.0) */
+#tab-prc .pv-tblwrap td.pv-revtd.mk-prc input{ accent-color:#2f6f9f }
+#tab-prc .pv-tblwrap td.pv-revtd.mk-site input{ accent-color:#8a5b12 }
+#tab-prc .pv-revd.mk-prc{ color:#2f6f9f }
+#tab-prc .pv-revd.mk-site{ color:#8a5b12 }
+#tab-prc .pv-revall.mk-prc:hover{ background:#eaf2f8; border-color:#2f6f9f; color:#2f6f9f }
+#tab-prc .pv-revall.mk-site:hover{ background:#fdf6e9; border-color:#8a5b12; color:#8a5b12 }
 #tab-prc .pv-menu > summary{ list-style:none; display:inline-block }
 #tab-prc .pv-menu > summary::-webkit-details-marker{ display:none }
 #tab-prc .pv-menupop{ position:absolute; inset-inline-start:0; top:calc(100% + 6px); background:#fff; border:1px solid var(--pv-line); border-radius:10px; box-shadow:0 6px 20px rgba(15,23,42,.12); padding:6px; z-index:20; min-width:170px; display:flex; flex-direction:column; gap:4px }
@@ -6096,7 +6103,7 @@ async function prcLoad(force){
   try{
     const o = sb.schema('ord');
     const [it, bm, st, gr, mx, ov, ex] = await Promise.all([
-      o.from('prc_item_ext').select('partname,name,cat,sub,source,cost_usd,cost_ils,load_override,prc_status,notes,img,img_full,sort,v13_updated,item_role,reviewed_at,reviewed_by').order('sort',{ascending:true}).limit(5000),
+      o.from('prc_item_ext').select('partname,name,cat,sub,source,cost_usd,cost_ils,load_override,prc_status,notes,img,img_full,sort,v13_updated,item_role,reviewed_at,reviewed_by,changed_prc_at,changed_prc_by,changed_site_at,changed_site_by').order('sort',{ascending:true}).limit(5000),
       o.from('prc_bom').select('parent,child,qty').limit(5000),
       o.from('prc_settings').select('*').eq('id',1).maybeSingle(),
       o.from('prc_groups').select('key,margin,descr,colour,sort').order('sort',{ascending:true}),
@@ -6141,7 +6148,9 @@ async function prcLoad(force){
         source:r.source||'', cost:num(r.cost_usd), costILS:num(r.cost_ils),
         status:r.prc_status||'', notes:r.notes||'', updated:(r.v13_updated||''),
         role:(r.item_role||ROLE_SELL),
-        revAt:(r.reviewed_at||null), revBy:(r.reviewed_by||'')
+        revAt:(r.reviewed_at||null),      revBy:(r.reviewed_by||''),
+        chpAt:(r.changed_prc_at||null),   chpBy:(r.changed_prc_by||''),
+        chsAt:(r.changed_site_at||null),  chsBy:(r.changed_site_by||'')
       };
       if(r.img) p.img = r.img;
       if(r.img_full) p.imgFull = r.img_full;
@@ -6308,7 +6317,9 @@ const SORT_ACC = {
   cost: p=>sortNum(rawCost(p)),
   ca:   p=>sortNum(costAfter(p.sku)),
   site: p=>sortNum(sitePrice(p.sku)),
-  rev:  p=>String(p.revAt||'')
+  rev:  p=>String(p.revAt||''),
+  chp:  p=>String(p.chpAt||''),
+  chs:  p=>String(p.chsAt||'')
 };
 function sortNum(v){ return (v==null || v===undefined || isNaN(Number(v)))? -Infinity : Number(v); }
 function sortVal(p, key, g){
@@ -6345,27 +6356,47 @@ function soTh(key, label, cls, style){
     ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();prcV13.sortBy(\''+q1(key)+'\')}"'+
     ' title="מיון לפי עמודה זו">'+label+'<span class="pv-ar">'+ar+'</span></th>';
 }
-/* סימון סקירה: V ברמת המק״ט עם חתימת תאריך ומשתמש. סימון קטגוריה שלמה
-   נעשה בכפתור שבכותרת — הוא חל על כל השורות שבתצוגה הנוכחית, כלומר על
-   הקטגוריה כשמסננים לפיה. */
+/* שלושה סימוני עבודה ברמת המק״ט, כל אחד עם חתימת תאריך ומשתמש:
+   נסקר — עברתי על המוצר וסיימתי · שונה במחירון — עדכנתי אותו במחירונים ·
+   שונה באתר — עדכנתי אותו באתר. חתימה על קטגוריה שלמה נעשית בכפתור
+   שבכותרת, שחל על כל השורות שבתצוגה הנוכחית — כלומר על הקטגוריה כשמסננים
+   לפיה. הכול נשמר ב-ord.prc_item_ext, בלי טבלת קטגוריות שנייה שיכולה
+   לסתור את הסימון הפרטני. */
 function revDate(v){ try{ return new Date(v).toLocaleDateString('he-IL'); }catch(_e){ return ''; } }
-function revTh(ed){
-  const on = (sortState.key==='rev');
-  return '<th class="pv-revh" title="סימון שהמוצר נסקר ואושר, עם חתימת תאריך">'+
-    '<span class="pv-revso'+(on?' on':'')+'" role="button" tabindex="0" onclick="prcV13.sortBy(\'rev\')"'+
-    ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();prcV13.sortBy(\'rev\')}"'+
-    ' title="מיון לפי מצב הסקירה">✓ נסקר<span class="pv-ar">'+(on? (sortState.dir>0?'▲':'▼') : '⇅')+'</span></span>'+
-    (ed? '<button type="button" class="pv-revall" onclick="prcV13.revAll(event)" title="סימון או ביטול לכל השורות שבתצוגה הנוכחית — סנן לפי קטגוריה כדי לחתום עליה כולה">הכל בתצוגה</button>' : '')+
+const MARKS = [
+  { k:'rev',  at:'revAt', by:'revBy', col:'reviewed_at',     colBy:'reviewed_by',     cls:'',        lbl:'✓ נסקר',
+    thTtl:'סימון שעברת על המוצר וסיימת, עם חתימת תאריך', on:'נסקר ב-', off:'סימון שעברת על המוצר וסיימת',
+    okOn:'סומן כנסקר ✓ ', okOff:'סימון הסקירה בוטל', askOn:'לסמן כנסקרו ', askOff:'לבטל את סימון הסקירה מ־', doneOn:'נחתמו ' },
+  { k:'chp',  at:'chpAt', by:'chpBy', col:'changed_prc_at',  colBy:'changed_prc_by',  cls:'mk-prc',  lbl:'שונה במחירון',
+    thTtl:'סימון ששינית את המק״ט במחירונים, עם חתימת תאריך', on:'שונה במחירון ב-', off:'סימון ששינית את המק״ט במחירונים',
+    okOn:'סומן כשונה במחירון ', okOff:'הסימון "שונה במחירון" בוטל', askOn:'לסמן כשונו במחירון ', askOff:'לבטל את הסימון "שונה במחירון" מ־', doneOn:'סומנו ' },
+  { k:'chs',  at:'chsAt', by:'chsBy', col:'changed_site_at', colBy:'changed_site_by', cls:'mk-site', lbl:'שונה באתר',
+    thTtl:'סימון שעדכנת את המק״ט באתר, עם חתימת תאריך', on:'שונה באתר ב-', off:'סימון שעדכנת את המק״ט באתר',
+    okOn:'סומן כשונה באתר ', okOff:'הסימון "שונה באתר" בוטל', askOn:'לסמן כשונו באתר ', askOff:'לבטל את הסימון "שונה באתר" מ־', doneOn:'סומנו ' }
+];
+/* בלי נפילה לברירת מחדל: מפתח שגוי היה נכתב בשקט לעמודת הסקירה. */
+function markDef(k){ return MARKS.find(m=>m.k===k) || null; }
+function markTh(m, ed){
+  const on = (sortState.key===m.k);
+  return '<th class="pv-revh" title="'+m.thTtl+'">'+
+    '<span class="pv-revso'+(on?' on':'')+'" role="button" tabindex="0" onclick="prcV13.sortBy(\''+m.k+'\')"'+
+    ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();prcV13.sortBy(\''+m.k+'\')}"'+
+    ' title="מיון לפי עמודה זו">'+m.lbl+'<span class="pv-ar">'+(on? (sortState.dir>0?'▲':'▼') : '⇅')+'</span></span>'+
+    (ed? '<button type="button" class="pv-revall '+m.cls+'" onclick="prcV13.markAll(\''+m.k+'\',event)" title="סימון או ביטול לכל השורות שבתצוגה הנוכחית — סנן לפי קטגוריה כדי לחתום עליה כולה">הכל בתצוגה</button>' : '')+
     '</th>';
 }
-function revTd(p, ed){
-  const on = !!p.revAt;
-  return '<td class="pv-revtd">'+
+function markTd(p, m, ed){
+  const v = p[m.at], on = !!v;
+  return '<td class="pv-revtd '+m.cls+'">'+
     '<input type="checkbox" '+(on?'checked':'')+' '+(ed?'':'disabled')+
-      ' onchange="prcV13.setRev(\''+q1(p.sku)+'\',this.checked)" title="'+(on? 'נסקר ב-'+revDate(p.revAt)+(p.revBy? ' על ידי '+esc(p.revBy):'') : 'סימון שעברת על המוצר וסיימת')+'">'+
-    (on? '<span class="pv-revd">'+revDate(p.revAt)+'</span>' : '')+
+      ' onchange="prcV13.setMark(\''+q1(p.sku)+'\',\''+m.k+'\',this.checked)" title="'+(on? m.on+revDate(v)+(p[m.by]? ' על ידי '+esc(p[m.by]):'') : m.off)+'">'+
+    (on? '<span class="pv-revd '+m.cls+'">'+revDate(v)+'</span>' : '')+
   '</td>';
 }
+/* שלוש העמודות נבנות תמיד יחד, כדי שספירת התאים בכל הטבלאות תישאר מסונכרנת. */
+function revTh(ed){ return MARKS.map(m=>markTh(m, ed)).join(''); }
+function revTd(p, ed){ return MARKS.map(m=>markTd(p, m, ed)).join(''); }
+function revBlank(){ return MARKS.map(()=>'<td class="pv-revtd">—</td>').join(''); }
 function rowCls(p){ return (p.status!=='פעיל'?'pv-inactive':'')+(p.revAt?' pv-rev':''); }
 function rawCost(p){
   if(treeKids(p.sku)) return costBefore(p.sku);
@@ -6743,7 +6774,7 @@ function renderPricing(m){
           '<td class="pv-num pv-cost">'+(inc==null?'':fmt(inc)+' ₪')+'</td>'+
           '<td></td>'+
           '<td><span class="pv-edf"><i>סטטוס</i><select class="pv-edin mid" id="pv-ed-st">'+['פעיל','בהמתנה','לא פעיל'].map(s=>'<option '+(p.status===s?'selected':'')+'>'+s+'</option>').join('')+'</select></span></td>'+
-          '<td class="pv-revtd">—</td>'+
+          revBlank()+
           '<td style="white-space:nowrap"><button class="pv-rowbtn primary" onclick="prcV13.saveEdit(\''+q1(p.sku)+'\')">שמור</button> <button class="pv-rowbtn" onclick="prcV13.setEdit(null)">ביטול</button></td></tr>'+edExtraRow(p);
 
       } else {
@@ -6843,7 +6874,7 @@ function catEditRow(p, ix){
     '<td class="pv-num"><span class="pv-edcalc" title="עלות אחרי מקדם ההעמסה — מחושבת, לא נערכת כאן">'+(ca==null?'—':fmt(ca)+' ₪')+'</span></td>'+
     '<td><span class="pv-edf"><i>סטטוס</i><select class="pv-edin mid" id="pv-ed-st">'+['פעיל','בהמתנה','לא פעיל'].map(s=>'<option '+(p.status===s?'selected':'')+'>'+s+'</option>').join('')+'</select></span></td>'+
     GROUPS.map(x=>'<td><input type="checkbox" style="width:15px;height:15px" '+(isIncluded(p.sku,x)?'checked':'')+' disabled title="לשינוי שיוך מחירון — יש לסיים את העריכה"></td>').join('')+
-    '<td class="pv-revtd">—</td>'+
+    revBlank()+
     '<td style="white-space:nowrap"><button class="pv-rowbtn primary" onclick="prcV13.saveEdit(\''+q1(p.sku)+'\')">שמור</button> <button class="pv-rowbtn" onclick="prcV13.setEdit(null)">ביטול</button></td>'+
   '</tr>'+edExtraRow(p);
 }
@@ -7508,42 +7539,48 @@ PV.sortBy = k => {
   else { sortState.key = k; sortState.dir = 1; }
   renderBody();
 };
-PV.setRev = async (sku, on)=>{
+PV.setMark = async (sku, kind, on)=>{
   if(!prcEdit()) return noEdit();
+  const m = markDef(kind); if(!m) return;
   const p = byy[sku]; if(!p) return;
   const at = on? nowIso() : null, by = on? meNow() : null;
-  p.revAt = at; p.revBy = by || '';
+  p[m.at] = at; p[m.by] = by || '';
   renderBody();
-  const okw = await dbw(()=>O().from('prc_item_ext').update({ reviewed_at:at, reviewed_by:by, updated_by:meNow(), updated_at:nowIso() }).eq('partname',sku),
-    on? ('סומן כנסקר ✓ '+revDate(at)) : 'סימון הסקירה בוטל');
+  const row = { updated_by:meNow(), updated_at:nowIso() };
+  row[m.col] = at; row[m.colBy] = by;
+  const okw = await dbw(()=>O().from('prc_item_ext').update(row).eq('partname',sku),
+    on? (m.okOn+revDate(at)) : m.okOff);
   if(okw) flashRow(sku);
 };
 /* חתימה על קטגוריה שלמה: אין טבלה שנייה של קטגוריות ואין מקור אמת שני —
    הכפתור חותם על כל מה שנמצא כרגע בתצוגה, כך שסינון לפי קטגוריה הופך
    אותו לחתימה על אותה קטגוריה בדיוק. */
-PV.revAll = async (ev)=>{
+PV.markAll = async (kind, ev)=>{
   try{ if(ev){ ev.stopPropagation(); ev.preventDefault(); } }catch(_e){}
   if(!prcEdit()) return noEdit();
+  const m = markDef(kind); if(!m) return;
   /* בתצוגת מחירון בודד הטבלה מסננת גם לפי שיוך למחירון, ולכן חייבים לחזור
      על אותו סינון — אחרת ייחתמו מק״טים שכלל לא הופיעו על המסך. */
   let rows = filteredProducts();
   if(!state.catalog && !state.allGroups) rows = rows.filter(x=>isIncluded(x.sku, state.group));
   if(!rows.length){ toast('אין שורות בתצוגה הנוכחית'); return; }
-  const on = !rows.every(p=>!!p.revAt);
+  const on = !rows.every(p=>!!p[m.at]);
   const fc = gv('pv-fcat');
   const what = rows.length+' מק״טים'+(fc? ' בקטגוריה "'+fc+'"' : ' בתצוגה הנוכחית');
-  if(!window.confirm((on? 'לסמן כנסקרו ' : 'לבטל את סימון הסקירה מ־')+what+'?')) return;
+  if(!window.confirm((on? m.askOn : m.askOff)+what+'?')) return;
   const at = on? nowIso() : null, by = on? meNow() : null;
   const skus = rows.map(p=>p.sku);
-  skus.forEach(s=>{ const p = byy[s]; if(p){ p.revAt = at; p.revBy = by || ''; } });
+  skus.forEach(x=>{ const q = byy[x]; if(q){ q[m.at] = at; q[m.by] = by || ''; } });
   renderBody();
+  const row = { updated_by:meNow(), updated_at:nowIso() };
+  row[m.col] = at; row[m.colBy] = by;
   /* מנות של 200 — רשימת מק״טים ארוכה מדי בשאילתה אחת נחתכת באורך ה-URL. */
   for(let i=0;i<skus.length;i+=200){
     const chunk = skus.slice(i, i+200);
-    const okw = await dbw(()=>O().from('prc_item_ext').update({ reviewed_at:at, reviewed_by:by, updated_by:meNow(), updated_at:nowIso() }).in('partname',chunk));
+    const okw = await dbw(()=>O().from('prc_item_ext').update(row).in('partname',chunk));
     if(!okw) return;
   }
-  toast(on? ('נחתמו '+skus.length+' מק״טים כנסקרו ✓ '+revDate(at)) : ('בוטל הסימון מ־'+skus.length+' מק״טים'));
+  toast(on? (m.doneOn+skus.length+' מק״טים · '+revDate(at)) : ('בוטל הסימון מ־'+skus.length+' מק״טים'));
 };
 /* מווסת מקדם ההעמסה — אותה חוויה כמו עריכת שולי הרווח: בלי הקלדה.
    ברירת המחדל הפעילה נשמרת על השדה עצמו (data-df) ולא נגזרת מהמוצר, כדי
@@ -8080,7 +8117,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'prc-v13-review-2026-08-07';
+const BUILD_ID = 'prc-v13-marks-2026-08-07';
 
 window.renderPrc = async function(){
   pvInjectCss();

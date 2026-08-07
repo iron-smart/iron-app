@@ -1205,7 +1205,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.30.1</div>
+      <div class="ver">גרסה 6.31.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1303,7 +1303,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.30.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.31.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5853,6 +5853,15 @@ const PV_CSS = `
 #tab-prc .pv-mgdot.mx{ background:#3f7a5e }
 #tab-prc .pv-mgdot.df{ background:#c3ccd8 }
 #tab-prc .pv-outg{ font-size:10px; font-weight:700; color:#8a6100; background:#fdf1e0; border-radius:5px; padding:1px 5px; display:block; width:fit-content; margin:3px auto 0 }
+#tab-prc .pv-chev{ width:21px; height:21px; line-height:1; border:1px solid var(--pv-line); background:#fff; border-radius:6px; cursor:pointer; font-size:11px; color:var(--pv-brand); margin-inline-end:6px; padding:0; vertical-align:middle; transition:transform .12s ease }
+#tab-prc .pv-chev:hover{ border-color:var(--pv-brand); background:#eaf1f6 }
+#tab-prc .pv-chev.on{ background:var(--pv-brand); color:#fff; border-color:var(--pv-brand); transform:rotate(180deg) }
+#tab-prc .pv-chev.sp{ visibility:hidden; cursor:default }
+#tab-prc .pv-skuin{ direction:ltr; display:inline-block; font-weight:600; letter-spacing:.2px }
+#tab-prc .pv-kidn{ font-size:10px; font-weight:700; background:#eef1f4; color:var(--pv-muted); border-radius:20px; padding:1px 6px; margin-inline-start:5px }
+#tab-prc .pv-bomedit.nested{ border-inline-start:3px solid var(--pv-accent); background:#fbfdfe; border-radius:8px; margin:4px 0 2px }
+#tab-prc .pv-tblwrap .pv-nestrow > td{ background:#fbfdfe !important; padding:0 0 6px 0 !important; border-bottom:none !important }
+#tab-prc .pv-tblwrap tbody tr.pv-openrow, #tab-prc .pv-tblwrap tbody tr.pv-openrow:nth-child(even){ background:#eef4f9 }
 #tab-prc .pv-panelgrid{ display:grid; grid-template-columns:340px 1fr; gap:16px; align-items:start }
 #tab-prc .pv-panel{ background:#fff; border:1px solid var(--pv-line); border-radius:12px; padding:18px }
 #tab-prc .pv-panel h3{ font-size:15px; font-weight:800; color:var(--pv-brand); margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--pv-line) }
@@ -6404,6 +6413,7 @@ function renderPricing(m){
   const cats=[...new Set(DATA.products.map(p=>p.cat).filter(Boolean))];
   const subs=[...new Set(DATA.products.map(p=>p.sub).filter(Boolean))];
   let top='<div class="pv-dbbar">'+
+    (bomBackFrom? '<button class="pv-btn ghost" onclick="prcV13.bomBack()">→ חזרה לעצי מוצר ורכיבים</button>':'')+
     (ed? '<button class="pv-btn" onclick="prcV13.toggleAdd()">＋ הוספת מק״ט חדש</button>':'')+
     '<span class="pv-hint" style="margin:0">סה״כ במאגר: <b>'+DATA.products.length+'</b> מק״טים · כל שינוי נשמר במסד מיד ✓ — "שמירת גיבוי" מפיק קובץ להעברה ולארכיון</span>'+
   '</div>'+
@@ -6576,39 +6586,64 @@ function catEditRow(p){
   '</tr>'+edExtraRow(p);
 }
 
-function bomEditor(p, ed){
-  const kids=bomByParent[p.sku]||[];
-  const rows=kids.map((k,i)=>{
-    const c=byy[k.child];
-    const cost=costBefore(k.child);
+/* פאנל עץ מוצר — מימוש אחד שמשרת גם את עורך ה-BOM במאגר הכללי וגם את
+   האקורדיון במסך עצי המוצר. כל בן שהוא בעצמו אב מקבל חץ משלו ונפתח רמה
+   פנימה, ו-path הוא המסלול המלא מהשורש כדי ששני אבות שמכילים את אותו בן
+   ייפתחו וייסגרו בנפרד זה מזה. */
+function bomPanel(sku, path, ed, depth, head){
+  const p = byy[sku];
+  const kids = bomByParent[sku] || [];
+  const rows = kids.map((k,i)=>{
+    const c = byy[k.child];
+    const cost = costBefore(k.child);
     const bad = cost==null;
-    return '<tr class="'+(bad?'pv-inactive':'')+'">'+skuTd(k.child)+'<td>'+esc(c?c.name:'⚠ לא נמצא במאגר')+((c&&c.role===ROLE_PART)?' <span class="pv-role part">רכיב פנימי</span>':'')+'</td>'+
-      '<td><input type="number" step="1" min="1" style="width:60px;direction:ltr" value="'+k.qty+'" '+(ed?'':'disabled')+' onchange="prcV13.bomQty(\''+q1(p.sku)+'\','+i+',this.value)"></td>'+
+    const sub = treeKids(k.child);
+    const kp = path+'>'+k.child;
+    const open = bomOpen.has(kp);
+    const chev = sub
+      ? '<button class="pv-chev'+(open?' on':'')+'" onclick="prcV13.bomToggle(\''+q1(kp)+'\')" title="'+(open?'סגירת':'פתיחת')+' עץ הרכיב">▾</button>'
+      : '<span class="pv-chev sp"></span>';
+    let tr = '<tr class="'+(bad?'pv-inactive':'')+'">'+
+      '<td style="text-align:start;white-space:nowrap">'+chev+'<span class="pv-skuin">'+esc(k.child)+'</span>'+(sub?'<span class="pv-kidn" title="רכיבים בעץ שלו">'+sub.length+'</span>':'')+'</td>'+
+      '<td style="text-align:start">'+esc(c? (c.name||'') : '⚠ לא נמצא במאגר')+((c&&c.role===ROLE_PART)?' <span class="pv-role part">רכיב פנימי</span>':'')+'</td>'+
+      '<td><input type="number" step="1" min="1" style="width:60px;direction:ltr" value="'+k.qty+'" '+(ed?'':'disabled')+' onchange="prcV13.bomQty(\''+q1(sku)+'\','+i+',this.value)"></td>'+
       '<td class="pv-num">'+(bad?'<span class="pv-nocost">חסר עלות — מאפס את האב</span>':fmt(cost)+' ₪')+'</td>'+
       '<td class="pv-num">'+(bad?'—':fmt(cost*k.qty)+' ₪')+'</td>'+
-      '<td>'+(ed?'<button class="pv-rowbtn danger" onclick="prcV13.bomDel(\''+q1(p.sku)+'\','+i+')">הסר</button>':'')+'</td></tr>';
+      '<td>'+(ed?'<button class="pv-rowbtn danger" onclick="prcV13.bomDel(\''+q1(sku)+'\','+i+')">הסר</button>':'')+'</td></tr>';
+    if(sub && open) tr += '<tr class="pv-nestrow"><td colspan="6">'+
+      (depth>=6? '<div class="pv-hint">עומק הקינון חורג מהמותר להצגה.</div>' : bomPanel(k.child, kp, ed, depth+1, true))+
+      '</td></tr>';
+    return tr;
   }).join('');
-  const total=costBefore(p.sku);
-  const stored=storedCost(p);
-  return '<tr class="pv-bomrow"><td colspan="99"><div class="pv-bomedit">'+
-    '<h4>עץ המוצר — '+esc(p.name)+'</h4>'+
+  const total = costBefore(sku);
+  const stored = p? storedCost(p) : null;
+  return '<div class="pv-bomedit'+(depth?' nested':'')+'">'+
+    (head? '<h4>עץ המוצר — '+esc(p? (p.name||sku) : sku)+'</h4>' : '')+
     (kids.length? '' : '<div class="pv-hint" style="margin-bottom:8px">אין עדיין רכיבים. כל מק״ט — מכל מקור — יכול להיות מורכב מרכיבים; מרגע שיתווסף רכיב אחד, העלות תחושב מהעץ ולא מהשדה הידני.</div>')+
     '<table><thead><tr><th>מק״ט בן</th><th>שם</th><th>כמות</th><th class="pv-num">עלות יח׳</th><th class="pv-num">סה״כ</th><th></th></tr></thead>'+
     '<tbody>'+rows+'</tbody></table>'+
-    '<div style="display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap">'+
-      (ed? '<input id="pv-bom-new-sku" list="pv-dlSkus" placeholder="מק״ט בן להוספה" style="direction:ltr">'+
-      '<input id="pv-bom-new-qty" type="number" value="1" min="1" style="width:60px;direction:ltr">'+
-      '<button class="pv-rowbtn primary" onclick="prcV13.bomAdd(\''+q1(p.sku)+'\')">＋ הוסף רכיב</button>':'')+
+    '<div class="pv-bomadd" style="display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap">'+
+      (ed? '<input class="pv-bnsku" list="pv-dlSkus" placeholder="מק״ט בן להוספה" style="direction:ltr">'+
+      '<input class="pv-bnqty" type="number" value="1" min="1" style="width:60px;direction:ltr">'+
+      '<button class="pv-rowbtn primary" onclick="prcV13.bomAdd(\''+q1(sku)+'\',this)">＋ הוסף רכיב</button>':'')+
       '<span style="margin-inline-start:auto; font-weight:700">עלות כוללת לפני העמסה: '+(total==null?'—':fmt(total)+' ₪')+'</span>'+
     '</div>'+
     ((kids.length && stored!=null)? '<div class="pv-hint" style="margin-top:6px">עלות שמורה בכרטיס (ערך ביקורת בלבד): '+fmt(stored)+' ₪ · פער מול חישוב העץ: '+diffTag(total,stored)+'</div>' : '')+
-    '</div></td></tr>';
+  '</div>';
+}
+function bomEditor(p, ed){
+  return '<tr class="pv-bomrow"><td colspan="99">'+bomPanel(p.sku, p.sku, ed, 0, true)+'</td></tr>';
 }
 
 /* ---------- סעיף 14.7 — מסך עצי מוצר ורכיבים (תור עבודה) ----------
    המסך אינו משנה דבר בחישוב; הוא חושף את מה שהחישוב כבר עושה:
    מי אב, מי רכיב, איפה חסרה עלות, ומי מאפס את מי. */
 let bomTab = 'parents';
+/* אילו עצים פתוחים כרגע באקורדיון. המפתח הוא המסלול המלא מהשורש
+   ("אב>בן>נכד"), כדי ששני אבות שמכילים את אותו בן ייפתחו בנפרד. */
+let bomOpen = new Set();
+/* אם הגענו למאגר הכללי מתוך מסך עצי המוצר — לאיזו לשונית לחזור. */
+let bomBackFrom = null;
 
 function usedInList(sku){
   const out = [];
@@ -6641,7 +6676,7 @@ const bstat = (v,l,bad)=> '<div class="pv-stat"><div class="v'+((bad && v)?' pv-
 function skuChips(list, max){
   if(!list || !list.length) return '<span class="pv-catcell">—</span>';
   max = max || 6;
-  const sh = list.slice(0,max).map(s=>'<a class="pv-skulink" href="javascript:void(0)" onclick="prcV13.gotoBomOf(\''+q1(s)+'\')" title="פתיחת עץ המוצר">'+esc(s)+'</a>').join(', ');
+  const sh = list.slice(0,max).map(s=>'<a class="pv-skulink" href="javascript:void(0)" onclick="prcV13.openTree(\''+q1(s)+'\')" title="פתיחת עץ המוצר במקום">'+esc(s)+'</a>').join(', ');
   return '<span class="pv-usedin">'+sh+(list.length>max? ' ועוד '+(list.length-max) : '')+'</span>';
 }
 function bomGroupsOf(sku){
@@ -6675,7 +6710,11 @@ function renderBom(m){
     bstat(noCost.length,'מק״טים ללא עלות',true)+
     bstat(partsInLists.length,'רכיבים פנימיים שעדיין במחירונים',true)+
   '</div>'+
-  '<div class="pv-warn">עץ מוצר נקבע לפי קיום רכיבים ולא לפי המקור: כל מק״ט — יבוא, יצור, מורכב או קניה בארץ — יכול להיות אב. כאשר קיים עץ, העלות מחושבת מהרכיבים ושדה העלות הידני נעול. רכיב שחסרה לו עלות מאפס את כל שרשרת האבות שמעליו.</div>';
+  '<div class="pv-warn">עץ מוצר נקבע לפי קיום רכיבים ולא לפי המקור: כל מק״ט — יבוא, יצור, מורכב או קניה בארץ — יכול להיות אב. כאשר קיים עץ, העלות מחושבת מהרכיבים ושדה העלות הידני נעול. רכיב שחסרה לו עלות מאפס את כל שרשרת האבות שמעליו.</div>'+
+  '<datalist id="pv-dlSkus">'+DATA.products.map(p=>'<option value="'+esc(p.sku)+'">').join('')+'</datalist>';
+
+  /* הגענו למסך עצי המוצר — כפתור "חזרה" במאגר הכללי כבר לא רלוונטי. */
+  bomBackFrom = null;
 
   let html = '';
   if(bomTab==='parents')      html = bomParents(parents, ed);
@@ -6705,7 +6744,8 @@ function bomParents(parents, ed){
     '<th>מצב</th><th>פעולות</th></tr></thead><tbody>';
   rows.forEach(r=>{
     const p = r.p;
-    h += '<tr class="'+(r.bad?'pv-inactive':'')+'">'+
+    const open = bomOpen.has(p.sku);
+    h += '<tr class="'+(r.bad?'pv-inactive':'')+(open?' pv-openrow':'')+'">'+
       skuTd(p.sku)+
       '<td class="pv-name" style="text-align:start">'+esc(p.name||'')+roleTag(p)+'</td>'+
       '<td><span class="pv-src '+(SRC_CLS[p.source]||'')+'">'+esc(p.source||'—')+'</span></td>'+
@@ -6718,8 +6758,10 @@ function bomParents(parents, ed){
       '<td style="text-align:start;white-space:normal">'+(r.bad
           ? '<span class="pv-bad">חסרה עלות ל־</span> '+skuChips(r.cul,4)
           : '<span class="pv-good">מחושב</span>')+'</td>'+
-      '<td><button class="pv-rowbtn" onclick="prcV13.gotoBomOf(\''+q1(p.sku)+'\')">פתיחת עץ</button></td>'+
+      '<td><button class="pv-rowbtn'+(open?' primary':'')+'" onclick="prcV13.bomToggle(\''+q1(p.sku)+'\')" title="פתיחת רכיבי העץ מתחת לשורה, בלי לצאת מהמסך">'+(open?'▴ סגירה':'▾ פתיחת עץ')+'</button></td>'+
     '</tr>';
+    /* האקורדיון — הרכיבים נפתחים מתחת לשורת האב ולא במסך אחר. */
+    if(open) h += '<tr class="pv-bomrow"><td colspan="99">'+bomPanel(p.sku, p.sku, ed, 0, false)+'</td></tr>';
   });
   return h+'</tbody></table></div>';
 }
@@ -6773,7 +6815,7 @@ function bomGaps(asmNoTree, noCost, ed){
         '<td class="pv-name" style="text-align:start">'+esc(p.name||'')+roleTag(p)+'</td>'+
         '<td>'+esc(p.cat||'—')+'</td>'+
         '<td class="pv-num">'+(st==null?'<span class="pv-nocost">חסר</span>':fmt(st)+' ₪')+'</td>'+
-        '<td><button class="pv-rowbtn" onclick="prcV13.gotoBomOf(\''+q1(p.sku)+'\')">בניית עץ</button></td></tr>';
+        '<td><button class="pv-rowbtn" onclick="prcV13.buildTree(\''+q1(p.sku)+'\')">בניית עץ</button></td></tr>';
     });
     h += '</tbody></table></div>';
   }
@@ -6860,6 +6902,33 @@ function bomLf(){
 
 /* ---------- מטפלים ---------- */
 PV.bomTab   = t => { bomTab = t; renderBody(); };
+PV.bomToggle = key => { if(bomOpen.has(key)) bomOpen.delete(key); else bomOpen.add(key); renderBody(); };
+/* פתיחת עץ במקום: עוברים ללשונית עצי המוצר, פותחים את השורה וגוללים אליה.
+   מק״ט שאין לו עץ אינו מופיע ברשימה, ולכן הוא נשלח למאגר עם כפתור חזרה. */
+PV.openTree = sku => {
+  if(!treeKids(sku)) return PV.buildTree(sku);
+  bomTab = 'parents'; bomOpen.add(sku); renderBody();
+  setTimeout(()=>{ try{
+    const cells = document.querySelectorAll('#prc-body .pv-tblwrap td.pv-sku');
+    for(let i=0;i<cells.length;i++){
+      if(cells[i].textContent.trim() === String(sku).trim()){
+        const tr = cells[i].parentElement; if(!tr) return;
+        tr.classList.add('pv-flash');
+        try{ cells[i].scrollIntoView({block:'center'}); }catch(_e){}
+        setTimeout(()=>{ try{ tr.classList.remove('pv-flash'); }catch(_e){} }, 1700);
+        return;
+      }
+    }
+  }catch(_e){} }, 60);
+};
+PV.buildTree = sku => { bomBackFrom = bomTab || 'parents'; PV.gotoBomOf(sku); };
+PV.bomBack = ()=>{
+  const t = bomBackFrom || 'parents';
+  bomBackFrom = null; dbBomSku = null; dbEditSku = null;
+  const q = document.getElementById('pv-q'); if(q) q.value = '';
+  bomTab = t; window.PRC_VIEW = 'bom';
+  renderPrcInner();
+};
 PV.lfGroup  = v => { state.group = v; renderBody(); };
 PV.gotoBomOf = sku => {
   window.PRC_VIEW = 'db';
@@ -7340,10 +7409,15 @@ PV.bomDel = async (parent, i)=>{
   await dbw(()=>O().from('prc_bom').delete().eq('parent',parent).eq('child',child), 'הרכיב הוסר');
 };
 
-PV.bomAdd = async (parent)=>{
+PV.bomAdd = async (parent, btn)=>{
   if(!prcEdit()) return noEdit();
-  const sku = gv('pv-bom-new-sku').trim();
-  const qty = Math.max(1, parseFloat(gv('pv-bom-new-qty'))||1);
+  /* שדות ההוספה מאותרים יחסית לפאנל שממנו נלחץ הכפתור ולא לפי id גלובלי,
+     כי באקורדיון יכולים להיות כמה פאנלים פתוחים בבת אחת. הבורר :scope
+     מגביל לילדים הישירים, אחרת פאנל מקונן היה נתפס ראשון. */
+  const box = (btn && btn.closest)? btn.closest('.pv-bomedit') : null;
+  const fld = c => { const e = box? box.querySelector(':scope > .pv-bomadd > .'+c) : document.querySelector('.'+c); return e? e.value : ''; };
+  const sku = String(fld('pv-bnsku')||'').trim();
+  const qty = Math.max(1, parseFloat(fld('pv-bnqty'))||1);
   if(!sku) return;
   if(!byy[sku]){ toast('מק״ט "'+sku+'" לא נמצא במאגר'); return; }
   if(sku===parent){ toast('מוצר לא יכול להכיל את עצמו'); return; }
@@ -7745,7 +7819,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'prc-v13-cat-default-2026-08-07';
+const BUILD_ID = 'prc-v13-tree-accordion-2026-08-07';
 
 window.renderPrc = async function(){
   pvInjectCss();

@@ -1205,7 +1205,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.40.2</div>
+      <div class="ver">גרסה 6.41.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1303,7 +1303,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.40.2</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.41.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -7102,7 +7102,7 @@ function renderPricing(m){
       '<th class="pv-imgtd">תמונה</th>'+soTh('sku','מק״ט')+soTh('name','שם מוצר','pv-name')+soTh('cat','קטגוריה · תת קטגוריה')+soTh('ca','עלות בש״ח','pv-num')+
       (colOn('site')? soTh('site','מחיר אתר כיום<small class="pv-sub2">ללא מע״מ · הפרש מול שלנו</small>','pv-num') : '')+
       shownDisc().map(g=>discTh(g)).join('')+
-      shownGroups().map(x=>soTh('px:'+x,'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+gcol(x)+';margin-inline-end:5px"></span>'+esc(x)+'<small class="pv-sub2">ללא מע״מ · שולי רווח</small>','pv-num','border-bottom:3px solid '+gcol(x))).join('')+
+      shownGroups().map(x=>soTh('px:'+x,'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+gcol(x)+';margin-inline-end:5px"></span>'+esc(x)+'<small class="pv-sub2">'+(x==='אתר'? 'ללא מע״מ · כולל · שולי רווח' : 'ללא מע״מ · שולי רווח')+'</small>','pv-num','border-bottom:3px solid '+gcol(x))).join('')+
       revTh(ed)+'</tr></thead><tbody>';
     rows.forEach((p,i)=>{
       const ca=costAfter(p.sku);
@@ -7787,8 +7787,17 @@ function cmpCell(p, grp, ed){
   const mgCell = '<div class="pv-cmpmg'+(ed?' ed':'')+'" '+
     (ed? 'tabindex="0" role="button" onclick="prcV13.editMargin(this,\''+q1(p.sku)+'\',\''+q1(grp)+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();prcV13.editMargin(this,\''+q1(p.sku)+'\',\''+q1(grp)+'\')}" title="לחץ או Enter לעריכת שולי הרווח במחירון '+esc(grp)+' — '+ttl+'"' : 'title="'+ttl+'"')+
     '><span class="pv-mgdot '+cls+'"></span>'+mgTxt+'</div>';
+  /* מחיר "אתר" מוצג גם כולל מע״מ בשורת משנה קטנה, בדיוק כמו בעמודת "מחיר
+     אתר כיום" — זה המספר שהלקוח רואה בפועל בחנות. רק בעמודה הזו: בשאר
+     המחירונים המע״מ אינו מוסיף מידע להחלטה. בצפוף השורה מתקפלת, ולכן אותה
+     עובדה נשמרת גם ב-title של התא. */
+  const pinc = (grp==='אתר')? priceInc(p.sku, grp) : null;
+  const incLine = (pinc==null)? '' : '<div class="pv-cmpsub pv-fold">'+fmt(pinc)+' ₪ כולל</div>';
+  const tips = [];
+  if(pinc!=null) tips.push('כולל מע״מ: '+fmt(pinc)+' ₪');
+  if(!inc) tips.push('המק״ט מוחרג מהמחירון הזה ולא יופיע ללקוח');
   /* בצפוף השורה השלישית מתקפלת, והחריגה מסומנת בקו חוצה על המחיר עצמו. */
-  return '<td class="pv-num'+(inc?'':' pv-outgc')+'"'+(inc?'':' title="המק״ט מוחרג מהמחירון הזה ולא יופיע ללקוח"')+'>'+price+mgCell+
+  return '<td class="pv-num'+(inc?'':' pv-outgc')+'"'+(tips.length? ' title="'+esc(tips.join(' · '))+'"' : '')+'>'+price+incLine+mgCell+
     (inc?'':'<div class="pv-outg pv-fold" title="המק״ט מוחרג מהמחירון הזה ולא יופיע ללקוח">מחוץ למחירון</div>')+'</td>';
 }
 
@@ -8874,7 +8883,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'prc-v13-ux2c-2026-08-08';
+const BUILD_ID = 'prc-v13-siteinc-2026-08-08';
 
 window.renderPrc = async function(){
   pvInjectCss();

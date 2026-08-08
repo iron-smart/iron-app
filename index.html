@@ -1205,7 +1205,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.40.0</div>
+      <div class="ver">גרסה 6.40.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1303,7 +1303,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.40.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.40.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5980,7 +5980,7 @@ const PV_CSS = `
 #tab-prc .pv-bomedit.nested{ border-inline-start:3px solid var(--pv-accent); background:#fbfdfe; border-radius:8px; margin:4px 0 2px }
 #tab-prc .pv-tblwrap .pv-nestrow > td{ background:#fbfdfe; padding:0 0 6px 0 !important; border-bottom:none !important }
 /* מעטפת קבועה: שורת ניווט למעלה, שורת הקשר מתחתיה שלעולם אינה נעלמת. */
-#tab-prc .pv-shell{ position:relative; z-index:12 }
+#tab-prc .pv-shell{ position:relative; z-index:8 }
 #tab-prc .pv-ctxrow{ min-height:38px; margin-top:9px; padding-top:9px; border-top:1px solid var(--pv-line) }
 #tab-prc .pv-ctxrow > .tools-bar{ margin-bottom:0 }
 #tab-prc .pv-vbtn:focus-visible, #tab-prc .pv-chip:focus-visible{ outline:2px solid var(--pv-brand); outline-offset:2px }
@@ -8208,8 +8208,10 @@ PV.setMfg = sku => { if(mfgOpen.has(sku)) mfgOpen.delete(sku); else mfgOpen.add(
 
 /* ---------- צפיפות, עמודות וברירת מחדל (6.40.0) ---------- */
 PV.setDense = v => { dense = !!v; renderBody(); };
-PV.colGroup = (g, show)=>{ if(show) hidGroups.delete(g); else hidGroups.add(g); renderBody(); };
-PV.colOther = (k, show)=>{ if(show) hidCols.delete(k); else hidCols.add(k); renderBody(); };
+/* מיון לפי עמודה שהוסתרה נשאר פעיל אך בלתי נראה — ולכן הוא מתאפס יחד איתה */
+function dropSort(keys){ if(sortState.key && keys.indexOf(sortState.key)>=0) sortState = { key:null, dir:1 }; }
+PV.colGroup = (g, show)=>{ if(show) hidGroups.delete(g); else { hidGroups.add(g); dropSort(['px:'+g, 'dsc:'+g]); } renderBody(); };
+PV.colOther = (k, show)=>{ if(show) hidCols.delete(k); else { hidCols.add(k); dropSort(k==='site'? ['site'] : MARKS.map(m=>m.k)); } renderBody(); };
 PV.colAll   = ()=>{ hidGroups.clear(); hidCols.clear(); renderBody(); };
 
 const PRC_DEF_KEY = 'iron_prc_default_v1';
@@ -8865,7 +8867,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'prc-v13-ux2-2026-08-07';
+const BUILD_ID = 'prc-v13-ux2b-2026-08-08';
 
 window.renderPrc = async function(){
   pvInjectCss();

@@ -1205,7 +1205,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.39.0</div>
+      <div class="ver">גרסה 6.40.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1303,7 +1303,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.39.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.40.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5806,6 +5806,52 @@ const PV_CSS = `
 #tab-prc .pv-tblwrap > table > tbody > tr.pv-rev:hover{ --row-bg:#e0efe7 }
 #tab-prc .pv-tblwrap > table > tbody > tr.pv-edrow:hover{ --row-bg:#f0f6fb }
 #tab-prc .pv-tblwrap > table > tbody > tr > td{ background:var(--cell-bg, var(--row-bg, #fff)) }
+/* ---- מצב צפוף (6.40.0) ----
+   שורה נמוכה יותר, תמונה קטנה יותר, וקיפול השורות המשניות בתאים. הקיפול
+   נעשה ב-CSS בלבד (.pv-fold) כדי שלא ייווצרו שני מסלולי בנייה לאותו תא —
+   כל המידע שנקפל נשאר ב-title של האלמנט שמעליו. */
+#tab-prc .pv-tblwrap.pv-dense tbody td{ height:34px; padding:3px 5px; font-size:12.5px; line-height:1.25 }
+#tab-prc .pv-tblwrap.pv-dense tbody tr{ height:34px }
+#tab-prc .pv-tblwrap.pv-dense .pv-imgbox{ width:26px; height:26px; min-width:26px; min-height:26px; font-size:11px }
+#tab-prc .pv-tblwrap.pv-dense td.pv-imgtd, #tab-prc .pv-tblwrap.pv-dense th.pv-imgtd{ width:38px; min-width:38px; max-width:38px }
+#tab-prc .pv-tblwrap.pv-dense .pv-fold{ display:none }
+#tab-prc .pv-tblwrap.pv-dense > table > tbody > tr > td br{ display:none }
+#tab-prc .pv-tblwrap.pv-dense .pv-role.part{ margin-inline-start:5px }
+#tab-prc .pv-tblwrap.pv-dense .pv-revd{ display:none }
+#tab-prc .pv-tblwrap.pv-dense .pv-dprice{ font-size:12.5px; margin-top:1px }
+#tab-prc .pv-tblwrap.pv-dense .pv-dmg{ margin-top:1px }
+#tab-prc .pv-tblwrap.pv-dense td.pv-outgc .pv-cmpmain{ text-decoration:line-through; opacity:.55 }
+/* בצפוף גם תיבת התמונה מצטמצמת, ולכן היסטי העמודות המוקפאות משתנים */
+#tab-prc .pv-frz.pv-dense > table > thead > tr > th:nth-child(2),
+#tab-prc .pv-frz.pv-dense > table > tbody > tr:not(.pv-bomrow):not(.pv-edrow2):not(.pv-nestrow) > td:nth-child(2){ inset-inline-start:34px; width:38px; min-width:38px; max-width:38px }
+#tab-prc .pv-frz.pv-dense > table > thead > tr > th:nth-child(3),
+#tab-prc .pv-frz.pv-dense > table > tbody > tr:not(.pv-bomrow):not(.pv-edrow2):not(.pv-nestrow) > td:nth-child(3){ inset-inline-start:72px }
+#tab-prc .pv-frz.pv-dense > table > thead > tr > th:nth-child(4),
+#tab-prc .pv-frz.pv-dense > table > tbody > tr:not(.pv-bomrow):not(.pv-edrow2):not(.pv-nestrow) > td:nth-child(4){ inset-inline-start:192px; width:170px; min-width:170px; max-width:170px }
+/* ---- בורר העמודות ושמירת ברירת מחדל (6.40.0) ---- */
+#tab-prc .pv-colsum{ cursor:pointer; user-select:none; list-style:none; border:1px solid var(--pv-line); border-radius:8px; padding:6px 10px; font-size:12.5px; font-weight:600; color:var(--pv-ink2); background:#fff; white-space:nowrap }
+#tab-prc .pv-colsum::-webkit-details-marker{ display:none }
+#tab-prc .pv-colsum:hover{ border-color:var(--pv-brand); color:var(--pv-brand) }
+#tab-prc .pv-colsum.on{ border-color:var(--pv-brand); color:var(--pv-brand); font-weight:800 }
+#tab-prc .pv-colspop{ position:absolute; z-index:45; inset-inline-end:0; top:calc(100% + 5px); background:#fff; border:1px solid var(--pv-line); border-radius:10px; box-shadow:0 12px 30px rgba(6,24,39,.18); padding:9px 11px; min-width:230px; max-height:330px; overflow:auto }
+#tab-prc .pv-colspop h6{ margin:2px 0 5px; font-size:11px; font-weight:800; color:var(--pv-muted); letter-spacing:.2px }
+#tab-prc .pv-colspop label{ display:flex; align-items:center; gap:7px; padding:3px 2px; font-size:12.5px; cursor:pointer; white-space:nowrap }
+#tab-prc .pv-colspop label input{ width:15px; height:15px; cursor:pointer; accent-color:var(--pv-brand) }
+#tab-prc .pv-colspop .sep{ height:1px; background:var(--pv-line); margin:7px 0 }
+#tab-prc .pv-colspop button{ width:100%; background:#fff; border:1px solid var(--pv-line); border-radius:8px; padding:4px 8px; font-size:12px; font-weight:700; color:var(--pv-ink2); cursor:pointer; font-family:inherit; margin-top:3px }
+#tab-prc .pv-colspop button:hover{ border-color:var(--pv-brand); color:var(--pv-brand) }
+#tab-prc .pv-defbtn{ border:1px solid var(--pv-line); border-radius:8px; padding:6px 10px; font-size:12.5px; font-weight:600; color:var(--pv-ink2); background:#fff; cursor:pointer; font-family:inherit; white-space:nowrap }
+#tab-prc .pv-defbtn:hover{ border-color:var(--pv-brand); color:var(--pv-brand) }
+#tab-prc .pv-colspop .pv-dot{ width:9px; height:9px; border-radius:50%; display:inline-block; flex:none }
+/* הפאנלים המקוננים אינם מושפעים מהצפיפות — כלל החריג שלהם מפסיד בספציפיות
+   מול כללי הצפוף, ולכן הוא נכתב כאן שוב בצורה שמנצחת אותם. */
+#tab-prc .pv-tblwrap.pv-dense .pv-bomedit td, #tab-prc .pv-tblwrap.pv-dense .pv-bomedit tr,
+#tab-prc .pv-tblwrap.pv-dense .pv-bomedit th, #tab-prc .pv-tblwrap.pv-dense .pv-mfg td,
+#tab-prc .pv-tblwrap.pv-dense .pv-mfg tr, #tab-prc .pv-tblwrap.pv-dense .pv-mfg th{ height:auto; padding:5px 9px; font-size:12.5px; line-height:1.35 }
+#tab-prc .pv-tblwrap.pv-dense .pv-bomedit .pv-imgbox, #tab-prc .pv-tblwrap.pv-dense .pv-mfg .pv-imgbox{ width:47px; height:47px; min-width:47px; min-height:47px }
+/* מה שמתקפל בצפוף וצריך להישאר נגיש — גרסה מקוצרת שמופיעה רק בצפוף */
+#tab-prc .pv-onlydense{ display:none }
+#tab-prc .pv-tblwrap.pv-dense .pv-onlydense{ display:inline-block }
 /* הטבלאות המקוננות מקבלות פסים משלהן, במקום אלה שדלפו אליהן */
 #tab-prc .pv-bomedit tbody tr:nth-child(even) > td,
 #tab-prc .pv-mfg tbody tr:nth-child(even) > td{ background:#f7f9fb }
@@ -5865,13 +5911,20 @@ const PV_CSS = `
 #tab-prc .pv-frz > table > tbody > tr.pv-flash:not(.pv-bomrow):not(.pv-edrow2) > td:nth-child(4){ box-shadow:none }
 #tab-prc .pv-frz > table > thead > tr > th:nth-child(4){ box-shadow:inset 0 -1px 0 rgba(255,255,255,.14), -9px 0 12px -10px rgba(6,24,39,.30) }
 @media (max-width:1100px){
-  /* במסך צר גוש קפוא של 386 פיקסלים גוזל יותר מדי — משאירים מק״ט ושם בלבד */
+  /* במסך צר גוש קפוא של ~390 פיקסלים גוזל יותר מדי — משאירים מק״ט ושם בלבד.
+     הבוררים כאן חייבים לשאת בדיוק את אותה צורה ככללי הבסיס — שרשרת ה-:not
+     ומחלקת pv-dense — כי media query אינו מוסיף ספציפיות. בלי זה הכלל חל על
+     הכותרת בלבד, והגוף נשאר קפוא: עמודה 3 הייתה נערמת על עמודה 1. */
   #tab-prc .pv-frz > table > thead > tr > th:nth-child(-n+2),
-  #tab-prc .pv-frz > table > tbody > tr > td:nth-child(-n+2){ position:static }
+  #tab-prc .pv-frz > table > tbody > tr:not(.pv-bomrow):not(.pv-edrow2):not(.pv-nestrow) > td:nth-child(-n+2){ position:static }
   #tab-prc .pv-frz > table > thead > tr > th:nth-child(3),
-  #tab-prc .pv-frz > table > tbody > tr:not(.pv-bomrow):not(.pv-edrow2):not(.pv-nestrow) > td:nth-child(3){ inset-inline-start:0 }
+  #tab-prc .pv-frz > table > tbody > tr:not(.pv-bomrow):not(.pv-edrow2):not(.pv-nestrow) > td:nth-child(3),
+  #tab-prc .pv-frz.pv-dense > table > thead > tr > th:nth-child(3),
+  #tab-prc .pv-frz.pv-dense > table > tbody > tr:not(.pv-bomrow):not(.pv-edrow2):not(.pv-nestrow) > td:nth-child(3){ inset-inline-start:0 }
   #tab-prc .pv-frz > table > thead > tr > th:nth-child(4),
-  #tab-prc .pv-frz > table > tbody > tr:not(.pv-bomrow):not(.pv-edrow2):not(.pv-nestrow) > td:nth-child(4){ inset-inline-start:120px }
+  #tab-prc .pv-frz > table > tbody > tr:not(.pv-bomrow):not(.pv-edrow2):not(.pv-nestrow) > td:nth-child(4),
+  #tab-prc .pv-frz.pv-dense > table > thead > tr > th:nth-child(4),
+  #tab-prc .pv-frz.pv-dense > table > tbody > tr:not(.pv-bomrow):not(.pv-edrow2):not(.pv-nestrow) > td:nth-child(4){ inset-inline-start:120px }
 }
 #tab-prc td.pv-num, #tab-prc th.pv-num{ text-align:center }
 #tab-prc .pv-sku{ font-family:ui-monospace,Consolas,monospace; font-size:12px; color:var(--pv-ink2); direction:ltr }
@@ -5927,7 +5980,7 @@ const PV_CSS = `
 #tab-prc .pv-bomedit.nested{ border-inline-start:3px solid var(--pv-accent); background:#fbfdfe; border-radius:8px; margin:4px 0 2px }
 #tab-prc .pv-tblwrap .pv-nestrow > td{ background:#fbfdfe; padding:0 0 6px 0 !important; border-bottom:none !important }
 /* מעטפת קבועה: שורת ניווט למעלה, שורת הקשר מתחתיה שלעולם אינה נעלמת. */
-#tab-prc .pv-shell{ position:relative; z-index:5 }
+#tab-prc .pv-shell{ position:relative; z-index:12 }
 #tab-prc .pv-ctxrow{ min-height:38px; margin-top:9px; padding-top:9px; border-top:1px solid var(--pv-line) }
 #tab-prc .pv-ctxrow > .tools-bar{ margin-bottom:0 }
 #tab-prc .pv-vbtn:focus-visible, #tab-prc .pv-chip:focus-visible{ outline:2px solid var(--pv-brand); outline-offset:2px }
@@ -6244,6 +6297,8 @@ function costLocked(p){ return !!treeKids(p.sku) || mfgCostOf(p)!=null; }
    שולי הרווח שמוצגים לצדה מחושבים מול העלות האמיתית אחרי העמסה. */
 const DISC_GROUPS = ['פרטי-עסקי','עסקי'];
 function discGroups(){ return DISC_GROUPS.filter(g=>GROUPS.indexOf(g)>=0); }
+/* עמודת הנחה נעלמת יחד עם עמודת המחירון שלה — הן זוג אחד */
+function shownDisc(){ return discGroups().filter(g=>!hidGroups.has(g)); }
 function discOf(sku, grp){
   const d = DATA.discounts? DATA.discounts[sku] : null;
   const v = d? d[grp] : null;
@@ -6518,6 +6573,16 @@ function srcFactor(p){ const v = S.loadFactors? S.loadFactors[p.source] : null; 
    המסך כך שהוא נשמר גם במעבר בין המאגר, ההשוואה ומחירון בודד. ערך חסר
    נדחף תמיד לסוף כדי שהשורות המתומחרות יופיעו ראשונות. */
 let sortState = { key:null, dir:1 };
+/* ---- מצב תצוגה שנשמר כברירת מחדל (6.40.0) ----
+   צפיפות, עמודות מוסתרות, ומצב הסינון. נשמר בדפדפן בלחיצה מפורשת, לפי
+   אותה מוסכמה שכבר קיימת במסך ההזמנות ובקריאות השירות
+   (iron_logi_default_v1 / iron_calls_default_v1) — ולא שמירה אוטומטית. */
+let dense = false;
+let hidGroups = new Set();
+let hidCols = new Set();
+function shownGroups(){ return GROUPS.filter(g=>!hidGroups.has(g)); }
+function colOn(k){ return !hidCols.has(k); }
+function hiddenCount(){ return hidGroups.size + hidCols.size; }
 const SORT_ACC = {
   sku:  p=>String(p.sku||''),
   name: p=>String(p.name||''),
@@ -6605,9 +6670,9 @@ function markTd(p, m, ed){
   '</td>';
 }
 /* שלוש העמודות נבנות תמיד יחד, כדי שספירת התאים בכל הטבלאות תישאר מסונכרנת. */
-function revTh(ed){ return MARKS.map(m=>markTh(m, ed)).join(''); }
-function revTd(p, ed){ return MARKS.map(m=>markTd(p, m, ed)).join(''); }
-function revBlank(){ return MARKS.map(()=>'<td class="pv-revtd">—</td>').join(''); }
+function revTh(ed){ return colOn('marks')? MARKS.map(m=>markTh(m, ed)).join('') : ''; }
+function revTd(p, ed){ return colOn('marks')? MARKS.map(m=>markTd(p, m, ed)).join('') : ''; }
+function revBlank(){ return colOn('marks')? MARKS.map(()=>'<td class="pv-revtd">—</td>').join('') : ''; }
 function rowCls(p){ return (p.status!=='פעיל'?'pv-inactive':'')+(p.revAt?' pv-rev':''); }
 function rawCost(p){
   if(treeKids(p.sku)) return costBefore(p.sku);
@@ -6625,7 +6690,8 @@ function costSrcCell(p){
   const t = (mfgCostOf(p)!=null)? mfgTier(p) : null;
   return fmt(rc)+(p.source===SRC_IMPORT?' $':' ₪')+
     (t? '<span class="pv-tierbadge" title="מחושב ממדרגת הייצור שנבחרה: ייצור '+fmt(t.prod||0)+' ₪ + צבע '+fmt(t.paint||0)+' ₪">מדרגה '+fmt(t.qty,0)+'</span>' : '')+
-    (hasDualSupply(p)? '<span class="pv-tierbadge" title="למק״ט הזה יש גם עלות יבוא וגם מדרגות ייצור בארץ — פתח \'ייצור\' כדי להשוות ולהחליף ספק">2 ספקים</span>' : '');
+    (hasDualSupply(p)? '<span class="pv-tierbadge pv-fold" title="למק״ט הזה יש גם עלות יבוא וגם מדרגות ייצור בארץ — פתח \'ייצור\' כדי להשוות ולהחליף ספק">2 ספקים</span>'+
+      '<span class="pv-tierbadge pv-onlydense" title="למק״ט הזה יש גם עלות יבוא וגם מדרגות ייצור בארץ — פתח \'ייצור\' כדי להשוות ולהחליף ספק">2 ספ׳</span>' : '');
 }
 function storedCost(p){ return p.source===SRC_IMPORT? (p.cost!=null? p.cost*S.usdRate : null) : (p.costILS ?? null); }
 function diffTag(a,b){
@@ -6754,10 +6820,41 @@ function buildToolbar(){
       '<select class="pv-f" id="pv-fmode" onchange="prcV13.render()" title="מצב הפריט — מחליף את מסך הפערים">'+
         '<option value="">כל המצבים</option>'+MODE_LIST.map(m=>'<option value="'+m[0]+'">'+m[1]+'</option>').join('')+'</select>'+
       '<label class="pv-tgl"><input type="checkbox" id="pv-onlycost" onchange="prcV13.render()"> רק עם עלות</label>'+
+      '<label class="pv-tgl" title="שורות נמוכות יותר וקיפול השורות המשניות בתאים — לסריקה מהירה של מאות מק״טים"><input type="checkbox" id="pv-dense" onchange="prcV13.setDense(this.checked)"> צפוף</label>'+
+      '<details class="pv-menu" id="pv-colsm"><summary class="pv-colsum" id="pv-colsum">עמודות</summary><div class="pv-colspop" id="pv-colspop"></div></details>'+
+      '<button class="pv-defbtn" onclick="prcV13.defSave()" title="שמירת התצוגה, הסינון, המיון והעמודות הנוכחיים כברירת מחדל בדפדפן הזה">★ שמור כברירת מחדל</button>'+
+      '<button class="pv-defbtn" id="pv-defclr" onclick="prcV13.defClear()" style="display:none">↺ אפס ברירת מחדל</button>'+
     '</div>';
     fillCatFilter();
+    prcDefApplyFilters();
   }
   buildChips();
+  buildColsMenu();
+}
+/* בורר העמודות — עמודות המחירונים (וזוג ההנחה שלהן), מחיר האתר ושלוש
+   עמודות הסימון. הקטגוריה והעלות אינן ניתנות להסתרה בכוונה: הן מופיעות גם
+   בשורת העריכה, והסתרתן הייתה מנתקת את מספר התאים בין הכותרת לשורה. */
+function buildColsMenu(){
+  const sum = document.getElementById('pv-colsum');
+  const pop = document.getElementById('pv-colspop');
+  const dn  = document.getElementById('pv-dense');
+  const dc  = document.getElementById('pv-defclr');
+  if(dn) dn.checked = !!dense;
+  if(dc) dc.style.display = prcDefExists()? '' : 'none';
+  if(sum){
+    const n = hiddenCount();
+    sum.textContent = n? ('עמודות · '+n+' מוסתרות') : 'עמודות';
+    sum.className = 'pv-colsum'+(n?' on':'');
+  }
+  if(!pop) return;
+  pop.innerHTML =
+    '<h6>מחירונים</h6>'+
+    GROUPS.map(g=>'<label><input type="checkbox" '+(hidGroups.has(g)?'':'checked')+' onchange="prcV13.colGroup(\''+q1(g)+'\',this.checked)">'+
+      '<span class="pv-dot" style="background:'+gcol(g)+'"></span>'+esc(g)+'</label>').join('')+
+    '<div class="sep"></div><h6>עמודות נוספות</h6>'+
+    '<label><input type="checkbox" '+(colOn('site')?'checked':'')+' onchange="prcV13.colOther(\'site\',this.checked)">מחיר אתר כיום</label>'+
+    '<label><input type="checkbox" '+(colOn('marks')?'checked':'')+' onchange="prcV13.colOther(\'marks\',this.checked)">נסקר · שונה במחירון · שונה באתר</label>'+
+    '<button onclick="prcV13.colAll()">הצג את כל העמודות</button>';
 }
 
 function buildChips(){
@@ -6962,11 +7059,11 @@ function renderPricing(m){
 
   let html='';
   if(state.catalog){
-    html = '<div class="pv-tblwrap pv-frz" style="border-top:3px solid var(--pv-dark)"><table><thead><tr>'+
+    html = '<div class="pv-tblwrap pv-frz'+(dense?' pv-dense':'')+'" style="border-top:3px solid var(--pv-dark)"><table><thead><tr>'+
       '<th class="pv-rn" title="מספר שורה בתצוגה הנוכחית">#</th>'+
       '<th class="pv-imgtd">תמונה</th>'+soTh('sku','מק״ט')+soTh('name','שם מוצר','pv-name')+soTh('cat','קטגוריה · תת קטגוריה')+soTh('src','מקור')+
       soTh('cost','עלות מקור','pv-num')+soTh('ca','עלות בש״ח','pv-num')+soTh('st','סטטוס')+
-      GROUPS.map(x=>'<th style="border-bottom:3px solid '+gcol(x)+'"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+gcol(x)+';margin-inline-end:4px"></span>'+esc(x)+'</th>').join('')+
+      shownGroups().map(x=>'<th style="border-bottom:3px solid '+gcol(x)+'"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+gcol(x)+';margin-inline-end:4px"></span>'+esc(x)+'</th>').join('')+
       revTh(ed)+'<th>פעולות</th></tr></thead><tbody>';
     rows.forEach((p,i)=>{
       const ca=costAfter(p.sku);
@@ -6981,7 +7078,7 @@ function renderPricing(m){
         '<td class="pv-num pv-cost">'+costSrcCell(p)+'</td>'+
         '<td class="pv-num pv-cost" '+(p.loadOv?'title="מקדם העמסה ידני: '+p.loadOv+'"':'')+'>'+(ca==null?'<span class="pv-nocost">—</span>':fmt(ca)+' ₪'+(p.loadOv?' <span style="color:var(--pv-amber)">*</span>':''))+'</td>'+
         '<td style="font-size:12px">'+esc(p.status)+'</td>'+
-        GROUPS.map(x=>'<td><input type="checkbox" style="width:15px;height:15px;cursor:pointer;accent-color:'+gcol(x)+'" '+(isIncluded(p.sku,x)?'checked':'')+' '+(ed?'':'disabled')+' onchange="prcV13.toggleInclude(\''+q1(p.sku)+'\',\''+q1(x)+'\')" title="כלול במחירון '+esc(x)+'"></td>').join('')+
+        shownGroups().map(x=>'<td><input type="checkbox" style="width:15px;height:15px;cursor:pointer;accent-color:'+gcol(x)+'" '+(isIncluded(p.sku,x)?'checked':'')+' '+(ed?'':'disabled')+' onchange="prcV13.toggleInclude(\''+q1(p.sku)+'\',\''+q1(x)+'\')" title="כלול במחירון '+esc(x)+'"></td>').join('')+
         revTd(p, ed)+
         '<td style="white-space:nowrap">'+rowActions(p, ed)+'</td></tr>';
       if(dbBomSku.has(p.sku)) html+=bomEditor(p, ed);
@@ -6993,26 +7090,26 @@ function renderPricing(m){
        על אותו בסיס. מחיר האתר מוצג ללא מע״מ בשורה הראשית וכולל מע״מ מתחתיו,
        כי הוא נשמר בפריוריטי כמחיר כולל מע״מ. שולי הרווח מוצגים מתחת לכל מחיר
        וניתנים לעריכה במקום — זהו מסך העבודה להחלטת ההנחה לכל מוצר בכל מחירון. */
-    html = '<div class="pv-tblwrap pv-frz"><table><thead><tr>'+
+    html = '<div class="pv-tblwrap pv-frz'+(dense?' pv-dense':'')+'"><table><thead><tr>'+
       '<th class="pv-rn" title="מספר שורה בתצוגה הנוכחית">#</th>'+
       '<th class="pv-imgtd">תמונה</th>'+soTh('sku','מק״ט')+soTh('name','שם מוצר','pv-name')+soTh('cat','קטגוריה · תת קטגוריה')+soTh('ca','עלות בש״ח','pv-num')+
-      soTh('site','מחיר אתר כיום<small class="pv-sub2">ללא מע״מ · הפרש מול שלנו</small>','pv-num')+
-      discGroups().map(g=>discTh(g)).join('')+
-      GROUPS.map(x=>soTh('px:'+x,'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+gcol(x)+';margin-inline-end:5px"></span>'+esc(x)+'<small class="pv-sub2">ללא מע״מ · שולי רווח</small>','pv-num','border-bottom:3px solid '+gcol(x))).join('')+
+      (colOn('site')? soTh('site','מחיר אתר כיום<small class="pv-sub2">ללא מע״מ · הפרש מול שלנו</small>','pv-num') : '')+
+      shownDisc().map(g=>discTh(g)).join('')+
+      shownGroups().map(x=>soTh('px:'+x,'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+gcol(x)+';margin-inline-end:5px"></span>'+esc(x)+'<small class="pv-sub2">ללא מע״מ · שולי רווח</small>','pv-num','border-bottom:3px solid '+gcol(x))).join('')+
       revTh(ed)+'</tr></thead><tbody>';
     rows.forEach((p,i)=>{
       const ca=costAfter(p.sku);
       if(ca==null) noCost++; else priced++;
       html+='<tr data-sku="'+esc(p.sku)+'" class="'+rowCls(p)+'"><td class="pv-rn">'+(i+1)+'</td><td class="pv-imgtd">'+imgCell(p)+'</td>'+skuTd(p.sku)+'<td class="pv-name">'+esc(p.name)+'</td><td class="pv-catcell">'+esc(p.cat)+(p.sub?' · '+esc(p.sub):'')+'</td>'+
         '<td class="pv-num pv-cost">'+(ca==null?'<span class="pv-nocost">חסר עלות</span>':fmt(ca)+' ₪')+'</td>'+
-        siteCmpCell(p.sku)+
-        discGroups().map(g=>discCell(p, g, ed)).join('')+
-        GROUPS.map(x=>cmpCell(p, x, ed)).join('')+revTd(p, ed)+'</tr>';
+        (colOn('site')? siteCmpCell(p.sku) : '')+
+        shownDisc().map(g=>discCell(p, g, ed)).join('')+
+        shownGroups().map(x=>cmpCell(p, x, ed)).join('')+revTd(p, ed)+'</tr>';
     });
     html+='</tbody></table></div>'+discSummary(rows, ed);
   } else {
     rows = rows.filter(p=>isIncluded(p.sku,g));
-    html = '<div class="pv-tblwrap pv-frz" style="border-top:3px solid '+gcol(g)+'"><table><thead><tr>'+
+    html = '<div class="pv-tblwrap pv-frz'+(dense?' pv-dense':'')+'" style="border-top:3px solid '+gcol(g)+'"><table><thead><tr>'+
       '<th class="pv-rn" title="מספר שורה בתצוגה הנוכחית">#</th>'+
       '<th class="pv-imgtd">תמונה</th>'+soTh('sku','מק״ט')+soTh('name','שם מוצר','pv-name')+soTh('cat','קטגוריה · תת קטגוריה')+soTh('src','מקור')+
       soTh('cost','עלות מקור','pv-num')+soTh('ca','עלות בש״ח','pv-num')+
@@ -7144,7 +7241,7 @@ function catEditRow(p, ix){
     '<td class="pv-num"><span class="pv-edf"><i>'+(p.source===SRC_IMPORT?'עלות ב-$':'עלות ב-₪')+'</i><input class="pv-edin narrow" id="pv-ed-cost" type="number" step="0.01" value="'+((tree||lockT)?'':(p.source===SRC_IMPORT? (p.cost??'') : (p.costILS??'')))+'" '+(tree?'disabled title="מחושב מעץ המוצר"':(lockT?'disabled title="מחושב ממדרגת הייצור שנבחרה"':''))+'></span></td>'+
     '<td class="pv-num"><span class="pv-edcalc" title="עלות אחרי מקדם ההעמסה — מחושבת, לא נערכת כאן">'+(ca==null?'—':fmt(ca)+' ₪')+'</span></td>'+
     '<td><span class="pv-edf"><i>סטטוס</i><select class="pv-edin mid" id="pv-ed-st">'+['פעיל','בהמתנה','לא פעיל'].map(s=>'<option '+(p.status===s?'selected':'')+'>'+s+'</option>').join('')+'</select></span></td>'+
-    GROUPS.map(x=>'<td><input type="checkbox" style="width:15px;height:15px" '+(isIncluded(p.sku,x)?'checked':'')+' disabled title="לשינוי שיוך מחירון — יש לסיים את העריכה"></td>').join('')+
+    shownGroups().map(x=>'<td><input type="checkbox" style="width:15px;height:15px" '+(isIncluded(p.sku,x)?'checked':'')+' disabled title="לשינוי שיוך מחירון — יש לסיים את העריכה"></td>').join('')+
     revBlank()+
     '<td style="white-space:nowrap"><button class="pv-rowbtn primary" onclick="prcV13.saveEdit(\''+q1(p.sku)+'\')">שמור</button> <button class="pv-rowbtn" onclick="prcV13.setEdit(null)">ביטול</button></td>'+
   '</tr>'+edExtraRow(p);
@@ -7597,8 +7694,10 @@ function siteCmpCell(sku){
     const cls = Math.abs(df)<0.005? 'eq' : (df>0? 'up':'dn');
     chip = '<span class="pv-sdiff '+cls+'" title="ההפרש בין המחיר שבאתר היום לבין מחיר \'אתר\' לפי מודל המרווחים שלנו ('+fmt(ourInc)+' ₪ כולל מע״מ)">'+(df>0?'+':'')+pc(df)+'</span>';
   }
-  return '<td class="pv-num"><div class="pv-cmpmain">'+fmt(ex)+' ₪'+chip+'</div>'+
-    '<div class="pv-cmpsub" title="מחיר האתר כפי שנשמר בפריוריטי, כולל מע״מ — ולצדו מחיר \'אתר\' שלנו כולל מע״מ">'+fmt(sp)+' ₪ כולל'+
+  /* בצפוף שורת המשנה מתקפלת, ולכן אותו מידע נשמר כ-title על התא עצמו —
+     אחרת הוא היה נעלם בלי שום דרך להגיע אליו. */
+  return '<td class="pv-num" title="מחיר האתר כולל מע״מ: '+fmt(sp)+' ₪'+(ourInc!=null? ' · מחיר \'אתר\' שלנו כולל מע״מ: '+fmt(ourInc)+' ₪' : '')+'"><div class="pv-cmpmain">'+fmt(ex)+' ₪'+chip+'</div>'+
+    '<div class="pv-cmpsub pv-fold">'+fmt(sp)+' ₪ כולל'+
       (ourInc!=null? ' · שלנו '+fmt(ourInc)+' ₪' : '')+'</div></td>';
 }
 /* עמודת ההנחה — הקלדה ישירה בשורה, ומיד לצדה המחיר אחרי ההנחה,
@@ -7625,13 +7724,13 @@ function discCell(p, grp, ed){
   if(pr==null) body = '<div class="pv-cmpsub">'+(SITE? 'אין מחיר באתר' : 'טוען…')+'</div>';
   else body = '<div class="pv-dprice">'+fmt(pr)+' ₪</div>'+
     '<div><span class="pv-dmg '+(lv||'ok')+'" title="שולי הרווח והרווח בשקלים על יחידה אחת, אחרי ההנחה ומול העלות אחרי העמסה">'+
-      (mg==null? 'חסר עלות' : pc(mg))+(pf==null? '' : ' · '+fmt(pf,0)+' ₪')+'</span></div>';
+      (mg==null? 'חסר עלות' : pc(mg))+(pf==null? '' : '<span class="pv-fold"> · '+fmt(pf,0)+' ₪</span>')+'</span></div>';
   return '<td class="pv-num pv-disctd'+((lv==='warn'||lv==='bad')? ' '+lv : '')+'">'+inp+body+'</td>';
 }
 /* סיכום ההנחות מתחת לטבלה — כמה רווח מצטבר ניתן בכל מחירון, על השורות
    שבתצוגה הנוכחית. החישוב הוא ליחידה אחת מכל מק״ט ואינו משוקלל בכמויות. */
 function discSummary(rows, ed){
-  const gs = discGroups();
+  const gs = shownDisc();
   if(!gs.length) return '';
   const cards = gs.map(g=>{
     let withD=0, base=0, give=0, keep=0, noCost=0, warn=0, bad=0, priced=0;
@@ -7681,7 +7780,9 @@ function cmpCell(p, grp, ed){
   const mgCell = '<div class="pv-cmpmg'+(ed?' ed':'')+'" '+
     (ed? 'tabindex="0" role="button" onclick="prcV13.editMargin(this,\''+q1(p.sku)+'\',\''+q1(grp)+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();prcV13.editMargin(this,\''+q1(p.sku)+'\',\''+q1(grp)+'\')}" title="לחץ או Enter לעריכת שולי הרווח במחירון '+esc(grp)+' — '+ttl+'"' : 'title="'+ttl+'"')+
     '><span class="pv-mgdot '+cls+'"></span>'+mgTxt+'</div>';
-  return '<td class="pv-num">'+price+mgCell+(inc?'':'<div class="pv-outg" title="המק״ט מוחרג מהמחירון הזה ולא יופיע ללקוח">מחוץ למחירון</div>')+'</td>';
+  /* בצפוף השורה השלישית מתקפלת, והחריגה מסומנת בקו חוצה על המחיר עצמו. */
+  return '<td class="pv-num'+(inc?'':' pv-outgc')+'"'+(inc?'':' title="המק״ט מוחרג מהמחירון הזה ולא יופיע ללקוח"')+'>'+price+mgCell+
+    (inc?'':'<div class="pv-outg pv-fold" title="המק״ט מוחרג מהמחירון הזה ולא יופיע ללקוח">מחוץ למחירון</div>')+'</td>';
 }
 
 /* ---------- תג מרווח אפקטיבי (רצפות) ---------- */
@@ -8104,6 +8205,63 @@ PV.editMargin = function(td, sku, grp){
 /* ---------- BOM ---------- */
 PV.setBom = sku => { if(dbBomSku.has(sku)) dbBomSku.delete(sku); else dbBomSku.add(sku); renderBody(); };
 PV.setMfg = sku => { if(mfgOpen.has(sku)) mfgOpen.delete(sku); else mfgOpen.add(sku); renderBody(); };
+
+/* ---------- צפיפות, עמודות וברירת מחדל (6.40.0) ---------- */
+PV.setDense = v => { dense = !!v; renderBody(); };
+PV.colGroup = (g, show)=>{ if(show) hidGroups.delete(g); else hidGroups.add(g); renderBody(); };
+PV.colOther = (k, show)=>{ if(show) hidCols.delete(k); else hidCols.add(k); renderBody(); };
+PV.colAll   = ()=>{ hidGroups.clear(); hidCols.clear(); renderBody(); };
+
+const PRC_DEF_KEY = 'iron_prc_default_v1';
+function prcDefLoad(){ try{ const r = JSON.parse(localStorage.getItem(PRC_DEF_KEY)||'null'); return (r && typeof r==='object')? r : null; }catch(_e){ return null; } }
+function prcDefExists(){ return !!prcDefLoad(); }
+/* מצב התצוגה מוחל פעם אחת לפני הרינדור הראשון; ערכי הסלקטים מוחלים בנפרד
+   כי הם קיימים ב-DOM רק אחרי שסרגל הכלים נבנה. */
+function prcDefApplyState(){
+  const d = prcDefLoad(); if(!d) return;
+  try{
+    const av = prcAllowedViews();
+    if(d.view && av.indexOf(d.view)>=0) window.PRC_VIEW = d.view;
+    if(typeof d.catalog === 'boolean') state.catalog = d.catalog;
+    if(typeof d.allGroups === 'boolean') state.allGroups = d.allGroups;
+    if(d.group && GROUPS.indexOf(d.group)>=0) state.group = d.group;
+    if(d.sort && d.sort.key) sortState = { key:d.sort.key, dir:(d.sort.dir<0? -1 : 1) };
+    dense = !!d.dense;
+    hidGroups = new Set(Array.isArray(d.hidG)? d.hidG.filter(g=>GROUPS.indexOf(g)>=0) : []);
+    hidCols   = new Set(Array.isArray(d.hidC)? d.hidC.filter(k=>k==='site'||k==='marks') : []);
+  }catch(_e){}
+}
+function prcDefApplyFilters(){
+  const d = prcDefLoad(); if(!d || !d.f) return;
+  try{
+    const cat = document.getElementById('pv-fcat');
+    if(cat && d.f.cat){ cat.value = d.f.cat; fillSubFilter(); }
+    const sub = document.getElementById('pv-fsub'); if(sub && d.f.sub) sub.value = d.f.sub;
+    [['pv-fsrc','src'],['pv-fstatus','status'],['pv-fmode','mode']].forEach(([id,k])=>{
+      const e = document.getElementById(id); if(e && d.f[k]) e.value = d.f[k];
+    });
+    const oc = document.getElementById('pv-onlycost'); if(oc) oc.checked = !!d.f.onlycost;
+  }catch(_e){}
+}
+/* שמירה מפורשת בלבד, כמו במסך ההזמנות ובקריאות השירות. טקסט החיפוש אינו
+   נשמר — שאילתה חופשית אינה ברירת מחדל סבירה. */
+PV.defSave = ()=>{
+  const d = {
+    view: window.PRC_VIEW, catalog: !!state.catalog, allGroups: !!state.allGroups, group: state.group,
+    sort: { key: sortState.key, dir: sortState.dir },
+    dense: !!dense, hidG: [...hidGroups], hidC: [...hidCols],
+    f: { cat:gv('pv-fcat'), sub:gv('pv-fsub'), src:gv('pv-fsrc'), status:gv('pv-fstatus'), mode:gv('pv-fmode'),
+         onlycost: !!(document.getElementById('pv-onlycost') && document.getElementById('pv-onlycost').checked) }
+  };
+  try{ localStorage.setItem(PRC_DEF_KEY, JSON.stringify(d)); toast('התצוגה נשמרה כברירת מחדל ✓'); }
+  catch(_e){ toast('הדפדפן חוסם שמירת ברירת מחדל'); }
+  buildColsMenu();
+};
+PV.defClear = ()=>{
+  try{ localStorage.removeItem(PRC_DEF_KEY); }catch(_e){}
+  toast('ברירת המחדל נמחקה');
+  buildColsMenu();
+};
 
 /* ---------- הנחות פר מק״ט למחירון (6.38.0) ---------- */
 PV.setDisc = async (sku, grp, v, el)=>{
@@ -8707,7 +8865,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'prc-v13-ux1-2026-08-07';
+const BUILD_ID = 'prc-v13-ux2-2026-08-07';
 
 window.renderPrc = async function(){
   pvInjectCss();
@@ -8725,6 +8883,7 @@ window.renderPrc = async function(){
       return;
     }
     fillCatFilter();
+    prcDefApplyState();
   }
   renderPrcInner();
 };

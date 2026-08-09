@@ -1259,7 +1259,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.45.0</div>
+      <div class="ver">גרסה 6.45.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1360,7 +1360,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.45.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.45.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1538,7 +1538,7 @@
       <div class="gs-hint" id="gsHint">מספר טלפון נמצא בכל כתיב — עם קידומת, בלי, עם מקפים או רק הספרות האחרונות.</div>
       <div class="gs-bar"><i></i></div>
     </div>
-    <div class="gs-body" id="gsBody" role="listbox" aria-label="תוצאות החיפוש"></div>
+    <div class="gs-body" id="gsBody" role="region" aria-label="תוצאות החיפוש"></div>
     <div class="gs-foot"><span>↑↓ לניווט · Enter לפתיחה · Ctrl/⌘ S לפתיחת החיפוש</span><span id="gsCount"></span></div>
   </div>
 </div>
@@ -8962,7 +8962,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'gsearch4-2026-08-09';
+const BUILD_ID = 'gsearch5-2026-08-09';
 
 window.renderPrc = async function(){
   pvInjectCss();
@@ -12124,6 +12124,9 @@ boot();
   /* מפת ההרשאות נטענת מחדש רק בכניסה, אבל אם זה קורה — המטמון של החיפוש
      שייך למשתמש הקודם וחייב להתאפס. */
   GS.reset = function(){
+    gsSeq++;                                     /* תשובה בתעופה לא תאכלס מטמון חדש */
+    if(gsCtrl){ try{ gsCtrl.abort(); }catch(_e){} gsCtrl = null; }
+    if(gsTimer){ clearTimeout(gsTimer); gsTimer = null; }
     gsCache = {}; gsCacheKeys = []; gsRows = []; gsOpen = {};
     gsLast = ''; gsIdx = -1; gsScroll = 0;
   };
@@ -12163,18 +12166,24 @@ boot();
     var s = esc(String(txt == null ? '' : txt));
     var needle = String(q || '').trim();
     if(needle.length < 2) return s;
-    var i = s.toLowerCase().indexOf(esc(needle).toLowerCase());
+    /* החיפוש נעשה במחרוזת המוברחת, ולכן גם האורך חייב להיות של המוברחת —
+       אחרת שם עם גרש ("ג'ורג'") נחתך באמצע ישות HTML. */
+    var eneedle = esc(needle);
+    var i = s.toLowerCase().indexOf(eneedle.toLowerCase());
     if(i < 0) return s;
-    return s.slice(0, i) + '<mark>' + s.slice(i, i + needle.length) + '</mark>' + s.slice(i + needle.length);
+    return s.slice(0, i) + '<mark>' + s.slice(i, i + eneedle.length) + '</mark>' + s.slice(i + eneedle.length);
   }
 
   /* קיבוץ לפי סוג, וסדר הקבוצות לפי ההתאמה הטובה ביותר שבתוכן — כך גם הקיבוץ
      שרומן ביקש נשמר וגם "התאמה מלאה קודמת להתאמה חלקית". */
   function gsGroup(rows){
     var g = {}, order = [];
-    rows.forEach(function(r){
+    /* חובה לשמור את המיקום המקורי במערך השטוח: השרת ממיין קודם לפי דירוג
+       ורק אחר כך לפי סוג, ולכן סוג שיש לו תוצאות בכמה דירוגים מפוצל. מונה
+       רץ לפי סדר התצוגה היה מצביע על רשומה אחרת לגמרי. */
+    rows.forEach(function(r, ix){
       if(!g[r.entity_type]){ g[r.entity_type] = { rows:[], best:99 }; order.push(r.entity_type); }
-      g[r.entity_type].rows.push(r);
+      g[r.entity_type].rows.push({ r:r, i:ix });
       if(r.rank < g[r.entity_type].best) g[r.entity_type].best = r.rank;
     });
     order.sort(function(a,c){
@@ -12203,24 +12212,24 @@ boot();
     var h = '', n = 0;
     order.forEach(function(t){
       var meta = GS_TYPES[t] || { lbl:t, ic:'' };
-      var rows = g[t].rows, op = !!gsOpen[t];
+      var items = g[t].rows, op = !!gsOpen[t];
       /* "8+" ולא "8": התקרה היא per_type, ולכן מספר השווה לה אומר "לפחות". */
-      var nTxt = rows.length + (rows.length >= GS_PER ? '+' : '');
-      var top = rows[0];
+      var nTxt = items.length + (items.length >= GS_PER ? '+' : '');
+      var top = items[0].r;
       var prev = op ? '' : esc(String(top.title || '') + (top.subtitle ? ' · ' + top.subtitle : ''));
       h += '<div class="gs-sec' + (op ? ' op' : '') + '" data-t="' + esc(t) + '">' +
            '<button type="button" class="gs-sh" data-t="' + esc(t) + '" aria-expanded="' + (op ? 'true' : 'false') +
-             '" onclick="GS.toggle(\'' + esc(t) + '\')">' +
+             '" onclick="GS.toggle(\'' + jsq(t) + '\')">' +
              gsIcon(t) + '<b>' + esc(meta.lbl) + '</b><span class="gs-n">' + nTxt + '</span>' +
              '<span class="gs-prev">' + prev + '</span>' + GS_CHEV + '</button>' +
            '<div class="gs-rows">';
-      rows.forEach(function(r){
-        var linked = !!gsTarget(r);
+      items.forEach(function(it){
+        var r = it.r, linked = !!gsTarget(r);
         var tags = '<span class="gs-tag why">' + esc(GS_WHY[r.match_kind] || 'התאמה') + '</span>';
         if(r.status) tags += '<span class="gs-tag">' + esc(r.status) + '</span>';
         if(!linked) tags += '<span class="gs-tag" title="אין לך הרשאה לפתוח את הכרטיס של הרשומה הזו">אין הרשאה</span>';
-        h += '<button type="button" role="option" class="gs-row' + (linked ? '' : ' nolink') + '" data-i="' + n + '"' +
-             (linked ? ' onclick="GS.pick(' + n + ')"' : ' disabled aria-disabled="true"') + '>' +
+        h += '<button type="button" class="gs-row' + (linked ? '' : ' nolink') + '" data-i="' + it.i + '"' +
+             (linked ? ' onclick="GS.pick(' + it.i + ')"' : ' disabled aria-disabled="true"') + '>' +
              '<b>' + gsMark(r.title, q) + '</b>' +
              (r.subtitle ? '<div class="gs-sub">' + gsMark(r.subtitle, q) + '</div>' : '') +
              '<div class="gs-tags">' + tags + '</div></button>';
@@ -12315,10 +12324,33 @@ boot();
     }
   };
 
+  /* המערכים נטענים פעם אחת בכניסה. רשומה שנוצרה מאז נמצאת בחיפוש (השרת חי)
+     אך אינה במערך, וה-open* היה יוצא בשקט — ומשאיר את CARD_NAV דלוק. אנשי
+     קשר ותשלומים אינם נבדקים כאן: אצלם מערך ריק פירושו חוסר הרשאה. */
+  function gsLoadedArr(t){
+    if(t === 'customer') return typeof CUSTS  !== 'undefined' ? CUSTS  : null;
+    if(t === 'lead')     return typeof LEADS  !== 'undefined' ? LEADS  : null;
+    if(t === 'deal')     return typeof DEALS  !== 'undefined' ? DEALS  : null;
+    if(t === 'order')    return typeof ORDS   !== 'undefined' ? ORDS   : null;
+    if(t === 'call')     return typeof SCALLS !== 'undefined' ? SCALLS : null;
+    if(t === 'meeting')  return typeof MEETS  !== 'undefined' ? MEETS  : null;
+    if(t === 'po')       return typeof PO     !== 'undefined' ? PO     : null;
+    if(t === 'sku')      return typeof SKUS   !== 'undefined' ? SKUS   : null;
+    return null;
+  }
+  function gsLoaded(t, id){
+    var a = gsLoadedArr(t); if(!a || !a.length) return true;
+    var k = (t === 'po') ? 'ordname' : (t === 'sku' ? 'partname' : 'id');
+    for(var i=0;i<a.length;i++){ if(String(a[i][k]) === String(id)) return true; }
+    return false;
+  }
   GS.pick = function(i){
     var r = gsRows[i]; if(!r) return;
     var fn = gsTarget(r);
     if(!fn){ toast('אין לך הרשאה לפתוח את הרשומה הזו'); return; }
+    if(!gsLoaded(r.entity_type, r.entity_id)){
+      toast('הרשומה נוצרה אחרי טעינת המסך — רענן את הדף כדי לפתוח אותה'); return;
+    }
     var b = gsBody(); gsScroll = b ? b.scrollTop : 0;
     window.goCard(fn);     /* דרך מחסנית הכרטיסים — "→ חזרה" יחזיר לחיפוש */
   };

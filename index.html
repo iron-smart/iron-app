@@ -2749,7 +2749,7 @@ function applyDashboard(){
 }
 function renderOps(){
   const el=$('#dash-board-wrap'); if(!el) return;
-  const act=ORDS.filter(o=>!['הושלם','בוטל'].includes(o.order_status));
+  const act=ORDS.filter(o=>!['הושלם','בוטל','לא לטיפול'].includes(o.order_status));
   const today=isoD(new Date());
   const wk=new Date(); wk.setDate(wk.getDate()+7); const weekIso=isoD(wk);
   const tToday=[...act.filter(o=>o.scheduled_date===today),...SCALLS.filter(s=>s.scheduled_date===today&&!['בוטלה'].includes(s.status))];
@@ -2814,9 +2814,9 @@ window.logiScope = v => { LOGI_SCOPE=v; LOGI_SEL.clear(); renderLogi(); };
 window.logiSelClear = () => { LOGI_SEL.clear(); renderLogi(); };
 function renderLogiScope(){
   const box=$('#logi-scope'); if(!box) return;
-  const base = ORDS.filter(o=>!['הושלם','בוטל'].includes(o.order_status));
-  const n = { sched: base.filter(needsSched).length, ship: base.filter(o=>!needsSched(o)).length, all: base.length, done: ORDS.filter(o=>o.order_status==='הושלם').length, every: ORDS.length };
-  box.innerHTML = [['sched','לתיאום'],['ship','משלוחים'],['all','לטיפול'],['done','הושלמו'],['every','הכל']]
+  const base = ORDS.filter(o=>!['הושלם','בוטל','לא לטיפול'].includes(o.order_status));
+  const n = { sched: base.filter(needsSched).length, ship: base.filter(o=>!needsSched(o)).length, all: base.length, pend: ORDS.filter(o=>o.order_status==='לא לטיפול').length, done: ORDS.filter(o=>o.order_status==='הושלם').length, every: ORDS.length };
+  box.innerHTML = [['sched','לתיאום'],['ship','משלוחים'],['all','לטיפול'],['pend','לא לטיפול'],['done','הושלמו'],['every','הכל']]
     .map(([k,l])=>`<button type="button" class="chip ${LOGI_SCOPE===k?'active':''}" onclick="logiScope('${k}')">${l} <b>${n[k]}</b></button>`).join('');
 }
 /* 6.24.6 — סינון בתצוגה הטבלאית: רב-בחירת סטטוסים, סינון קריאות שירות, ושמירת ברירת מחדל */
@@ -2964,12 +2964,14 @@ function logiRenderTable(){
     const q=($('#logiSearchOrders').value||'').trim();
     const stF = LOGI_F.status||[];
     const doneScope = LOGI_SCOPE==='done';
+    const pendScope = LOGI_SCOPE==='pend';
     const everyScope = LOGI_SCOPE==='every';
     let list = ORDS.filter(o=>{
       if(everyScope) return true;
+      if(o.order_status==='לא לטיפול') return pendScope || stF.includes('לא לטיפול');
       if(o.order_status==='הושלם') return doneScope || stF.includes('הושלם');
       if(o.order_status==='בוטל')  return stF.includes('בוטל');
-      return !doneScope;
+      return !doneScope && !pendScope;
     });
     if(q) list = list.filter(o=>[o.customer_name,o.order_number,o.city,o.address,o.team,o.phone]
       .some(v=>String(v||'').includes(q)));
@@ -2977,7 +2979,7 @@ function logiRenderTable(){
     if(LOGI_F.contact) list = list.filter(o=>o.contact_status===LOGI_F.contact);
     if(LOGI_F.team)    list = list.filter(o=> LOGI_F.team==='__none__' ? !o.team : o.team===LOGI_F.team);
     if(LOGI_F.region)  list = list.filter(o=>o.region===LOGI_F.region);
-    if(!doneScope) list = list.filter(scopeOk);
+    if(!doneScope && !pendScope) list = list.filter(scopeOk);
     list = window.ordSortList(list.slice());
     LOGI_SHOWN = list;
     const _ids=new Set(list.map(o=>String(o.id))); [...LOGI_SEL].forEach(id=>{ if(!_ids.has(id)) LOGI_SEL.delete(id); });
@@ -10274,7 +10276,7 @@ function scTable(list){
   </tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('calls',list.length,'קריאות')}`;
 }
 /* קבועי הלוח הישן — כרטיסים מלאים (הערות 21–22) */
-const ORDER_STATUSES = ['הזמנה חדשה','נשלח לייצור','נשלח לצביעה','ממתין לאספקה','תואם','הושלם','בהשהיה','בוטל'];
+const ORDER_STATUSES = ['לא לטיפול','הזמנה חדשה','נשלח לייצור','נשלח לצביעה','ממתין לאספקה','תואם','הושלם','בהשהיה','בוטל'];
 const CONTACT_STATUSES = ['טרם נוצר קשר','נוצר קשר ראשוני לפרוטוקול','פרוטוקול חתום ממתין לתיאום'];
 const CALL_STATUSES = ['חדש','תואם','הושלם'];
 const URGENCIES = ['רגילה','בינונית','משביתה'];
@@ -10288,7 +10290,7 @@ const REGIONS = ['תל אביב והסביבה','מרכז','שרון','שפלה'
 const YESNO = ['כן','לא'];
 const STATUS_PILL = {
   'הזמנה חדשה':'p-blue','נשלח לייצור':'p-violet','נשלח לצביעה':'p-orange','ממתין לאספקה':'p-teal','בהשהיה':'p-yellow',
-  'תואם':'p-green','הושלם':'p-gray','בוטל':'p-red','מבוטלת':'p-red',
+  'תואם':'p-green','הושלם':'p-gray','בוטל':'p-red','מבוטלת':'p-red','לא לטיפול':'p-gray',
   'טרם נוצר קשר':'p-red','נוצר קשר ראשוני לפרוטוקול':'p-yellow','פרוטוקול חתום ממתין לתיאום':'p-blue',
   'חדש':'p-blue','רגילה':'p-gray','בינונית':'p-yellow','משביתה':'p-red',
   'תקלה':'p-red','אחזקה':'p-orange','שירות':'p-blue','אחר':'p-gray','כן':'p-green','לא':'p-red'

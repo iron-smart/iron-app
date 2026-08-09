@@ -12135,7 +12135,10 @@ boot();
     if(t === 'customer') return window.canView('crm.customers') ? function(){ openCust(id); } : null;
     if(t === 'lead')     return window.canView('crm.leads')     ? function(){ openLead(id); } : null;
     if(t === 'deal')     return window.canView('crm.deals')     ? function(){ openDeal(id); } : null;
-    if(t === 'order')    return (window.canView('crm.orders') || window.canView('logi.orders')) ? function(){ openOrd(id); } : null;
+    /* משתמש לוגיסטיקה בלבד מקבל את הכרטיס בהקשר לוגיסטי — בלי מחיר, מייל
+       ומסמכים — במקום להיפתח בהקשר מכירות שאינו שלו. */
+    if(t === 'order')    return window.canView('crm.orders') ? function(){ openOrd(id); }
+                              : (window.canView('logi.orders') ? function(){ openOrd(id, 'logi'); } : null);
     if(t === 'call')     return window.canView('logi.calls')    ? function(){ openScall(id); } : null;
     if(t === 'meeting')  return window.canView('crm.meets')     ? function(){ openMeet(id); } : null;
     if(t === 'po')       return window.canView('inv.po')        ? function(){ gotoTab('po'); setTimeout(function(){ openPo(id); }, 60); } : null;

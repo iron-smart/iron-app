@@ -1244,7 +1244,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.43.0</div>
+      <div class="ver">גרסה 6.44.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1345,7 +1345,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.43.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.44.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5606,7 +5606,7 @@ let DOC_CAT='all';
    בשרת, ב-ord.gen_doc_token, ולעולם אינם מגיעים ל-DOM. */
 const signUrl = t => new URL('sign.html?t='+t, location.href).href;
 const viewUrl = t => new URL('sign.html?view='+t, location.href).href;
-function waLink(phone, text){ let d=digitsOf(phone); if(d.startsWith('0')) d='972'+d.slice(1); return 'https://wa.me/'+d+'?text='+encodeURIComponent(text); }
+function waLink(phone, text){ let d=phoneNorm(phone); if(!d){ d=digitsOf(phone); if(d.startsWith('0')) d='972'+d.slice(1); } return 'https://wa.me/'+d+'?text='+encodeURIComponent(text); }
 window.copyTxt = async t=>{ try{ await navigator.clipboard.writeText(t); alert('הקישור הועתק ✓'); }catch(_e){ prompt('העתקה ידנית:', t); } };
 /* 6.22.0 — ארבע קטגוריות המסמכים. כל קטגוריה נשלטת במפתח הרשאה משלה
    docs.quotes / docs.protocols / docs.reports / docs.media. */
@@ -8940,7 +8940,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'gsearch2-2026-08-09';
+const BUILD_ID = 'gsearch3-2026-08-09';
 
 window.renderPrc = async function(){
   pvInjectCss();
@@ -9950,8 +9950,8 @@ window.openCust = async (id)=>{
       return (open.length?`<h2 class="sec">📦 הזמנות פתוחות (${open.length})</h2>`+open.map(row).join(''):'') +
              (past.length?`<h2 class="sec">🗄️ הזמנות עבר (${past.length})</h2>`+past.map(row).join(''):''); })()}
     ${(()=>{ /* קריאות שירות מקושרות ללקוח (הערת רומן 27/07) */
-      const pid=String(c.priority_id||'').trim(), ph=digitsOf(c.phone);
-      const cs=SCALLS.filter(s=> (pid && String(s.customer_number||'').trim()===pid) || (ph && digitsOf(s.phone)===ph) );
+      const pid=String(c.priority_id||'').trim(), ph=phoneKey(c.phone);
+      const cs=SCALLS.filter(s=> (pid && String(s.customer_number||'').trim()===pid) || (ph && phoneKey(s.phone)===ph) );
       return cs.length?`<h2 class="sec">🛠️ קריאות שירות (${cs.length})</h2>`+cs.slice(0,15).map(s=>`<div class="row" style="cursor:pointer" onclick="goCard(()=>openScall('${s.id}'))"><span class="k">${esc(s.call_number||'')}${s.opened_date?' · '+fmtD(s.opened_date):''}${s.product?' · '+esc(String(s.product).slice(0,26)):''}</span><span class="v"><span class="pill ${scStClass(s.status)}">${esc(s.status||'—')}</span></span></div>`).join(''):''; })()}
     ${(()=>{ const cp=PAYS.filter(p=>p.customer_id===c.id); return cp.length?`<h2 class="sec">💳 תשלומים (${cp.length})</h2>`+cp.slice(0,10).map(p=>`<div class="row"><span class="k">${p.due_date?fmtD(p.due_date):'—'}</span><span class="v">${shekel(p.total_amount)} · ${esc(p.status||'')}</span></div>`).join(''):''; })()}
     ${(()=>{ const cm=MEETS.filter(m=>m.linked_type==='customer'&&m.linked_id===c.id); return cm.length?`<h2 class="sec">📅 פגישות (${cm.length})</h2>`+cm.slice(0,10).map(m=>`<div class="row"><span class="k">${m.meet_date?fmtD(m.meet_date):''}</span><span class="v">${esc(m.subject||'')}</span></div>`).join(''):''; })()}
@@ -10046,12 +10046,40 @@ $('#paySearch').addEventListener('input', renderPays);
 /* ===== הזמנות — מערכת ההזמנות והתיאומים (קריאה בלבד) ===== */
 const ORDERS_URL = 'orders/';
 const digitsOf = s => String(s||'').replace(/\D/g,'');
+/* ===== נרמול טלפון — מראה מדויקת של core.phone_norm שבמסד (6.44.0) =====
+   עד 6.43.0 היו כאן שלושה מנרמלים מתחרים (waLink, phDigits, digitsOf גולמי).
+   מעכשיו יש אחד, והוא מיושר אל פונקציית ה-SQL אחד-לאחד — כולל תווי כיווניות,
+   מספרי שירות 1-700/1-800, ואימות מול תוכנית המספור הישראלית.
+   אין להוסיף כאן וריאציה נוספת; כל שינוי חייב להיעשות בשני הצדדים יחד. */
+const PH_CTRL = /[\u200B-\u200F\u202A-\u202E\u2066-\u2069\u00A0\uFEFF]/g;
+function phoneDigits(s){
+  const d = String(s==null?'':s).replace(PH_CTRL,'').replace(/[^0-9]/g,'');
+  if(d.length < 7) return null;
+  if(/^(.)\1*$/.test(d)) return null;      /* 000-0000000 וכיוצא בו אינם מספר */
+  return d;
+}
+function phoneIlOk(r){ return /^[23489][0-9]{7}$/.test(r) || /^[57][0-9]{8}$/.test(r); }
+function phoneNorm(s){
+  let d = phoneDigits(s); if(!d) return null;
+  if(/^0?(1700|1800|1801|1599)[0-9]+$/.test(d)) return d.replace(/^0/,'');
+  if(d.slice(0,2) === '00'){ d = d.slice(2); if(d.length < 7) return null; }
+  if(d.slice(0,4) === '9720' && (d.length === 12 || d.length === 13)) d = '972' + d.slice(4);
+  if(d.slice(0,3) === '972'){ const r = d.slice(3); return phoneIlOk(r) ? '972'+r : d; }
+  if(d.charAt(0) === '0'){ const r = d.slice(1); return phoneIlOk(r) ? '972'+r : null; }
+  if(phoneIlOk(d)) return '972' + d;
+  return d;
+}
+function phoneTail(s){ const d = phoneDigits(s); return d ? d.slice(-9) : null; }
+/* מפתח להשוואה בין רשומות: הצורה הקנונית, ואם המספר אינו ניתן לנרמול —
+   תשע הספרות האחרונות. כך שני כתיבים של אותו מספר תמיד נפגשים. */
+function phoneKey(s){ return phoneNorm(s) || phoneTail(s); }
+window.phoneNorm = phoneNorm; window.phoneTail = phoneTail; window.phoneKey = phoneKey;
 const ordStClass = s => s==='הושלם' ? 'st-rel' : (['בוטל','מבוטלת'].includes(s) ? 'st-no' : (s==='הזמנה חדשה' ? 'st-new' : 'st-def'));
 const fmtD = d => d ? new Date(d+'T00:00').toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '';
 function custOrders(c){
   if(!c) return [];
-  const pid = String(c.priority_id||'').trim(), ph = digitsOf(c.phone);
-  return ORDS.filter(o => (pid && String(o.customer_number||'').trim()===pid) || (ph && digitsOf(o.phone)===ph));
+  const pid = String(c.priority_id||'').trim(), ph = phoneKey(c.phone);
+  return ORDS.filter(o => (pid && String(o.customer_number||'').trim()===pid) || (ph && phoneKey(o.phone)===ph));
 }
 /* ===== מסנני ההזמנות המלאים — כמו בלוח הישן (איפיון 8א) ===== */
 const OF_EMPTY = { q:'', team:'', region:'', status:'', contact:'', dateFrom:'', dateTo:'', odFrom:'', odTo:'', sort:'', col:'', dir:1 };
@@ -10275,7 +10303,9 @@ const wazeIco = addr => addr ? `<a class="waze-ico" target="_blank" rel="noopene
 /* 6.2.7 — טלפון לחיץ (רומן 30/07/2026): מספר תקין נפתח בחיוג ישיר ובוואטסאפ.
    מספר ישראלי מומר ל-972 עבור wa.me; מספר קצר/פגום לא מקבל כפתורים כלל. */
 const WA_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="#25D366" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z"/><path fill="#fff" d="M8.6 7.2c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.4-.3.3-.9.9-.9 2.1s.9 2.4 1 2.6c.1.2 1.7 2.8 4.3 3.8 2.1.8 2.6.7 3 .6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.2-.2-.5-.3l-1.7-.8c-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1-.2-.1-1-.4-1.9-1.2-.7-.6-1.2-1.4-1.3-1.6-.1-.2 0-.4.1-.5l.4-.5c.1-.2.2-.3.2-.5s0-.3-.1-.4l-.8-1.9z"/></svg>';
-const phDigits = p => { let d=digitsOf(p); if(d.startsWith('00')) d=d.slice(2); return d; };
+/* phDigits נשמר כשם לתאימות אחורה, אבל הוא מחזיר עכשיו את הצורה הקנונית
+   של phoneNorm — כלומר אין יותר שני מסלולי נרמול שיכולים להיפרד. */
+const phDigits = p => phoneNorm(p) || (function(){ let d=digitsOf(p); if(d.startsWith('00')) d=d.slice(2); return d; })();
 const phOk = p => { const d=phDigits(p); return d.length>=9 && d.length<=15; };
 const telUrl = p => 'tel:+' + (phDigits(p).startsWith('972') ? phDigits(p) : '972'+phDigits(p).replace(/^0/,''));
 const waUrl  = p => 'https://wa.me/' + (phDigits(p).startsWith('972') ? phDigits(p) : '972'+phDigits(p).replace(/^0/,''));
@@ -10611,7 +10641,7 @@ window.openOrd = (id, ctx)=>{
   ctx = (ctx==='logi' || ctx==='sales') ? ctx : null;
   const showSales  = ctx !== 'logi';   /* מחיר, אימייל, דו שיח, חשבונית, מסמכים, כרטיס לקוח */
   const showSupply = ctx !== 'sales';  /* אספקה והערות מחסן */
-  const cust = CUSTS.find(c=> (c.priority_id && String(c.priority_id).trim()===String(o.customer_number||'').trim()) || (digitsOf(c.phone) && digitsOf(c.phone)===digitsOf(o.phone)) );
+  const cust = CUSTS.find(c=> (c.priority_id && String(c.priority_id).trim()===String(o.customer_number||'').trim()) || (phoneKey(c.phone) && phoneKey(c.phone)===phoneKey(o.phone)) );
   const others = ORDS.filter(x=>x.id!==o.id && x.customer_name && x.customer_name===o.customer_name && !['הושלם','בוטל','מבוטלת'].includes(x.order_status));
   const teamVals = [...new Set([...OTEAMS.filter(t=>t.active!==false).map(t=>t.name), ...uniqVals(ORDS,'team',o.team)])];
   const norm=a=>String(a||'').trim().replace(/\s+/g,' ').toLowerCase();
@@ -11213,7 +11243,9 @@ window.leadSubUI = ()=>{
 window.openLead = (id)=>{
   const l = LEADS.find(x=>x.id===id); if(!l) return;
   const canConvert = l.status!=='רלוונטי';
-  const editable = ME.role!=='viewer';
+  /* 6.44.0 — עד כאן הבדיקה הייתה על ME.role הישן, ולכן היא לא כיבדה את מפת
+     ההרשאות שכל שאר המערכת עובדת לפיה. */
+  const editable = window.canEdit('crm.leads');
   $('#leadSheet').innerHTML = `
     <h3>${esc(l.full_name)}</h3>
     <div class="row"><span class="k">טלפון</span><span class="v" dir="ltr">${esc(l.phone||'—')}</span></div>
@@ -11488,8 +11520,10 @@ boot();
   var PFN = 'https://hjibpfavkjqocjvffsbq.supabase.co/functions/v1/portal';
   if (typeof window.openOrd !== 'function') { console.warn('paylink: openOrd לא נמצא'); return; }
   var _origOpenOrd = window.openOrd;
-  window.openOrd = function(id){
-    _origOpenOrd(id);
+  /* 6.44.0 — העוטף חייב להעביר הלאה את כל הארגומנטים. עד כאן הוא קיבל (id)
+     בלבד, ולכן הפרמטר ctx של openOrd המקורית נבלע ומעולם לא הגיע ליעד. */
+  window.openOrd = function(id, ctx){
+    _origOpenOrd(id, ctx);
     try { injectPay(id); } catch(e) { console.error('paylink inject', e); }
   };
 
@@ -11753,8 +11787,9 @@ boot();
   'use strict';
   if (typeof window.openOrd !== 'function') { console.warn('yahav: openOrd לא נמצא'); return; }
   var _origOpenOrd = window.openOrd;
-  window.openOrd = function(id){
-    _origOpenOrd(id);
+  /* 6.44.0 — אותו תיקון כמו בעוטף הראשון: ctx עובר הלאה. */
+  window.openOrd = function(id, ctx){
+    _origOpenOrd(id, ctx);
     try { injectYahav(id); } catch(e){ console.error('yahav inject', e); }
   };
 

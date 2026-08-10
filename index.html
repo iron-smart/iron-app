@@ -203,12 +203,11 @@
     #gsModal .sheet{ max-width:100%; height:100dvh; max-height:100dvh; border-radius:0 }
   }
   #gsModal .card-bar{ padding:8px 12px 0 }
-  .gs-head{ padding:2px 14px 11px; border-bottom:1px solid var(--line); position:relative; background:#fff }
+  .gs-head{ padding:11px 14px; border-bottom:1px solid var(--line); position:relative; background:#fff }
   .gs-inwrap{ display:flex; align-items:center; gap:9px; border:1px solid var(--line); border-radius:12px; padding:0 13px; background:#fff; height:54px }
   .gs-inwrap:focus-within{ border-color:#2a78d6; box-shadow:0 0 0 3px rgba(42,120,214,.15) }
   .gs-inwrap svg{ width:19px; height:19px; color:#94a3b8; flex:none }
   .gs-in{ flex:1 1 auto; min-width:0; border:none; outline:none; background:none; font-size:17px; font-family:inherit; color:#0f172a; padding:0 }
-  .gs-hint{ margin-top:7px; font-size:11.5px; color:#94a3b8 }
   .gs-bar{ position:absolute; inset-inline:14px; bottom:0; height:2px; overflow:hidden; border-radius:2px; display:none }
   .gs-head.busy .gs-bar{ display:block; background:#e2e8f0 }
   .gs-bar i{ position:absolute; inset-block:0; width:38%; background:#2a78d6; border-radius:2px; animation:gsslide 1s linear infinite }
@@ -1304,7 +1303,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.46.2</div>
+      <div class="ver">גרסה 6.46.3</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1423,7 +1422,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.46.2</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.46.3</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1594,15 +1593,14 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20.5 20.5l-4-4"/></svg>
         <input class="gs-in" id="gsQ" type="search" autocomplete="off" spellcheck="false"
                placeholder="שם, מספר טלפון או אימייל…" aria-label="חיפוש בכל המערכת"
-               aria-controls="gsBody" aria-describedby="gsHint"
+               aria-controls="gsBody"
                oninput="GS.input()" onkeydown="GS.keys(event)" onsearch="GS.flush()"
                onpaste="GS.paste()" oncut="GS.paste()" ondrop="GS.paste()">
       </div>
-      <div class="gs-hint" id="gsHint">מספר טלפון נמצא בכל כתיב — עם קידומת, בלי, עם מקפים או רק הספרות האחרונות.</div>
       <div class="gs-bar"><i></i></div>
     </div>
     <div class="gs-body" id="gsBody" role="region" aria-label="תוצאות החיפוש"></div>
-    <div class="gs-foot"><span>↑↓ לניווט · Enter לפתיחה · Ctrl/⌘ S לפתיחת החיפוש</span><span id="gsCount"></span></div>
+    <div class="gs-foot hidden" id="gsFoot"><span id="gsCount"></span></div>
   </div>
 </div>
 <div class="modal hidden" id="taskModal">
@@ -9029,7 +9027,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'verwatch3-2026-08-10';
+const BUILD_ID = 'gsclean-2026-08-11';
 
 window.renderPrc = async function(){
   pvInjectCss();
@@ -12546,13 +12544,19 @@ boot();
     return o;
   }
 
+  /* מונה התוצאות הוא כל מה שנשאר בפס התחתון, ולכן הפס עצמו מוסתר כשאין מה
+     למנות — אחרת נשארת רצועה ריקה עם קו הפרדה. */
+  function gsCnt(t){
+    var c = document.getElementById('gsCount'), f = document.getElementById('gsFoot');
+    if(c) c.textContent = t || '';
+    if(f) f.classList.toggle('hidden', !t);
+  }
   function gsRender(state, q, keepIdx){
     var b = gsBody(); if(!b) return;
-    var cnt = document.getElementById('gsCount');
-    if(state === 'short'){ if(cnt) cnt.textContent=''; b.innerHTML = '<div class="gs-msg">הקלד לפחות שני תווים, או שש ספרות לחיפוש טלפון.</div>'; return; }
+    if(state === 'short'){ gsCnt(''); b.innerHTML = '<div class="gs-msg">הקלד לפחות שני תווים, או שש ספרות לחיפוש טלפון.</div>'; return; }
     if(state === 'load'){ if(!gsRows.length) b.innerHTML = '<div class="gs-msg">מחפש…</div>'; return; }
-    if(state === 'err'){ if(cnt) cnt.textContent=''; b.innerHTML = '<div class="gs-msg">החיפוש נכשל. נסה שוב בעוד רגע.</div>'; return; }
-    if(!gsRows.length){ if(cnt) cnt.textContent=''; b.innerHTML = '<div class="gs-msg">לא נמצאו תוצאות ל־"' + esc(q) + '".</div>'; return; }
+    if(state === 'err'){ gsCnt(''); b.innerHTML = '<div class="gs-msg">החיפוש נכשל. נסה שוב בעוד רגע.</div>'; return; }
+    if(!gsRows.length){ gsCnt(''); b.innerHTML = '<div class="gs-msg">לא נמצאו תוצאות ל־"' + esc(q) + '".</div>'; return; }
 
     var gr = gsGroup(gsRows), g = gr.g, order = gr.order;
     var h = '', n = 0;
@@ -12585,7 +12589,7 @@ boot();
     });
     b.innerHTML = h;
     if(!keepIdx) gsIdx = -1;
-    if(cnt) cnt.textContent = gsRows.length + ' תוצאות';
+    gsCnt(gsRows.length + ' תוצאות');
   }
 
   /* ניווט המקלדת עובר גם על הכותרות — אחרת קבוצה סגורה אינה נגישה בלי עכבר. */
@@ -12706,7 +12710,12 @@ boot();
     if(!window.PERM || !window.PERM.__loaded){ toast('ההרשאות עדיין נטענות'); return; }
     mountCard('gsModal', function(){ GS.open(gsLast, true); });
     var e = document.getElementById('gsQ');
-    if(e && pre != null) e.value = pre;
+    /* פתיחה חדשה של החיפוש מתחילה מדף ריק. רק חזרה מכרטיס (keep) או ערך
+       שהועבר במפורש שומרים על הטקסט הקודם — הכרעת רומן 11/08/2026. */
+    if(e){
+      if(pre != null) e.value = pre;
+      else if(!keep) e.value = '';
+    }
     var v = gsVal().trim(), ent = v.length >= 2 ? gsCacheGet(v) : null;
     if(keep && ent){
       gsRows = ent.rows; gsOpen = ent.open; gsBusy(false); gsRender('ok', v);

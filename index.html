@@ -949,7 +949,7 @@
 
   /* ===== הגדרות בתתי-קטגוריות (הערה 10) ===== */
   .set-layout{ display:flex; gap:16px; align-items:flex-start; }
-  .set-nav{ flex:none; width:210px; background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; position:sticky; top:70px; }
+  .set-nav{ flex:none; width:210px; background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; position:sticky; top:calc(70px + var(--verbar-h,0px)); }
   .set-nav button{ display:flex; justify-content:space-between; align-items:center; width:100%; text-align:start; background:none; border:none; border-bottom:1px solid #eef1f4; padding:12px 14px; font-size:14px; color:#475569; }
   .set-nav button:last-child{ border-bottom:none; }
   .set-nav button.active{ background:#f2f8f5; color:var(--navy); font-weight:800; border-inline-start:4px solid var(--green); }
@@ -1304,7 +1304,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.46.1</div>
+      <div class="ver">גרסה 6.46.2</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1423,7 +1423,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.46.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.46.2</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9029,7 +9029,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'verwatch2-2026-08-10';
+const BUILD_ID = 'verwatch3-2026-08-10';
 
 window.renderPrc = async function(){
   pvInjectCss();
@@ -12171,6 +12171,8 @@ boot();
   /* הרשומה רלוונטית רק למי שאינו מריץ את הבנייה שבתוכה */
   function verStale(){ var r = verState(); return (r && String(r.b) !== String(BUILD_ID)) ? r : null; }
   function verDeadline(){ var r = verStale(); return r ? +r.t : 0; }
+  /* מפתחות 6.46.0 שהוחלפו ברשומה אחת — ניקוי חד-פעמי כדי שלא יישארו זבל */
+  try{ ['iron_ver_deadline','iron_ver_build','iron_ver_label'].forEach(vDel); }catch(_e){}
   function verAuto(){ try{ return sessionStorage.getItem(VK_AUTO); }catch(_e){ return null; } }
   function verAutoSet(v){ try{ sessionStorage.setItem(VK_AUTO, v); }catch(_e){} }
   function verBar(){ return document.getElementById('verBar'); }
@@ -12351,8 +12353,9 @@ boot();
           verAutoSet(sid); verGo(sid); return;
         }
         /* כבר ניסינו רענון אחד והבנייה עדיין ישנה (מטמון קצה, למשל) — פותחים
-           חסד חדש במקום להישאר עם פס בלי אכיפה. */
-        vDel(VK_KICKED);
+           חסד חדש במקום להישאר עם פס בלי אכיפה, ומשחררים את מנעול הרענון
+           האוטומטי כדי שבסבב הבא יינתן לו עוד ניסיון אחרי שהמטמון יפוג. */
+        vDel(VK_KICKED); try{ sessionStorage.removeItem(VK_AUTO); }catch(_e){}
         r = { b: sid, v: lbl, t: Date.now() + VER_GRACE_MS };
         verSave(r);
         verAudit('זוהתה גרסה חדשה', lbl || sid);

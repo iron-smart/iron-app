@@ -153,6 +153,9 @@
   .fin-flag.red{ background:#fef2f2; color:#b91c1c; border-color:#fecaca }
   .fin-flag.blue{ background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe }
   .fin-muted{ color:#94a3b8 }
+  .fin-sched{ white-space:nowrap }
+  .fin-sched b{ font-weight:800 }
+  .fin-sched small{ display:block; font-size:10.5px; color:#94a3b8; margin-top:1px }
   /* ===== נותר לספק (6.48.0) =====
      הצבע כאן מסמן עבודה שנותרה, לא סטטוס. המקור הוא TBALANCE של פריוריטי,
      שנסגר מעצמו כשהשורה מסופקת בפועל — ולכן אין כאן שום סימון ידני. */
@@ -1336,7 +1339,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.49.1</div>
+      <div class="ver">גרסה 6.50.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1455,7 +1458,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.49.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.50.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9082,7 +9085,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'contactperm-2026-08-11i';
+const BUILD_ID = 'paysched-2026-08-11j';
 
 window.renderPrc = async function(){
   pvInjectCss();
@@ -10213,7 +10216,19 @@ const remaining = p => Math.max(0, Number(p.total_amount||0) - Number(p.paid_amo
    ₪1.14M חוב פנטום. כל היתר נחשב חוב חי, ובכוונה: הזמנה בסטטוס "הושלם"
    או "שולמה" עדיין יכולה להיות לא-גבויה, וזה בדיוק מה שהמסך אמור לתפוס.
    עד 6.47.0 היתה כאן רשימת-היתר צרה שהסתירה ₪256K חוב אמיתי. */
-const FIN_DEAD_ST = ['מבוטלת','נסגר-מ.קודמת'];
+/* ההחרגות עברו לשרת (ord.settings.finance_exclude_statuses ו-
+   finance_exclude_doers), כדי שאפשר יהיה לשנותן בלי פריסה: סטטוסים שאינם חוב
+   חי, והזמנות מהאתר (doer=ironfitness) ששולמו באשראי בעת ההזמנה ואין בהן
+   מעקב תשלום. הרשימה כאן נשארת כרשת ביטחון בלבד ואינה המקור. */
+const FIN_DEAD_ST = ['מבוטלת','נסגר-מ.קודמת','טיוטא','מיקור חוץ','מיקור הושלם'];
+/* תיאום האספקה מלוח ההזמנות. שני התאריכים בשורה אחת חוסכים לגובה לקפוץ
+   בין מסך התשלומים למסך ההזמנות רק כדי לדעת מתי הסחורה יוצאת. */
+function finSchedCell(f){
+  if(!f.scheduled_date) return '<span class="fin-muted">—</span>';
+  const d = Number(f.days_count)||1;
+  return '<div class="fin-sched"><b>' + fmtD(f.scheduled_date) + '</b>' +
+         (d > 1 ? '<small>' + d + ' ימים</small>' : (f.team ? '<small>' + esc(f.team) + '</small>' : '')) + '</div>';
+}
 const finNum = v => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
 /* הזמנה בלי מחיר בפריוריטי — "נותר" אינו ידוע, ולכן מוצג "—" ולא 0, אחרת
    ההזמנה נראית סגורה וכל קבלה נראית חריגה. שים לב: ord.order_finance_v אינו
@@ -10401,6 +10416,7 @@ function payTable(list){
       '<td dir="ltr" style="white-space:nowrap"><b><a href="#" onclick="event.preventDefault();finOpen(\'' + jsq(f.order_number) + '\')">' + esc(f.order_number) + '</a></b></td>' +
       '<td><b>' + esc(f.customer_name||'—') + '</b>' + c.flags + '</td>' +
       '<td>' + (f.order_date?fmtD(f.order_date):'—') + '</td>' +
+      '<td>' + finSchedCell(f) + '</td>' +
       '<td><span class="pill ' + ordStClass(f.erp_status) + '">' + esc(f.erp_status||'—') + '</span></td>' +
       '<td>' + (c.masked ? '<span class="fin-muted">—</span>' : shekel(c.ordered)) + '<div class="fin-sub">חויב ' + shekel(c.inv) + '</div></td>' +
       '<td>' + (c.rec ? '<span class="fin-ok">' + shekel(c.rec) + '</span>' : '—') + '</td>' +
@@ -10409,7 +10425,7 @@ function payTable(list){
       '<td>' + note + '</td>' +
     '</tr>'; }).join('');
   return '<div class="tbl-wrap"><table class="tbl"><thead><tr>' +
-    '<th class="rownum">#</th><th>מס\' הזמנה</th><th>שם לקוח</th><th>ת. הזמנה</th><th>סטטוס</th>' +
+    '<th class="rownum">#</th><th>מס\' הזמנה</th><th>שם לקוח</th><th>ת. הזמנה</th><th title="תאריך ההתקנה או המשלוח מלוח התיאום">אספקה מתואמת</th><th title="הסטטוס בפריוריטי — מתעדכן בסנכרון ואינו נערך אצלנו">סטטוס פריוריטי</th>' +
     '<th>סה"כ</th><th>שולם</th><th>נותר לתשלום</th><th>תנאי תשלום</th><th>הערות</th>' +
     '</tr></thead><tbody>' + rows + '</tbody></table></div>' + pgFoot('pays', list.length, 'הזמנות');
 }
@@ -10417,7 +10433,8 @@ function payRow(f){
   const c = finCell(f);
   return '<div class="lead" onclick="finOpen(\'' + jsq(f.order_number) + '\')">' +
     '<div><div class="nm" dir="ltr" style="text-align:start">' + esc(f.order_number) + ' · ' + esc(f.customer_name||'') + '</div>' +
-    '<div class="meta">' + (f.order_date?fmtD(f.order_date):'—') + ' · סה"כ ' + (c.masked ? '—' : shekel(c.ordered)) +
+    '<div class="meta">' + (f.order_date?fmtD(f.order_date):'—') +
+      (f.scheduled_date ? ' · אספקה ' + fmtD(f.scheduled_date) : '') + ' · סה"כ ' + (c.masked ? '—' : shekel(c.ordered)) +
       (c.rec ? ' · שולם ' + shekel(c.rec) : '') +
       (!c.masked && c.bal > 1 ? ' · <b style="color:#c0392b">נותר ' + shekel(c.bal) + '</b>' : '') +
       (!c.masked && c.bal < -1 ? ' · <b style="color:#b45309">' + (c.credit ? 'זיכוי ' + shekel(-c.bal) + ' להשבה' : 'עודף ' + shekel(-c.bal)) + '</b>' : '') +

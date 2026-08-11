@@ -1336,7 +1336,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.49.0</div>
+      <div class="ver">גרסה 6.49.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1455,7 +1455,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.49.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.49.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2822,7 +2822,13 @@ const ORD_FIELD_PERM = {
   deadline:'logi.orders.supply', delivery_method:'logi.orders.supply',
   delivery_note:'crm.orders.invoice', invoice:'crm.orders.invoice',
   internal_dialog:'crm.orders.dialog',
-  contact_status:'crm.orders', order_notes:'crm.orders'
+  /* "יצרנו קשר?" הוא שדה תיאום ולא שדה מכירות: הוא מתאר אם יצרנו קשר עם
+     הלקוח לקראת ההתקנה, וכל ערכיו על הפרוטוקול והתיאום. עד 11/08/2026 הוא
+     היה ממופה ל-crm.orders, ולכן מנהל הלוגיסטיקה — האדם היחיד שבפועל מבצע
+     את הפעולה — לא יכול היה לערוך אותו: התא הוצג כתווית קפואה במקום כרשימה
+     נפתחת, גם בטבלה וגם בכרטיס. בפועל אף משתמש לא-אדמין לא החזיק crm.orders
+     לעריכה, כך שהשדה היה נעול לכולם. שונה גם ב-ord.order_patch שבמסד. */
+  contact_status:'logi.orders', order_notes:'crm.orders'
 };
 window.ordFieldPerm = (kind, field)=> kind==='scall' ? 'logi.calls' : (ORD_FIELD_PERM[field] || null);
 /* 6.21.0 — מזהה האלמנט בכרטיס ההזמנה מול העמודה במסד. משמש גם לנעילה לפי שדה
@@ -2846,11 +2852,11 @@ function ieSel(kind,id,field,options,val,opts){
   let cls='inline-edit', style='';
   if(opts.mdColors){ cls+=' mdc'; const _bg=opts.mdColors[val]||'#94a3b8'; style=`background:${tint(_bg,.85)};color:${onWhite(_bg)};border:1px solid ${tint(_bg,.68)}`; } /* 6.24.4 — שבב פסטל אחיד */
   else if(STATUS_PILL[val]) cls+=` pilled ${STATUS_PILL[val]}`;
-  return `<select class="${cls}" style="${style}" data-ie="${kind}|${id}|${field}" onclick="event.stopPropagation()" onchange="ieSave(this)">${list.map(([v,l])=>`<option value="${esc(v)}" ${String(val||'')===v?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
+  return `<select class="${cls}" style="${style}" data-ie="${esc(kind+'|'+id+'|'+field)}" onclick="event.stopPropagation()" onchange="ieSave(this)">${list.map(([v,l])=>`<option value="${esc(v)}" ${String(val||'')===v?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
 }
 function ieDate(kind,id,field,val){
   if(!canIE(kind,field)) return val?`<b>${fmtD(val)}</b>`:'<span class="note-preview">—</span>';
-  return `<input type="date" class="inline-edit ie-date" data-ie="${kind}|${id}|${field}" value="${esc(val||'')}" onclick="event.stopPropagation()" onchange="ieSave(this)">`;
+  return `<input type="date" class="inline-edit ie-date" data-ie="${esc(kind+'|'+id+'|'+field)}" value="${esc(val||'')}" onclick="event.stopPropagation()" onchange="ieSave(this)">`;
 }
 window.gotoPays = f=>{ PAY_FILTER=f||'open'; gotoTab('pays'); renderPays(); navMark(); };
 window.gotoDocs = f=>{ DOC_FILTER=f||'sent'; gotoTab('docs'); renderDocs(); navMark(); };
@@ -9076,7 +9082,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'returns-2026-08-11h';
+const BUILD_ID = 'contactperm-2026-08-11i';
 
 window.renderPrc = async function(){
   pvInjectCss();

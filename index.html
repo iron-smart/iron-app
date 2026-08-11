@@ -151,6 +151,8 @@
   .fin-flag{ display:inline-block; font-size:10.5px; border-radius:999px; padding:1px 7px;
              background:#fff7ed; color:#b45309; border:1px solid #fed7aa; margin-inline-start:5px; white-space:nowrap }
   .fin-flag.red{ background:#fef2f2; color:#b91c1c; border-color:#fecaca }
+  .fin-flag.blue{ background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe }
+  .fin-muted{ color:#94a3b8 }
   #tab-pays .tbl td{ vertical-align:top }
   #tab-pays .fin-note{ width:100%; border:1px solid transparent; background:transparent; border-radius:7px;
                        padding:3px 6px; font-family:inherit; font-size:12.5px; color:#0f172a }
@@ -1320,7 +1322,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.47.0</div>
+      <div class="ver">גרסה 6.47.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1439,7 +1441,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.47.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.47.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9049,7 +9051,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'finpay-2026-08-11';
+const BUILD_ID = 'finpay-2026-08-11b';
 
 window.renderPrc = async function(){
   pvInjectCss();
@@ -9885,7 +9887,9 @@ function loadErrBanner(names){
   b.innerHTML='⚠️ חלק מהנתונים לא נטענו ('+esc(names.join(', '))+'). ייתכן שהמוצג חלקי — '
     +'<button onclick="location.reload()" style="background:rgba(255,255,255,.22);color:#fff;border:0;border-radius:6px;padding:3px 10px;margin-inline-start:8px;cursor:pointer;font-family:inherit">רענון</button>';
 }
-const LOAD_NAMES = ['לידים','לקוחות','משימות','עסקאות','פגישות','אנשי קשר','תשלומים','הזמנות','קריאות שירות','צוותים','מק"טים','מסמכים','הגדרות','מצב סנכרון'];
+/* חייב להיות באותו אורך ובאותו סדר כמו מערך השאילתות ב-loadLeads —
+   אחרת פס השגיאה מציג "undefined" במקום שם השאילתה שנכשלה. */
+const LOAD_NAMES = ['לידים','לקוחות','משימות','עסקאות','פגישות','אנשי קשר','תשלומים','הזמנות','קריאות שירות','צוותים','מק"טים','מסמכים','הגדרות','מצב סנכרון','מעקב תשלומים','תנאי תשלום'];
 async function loadLeads(){
   let _q;
   try{ if(!$('#lastSync').textContent) $('#lastSync').textContent = 'טוען נתונים…'; }catch(_){}
@@ -10111,37 +10115,54 @@ $('#contSearch').addEventListener('input', renderConts);
 let PAY_FILTER = 'open';
 const payStClass = s => s==='שולמה' ? 'st-rel' : (s==='שולמה חלקית' ? 'st-def' : 'st-no');
 const remaining = p => Math.max(0, Number(p.total_amount||0) - Number(p.paid_amount||0));
-/* ===== מסך התשלומים (6.47.0) — סביב ההזמנה ולא סביב רשומת תשלום =====
-   כל המספרים כאן מגיעים מפריוריטי דרך ord.order_finance_v ואינם מוקלדים
-   אצלנו: הוזמן מההזמנה, חויב ונגבה מהחשבוניות והקבלות, וכן הלאה. מה שכן
-   שלנו הוא תנאי התשלום וההערה, והם נשמרים ב-ord.order_finance_meta.
-   שים לב: "נותר" נגזר מ-הוזמן פחות נגבה, ולכן הוא החוב האמיתי של הלקוח
-   ולא יתרת החשבוניות — זו בדיוק הנקודה שדוח הגיול של פריוריטי מפספס. */
-const FIN_OPEN_ST = ['מאושרת לקוח','ממתין לתשלום','שולמה חלקית','טיוטא','פתיחה חוזרת','מיקור חוץ'];
+/* ===== מסך התשלומים (6.47.1) — סביב ההזמנה ולא סביב רשומת תשלום =====
+   סטטוסים שאינם חוב חי הם רק שניים: "מבוטלת", ו"נסגר-מ.קודמת" — 456 הזמנות
+   שיובאו מהשנה הקודמת, שאין להן קבלות בפריוריטי בכלל, ולכן היו מציגות
+   ₪1.14M חוב פנטום. כל היתר נחשב חוב חי, ובכוונה: הזמנה בסטטוס "הושלם"
+   או "שולמה" עדיין יכולה להיות לא-גבויה, וזה בדיוק מה שהמסך אמור לתפוס.
+   עד 6.47.0 היתה כאן רשימת-היתר צרה שהסתירה ₪256K חוב אמיתי. */
+const FIN_DEAD_ST = ['מבוטלת','נסגר-מ.קודמת'];
 const finNum = v => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
+/* מחיר ההזמנה ממוסך למי שאין לו crm.orders.price. במצב כזה "נותר" אינו ידוע,
+   ולכן מוצג "—" ולא 0 — אחרת כל הזמנה נראית סגורה וכל קבלה נראית חריגה. */
+const finMasked = f => (f.ordered === null || f.ordered === undefined);
+const finLive   = f => !FIN_DEAD_ST.includes(String(f.erp_status||''));
+const finIsOpen = f => finLive(f) && !finMasked(f) && finNum(f.balance) > 1;
 function finTermName(code){ const t = PTERMS.find(x=>x.code===code); return t ? t.name : ''; }
+/* סכום הקבלות שאינן משויכות להזמנה — נמדד לפי לקוח ולא לפי הזמנה, ולכן
+   נספר פעם אחת לכל לקוח ולא פעם לכל שורה שלו. */
+function finUnlinked(list){
+  const byCust = {};
+  list.forEach(f => { if(finNum(f.cust_unlinked_cnt) > 0 && f.customer_number) byCust[f.customer_number] = finNum(f.cust_unlinked_amt); });
+  const keys = Object.keys(byCust);
+  return { custs: keys.length, sum: keys.reduce((a,k)=>a+byCust[k], 0) };
+}
 function finRows(){
-  let list = FIN.filter(f => String(f.erp_status||'') !== 'מבוטלת');
-  if(PAY_FILTER === 'open')   list = list.filter(f => finNum(f.balance) > 1 && FIN_OPEN_ST.includes(String(f.erp_status||'')));
+  let list = FIN.filter(finLive);
+  if(PAY_FILTER === 'open')   list = list.filter(finIsOpen);
   if(PAY_FILTER === 'uninv')  list = list.filter(f => finNum(f.delivered_uninvoiced) > 0);
-  if(PAY_FILTER === 'noterm') list = list.filter(f => !f.pay_code && finNum(f.balance) > 1 && FIN_OPEN_ST.includes(String(f.erp_status||'')));
-  if(PAY_FILTER === 'paid')   list = list.filter(f => finNum(f.balance) <= 1);
+  if(PAY_FILTER === 'noterm') list = list.filter(f => !f.pay_code && finIsOpen(f));
+  if(PAY_FILTER === 'unlink') list = list.filter(f => finNum(f.cust_unlinked_cnt) > 0);
+  if(PAY_FILTER === 'paid')   list = list.filter(f => !finMasked(f) && finNum(f.balance) <= 1);
   if(PAY_TERM_F) list = list.filter(f => String(f.pay_code||'') === PAY_TERM_F);
   return list;
 }
 function payChips(){
-  const live = FIN.filter(f => String(f.erp_status||'') !== 'מבוטלת');
-  const open = live.filter(f => finNum(f.balance) > 1 && FIN_OPEN_ST.includes(String(f.erp_status||'')));
+  const live = FIN.filter(finLive);
+  const open = live.filter(finIsOpen);
   const sumRem = open.reduce((a,f)=>a+finNum(f.balance), 0);
   const uninv  = live.filter(f => finNum(f.delivered_uninvoiced) > 0);
   const sumUninv = uninv.reduce((a,f)=>a+finNum(f.delivered_uninvoiced_sum), 0);
   const noterm = open.filter(f => !f.pay_code);
+  const unlink = live.filter(f => finNum(f.cust_unlinked_cnt) > 0);
+  const unl = finUnlinked(live);
   const el = $('#pay-chips'); if(!el) return;
   el.innerHTML =
     '<button class="chip ' + (PAY_FILTER==='open'?'active':'') + '" onclick="setPayFilter(\'open\')">יתרה פתוחה ' + open.length + ' <small>· ' + shekel(sumRem) + '</small></button>' +
     '<button class="chip ' + (PAY_FILTER==='uninv'?'active':'') + '" onclick="setPayFilter(\'uninv\')" title="תעודות משלוח סופיות שלא יצאה כנגדן חשבונית — נספרות מ-27/07/2026">סופק ולא חויב ' + uninv.length + ' <small>· ' + shekel(sumUninv) + '</small></button>' +
+    (unl.custs ? '<button class="chip ' + (PAY_FILTER==='unlink'?'active':'') + '" onclick="setPayFilter(\'unlink\')" title="קבלות שנקלטו מפריוריטי בלי מספר הזמנה — הכסף התקבל אך אינו יורד מאף הזמנה">קבלות ללא שיוך ' + unl.custs + ' <small>· ' + shekel(unl.sum) + '</small></button>' : '') +
     '<button class="chip ' + (PAY_FILTER==='noterm'?'active':'') + '" onclick="setPayFilter(\'noterm\')">בלי תנאי תשלום ' + noterm.length + '</button>' +
-    '<button class="chip ' + (PAY_FILTER==='paid'?'active':'') + '" onclick="setPayFilter(\'paid\')">נסגר ' + live.filter(f=>finNum(f.balance)<=1).length + '</button>' +
+    '<button class="chip ' + (PAY_FILTER==='paid'?'active':'') + '" onclick="setPayFilter(\'paid\')">נסגר ' + live.filter(f=>!finMasked(f) && finNum(f.balance)<=1).length + '</button>' +
     '<button class="chip ' + (PAY_FILTER==='all'?'active':'') + '" onclick="setPayFilter(\'all\')">הכל ' + live.length + '</button>';
   const sy = $('#paySync');
   if(sy){
@@ -10155,13 +10176,32 @@ function payChips(){
 }
 window.setPayFilter = f => { PAY_FILTER = f; renderPays(); navMark(); };
 window.setPayTerm  = v => { PAY_TERM_F = v || ''; renderPays(); };
+/* שכבת הכתיבה של המסך הזה. dbw הכללי שייך למודול התמחור ובכישלון הוא טוען
+   מחדש את המחירון — כאן זה לא רלוונטי, ומשאיר את התצוגה האופטימית שקרית.
+   לכן: החזרת הערך הקודם ואז ציור מחדש של מסך התשלומים בלבד. */
+async function finDbw(fn, okMsg, undo){
+  try{
+    const r = await fn();
+    if(r && r.error) throw r.error;
+    if(okMsg) toast(okMsg);
+    return true;
+  }catch(e){
+    toast('שגיאה בשמירה: ' + (e && e.message ? e.message : e));
+    if(typeof undo === 'function'){ try{ undo(); }catch(_e){} }
+    try{ renderPays(); }catch(_e){}
+    return false;
+  }
+}
 /* שמירת תנאי תשלום והערה — שתי העמודות היחידות במסך שהן שלנו */
 window.finSetTerm = async (ord, code) => {
   if(!canEdit('acc.pays')) return noEdit();
-  const row = FIN.find(f=>f.order_number===ord); if(row) row.pay_code = code || null;
-  const ok = await dbw(()=>sb.schema('ord').from('order_finance_meta')
+  const row = FIN.find(f=>f.order_number===ord);
+  const was = row ? row.pay_code : null;
+  if(row) row.pay_code = code || null;
+  const ok = await finDbw(()=>sb.schema('ord').from('order_finance_meta')
       .upsert({ order_number:ord, pay_code:code||null, updated_by:meNow(), updated_at:nowIso() }, { onConflict:'order_number' }),
-    code ? ('תנאי התשלום עודכן ל' + finTermName(code)) : 'תנאי התשלום נוקה');
+    code ? ('תנאי התשלום עודכן ל' + finTermName(code)) : 'תנאי התשלום נוקה',
+    ()=>{ if(row) row.pay_code = was; });
   if(ok) renderPays();
 };
 window.finSetNote = async (ord, txt) => {
@@ -10169,21 +10209,40 @@ window.finSetNote = async (ord, txt) => {
   const row = FIN.find(f=>f.order_number===ord);
   const val = String(txt||'').trim() || null;
   if(row && String(row.notes||'') === String(val||'')) return;
+  const was = row ? row.notes : null;
   if(row) row.notes = val;
-  await dbw(()=>sb.schema('ord').from('order_finance_meta')
+  await finDbw(()=>sb.schema('ord').from('order_finance_meta')
       .upsert({ order_number:ord, notes:val, updated_by:meNow(), updated_at:nowIso() }, { onConflict:'order_number' }),
-    'ההערה נשמרה');
+    'ההערה נשמרה',
+    ()=>{ if(row) row.notes = was; });
 };
 function finCell(f){
-  const ordered = finNum(f.ordered), rec = finNum(f.received), bal = finNum(f.balance);
-  const inv = finNum(f.invoiced) + finNum(f.credited);
+  const masked  = finMasked(f);
+  const ordered = masked ? null : finNum(f.ordered);
+  const rec     = finNum(f.received);
+  const bal     = masked ? null : finNum(f.balance);
+  const inv     = (f.billed === null || f.billed === undefined)
+                    ? (finNum(f.invoiced) + finNum(f.credited)) : finNum(f.billed);
   let flags = '';
   if(finNum(f.delivered_uninvoiced) > 0)
     flags += '<span class="fin-flag" title="' + esc(shekel(finNum(f.delivered_uninvoiced_sum))) + ' סופקו בלי חשבונית">סופק ולא חויב</span>';
   if(finNum(f.returned_uncredited) > 0)
     flags += '<span class="fin-flag red">הוחזר ולא זוכה</span>';
-  if(rec > ordered + 1) flags += '<span class="fin-flag red">נגבה מעל ההזמנה</span>';
-  return { ordered, rec, bal, inv, flags };
+  if(!masked && rec > ordered + 1)
+    flags += '<span class="fin-flag red">נגבה מעל ההזמנה</span>';
+  if(finNum(f.cust_unlinked_cnt) > 0)
+    flags += '<span class="fin-flag blue" title="' + esc(shekel(finNum(f.cust_unlinked_amt))) + ' בקבלות של הלקוח נקלטו בלי מספר הזמנה, ולכן אינם יורדים מאף הזמנה">קבלות ללא שיוך</span>';
+  if(finNum(f.dup_rows) > 1)
+    flags += '<span class="fin-flag red" title="מספר ההזמנה מופיע יותר מפעם אחת בטבלת ההזמנות">הזמנה כפולה</span>';
+  return { masked, ordered, rec, bal, inv, flags };
+}
+/* תא "נותר לתשלום" — שלושה מצבים שאסור לבלבל ביניהם: לא ידוע (מחיר ממוסך),
+   חוב, ועודף גבייה. עד 6.47.0 כל השלושה הוצגו כ-0 ירוק. */
+function finBalCell(c){
+  if(c.masked) return '<span class="fin-muted">—</span>';
+  if(c.bal > 1)  return '<span class="fin-bad">' + shekel(c.bal) + '</span>';
+  if(c.bal < -1) return '<span class="fin-warn" title="נגבה יותר מסכום ההזמנה">עודף ' + shekel(-c.bal) + '</span>';
+  return '<span class="fin-ok">0</span>';
 }
 function payTable(list){
   if(!list.length) return '<div class="empty">אין הזמנות בסינון הזה</div>';
@@ -10203,9 +10262,9 @@ function payTable(list){
       '<td><b>' + esc(f.customer_name||'—') + '</b>' + c.flags + '</td>' +
       '<td>' + (f.order_date?fmtD(f.order_date):'—') + '</td>' +
       '<td><span class="pill ' + ordStClass(f.erp_status) + '">' + esc(f.erp_status||'—') + '</span></td>' +
-      '<td>' + shekel(c.ordered) + '<div class="fin-sub">חויב ' + shekel(c.inv) + '</div></td>' +
+      '<td>' + (c.masked ? '<span class="fin-muted">—</span>' : shekel(c.ordered)) + '<div class="fin-sub">חויב ' + shekel(c.inv) + '</div></td>' +
       '<td>' + (c.rec ? '<span class="fin-ok">' + shekel(c.rec) + '</span>' : '—') + '</td>' +
-      '<td>' + (c.bal > 1 ? '<span class="fin-bad">' + shekel(c.bal) + '</span>' : '<span class="fin-ok">0</span>') + '</td>' +
+      '<td>' + finBalCell(c) + '</td>' +
       '<td>' + termSel + '</td>' +
       '<td>' + note + '</td>' +
     '</tr>'; }).join('');
@@ -10218,9 +10277,10 @@ function payRow(f){
   const c = finCell(f);
   return '<div class="lead" onclick="finOpen(\'' + jsq(f.order_number) + '\')">' +
     '<div><div class="nm" dir="ltr" style="text-align:start">' + esc(f.order_number) + ' · ' + esc(f.customer_name||'') + '</div>' +
-    '<div class="meta">' + (f.order_date?fmtD(f.order_date):'—') + ' · סה"כ ' + shekel(c.ordered) +
+    '<div class="meta">' + (f.order_date?fmtD(f.order_date):'—') + ' · סה"כ ' + (c.masked ? '—' : shekel(c.ordered)) +
       (c.rec ? ' · שולם ' + shekel(c.rec) : '') +
-      (c.bal > 1 ? ' · <b style="color:#c0392b">נותר ' + shekel(c.bal) + '</b>' : '') +
+      (!c.masked && c.bal > 1 ? ' · <b style="color:#c0392b">נותר ' + shekel(c.bal) + '</b>' : '') +
+      (!c.masked && c.bal < -1 ? ' · <b style="color:#b45309">עודף ' + shekel(-c.bal) + '</b>' : '') +
       (f.pay_code ? ' · ' + esc(finTermName(f.pay_code)) : '') + '</div>' + c.flags + '</div>' +
     '<span class="pill ' + ordStClass(f.erp_status) + '">' + esc(f.erp_status||'—') + '</span></div>';
 }
@@ -10230,7 +10290,17 @@ window.finOpen = on => {
   if(!o) return toast('ההזמנה אינה טעונה במסך — רענן את הדף');
   goCard(()=>openOrd(o.id));
 };
+/* ציור מחדש בזמן הקלדה בהערה מוחק טקסט שטרם נשמר. לכן דוחים אותו עד
+   שהמיקוד יוצא מהטבלה, ואז מציירים פעם אחת. */
+let PAY_PENDING = false;
+function payTyping(){
+  const a = document.activeElement;
+  return !!(a && a.classList && (a.classList.contains('fin-note') || a.classList.contains('fin-term'))
+            && a.closest && a.closest('#pays-list'));
+}
 function renderPays(){
+  if(payTyping()){ PAY_PENDING = true; return; }
+  PAY_PENDING = false;
   payChips();
   const q = (($('#paySearch')||{}).value||'').trim();
   let list = finRows();
@@ -10244,6 +10314,8 @@ function renderPays(){
 }
 $('#paySearch').addEventListener('input', renderPays);
 $('#payTermFilter').addEventListener('change', e => setPayTerm(e.target.value));
+(function(){ const el = $('#pays-list');
+  if(el) el.addEventListener('focusout', function(){ setTimeout(function(){ if(PAY_PENDING && !payTyping()) renderPays(); }, 0); }); })();
 
 /* ===== הזמנות — מערכת ההזמנות והתיאומים (קריאה בלבד) ===== */
 const ORDERS_URL = 'orders/';

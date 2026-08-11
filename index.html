@@ -159,10 +159,6 @@
   .open-badge{ display:inline-block; font-size:11px; font-weight:800; border-radius:999px; padding:1px 8px;
                background:#fff7ed; color:#b45309; border:1px solid #fed7aa; margin-inline-start:6px; white-space:nowrap }
   .open-badge.big{ font-size:12px; padding:2px 10px }
-  /* אספקה שכבר מתוכננת אינה חריגה ואינה צריכה למשוך את העין באותה עוצמה */
-  .open-badge.wait{ background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe }
-  /* הזמנה שעדיין בזרימה הרגילה — עובדה, לא חריגה. אפור ולא צבע התראה. */
-  .open-badge.calm{ background:#f1f5f9; color:#64748b; border-color:#e2e8f0; font-weight:700 }
   .items-tbl td.bal.svc{ color:#cbd5e1; font-weight:400 }
   .items-tbl td.bal{ text-align:center; font-weight:800; color:#b45309 }
   .items-tbl tr.has-bal{ background:#fffbeb }
@@ -1335,7 +1331,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.48.2</div>
+      <div class="ver">גרסה 6.48.3</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1454,7 +1450,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.48.2</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.48.3</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9070,7 +9066,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'openitems-2026-08-11f';
+const BUILD_ID = 'openitems-2026-08-11g';
 
 window.renderPrc = async function(){
   pvInjectCss();
@@ -9909,13 +9905,12 @@ function reIndexAux(){
 const openOf = on => OPEN_BY[String(on||'')] || null;
 const finmOf = on => FINM_BY[String(on||'')] || {};
 const openCnt = on => { const r = openOf(on); return r ? Number(r.open_lines)||0 : 0; };
-/* שלושה מצבים, ורק אחד מהם דורש פעולה:
-   "השלמה לתיאום" — ההזמנה כבר סומנה "הושלם" ובכל זאת נותרו בה פריטי סחורה.
-     מישהו כבר היה בשטח וסגר, והפריט נשכח. זה ורק זה נכנס לשבב.
-   "אספקה בהמשך" — סומנה הושלם אך כבר יש ביקור עתידי. בדרך, לא תקועה.
-   "בתהליך" — ההזמנה עדיין בזרימה הרגילה (הזמנה חדשה, תואם, ממתין לאספקה).
-     היא פשוט טרם סופקה, ומטופלת בתור התיאום הרגיל — כולל התקנה דו-יומית
-     שסופק בה רק היום הראשון. מוצגת כעובדה אפורה ולא כהתראה. */
+/* מוצג מצב אחד בלבד: "השלמה לתיאום" — ההזמנה כבר סומנה "הושלם" ובכל זאת
+   נותרו בה פריטי סחורה. מישהו היה בשטח וסגר, והפריט נשכח.
+   הזמנה שעדיין בזרימה הרגילה ("בתהליך") או שכבר יש לה ביקור עתידי
+   ("אספקה בהמשך") אינה חריגה — היא בתור התיאום הרגיל, ולכן אינה מסומנת
+   כלל. ord.order_open_items_v ממשיך להחזיר את כל המצבים; ההחלטה מה מוצג
+   נעשית כאן, כדי שאפשר יהיה להחזיר מצב לתצוגה בלי לגעת במסד. */
 const openStuck = on => { const r = openOf(on); return !!(r && r.supply_state === 'השלמה לתיאום'); };
 /* סדרות השירות (התקנה, משלוח, סבלות) אינן נסגרות בפריוריטי לעולם, ולכן
    הוחרגו. הרשימה חיה ב-ord.settings.supply_service_skus ונטענת עם OSET,
@@ -9925,15 +9920,11 @@ function svcSkuSet(){
   return new Set(String((r && r.value) || '').split(',').map(s=>s.trim()).filter(Boolean));
 }
 function openBadge(on, big){
-  const r = openOf(on); if(!r || r.supply_state === 'לא רלוונטי') return '';
-  const n = Number(r.open_lines)||0, st = String(r.supply_state||'');
-  const stuck = st === 'השלמה לתיאום', wait = st === 'אספקה בהמשך';
-  const cls = stuck ? '' : (wait ? ' wait' : ' calm');
-  const lbl = stuck ? 'השלמה לתיאום' : (wait ? 'אספקה בהמשך' : 'טרם סופק');
-  return '<span class="open-badge' + cls + (big?' big':'') +
-         '" title="' + esc(String(r.items||'').slice(0,300)) + '">' +
-         lbl + ' · ' + n + (n===1?' פריט':' פריטים') +
-         (wait && r.visit_end ? ' · ' + fmtD(r.visit_end) : '') + '</span>';
+  const r = openOf(on); if(!r || r.supply_state !== 'השלמה לתיאום') return '';
+  const n = Number(r.open_lines)||0;
+  return '<span class="open-badge' + (big?' big':'') +
+         '" title="' + esc(String(r.items||'').slice(0,300)) + '">השלמה לתיאום · ' +
+         n + (n===1?' פריט':' פריטים') + '</span>';
 }
 /* פס אזהרה עליון כשטעינת נתונים נכשלה — במקום להציג "אין נתונים" (תיקון ממצא 11) */
 function loadErrBanner(names){

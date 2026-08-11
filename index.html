@@ -159,6 +159,11 @@
   .open-badge{ display:inline-block; font-size:11px; font-weight:800; border-radius:999px; padding:1px 8px;
                background:#fff7ed; color:#b45309; border:1px solid #fed7aa; margin-inline-start:6px; white-space:nowrap }
   .open-badge.big{ font-size:12px; padding:2px 10px }
+  /* החזרה לאיסוף — עבודה הפוכה מהשלמה, ולכן צבע משלה ולא כתום */
+  .ret-badge{ display:inline-block; font-size:11px; font-weight:800; border-radius:999px; padding:1px 8px;
+              background:#f5f3ff; color:#6d28d9; border:1px solid #ddd6fe; margin-inline-start:6px; white-space:nowrap }
+  .ret-badge.big{ font-size:12px; padding:2px 10px }
+  .ret-badge.late{ background:#fef2f2; color:#b91c1c; border-color:#fecaca }
   .items-tbl td.bal.svc{ color:#cbd5e1; font-weight:400 }
   .items-tbl td.bal{ text-align:center; font-weight:800; color:#b45309 }
   .items-tbl tr.has-bal{ background:#fffbeb }
@@ -1331,7 +1336,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.48.3</div>
+      <div class="ver">גרסה 6.49.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1450,7 +1455,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.48.3</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.49.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2934,8 +2939,9 @@ function renderLogiScope(){
   const box=$('#logi-scope'); if(!box) return;
   const base = ORDS.filter(o=>!['הושלם','בוטל','לא לטיפול'].includes(o.order_status));
   const n = { sched: base.filter(needsSched).length, ship: base.filter(o=>!needsSched(o)).length, all: base.length, pend: ORDS.filter(o=>o.order_status==='לא לטיפול').length, done: ORDS.filter(o=>o.order_status==='הושלם').length, every: ORDS.length,
-    open: ORDS.filter(o=>openStuck(o.order_number)).length };
-  box.innerHTML = [['sched','לתיאום'],['ship','משלוחים'],['all','לטיפול'],['open','השלמות לתיאום'],['pend','לא לטיפול'],['done','הושלמו'],['every','הכל']]
+    open: ORDS.filter(o=>openStuck(o.order_number)).length,
+    ret: ORDS.filter(o=>retPending(o.order_number)).length };
+  box.innerHTML = [['sched','לתיאום'],['ship','משלוחים'],['all','לטיפול'],['open','השלמות לתיאום'],['ret','החזרות לאיסוף'],['pend','לא לטיפול'],['done','הושלמו'],['every','הכל']]
     .map(([k,l])=>`<button type="button" class="chip ${LOGI_SCOPE===k?'active':''}" onclick="logiScope('${k}')">${l} <b>${n[k]}</b></button>`).join('');
 }
 /* 6.24.6 — סינון בתצוגה הטבלאית: רב-בחירת סטטוסים, סינון קריאות שירות, ושמירת ברירת מחדל */
@@ -3089,7 +3095,11 @@ function logiRenderTable(){
        "הושלם", וזו בדיוק הסיבה שנעלמו מהעין עד היום. הזמנה שכבר יש לה ביקור
        עתידי אינה נכנסת לכאן — היא בדרך, לא תקועה. */
     const openScope = LOGI_SCOPE==='open';
+    /* החזרה לאיסוף אינה תלויה בסטטוס ההזמנה כלל — הלקוח מחזיר סחורה
+       גם מהזמנה שהושלמה מזמן. */
+    const retScope = LOGI_SCOPE==='ret';
     let list = ORDS.filter(o=>{
+      if(retScope) return retPending(o.order_number);
       if(openScope) return openStuck(o.order_number);
       if(everyScope) return true;
       if(o.order_status==='לא לטיפול') return pendScope || stF.includes('לא לטיפול');
@@ -3103,7 +3113,7 @@ function logiRenderTable(){
     if(LOGI_F.contact) list = list.filter(o=>o.contact_status===LOGI_F.contact);
     if(LOGI_F.team)    list = list.filter(o=> LOGI_F.team==='__none__' ? !o.team : o.team===LOGI_F.team);
     if(LOGI_F.region)  list = list.filter(o=>o.region===LOGI_F.region);
-    if(!doneScope && !pendScope && !openScope) list = list.filter(scopeOk);
+    if(!doneScope && !pendScope && !openScope && !retScope) list = list.filter(scopeOk);
     list = window.ordSortList(list.slice());
     LOGI_SHOWN = list;
     const _ids=new Set(list.map(o=>String(o.id))); [...LOGI_SEL].forEach(id=>{ if(!_ids.has(id)) LOGI_SEL.delete(id); });
@@ -9066,7 +9076,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'openitems-2026-08-11g';
+const BUILD_ID = 'returns-2026-08-11h';
 
 window.renderPrc = async function(){
   pvInjectCss();
@@ -9894,13 +9904,18 @@ let FIN=[], PTERMS=[], PAY_TERM_F='';
    שנשען על TBALANCE של פריוריטי ולכן אינו דורש שאיש יסמן דבר. FINMETA הוא
    תנאי התשלום וההערה בלבד, ונטען בנפרד מ-FIN כדי שאיש מכירות שיש לו
    crm.orders.terms ואין לו acc.pays יוכל לערוך תנאים בלי לראות שקל. */
-let OPENIT=[], FINMETA=[];
-const OPEN_BY={}, FINM_BY={};
+let OPENIT=[], FINMETA=[], RETPEND=[];
+const OPEN_BY={}, FINM_BY={}, RET_BY={};
 function reIndexAux(){
   Object.keys(OPEN_BY).forEach(k=>delete OPEN_BY[k]);
   (OPENIT||[]).forEach(r=>{ if(r && r.order_number) OPEN_BY[r.order_number]=r; });
   Object.keys(FINM_BY).forEach(k=>delete FINM_BY[k]);
   (FINMETA||[]).forEach(r=>{ if(r && r.order_number) FINM_BY[r.order_number]=r; });
+  /* לתעודת החזרה יש מספר הזמנה, אך ייתכנו כמה תעודות לאותה הזמנה —
+     ולכן מפתח ההזמנה מצביע על מערך ולא על שורה בודדת. */
+  Object.keys(RET_BY).forEach(k=>delete RET_BY[k]);
+  (RETPEND||[]).forEach(r=>{ if(!r || !r.order_number) return;
+    (RET_BY[r.order_number] = RET_BY[r.order_number] || []).push(r); });
 }
 const openOf = on => OPEN_BY[String(on||'')] || null;
 const finmOf = on => FINM_BY[String(on||'')] || {};
@@ -9918,6 +9933,22 @@ const openStuck = on => { const r = openOf(on); return !!(r && r.supply_state ==
 function svcSkuSet(){
   const r = (typeof OSET !== 'undefined' ? OSET : []).find(x=>x && x.key==='supply_service_skus');
   return new Set(String((r && r.value) || '').split(',').map(s=>s.trim()).filter(Boolean));
+}
+/* החזרות שממתינות לאיסוף מהלקוח. המצב מגיע מפריוריטי ("ממתין להחזרה"),
+   ולכן השורה נושרת מעצמה כשהתעודה נסגרת — אין כאן סימון ידני שיכול להתיישן.
+   מעל RET_LATE_DAYS ימי המתנה הצבע הופך אדום: החזרה ששוכבת שבועיים היא
+   מלאי תקוע אצל הלקוח וזיכוי שלא יצא. */
+const RET_LATE_DAYS = 14;
+const retOf = on => RET_BY[String(on||'')] || null;
+const retPending = on => !!retOf(on);
+function retBadge(on, big){
+  const rs = retOf(on); if(!rs || !rs.length) return '';
+  const days = Math.max.apply(null, rs.map(r=>Number(r.days_waiting)||0));
+  const n = rs.reduce((s,r)=>s+(Number(r.lines)||0), 0);
+  const tip = rs.map(r=>String(r.doc_no||'') + ': ' + String(r.items||'')).join(' | ').slice(0,300);
+  return '<span class="ret-badge' + (days>=RET_LATE_DAYS?' late':'') + (big?' big':'') +
+         '" title="' + esc(tip) + '">החזרה לאיסוף · ' + n + (n===1?' פריט':' פריטים') +
+         (days>0 ? ' · ' + days + ' ימים' : '') + '</span>';
 }
 function openBadge(on, big){
   const r = openOf(on); if(!r || r.supply_state !== 'השלמה לתיאום') return '';
@@ -9940,7 +9971,7 @@ function loadErrBanner(names){
 }
 /* חייב להיות באותו אורך ובאותו סדר כמו מערך השאילתות ב-loadLeads —
    אחרת פס השגיאה מציג "undefined" במקום שם השאילתה שנכשלה. */
-const LOAD_NAMES = ['לידים','לקוחות','משימות','עסקאות','פגישות','אנשי קשר','תשלומים','הזמנות','קריאות שירות','צוותים','מק"טים','מסמכים','הגדרות','מצב סנכרון','מעקב תשלומים','תנאי תשלום','נותר לספק','תנאי תשלום בהזמנה'];
+const LOAD_NAMES = ['לידים','לקוחות','משימות','עסקאות','פגישות','אנשי קשר','תשלומים','הזמנות','קריאות שירות','צוותים','מק"טים','מסמכים','הגדרות','מצב סנכרון','מעקב תשלומים','תנאי תשלום','נותר לספק','תנאי תשלום בהזמנה','החזרות לאיסוף'];
 async function loadLeads(){
   let _q;
   try{ if(!$('#lastSync').textContent) $('#lastSync').textContent = 'טוען נתונים…'; }catch(_){}
@@ -9966,10 +9997,11 @@ async function loadLeads(){
     sb.schema('ord').from('order_finance_v').select('*').order('order_date',{ascending:false}).limit(10000),
     sb.schema('ord').from('payment_terms').select('*').eq('active',true).order('sort_order',{ascending:true}),
     sb.schema('ord').from('order_open_items_v').select('*').limit(10000),
-    sb.schema('ord').from('order_finance_meta').select('order_number,pay_code,notes').limit(10000)
+    sb.schema('ord').from('order_finance_meta').select('order_number,pay_code,notes').limit(10000),
+    sb.schema('ord').from('pending_returns_v').select('*').limit(5000)
   ]);
   }catch(e){ console.error('טעינת הנתונים נכשלה לגמרי', e); loadErrBanner(['החיבור לשרת']); try{ $('#lastSync').textContent=''; renderAllViews(); }catch(_){} return; }
-  const [l,c,t,d,m,k,p,o,sc,tm,sk,pr,st,sl,fin,pt,oi,fm] = _q;
+  const [l,c,t,d,m,k,p,o,sc,tm,sk,pr,st,sl,fin,pt,oi,fm,rp] = _q;
   /* תיקון ממצא 11 — שאילתה שנכשלה כבר לא מתחזה ל"אין נתונים" */
   const _bad = _q.map((r,i)=>(r&&r.error)?{n:LOAD_NAMES[i],e:r.error}:null).filter(Boolean);
   if(_bad.length){ _bad.forEach(b=>console.error('טעינת נתונים נכשלה —', b.n, b.e)); loadErrBanner(_bad.map(b=>b.n)); }
@@ -9979,7 +10011,7 @@ async function loadLeads(){
   /* מצב הסנכרון — מגיע מ-ord.sync_status(), תמצית ללא תוכן היומן */
   SYNC_STATUS = (sl && sl.data) || [];
   FIN = (fin && fin.data) || []; PTERMS = (pt && pt.data) || [];
-  OPENIT = (oi && oi.data) || []; FINMETA = (fm && fm.data) || []; reIndexAux();
+  OPENIT = (oi && oi.data) || []; FINMETA = (fm && fm.data) || []; RETPEND = (rp && rp.data) || []; reIndexAux();
   const invRow = SYNC_STATUS.find(r=>r.fn==='inventory-sync');
   SKU_SYNC_ROW = (invRow && invRow.last_ok_at) ? { ran_at: invRow.last_ok_at, details:{ items_synced: invRow.last_ok_items } } : null;
   const priRow = SYNC_STATUS.find(r=>r.fn==='priority-sync');
@@ -11024,7 +11056,7 @@ window.openOrd = (id, ctx)=>{
   const myAddr=norm(shipAddrOnly(o));
   const hasSame=myAddr && others.some(x=>norm(shipAddrOnly(x))===myAddr);
   $('#ordSheet').innerHTML = `
-    <h3>${esc(o.order_number)} — ${esc(o.customer_name||'')}${o.erp_status?` <span class="pill p-violet" title="הסטטוס בפריוריטי — מתעדכן בסנכרון">${PRI_ICO}פריוריטי: ${esc(o.erp_status)}</span>`:''}${o.erp_synced_at?`<span class="pill" style="font-weight:400">סונכרן מפריוריטי ${new Date(o.erp_synced_at).toLocaleDateString('he-IL')}</span>`:''}${openBadge(o.order_number,1)}</h3>
+    <h3>${esc(o.order_number)} — ${esc(o.customer_name||'')}${o.erp_status?` <span class="pill p-violet" title="הסטטוס בפריוריטי — מתעדכן בסנכרון">${PRI_ICO}פריוריטי: ${esc(o.erp_status)}</span>`:''}${o.erp_synced_at?`<span class="pill" style="font-weight:400">סונכרן מפריוריטי ${new Date(o.erp_synced_at).toLocaleDateString('he-IL')}</span>`:''}${openBadge(o.order_number,1)}${retBadge(o.order_number,1)}</h3>
     <div style="height:10px"></div>
     <div class="form-grid">
       <div><label>מס' הזמנה${SRC_TAG}</label>${roIn(o.order_number,{ltr:1})}</div>
@@ -11061,7 +11093,7 @@ window.openOrd = (id, ctx)=>{
       ${showSupply?`<div><label>תאריך סיום אספקה</label><input id="oe-supend" type="date" value="${esc(o.supply_end_date||'')}"></div>`:''}
       ${showSupply?`<div class="span2"><label>הערות למחסן</label><textarea id="oe-wnotes" rows="2">${esc(o.warehouse_notes||'')}</textarea></div>`:''}
       <div class="span4"><label>דו שיח פנימי${SRC_TAG}</label><div class="dialog-box">${o.internal_dialog?esc(o.internal_dialog).replace(/\n/g,'<br>'):'<span class="dialog-empty">אין דו שיח פנימי בהזמנה זו</span>'}</div></div>
-      <div class="form-sep sep-items">פירוט ההזמנה${SRC_TAG}${openBadge(o.order_number)}</div>
+      <div class="form-sep sep-items">פירוט ההזמנה${SRC_TAG}${openBadge(o.order_number)}${retBadge(o.order_number)}</div>
       <div class="span4" id="orderItemsBox"><div class="items-loading">טוען פירוט הזמנה מפריוריטי…</div></div>
     </div>
     <div class="ord-bottom">

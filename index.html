@@ -208,6 +208,9 @@
   #paySheet .led-act{ padding:5px 11px; font-size:12px; border-radius:8px; border:1px solid var(--line);
                       background:#fff; font-family:inherit; cursor:pointer; white-space:nowrap }
   #paySheet .led-act.go{ background:#1B365D; color:#fff; border-color:#1B365D; font-weight:700 }
+  #paySheet .led-act.weak{ color:#64748b; border-style:dashed }
+  #paySheet .led-else{ font-size:12px }
+  #paySheet .led-else a{ font-weight:700 }
   #paySheet .led-gap{ background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; border-radius:9px;
                       padding:8px 11px; font-size:12.5px; margin-top:8px; line-height:1.55 }
   #paySheet .be-wrap{ margin-top:10px; border:1px solid var(--line); border-radius:11px; padding:11px 13px; background:#f8fafc }
@@ -1414,7 +1417,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.56.0</div>
+      <div class="ver">גרסה 6.56.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1533,7 +1536,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.56.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.56.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9193,7 +9196,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'ledger-2026-08-11p';
+const BUILD_ID = 'ledger-2026-08-11q';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -10717,7 +10720,10 @@ async function payLoadLedger(on){
         .eq('customer_number', cust)
     ]);
     if(!box.isConnected) return;
-    if(led && led.error) throw led.error;
+    /* שגיאה בשאילתת המסמכים נבלעה קודם לכן והמסך הציג "כל מסמכי הלקוח
+       משויכים" — כלומר מידע כוזב במקום הודעת שגיאה. */
+    const bad = [led, docs, sug].find(r=>r && r.error);
+    if(bad) throw bad.error;
     LED = { led: (led && led.data) || null, docs: (docs && docs.data) || [], sug: (sug && sug.data) || [] };
     ledRender();
   }catch(e){
@@ -10742,14 +10748,20 @@ function ledRender(){
     '<span class="pill pc-neutral">יתרת ההזמנות הפתוחות ' + shekel(finNum(L.orders_open_balance)) + '</span>' +
     '</div>';
 
-  /* הפער בין שני המספרים הוא בדיוק מה שאי אפשר לראות בשום מסך אחר: אם
-     הכרטסת נמוכה מסכום היתרות שלנו, הלקוח שילם ואנחנו לא יודעים על איזו
-     הזמנה. אם היא גבוהה, יש חוב שאינו יושב על אף הזמנה פתוחה. */
+  /* שני המספרים אינם נמדדים על אותו בסיס: הכרטסת היא כל היסטוריית
+     פריוריטי של הלקוח ונשענת על חשבוניות, ואילו יתרת ההזמנות היא רק
+     ההזמנות המסונכרנות אצלנו, אחרי החרגת סטטוסים והזמנות אתר, ונשענת על
+     מחיר ההזמנה. לכן פער כמעט תמיד קיים — ואסור לייחס לו סיבה אחת.
+     המספר שכן אומר משהו חד הוא סכום הקבלות שאינן משויכות לאף הזמנה. */
+  if(finNum(L.unlinked_receipts)){
+    h += '<div class="led-gap">ללקוח ' + finNum(L.unlinked_receipts) + ' קבלות בסך ' +
+      shekel(finNum(L.unlinked_amt)) + ' שנקלטו בפריוריטי בלי מספר הזמנה, ולכן אינן יורדות מאף הזמנה. ' +
+      'כאן אפשר לשייך אותן אצלנו — השיוך אינו נוגע בפריוריטי.</div>';
+  }
   if(Math.abs(gap) > 1){
-    h += '<div class="led-gap">' + (gap < 0
-      ? 'הכרטסת נמוכה ב-' + shekel(Math.abs(gap)) + ' מסכום היתרות הפתוחות שלנו. כלומר הלקוח שילם כסף שאינו יורד מאף הזמנה — כמעט תמיד קבלה שנקלטה בלי מספר הזמנה.'
-      : 'הכרטסת גבוהה ב-' + shekel(gap) + ' מסכום היתרות הפתוחות שלנו. כלומר יש חוב בכרטסת שאינו יושב על הזמנה פתוחה — בדרך כלל הזמנה ישנה או חשבונית ללא הזמנה.') +
-      '</div>';
+    h += '<div class="pc-legend">הפרש של ' + shekel(Math.abs(gap)) + ' בין יתרת הכרטסת ליתרת ההזמנות הפתוחות. ' +
+      'שני המספרים אינם על אותו בסיס — הכרטסת היא כל היסטוריית הלקוח ולפי חשבוניות, ' +
+      'ויתרת ההזמנות היא רק ההזמנות המסונכרנות ולפי מחיר ההזמנה — ולכן הפרש כשלעצמו אינו בהכרח תקלה.</div>';
   }
 
   if(open.length){
@@ -10762,14 +10774,20 @@ function ledRender(){
           '<td>' + esc(kindName(d.kind)) + '<span class="led-why" dir="ltr">' + esc(d.doc_no) + '</span></td>' +
           '<td>' + (d.doc_date ? fmtD(d.doc_date) : '—') + '</td>' +
           '<td>' + shekel(finNum(d.total)) + '</td>' +
+          /* ההמלצה עשויה להצביע על הזמנה אחרת של אותו לקוח. במצב כזה אסור
+             להציג לצדה כפתור שמשייך דווקא לכאן — זו הדרך הקצרה ביותר
+             להזרים כסף להזמנה הלא נכונה. במקום זה מפנים לכרטיס ההוא. */
           '<td>' + (rec
             ? '<span class="led-conf ' + ledConfCls(rec.confidence) + '">' + esc(rec.confidence) + '</span>' +
-              (here ? ' להזמנה זו' : ' <span dir="ltr">' + esc(rec.order_number) + '</span>') +
+              (here ? ' להזמנה זו' :
+                ' <span class="led-else">ההמלצה היא להזמנה <a href="#" onclick="event.preventDefault();payOpen(\'' +
+                jsq(rec.order_number) + '\')" dir="ltr">' + esc(rec.order_number) + '</a></span>') +
               '<span class="led-why">' + esc(rec.reason || '') + '</span>'
             : '<span class="fin-muted">אין הזמנה פתוחה תואמת</span>') + '</td>' +
           '<td>' + (canEdit('acc.pays')
-            ? '<button class="led-act' + (here && here.confidence === 'גבוהה' ? ' go' : '') +
-              '" onclick="ledLink(\'' + jsq(d.kind) + '\',\'' + jsq(d.doc_no) + '\')">שייך להזמנה זו</button>'
+            ? '<button class="led-act' + (here && here.confidence === 'גבוהה' ? ' go' : (here ? '' : ' weak')) +
+              '" onclick="ledLink(\'' + jsq(d.kind) + '\',\'' + jsq(d.doc_no) + '\')">' +
+              (here ? 'שייך להזמנה זו' : 'בכל זאת שייך לכאן') + '</button>'
             : '') + '</td>' +
         '</tr>';
       }).join('') + '</tbody></table>';
@@ -10785,12 +10803,28 @@ function ledRender(){
   }
   box.innerHTML = h;
 }
-window.ledLink = async (kind, docNo) => {
+window.ledLink = async (kind, docNo, force) => {
   if(!canEdit('acc.pays')) return finNoEdit();
   const on = LED_ORD; if(!on) return;
-  if(!window.confirm('לשייך את המסמך ' + docNo + ' להזמנה ' + on + '? השיוך נשמר אצלנו בלבד ואינו משנה דבר בפריוריטי.')) return;
-  const ok = await finDbw(()=>sb.schema('ord').rpc('doc_link_set', { p_kind: kind, p_doc_no: docNo, p_order: on }),
-    'המסמך שויך להזמנה');
+  const f = FIN.find(x=>x.order_number===on) || {};
+  if(!force && !window.confirm('לשייך את המסמך ' + docNo + ' להזמנה ' + on +
+      (f.customer_name ? ' (' + f.customer_name + ')' : '') +
+      '?\n\nהשיוך נשמר אצלנו בלבד ואינו משנה דבר בפריוריטי.')) return;
+  /* בדיקות הסכום יושבות בשרת ולא כאן, כדי שגם קריאה ישירה תיחסם. אם השרת
+     סירב — מציגים לו את נימוק הסירוב ומאפשרים לעקוף במודע, כי לפעמים
+     המציאות באמת מוזרה יותר מהכלל. */
+  let r;
+  try{ r = await sb.schema('ord').rpc('doc_link_set',
+    { p_kind: kind, p_doc_no: docNo, p_order: on, p_force: !!force }); }
+  catch(e){ r = { error: e }; }
+  if(r && r.error){
+    const msg = (r.error && r.error.message) ? r.error.message : String(r.error);
+    if(!force && window.confirm(msg + '\n\nלשייך בכל זאת?')) return ledLink(kind, docNo, true);
+    toast('השיוך לא בוצע: ' + msg);
+    return;
+  }
+  toast('המסמך שויך להזמנה');
+  const ok = true;
   if(!ok) return;
   await finRefreshRow(on);
   payLoadBeats(on);

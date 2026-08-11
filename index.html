@@ -192,6 +192,17 @@
   .pay-legend .pl-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:9px 18px; padding:12px 15px }
   .pay-legend .pl-i{ display:flex; gap:8px; align-items:baseline; font-size:12.5px; line-height:1.7; color:#475569 }
   .pay-legend .pl-i b{ flex:none; color:#0f172a; min-width:104px }
+  /* תיוג ידני — חייב להיות מובחן מיידית משורה שהגיעה מפריוריטי, אחרת
+     אי אפשר לדעת על איזה מספר אפשר לסמוך. */
+  .man-tag{ display:inline-block; font-size:10.5px; font-weight:800; border-radius:999px; padding:1px 7px;
+            background:#fdf4ff; color:#86198f; border:1px solid #f5d0fe; margin-inline-start:5px; white-space:nowrap }
+  #payManSheet .pm-f{ margin-bottom:11px }
+  #payManSheet .pm-f label{ display:block; font-size:12.5px; color:#475569; margin-bottom:4px; font-weight:700 }
+  #payManSheet .pm-f label i{ color:#b91c1c; font-style:normal }
+  #payManSheet .pm-f input{ width:100%; box-sizing:border-box; padding:9px 11px; border:1px solid var(--line);
+                            border-radius:9px; font-family:inherit; font-size:14px }
+  #payManSheet .pm-f input.bad{ border-color:#dc2626; background:#fef2f2 }
+  #payManSheet .pm-err{ color:#b91c1c; font-size:12.5px; min-height:18px; margin-bottom:6px }
   /* ===== נותר לספק (6.48.0) =====
      הצבע כאן מסמן עבודה שנותרה, לא סטטוס. המקור הוא TBALANCE של פריוריטי,
      שנסגר מעצמו כשהשורה מסופקת בפועל — ולכן אין כאן שום סימון ידני. */
@@ -1375,7 +1386,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.53.0</div>
+      <div class="ver">גרסה 6.54.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1494,7 +1505,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.53.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.54.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1577,6 +1588,7 @@
       <div class="toolbar">
         <input id="paySearch" placeholder="חיפוש לפי מספר הזמנה או שם לקוח…">
         <select id="payTermFilter" title="סינון לפי תנאי תשלום"><option value="">כל תנאי התשלום</option></select>
+        <button class="ghost" id="payAddBtn" onclick="payManOpen(null)">+ שורה ידנית</button>
         <span class="pv-sep"></span>
         <span class="who2" id="paySync" style="color:#64748b;font-size:12px"></span>
       </div>
@@ -1776,6 +1788,11 @@
 <!-- מודל כרטיס הזמנה / קריאת שירות (מערכת התיאומים) -->
 <div class="modal hidden" id="ordModal">
   <div class="sheet wide" id="ordSheet"></div>
+</div>
+
+<!-- מודל שורת תשלום ידנית -->
+<div class="modal hidden" id="payManModal">
+  <div class="sheet" id="payManSheet"></div>
 </div>
 
 <!-- מודל כרטיס שורת תשלום -->
@@ -9142,7 +9159,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'paycard2-2026-08-11m';
+const BUILD_ID = 'paymanual-2026-08-11n';
 
 window.renderPrc = async function(){
   pvInjectCss();
@@ -10358,6 +10375,7 @@ function payChips(){
     const last = FIN.map(f=>f.synced_at).filter(Boolean).sort().slice(-1)[0];
     sy.textContent = last ? ('סונכרן מפריוריטי ' + new Date(last).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})) : '';
   }
+  const ab = $('#payAddBtn'); if(ab) ab.classList.toggle('hidden', !canEdit('acc.pays'));
   const tf = $('#payTermFilter');
   if(tf && tf.options.length <= 1 && PTERMS.length){
     PTERMS.forEach(t=>{ const o=document.createElement('option'); o.value=t.code; o.textContent=t.name; tf.appendChild(o); });
@@ -10412,12 +10430,13 @@ async function finSeedBeats(ord){
   }catch(e){ toast('לוח הפעימות לא נוצר: ' + (e && e.message ? e.message : e)); }
 }
 /* רענון שורה בודדת אחרי שינוי שנגזר בשרת, במקום טעינה מחדש של כל המסך */
-async function finRefreshRow(ord){
+async function finRefreshRow(ord, addIfNew){
   try{
     const { data, error } = await sb.schema('ord').from('order_finance_v').select('*').eq('order_number', ord).maybeSingle();
     if(error || !data) return;
     const i = FIN.findIndex(f=>f.order_number===ord);
     if(i >= 0) FIN[i] = data;
+    else if(addIfNew) FIN.push(data);
   }catch(_e){}
 }
 window.finSetNote = async (ord, txt) => {
@@ -10503,6 +10522,70 @@ function finBalCell(c){
   if(c.bal < -1) return '<span class="fin-warn" title="נגבה יותר מסכום ההזמנה">עודף ' + shekel(-c.bal) + '</span>';
   return '<span class="fin-ok">0</span>';
 }
+/* שורה ידנית — חוב שאין לו הזמנה בפריוריטי. מספר הזמנה ושם לקוח הם חובה,
+   כי בלעדיהם אי אפשר להצליב את השורה לשום קבלה שתגיע בעתיד. השורה מתויגת
+   "ידני" בכל מקום שבו היא מוצגת, ונעלמת מעצמה ברגע שפריוריטי מסנכרנת
+   הזמנה באותו מספר — הנתון האמיתי תמיד גובר. */
+const manTag = f => (f && f.is_manual) ? '<span class="man-tag" title="שורה שנפתחה ידנית — אינה מגיעה מפריוריטי">ידני</span>' : '';
+window.payManOpen = row => {
+  if(!canEdit('acc.pays')) return finNoEdit();
+  const r = row || {};
+  const ed = !!row;
+  const inp = (id,lab,val,req,type)=>'<div class="pm-f"><label for="'+id+'">'+esc(lab)+(req?' <i>*</i>':'')+'</label>' +
+    '<input id="'+id+'" type="'+(type||'text')+'" value="'+esc(val==null?'':String(val))+'"'+(ed&&id==='pm-ord'?' readonly':'')+'></div>';
+  $('#payManSheet').innerHTML =
+    '<h3>' + (ed ? 'עריכת שורה ידנית' : 'שורת תשלום ידנית חדשה') + '</h3>' +
+    '<div class="pm-err" id="pm-err"></div>' +
+    inp('pm-ord','מספר הזמנה', r.order_number, true) +
+    inp('pm-cust','שם לקוח', r.customer_name, true) +
+    inp('pm-amt','סכום ההזמנה (₪)', r.ordered, false, 'number') +
+    inp('pm-date','תאריך הזמנה', r.order_date, false, 'date') +
+    inp('pm-note','הערה', r.manual_note, false) +
+    '<div class="modal-actions">' +
+      '<button class="btn btnw" onclick="payManSave(' + (ed?'true':'false') + ')">שמירה</button>' +
+      (ed ? '<button class="ghost" style="width:auto;padding:11px 18px" onclick="payManDelete(\'' + jsq(r.order_number) + '\')">מחיקה</button>' : '') +
+    '</div>';
+  mountCard('payManModal', ()=>payManOpen(row));
+};
+window.payManSave = async ed => {
+  if(!canEdit('acc.pays')) return finNoEdit();
+  const g = id => ($('#'+id)||{}).value;
+  const ord = String(g('pm-ord')||'').trim(), cust = String(g('pm-cust')||'').trim();
+  const err = $('#pm-err'); const mark = (id,bad)=>{ const e=$('#'+id); if(e) e.classList.toggle('bad', !!bad); };
+  mark('pm-ord', !ord); mark('pm-cust', !cust);
+  if(!ord || !cust){ if(err) err.textContent = 'מספר הזמנה ושם לקוח הם שדות חובה.'; return; }
+  /* מספר שכבר קיים — בין אם ידנית ובין אם מפריוריטי — יוצר שתי שורות
+     לאותה הזמנה, ולכן נחסם כאן ולא רק במסד. */
+  if(!ed && FIN.some(f=>String(f.order_number)===ord)){
+    mark('pm-ord', true);
+    if(err) err.textContent = 'מספר ההזמנה ' + ord + ' כבר קיים במסך.';
+    return;
+  }
+  if(err) err.textContent = '';
+  const amtRaw = String(g('pm-amt')||'').trim();
+  const row = { order_number: ord, customer_name: cust,
+    ordered: amtRaw === '' ? null : Number(amtRaw),
+    order_date: String(g('pm-date')||'').trim() || null,
+    note: String(g('pm-note')||'').trim() || null,
+    updated_by: finMe(), updated_at: finNowIso() };
+  if(!ed){ row.created_by = finMe(); row.created_at = finNowIso(); }
+  const ok = await finDbw(()=>sb.schema('ord').from('pay_manual').upsert(row, { onConflict:'order_number' }),
+    ed ? 'השורה עודכנה' : 'השורה נוספה');
+  if(!ok) return;
+  await finRefreshRow(ord, true);
+  document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden'));
+  renderPays();
+};
+window.payManDelete = async ord => {
+  if(!canEdit('acc.pays')) return finNoEdit();
+  if(!window.confirm('למחוק את השורה הידנית ' + ord + '?')) return;
+  const ok = await finDbw(()=>sb.schema('ord').from('pay_manual').delete().eq('order_number', ord), 'השורה נמחקה');
+  if(!ok) return;
+  const i = FIN.findIndex(f=>f.order_number===ord);
+  if(i >= 0) FIN.splice(i,1);
+  document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden'));
+  renderPays();
+};
 /* כרטיס שורת התשלום. כל מה שהוצא מהטבלה חי כאן, יחד עם פירוט הפעימות
    שנטען מהשרת בפתיחה. הכרטיס הוא לקריאה — העריכה נשארת בטבלה, כדי שלא
    יהיו שני מקומות שכותבים את אותו שדה. */
@@ -10514,7 +10597,7 @@ window.payOpen = on => {
   $('#paySheet').innerHTML =
     /* כותרת זהה בדיוק לזו של כרטיס ההזמנה: RTL, סטטוס פריוריטי בשבב הסגול
        עם סמל P, ומועד הסנכרון לצדו — כדי שלא יהיו שני עיצובים לאותו דבר. */
-    '<h3>' + esc(f.customer_name||'') + ' — <span dir="ltr">' + esc(f.order_number) + '</span>' +
+    '<h3>' + esc(f.customer_name||'') + ' — <span dir="ltr">' + esc(f.order_number) + '</span>' + manTag(f) +
       (f.erp_status ? ' <span class="pill p-violet" title="הסטטוס בפריוריטי — מתעדכן בסנכרון">' + PRI_ICO + 'פריוריטי: ' + esc(f.erp_status) + '</span>' : '') +
       (f.synced_at ? '<span class="pill" style="font-weight:400">סונכרן מפריוריטי ' +
         new Date(f.synced_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) + '</span>' : '') +
@@ -10543,6 +10626,11 @@ window.payOpen = on => {
     '</table>' +
     (finNum(f.cust_unlinked_cnt) ? '<div class="pc-legend">⚠️ ללקוח יש ' + finNum(f.cust_unlinked_cnt) +
         ' קבלות בסך ' + shekel(finNum(f.cust_unlinked_amt)) + ' שנקלטו בלי מספר הזמנה, ולכן אינן יורדות מאף הזמנה.</div>' : '') +
+    (f.is_manual ? '<div class="pc-legend">✏️ זו שורה שנפתחה ידנית ואינה מגיעה מפריוריטי' +
+        (f.manual_note ? ' · ' + esc(f.manual_note) : '') +
+        '. היא תיעלם מהמסך מעצמה ברגע שתסונכרן הזמנה באותו מספר.' +
+        (canEdit('acc.pays') ? ' <a href="#" onclick="event.preventDefault();payManOpen(FIN.find(x=>x.order_number===\'' + jsq(f.order_number) + '\'))">עריכה</a>' : '') +
+      '</div>' : '') +
     '<h2 class="sec">לוח פעימות</h2><div id="payBeats"><div class="items-loading">טוען…</div></div>';
   mountCard('payModal', ()=>payOpen(on));
   payLoadBeats(on);
@@ -10582,7 +10670,7 @@ function payTable(list){
     return '<tr class="pay-row" onclick="payOpen(\'' + jsq(f.order_number) + '\')">' +
       '<td class="rownum">' + (i+1) + '</td>' +
       '<td dir="ltr" style="white-space:nowrap"><b><a href="#" onclick="event.preventDefault();finOpen(\'' + jsq(f.order_number) + '\')">' + esc(f.order_number) + '</a></b></td>' +
-      '<td><b>' + esc(f.customer_name||'—') + '</b>' + c.flags + '</td>' +
+      '<td><b>' + esc(f.customer_name||'—') + '</b>' + manTag(f) + c.flags + '</td>' +
       '<td>' + (f.order_date?fmtD(f.order_date):'—') + '</td>' +
 
       '<td>' + (c.masked ? '<span class="fin-muted">—</span>' : shekel(c.ordered)) + '<div class="fin-sub">חויב ' + shekel(c.inv) + '</div></td>' +
@@ -10600,7 +10688,7 @@ function payTable(list){
 function payRow(f){
   const c = finCell(f);
   return '<div class="lead" onclick="finOpen(\'' + jsq(f.order_number) + '\')">' +
-    '<div><div class="nm" dir="ltr" style="text-align:start">' + esc(f.order_number) + ' · ' + esc(f.customer_name||'') + '</div>' +
+    '<div><div class="nm" dir="ltr" style="text-align:start">' + esc(f.order_number) + ' · ' + esc(f.customer_name||'') + manTag(f) + '</div>' +
     '<div class="meta">' + (f.order_date?fmtD(f.order_date):'—') +
       (f.scheduled_date ? ' · אספקה ' + fmtD(f.scheduled_date) : '') + ' · סה"כ ' + (c.masked ? '—' : shekel(c.ordered)) +
       (c.rec ? ' · שולם ' + shekel(c.rec) : '') +

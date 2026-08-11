@@ -1322,7 +1322,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.47.1</div>
+      <div class="ver">גרסה 6.47.2</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1441,7 +1441,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.47.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.47.2</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9051,7 +9051,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'finpay-2026-08-11b';
+const BUILD_ID = 'finpay-2026-08-11c';
 
 window.renderPrc = async function(){
   pvInjectCss();
@@ -10123,9 +10123,14 @@ const remaining = p => Math.max(0, Number(p.total_amount||0) - Number(p.paid_amo
    עד 6.47.0 היתה כאן רשימת-היתר צרה שהסתירה ₪256K חוב אמיתי. */
 const FIN_DEAD_ST = ['מבוטלת','נסגר-מ.קודמת'];
 const finNum = v => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
-/* מחיר ההזמנה ממוסך למי שאין לו crm.orders.price. במצב כזה "נותר" אינו ידוע,
-   ולכן מוצג "—" ולא 0 — אחרת כל הזמנה נראית סגורה וכל קבלה נראית חריגה. */
+/* הזמנה בלי מחיר בפריוריטי — "נותר" אינו ידוע, ולכן מוצג "—" ולא 0, אחרת
+   ההזמנה נראית סגורה וכל קבלה נראית חריגה. שים לב: ord.order_finance_v אינו
+   ממסך את המחיר לפי crm.orders.price. acc.pays היא הרשאת כסף — מי שרואה
+   "נותר לתשלום" ממילא רואה את סכום ההזמנה, ומיסוך היה מייצר מסך חסר-פשר. */
 const finMasked = f => (f.ordered === null || f.ordered === undefined);
+/* הזמנת זיכוי — מחיר שלילי. אינה חוב של הלקוח אלינו אלא חוב שלנו כלפיו,
+   ולכן אסור להציגה כ"עודף גבייה", שמשתמע ממנו שקיבלנו כסף מיותר. */
+const finCredit = f => !finMasked(f) && finNum(f.ordered) < 0;
 const finLive   = f => !FIN_DEAD_ST.includes(String(f.erp_status||''));
 const finIsOpen = f => finLive(f) && !finMasked(f) && finNum(f.balance) > 1;
 function finTermName(code){ const t = PTERMS.find(x=>x.code===code); return t ? t.name : ''; }
@@ -10228,19 +10233,22 @@ function finCell(f){
     flags += '<span class="fin-flag" title="' + esc(shekel(finNum(f.delivered_uninvoiced_sum))) + ' סופקו בלי חשבונית">סופק ולא חויב</span>';
   if(finNum(f.returned_uncredited) > 0)
     flags += '<span class="fin-flag red">הוחזר ולא זוכה</span>';
-  if(!masked && rec > ordered + 1)
+  if(!masked && !finCredit(f) && rec > ordered + 1)
     flags += '<span class="fin-flag red">נגבה מעל ההזמנה</span>';
+  if(finCredit(f))
+    flags += '<span class="fin-flag">הזמנת זיכוי</span>';
   if(finNum(f.cust_unlinked_cnt) > 0)
     flags += '<span class="fin-flag blue" title="' + esc(shekel(finNum(f.cust_unlinked_amt))) + ' בקבלות של הלקוח נקלטו בלי מספר הזמנה, ולכן אינם יורדים מאף הזמנה">קבלות ללא שיוך</span>';
   if(finNum(f.dup_rows) > 1)
     flags += '<span class="fin-flag red" title="מספר ההזמנה מופיע יותר מפעם אחת בטבלת ההזמנות">הזמנה כפולה</span>';
-  return { masked, ordered, rec, bal, inv, flags };
+  return { masked, credit: finCredit(f), ordered, rec, bal, inv, flags };
 }
 /* תא "נותר לתשלום" — שלושה מצבים שאסור לבלבל ביניהם: לא ידוע (מחיר ממוסך),
    חוב, ועודף גבייה. עד 6.47.0 כל השלושה הוצגו כ-0 ירוק. */
 function finBalCell(c){
   if(c.masked) return '<span class="fin-muted">—</span>';
   if(c.bal > 1)  return '<span class="fin-bad">' + shekel(c.bal) + '</span>';
+  if(c.credit)   return '<span class="fin-warn" title="הזמנת זיכוי — הסכום חייב ללקוח ולא ממנו">זיכוי ' + shekel(-c.bal) + ' להשבה</span>';
   if(c.bal < -1) return '<span class="fin-warn" title="נגבה יותר מסכום ההזמנה">עודף ' + shekel(-c.bal) + '</span>';
   return '<span class="fin-ok">0</span>';
 }
@@ -10280,7 +10288,7 @@ function payRow(f){
     '<div class="meta">' + (f.order_date?fmtD(f.order_date):'—') + ' · סה"כ ' + (c.masked ? '—' : shekel(c.ordered)) +
       (c.rec ? ' · שולם ' + shekel(c.rec) : '') +
       (!c.masked && c.bal > 1 ? ' · <b style="color:#c0392b">נותר ' + shekel(c.bal) + '</b>' : '') +
-      (!c.masked && c.bal < -1 ? ' · <b style="color:#b45309">עודף ' + shekel(-c.bal) + '</b>' : '') +
+      (!c.masked && c.bal < -1 ? ' · <b style="color:#b45309">' + (c.credit ? 'זיכוי ' + shekel(-c.bal) + ' להשבה' : 'עודף ' + shekel(-c.bal)) + '</b>' : '') +
       (f.pay_code ? ' · ' + esc(finTermName(f.pay_code)) : '') + '</div>' + c.flags + '</div>' +
     '<span class="pill ' + ordStClass(f.erp_status) + '">' + esc(f.erp_status||'—') + '</span></div>';
 }

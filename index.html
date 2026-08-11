@@ -194,6 +194,18 @@
   .pay-legend .pl-i b{ flex:none; color:#0f172a; min-width:104px }
   /* תיוג ידני — חייב להיות מובחן מיידית משורה שהגיעה מפריוריטי, אחרת
      אי אפשר לדעת על איזה מספר אפשר לסמוך. */
+  #paySheet .be-wrap{ margin-top:10px; border:1px solid var(--line); border-radius:11px; padding:11px 13px; background:#f8fafc }
+  #paySheet .be-top{ display:flex; flex-wrap:wrap; gap:9px; align-items:center; margin-bottom:9px }
+  #paySheet .be-top select, #paySheet .be-top input{ padding:6px 9px; border:1px solid var(--line); border-radius:8px;
+                                                     font-family:inherit; font-size:13px; background:#fff }
+  #paySheet table.be{ width:100%; border-collapse:collapse; font-size:13px }
+  #paySheet table.be th{ text-align:start; font-size:11.5px; color:#64748b; padding:3px 6px; font-weight:700 }
+  #paySheet table.be td{ padding:4px 6px; border-top:1px solid #eef2f7 }
+  #paySheet table.be input, #paySheet table.be select{ width:100%; box-sizing:border-box; padding:6px 8px;
+    border:1px solid var(--line); border-radius:8px; font-family:inherit; font-size:13px; background:#fff }
+  #paySheet table.be input.pct{ text-align:center }
+  #paySheet .be-sum{ margin-top:9px; font-size:13px; font-weight:800 }
+  #paySheet .be-sum.ok{ color:#047857 } #paySheet .be-sum.bad{ color:#b91c1c }
   .man-tag{ display:inline-block; font-size:10.5px; font-weight:800; border-radius:999px; padding:1px 7px;
             background:#fdf4ff; color:#86198f; border:1px solid #f5d0fe; margin-inline-start:5px; white-space:nowrap }
   #payManSheet .pm-f{ margin-bottom:11px }
@@ -1386,7 +1398,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.54.0</div>
+      <div class="ver">גרסה 6.55.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1505,7 +1517,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.54.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.55.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1588,6 +1600,12 @@
       <div class="toolbar">
         <input id="paySearch" placeholder="חיפוש לפי מספר הזמנה או שם לקוח…">
         <select id="payTermFilter" title="סינון לפי תנאי תשלום"><option value="">כל תנאי התשלום</option></select>
+        <select id="paySort" title="מיון הרשימה" onchange="setPaySort(this.value)">
+          <option value="bal">מיון: יתרה מהגבוהה לנמוכה</option>
+          <option value="due">מיון: מועד התשלום הקרוב ביותר</option>
+          <option value="duedesc">מיון: מועד התשלום הרחוק ביותר</option>
+          <option value="date">מיון: תאריך הזמנה מהחדש לישן</option>
+        </select>
         <button class="ghost" id="payAddBtn" onclick="payManOpen(null)">+ שורה ידנית</button>
         <span class="pv-sep"></span>
         <span class="who2" id="paySync" style="color:#64748b;font-size:12px"></span>
@@ -9159,7 +9177,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'paymanual-2026-08-11n';
+const BUILD_ID = 'beatedit-2026-08-11o';
 
 window.renderPrc = async function(){
   pvInjectCss();
@@ -9982,7 +10000,25 @@ window.saveSetting = async i=>{
 let CUSTS=[], TASKS=[], DEALS=[], MEETS=[], CONTS=[], PAYS=[], ORDS=[], SCALLS=[], OTEAMS=[], SKUS=[], PROTS=[], OSET=[];
 /* 6.47.0 — מסך התשלומים עבר להישען על ההזמנה. FIN היא התצוגה המסונכרנת
    מפריוריטי, PTERMS קטלוג תנאי התשלום. crm.payments נשארת כארכיון בלבד. */
-let FIN=[], PTERMS=[], PAY_TERM_F='';
+let FIN=[], PTERMS=[], PAY_TERM_F='', PAY_SORT='bal';
+/* מיון לפי מועד התשלום הבא — הזמנה בלי מועד (פעימה שממתינה לאירוע, או
+   הזמנה בלי לוח) יורדת לסוף בשני הכיוונים, כי "אין תאריך" אינו מוקדם
+   ואינו מאוחר. */
+window.setPaySort = v => { PAY_SORT = v || 'bal'; renderPays(); };
+function paySortFn(a,b){
+  if(PAY_SORT === 'due' || PAY_SORT === 'duedesc'){
+    const da = a.next_due || '', db = b.next_due || '';
+    if(!da && !db) return finNum(b.balance) - finNum(a.balance);
+    if(!da) return 1;
+    if(!db) return -1;
+    const d = String(da).localeCompare(String(db));
+    if(d) return PAY_SORT === 'due' ? d : -d;
+    return finNum(b.balance) - finNum(a.balance);
+  }
+  if(PAY_SORT === 'date') return String(b.order_date||'').localeCompare(String(a.order_date||''));
+  const d = finNum(b.balance) - finNum(a.balance);
+  return d ? d : String(b.order_date||'').localeCompare(String(a.order_date||''));
+}
 /* 6.48.0 — שתי מראות נוספות. OPENIT הוא "נותר לספק" מ-ord.order_open_items_v,
    שנשען על TBALANCE של פריוריטי ולכן אינו דורש שאיש יסמן דבר. FINMETA הוא
    תנאי התשלום וההערה בלבד, ונטען בנפרד מ-FIN כדי שאיש מכירות שיש לו
@@ -10631,9 +10667,114 @@ window.payOpen = on => {
         '. היא תיעלם מהמסך מעצמה ברגע שתסונכרן הזמנה באותו מספר.' +
         (canEdit('acc.pays') ? ' <a href="#" onclick="event.preventDefault();payManOpen(FIN.find(x=>x.order_number===\'' + jsq(f.order_number) + '\'))">עריכה</a>' : '') +
       '</div>' : '') +
-    '<h2 class="sec">לוח פעימות</h2><div id="payBeats"><div class="items-loading">טוען…</div></div>';
+    '<h2 class="sec">לוח פעימות</h2><div id="payBeats"><div class="items-loading">טוען…</div></div>' +
+    '<div id="beEditor"></div>';
   mountCard('payModal', ()=>payOpen(on));
+  BE_ORD = on; BE_ROWS = [];
+  const be = $('#beEditor'); if(be) be.innerHTML = beBtn(on);
   payLoadBeats(on);
+};
+/* עורך לוח הפעימות. התבניות נשארות כנקודת פתיחה בלבד — כאן נקבע כמה
+   פעימות, כמה אחוז כל אחת, ומאיזה אירוע היא נספרת. הפעימה האחרונה יכולה
+   להיות מזומן (ביום האספקה) או שוטף מהחשבונית, וזה בדיוק ההבדל בין
+   "50% מקדמה ו-50% באספקה" ל"50% מקדמה ו-50% שוטף 60". */
+const BEAT_ANCHORS = [['order','אישור ההזמנה'],['delivery','אספקה / התקנה'],
+                      ['invoice','חשבונית'],['fixed','תאריך קבוע']];
+let BE_ROWS = [], BE_ORD = null;
+function beDefault(n){
+  const out = [];
+  for(let i=0;i<n;i++) out.push({ label: i===0 ? 'מקדמה' : ('תשלום ' + (i+1)),
+    pct: 0, anchor: i===0 ? 'order' : 'delivery', offset_days: 0, due_date: '' });
+  const base = Math.floor(100/n);
+  out.forEach((r,i)=>{ r.pct = i === n-1 ? 100 - base*(n-1) : base; });
+  return out;
+}
+window.beSetCount = n => {
+  n = Math.max(1, Math.min(12, Number(n)||1));
+  const cur = BE_ROWS.slice(0, n);
+  while(cur.length < n) cur.push({ label:'תשלום ' + (cur.length+1), pct:0,
+    anchor: cur.length===0 ? 'order' : 'delivery', offset_days:0, due_date:'' });
+  BE_ROWS = cur; beRender();
+};
+window.bePreset = code => {
+  if(!code) return;
+  const t = PTERMS.find(x=>x.code===code); if(!t || !Array.isArray(t.beats)) return;
+  BE_ROWS = t.beats.map((b,i)=>({ label: b.label || ('תשלום ' + (i+1)), pct: Number(b.pct)||0,
+    anchor: b.anchor === 'install' ? 'delivery' : (b.anchor || 'order'),
+    offset_days: Number(b.offset_days)||0, due_date:'' }));
+  beRender();
+};
+window.beSet = (i, k, v) => {
+  if(!BE_ROWS[i]) return;
+  BE_ROWS[i][k] = (k === 'pct' || k === 'offset_days') ? (v === '' ? 0 : Number(v)) : v;
+  if(k === 'anchor' || k === 'pct') beRender();
+};
+function beSum(){ return BE_ROWS.reduce((s,r)=>s + (Number(r.pct)||0), 0); }
+function beRender(){
+  const box = $('#beBody'); if(!box) return;
+  const f = FIN.find(x=>x.order_number===BE_ORD) || {};
+  const tot = finNum(f.ordered);
+  const opt = (list, cur) => list.map(o=>'<option value="'+esc(o[0])+'"'+(String(cur)===o[0]?' selected':'')+'>'+esc(o[1])+'</option>').join('');
+  box.innerHTML =
+    '<table class="be"><thead><tr><th style="width:26%">תיאור</th><th style="width:12%">אחוז</th>' +
+    '<th style="width:16%">סכום</th><th style="width:22%">נספר מ־</th><th style="width:12%">ימים</th><th style="width:16%">תאריך</th></tr></thead><tbody>' +
+    BE_ROWS.map((r,i)=>'<tr>' +
+      '<td><input value="' + esc(r.label||'') + '" onchange="beSet(' + i + ',\'label\',this.value)"></td>' +
+      '<td><input class="pct" type="number" min="0" max="100" step="0.5" value="' + esc(String(r.pct)) + '" onchange="beSet(' + i + ',\'pct\',this.value)"></td>' +
+      '<td>' + (tot ? shekel(Math.round(tot * (Number(r.pct)||0) / 100)) : '<span class="fin-muted">—</span>') + '</td>' +
+      '<td><select onchange="beSet(' + i + ',\'anchor\',this.value)">' + opt(BEAT_ANCHORS, r.anchor) + '</select></td>' +
+      '<td>' + (r.anchor === 'fixed' ? '<span class="fin-muted">—</span>' :
+        '<input type="number" min="0" step="1" value="' + esc(String(r.offset_days||0)) + '" onchange="beSet(' + i + ',\'offset_days\',this.value)">') + '</td>' +
+      '<td>' + (r.anchor === 'fixed' ?
+        '<input type="date" value="' + esc(r.due_date||'') + '" onchange="beSet(' + i + ',\'due_date\',this.value)">' :
+        '<span class="fin-muted">לפי האירוע</span>') + '</td>' +
+    '</tr>').join('') + '</tbody></table>' +
+    '<div class="be-sum ' + (Math.abs(beSum()-100) < 0.01 ? 'ok' : 'bad') + '">סה"כ ' +
+      (Math.round(beSum()*100)/100) + '%' + (Math.abs(beSum()-100) < 0.01 ? ' ✓' : ' — חייב להיות 100%') + '</div>';
+}
+window.beOpen = on => {
+  if(!canEdit('acc.pays')) return finNoEdit();
+  BE_ORD = on;
+  const box = $('#beEditor'); if(!box) return;
+  box.innerHTML =
+    '<div class="be-wrap">' +
+      '<div class="be-top">' +
+        '<label>מספר פעימות</label>' +
+        '<select id="beCount" onchange="beSetCount(this.value)">' +
+          [1,2,3,4,5,6].map(n=>'<option value="'+n+'">'+n+'</option>').join('') + '</select>' +
+        '<label>טעינה מתבנית</label>' +
+        '<select id="bePreset" onchange="bePreset(this.value)"><option value="">— בחר —</option>' +
+          PTERMS.map(t=>'<option value="'+esc(t.code)+'">'+esc(t.name)+'</option>').join('') + '</select>' +
+      '</div>' +
+      '<div id="beBody"></div>' +
+      '<div class="modal-actions" style="margin-top:10px">' +
+        '<button class="btn btnw" onclick="beSave()">שמירת הלוח</button>' +
+        '<button class="ghost" style="width:auto;padding:11px 18px" onclick="beCancel()">ביטול</button>' +
+      '</div>' +
+    '</div>';
+  const sel = $('#beCount'); if(sel) sel.value = String(BE_ROWS.length || 2);
+  beRender();
+};
+window.beCancel = () => { const b = $('#beEditor'); if(b) b.innerHTML = beBtn(BE_ORD); };
+function beBtn(on){
+  if(!canEdit('acc.pays')) return '';
+  return '<button class="ghost" style="width:auto;padding:9px 16px;margin-top:8px" onclick="beOpen(\'' + jsq(on) + '\')">עריכת לוח הפעימות</button>';
+}
+window.beSave = async () => {
+  if(!canEdit('acc.pays')) return finNoEdit();
+  if(Math.abs(beSum()-100) >= 0.01){ toast('סכום האחוזים חייב להיות 100%'); return; }
+  const bad = BE_ROWS.find(r=>r.anchor === 'fixed' && !r.due_date);
+  if(bad){ toast('פעימה בתאריך קבוע חייבת תאריך'); return; }
+  const payload = BE_ROWS.map(r=>({ label:r.label||null, pct:Number(r.pct)||0, anchor:r.anchor,
+    offset_days: r.anchor==='fixed' ? 0 : (Number(r.offset_days)||0),
+    due_date: r.anchor==='fixed' ? (r.due_date||null) : null }));
+  const ok = await finDbw(()=>sb.schema('ord').rpc('order_beats_set', { p_order: BE_ORD, p_beats: payload }),
+    'לוח הפעימות נשמר');
+  if(!ok) return;
+  await finRefreshRow(BE_ORD);
+  payLoadBeats(BE_ORD);
+  beCancel();
+  renderPays();
 };
 /* הפעימות נטענות בפתיחה ולא נשמרות ב-FIN, כדי שכרטיס פתוח יציג תמיד את
    התאריכים המעודכנים — הם נגזרים ויכולים לזוז עם תאריך האספקה. */
@@ -10641,11 +10782,15 @@ async function payLoadBeats(on){
   const box = $('#payBeats'); if(!box) return;
   try{
     const { data, error } = await sb.schema('ord').from('order_beats_v')
-      .select('seq,notes,amount,anchor,due_eff,covered,beat_state').eq('order_number', on).order('seq');
+      .select('seq,notes,amount,anchor,offset_days,due_date,due_is_final,due_eff,covered,beat_state').eq('order_number', on).order('seq');
     if(error) throw error;
     if(!box.isConnected) return;
     const rows = data || [];
-    if(!rows.length){ box.innerHTML = '<div class="items-empty">אין לוח פעימות. בחירת תנאי תשלום בטבלה תיצור אותו.</div>'; return; }
+    const tot = finNum((FIN.find(x=>x.order_number===on)||{}).ordered);
+    BE_ROWS = rows.length ? rows.map(r=>({ label: r.notes||'', pct: tot ? Math.round(finNum(r.amount)/tot*1000)/10 : 0,
+      anchor: r.due_is_final ? 'fixed' : (r.anchor==='install' ? 'delivery' : (r.anchor||'order')),
+      offset_days: Number(r.offset_days)||0, due_date: r.due_is_final ? (r.due_date||'') : '' })) : beDefault(2);
+    if(!rows.length){ box.innerHTML = '<div class="items-empty">אין לוח פעימות. אפשר לבנות אותו כאן, או לבחור תנאי תשלום בטבלה.</div>'; return; }
     box.innerHTML = '<table class="pc-beats"><thead><tr><th>#</th><th>פעימה</th><th>סכום</th><th>מועד</th><th>נגבה</th><th>מצב</th></tr></thead><tbody>' +
       rows.map(r=>'<tr><td>' + (Number(r.seq)||0) + '</td><td>' + esc(r.notes||'') + '</td>' +
         '<td>' + shekel(finNum(r.amount)) + '</td>' +
@@ -10720,11 +10865,7 @@ function renderPays(){
   const q = (($('#paySearch')||{}).value||'').trim();
   let list = finRows();
   if(q) list = list.filter(f => String(f.order_number||'').includes(q) || String(f.customer_name||'').includes(q));
-  list = list.slice().sort((a,b)=>{
-    const d = finNum(b.balance) - finNum(a.balance);
-    if(d) return d;
-    return String(b.order_date||'').localeCompare(String(a.order_date||''));
-  });
+  list = list.slice().sort(paySortFn);
   $('#pays-list').innerHTML = wideScreen() ? payTable(list) : capped(list, payRow, 'אין הזמנות בסינון הזה');
 }
 $('#paySearch').addEventListener('input', renderPays);

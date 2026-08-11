@@ -159,6 +159,9 @@
   .open-badge{ display:inline-block; font-size:11px; font-weight:800; border-radius:999px; padding:1px 8px;
                background:#fff7ed; color:#b45309; border:1px solid #fed7aa; margin-inline-start:6px; white-space:nowrap }
   .open-badge.big{ font-size:12px; padding:2px 10px }
+  /* אספקה שכבר מתוכננת אינה חריגה ואינה צריכה למשוך את העין באותה עוצמה */
+  .open-badge.wait{ background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe }
+  .items-tbl td.bal.svc{ color:#cbd5e1; font-weight:400 }
   .items-tbl td.bal{ text-align:center; font-weight:800; color:#b45309 }
   .items-tbl tr.has-bal{ background:#fffbeb }
   #tab-pays .tbl td{ vertical-align:top }
@@ -1330,7 +1333,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.48.0</div>
+      <div class="ver">גרסה 6.48.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1449,7 +1452,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.48.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.48.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2933,8 +2936,8 @@ function renderLogiScope(){
   const box=$('#logi-scope'); if(!box) return;
   const base = ORDS.filter(o=>!['הושלם','בוטל','לא לטיפול'].includes(o.order_status));
   const n = { sched: base.filter(needsSched).length, ship: base.filter(o=>!needsSched(o)).length, all: base.length, pend: ORDS.filter(o=>o.order_status==='לא לטיפול').length, done: ORDS.filter(o=>o.order_status==='הושלם').length, every: ORDS.length,
-    open: ORDS.filter(o=>openCnt(o.order_number)>0 && !['בוטל','מבוטלת'].includes(o.order_status)).length };
-  box.innerHTML = [['sched','לתיאום'],['ship','משלוחים'],['all','לטיפול'],['open','נותר לספק'],['pend','לא לטיפול'],['done','הושלמו'],['every','הכל']]
+    open: ORDS.filter(o=>openStuck(o.order_number)).length };
+  box.innerHTML = [['sched','לתיאום'],['ship','משלוחים'],['all','לטיפול'],['open','השלמות לתיאום'],['pend','לא לטיפול'],['done','הושלמו'],['every','הכל']]
     .map(([k,l])=>`<button type="button" class="chip ${LOGI_SCOPE===k?'active':''}" onclick="logiScope('${k}')">${l} <b>${n[k]}</b></button>`).join('');
 }
 /* 6.24.6 — סינון בתצוגה הטבלאית: רב-בחירת סטטוסים, סינון קריאות שירות, ושמירת ברירת מחדל */
@@ -3084,11 +3087,12 @@ function logiRenderTable(){
     const doneScope = LOGI_SCOPE==='done';
     const pendScope = LOGI_SCOPE==='pend';
     const everyScope = LOGI_SCOPE==='every';
-    /* "נותר לספק" חוצה סטטוסים בכוונה: רוב ההזמנות שנותרו בהן פריטים
-       כבר מסומנות "הושלם", וזו בדיוק הסיבה שהן נעלמו מהעין עד היום. */
+    /* "השלמות לתיאום" חוצה סטטוסים בכוונה: רוב ההזמנות התקועות כבר מסומנות
+       "הושלם", וזו בדיוק הסיבה שנעלמו מהעין עד היום. הזמנה שכבר יש לה ביקור
+       עתידי אינה נכנסת לכאן — היא בדרך, לא תקועה. */
     const openScope = LOGI_SCOPE==='open';
     let list = ORDS.filter(o=>{
-      if(openScope) return openCnt(o.order_number)>0 && !['בוטל','מבוטלת'].includes(o.order_status);
+      if(openScope) return openStuck(o.order_number);
       if(everyScope) return true;
       if(o.order_status==='לא לטיפול') return pendScope || stF.includes('לא לטיפול');
       if(o.order_status==='הושלם') return doneScope || stF.includes('הושלם');
@@ -9064,7 +9068,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'openitems-2026-08-11d';
+const BUILD_ID = 'openitems-2026-08-11e';
 
 window.renderPrc = async function(){
   pvInjectCss();
@@ -9903,10 +9907,25 @@ function reIndexAux(){
 const openOf = on => OPEN_BY[String(on||'')] || null;
 const finmOf = on => FINM_BY[String(on||'')] || {};
 const openCnt = on => { const r = openOf(on); return r ? Number(r.open_lines)||0 : 0; };
+/* "השלמה לתיאום" הוא המצב היחיד שדורש פעולה: נותרו פריטי סחורה ואין ביקור
+   עתידי. הזמנה שכבר משובצת — למשל התקנה דו-יומית שסופק בה רק היום הראשון —
+   היא "אספקה בהמשך" ואינה תקלה. ההבחנה נעשית ב-ord.order_open_items_v לפי
+   התאריך המתואם ועוד ימי ההתקנה, ולא לפי סטטוס. */
+const openStuck = on => { const r = openOf(on); return !!(r && r.supply_state === 'השלמה לתיאום'); };
+/* סדרות השירות (התקנה, משלוח, סבלות) אינן נסגרות בפריוריטי לעולם, ולכן
+   הוחרגו. הרשימה חיה ב-ord.settings.supply_service_skus ונטענת עם OSET,
+   כדי שלא תהיה כאן רשימה מקבילה שתסטה מזו שבמסד. */
+function svcSkuSet(){
+  const r = (typeof OSET !== 'undefined' ? OSET : []).find(x=>x && x.key==='supply_service_skus');
+  return new Set(String((r && r.value) || '').split(',').map(s=>s.trim()).filter(Boolean));
+}
 function openBadge(on, big){
-  const r = openOf(on); if(!r) return '';
-  return '<span class="open-badge' + (big?' big':'') + '" title="' + esc(String(r.items||'').slice(0,300)) +
-         '">נותר לספק · ' + (Number(r.open_lines)||0) + (Number(r.open_lines)===1?' פריט':' פריטים') + '</span>';
+  const r = openOf(on); if(!r || r.supply_state === 'לא רלוונטי') return '';
+  const n = Number(r.open_lines)||0, wait = r.supply_state === 'אספקה בהמשך';
+  return '<span class="open-badge' + (wait?' wait':'') + (big?' big':'') +
+         '" title="' + esc(String(r.items||'').slice(0,300)) + '">' +
+         (wait ? 'אספקה בהמשך' : 'השלמה לתיאום') + ' · ' + n + (n===1?' פריט':' פריטים') +
+         (wait && r.visit_end ? ' · ' + fmtD(r.visit_end) : '') + '</span>';
 }
 /* פס אזהרה עליון כשטעינת נתונים נכשלה — במקום להציג "אין נתונים" (תיקון ממצא 11) */
 function loadErrBanner(names){
@@ -11097,16 +11116,18 @@ async function loadOrderItems(orderNumber){
     const list=Object.values(byLine).sort((a,b)=>(a.kline||0)-(b.kline||0));
     if(!list.length){ box.innerHTML='<div class="items-empty">אין שורות ציוד להזמנה זו</div>'; return; }
     const totalQty=list.reduce((s,r)=>s+(Number(r.qty)||0),0);
-    const openBal=list.reduce((s,r)=>s+(Number(r.balance)>0?Number(r.balance):0),0);
-    const openLines=list.filter(r=>Number(r.balance)>0).length;
+    const SVC=svcSkuSet();
+    const goods=list.filter(r=>!SVC.has(String(r.partname||'')));
+    const openBal=goods.reduce((s,r)=>s+(Number(r.balance)>0?Number(r.balance):0),0);
+    const openLines=goods.filter(r=>Number(r.balance)>0).length;
     box.innerHTML=`<div class="items-wrap"><table class="items-tbl">
       <thead><tr><th style="width:34px">#</th><th style="width:130px">מק"ט</th><th>תיאור</th><th style="width:70px">כמות</th><th style="width:78px" title="כמה מהשורה עדיין לא סופק — לפי פריוריטי">נותר לספק</th></tr></thead>
-      <tbody>${list.map((r,i)=>{ const bal=Number(r.balance)||0; return `<tr class="${bal>0?'has-bal':''}">
+      <tbody>${list.map((r,i)=>{ const isSvc=SVC.has(String(r.partname||'')); const bal=(!isSvc&&Number(r.balance)>0)?Number(r.balance):0; return `<tr class="${bal>0?'has-bal':''}">
         <td class="rn">${i+1}</td>
         <td dir="ltr" class="sku">${esc(r.partname||'')}</td>
         <td>${esc(r.partdes||'')}</td>
         <td class="qty">${r.qty==null?'':Number(r.qty).toLocaleString('he-IL')}</td>
-        <td class="bal">${bal>0?bal.toLocaleString('he-IL'):'<span style="color:#cbd5e1">—</span>'}</td>
+        <td class="bal${isSvc?' svc':''}"${isSvc?' title="שורת שירות — פריוריטי אינה סוגרת אותה, ולכן אינה נספרת כחוב אספקה"':''}>${bal>0?bal.toLocaleString('he-IL'):'<span style="color:#cbd5e1">—</span>'}</td>
       </tr>`; }).join('')}</tbody>
     </table></div>
     <div class="count-line">${list.length} שורות · סה"כ ${totalQty.toLocaleString('he-IL')} יח'${openBal>0?` · <b style="color:#b45309">${openLines} שורות שטרם סופקו, ${openBal.toLocaleString('he-IL')} יח'</b>`:''}</div>`;

@@ -208,6 +208,9 @@
   #paySheet .led-act{ padding:5px 11px; font-size:12px; border-radius:8px; border:1px solid var(--line);
                       background:#fff; font-family:inherit; cursor:pointer; white-space:nowrap }
   #paySheet .led-act.go{ background:#1B365D; color:#fff; border-color:#1B365D; font-weight:700 }
+  .est-tag{ display:inline-block; font-size:10px; font-weight:800; border-radius:999px; padding:0 6px;
+            background:#fff7ed; color:#9a3412; border:1px solid #fed7aa; margin-inline-start:5px; white-space:nowrap }
+  .est-d{ color:#9a3412 }
   .vis-box{ border:1px solid #c7d2fe; background:#eef2ff; border-radius:12px; padding:11px 13px; margin-top:12px }
   .vis-box .vb-title{ font-weight:800; font-size:13px; color:#3730a3; margin-bottom:8px }
   .vis-row{ display:flex; flex-wrap:wrap; gap:9px; align-items:center; padding:7px 0; border-top:1px solid #e0e7ff; font-size:13px }
@@ -1451,7 +1454,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.58.0</div>
+      <div class="ver">גרסה 6.59.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1570,7 +1573,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.58.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.59.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1651,6 +1654,8 @@
           <div class="pl-i"><b>שולמה</b><span>היתרה אפס — ההזמנה נגבתה במלואה.</span></div>
           <div class="pl-i"><b>עודף גבייה</b><span>נגבה יותר מסכום ההזמנה.</span></div>
           <div class="pl-i"><b>סופק ולא חויב</b><span>יצאה תעודת משלוח סופית שלא הופקה כנגדה חשבונית. נספר מ-27/07/2026.</span></div>
+          <div class="pl-i"><b>צפי</b><span>הפעימה תלויה באירוע שטרם קרה — אספקה או חשבונית — ולכן אין לה עדיין תאריך ודאי. התאריך המוצג נגזר מתאריך האספקה המתואם (אצלנו החשבונית מופקת באספקה: בפועל חציון של אפס ימים בין תעודת המשלוח לחשבונית). הוא מתעדכן מעצמו כשהתיאום זז, והופך לתאריך ודאי ברגע שהחשבונית יוצאת. פעימה בצפי לעולם אינה נספרת כאיחור.</span></div>
+          <div class="pl-i"><b>ממתין לאירוע</b><span>אין עדיין אפילו צפי, כי להזמנה אין תאריך אספקה מתואם. קביעת תאריך תיאום תייצר צפי אוטומטית.</span></div>
           <div class="pl-i"><b>קבלות ללא שיוך</b><span>קבלות של הלקוח שנקלטו בלי מספר הזמנה, ולכן אינן יורדות מאף הזמנה.</span></div>
         </div>
       </details>
@@ -9235,7 +9240,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'visit-2026-08-12b';
+const BUILD_ID = 'proj-2026-08-12c';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -10406,7 +10411,9 @@ function payStateCell(f){
   if(finNum(f.n_beats) > 0 && (f.next_due || f.next_amt)){
     out += '<div class="pay-next">הבא: ' + (f.next_label ? esc(f.next_label) + ' · ' : '') +
            (f.next_amt != null ? '<b>' + shekel(finNum(f.next_amt)) + '</b>' : '') +
-           (f.next_due ? ' · ' + fmtD(f.next_due) : ' · ללא תאריך') + '</div>';
+           (f.next_due ? ' · ' + (f.next_is_est ? '<span class="est-d">' + fmtD(f.next_due) + '</span><span class="est-tag">צפי</span>'
+                                                 : fmtD(f.next_due))
+                       : ' · ללא תאריך') + '</div>';
   } else if(finNum(f.n_beats) === 0 && f.pay_code){
     out += '<div class="pay-next">אין לוח פעימות</div>';
   }
@@ -11065,22 +11072,50 @@ function beDefault(n){
 window.beSetCount = n => {
   n = Math.max(1, Math.min(12, Number(n)||1));
   const cur = BE_ROWS.slice(0, n);
-  while(cur.length < n) cur.push({ label: cur.length===0 ? 'מקדמה' : 'לאחר אספקה', pct:0,
+  while(cur.length < n) cur.push({ label: cur.length===0 ? 'מקדמה' : 'לאחר אספקה', pct:0, amount:0,
     anchor: cur.length===0 ? 'order' : 'delivery', offset_days:0, due_date:'' });
-  BE_ROWS = cur; beRender();
+  BE_ROWS = cur;
+  /* שינוי מספר הפעימות מפזר מחדש שווה בשווה, אחרת נשארים עם סכום שאינו
+     מסתדר וכפתור שמירה חסום בלי סיבה ברורה. */
+  const t2 = beTot();
+  if(t2){ const base = Math.floor(t2 / n);
+    BE_ROWS.forEach((r,i)=>{ r.amount = (i === n-1) ? (t2 - base*(n-1)) : base;
+      r.pct = Math.round(r.amount / t2 * 10000) / 100; }); }
+  beRender();
 };
 window.bePreset = code => {
   if(!code) return;
   const t = PTERMS.find(x=>x.code===code); if(!t || !Array.isArray(t.beats)) return;
+  const ptot = beTot();
   BE_ROWS = t.beats.map((b,i)=>({ label: b.label || 'לאחר אספקה', pct: Number(b.pct)||0,
+    amount: ptot ? Math.round(ptot * (Number(b.pct)||0) / 100) : null,
     anchor: b.anchor === 'install' ? 'delivery' : (b.anchor || 'order'),
     offset_days: Number(b.offset_days)||0, due_date:'' }));
   beRender();
 };
+/* הסכום של פעימה: מה שהוקלד אם הוקלד, אחרת נגזר מהאחוז. */
+function beTot(){ const f = FIN.find(x=>x.order_number===BE_ORD) || {}; return finNum(f.ordered); }
+function beAmt(r, tot){
+  if(r.amount != null && r.amount !== '') return Math.round(Number(r.amount));
+  return Math.round((tot || beTot()) * (Number(r.pct)||0) / 100);
+}
+function beAmtSum(){ const t = beTot(); return BE_ROWS.reduce((s,r)=>s + beAmt(r, t), 0); }
 window.beSet = (i, k, v) => {
   if(!BE_ROWS[i]) return;
-  BE_ROWS[i][k] = (k === 'pct' || k === 'offset_days') ? (v === '' ? 0 : Number(v)) : v;
-  if(k === 'anchor' || k === 'pct') beRender();
+  const tot = beTot();
+  if(k === 'pct'){
+    BE_ROWS[i].pct = v === '' ? 0 : Number(v);
+    BE_ROWS[i].amount = tot ? Math.round(tot * BE_ROWS[i].pct / 100) : null;
+  } else if(k === 'amount'){
+    const a = v === '' ? 0 : Math.round(Number(v));
+    BE_ROWS[i].amount = a;
+    BE_ROWS[i].pct = tot ? Math.round(a / tot * 10000) / 100 : 0;
+  } else if(k === 'offset_days'){
+    BE_ROWS[i].offset_days = v === '' ? 0 : Number(v);
+  } else {
+    BE_ROWS[i][k] = v;
+  }
+  if(k === 'anchor' || k === 'pct' || k === 'amount') beRender();
 };
 function beSum(){ return BE_ROWS.reduce((s,r)=>s + (Number(r.pct)||0), 0); }
 function beRender(){
@@ -11093,8 +11128,12 @@ function beRender(){
     '<th style="width:16%">סכום</th><th style="width:22%">נספר מ־</th><th style="width:12%">ימים</th><th style="width:16%">תאריך</th></tr></thead><tbody>' +
     BE_ROWS.map((r,i)=>'<tr>' +
       '<td><select onchange="beSet(' + i + ',\'label\',this.value)">' + beLabelOpts(r.label) + '</select></td>' +
-      '<td><input class="pct" type="number" min="0" max="100" step="0.5" value="' + esc(String(r.pct)) + '" onchange="beSet(' + i + ',\'pct\',this.value)"></td>' +
-      '<td>' + (tot ? shekel(Math.round(tot * (Number(r.pct)||0) / 100)) : '<span class="fin-muted">—</span>') + '</td>' +
+      '<td><input class="pct" type="number" min="0" max="100" step="0.01" value="' + esc(String(Math.round((Number(r.pct)||0)*100)/100)) + '" onchange="beSet(' + i + ',\'pct\',this.value)"></td>' +
+      /* אחוז וסכום הם שני צדדים של אותו מספר, ולכן שניהם ניתנים להקלדה.
+         הסכום הוא הקובע בשמירה כשכל הפעימות נושאות סכום — 33.33% מ-266,019
+         אינו מספר שאפשר להקליד כאחוז בלי לאבד שקל. */
+      '<td>' + (tot ? '<input type="number" min="0" step="1" value="' + esc(String(beAmt(r, tot))) +
+        '" onchange="beSet(' + i + ',\'amount\',this.value)">' : '<span class="fin-muted">—</span>') + '</td>' +
       '<td><select onchange="beSet(' + i + ',\'anchor\',this.value)">' + opt(BEAT_ANCHORS, r.anchor) + '</select></td>' +
       '<td>' + (r.anchor === 'fixed' ? '<span class="fin-muted">—</span>' :
         '<input type="number" min="0" step="1" value="' + esc(String(r.offset_days||0)) + '" onchange="beSet(' + i + ',\'offset_days\',this.value)">') + '</td>' +
@@ -11102,8 +11141,15 @@ function beRender(){
         '<input type="date" value="' + esc(r.due_date||'') + '" onchange="beSet(' + i + ',\'due_date\',this.value)">' :
         '<span class="fin-muted">לפי האירוע</span>') + '</td>' +
     '</tr>').join('') + '</tbody></table>' +
-    '<div class="be-sum ' + (Math.abs(beSum()-100) < 0.01 ? 'ok' : 'bad') + '">סה"כ ' +
-      (Math.round(beSum()*100)/100) + '%' + (Math.abs(beSum()-100) < 0.01 ? ' ✓' : ' — חייב להיות 100%') + '</div>';
+    /* הבדיקה היא על השקלים ולא על האחוזים: שלוש פעימות של 33.33% לעולם
+       לא יסתכמו ל-100 אבל הסכומים כן מסתכמים למחיר ההזמנה, וזה מה שחשוב. */
+    (function(){
+      const t = beTot(), s = beAmtSum(), d = t ? s - t : 0, ok = !t || Math.abs(d) <= 1;
+      return '<div class="be-sum ' + (ok ? 'ok' : 'bad') + '">סה"כ ' + shekel(s) +
+        (t ? ' מתוך ' + shekel(t) : '') +
+        ' · ' + (Math.round(beSum()*100)/100) + '%' +
+        (ok ? ' ✓' : ' — הפרש של ' + shekel(Math.abs(d))) + '</div>';
+    })();
 }
 window.beOpen = on => {
   if(!canEdit('acc.pays')) return finNoEdit();
@@ -11135,10 +11181,15 @@ function beBtn(on){
 }
 window.beSave = async () => {
   if(!canEdit('acc.pays')) return finNoEdit();
-  if(Math.abs(beSum()-100) >= 0.01){ toast('סכום האחוזים חייב להיות 100%'); return; }
+  const beT = beTot(), beS = beAmtSum();
+  if(beT && Math.abs(beS - beT) > 1){
+    toast('סכום הפעימות ' + shekel(beS) + ' מול ' + shekel(beT) + ' בהזמנה'); return;
+  }
+  if(!beT && Math.abs(beSum()-100) >= 0.01){ toast('סכום האחוזים חייב להיות 100%'); return; }
   const bad = BE_ROWS.find(r=>r.anchor === 'fixed' && !r.due_date);
   if(bad){ toast('פעימה בתאריך קבוע חייבת תאריך'); return; }
-  const payload = BE_ROWS.map(r=>({ label:r.label||null, pct:Number(r.pct)||0, anchor:r.anchor,
+  const payload = BE_ROWS.map(r=>({ label:r.label||null, pct:Number(r.pct)||0,
+    amount: beT ? beAmt(r, beT) : null, anchor:r.anchor,
     offset_days: r.anchor==='fixed' ? 0 : (Number(r.offset_days)||0),
     due_date: r.anchor==='fixed' ? (r.due_date||null) : null }));
   const ok = await finDbw(()=>sb.schema('ord').rpc('order_beats_set', { p_order: BE_ORD, p_beats: payload }),
@@ -11155,19 +11206,24 @@ async function payLoadBeats(on){
   const box = $('#payBeats'); if(!box) return;
   try{
     const { data, error } = await sb.schema('ord').from('order_beats_v')
-      .select('seq,notes,amount,anchor,offset_days,due_date,due_is_final,due_eff,covered,beat_state').eq('order_number', on).order('seq');
+      .select('seq,notes,amount,anchor,offset_days,due_date,due_is_final,due_eff,due_proj,due_show,due_is_est,covered,beat_state').eq('order_number', on).order('seq');
     if(error) throw error;
     if(!box.isConnected) return;
     const rows = data || [];
     const tot = finNum((FIN.find(x=>x.order_number===on)||{}).ordered);
-    BE_ROWS = rows.length ? rows.map(r=>({ label: r.notes||'', pct: tot ? Math.round(finNum(r.amount)/tot*1000)/10 : 0,
+    BE_ROWS = rows.length ? rows.map(r=>({ label: r.notes||'', amount: Math.round(finNum(r.amount)),
+      pct: tot ? Math.round(finNum(r.amount)/tot*10000)/100 : 0,
       anchor: r.due_is_final ? 'fixed' : (r.anchor==='install' ? 'delivery' : (r.anchor||'order')),
       offset_days: Number(r.offset_days)||0, due_date: r.due_is_final ? (r.due_date||'') : '' })) : beDefault(2);
     if(!rows.length){ box.innerHTML = '<div class="items-empty">אין לוח פעימות. אפשר לבנות אותו כאן, או לבחור תנאי תשלום בטבלה.</div>'; return; }
     box.innerHTML = '<table class="pc-beats"><thead><tr><th>#</th><th>פעימה</th><th>סכום</th><th>מועד</th><th>נגבה</th><th>מצב</th></tr></thead><tbody>' +
       rows.map(r=>'<tr><td>' + (Number(r.seq)||0) + '</td><td>' + esc(r.notes||'') + '</td>' +
         '<td>' + shekel(finNum(r.amount)) + '</td>' +
-        '<td>' + (r.due_eff ? fmtD(r.due_eff) : '<span class="fin-muted">ממתין לאירוע</span>') + '</td>' +
+        /* תאריך ודאי מוצג רגיל. תאריך צפי מסומן, כי אסור שיטושטש ההבדל
+           בין "יחויב ב-" ל"צפוי להיות מחויב ב-". */
+        '<td>' + (r.due_is_est
+          ? '<span class="est-d">' + fmtD(r.due_show) + '</span><span class="est-tag">צפי</span>'
+          : (r.due_show ? fmtD(r.due_show) : '<span class="fin-muted">ממתין לאירוע</span>')) + '</td>' +
         '<td>' + (finNum(r.covered) ? shekel(finNum(r.covered)) : '—') + '</td>' +
         '<td><span class="pay-st ' + (r.beat_state==='שולמה'?'done':(r.beat_state==='באיחור'?'late':(r.beat_state==='שולמה חלקית'?'part':'none'))) +
           '">' + esc(r.beat_state||'') + '</span></td></tr>').join('') + '</tbody></table>';

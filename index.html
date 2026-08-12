@@ -1454,7 +1454,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.60.0</div>
+      <div class="ver">גרסה 6.60.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1573,7 +1573,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.60.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.60.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9246,7 +9246,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'eta-2026-08-12d';
+const BUILD_ID = 'ordlink-2026-08-12e';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -11059,7 +11059,7 @@ const BEAT_ANCHORS = [['order','אישור ההזמנה'],['delivery','אספק�
 /* תיאור הפעימה נבחר מרשימה סגורה ולא מוקלד. שני אנשים שכותבים "מקדמה"
    ו"מקדמה " יוצרים שני מונחים שאי אפשר לסכם עליהם, ולכן ההקלדה ירדה.
    ערך שנשמר בעבר ואינו ברשימה מתווסף אליה בטעינה כדי שלא ייעלם. */
-const BEAT_LABELS = ['מקדמה','לפני אספקה','לאחר אספקה','שוטף מהחשבונית','בהתקנה','תשלום מלא','יתרה'];
+const BEAT_LABELS = ['מקדמה','לפני אספקה','לאחר אספקה','שוטף מהחשבונית','בהתקנה'];
 function beLabelOpts(cur){
   const list = BEAT_LABELS.slice();
   const v = String(cur||'');
@@ -11263,7 +11263,14 @@ function payTable(list){
       : esc(f.notes||'');
     return '<tr class="pay-row" onclick="payOpen(\'' + jsq(f.order_number) + '\')">' +
       '<td class="rownum">' + (i+1) + '</td>' +
-      '<td dir="ltr" style="white-space:nowrap"><b><a href="#" onclick="event.preventDefault();finOpen(\'' + jsq(f.order_number) + '\')">' + esc(f.order_number) + '</a></b></td>' +
+      /* מספר ההזמנה הוא הדרך היחידה לכרטיס ההזמנה; כל שאר השורה פותחת את
+         כרטיס התשלום. בלי stopPropagation הלחיצה המשיכה לשורה, ו-payOpen
+         נפתח מעל כרטיס ההזמנה — כלומר הקישור "לא עבד" אף שהוא כן רץ.
+         שורה ידנית אינה הזמנה ולכן אינה קישור. */
+      '<td dir="ltr" style="white-space:nowrap"><b>' +
+        (f.is_manual ? esc(f.order_number)
+          : '<a href="#" title="לכרטיס ההזמנה" onclick="event.preventDefault();event.stopPropagation();finOpen(\'' +
+            jsq(f.order_number) + '\')">' + esc(f.order_number) + '</a>') + '</b></td>' +
       '<td><b>' + esc(f.customer_name||'—') + '</b>' + manTag(f) + c.flags + '</td>' +
       '<td>' + (f.order_date?fmtD(f.order_date):'—') + '</td>' +
 
@@ -11281,8 +11288,13 @@ function payTable(list){
 }
 function payRow(f){
   const c = finCell(f);
-  return '<div class="lead" onclick="finOpen(\'' + jsq(f.order_number) + '\')">' +
-    '<div><div class="nm" dir="ltr" style="text-align:start">' + esc(f.order_number) + ' · ' + esc(f.customer_name||'') + manTag(f) + '</div>' +
+  /* גם במובייל: המספר לכרטיס ההזמנה, שאר השורה לכרטיס התשלום. */
+  return '<div class="lead" onclick="payOpen(\'' + jsq(f.order_number) + '\')">' +
+    '<div><div class="nm" dir="ltr" style="text-align:start">' +
+      (f.is_manual ? esc(f.order_number)
+        : '<a href="#" title="לכרטיס ההזמנה" onclick="event.preventDefault();event.stopPropagation();finOpen(\'' +
+          jsq(f.order_number) + '\')">' + esc(f.order_number) + '</a>') +
+      ' · ' + esc(f.customer_name||'') + manTag(f) + '</div>' +
     '<div class="meta">' + (f.order_date?fmtD(f.order_date):'—') +
       (f.scheduled_date ? ' · אספקה ' + fmtD(f.scheduled_date) : '') + ' · סה"כ ' + (c.masked ? '—' : shekel(c.ordered)) +
       (c.rec ? ' · שולם ' + shekel(c.rec) : '') +
@@ -11294,9 +11306,20 @@ function payRow(f){
     '<span class="pill ' + ordStClass(f.erp_status) + '">' + esc(f.erp_status||'—') + '</span></div>';
 }
 /* פתיחת ההזמנה עצמה מהמסך הפיננסי — דרך מחסנית הכרטיסים כדי שיהיה "חזרה" */
-window.finOpen = on => {
-  const o = (typeof ORDS !== 'undefined' ? ORDS : []).find(x=>x.order_number===on);
-  if(!o) return toast('ההזמנה אינה טעונה במסך — רענן את הדף');
+/* מסך התשלומים נשען על ord.order_finance_v ומסך ההזמנות על ord.orders_v,
+   ולכן ייתכן שהזמנה מופיעה כאן ואינה ב-ORDS. במקום להודיע "רענן את הדף"
+   מושכים אותה מהמסד ומוסיפים למערך — הפעם הבאה כבר תהיה מיידית. */
+window.finOpen = async on => {
+  let o = (typeof ORDS !== 'undefined' ? ORDS : []).find(x=>x.order_number===on);
+  if(!o){
+    try{
+      const { data, error } = await sb.schema('ord').from('orders_v')
+        .select('*').eq('order_number', on).maybeSingle();
+      if(error) throw error;
+      if(data){ o = data; if(typeof ORDS !== 'undefined') ORDS.push(data); }
+    }catch(e){ /* נופלים להודעה שלמטה */ }
+  }
+  if(!o) return toast('לא נמצא כרטיס הזמנה למספר ' + on);
   goCard(()=>openOrd(o.id));
 };
 /* ציור מחדש בזמן הקלדה בהערה מוחק טקסט שטרם נשמר. לכן דוחים אותו עד

@@ -208,6 +208,21 @@
   #paySheet .led-act{ padding:5px 11px; font-size:12px; border-radius:8px; border:1px solid var(--line);
                       background:#fff; font-family:inherit; cursor:pointer; white-space:nowrap }
   #paySheet .led-act.go{ background:#1B365D; color:#fff; border-color:#1B365D; font-weight:700 }
+  .vis-box{ border:1px solid #c7d2fe; background:#eef2ff; border-radius:12px; padding:11px 13px; margin-top:12px }
+  .vis-box .vb-title{ font-weight:800; font-size:13px; color:#3730a3; margin-bottom:8px }
+  .vis-row{ display:flex; flex-wrap:wrap; gap:9px; align-items:center; padding:7px 0; border-top:1px solid #e0e7ff; font-size:13px }
+  .vis-row:first-of-type{ border-top:0 }
+  .vis-row b{ min-width:112px }
+  .vis-why{ font-size:11.5px; color:#4338ca }
+  .vis-act{ padding:5px 11px; font-size:12px; border-radius:8px; border:1px solid #c7d2fe;
+            background:#fff; font-family:inherit; cursor:pointer; white-space:nowrap; margin-inline-start:auto }
+  .vis-act.go{ background:#3730a3; color:#fff; border-color:#3730a3; font-weight:700 }
+  .vis-note{ font-size:11.5px; color:#4338ca; margin-top:8px; line-height:1.55 }
+  .vis-mem{ background:#ecfdf5; border-color:#a7f3d0 }
+  .vis-mem .vb-title{ color:#047857 }
+  .vis-mem .vis-row{ border-top-color:#d1fae5 }
+  .vis-mem .vis-act{ border-color:#a7f3d0 }
+  .vis-mem .vis-note{ color:#047857 }
   #ptSheet table.pt{ width:100%; border-collapse:collapse; font-size:13px }
   #ptSheet table.pt th{ text-align:start; font-size:11.5px; color:#64748b; padding:4px 6px; font-weight:700 }
   #ptSheet table.pt td{ padding:7px 6px; border-top:1px solid #eef2f7; vertical-align:top }
@@ -1436,7 +1451,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.57.0</div>
+      <div class="ver">גרסה 6.58.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1555,7 +1570,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.57.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.58.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9220,7 +9235,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'terms-2026-08-12a';
+const BUILD_ID = 'visit-2026-08-12b';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -11875,6 +11890,7 @@ window.openOrd = (id, ctx)=>{
       <div class="span4"><label>דו שיח פנימי${SRC_TAG}</label><div class="dialog-box">${o.internal_dialog?esc(o.internal_dialog).replace(/\n/g,'<br>'):'<span class="dialog-empty">אין דו שיח פנימי בהזמנה זו</span>'}</div></div>
       <div class="form-sep sep-items">פירוט ההזמנה${SRC_TAG}${openBadge(o.order_number)}${retBadge(o.order_number)}</div>
       <div class="span4" id="orderItemsBox"><div class="items-loading">טוען פירוט הזמנה מפריוריטי…</div></div>
+      <div class="span4" id="ordVisitBox"></div>
     </div>
     <div class="ord-bottom">
     ${(function(){
@@ -11911,8 +11927,126 @@ window.openOrd = (id, ctx)=>{
   if(bNo)   bNo.classList.toggle('hidden', anyEditable);
   mountCard('ordModal', ()=>openOrd(id, ctx));
   loadOrderItems(o.order_number);
+  loadVisit(o.order_number, o.id, ctx);
   window.markEmpty('ordModal');
 };
+/* ביקור משותף. לקוח מזמין הזמנה ראשית ואז מוסיף פריטים, ופריוריטי פותח
+   הזמנה נוספת — אבל הכול מסופק באותו ביקור. עד כה מנהל הלוגיסטיקה תיאם רק
+   אחת מהן והשאר נשארו בסטטוס שקרי. כאן מקבצים אותן, ומאותו רגע עדכון של
+   תאריך, צוות, שעות או סטטוס על אחת מהן נכתב בשרת גם על כל האחרות.
+   השדות עצמם נשארים על ההזמנה ולכן כל מסך אחר במערכת אינו יודע שקרה כאן
+   משהו — הוא פשוט רואה הזמנות מתואמות נכון. הכסף אינו מתקבץ: חשבוניות,
+   קבלות ופעימות נשארות פר הזמנה כפי שפריוריטי מכתיב. */
+let VIS_ORD = null;
+window.visJoin = async (a, b, id, ctx) => {
+  if(!canEdit('logi.orders.schedule') && !canEdit('logi.orders')){
+    toast('אין לך הרשאת עריכה לתיאום'); return;
+  }
+  if(!window.confirm('לצרף את ' + b + ' לאותו ביקור עם ' + a + '?\n\n' +
+     'מכאן והלאה תאריך, צוות, שעות וסטטוס שיוזנו על אחת מהן יוחלו על שתיהן. ' +
+     'החשבוניות והקבלות נשארות נפרדות.')) return;
+  try{
+    const { error } = await sb.schema('ord').rpc('coord_join', { p_order: b, p_with: a });
+    if(error) throw error;
+    toast('ההזמנות מקובצות לביקור אחד');
+    await visRefreshOrders();
+    loadVisit(a, id, ctx);
+  }catch(e){ toast('הצירוף נכשל: ' + (e && e.message ? e.message : e)); }
+};
+window.visLeave = async (order, a, id, ctx) => {
+  if(!canEdit('logi.orders.schedule') && !canEdit('logi.orders')){
+    toast('אין לך הרשאת עריכה לתיאום'); return;
+  }
+  if(!window.confirm('להוציא את ' + order + ' מהביקור המשותף?\n\n' +
+     'שדות התיאום שכבר נכתבו עליה נשארים כפי שהם — היא פשוט תפסיק להתעדכן יחד.')) return;
+  try{
+    const { error } = await sb.schema('ord').rpc('coord_leave', { p_order: order });
+    if(error) throw error;
+    toast('ההזמנה הוצאה מהביקור');
+    loadVisit(a, id, ctx);
+  }catch(e){ toast('הפעולה נכשלה: ' + (e && e.message ? e.message : e)); }
+};
+/* אחרי הפצה בשרת השורות המקומיות מיושנות, ולכן מרעננים אותן מהמסד במקום
+   לנחש מה השתנה. */
+async function visRefreshOrders(){
+  try{
+    const { data, error } = await sb.schema('ord').from('orders_v')
+      .select('id,order_number,order_status,contact_status,scheduled_date,days_count,team,time_slot,city,region');
+    if(error || !data) return;
+    const by = {}; data.forEach(r=>{ by[r.id] = r; });
+    ORDS.forEach(o=>{ if(by[o.id]) Object.assign(o, by[o.id]); });
+    try{ renderOrders(); renderLogi(); renderCal(); renderOps(); }catch(_e){}
+  }catch(_e){}
+}
+async function loadVisit(orderNumber, id, ctx){
+  const box = $('#ordVisitBox'); if(!box || !orderNumber) return;
+  VIS_ORD = orderNumber;
+  try{
+    const [mem, sug] = await Promise.all([
+      sb.schema('ord').from('coord_group_v')
+        .select('group_id,order_number,order_date,erp_price,order_status,scheduled_date,team,open_lines')
+        .eq('order_number', orderNumber).maybeSingle(),
+      sb.schema('ord').from('coord_suggest_v')
+        .select('cand_order,cand_date,cand_price,cand_status,cand_sched,confidence,reason,score')
+        .eq('order_number', orderNumber)
+    ]);
+    if(!box.isConnected || VIS_ORD !== orderNumber) return;
+    const bad = [mem, sug].find(r=>r && r.error);
+    if(bad) throw bad.error;
+    const g = (mem && mem.data) || null;
+    let members = [];
+    if(g && g.group_id){
+      const { data: all } = await sb.schema('ord').from('coord_group_v')
+        .select('order_number,order_date,erp_price,order_status,scheduled_date,team,open_lines')
+        .eq('group_id', g.group_id);
+      members = (all || []).filter(x=>x.order_number !== orderNumber);
+    }
+    if(!box.isConnected || VIS_ORD !== orderNumber) return;
+    visRender(box, orderNumber, members, (sug && sug.data) || [], id, ctx);
+  }catch(e){
+    if(box.isConnected) box.innerHTML = '<div class="vis-note">לא ניתן לטעון את נתוני הביקור המשותף: ' +
+      esc(e && e.message ? e.message : String(e)) + '</div>';
+  }
+}
+function visRender(box, on, members, sug, id, ctx){
+  const ed = canEdit('logi.orders.schedule') || canEdit('logi.orders');
+  const line = x => esc(x.order_number) + ' · ' + (x.order_date ? fmtD(x.order_date) : '—') +
+    ' · ' + (Number(x.erp_price) ? shekel(Number(x.erp_price)) : 'ללא סכום') +
+    (x.order_status ? ' · ' + esc(x.order_status) : '');
+  let h = '';
+  if(members.length){
+    h += '<div class="vis-box vis-mem"><div class="vb-title">🔗 ביקור משותף — ' + (members.length + 1) + ' הזמנות</div>' +
+      members.map(x=>'<div class="vis-row"><b dir="ltr">' + esc(x.order_number) + '</b>' +
+        '<span>' + (x.order_date ? fmtD(x.order_date) : '—') + '</span>' +
+        '<span>' + (Number(x.erp_price) ? shekel(Number(x.erp_price)) : 'ללא סכום') + '</span>' +
+        '<span>' + esc(x.order_status || '—') + '</span>' +
+        (Number(x.open_lines) ? '<span class="vis-why">' + Number(x.open_lines) + ' שורות פתוחות</span>' : '') +
+        (ed ? '<button class="vis-act" onclick="visLeave(\'' + jsq(x.order_number) + '\',\'' + jsq(on) + '\',\'' +
+          jsq(id) + '\'' + (ctx ? ",'" + jsq(ctx) + "'" : '') + ')">הוצאה מהביקור</button>' : '') +
+      '</div>').join('') +
+      '<div class="vis-note">תאריך, צוות, שעות, מספר ימים וסטטוס שיוזנו כאן יוחלו על כל ההזמנות בביקור. ' +
+        'הערות מחסן, רשימת ציוד וכל הצד הכספי נשארים פרטיים לכל הזמנה.</div></div>';
+  }
+  const open = (sug || []).filter(s=>!members.some(m=>m.order_number === s.cand_order))
+                          .sort((a,b)=>Number(b.score) - Number(a.score));
+  if(open.length){
+    h += '<div class="vis-box"><div class="vb-title">ללקוח יש עוד ' +
+      (open.length === 1 ? 'הזמנה פתוחה' : open.length + ' הזמנות פתוחות') +
+      ' — לצרף לאותו ביקור?</div>' +
+      open.map(s=>'<div class="vis-row"><b dir="ltr">' + esc(s.cand_order) + '</b>' +
+        '<span>' + (s.cand_date ? fmtD(s.cand_date) : '—') + '</span>' +
+        '<span>' + (Number(s.cand_price) ? shekel(Number(s.cand_price)) : 'ללא סכום') + '</span>' +
+        '<span>' + esc(s.cand_status || '—') + '</span>' +
+        '<span class="vis-why">' + esc(s.reason || '') + '</span>' +
+        (ed ? '<button class="vis-act' + (s.confidence === 'גבוהה' ? ' go' : '') +
+          '" onclick="visJoin(\'' + jsq(on) + '\',\'' + jsq(s.cand_order) + '\',\'' + jsq(id) + '\'' +
+          (ctx ? ",'" + jsq(ctx) + "'" : '') + ')">צירוף לביקור</button>' : '') +
+      '</div>').join('') +
+      '<div class="vis-note">הצירוף אינו אוטומטי בכוונה — הזמנה שנפתחה מאוחר יותר עשויה באמת להיות ביקור נפרד. ' +
+        'כמעט חמישית מההזמנות אצלנו מסופקות ביותר מביקור אחד.</div></div>';
+  }
+  box.innerHTML = h;
+}
 /* פירוט הפריטים האמיתי מפריוריטי — ord.order_items (הערה 20) */
 async function loadOrderItems(orderNumber){
   const box=$('#orderItemsBox'); if(!box) return;
@@ -11998,6 +12132,9 @@ window.saveOrd = async (id)=>{
   Object.assign(o, (res && res.row) || changed);
   closeCards();
   renderOrders(); renderLogi(); renderCal(); renderOps();
+  /* אם ההזמנה חברה בביקור משותף, השרת עדכן גם את אחיותיה — והשורות
+     המקומיות שלהן מיושנות עד שנמשוך אותן מחדש. */
+  visRefreshOrders();
 };
 
 /* ===== ציר פעילות (לכרטיסי ליד/עסקה) ===== */

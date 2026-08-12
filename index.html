@@ -208,6 +208,25 @@
   #paySheet .led-act{ padding:5px 11px; font-size:12px; border-radius:8px; border:1px solid var(--line);
                       background:#fff; font-family:inherit; cursor:pointer; white-space:nowrap }
   #paySheet .led-act.go{ background:#1B365D; color:#fff; border-color:#1B365D; font-weight:700 }
+  #ptSheet table.pt{ width:100%; border-collapse:collapse; font-size:13px }
+  #ptSheet table.pt th{ text-align:start; font-size:11.5px; color:#64748b; padding:4px 6px; font-weight:700 }
+  #ptSheet table.pt td{ padding:7px 6px; border-top:1px solid #eef2f7; vertical-align:top }
+  #ptSheet .pt-beats{ font-size:12px; color:#475569; line-height:1.6 }
+  #ptSheet .pt-off{ opacity:.5 }
+  #ptSheet .pt-form{ border:1px solid var(--line); border-radius:11px; padding:12px 14px; background:#f8fafc; margin-top:12px }
+  #ptSheet .pt-row{ display:flex; flex-wrap:wrap; gap:9px; align-items:center; margin-bottom:9px }
+  #ptSheet .pt-row input, #ptSheet .pt-row select{ padding:7px 10px; border:1px solid var(--line);
+    border-radius:8px; font-family:inherit; font-size:13px; background:#fff }
+  #ptSheet .pt-row input.code{ width:110px; text-transform:uppercase }
+  #ptSheet .pt-row input.nm{ min-width:230px; flex:1 }
+  #ptSheet table.be{ width:100%; border-collapse:collapse; font-size:13px }
+  #ptSheet table.be th{ text-align:start; font-size:11.5px; color:#64748b; padding:3px 6px; font-weight:700 }
+  #ptSheet table.be td{ padding:4px 6px; border-top:1px solid #eef2f7 }
+  #ptSheet table.be input, #ptSheet table.be select{ width:100%; box-sizing:border-box; padding:6px 8px;
+    border:1px solid var(--line); border-radius:8px; font-family:inherit; font-size:13px; background:#fff }
+  #ptSheet .be-sum{ margin-top:9px; font-size:13px; font-weight:800 }
+  #ptSheet .be-sum.ok{ color:#047857 } #ptSheet .be-sum.bad{ color:#b91c1c }
+  #ptSheet .pt-err{ color:#b91c1c; font-size:12.5px; font-weight:700; margin-top:8px; min-height:16px }
   #paySheet .led-act.weak{ color:#64748b; border-style:dashed }
   #paySheet .led-else{ font-size:12px }
   #paySheet .led-else a{ font-weight:700 }
@@ -1417,7 +1436,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.56.1</div>
+      <div class="ver">גרסה 6.57.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1536,7 +1555,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.56.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.57.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1597,6 +1616,10 @@
       <div id="contacts-list"></div>
     </section>
 
+    <div id="ptModal" class="modal hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+      <div class="sheet" id="ptSheet"></div>
+    </div>
+
     <!-- תשלומים -->
     <section id="tab-pays" class="hidden">
       <div class="chips" id="pay-chips"></div>
@@ -1626,6 +1649,7 @@
           <option value="date">מיון: תאריך הזמנה מהחדש לישן</option>
         </select>
         <button class="ghost" id="payAddBtn" onclick="payManOpen(null)">+ שורה ידנית</button>
+        <button class="ghost" id="payTermsBtn" onclick="ptOpen()">תבניות תנאי תשלום</button>
         <span class="pv-sep"></span>
         <span class="who2" id="paySync" style="color:#64748b;font-size:12px"></span>
       </div>
@@ -9196,7 +9220,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'ledger-2026-08-11q';
+const BUILD_ID = 'terms-2026-08-12a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -10698,6 +10722,162 @@ window.payOpen = on => {
   payLoadBeats(on);
   payLoadLedger(on);
 };
+/* ניהול תבניות תנאי התשלום. התבניות יושבות ב-ord.payment_terms ולכן הן
+   משותפות לכל המשתמשים ומסונכרנות מעצמן — מי שמגדיר כאן "מקדמה 40% +
+   שוטף 60 לאחר אספקה" מגדיר אותה לכולם, ובכרטיס ההזמנה היא תופיע ברשימת
+   התבניות. עדיין אפשר לבנות לוח חד־פעמי בכרטיס בלי לשמור תבנית. */
+let PT_ROWS = [], PT_EDIT = null;
+const PT_ANCHORS = [['order','אישור ההזמנה'],['delivery','אספקה / התקנה'],['invoice','חשבונית']];
+window.ptOpen = () => {
+  if(!canView('acc.pays') && !canView('crm.orders.terms')) return finNoEdit();
+  PT_EDIT = null; PT_ROWS = [];
+  ptRender();
+  const m = $('#ptModal'); if(m) m.classList.remove('hidden');
+};
+window.ptClose = () => { const m = $('#ptModal'); if(m) m.classList.add('hidden'); };
+function ptBeatsText(t){
+  if(!Array.isArray(t.beats) || !t.beats.length) return '—';
+  const an = { order:'מאישור ההזמנה', delivery:'מהאספקה', install:'מהאספקה', invoice:'מהחשבונית' };
+  return t.beats.map(b=>(Number(b.pct)||0) + '% ' + esc(b.label||'') +
+    ' · ' + (an[b.anchor] || 'מאישור ההזמנה') +
+    (Number(b.offset_days) ? ' + ' + Number(b.offset_days) + ' ימים' : '')).join('<br>');
+}
+function ptRender(){
+  const box = $('#ptSheet'); if(!box) return;
+  const ed = canEdit('acc.pays');
+  box.innerHTML =
+    '<h3>תבניות תנאי תשלום</h3>' +
+    '<div class="pc-legend">תבנית היא נקודת פתיחה בלבד. בכרטיס ההזמנה אפשר לטעון אותה ואז לשנות ' +
+      'מבלי לגעת בתבנית עצמה, או לבנות לוח חד־פעמי בלי תבנית כלל.</div>' +
+    '<table class="pt"><thead><tr><th style="width:14%">קוד</th><th style="width:30%">שם</th>' +
+      '<th>הפעימות</th>' + (ed ? '<th style="width:16%"></th>' : '') + '</tr></thead><tbody>' +
+    (PTERMS.length ? PTERMS.map(t=>'<tr' + (t.active === false ? ' class="pt-off"' : '') + '>' +
+      '<td dir="ltr">' + esc(t.code) + '</td><td>' + esc(t.name) + (t.active === false ? ' (כבויה)' : '') + '</td>' +
+      '<td class="pt-beats">' + ptBeatsText(t) + '</td>' +
+      (ed ? '<td><button class="led-act" onclick="ptEdit(\'' + jsq(t.code) + '\')">עריכה</button></td>' : '') +
+    '</tr>').join('') : '<tr><td colspan="4"><span class="fin-muted">אין תבניות</span></td></tr>') +
+    '</tbody></table>' +
+    (ed ? '<div id="ptForm"></div>' +
+      '<div class="modal-actions" style="margin-top:12px">' +
+        '<button class="btn btnw" onclick="ptNew()">+ תבנית חדשה</button>' +
+        '<button class="ghost" style="width:auto;padding:11px 18px" onclick="ptClose()">סגירה</button>' +
+      '</div>'
+     : '<div class="modal-actions" style="margin-top:12px">' +
+        '<button class="ghost" style="width:auto;padding:11px 18px" onclick="ptClose()">סגירה</button></div>');
+  if(PT_EDIT !== null) ptForm();
+}
+window.ptNew = () => {
+  if(!canEdit('acc.pays')) return finNoEdit();
+  PT_EDIT = { code:'', name:'', active:true, sort_order:100, isNew:true };
+  PT_ROWS = [{ label:'מקדמה', pct:50, anchor:'order', offset_days:0 },
+             { label:'לאחר אספקה', pct:50, anchor:'delivery', offset_days:0 }];
+  ptRender();
+};
+window.ptEdit = code => {
+  if(!canEdit('acc.pays')) return finNoEdit();
+  const t = PTERMS.find(x=>x.code===code); if(!t) return;
+  PT_EDIT = { code:t.code, name:t.name, active:t.active !== false, sort_order:t.sort_order || 100, isNew:false };
+  PT_ROWS = (Array.isArray(t.beats) && t.beats.length ? t.beats : [{pct:100,label:'תשלום מלא',anchor:'order',offset_days:0}])
+    .map(b=>({ label:b.label || 'לאחר אספקה', pct:Number(b.pct)||0,
+      anchor: b.anchor === 'install' ? 'delivery' : (b.anchor || 'order'),
+      offset_days: Number(b.offset_days)||0 }));
+  ptRender();
+};
+window.ptSetCount = n => {
+  n = Math.max(1, Math.min(12, Number(n)||1));
+  const cur = PT_ROWS.slice(0, n);
+  while(cur.length < n) cur.push({ label: cur.length===0 ? 'מקדמה' : 'לאחר אספקה',
+    pct:0, anchor: cur.length===0 ? 'order' : 'delivery', offset_days:0 });
+  PT_ROWS = cur; ptForm();
+};
+window.ptSet = (i, k, v) => {
+  if(!PT_ROWS[i]) return;
+  PT_ROWS[i][k] = (k === 'pct' || k === 'offset_days') ? (v === '' ? 0 : Number(v)) : v;
+  ptForm();
+};
+window.ptField = (k, v) => { if(PT_EDIT) PT_EDIT[k] = (k === 'active') ? !!v : v; };
+function ptSum(){ return PT_ROWS.reduce((s,r)=>s + (Number(r.pct)||0), 0); }
+function ptForm(){
+  const box = $('#ptForm'); if(!box || PT_EDIT === null) return;
+  const opt = (list, cur) => list.map(o=>'<option value="'+esc(o[0])+'"'+(String(cur)===o[0]?' selected':'')+'>'+esc(o[1])+'</option>').join('');
+  box.innerHTML =
+    '<div class="pt-form">' +
+      '<div class="pt-row">' +
+        '<label>קוד</label><input class="code" id="pt-code" value="' + esc(PT_EDIT.code||'') + '"' +
+          (PT_EDIT.isNew ? '' : ' disabled') + ' onchange="ptField(\'code\',this.value)">' +
+        '<label>שם</label><input class="nm" id="pt-name" value="' + esc(PT_EDIT.name||'') + '" onchange="ptField(\'name\',this.value)">' +
+        '<label><input type="checkbox" id="pt-active"' + (PT_EDIT.active ? ' checked' : '') +
+          ' onchange="ptField(\'active\',this.checked)"> פעילה</label>' +
+        '<label>מספר פעימות</label>' +
+        '<select id="ptCount" onchange="ptSetCount(this.value)">' +
+          [1,2,3,4,5,6].map(n=>'<option value="'+n+'"'+(PT_ROWS.length===n?' selected':'')+'>'+n+'</option>').join('') + '</select>' +
+      '</div>' +
+      '<table class="be"><thead><tr><th style="width:34%">תיאור</th><th style="width:16%">אחוז</th>' +
+        '<th style="width:32%">נספר מ־</th><th style="width:18%">ימים</th></tr></thead><tbody>' +
+      PT_ROWS.map((r,i)=>'<tr>' +
+        '<td><select onchange="ptSet(' + i + ',\'label\',this.value)">' + beLabelOpts(r.label) + '</select></td>' +
+        '<td><input type="number" min="0" max="100" step="0.5" value="' + esc(String(r.pct)) + '" onchange="ptSet(' + i + ',\'pct\',this.value)"></td>' +
+        '<td><select onchange="ptSet(' + i + ',\'anchor\',this.value)">' + opt(PT_ANCHORS, r.anchor) + '</select></td>' +
+        '<td><input type="number" min="0" step="1" value="' + esc(String(r.offset_days||0)) + '" onchange="ptSet(' + i + ',\'offset_days\',this.value)"></td>' +
+      '</tr>').join('') + '</tbody></table>' +
+      '<div class="be-sum ' + (Math.abs(ptSum()-100) < 0.01 ? 'ok' : 'bad') + '">סה"כ ' +
+        (Math.round(ptSum()*100)/100) + '%' + (Math.abs(ptSum()-100) < 0.01 ? ' ✓' : ' — חייב להיות 100%') + '</div>' +
+      '<div class="pt-err" id="pt-err"></div>' +
+      '<div class="modal-actions" style="margin-top:6px">' +
+        '<button class="btn btnw" onclick="ptSave()">שמירת התבנית</button>' +
+        '<button class="ghost" style="width:auto;padding:11px 18px" onclick="ptCancel()">ביטול</button>' +
+        (PT_EDIT.isNew ? '' : '<button class="ghost" style="width:auto;padding:11px 18px" onclick="ptDelete()">מחיקה</button>') +
+      '</div>' +
+    '</div>';
+}
+window.ptCancel = () => { PT_EDIT = null; PT_ROWS = []; ptRender(); };
+window.ptSave = async () => {
+  if(!canEdit('acc.pays')) return finNoEdit();
+  const err = $('#pt-err');
+  const code = String((PT_EDIT.code||'')).trim().toUpperCase();
+  const name = String((PT_EDIT.name||'')).trim();
+  if(!code || !name){ if(err) err.textContent = 'חובה קוד ושם לתבנית.'; return; }
+  if(PT_EDIT.isNew && PTERMS.some(t=>t.code===code)){
+    if(err) err.textContent = 'הקוד ' + code + ' כבר קיים.'; return;
+  }
+  if(Math.abs(ptSum()-100) >= 0.01){ if(err) err.textContent = 'סכום האחוזים חייב להיות 100%.'; return; }
+  if(err) err.textContent = '';
+  const row = { code: code, name: name, kind: 'beats', active: !!PT_EDIT.active,
+    sort_order: Number(PT_EDIT.sort_order) || 100,
+    beats: PT_ROWS.map(r=>({ pct: Number(r.pct)||0, label: r.label || 'לאחר אספקה',
+      anchor: r.anchor || 'order', offset_days: Number(r.offset_days)||0 })),
+    updated_by: finMe(), updated_at: finNowIso() };
+  const ok = await finDbw(()=>sb.schema('ord').from('payment_terms').upsert(row, { onConflict:'code' }),
+    'התבנית נשמרה');
+  if(!ok) return;
+  await ptReload();
+  PT_EDIT = null; PT_ROWS = [];
+  ptRender();
+};
+window.ptDelete = async () => {
+  if(!canEdit('acc.pays')) return finNoEdit();
+  const code = PT_EDIT && PT_EDIT.code; if(!code) return;
+  if(!window.confirm('למחוק את התבנית ' + code + '?\n\nהזמנות שכבר נפרסו לפיה אינן מושפעות — הלוח שלהן כבר נשמר.')) return;
+  const ok = await finDbw(()=>sb.schema('ord').from('payment_terms').delete().eq('code', code), 'התבנית נמחקה');
+  if(!ok) return;
+  await ptReload();
+  PT_EDIT = null; PT_ROWS = [];
+  ptRender();
+};
+async function ptReload(){
+  try{
+    const { data, error } = await sb.schema('ord').from('payment_terms').select('*')
+      .eq('active', true).order('sort_order', { ascending:true });
+    if(error) throw error;
+    PTERMS = data || [];
+    const tf = $('#payTermFilter');
+    if(tf){ const v = tf.value;
+      tf.innerHTML = '<option value="">כל תנאי התשלום</option>' +
+        PTERMS.map(t=>'<option value="' + esc(t.code) + '">' + esc(t.name) + '</option>').join('');
+      tf.value = v; }
+    renderPays();
+  }catch(_e){}
+}
 /* כרטסת הלקוח. פריוריטי מחזיק את החשבוניות והקבלות ברמת הלקוח, וקישור
    הקבלה להזמנה נעשה שם ידנית — ולכן לפעמים פשוט לא נעשה. במצב כזה ההזמנה
    נראית כאילו לא שולמה אף שהכסף התקבל. כאן משווים את הכרטסת (חויב פחות
@@ -10848,10 +11028,20 @@ window.ledUnlink = async (kind, docNo) => {
    "50% מקדמה ו-50% באספקה" ל"50% מקדמה ו-50% שוטף 60". */
 const BEAT_ANCHORS = [['order','אישור ההזמנה'],['delivery','אספקה / התקנה'],
                       ['invoice','חשבונית'],['fixed','תאריך קבוע']];
+/* תיאור הפעימה נבחר מרשימה סגורה ולא מוקלד. שני אנשים שכותבים "מקדמה"
+   ו"מקדמה " יוצרים שני מונחים שאי אפשר לסכם עליהם, ולכן ההקלדה ירדה.
+   ערך שנשמר בעבר ואינו ברשימה מתווסף אליה בטעינה כדי שלא ייעלם. */
+const BEAT_LABELS = ['מקדמה','לפני אספקה','לאחר אספקה','שוטף מהחשבונית','בהתקנה','תשלום מלא','יתרה'];
+function beLabelOpts(cur){
+  const list = BEAT_LABELS.slice();
+  const v = String(cur||'');
+  if(v && list.indexOf(v) < 0) list.push(v);
+  return list.map(x=>'<option value="'+esc(x)+'"'+(x===v?' selected':'')+'>'+esc(x)+'</option>').join('');
+}
 let BE_ROWS = [], BE_ORD = null;
 function beDefault(n){
   const out = [];
-  for(let i=0;i<n;i++) out.push({ label: i===0 ? 'מקדמה' : ('תשלום ' + (i+1)),
+  for(let i=0;i<n;i++) out.push({ label: i===0 ? 'מקדמה' : (i===n-1 ? 'לאחר אספקה' : 'לפני אספקה'),
     pct: 0, anchor: i===0 ? 'order' : 'delivery', offset_days: 0, due_date: '' });
   const base = Math.floor(100/n);
   out.forEach((r,i)=>{ r.pct = i === n-1 ? 100 - base*(n-1) : base; });
@@ -10860,14 +11050,14 @@ function beDefault(n){
 window.beSetCount = n => {
   n = Math.max(1, Math.min(12, Number(n)||1));
   const cur = BE_ROWS.slice(0, n);
-  while(cur.length < n) cur.push({ label:'תשלום ' + (cur.length+1), pct:0,
+  while(cur.length < n) cur.push({ label: cur.length===0 ? 'מקדמה' : 'לאחר אספקה', pct:0,
     anchor: cur.length===0 ? 'order' : 'delivery', offset_days:0, due_date:'' });
   BE_ROWS = cur; beRender();
 };
 window.bePreset = code => {
   if(!code) return;
   const t = PTERMS.find(x=>x.code===code); if(!t || !Array.isArray(t.beats)) return;
-  BE_ROWS = t.beats.map((b,i)=>({ label: b.label || ('תשלום ' + (i+1)), pct: Number(b.pct)||0,
+  BE_ROWS = t.beats.map((b,i)=>({ label: b.label || 'לאחר אספקה', pct: Number(b.pct)||0,
     anchor: b.anchor === 'install' ? 'delivery' : (b.anchor || 'order'),
     offset_days: Number(b.offset_days)||0, due_date:'' }));
   beRender();
@@ -10887,7 +11077,7 @@ function beRender(){
     '<table class="be"><thead><tr><th style="width:26%">תיאור</th><th style="width:12%">אחוז</th>' +
     '<th style="width:16%">סכום</th><th style="width:22%">נספר מ־</th><th style="width:12%">ימים</th><th style="width:16%">תאריך</th></tr></thead><tbody>' +
     BE_ROWS.map((r,i)=>'<tr>' +
-      '<td><input value="' + esc(r.label||'') + '" onchange="beSet(' + i + ',\'label\',this.value)"></td>' +
+      '<td><select onchange="beSet(' + i + ',\'label\',this.value)">' + beLabelOpts(r.label) + '</select></td>' +
       '<td><input class="pct" type="number" min="0" max="100" step="0.5" value="' + esc(String(r.pct)) + '" onchange="beSet(' + i + ',\'pct\',this.value)"></td>' +
       '<td>' + (tot ? shekel(Math.round(tot * (Number(r.pct)||0) / 100)) : '<span class="fin-muted">—</span>') + '</td>' +
       '<td><select onchange="beSet(' + i + ',\'anchor\',this.value)">' + opt(BEAT_ANCHORS, r.anchor) + '</select></td>' +

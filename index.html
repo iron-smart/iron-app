@@ -761,6 +761,7 @@
   .eta-tag{ display:inline-block; font-size:9.5px; font-weight:800; border-radius:999px; padding:0 5px;
             background:#fff7ed; color:#9a3412; border:1px solid #fed7aa; white-space:nowrap; flex:none }
   .mcount.eta{ background:#fff7ed; color:#9a3412; border:1px solid #fed7aa }
+  .tg-chip.eta{ border-inline-start-style:dashed !important; background:#fffbeb }
   .eta-span{ font-size:11.5px; font-weight:700; color:#9a3412; margin-top:5px }
   .cal-eta-tg{ display:flex; align-items:center; gap:6px; font-size:12.5px; color:#475569; cursor:pointer;
                user-select:none; white-space:nowrap }
@@ -1462,7 +1463,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.61.1</div>
+      <div class="ver">גרסה 6.61.2</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1581,7 +1582,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.61.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.61.2</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3471,6 +3472,13 @@ const tgTop=m=>((Math.min(Math.max(m,CAL_H0*60),CAL_H1*60)-CAL_H0*60)/60)*CAL_PX
 const TG_H=(CAL_H1-CAL_H0)*CAL_PX;
 function tgChip(e){
   const o=e.o, col=evColor(e);
+  if(e.kind==='eta'){
+    const mates=etaMates(e);
+    return `<div class="tg-chip eta" style="border-inline-start-color:${col};cursor:pointer" onclick="goCard(()=>openOrd('${jsq(o.id)}'))" title="${esc(o.customer_name||'')} · צפי אספקה ${esc(etaSpanText(o))}${o.eta_note?' · '+esc(o.eta_note):''} — אינו תיאום, ואינו מחייב צוות או שעה">
+      <div class="c1"><span class="eta-tag">צפי בלבד</span><span style="overflow:hidden;text-overflow:ellipsis">${esc(o.customer_name||'')}</span>${e.dayTotal>1?`<span class="tm">${e.dayIdx}/${e.dayTotal}</span>`:''}</div>
+      <div class="c2">${esc(o.order_number||'')}${mates.length?` +${mates.length}`:''}${o.city?` · ${esc(o.city)}`:''}${o.eta_note?` · ${esc(o.eta_note)}`:''}</div>
+    </div>`;
+  }
   const mark=evMark(e), ref=e.kind==='svc'?(o.product||''):(o.order_number||'');
   const line2=[ref, o.city, o.address].filter(Boolean).map(x=>esc(String(x))).join(' · ');
   return `<div class="tg-chip" style="border-inline-start-color:${col};${evDone(e)?'opacity:.55':''}" onclick="${evOpen(e)}" title="${esc(o.customer_name||'')} · ${esc(o.time_slot||'ללא שעה')} · ${esc(evStatus(e)||'')} · ${esc(o.team||'ללא צוות')}${o.phone?' · '+esc(o.phone):''}">
@@ -4096,7 +4104,10 @@ function renderCal(){
           ${shown.map(e=>{ const o=e.o, col=evColor(e), done=evDone(e), ok=evOk(e), st=evStatus(e);
             if(e.kind==='eta'){
               const mates=etaMates(e);
-              return `<div class="mini-ev eta" style="border-inline-start-color:${col}" title="${esc(o.customer_name||'')} · צפי אספקה ${esc(etaSpanText(o))}${o.eta_note?' · '+esc(o.eta_note):''}${mates.length?' · ביקור משותף עם '+esc(mates.map(x=>x.order_number).join(', ')):''} — אינו תיאום, ואינו מחייב צוות או שעה">
+              /* הצפי הוא סמן תכנון ולא משימת ביצוע, ולכן הלחיצה עליו מדלגת
+                 על התצוגה היומית ונכנסת ישר לכרטיס ההזמנה — המקום היחיד
+                 שבו הופכים אותו לתיאום אמיתי. */
+              return `<div class="mini-ev eta" style="border-inline-start-color:${col};cursor:pointer" onclick="event.stopPropagation();goCard(()=>openOrd('${jsq(o.id)}'))" title="${esc(o.customer_name||'')} · צפי אספקה ${esc(etaSpanText(o))}${o.eta_note?' · '+esc(o.eta_note):''}${mates.length?' · ביקור משותף עם '+esc(mates.map(x=>x.order_number).join(', ')):''} — אינו תיאום, ואינו מחייב צוות או שעה">
                 <div class="me-line1"><span class="eta-tag">צפי בלבד</span><b>${esc(o.customer_name||'')}</b>${e.dayTotal>1?`<span class="me-time">${e.dayIdx}/${e.dayTotal}</span>`:''}</div>
                 <div class="me-line2"><span class="me-dot" style="background:${col}"></span>${esc(o.order_number||'')}${mates.length?` +${mates.length}`:''}${o.city?` · ${esc(o.city)}`:''}</div>
               </div>`;
@@ -4127,11 +4138,15 @@ function renderCal(){
         </div>`).join('')}
     </div></div>`;
   } else {
-    const evs=eventsOn(cd);
+    /* התצוגה היומית כוללת את הצפי, אחרת לחיצה על יום שיש בו צפי מובילה
+       למסך שנראה ריק. התצוגה השבועית נשארת בלי צפי, כי שם גובה רצועת
+       "ללא שעה" משותף לכל ימי השבוע וצפי בודד היה מנפח את כולם. */
+    const evs=eventsOnCal(cd);
     scope=[cd];
     title=`${dayNameHe(cd)}, ${fmtD(cd)}`;
     /* 6.2.5 — התצוגה היומית היא אותה רשת שעות, בעמודה אחת ובכרטיסים מלאים. */
-    const adH=adCount(cd)? adCount(cd)*CAL_CHIP+6 : 0;
+    const adDay=evs.filter(e=>!evSpan(e)).length;
+    const adH=adDay? adDay*CAL_CHIP+6 : 0;
     body=`<div class="cal-scroll"><div class="tg-wrap" style="grid-template-columns:56px minmax(260px,1fr)">
       ${tgGutter(adH)}
       <div class="tg-col ${dowOf(cd)===CAL_FRIDAY?'nowork':''}">
@@ -9359,7 +9374,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'etadays-2026-08-12g';
+const BUILD_ID = 'etaclick-2026-08-12h';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -12094,7 +12109,7 @@ window.openOrd = (id, ctx)=>{
       <div><label>אזור גיאוגרפי</label>${selHtml('oe-region',REGIONS,o.region,true)}</div>
       <div><label>צוות</label>${selHtml('oe-team',teamVals,o.team,true)}${window.tdHint(o.scheduled_date,o.team,'oeTdHint')}</div>
       <div><label>תאריך מתואם</label><input id="oe-date" type="date" value="${esc(o.scheduled_date||'')}"></div>
-      <div><label>מספר ימים</label><input id="oe-days" type="number" min="1" value="${o.days_count||1}"></div>
+      <div><label>מספר ימים</label><input id="oe-days" type="number" min="1" value="${o.days_count||1}" oninput="oeDaysSlot(this.value)"></div>
       <div><label>משבצת זמן</label>${selHtml('oe-slot',TIME_SLOTS,o.time_slot,true)}</div>
       <div><label>צפי אספקה <small style="font-weight:400;color:#64748b">${o.eta_date&&o.scheduled_date?'(הוחלף בתאריך המתואם)':'(כשאין עדיין תיאום)'}</small></label><input id="oe-eta" type="date" value="${esc(o.eta_date||'')}"${o.eta_date&&o.scheduled_date?' style="opacity:.55"':''}>
         ${o.eta_date&&!o.scheduled_date?`<div class="eta-span" title="נגזר מ&quot;מספר ימים&quot; ומדילוג על שבת${o.friday_ok?'':' ושישי'}">📅 ${esc(etaSpanText(o))}</div>`:''}</div>
@@ -12314,6 +12329,15 @@ const optHtml = (vals, cur) => vals.map(v=>`<option ${v===cur?'selected':''}>${e
       checkbox, ובלי נרמול כל שמירה של כרטיס שלא נגעו בו הייתה כותבת 1 ו-false
       על NULL ומזהמת את היומן.
    4. אין רישום יומן מהלקוח — ord.order_patch רושם אותו בעצמו. */
+/* עבודה שנפרסת על יותר מיום אחד היא יום מלא בהגדרה — אין משבצת של ארבע
+   שעות שנמשכת שלושה ימים. לכן שינוי מספר הימים בוחר "יום מלא" אוטומטית.
+   ביום בודד הבחירה נעשית רק אם המשבצת ריקה, כדי לא למחוק 08:00-11:00
+   שמישהו קבע בכוונה. */
+window.oeDaysSlot = v => {
+  const sel = document.getElementById('oe-slot'); if(!sel || sel.disabled) return;
+  const n = parseInt(v, 10); if(!(n >= 1)) return;
+  if(n > 1 || !sel.value) sel.value = 'יום מלא';
+};
 window.saveOrd = async (id)=>{
   const o = ORDS.find(x=>x.id===id); if(!o) return;
   const num = v => v===''||v==null ? null : parseInt(v);

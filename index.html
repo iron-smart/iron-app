@@ -756,6 +756,13 @@
   body.side-closed #sideOpenTab{ display:flex; }
 
   /* ===== לוח שנה — בקרות למעלה + עיצוב המערכת הקודמת בקנה מידה נוכחי (הנחיית רומן 27/07) ===== */
+  .mini-ev.eta, .ev.eta{ border-inline-start-style:dashed !important; background:#fffbeb }
+  .ev.eta{ border:1px dashed #fcd34d; border-inline-start-width:4px }
+  .eta-tag{ display:inline-block; font-size:9.5px; font-weight:800; border-radius:999px; padding:0 5px;
+            background:#fff7ed; color:#9a3412; border:1px solid #fed7aa; white-space:nowrap; flex:none }
+  .mcount.eta{ background:#fff7ed; color:#9a3412; border:1px solid #fed7aa }
+  .cal-eta-tg{ display:flex; align-items:center; gap:6px; font-size:12.5px; color:#475569; cursor:pointer;
+               user-select:none; white-space:nowrap }
   .cal-topbar{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:8px 12px; box-shadow:0 1px 3px rgba(6,24,39,.06); }
   .cal-topbar .cal-title{ font-size:17px; font-weight:800; color:var(--navy); letter-spacing:-.2px; }
   .cal-topbar .grow{ flex:1; }
@@ -1454,7 +1461,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.60.1</div>
+      <div class="ver">גרסה 6.61.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1573,7 +1580,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.60.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.61.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3102,6 +3109,10 @@ function logiInit(){ if(LOGI_INIT) return; LOGI_INIT=true; const d=logiDefLoad()
 const LOGI_SEL=new Set();
 let LOGI_SHOWN=[];
 const needsSched = o => o.needs_scheduling !== false;
+/* צפי שעבר זמנו ואיש לא תיאם ולא עדכן. הלוח אינו המקום להתריע על כך — אף
+   אחד לא מדפדף אחורה — ולכן זה שבב במסך ההזמנות. */
+const etaStale = o => !!o.eta_date && !o.scheduled_date && o.eta_date < todayStr()
+  && !['בוטל','מבוטלת','הושלם','לא לטיפול'].includes(o.order_status);
 const scopeOk = o => (LOGI_SCOPE==='all'||LOGI_SCOPE==='every') ? true : (LOGI_SCOPE==='ship' ? !needsSched(o) : needsSched(o));
 window.logiScope = v => { LOGI_SCOPE=v; LOGI_SEL.clear(); renderLogi(); };
 window.logiSelClear = () => { LOGI_SEL.clear(); renderLogi(); };
@@ -3110,8 +3121,9 @@ function renderLogiScope(){
   const base = ORDS.filter(o=>!['הושלם','בוטל','לא לטיפול'].includes(o.order_status));
   const n = { sched: base.filter(needsSched).length, ship: base.filter(o=>!needsSched(o)).length, all: base.length, pend: ORDS.filter(o=>o.order_status==='לא לטיפול').length, done: ORDS.filter(o=>o.order_status==='הושלם').length, every: ORDS.length,
     open: ORDS.filter(o=>openStuck(o.order_number)).length,
-    ret: ORDS.filter(o=>retPending(o.order_number)).length };
-  box.innerHTML = [['sched','לתיאום'],['ship','משלוחים'],['all','לטיפול'],['open','השלמות לתיאום'],['ret','החזרות לאיסוף'],['pend','לא לטיפול'],['done','הושלמו'],['every','הכל']]
+    ret: ORDS.filter(o=>retPending(o.order_number)).length,
+    etastale: ORDS.filter(etaStale).length };
+  box.innerHTML = [['sched','לתיאום'],['ship','משלוחים'],['all','לטיפול'],['open','השלמות לתיאום'],['ret','החזרות לאיסוף'],['etastale','צפי שעבר'],['pend','לא לטיפול'],['done','הושלמו'],['every','הכל']]
     .map(([k,l])=>`<button type="button" class="chip ${LOGI_SCOPE===k?'active':''}" onclick="logiScope('${k}')">${l} <b>${n[k]}</b></button>`).join('');
 }
 /* 6.24.6 — סינון בתצוגה הטבלאית: רב-בחירת סטטוסים, סינון קריאות שירות, ושמירת ברירת מחדל */
@@ -3268,7 +3280,11 @@ function logiRenderTable(){
     /* החזרה לאיסוף אינה תלויה בסטטוס ההזמנה כלל — הלקוח מחזיר סחורה
        גם מהזמנה שהושלמה מזמן. */
     const retScope = LOGI_SCOPE==='ret';
+    /* "צפי שעבר" חוצה סטטוסים כמו "השלמות לתיאום", כי רוב ההזמנות שם
+       יושבות ב"בהשהיה" ולא היו נכללות בשום סינון רגיל. */
+    const etaScope = LOGI_SCOPE==='etastale';
     let list = ORDS.filter(o=>{
+      if(etaScope) return etaStale(o);
       if(retScope) return retPending(o.order_number);
       if(openScope) return openStuck(o.order_number);
       if(everyScope) return true;
@@ -3283,7 +3299,7 @@ function logiRenderTable(){
     if(LOGI_F.contact) list = list.filter(o=>o.contact_status===LOGI_F.contact);
     if(LOGI_F.team)    list = list.filter(o=> LOGI_F.team==='__none__' ? !o.team : o.team===LOGI_F.team);
     if(LOGI_F.region)  list = list.filter(o=>o.region===LOGI_F.region);
-    if(!doneScope && !pendScope && !openScope && !retScope) list = list.filter(scopeOk);
+    if(!doneScope && !pendScope && !openScope && !retScope && !etaScope) list = list.filter(scopeOk);
     list = window.ordSortList(list.slice());
     LOGI_SHOWN = list;
     const _ids=new Set(list.map(o=>String(o.id))); [...LOGI_SEL].forEach(id=>{ if(!_ids.has(id)) LOGI_SEL.delete(id); });
@@ -3294,6 +3310,17 @@ function logiRenderTable(){
 }
 
 /* ===== לוח שנה נטיבי — שיבוצי התקנות, משלוחים וקריאות שירות ===== */
+/* צפי אספקה בלוח. מוצג בתצוגה החודשית בלבד — שם חי התכנון הגס — והתצוגות
+   השבועית והיומית, שהן מסכי ביצוע, נשארות נקיות. הניצחון של התאריך המתואם
+   אינו לוגיקה אלא היעדרה: אירוע צפי נוצר רק כשאין scheduled_date, ולכן
+   ברגע שמנהל הלוגיסטיקה מתאם — הצפי נעלם מעצמו, גם אם התאריך שונה לגמרי,
+   ובלי שנמחק דבר. אם התיאום מתבטל, הצפי חוזר לבדו. */
+let CAL_ETA = (()=>{ try{ return localStorage.getItem('iron_cal_eta_v1') !== '0'; }catch(_e){ return true; } })();
+window.calEtaToggle = on => {
+  CAL_ETA = !!on;
+  try{ localStorage.setItem('iron_cal_eta_v1', CAL_ETA ? '1' : '0'); }catch(_e){}
+  renderCal();
+};
 let CAL_D = new Date();
 const isoD = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 let CAL_VIEW='month';
@@ -3314,8 +3341,9 @@ const STATUS_COLOR = {
   'חדש':'#2563eb','פתוחה':'#2563eb','סגורה':'#64748b'
 };
 const CAL_LEGEND = ['הזמנה חדשה','נשלח לייצור','נשלח לצביעה','ממתין לאספקה','תואם','הושלם','בהשהיה'];
-const evStatus = e => e.kind==='order' ? (e.o.order_status||'') : (e.o.status||'');
-const evColor  = e => STATUS_COLOR[evStatus(e)] || '#94a3b8';
+const ETA_COLOR = '#d97706';
+const evStatus = e => e.kind==='svc' ? (e.o.status||'') : (e.o.order_status||'');
+const evColor  = e => e.kind==='eta' ? '#d97706' : (STATUS_COLOR[evStatus(e)] || '#94a3b8');
 /* לוח שנה בעיצוב המערכת הקודמת (הזמנות ותיאומים), בקנה מידה נוכחי — הנחיית רומן 27/07.
    שבוע עבודה ראשון–חמישי; שישי מוצג רק אם שובצה בו עבודה שאושרה; אירועים רב-יומיים לפי days_count. */
 const CAL_FRIDAY=5, CAL_SATURDAY=6;
@@ -3334,6 +3362,47 @@ function workDates(o){
   return out;
 }
 function dayIndexOf(o, ds){ const i=workDates(o).indexOf(ds); return i<0?0:i+1; }
+/* הצפי מגולגל קדימה ליום עבודה באותו כלל של workDates: שבת ושישי-בלי-אישור
+   אינם מוצגים בלוח כלל, וצפי שנופל בהם היה נעלם בשקט. */
+function etaShowDate(o){
+  let d = o.eta_date, guard = 0;
+  while(guard++ < 10){
+    const dw = dowOf(d);
+    if(dw !== CAL_SATURDAY && (dw !== CAL_FRIDAY || o.friday_ok)) return d;
+    d = addDaysIso(d, 1);
+  }
+  return o.eta_date;
+}
+const ETA_SKIP = ['בוטל','מבוטלת','הושלם','לא לטיפול'];
+function etaEventsOn(ds){
+  if(!CAL_ETA) return [];
+  const out = [];
+  const seen = new Set();
+  for(const o of ORDS){
+    if(!o.eta_date || o.scheduled_date) continue;
+    if(ETA_SKIP.includes(o.order_status)) continue;
+    if(o.needs_scheduling === false) continue;
+    if(etaShowDate(o) !== ds) continue;
+    /* הזמנות בביקור משותף חולקות את אותו צפי — כרטיס אחד ולא שלושה. */
+    const g = (typeof VIS_GRP !== 'undefined' && VIS_GRP[o.order_number]) || null;
+    if(g){ if(seen.has(g)) continue; seen.add(g); }
+    out.push({ kind:'eta', o, ds, grp:g });
+  }
+  return out;
+}
+/* מפת חברות ביקור משותף, לצורך איחוד כרטיסי הצפי בלבד. */
+let VIS_GRP = {};
+async function loadVisGrp(){
+  try{
+    const { data } = await sb.schema('ord').from('coord_members').select('group_id,order_number');
+    VIS_GRP = {};
+    (data||[]).forEach(r=>{ VIS_GRP[r.order_number] = r.group_id; });
+  }catch(_e){ VIS_GRP = {}; }
+}
+function etaMates(e){
+  if(!e.grp) return [];
+  return ORDS.filter(x=>x.order_number !== e.o.order_number && VIS_GRP[x.order_number] === e.grp);
+}
 /* 6.2.2 — חיפוש בלוח השנה. הסינון יושב ב-eventsOn() ולכן הוא חל על שלוש
    התצוגות כאחת, כולל מוני האירועים בתאי החודש (רומן 29/07/2026). */
 let CAL_Q='';
@@ -3359,7 +3428,8 @@ function evSpan(e){
   if(one){ const a=(+one[1])*60+(+one[2]); return {s:a,e:a+60}; }
   return null;
 }
-const evSortKey=e=>{ const sp=evSpan(e); if(sp) return sp.s; return String(e.o.time_slot||'').trim()==='יום מלא' ? -2 : -1; };
+const evSortKey=e=>{ if(e.kind==='eta') return 9999; const sp=evSpan(e); if(sp) return sp.s;
+  return String(e.o.time_slot||'').trim()==='יום מלא' ? -2 : -1; };
 const adCount=ds=>eventsOn(ds).filter(e=>!evSpan(e)).length;
 function layoutDay(evs){
   const timed=evs.filter(e=>evSpan(e)).slice(), allday=evs.filter(e=>!evSpan(e));
@@ -3420,6 +3490,14 @@ function eventsOn(ds){
   const out = CAL_Q ? evs.filter(e=>evMatch(e,CAL_Q)) : evs;
   /* 6.2.5 — מיון לפי שעה אמיתית ולא לפי טקסט: "8:00" חייב לבוא לפני "14:00" */
   return out.sort((a,b)=>evSortKey(a)-evSortKey(b));
+}
+/* אירועי היום כולל צפי — לשימוש התצוגה החודשית בלבד. הפרדה זו היא שמונעת
+   מהצפי לנפח את רצועת "ללא שעה" בשבועי/יומי ולפתוח עמודת שישי מיותרת. */
+function eventsOnCal(ds){
+  const base = eventsOn(ds);
+  let eta = etaEventsOn(ds);
+  if(CAL_Q) eta = eta.filter(e=>evMatch(e, CAL_Q));
+  return base.concat(eta);
 }
 const teamChip=(name,col)=> name?`<span class="teamchip" style="background:${col}">${esc(name)}</span>`:'<span class="teamchip nochip">ללא צוות</span>';
 const slotShort=s=>!s?'':(s==='יום מלא'?'יום מלא':String(s).split('-')[0]);
@@ -3986,11 +4064,19 @@ function renderCal(){
       ${['ראשון','שני','שלישי','רביעי','חמישי','שישי'].map(n=>`<div class="mh">${n}</div>`).join('')}
       ${cells.map(d=>{
         const inMonth=new Date(d+'T12:00:00').getMonth()===mNum;
-        const evs=eventsOn(d); const shown=evs.slice(0,3);
+        const evs=eventsOnCal(d); const shown=evs.slice(0,3);
+        const nEta=evs.filter(e=>e.kind==='eta').length, nReal=evs.length-nEta;
         const nowork=dowOf(d)===CAL_FRIDAY&&!evs.length;
         return `<div class="month-cell ${inMonth?'':'out'} ${d===t?'today':''} ${nowork?'nowork':''}" onclick="calGoDay('${d}')">
-          <div class="mnum"><span>${parseInt(d.slice(8),10)}</span>${evs.length?`<span class="mcount">${evs.length}</span>`:''}</div>
+          <div class="mnum"><span>${parseInt(d.slice(8),10)}</span>${nReal?`<span class="mcount">${nReal}</span>`:''}${nEta?`<span class="mcount eta" title="צפי אספקה — אינו תיאום">${nEta} צפי</span>`:''}</div>
           ${shown.map(e=>{ const o=e.o, col=evColor(e), done=evDone(e), ok=evOk(e), st=evStatus(e);
+            if(e.kind==='eta'){
+              const mates=etaMates(e);
+              return `<div class="mini-ev eta" style="border-inline-start-color:${col}" title="${esc(o.customer_name||'')} · צפי אספקה ${esc(fmtD(o.eta_date))}${o.eta_note?' · '+esc(o.eta_note):''}${mates.length?' · ביקור משותף עם '+esc(mates.map(x=>x.order_number).join(', ')):''} — אינו תיאום, ואינו מחייב צוות או שעה">
+                <div class="me-line1"><span class="eta-tag">צפי בלבד</span><b>${esc(o.customer_name||'')}</b></div>
+                <div class="me-line2"><span class="me-dot" style="background:${col}"></span>${esc(o.order_number||'')}${mates.length?` +${mates.length}`:''}${o.city?` · ${esc(o.city)}`:''}</div>
+              </div>`;
+            }
             return `<div class="mini-ev" style="border-inline-start-color:${col};${done?'opacity:.5':''}" title="${esc(o.customer_name||'')} · ${esc(o.time_slot||'ללא שעה')} · ${esc(st||'ללא סטטוס')} · ${esc(o.team||'ללא צוות')}${o.city?' · '+esc(o.city):''}">
               <div class="me-line1"><span class="me-time">${esc(slotShort(o.time_slot))||'—'}</span><b>${e.kind==='svc'?'🛠️':''}${esc(o.customer_name||'')}</b>${ok?`<span class="me-ok" style="color:${col}">✓</span>`:''}</div>
               <div class="me-line2"><span class="me-dot" style="background:${col}"></span>${esc(o.team||'ללא צוות')}${(tdNames(d,o.team).length?` · 👷 ${esc(tdNames(d,o.team).map(tdShort).join(', '))}`:'')}${o.city?` · ${esc(o.city)}`:''}</div>
@@ -4033,7 +4119,8 @@ function renderCal(){
   /* 6.2.2 — המקרא מציג סטטוסים, כי הצבע בלוח מסמן סטטוס. הצוות ממשיך להופיע
      כשבב בתוך האירוע עצמו, בצבע הצוות. */
   const legend = CAL_LEGEND.map(s=>`<span class="cal-lg"><span class="cal-dot" style="background:${STATUS_COLOR[s]};border-radius:3px"></span>${esc(s)}</span>`).join('')
-    + '<span class="cal-lg">✓ תואם / הושלם</span><span class="cal-lg">🛠️ קריאת שירות</span>';
+    + '<span class="cal-lg">✓ תואם / הושלם</span><span class="cal-lg">🛠️ קריאת שירות</span>'
+    + (CAL_VIEW==='month' ? '<span class="cal-lg" title="הזמנה שטרם תואמה, עם צפי אספקה בכרטיס ההזמנה. אינה תיאום, אינה תופסת צוות, ונעלמת מהלוח ברגע שנקבע תאריך מתואם."><span class="cal-dot" style="background:' + ETA_COLOR + '"></span>צפי בלבד</span>' : '');
   /* הבקרות למעלה, בשורה אחת — הלוח מקבל את שאר המסך (הערה 8) */
   el.innerHTML = `<div class="cal-topbar">
       <span class="cal-title">${title}</span>
@@ -4044,6 +4131,8 @@ function renderCal(){
         <button class="${CAL_VIEW==='week'?'on':''}" onclick="calMode('week')">שבועי</button>
         <button class="${CAL_VIEW==='month'?'on':''}" onclick="calMode('month')">חודשי</button>
       </div>
+      ${CAL_VIEW==='month'?`<label class="cal-eta-tg" title="הזמנות שטרם תואמו, עם צפי אספקה בכרטיס ההזמנה">
+        <input type="checkbox" ${CAL_ETA?'checked':''} onchange="calEtaToggle(this.checked)"> הצגת צפי</label>`:''}
       <div class="cal-nav">
         <button class="nav-b" onclick="calShift(-1)" title="הקודם">▸</button>
         <button class="nav-b nav-today" onclick="calToday()">היום</button>
@@ -9246,7 +9335,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'ordlink-2026-08-12e';
+const BUILD_ID = 'calieta-2026-08-12f';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -10197,6 +10286,8 @@ async function loadLeads(){
   else loadErrBanner(null);
   LEADS = l.data||[]; CUSTS = c.data||[]; TASKS = t.data||[]; DEALS = d.data||[]; MEETS = m.data||[]; CONTS = k.data||[]; PAYS = p.data||[];
   ORDS = o.data||[]; SCALLS = sc.data||[]; OTEAMS = tm.data||[]; SKUS = sk.data||[]; PROTS = pr.data||[]; OSET = st.data||[];
+  /* מפת הביקורים המשותפים — לאיחוד כרטיסי הצפי בלוח בלבד. */
+  loadVisGrp().then(()=>{ try{ if($('#cal-wrap')) renderCal(); }catch(_e){} });
   /* מצב הסנכרון — מגיע מ-ord.sync_status(), תמצית ללא תוכן היומן */
   SYNC_STATUS = (sl && sl.data) || [];
   FIN = (fin && fin.data) || []; PTERMS = (pt && pt.data) || [];
@@ -11981,7 +12072,7 @@ window.openOrd = (id, ctx)=>{
       <div><label>תאריך מתואם</label><input id="oe-date" type="date" value="${esc(o.scheduled_date||'')}"></div>
       <div><label>מספר ימים</label><input id="oe-days" type="number" min="1" value="${o.days_count||1}"></div>
       <div><label>משבצת זמן</label>${selHtml('oe-slot',TIME_SLOTS,o.time_slot,true)}</div>
-      <div><label>צפי אספקה <small style="font-weight:400;color:#64748b">(כשאין עדיין תיאום)</small></label><input id="oe-eta" type="date" value="${esc(o.eta_date||'')}"></div>
+      <div><label>צפי אספקה <small style="font-weight:400;color:#64748b">${o.eta_date&&o.scheduled_date?'(הוחלף בתאריך המתואם)':'(כשאין עדיין תיאום)'}</small></label><input id="oe-eta" type="date" value="${esc(o.eta_date||'')}"${o.eta_date&&o.scheduled_date?' style="opacity:.55"':''}></div>
       <div><label>הערת צפי</label><input id="oe-etanote" value="${esc(o.eta_note||'')}" placeholder="למשל: פרויקט, צפי לפי הלקוח"></div>
       <div class="span2"><label class="chk-line chk-compact" style="margin-top:4px"><input type="checkbox" id="oe-friday" ${o.friday_ok?'checked':''}> <b>לאשר עבודה ביום שישי בהזמנה זו</b></label></div>
       ${showSupply?`<div class="form-sep">אספקה ומחסן</div>`:''}

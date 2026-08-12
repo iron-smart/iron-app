@@ -761,6 +761,7 @@
   .eta-tag{ display:inline-block; font-size:9.5px; font-weight:800; border-radius:999px; padding:0 5px;
             background:#fff7ed; color:#9a3412; border:1px solid #fed7aa; white-space:nowrap; flex:none }
   .mcount.eta{ background:#fff7ed; color:#9a3412; border:1px solid #fed7aa }
+  .eta-span{ font-size:11.5px; font-weight:700; color:#9a3412; margin-top:5px }
   .cal-eta-tg{ display:flex; align-items:center; gap:6px; font-size:12.5px; color:#475569; cursor:pointer;
                user-select:none; white-space:nowrap }
   .cal-topbar{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:8px 12px; box-shadow:0 1px 3px rgba(6,24,39,.06); }
@@ -1461,7 +1462,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.61.0</div>
+      <div class="ver">גרסה 6.61.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1580,7 +1581,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.61.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.61.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3373,6 +3374,28 @@ function etaShowDate(o){
   }
   return o.eta_date;
 }
+/* ימי העבודה שהצפי נפרס עליהם. "מספר ימים" בכרטיס ההזמנה הוא מספר ימי
+   ההתקנה, והוא אינו תלוי בשאלה אם התאריך ודאי או משוער — ולכן אין שדה
+   ימים נפרד לצפי: אותו מספר משמש את שניהם, וכך אין שתי אמיתות לאותה
+   עובדה. החישוב זהה ל-workDates, אלא שנקודת המוצא היא eta_date. */
+function etaWorkDates(o){
+  const out = []; if(!o.eta_date) return out;
+  let d = etaShowDate(o), guard = 0; const total = Math.max(1, o.days_count || 1);
+  while(out.length < total && guard++ < 60){
+    const dw = dowOf(d);
+    if(dw !== CAL_SATURDAY && (dw !== CAL_FRIDAY || o.friday_ok)) out.push(d);
+    d = addDaysIso(d, 1);
+  }
+  return out;
+}
+function etaDayIndexOf(o, ds){ const i = etaWorkDates(o).indexOf(ds); return i < 0 ? 0 : i + 1; }
+/* תיאור הצפי במילים — משמש גם את כרטיס ההזמנה וגם את הטולטיפ בלוח. */
+function etaSpanText(o){
+  const w = etaWorkDates(o); if(!w.length) return '';
+  const n = w.length;
+  return n === 1 ? fmtD(w[0])
+    : (fmtD(w[0]) + ' — ' + fmtD(w[n-1]) + ' · ' + n + ' ימי עבודה');
+}
 const ETA_SKIP = ['בוטל','מבוטלת','הושלם','לא לטיפול'];
 function etaEventsOn(ds){
   if(!CAL_ETA) return [];
@@ -3382,11 +3405,12 @@ function etaEventsOn(ds){
     if(!o.eta_date || o.scheduled_date) continue;
     if(ETA_SKIP.includes(o.order_status)) continue;
     if(o.needs_scheduling === false) continue;
-    if(etaShowDate(o) !== ds) continue;
+    const idx = etaDayIndexOf(o, ds);
+    if(!idx) continue;
     /* הזמנות בביקור משותף חולקות את אותו צפי — כרטיס אחד ולא שלושה. */
     const g = (typeof VIS_GRP !== 'undefined' && VIS_GRP[o.order_number]) || null;
     if(g){ if(seen.has(g)) continue; seen.add(g); }
-    out.push({ kind:'eta', o, ds, grp:g });
+    out.push({ kind:'eta', o, ds, grp:g, dayIdx:idx, dayTotal:Math.max(1, o.days_count||1) });
   }
   return out;
 }
@@ -4072,8 +4096,8 @@ function renderCal(){
           ${shown.map(e=>{ const o=e.o, col=evColor(e), done=evDone(e), ok=evOk(e), st=evStatus(e);
             if(e.kind==='eta'){
               const mates=etaMates(e);
-              return `<div class="mini-ev eta" style="border-inline-start-color:${col}" title="${esc(o.customer_name||'')} · צפי אספקה ${esc(fmtD(o.eta_date))}${o.eta_note?' · '+esc(o.eta_note):''}${mates.length?' · ביקור משותף עם '+esc(mates.map(x=>x.order_number).join(', ')):''} — אינו תיאום, ואינו מחייב צוות או שעה">
-                <div class="me-line1"><span class="eta-tag">צפי בלבד</span><b>${esc(o.customer_name||'')}</b></div>
+              return `<div class="mini-ev eta" style="border-inline-start-color:${col}" title="${esc(o.customer_name||'')} · צפי אספקה ${esc(etaSpanText(o))}${o.eta_note?' · '+esc(o.eta_note):''}${mates.length?' · ביקור משותף עם '+esc(mates.map(x=>x.order_number).join(', ')):''} — אינו תיאום, ואינו מחייב צוות או שעה">
+                <div class="me-line1"><span class="eta-tag">צפי בלבד</span><b>${esc(o.customer_name||'')}</b>${e.dayTotal>1?`<span class="me-time">${e.dayIdx}/${e.dayTotal}</span>`:''}</div>
                 <div class="me-line2"><span class="me-dot" style="background:${col}"></span>${esc(o.order_number||'')}${mates.length?` +${mates.length}`:''}${o.city?` · ${esc(o.city)}`:''}</div>
               </div>`;
             }
@@ -9335,7 +9359,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'calieta-2026-08-12f';
+const BUILD_ID = 'etadays-2026-08-12g';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -12072,7 +12096,8 @@ window.openOrd = (id, ctx)=>{
       <div><label>תאריך מתואם</label><input id="oe-date" type="date" value="${esc(o.scheduled_date||'')}"></div>
       <div><label>מספר ימים</label><input id="oe-days" type="number" min="1" value="${o.days_count||1}"></div>
       <div><label>משבצת זמן</label>${selHtml('oe-slot',TIME_SLOTS,o.time_slot,true)}</div>
-      <div><label>צפי אספקה <small style="font-weight:400;color:#64748b">${o.eta_date&&o.scheduled_date?'(הוחלף בתאריך המתואם)':'(כשאין עדיין תיאום)'}</small></label><input id="oe-eta" type="date" value="${esc(o.eta_date||'')}"${o.eta_date&&o.scheduled_date?' style="opacity:.55"':''}></div>
+      <div><label>צפי אספקה <small style="font-weight:400;color:#64748b">${o.eta_date&&o.scheduled_date?'(הוחלף בתאריך המתואם)':'(כשאין עדיין תיאום)'}</small></label><input id="oe-eta" type="date" value="${esc(o.eta_date||'')}"${o.eta_date&&o.scheduled_date?' style="opacity:.55"':''}>
+        ${o.eta_date&&!o.scheduled_date?`<div class="eta-span" title="נגזר מ&quot;מספר ימים&quot; ומדילוג על שבת${o.friday_ok?'':' ושישי'}">📅 ${esc(etaSpanText(o))}</div>`:''}</div>
       <div><label>הערת צפי</label><input id="oe-etanote" value="${esc(o.eta_note||'')}" placeholder="למשל: פרויקט, צפי לפי הלקוח"></div>
       <div class="span2"><label class="chk-line chk-compact" style="margin-top:4px"><input type="checkbox" id="oe-friday" ${o.friday_ok?'checked':''}> <b>לאשר עבודה ביום שישי בהזמנה זו</b></label></div>
       ${showSupply?`<div class="form-sep">אספקה ומחסן</div>`:''}

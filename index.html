@@ -228,8 +228,8 @@
   .fold-tag:hover{ background:#e0e7ff }
   .fold-tag.split{ background:#fff7ed; color:#9a3412; border-color:#fed7aa }
   .fold-tag.split:hover{ background:#ffedd5 }
-  .open-badge.sched{ background:#ccfbf1; color:#0f766e; border-color:#5eead4 }
-  .fup-note{ background:#f0fdfa; border:1px solid #99f6e4; color:#115e59; border-radius:9px;
+  .open-badge.sched{ background:#fae8ff; color:#86198f; border-color:#f0abfc }
+  .fup-note{ background:#fdf4ff; border:1px solid #f0abfc; color:#86198f; border-radius:9px;
              padding:8px 11px; font-size:12.5px; line-height:1.55; margin-top:2px }
   .regress-tag{ display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:800;
              border-radius:999px; padding:1px 7px; background:#fef3c7; color:#92400e;
@@ -1502,7 +1502,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.71.0</div>
+      <div class="ver">גרסה 6.71.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1621,7 +1621,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.71.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.71.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3106,8 +3106,15 @@ function renderOps(){
   const act=ORDS.filter(o=>!['הושלם','בוטל','ממתין לתשלום'].includes(o.order_status));
   const today=isoD(new Date());
   const wk=new Date(); wk.setDate(wk.getDate()+7); const weekIso=isoD(wk);
-  const tToday=[...act.filter(o=>o.scheduled_date===today),...SCALLS.filter(s=>s.scheduled_date===today&&!['בוטלה'].includes(s.status))];
-  const tWeek=act.filter(o=>o.scheduled_date&&o.scheduled_date>=today&&o.scheduled_date<=weekIso);
+  /* ביקור השלמה הוא נסיעה לכל דבר, אבל ההזמנה שלו כבר ב-Lane "הושלם" ולכן
+     היא מחוץ ל-act. בלי זה מנהלת הלוגיסטיקה הייתה רואה "מתואמים היום: 0"
+     בזמן שבלוח מופיעה נסיעה (ממצא fable 13/08/2026). אותו עותק רדוד כמו
+     ב-fupEventsOn, כדי שיהיה מסלול חישוב אחד ולא שניים. */
+  const fupAct = ORDS.filter(o=>o.followup_date && !['בוטל','מבוטלת'].includes(o.order_status))
+    .map(o=>Object.assign({}, o, { scheduled_date:o.followup_date, __fup:true,
+      days_count:Math.max(1,o.followup_days||1), team:o.followup_team||null, time_slot:o.followup_slot||null }));
+  const tToday=[...act.filter(o=>o.scheduled_date===today),...fupAct.filter(o=>o.scheduled_date===today),...SCALLS.filter(s=>s.scheduled_date===today&&!['בוטלה'].includes(s.status))];
+  const tWeek=[...act,...fupAct].filter(o=>o.scheduled_date&&o.scheduled_date>=today&&o.scheduled_date<=weekIso);
   const noSched=act.filter(o=>!o.scheduled_date);
   const noContact=act.filter(o=>o.contact_status==='טרם נוצר קשר');
   const inProto=act.filter(o=>(o.contact_status||'').includes('פרוטוקול'));
@@ -3115,7 +3122,7 @@ function renderOps(){
   const byTeam={};
   act.forEach(o=>{ const t=o.team||'לא משויך'; byTeam[t]=(byTeam[t]||0)+1; });
   const mx=Math.max(1,...Object.values(byTeam));
-  const upcoming=act.filter(o=>o.scheduled_date&&o.scheduled_date>=today).sort((a,b)=>a.scheduled_date.localeCompare(b.scheduled_date)).slice(0,8);
+  const upcoming=[...act,...fupAct].filter(o=>o.scheduled_date&&o.scheduled_date>=today).sort((a,b)=>a.scheduled_date.localeCompare(b.scheduled_date)).slice(0,8);
   el.innerHTML=`
     <div class="stats">
       <div class="stat"><div class="n">${act.length}</div><div class="l">הזמנות פעילות בלוח</div></div>
@@ -3137,7 +3144,7 @@ function renderOps(){
     <h2 class="sec">📅 השיבוצים הקרובים</h2>
     ${upcoming.map(o=>`<div class="lead" onclick="openOrd('${o.id}')">
       <div><div class="nm">${esc(o.customer_name||'')}</div><div class="meta">${fmtD(o.scheduled_date)}${o.time_slot?' · '+esc(o.time_slot):''}${o.city?' · '+esc(o.city):''}${o.team?' · '+esc(o.team):''}</div></div>
-      <span class="pill ${ordStClass(o.order_status)}">${esc(o.order_status)}</span></div>`).join('')||'<div class="empty">אין שיבוצים קרובים</div>'}`;
+      ${o.__fup?`<span class="pill" style="background:#fae8ff;color:#86198f">🔧 השלמה</span>`:`<span class="pill ${ordStClass(o.order_status)}">${esc(o.order_status)}</span>`}</div>`).join('')||'<div class="empty">אין שיבוצים קרובים</div>'}`;
 }
 /* לוגיסטיקה — שלוש תצוגות בתוך אותו מסך, בלי לקפוץ לקטגוריה אחרת (הערה 19) */
 let LOGI_VIEW='cal';
@@ -3159,7 +3166,12 @@ function logiDefLoad(){ try{ const r=JSON.parse(localStorage.getItem('iron_logi_
 function logiDefExists(){ return !!logiDefLoad(); }
 window.logiDefSave = ()=>{ try{ localStorage.setItem('iron_logi_default_v1', JSON.stringify({scope:LOGI_SCOPE, f:LOGI_F})); toast('התצוגה נשמרה כברירת מחדל ✓'); renderLogiFilters(); }catch(_e){ toast('הדפדפן חוסם שמירת ברירת מחדל'); } };
 window.logiDefClear = ()=>{ try{ localStorage.removeItem('iron_logi_default_v1'); }catch(_e){} toast('ברירת המחדל נמחקה'); renderLogiFilters(); };
-function logiInit(){ if(LOGI_INIT) return; LOGI_INIT=true; const d=logiDefLoad(); if(d){ if(d.scope) LOGI_SCOPE=d.scope; if(d.f&&typeof d.f==='object'){ LOGI_F=Object.assign({status:[],team:'',region:'',contact:''}, d.f); if(!Array.isArray(LOGI_F.status)) LOGI_F.status = LOGI_F.status?[LOGI_F.status]:[]; } } const cd=scDefLoad(); if(cd&&typeof cd==='object'){ SC_F=Object.assign({status:[],urgency:'',team:'',region:''}, cd); if(!Array.isArray(SC_F.status)) SC_F.status = SC_F.status?[SC_F.status]:[]; } }
+function logiInit(){ if(LOGI_INIT) return; LOGI_INIT=true; const d=logiDefLoad(); if(d){ if(d.scope) LOGI_SCOPE=d.scope; if(d.f&&typeof d.f==='object'){ LOGI_F=Object.assign({status:[],team:'',region:'',contact:''}, d.f); if(!Array.isArray(LOGI_F.status)) LOGI_F.status = LOGI_F.status?[LOGI_F.status]:[];
+    /* סטטוס ששמו שונה מאז שנשמרה ברירת המחדל ('לא לטיפול' → 'ממתין לתשלום')
+       היה מסנן החוצה כל שורה, בלי שאף תיבה תיראה מסומנת — טבלה ריקה בלי
+       הסבר (ממצא fable 13/08/2026). מנרמלים, ומה שכבר אינו קיים — יורד. */
+    LOGI_F.status = LOGI_F.status.map(s=> s==='לא לטיפול' ? 'ממתין לתשלום' : s)
+                                 .filter(s=> ORDER_STATUSES.includes(s)); } } const cd=scDefLoad(); if(cd&&typeof cd==='object'){ SC_F=Object.assign({status:[],urgency:'',team:'',region:''}, cd); if(!Array.isArray(SC_F.status)) SC_F.status = SC_F.status?[SC_F.status]:[]; } }
 const LOGI_SEL=new Set();
 let LOGI_SHOWN=[];
 /* ===== קיפול ביקור משותף (6.69.0) =====
@@ -3435,9 +3447,10 @@ function logiRenderTable(){
     const doneScope = LOGI_SCOPE==='done';
     const pendScope = LOGI_SCOPE==='pend';
     const everyScope = LOGI_SCOPE==='every';
-    /* "השלמות לתיאום" חוצה סטטוסים בכוונה: רוב ההזמנות התקועות כבר מסומנות
-       "הושלם", וזו בדיוק הסיבה שנעלמו מהעין עד היום. הזמנה שכבר יש לה ביקור
-       עתידי אינה נכנסת לכאן — היא בדרך, לא תקועה. */
+    /* שבב "השלמות" חוצה סטטוסים בכוונה: רוב ההזמנות התקועות כבר מסומנות
+       "הושלם", וזו בדיוק הסיבה שנעלמו מהעין עד היום. מ-13/08/2026 הוא מציג
+       גם השלמות שכבר תואמו (openAny) — הן אינן נעלמות עד שהפריטים סופקו,
+       והתג מבדיל בין "לתיאום" ל"תואמה · תאריך". */
     const openScope = LOGI_SCOPE==='open';
     /* החזרה לאיסוף אינה תלויה בסטטוס ההזמנה כלל — הלקוח מחזיר סחורה
        גם מהזמנה שהושלמה מזמן. */
@@ -3518,7 +3531,7 @@ const CAL_LEGEND = ['הזמנה חדשה','נשלח לייצור','נשלח לצ
 const ETA_COLOR = '#d97706';
 /* ביקור השלמה — צבע משלו, כדי שלא ייראה כמו הזמנה סגורה. ההזמנה עצמה
    ב-Lane "הושלם" (אפור), אבל הנסיעה הזו עתידית ואמיתית לגמרי. */
-const FUP_COLOR = '#0d9488';
+const FUP_COLOR = '#c026d3';
 const evStatus = e => e.kind==='svc' ? (e.o.status||'') : (e.o.order_status||'');
 const evColor  = e => e.kind==='eta' ? ETA_COLOR : (e.kind==='fup' ? FUP_COLOR : (STATUS_COLOR[evStatus(e)] || '#94a3b8'));
 /* לוח שנה בעיצוב המערכת הקודמת (הזמנות ותיאומים), בקנה מידה נוכחי — הנחיית רומן 27/07.
@@ -3660,7 +3673,7 @@ function tgChip(e){
   const mark=evMark(e), mts=(e.mates||[]);
   const ref=e.kind==='svc'?(o.product||''):((o.order_number||'') + (mts.length?' +'+mts.length:''));
   const line2=[ref, o.city, o.address].filter(Boolean).map(x=>esc(String(x))).join(' · ');
-  return `<div class="tg-chip" style="border-inline-start-color:${col};${evDone(e)?'opacity:.55':''}" onclick="${evOpen(e)}" title="${esc(o.customer_name||'')} · ${esc(o.time_slot||'ללא שעה')} · ${esc(evStatus(e)||'')} · ${esc(o.team||'ללא צוות')}${o.phone?' · '+esc(o.phone):''}">
+  return `<div class="tg-chip" style="border-inline-start-color:${col};${evDone(e)?'opacity:.55':''}" onclick="${evOpen(e)}" title="${esc(o.customer_name||'')} · ${esc(o.time_slot||'ללא שעה')} · ${esc(e.kind==='fup'?'ביקור השלמה — נותרו פריטים לאספקה':(evStatus(e)||''))} · ${esc(o.team||'ללא צוות')}${o.phone?' · '+esc(o.phone):''}">
     <div class="c1"><span class="tm">${esc(o.time_slot||'ללא שעה')}</span>${e.kind==='svc'?'🛠️':''}<span style="overflow:hidden;text-overflow:ellipsis">${esc(o.customer_name||'')}</span>${mark?`<span style="color:${col};font-size:10.5px;flex:none">${mark}</span>`:''}</div>
     <div class="c2">${line2||'—'}${o.team?` · <span class="team">${esc(o.team)}</span>`:''}${(tdNames(e.ds,o.team).length?` · 👷 ${esc(tdNames(e.ds,o.team).map(tdShort).join(', '))}`:'')}${o.phone?` · ${evPh(o.phone)}`:''}</div>
   </div>`;
@@ -3764,7 +3777,7 @@ function evCard(e, compact){
     <div class="s">${e.kind==='svc'?esc(String(o.product||'').slice(0,30)):esc(o.order_number||'')}${(e.mates&&e.mates.length)?` <span class="tagx" title="${esc('ביקור משותף · '+(e.mates.length+1)+' הזמנות: '+[o.order_number].concat(e.mates.map(m=>m.order_number)).join(', '))}">🔗 +${e.mates.length}</span>`:''}${o.items_count?` · ${o.items_count} פר'`:''}</div>
     ${o.city||o.address?`<div class="s">📍 ${esc(o.city||'')}${o.address?`, ${esc(String(o.address).slice(0,24))}`:''}</div>`:''}
     ${o.phone?`<div class="s" style="text-align:right">${evPh(o.phone)}</div>`:''}
-    <div class="s ev-foot">${teamChip(o.team,teamColor(o.team))}${crewChip(e.ds,o.team)}${e.kind==='order'&&e.dayTotal>1?`<span class="tagx">${e.dayIdx>1?'המשך · ':''}יום ${e.dayIdx} מתוך ${e.dayTotal}</span>`:''}${e.kind==='order'&&o.friday_ok?'<span class="tagx" title="אושרה עבודה ביום שישי">🗓️ שישי</span>':''}${e.kind==='order'&&o.order_notes?`<span class="tagx" title="${esc(o.order_notes)}">📝</span>`:''}</div>
+    <div class="s ev-foot">${teamChip(o.team,teamColor(o.team))}${crewChip(e.ds,o.team)}${(e.kind==='order'||e.kind==='fup')&&e.dayTotal>1?`<span class="tagx">${e.dayIdx>1?'המשך · ':''}יום ${e.dayIdx} מתוך ${e.dayTotal}</span>`:''}${e.kind==='order'&&o.friday_ok?'<span class="tagx" title="אושרה עבודה ביום שישי">🗓️ שישי</span>':''}${e.kind==='order'&&o.order_notes?`<span class="tagx" title="${esc(o.order_notes)}">📝</span>`:''}</div>
   </div>`;
 }
 /* ================= 6.24.18 — רישום יומי של אנשי הצוות =================
@@ -9601,7 +9614,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'followup-2026-08-13w';
+const BUILD_ID = 'followup-2026-08-13x';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){

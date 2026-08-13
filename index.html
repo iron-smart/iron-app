@@ -228,6 +228,9 @@
   .fold-tag:hover{ background:#e0e7ff }
   .fold-tag.split{ background:#fff7ed; color:#9a3412; border-color:#fed7aa }
   .fold-tag.split:hover{ background:#ffedd5 }
+  .open-badge.sched{ background:#ccfbf1; color:#0f766e; border-color:#5eead4 }
+  .fup-note{ background:#f0fdfa; border:1px solid #99f6e4; color:#115e59; border-radius:9px;
+             padding:8px 11px; font-size:12.5px; line-height:1.55; margin-top:2px }
   .regress-tag{ display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:800;
              border-radius:999px; padding:1px 7px; background:#fef3c7; color:#92400e;
              border:1px solid #fcd34d; cursor:default; white-space:nowrap; margin-inline-start:5px }
@@ -1499,7 +1502,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.70.0</div>
+      <div class="ver">גרסה 6.71.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1618,7 +1621,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.70.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.71.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3031,6 +3034,11 @@ const ORD_FIELD_PERM = {
      מ-13/08/2026 יש לו מפתח הרשאה משלו, כדי שאפשר יהיה לתת אותו למנהל
      הלוגיסטיקה בלי לתת אותו לאנשי המכירות. */
   eta_date:'logi.orders.eta', eta_note:'logi.orders.eta',
+  /* ביקור השלמה (13/08/2026). אותה הרשאה כמו תיאום רגיל, אבל שדות נפרדים:
+     ההשלמה אינה מחליפה את ההתקנה — היא נוספת עליה, ותאריך ההתקנה המקורי
+     חייב להישאר על מכונו (עוגני תוכנית התשלומים נשענים עליו). */
+  followup_date:'logi.orders.schedule', followup_team:'logi.orders.schedule',
+  followup_slot:'logi.orders.schedule', followup_days:'logi.orders.schedule',
   equipment_list:'logi.orders.warehouse', warehouse_notes:'logi.orders.warehouse',
   supply_days:'logi.orders.supply', supply_end_date:'logi.orders.supply',
   deadline:'logi.orders.supply', delivery_method:'logi.orders.supply',
@@ -3052,7 +3060,9 @@ const ORD_CARD_FIELDS = [
   ['oe-team','team'], ['oe-date','scheduled_date'], ['oe-days','days_count'], ['oe-slot','time_slot'],
   ['oe-friday','friday_ok'], ['oe-eta','eta_date'], ['oe-etanote','eta_note'],
   ['oe-supdays','supply_days'], ['oe-supend','supply_end_date'],
-  ['oe-wnotes','warehouse_notes']
+  ['oe-wnotes','warehouse_notes'],
+  ['oe-fupdate','followup_date'], ['oe-fupteam','followup_team'],
+  ['oe-fupslot','followup_slot'], ['oe-fupdays','followup_days']
 ];
 window.ordCardEditable = (col)=>{ const pk = window.ordFieldPerm('ord', col); return !!pk && window.canEdit(pk); };
 const canIE = (kind, field)=>{
@@ -3093,7 +3103,7 @@ function applyDashboard(){
 }
 function renderOps(){
   const el=$('#dash-board-wrap'); if(!el) return;
-  const act=ORDS.filter(o=>!['הושלם','בוטל','לא לטיפול'].includes(o.order_status));
+  const act=ORDS.filter(o=>!['הושלם','בוטל','ממתין לתשלום'].includes(o.order_status));
   const today=isoD(new Date());
   const wk=new Date(); wk.setDate(wk.getDate()+7); const weekIso=isoD(wk);
   const tToday=[...act.filter(o=>o.scheduled_date===today),...SCALLS.filter(s=>s.scheduled_date===today&&!['בוטלה'].includes(s.status))];
@@ -3242,19 +3252,19 @@ const needsSched = o => o.needs_scheduling !== false;
 /* צפי שעבר זמנו ואיש לא תיאם ולא עדכן. הלוח אינו המקום להתריע על כך — אף
    אחד לא מדפדף אחורה — ולכן זה שבב במסך ההזמנות. */
 const etaStale = o => !!o.eta_date && !o.scheduled_date && o.eta_date < todayStr()
-  && !['בוטל','מבוטלת','הושלם','לא לטיפול'].includes(o.order_status);
+  && !['בוטל','מבוטלת','הושלם','ממתין לתשלום'].includes(o.order_status);
 const scopeOk = o => (LOGI_SCOPE==='all'||LOGI_SCOPE==='every') ? true : (LOGI_SCOPE==='ship' ? !needsSched(o) : needsSched(o));
 window.logiScope = v => { LOGI_SCOPE=v; LOGI_SEL.clear(); renderLogi(); };
 window.logiSelClear = () => { LOGI_SEL.clear(); renderLogi(); };
 function renderLogiScope(){
   const box=$('#logi-scope'); if(!box) return;
-  const base = ORDS.filter(o=>!['הושלם','בוטל','לא לטיפול'].includes(o.order_status));
+  const base = ORDS.filter(o=>!['הושלם','בוטל','ממתין לתשלום'].includes(o.order_status));
   /* "לתיאום" ו"לטיפול" סופרים ביקורים ולא הזמנות, כדי שהמספר יתאים למספר
      השורות בטבלה. ה-title מציג את שני המספרים, כי הפער מול פריוריטי
      והאקסל הוא מכוון וצריך להיות ניתן להסבר. */
   const _sched = base.filter(needsSched), _all = base;
-  const n = { sched: foldCount(_sched), ship: base.filter(o=>!needsSched(o)).length, all: foldCount(_all), pend: ORDS.filter(o=>o.order_status==='לא לטיפול').length, done: ORDS.filter(o=>o.order_status==='הושלם').length, every: ORDS.length,
-    open: ORDS.filter(o=>openStuck(o.order_number)).length,
+  const n = { sched: foldCount(_sched), ship: base.filter(o=>!needsSched(o)).length, all: foldCount(_all), pend: ORDS.filter(o=>o.order_status==='ממתין לתשלום').length, done: ORDS.filter(o=>o.order_status==='הושלם').length, every: ORDS.length,
+    open: ORDS.filter(o=>openAny(o.order_number)).length,
     ret: ORDS.filter(o=>retPending(o.order_number)).length,
     etastale: ORDS.filter(etaStale).length };
   /* "צפי שעבר" מוצג רק למי שרואה צפי אספקה בכלל. אם המשתמש נמצא בו והוא
@@ -3262,9 +3272,9 @@ function renderLogiScope(){
   const etaOk = canView('logi.orders.eta');
   if(!etaOk && LOGI_SCOPE==='etastale') LOGI_SCOPE='sched';
   const _tip = { sched: _sched.length, all: _all.length };
-  box.innerHTML = [['sched','לתיאום'],['ship','משלוחים'],['all','לטיפול'],['open','השלמות לתיאום'],['ret','החזרות לאיסוף']]
+  box.innerHTML = [['sched','לתיאום'],['ship','משלוחים'],['all','לטיפול'],['open','השלמות'],['ret','החזרות לאיסוף']]
     .concat(etaOk?[['etastale','צפי שעבר']]:[])
-    .concat([['pend','לא לטיפול'],['done','הושלמו'],['every','הכל']])
+    .concat([['pend','ממתין לתשלום'],['done','הושלמו'],['every','הכל']])
     .map(([k,l])=>{
       const tip = (_tip[k] != null && _tip[k] !== n[k])
         ? ` title="${n[k]} ביקורים · ${_tip[k]} הזמנות — הזמנות שקובצו לביקור משותף מוצגות בשורה אחת"` : '';
@@ -3438,9 +3448,9 @@ function logiRenderTable(){
     let list = ORDS.filter(o=>{
       if(etaScope) return etaStale(o);
       if(retScope) return retPending(o.order_number);
-      if(openScope) return openStuck(o.order_number);
+      if(openScope) return openAny(o.order_number);
       if(everyScope) return true;
-      if(o.order_status==='לא לטיפול') return pendScope || stF.includes('לא לטיפול');
+      if(o.order_status==='ממתין לתשלום') return pendScope || stF.includes('ממתין לתשלום');
       if(o.order_status==='הושלם') return doneScope || stF.includes('הושלם');
       if(o.order_status==='בוטל')  return stF.includes('בוטל');
       return !doneScope && !pendScope;
@@ -3506,8 +3516,11 @@ const STATUS_COLOR = {
 };
 const CAL_LEGEND = ['הזמנה חדשה','נשלח לייצור','נשלח לצביעה','ממתין לאספקה','תואם','הושלם','בהשהיה'];
 const ETA_COLOR = '#d97706';
+/* ביקור השלמה — צבע משלו, כדי שלא ייראה כמו הזמנה סגורה. ההזמנה עצמה
+   ב-Lane "הושלם" (אפור), אבל הנסיעה הזו עתידית ואמיתית לגמרי. */
+const FUP_COLOR = '#0d9488';
 const evStatus = e => e.kind==='svc' ? (e.o.status||'') : (e.o.order_status||'');
-const evColor  = e => e.kind==='eta' ? '#d97706' : (STATUS_COLOR[evStatus(e)] || '#94a3b8');
+const evColor  = e => e.kind==='eta' ? ETA_COLOR : (e.kind==='fup' ? FUP_COLOR : (STATUS_COLOR[evStatus(e)] || '#94a3b8'));
 /* לוח שנה בעיצוב המערכת הקודמת (הזמנות ותיאומים), בקנה מידה נוכחי — הנחיית רומן 27/07.
    שבוע עבודה ראשון–חמישי; שישי מוצג רק אם שובצה בו עבודה שאושרה; אירועים רב-יומיים לפי days_count. */
 const CAL_FRIDAY=5, CAL_SATURDAY=6;
@@ -3559,7 +3572,7 @@ function etaSpanText(o){
   return n === 1 ? fmtD(w[0])
     : (fmtD(w[0]) + ' — ' + fmtD(w[n-1]) + ' · ' + n + ' ימי עבודה');
 }
-const ETA_SKIP = ['בוטל','מבוטלת','הושלם','לא לטיפול'];
+const ETA_SKIP = ['בוטל','מבוטלת','הושלם','ממתין לתשלום'];
 function etaEventsOn(ds){
   if(!CAL_ETA || !canView('logi.orders.eta')) return [];
   const out = [];
@@ -3679,6 +3692,22 @@ function tgGutter(adH){
     ${CAL_HOURS.map((h,i)=>`<div class="tg-hr" style="top:${i*CAL_PX}px">${String(h).padStart(2,'0')}:00</div>`).join('')}
   </div></div>`;
 }
+/* ביקור השלמה. השדות נפרדים מהתיאום הרגיל, אבל האירוע נבנה על עותק רדוד
+   שבו followup_* ממופים לשמות הרגילים — וכך כל מה שמצייר אירוע (שבב, כרטיס,
+   חישוב שעות, צוות) עובד בלי שינוי, ואין מסלול ציור שני שיסטה מהראשון. */
+function fupEventsOn(ds){
+  const out=[];
+  for(const o of ORDS){
+    if(!o.followup_date || ['בוטל','מבוטלת'].includes(o.order_status)) continue;
+    const oo = Object.assign({}, o, { scheduled_date:o.followup_date,
+      days_count:Math.max(1, o.followup_days||1), team:o.followup_team||null,
+      time_slot:o.followup_slot||null });
+    if(ds<oo.scheduled_date) continue;
+    const idx=dayIndexOf(oo,ds);
+    if(idx) out.push({kind:'fup',o:oo,ds,dayIdx:idx,dayTotal:oo.days_count});
+  }
+  return out;
+}
 function eventsOn(ds){
   const evs=[];
   for(const o of ORDS){
@@ -3688,6 +3717,7 @@ function eventsOn(ds){
     const idx=dayIndexOf(o,ds);
     if(idx) evs.push({kind:'order',o,ds,dayIdx:idx,dayTotal:Math.max(1,o.days_count||1)});
   }
+  evs.push(...fupEventsOn(ds));
   for(const c of SCALLS){ if(c.scheduled_date===ds && c.status!=='בוטלה') evs.push({kind:'svc',o:c,ds}); }
   let out = CAL_Q ? evs.filter(e=>evMatch(e,CAL_Q)) : evs;
   /* ביקור משותף הוא נסיעה אחת, ולכן שבב אחד ליום — בדיוק כפי שכרטיסי
@@ -3725,7 +3755,7 @@ const evOpen=e=> e.kind==='svc'?`openScall('${e.o.id}')`:`openOrd('${e.o.id}')`;
 const evDone=e=> e.kind==='order' ? e.o.order_status==='הושלם' : ['הושלם','הושלמה'].includes(e.o.status);
 /* 6.2.2 — גם אירוע שסטטוסו "תואם" מקבל סימן ✓, לא רק "הושלם" (רומן 29/07/2026) */
 const evOk=e=> evDone(e) || evStatus(e)==='תואם';
-const evMark=e=> evDone(e) ? '✓ הושלם' : (evStatus(e)==='תואם' ? '✓ תואם' : '');
+const evMark=e=> e.kind==='fup' ? '🔧 השלמה' : (evDone(e) ? '✓ הושלם' : (evStatus(e)==='תואם' ? '✓ תואם' : ''));
 function evCard(e, compact){
   const o=e.o, col=evColor(e), done=evDone(e), mark=evMark(e);
   return `<div class="ev ${e.kind==='svc'?'svc':''} ${compact?'ev-c':''}" style="border-inline-start-color:${col};${done?'opacity:.55':''}" onclick="${evOpen(e)}">
@@ -4353,6 +4383,7 @@ function renderCal(){
      כשבב בתוך האירוע עצמו, בצבע הצוות. */
   const legend = CAL_LEGEND.map(s=>`<span class="cal-lg"><span class="cal-dot" style="background:${STATUS_COLOR[s]};border-radius:3px"></span>${esc(s)}</span>`).join('')
     + '<span class="cal-lg">✓ תואם / הושלם</span><span class="cal-lg">🛠️ קריאת שירות</span>'
+    + '<span class="cal-lg" title="ביקור השלמה — הזמנה שכבר סופקה ונסגרה, ונותרו בה פריטים לאספקה. נקבע בכרטיס ההזמנה בשדות ההשלמה, ואינו דורס את תאריך ההתקנה המקורי."><span class="cal-dot" style="background:' + FUP_COLOR + '"></span>השלמה</span>'
     + (CAL_VIEW==='month' ? '<span class="cal-lg" title="הזמנה שטרם תואמה, עם צפי אספקה בכרטיס ההזמנה. אינה תיאום, אינה תופסת צוות, ונעלמת מהלוח ברגע שנקבע תאריך מתואם."><span class="cal-dot" style="background:' + ETA_COLOR + '"></span>צפי בלבד</span>' : '');
   /* הבקרות למעלה, בשורה אחת — הלוח מקבל את שאר המסך (הערה 8) */
   el.innerHTML = `<div class="cal-topbar">
@@ -9570,7 +9601,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'regress-2026-08-13v';
+const BUILD_ID = 'followup-2026-08-13w';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -10490,6 +10521,11 @@ const openCnt = on => { const r = openOf(on); return r ? Number(r.open_lines)||0
    כלל. ord.order_open_items_v ממשיך להחזיר את כל המצבים; ההחלטה מה מוצג
    נעשית כאן, כדי שאפשר יהיה להחזיר מצב לתצוגה בלי לגעת במסד. */
 const openStuck = on => { const r = openOf(on); return !!(r && r.supply_state === 'השלמה לתיאום'); };
+/* השלמה שכבר קיבלה תאריך ביקור. עד 13/08/2026 היא פשוט נעלמה מהעין — הדרך
+   היחידה לתאם הייתה לדרוס את scheduled_date, וזה הוציא אותה מהשבב בלי
+   להשאיר שום עקבה. עכשיו היא נשארת מוצגת עד שהפריטים באמת סופקו. */
+const openSched = on => { const r = openOf(on); return !!(r && r.supply_state === 'השלמה מתואמת'); };
+const openAny   = on => openStuck(on) || openSched(on);
 /* סדרות השירות (התקנה, משלוח, סבלות) אינן נסגרות בפריוריטי לעולם, ולכן
    הוחרגו. הרשימה חיה ב-ord.settings.supply_service_skus ונטענת עם OSET,
    כדי שלא תהיה כאן רשימה מקבילה שתסטה מזו שבמסד. */
@@ -10514,11 +10550,15 @@ function retBadge(on, big){
          (days>0 ? ' · ' + days + ' ימים' : '') + '</span>';
 }
 function openBadge(on, big){
-  const r = openOf(on); if(!r || r.supply_state !== 'השלמה לתיאום') return '';
+  const r = openOf(on); if(!r) return '';
+  const sched = r.supply_state === 'השלמה מתואמת';
+  if(!sched && r.supply_state !== 'השלמה לתיאום') return '';
   const n = Number(r.open_lines)||0;
-  return '<span class="open-badge' + (big?' big':'') +
-         '" title="' + esc(String(r.items||'').slice(0,300)) + '">השלמה לתיאום · ' +
-         n + (n===1?' פריט':' פריטים') + '</span>';
+  const items = esc(String(r.items||'').slice(0,300));
+  return '<span class="open-badge' + (sched?' sched':'') + (big?' big':'') +
+         '" title="' + items + (sched && r.followup_date ? esc(' · ביקור השלמה נקבע ל-' + fmtD(r.followup_date) + (r.followup_team?' · '+r.followup_team:'')) : '') +
+         '">' + (sched ? 'השלמה תואמה' + (r.followup_date ? ' · ' + fmtD(r.followup_date) : '') : 'השלמה לתיאום') +
+         ' · ' + n + (n===1?' פריט':' פריטים') + '</span>';
 }
 /* פס אזהרה עליון כשטעינת נתונים נכשלה — במקום להציג "אין נתונים" (תיקון ממצא 11) */
 function loadErrBanner(names){
@@ -12096,7 +12136,7 @@ function scTable(list){
   </tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('calls',list.length,'קריאות')}`;
 }
 /* קבועי הלוח הישן — כרטיסים מלאים (הערות 21–22) */
-const ORDER_STATUSES = ['לא לטיפול','הזמנה חדשה','נשלח לייצור','נשלח לצביעה','ממתין לאספקה','תואם','הושלם','בהשהיה','בוטל'];
+const ORDER_STATUSES = ['ממתין לתשלום','הזמנה חדשה','נשלח לייצור','נשלח לצביעה','ממתין לאספקה','תואם','הושלם','בהשהיה','בוטל'];
 const CONTACT_STATUSES = ['טרם נוצר קשר','נוצר קשר ראשוני לפרוטוקול','פרוטוקול חתום ממתין לתיאום'];
 const CALL_STATUSES = ['חדש','תואם','הושלם'];
 const URGENCIES = ['רגילה','בינונית','משביתה'];
@@ -12110,7 +12150,7 @@ const REGIONS = ['תל אביב והסביבה','מרכז','שרון','שפלה'
 const YESNO = ['כן','לא'];
 const STATUS_PILL = {
   'הזמנה חדשה':'p-blue','נשלח לייצור':'p-violet','נשלח לצביעה':'p-orange','ממתין לאספקה':'p-teal','בהשהיה':'p-yellow',
-  'תואם':'p-green','הושלם':'p-gray','בוטל':'p-red','מבוטלת':'p-red','לא לטיפול':'p-gray',
+  'תואם':'p-green','הושלם':'p-gray','בוטל':'p-red','מבוטלת':'p-red','ממתין לתשלום':'p-gray',
   'טרם נוצר קשר':'p-red','נוצר קשר ראשוני לפרוטוקול':'p-yellow','פרוטוקול חתום ממתין לתיאום':'p-blue',
   'חדש':'p-blue','רגילה':'p-gray','בינונית':'p-yellow','משביתה':'p-red',
   'תקלה':'p-red','אחזקה':'p-orange','שירות':'p-blue','אחר':'p-gray','כן':'p-green','לא':'p-red'
@@ -12431,7 +12471,7 @@ function ordTable(list,opts){
       ${SEL?`<td class="selcol" onclick="event.stopPropagation()">${window.canEdit('logi.orders.bulk')?`<input type="checkbox" class="ordsel" data-oid="${o.id}"${_f?` data-fold="${esc(_f.ids.join(','))}"`:''}>`:''}${window.canEdit('logi.orders')?`<button type="button" class="qdone" title="סימון כהושלם" onclick="ordQuickDone('${o.id}')">✓</button>`:''}</td>`:''}
       <td class="rownum">${i+1}</td>
       <td class="odate">${fmtD(o.order_date)||'—'}</td>
-      <td><b>${esc(o.order_number)}</b>${window.newChip(o)}${window.foldTag?window.foldTag(o):''}${window.regressTag?window.regressTag(o):''}${o.order_notes?`<div class="note-preview" title="${esc(o.order_notes)}">📝 ${esc(String(o.order_notes).slice(0,28))}${String(o.order_notes).length>28?'…':''}</div>`:''}</td>
+      <td><b>${esc(o.order_number)}</b>${window.newChip(o)}${window.foldTag?window.foldTag(o):''}${window.regressTag?window.regressTag(o):''}${openBadge(o.order_number)}${o.order_notes?`<div class="note-preview" title="${esc(o.order_notes)}">📝 ${esc(String(o.order_notes).slice(0,28))}${String(o.order_notes).length>28?'…':''}</div>`:''}</td>
       <td title="${esc(o.customer_name||'')}">${esc(o.customer_name||'')}</td>
       <td dir="ltr">${esc(o.phone||'')}</td>
       <td>${ordCityCell(o)}</td>
@@ -12511,6 +12551,13 @@ window.openOrd = (id, ctx)=>{
         ${o.eta_date&&!o.scheduled_date?`<div class="eta-span" title="נגזר מ&quot;מספר ימים&quot; ומדילוג על שבת${o.friday_ok?'':' ושישי'}">📅 ${esc(etaSpanText(o))}</div>`:''}</div>
       <div><label>הערת צפי</label><input id="oe-etanote" value="${esc(o.eta_note||'')}" placeholder="למשל: פרויקט, צפי לפי הלקוח"></div>`:''}
       <div class="span2"><label class="chk-line chk-compact" style="margin-top:4px"><input type="checkbox" id="oe-friday" ${o.friday_ok?'checked':''}> <b>לאשר עבודה ביום שישי בהזמנה זו</b></label></div>
+      ${(openAny(o.order_number) || o.followup_date) ? `
+      <div class="form-sep" style="margin-top:16px">ביקור השלמה ${openBadge(o.order_number)}</div>
+      <div class="span4"><div class="fup-note">ההזמנה כבר סופקה ונסגרה, ונותרו בה פריטים לאספקה. התאריך כאן הוא <b>ביקור נוסף</b> ואינו נוגע בתאריך המתואם למעלה — כך תאריך ההתקנה המקורי נשמר, וגם עוגני תוכנית התשלומים.</div></div>
+      <div><label>תאריך השלמה</label><input id="oe-fupdate" type="date" value="${esc(o.followup_date||'')}"></div>
+      <div><label>צוות להשלמה</label>${selHtml('oe-fupteam',teamVals,o.followup_team,true)}</div>
+      <div><label>משבצת זמן להשלמה</label>${selHtml('oe-fupslot',TIME_SLOTS,o.followup_slot,true)}</div>
+      <div><label>ימי השלמה</label><input id="oe-fupdays" type="number" min="1" value="${o.followup_days||1}"></div>` : ''}
       ${showSupply?`<div class="form-sep">אספקה ומחסן</div>`:''}
       ${showSupply?`<div><label>זמן אספקה (ימים)</label><input id="oe-supdays" type="number" value="${o.supply_days??''}"></div>`:''}
       ${showSupply?`<div><label>תאריך סיום אספקה</label><input id="oe-supend" type="date" value="${esc(o.supply_end_date||'')}"></div>`:''}
@@ -12768,11 +12815,16 @@ window.saveOrd = async (id)=>{
     eta_note:        el => el.value || null,
     supply_days:     el => num(el.value),
     supply_end_date: el => el.value || null,
+    followup_date:   el => el.value || null,
+    followup_team:   el => el.value || null,
+    followup_slot:   el => el.value || null,
+    followup_days:   el => num(el.value) || 1,
     delivery_note:   el => el.value || null,
     invoice:         el => el.value || null,
     warehouse_notes: el => el.value || null
   };
-  const CUR = { days_count: r => (r.days_count ?? 1), friday_ok: r => !!r.friday_ok, city: r => (effCity(r) || null) };
+  const CUR = { days_count: r => (r.days_count ?? 1), friday_ok: r => !!r.friday_ok, city: r => (effCity(r) || null),
+                followup_days: r => (r.followup_days ?? 1) };
   const changed = {};
   ORD_CARD_FIELDS.forEach(([elId, col])=>{
     const el = document.getElementById(elId);

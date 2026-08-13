@@ -231,6 +231,18 @@
   .open-badge.sched{ background:#fae8ff; color:#86198f; border-color:#f0abfc }
   .fup-note{ background:#fdf4ff; border:1px solid #f0abfc; color:#86198f; border-radius:9px;
              padding:8px 11px; font-size:12.5px; line-height:1.55; margin-top:2px }
+  .fup-ask{ background:#f8fafc; border:1px dashed #cbd5e1; color:#475569; border-radius:9px;
+             padding:9px 11px; font-size:12.5px; line-height:1.55; margin-top:2px;
+             display:flex; align-items:center; gap:10px; flex-wrap:wrap }
+  .fup-off{ background:#f1f5f9; border:1px solid #cbd5e1; color:#475569; border-radius:9px;
+             padding:9px 11px; font-size:12.5px; line-height:1.55; margin-top:2px;
+             display:flex; align-items:center; gap:10px; flex-wrap:wrap }
+  .fup-acts{ display:flex; gap:8px; flex-wrap:wrap; margin-top:2px }
+  .fup-btn{ width:auto; padding:7px 14px; font-size:12.5px; white-space:nowrap }
+  .fup-btn.on{ background:#fdf4ff; border-color:#f0abfc; color:#86198f }
+  .fup-man{ display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:800;
+             border-radius:999px; padding:1px 7px; background:#ede9fe; color:#5b21b6;
+             border:1px solid #c4b5fd; cursor:default; white-space:nowrap; margin-inline-start:5px }
   .regress-tag{ display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:800;
              border-radius:999px; padding:1px 7px; background:#fef3c7; color:#92400e;
              border:1px solid #fcd34d; cursor:default; white-space:nowrap; margin-inline-start:5px }
@@ -1502,7 +1514,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.71.1</div>
+      <div class="ver">גרסה 6.72.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1621,7 +1633,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.71.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.72.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3039,6 +3051,7 @@ const ORD_FIELD_PERM = {
      חייב להישאר על מכונו (עוגני תוכנית התשלומים נשענים עליו). */
   followup_date:'logi.orders.schedule', followup_team:'logi.orders.schedule',
   followup_slot:'logi.orders.schedule', followup_days:'logi.orders.schedule',
+  followup_flag:'logi.orders.schedule',
   equipment_list:'logi.orders.warehouse', warehouse_notes:'logi.orders.warehouse',
   supply_days:'logi.orders.supply', supply_end_date:'logi.orders.supply',
   deadline:'logi.orders.supply', delivery_method:'logi.orders.supply',
@@ -9614,7 +9627,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'followup-2026-08-13x';
+const BUILD_ID = 'fupflag-2026-08-13a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -10571,7 +10584,7 @@ function openBadge(on, big){
   return '<span class="open-badge' + (sched?' sched':'') + (big?' big':'') +
          '" title="' + items + (sched && r.followup_date ? esc(' · ביקור השלמה נקבע ל-' + fmtD(r.followup_date) + (r.followup_team?' · '+r.followup_team:'')) : '') +
          '">' + (sched ? 'השלמה תואמה' + (r.followup_date ? ' · ' + fmtD(r.followup_date) : '') : 'השלמה לתיאום') +
-         ' · ' + n + (n===1?' פריט':' פריטים') + '</span>';
+         ' · ' + (n ? n + (n===1?' פריט':' פריטים') : 'סומן ידנית') + '</span>';
 }
 /* פס אזהרה עליון כשטעינת נתונים נכשלה — במקום להציג "אין נתונים" (תיקון ממצא 11) */
 function loadErrBanner(names){
@@ -12564,13 +12577,7 @@ window.openOrd = (id, ctx)=>{
         ${o.eta_date&&!o.scheduled_date?`<div class="eta-span" title="נגזר מ&quot;מספר ימים&quot; ומדילוג על שבת${o.friday_ok?'':' ושישי'}">📅 ${esc(etaSpanText(o))}</div>`:''}</div>
       <div><label>הערת צפי</label><input id="oe-etanote" value="${esc(o.eta_note||'')}" placeholder="למשל: פרויקט, צפי לפי הלקוח"></div>`:''}
       <div class="span2"><label class="chk-line chk-compact" style="margin-top:4px"><input type="checkbox" id="oe-friday" ${o.friday_ok?'checked':''}> <b>לאשר עבודה ביום שישי בהזמנה זו</b></label></div>
-      ${(openAny(o.order_number) || o.followup_date) ? `
-      <div class="form-sep" style="margin-top:16px">ביקור השלמה ${openBadge(o.order_number)}</div>
-      <div class="span4"><div class="fup-note">ההזמנה כבר סופקה ונסגרה, ונותרו בה פריטים לאספקה. התאריך כאן הוא <b>ביקור נוסף</b> ואינו נוגע בתאריך המתואם למעלה — כך תאריך ההתקנה המקורי נשמר, וגם עוגני תוכנית התשלומים.</div></div>
-      <div><label>תאריך השלמה</label><input id="oe-fupdate" type="date" value="${esc(o.followup_date||'')}"></div>
-      <div><label>צוות להשלמה</label>${selHtml('oe-fupteam',teamVals,o.followup_team,true)}</div>
-      <div><label>משבצת זמן להשלמה</label>${selHtml('oe-fupslot',TIME_SLOTS,o.followup_slot,true)}</div>
-      <div><label>ימי השלמה</label><input id="oe-fupdays" type="number" min="1" value="${o.followup_days||1}"></div>` : ''}
+      <div id="oe-fupbox" style="display:contents">${fupBoxHtml(o)}</div>
       ${showSupply?`<div class="form-sep">אספקה ומחסן</div>`:''}
       ${showSupply?`<div><label>זמן אספקה (ימים)</label><input id="oe-supdays" type="number" value="${o.supply_days??''}"></div>`:''}
       ${showSupply?`<div><label>תאריך סיום אספקה</label><input id="oe-supend" type="date" value="${esc(o.supply_end_date||'')}"></div>`:''}
@@ -12810,6 +12817,66 @@ window.oeDaysSlot = v => {
   const sel = document.getElementById('oe-slot'); if(!sel || sel.disabled) return;
   const n = parseInt(v, 10); if(!(n >= 1)) return;
   if(n > 1 || !sel.value) sel.value = 'יום מלא';
+};
+/* ===== סימון ידני "דורשת השלמה" (6.72.0) =====
+   ההחלטה שהזמנה דורשת השלמה היא החלטה של מנהל הלוגיסטיקה, לא מסקנה של
+   נוסחה: לפעמים פריוריטי מראה יתרה פתוחה על פריט שבוטל מול הלקוח ולעולם
+   לא יסופק, ולפעמים חסר משהו שאין לו בכלל שורה בתעודה. לכן followup_flag
+   הוא תלת-מצבי — true גובר ומכניס, false גובר ומוציא, null מחזיר לזיהוי
+   האוטומטי (הושלם או שכבר יצאה תעודת משלוח חלקית). אותו סדר הכרעה בדיוק
+   חי ב-ord.order_open_items_v, כדי שלא יהיו שתי הגדרות מתחרות. */
+window.fupTeamVals = o => [...new Set([...OTEAMS.filter(t=>t.active!==false).map(t=>t.name), ...uniqVals(ORDS,'team',o.team)])];
+window.fupBoxHtml = (o)=>{
+  const can  = window.ordCardEditable('followup_date');
+  const flag = (o.followup_flag === true || o.followup_flag === false) ? o.followup_flag : null;
+  const btn  = (val,label,cls)=> can ? `<button class="ghost fup-btn${cls?' '+cls:''}" onclick="fupFlag('${o.id}',${val===null?'null':val})">${esc(label)}</button>` : '';
+  const sep  = extra => `<div class="form-sep" style="margin-top:16px">ביקור השלמה ${openBadge(o.order_number)}${extra||''}</div>`;
+  if(flag === false){
+    return sep('') + `<div class="span4"><div class="fup-off"><span>🚫 סומן ידנית: <b>אין השלמות בהזמנה זו</b>. היא לא תופיע ברשימת ההשלמות גם אם בפריוריטי נותרה יתרה פתוחה.</span>${btn(null,'ביטול הסימון')}</div></div>`;
+  }
+  if(!(flag === true || openAny(o.order_number) || o.followup_date)){
+    return sep('') + `<div class="span4"><div class="fup-ask"><span>לפי פריוריטי ההזמנה אינה דורשת השלמה. אם ידוע לך שנותרו פריטים לאספקה — סמנו כאן, ושדות תיאום הביקור ייפתחו מיד.</span>${btn(true,'✋ דורשת השלמה','on')}</div></div>`;
+  }
+  const teamVals = window.fupTeamVals(o);
+  const why = flag === true
+    ? 'ההזמנה סומנה ידנית כדורשת השלמה. התאריך כאן הוא <b>ביקור נוסף</b> ואינו נוגע בתאריך המתואם למעלה — כך תאריך ההתקנה המקורי נשמר, וגם עוגני תוכנית התשלומים.'
+    : 'ההזמנה כבר סופקה ונסגרה, ונותרו בה פריטים לאספקה. התאריך כאן הוא <b>ביקור נוסף</b> ואינו נוגע בתאריך המתואם למעלה — כך תאריך ההתקנה המקורי נשמר, וגם עוגני תוכנית התשלומים.';
+  return sep(flag === true ? '<span class="fup-man" title="מנהל הלוגיסטיקה סימן את ההזמנה ידנית, ולא הזיהוי האוטומטי">✋ סומן ידנית</span>' : '')
+    + `<div class="span4"><div class="fup-note">${why}</div></div>
+      <div><label>תאריך השלמה</label><input id="oe-fupdate" type="date" value="${esc(o.followup_date||'')}"></div>
+      <div><label>צוות להשלמה</label>${selHtml('oe-fupteam',teamVals,o.followup_team,true)}</div>
+      <div><label>משבצת זמן להשלמה</label>${selHtml('oe-fupslot',TIME_SLOTS,o.followup_slot,true)}</div>
+      <div><label>ימי השלמה</label><input id="oe-fupdays" type="number" min="1" value="${o.followup_days||1}"></div>
+      <div class="span4"><div class="fup-acts">${btn(false,'🚫 אין השלמות בהזמנה זו')}${flag === true ? btn(null,'חזרה לזיהוי אוטומטי') : ''}</div></div>`;
+};
+/* ציור מחדש של התיבה בלבד — ולא של הכרטיס כולו, כדי לא לאבד שינויים
+   שהמשתמש הקליד בשדות אחרים ועדיין לא שמר. */
+window.fupBoxPaint = (o)=>{
+  const box = document.getElementById('oe-fupbox'); if(!box) return;
+  box.innerHTML = window.fupBoxHtml(o);
+  [['oe-fupdate','followup_date'],['oe-fupteam','followup_team'],
+   ['oe-fupslot','followup_slot'],['oe-fupdays','followup_days']].forEach(([elId,col])=>{
+    const el = document.getElementById(elId);
+    if(el && !window.ordCardEditable(col)) el.disabled = true;
+  });
+};
+window.fupFlag = async (id, val)=>{
+  const o = ORDS.find(x=>x.id===id); if(!o) return;
+  const eb = document.getElementById('oe-err'); if(eb) eb.textContent = '';
+  document.querySelectorAll('#oe-fupbox .fup-btn').forEach(b=>{ b.disabled = true; b.textContent = 'שומר…'; });
+  const { data: res, error } = await oldCall('update_order', { id, patch: { followup_flag: val } });
+  if(error){ if(eb) eb.textContent = 'הסימון נכשל — ' + error.message; window.fupBoxPaint(o); return; }
+  Object.assign(o, (res && res.row) || { followup_flag: val });
+  /* השורה ב-order_open_items_v נגזרת מהסימון ומחושבת בשרת. מושכים אותה
+     מחדש במקום לנחש כאן, כדי שהשבב, הלוח והכרטיס יראו מצב אחד ויחיד. */
+  try{
+    const { data } = await sb.schema('ord').from('order_open_items_v').select('*').eq('order_number', o.order_number).maybeSingle();
+    const ix = OPENIT.findIndex(r=>r && r.order_number === o.order_number);
+    if(data){ OPEN_BY[o.order_number] = data; if(ix>=0) OPENIT[ix] = data; else OPENIT.push(data); }
+    else { delete OPEN_BY[o.order_number]; if(ix>=0) OPENIT.splice(ix,1); }
+  }catch(_e){}
+  window.fupBoxPaint(o);
+  renderOrders(); renderLogi(); renderCal(); renderOps();
 };
 window.saveOrd = async (id)=>{
   const o = ORDS.find(x=>x.id===id); if(!o) return;

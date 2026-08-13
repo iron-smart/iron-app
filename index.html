@@ -1481,7 +1481,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.65.0</div>
+      <div class="ver">גרסה 6.65.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1600,7 +1600,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.65.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.65.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9396,7 +9396,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'custoffset-2026-08-12m';
+const BUILD_ID = 'custoffset-2026-08-13n';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -10974,13 +10974,18 @@ function payOffsetBox(f){
   }
   const sug = POFF_SUG.filter(s => s.to_order === on);
   if(sug.length && !finMasked(f)){
-    out += sug.map(s =>
-      '<div class="pc-suggest">💡 ללקוח עודף גבייה של <b>' + shekel(finNum(s.from_surplus)) + '</b> בהזמנה ' +
+    out += sug.map(s => {
+      /* תאריך ההזמנה המקזזת מוצג במפורש: עודף על הזמנה מאתמול הוא כנראה
+         תשלום גמר שנקלט על הראשית, אבל עודף על הזמנה ישנה יכול להיות
+         מקדמה מכוונת על חשבון משהו אחר — והמאשר צריך לראות את זה. */
+      const fo = FIN.find(x => x.order_number === s.from_order);
+      return '<div class="pc-suggest">💡 ללקוח עודף גבייה של <b>' + shekel(finNum(s.from_surplus)) + '</b> בהזמנה ' +
       '<a href="#" onclick="event.preventDefault();payOpen(\'' + jsq(s.from_order) + '\')" dir="ltr">' + esc(s.from_order) + '</a>' +
+      (fo && fo.order_date ? ' (מ-' + fmtD(fo.order_date) + ')' : '') +
       ' — כנראה תשלום שנקלט בפריוריטי על ההזמנה הראשית. קיזוז של <b>' + shekel(finNum(s.suggest_amt)) + '</b> יסגור את היתרה כאן.' +
       (canEdit('acc.pays')
         ? ' <button class="ghost" style="padding:3px 10px;font-size:12px" onclick="payOffsetApprove(\'' + jsq(s.from_order) + '\',\'' + jsq(on) + '\')">אשר קיזוז</button>'
-        : '') + '</div>').join('');
+        : '') + '</div>'; }).join('');
   }
   if(finNum(f.cust_credit) > 1){
     out += '<div class="pc-legend">💰 אחרי כל הקיזוזים הלקוח ביתרת זכות של <b>' + shekel(finNum(f.cust_credit)) + '</b> — שילם יותר מסך הזמנותיו.</div>';

@@ -223,6 +223,11 @@
   .vis-row:first-of-type{ border-top:0 }
   .vis-row b{ min-width:112px }
   .vis-why{ font-size:11.5px; color:#4338ca }
+  .vis-why.ok{ color:#047857; font-weight:700 }
+  .vis-why.warn{ color:#9a3412 }
+  .vis-addr{ font-size:12px; color:#475569; background:#fff; border:1px solid #e2e8f0;
+             border-radius:7px; padding:1px 7px; max-width:230px; overflow:hidden;
+             text-overflow:ellipsis; white-space:nowrap }
   .vis-act{ padding:5px 11px; font-size:12px; border-radius:8px; border:1px solid #c7d2fe;
             background:#fff; font-family:inherit; cursor:pointer; white-space:nowrap; margin-inline-start:auto }
   .vis-act.go{ background:#3730a3; color:#fff; border-color:#3730a3; font-weight:700 }
@@ -806,7 +811,7 @@
   .tg-hr{ position:absolute; inset-inline-end:4px; transform:translateY(-7px); font-size:11.5px; font-weight:700; color:#94a3b8; white-space:nowrap; }
   .tg-col{ background:#fff; border:1px solid var(--line); border-radius:10px; padding:4px; box-shadow:0 1px 3px rgba(6,24,39,.06); }
   .tg-col.nowork{ background:repeating-linear-gradient(45deg,#f7f7f5,#f7f7f5 8px,#f1f1ee 8px,#f1f1ee 16px); }
-  .tg-allday{ overflow:hidden; }
+  .tg-allday{ overflow-y:auto; overflow-x:hidden; scrollbar-width:thin }
   .tg-allday.has{ border-bottom:1px dashed #dbe3ea; }
   /* 6.2.6 — שיבוץ "יום מלא" מציג את אותם פרטים ככל שיבוץ אחר (רומן 30/07/2026) */
   .tg-chip{ background:#fff; border:1px solid var(--line); border-inline-start:4px solid #94a3b8; border-radius:8px; padding:5px 8px; margin-bottom:4px; cursor:pointer; overflow:hidden; box-shadow:0 1px 2px rgba(6,24,39,.05); }
@@ -1481,7 +1486,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.66.1</div>
+      <div class="ver">גרסה 6.67.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1600,7 +1605,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.66.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.67.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3476,6 +3481,9 @@ function evMatch(e,q){
 const CAL_H0=8, CAL_H1=17, CAL_PX=62, CAL_CHIP=52;
 const CAL_HOURS=(()=>{const a=[];for(let h=CAL_H0;h<=CAL_H1;h++)a.push(h);return a;})();
 function evSpan(e){
+  /* צפי אינו תיאום ואין לו שעה — גם אם נותרה בהזמנה משבצת זמן ישנה הוא
+     שייך לרצועת "ללא שעה" ולא לרשת השעות. */
+  if(e.kind==='eta') return null;
   const s=String(e.o.time_slot||'').trim();
   if(!s || s==='יום מלא') return null;
   const m=s.match(/(\d{1,2}):(\d{2})\s*[-–—]\s*(\d{1,2}):(\d{2})/);
@@ -3554,8 +3562,8 @@ function eventsOn(ds){
   /* 6.2.5 — מיון לפי שעה אמיתית ולא לפי טקסט: "8:00" חייב לבוא לפני "14:00" */
   return out.sort((a,b)=>evSortKey(a)-evSortKey(b));
 }
-/* אירועי היום כולל צפי — לשימוש התצוגה החודשית בלבד. הפרדה זו היא שמונעת
-   מהצפי לנפח את רצועת "ללא שעה" בשבועי/יומי ולפתוח עמודת שישי מיותרת. */
+/* אירועי היום כולל צפי. משמש את שלוש התצוגות — חודשית, שבועית ויומית —
+   בעוד eventsOn נשאר "תיאומים בלבד" לכל מי שסופר עומס אמיתי. */
 function eventsOnCal(ds){
   const base = eventsOn(ds);
   let eta = etaEventsOn(ds);
@@ -4154,24 +4162,27 @@ function renderCal(){
     const ws=weekStartIso(cd);
     const days=[0,1,2,3,4].map(i=>addDaysIso(ws,i));
     const fri=addDaysIso(ws,5);
-    if(eventsOn(fri).length) days.push(fri);
+    if(eventsOnCal(fri).length) days.push(fri);
     scope=days;
     title=`שבוע ${fmtD(days[0])} — ${fmtD(days[days.length-1])}`;
     /* 6.2.5 — רשת שעות: עמודת שעות אחת ואחריה עמודה לכל יום. רצועת "ללא שעה"
        בגובה אחיד בכל העמודות, כדי שקו השעה 08:00 יהיה באותו גובה בכל היום. */
-    const adMax=Math.max(0,...days.map(adCount));
+    /* הצפי מוצג גם כאן (רומן, 13/08/2026). רצועת "ללא שעה" משותפת לכל
+       ימי השבוע, ולכן יום עמוס בצפי היה מנפח את כל השבוע — הרצועה חסומה
+       בארבעה שבבים וגוללת מעבר לזה, כדי שקו 08:00 יישאר במקומו. */
+    const wkEv = {}; days.forEach(d=>{ wkEv[d] = eventsOnCal(d); });
+    const adMax=Math.min(4, Math.max(0,...days.map(d=>wkEv[d].filter(e=>!evSpan(e)).length)));
     const adH=adMax? adMax*CAL_CHIP+6 : 0;
     body=`<div class="cal-scroll"><div class="tg-wrap" style="grid-template-columns:56px repeat(${days.length},minmax(150px,1fr))">
       ${tgGutter(adH)}
       ${days.map(d=>`<div class="tg-col ${dowOf(d)===CAL_FRIDAY?'nowork':''}">
           <div class="tg-head ${d===t?'today':''}" onclick="calGoDay('${d}')"><span>${dayNameHe(d)}${dowOf(d)===CAL_FRIDAY?' <span class="fri-tag">שישי</span>':''}</span><span class="dnum">${fmtD(d)}</span></div>
-          ${tgDay(d, eventsOn(d), true, adH)}
+          ${tgDay(d, wkEv[d], true, adH)}
         </div>`).join('')}
     </div></div>`;
   } else {
     /* התצוגה היומית כוללת את הצפי, אחרת לחיצה על יום שיש בו צפי מובילה
-       למסך שנראה ריק. התצוגה השבועית נשארת בלי צפי, כי שם גובה רצועת
-       "ללא שעה" משותף לכל ימי השבוע וצפי בודד היה מנפח את כולם. */
+       למסך שנראה ריק. */
     const evs=eventsOnCal(cd);
     scope=[cd];
     title=`${dayNameHe(cd)}, ${fmtD(cd)}`;
@@ -4201,7 +4212,7 @@ function renderCal(){
         <button class="${CAL_VIEW==='week'?'on':''}" onclick="calMode('week')">שבועי</button>
         <button class="${CAL_VIEW==='month'?'on':''}" onclick="calMode('month')">חודשי</button>
       </div>
-      ${(CAL_VIEW==='month'&&canView('logi.orders.eta'))?`<label class="cal-eta-tg" title="הזמנות שטרם תואמו, עם צפי אספקה בכרטיס ההזמנה">
+      ${(CAL_VIEW!=='day'&&canView('logi.orders.eta'))?`<label class="cal-eta-tg" title="הזמנות שטרם תואמו, עם צפי אספקה בכרטיס ההזמנה">
         <input type="checkbox" ${CAL_ETA?'checked':''} onchange="calEtaToggle(this.checked)"> הצגת צפי</label>`:''}
       <div class="cal-nav">
         <button class="nav-b" onclick="calShift(-1)" title="הקודם">▸</button>
@@ -9405,7 +9416,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'etacoordperm-2026-08-13p';
+const BUILD_ID = 'etaweek-2026-08-13q';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -12441,7 +12452,7 @@ async function loadVisit(orderNumber, id, ctx){
         .select('group_id,order_number,order_date,erp_price,order_status,scheduled_date,team,open_lines')
         .eq('order_number', orderNumber).maybeSingle(),
       sb.schema('ord').from('coord_suggest_v')
-        .select('cand_order,cand_date,cand_price,cand_status,cand_sched,confidence,reason,score')
+        .select('cand_order,cand_date,cand_price,cand_status,cand_sched,confidence,reason,score,same_addr,addr_unknown,cand_addr')
         .eq('order_number', orderNumber)
     ]);
     if(!box.isConnected || VIS_ORD !== orderNumber) return;
@@ -12491,12 +12502,15 @@ function visRender(box, on, members, sug, id, ctx){
         '<span>' + (s.cand_date ? fmtD(s.cand_date) : '—') + '</span>' +
         '<span>' + (Number(s.cand_price) ? shekel(Number(s.cand_price)) : 'ללא סכום') + '</span>' +
         '<span>' + esc(s.cand_status || '—') + '</span>' +
-        '<span class="vis-why">' + esc(s.reason || '') + '</span>' +
+        '<span class="vis-why' + (s.same_addr ? ' ok' : (s.addr_unknown ? ' warn' : '')) + '">' +
+          esc(s.reason || '') + '</span>' +
+        (s.cand_addr ? '<span class="vis-addr" title="כתובת המשלוח של ההזמנה המוצעת">📍 ' + esc(s.cand_addr) + '</span>' : '') +
         (ed ? '<button class="vis-act' + (s.confidence === 'גבוהה' ? ' go' : '') +
           '" onclick="visJoin(\'' + jsq(on) + '\',\'' + jsq(s.cand_order) + '\',\'' + jsq(id) + '\'' +
           (ctx ? ",'" + jsq(ctx) + "'" : '') + ')">צירוף לביקור</button>' : '') +
       '</div>').join('') +
-      '<div class="vis-note">הצירוף אינו אוטומטי בכוונה — הזמנה שנפתחה מאוחר יותר עשויה באמת להיות ביקור נפרד. ' +
+      '<div class="vis-note">מוצעות רק הזמנות לאותה כתובת משלוח. כשהכתובת חסרה בפריוריטי ההשוואה נופלת לעיר, ' +
+        'וההצעה מסומנת בהתאם. הצירוף אינו אוטומטי בכוונה — הזמנה שנפתחה מאוחר יותר עשויה באמת להיות ביקור נפרד; ' +
         'כמעט חמישית מההזמנות אצלנו מסופקות ביותר מביקור אחד.</div></div>';
   }
   box.innerHTML = h;

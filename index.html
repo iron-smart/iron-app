@@ -222,6 +222,13 @@
   .vis-row{ display:flex; flex-wrap:wrap; gap:9px; align-items:center; padding:7px 0; border-top:1px solid #e0e7ff; font-size:13px }
   .vis-row:first-of-type{ border-top:0 }
   .vis-row b{ min-width:112px }
+  .fold-tag{ display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:800;
+             border-radius:999px; padding:1px 7px; background:#eef2ff; color:#3730a3;
+             border:1px solid #c7d2fe; cursor:pointer; white-space:nowrap; margin-inline-start:5px }
+  .fold-tag:hover{ background:#e0e7ff }
+  tr.fold-sub > td{ background:#fafbff }
+  tr.fold-sub td.rownum::before{ content:'↳'; color:#818cf8; margin-inline-end:4px }
+  .lead.fold-sub{ background:#fafbff; border-inline-start:3px solid #c7d2fe }
   .vis-why{ font-size:11.5px; color:#4338ca }
   .vis-why.ok{ color:#047857; font-weight:700 }
   .vis-why.warn{ color:#9a3412 }
@@ -1487,7 +1494,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.68.0</div>
+      <div class="ver">גרסה 6.69.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1606,7 +1613,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.68.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.69.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3140,6 +3147,66 @@ window.logiDefClear = ()=>{ try{ localStorage.removeItem('iron_logi_default_v1')
 function logiInit(){ if(LOGI_INIT) return; LOGI_INIT=true; const d=logiDefLoad(); if(d){ if(d.scope) LOGI_SCOPE=d.scope; if(d.f&&typeof d.f==='object'){ LOGI_F=Object.assign({status:[],team:'',region:'',contact:''}, d.f); if(!Array.isArray(LOGI_F.status)) LOGI_F.status = LOGI_F.status?[LOGI_F.status]:[]; } } const cd=scDefLoad(); if(cd&&typeof cd==='object'){ SC_F=Object.assign({status:[],urgency:'',team:'',region:''}, cd); if(!Array.isArray(SC_F.status)) SC_F.status = SC_F.status?[SC_F.status]:[]; } }
 const LOGI_SEL=new Set();
 let LOGI_SHOWN=[];
+/* ===== קיפול ביקור משותף (6.69.0) =====
+   רומן: "שלוש הזמנות זה ביקור אחד, וזה עושה עומס בעין". הקיפול הוא תצוגתי
+   בלבד ואינו מודל נתונים — אין "הזמנה ראשית" במסד, שום שדה לא נכתב, וכל
+   ההזמנות ממשיכות להתקיים בנפרד בכל שאר המסכים.
+
+   שלושה כללים שנקבעו בייעוץ עם fable:
+   1. הנציג הוא מספר ההזמנה הנמוך בקבוצה — דטרמיניסטי, יציב בזמן (מספר
+      הזמנה לא משתנה בסנכרון) ובלתי תלוי הרשאות. כלל "הסכום הגבוה" נפסל
+      כי erp_price מגיע כ-NULL לכל מי שאין לו crm.orders.price, ואז כל
+      משתמש היה רואה נציג אחר.
+   2. מקפלים **אחרי** הסינון: החברות עשויות להיבדל בשדה שמסננים לפיו,
+      ואז מקופלת רק הקבוצה ששרדה.
+   3. הקיפול חל רק היכן שהשורה מייצגת עבודת תיאום — "לתיאום", "לטיפול"
+      ולוח השנה. ב"השלמות לתיאום", "הושלמו", "הכל" וכו' כל הזמנה נשארת
+      שורה, כי שם היא רשומה ולא משימה. */
+let LOGI_EXP = new Set();
+window.LOGI_FOLD = {};
+const foldOn = () => canView('logi.orders.coord');
+function foldGroupOf(o){ return (typeof VIS_GRP !== 'undefined' && VIS_GRP[o.order_number]) || null; }
+function coordFold(list){
+  if(!foldOn()) return { rows: list, fold: {} };
+  const byGrp = {};
+  list.forEach(o=>{ const g = foldGroupOf(o); if(g) (byGrp[g] = byGrp[g] || []).push(o); });
+  const rows = [], fold = {}, seen = new Set();
+  for(const o of list){
+    const g = foldGroupOf(o);
+    const mem = g ? (byGrp[g] || []) : [];
+    if(!g || mem.length < 2){ rows.push(o); continue; }
+    if(seen.has(g)) continue;
+    seen.add(g);
+    const sorted = mem.slice().sort((a,b)=>String(a.order_number).localeCompare(String(b.order_number)));
+    const head = sorted[0], mates = sorted.slice(1);
+    fold[head.order_number] = { grp: g, n: sorted.length, mates: mates, ids: sorted.map(x=>String(x.id)) };
+    rows.push(head);
+    if(LOGI_EXP.has(g)) mates.forEach(m=>{ rows.push(m); fold['__sub__' + m.order_number] = true; });
+  }
+  return { rows, fold };
+}
+/* מספר השורות שיוצגו בפועל — הצ'יפ חייב להתאים לטבלה, אחרת המונה משקר. */
+function foldCount(list){
+  if(!foldOn()) return list.length;
+  const seen = new Set(); let n = 0;
+  const byGrp = {};
+  list.forEach(o=>{ const g = foldGroupOf(o); if(g) (byGrp[g] = byGrp[g] || []).push(o); });
+  for(const o of list){
+    const g = foldGroupOf(o);
+    if(!g || (byGrp[g] || []).length < 2){ n++; continue; }
+    if(seen.has(g)) continue;
+    seen.add(g); n++;
+  }
+  return n;
+}
+window.logiFoldToggle = g => { if(LOGI_EXP.has(g)) LOGI_EXP.delete(g); else LOGI_EXP.add(g); logiRenderTable(); };
+window.foldTag = o => {
+  const f = window.LOGI_FOLD[o.order_number]; if(!f) return '';
+  const open = LOGI_EXP.has(f.grp);
+  return '<span class="fold-tag" onclick="event.stopPropagation();logiFoldToggle(\'' + jsq(f.grp) + '\')" title="' +
+    esc('ביקור משותף · ' + f.n + ' הזמנות: ' + [o.order_number].concat(f.mates.map(m=>m.order_number)).join(', ') +
+        ' — לחיצה ' + (open ? 'מקפלת' : 'פורסת')) + '">🔗 ' + (open ? '▾ ' : '') + f.n + ' הזמנות</span>';
+};
 const needsSched = o => o.needs_scheduling !== false;
 /* צפי שעבר זמנו ואיש לא תיאם ולא עדכן. הלוח אינו המקום להתריע על כך — אף
    אחד לא מדפדף אחורה — ולכן זה שבב במסך ההזמנות. */
@@ -3151,7 +3218,11 @@ window.logiSelClear = () => { LOGI_SEL.clear(); renderLogi(); };
 function renderLogiScope(){
   const box=$('#logi-scope'); if(!box) return;
   const base = ORDS.filter(o=>!['הושלם','בוטל','לא לטיפול'].includes(o.order_status));
-  const n = { sched: base.filter(needsSched).length, ship: base.filter(o=>!needsSched(o)).length, all: base.length, pend: ORDS.filter(o=>o.order_status==='לא לטיפול').length, done: ORDS.filter(o=>o.order_status==='הושלם').length, every: ORDS.length,
+  /* "לתיאום" ו"לטיפול" סופרים ביקורים ולא הזמנות, כדי שהמספר יתאים למספר
+     השורות בטבלה. ה-title מציג את שני המספרים, כי הפער מול פריוריטי
+     והאקסל הוא מכוון וצריך להיות ניתן להסבר. */
+  const _sched = base.filter(needsSched), _all = base;
+  const n = { sched: foldCount(_sched), ship: base.filter(o=>!needsSched(o)).length, all: foldCount(_all), pend: ORDS.filter(o=>o.order_status==='לא לטיפול').length, done: ORDS.filter(o=>o.order_status==='הושלם').length, every: ORDS.length,
     open: ORDS.filter(o=>openStuck(o.order_number)).length,
     ret: ORDS.filter(o=>retPending(o.order_number)).length,
     etastale: ORDS.filter(etaStale).length };
@@ -3159,10 +3230,15 @@ function renderLogiScope(){
      נשלל ממנו — חוזרים לתצוגת ברירת המחדל במקום להציג רשימה ריקה. */
   const etaOk = canView('logi.orders.eta');
   if(!etaOk && LOGI_SCOPE==='etastale') LOGI_SCOPE='sched';
+  const _tip = { sched: _sched.length, all: _all.length };
   box.innerHTML = [['sched','לתיאום'],['ship','משלוחים'],['all','לטיפול'],['open','השלמות לתיאום'],['ret','החזרות לאיסוף']]
     .concat(etaOk?[['etastale','צפי שעבר']]:[])
     .concat([['pend','לא לטיפול'],['done','הושלמו'],['every','הכל']])
-    .map(([k,l])=>`<button type="button" class="chip ${LOGI_SCOPE===k?'active':''}" onclick="logiScope('${k}')">${l} <b>${n[k]}</b></button>`).join('');
+    .map(([k,l])=>{
+      const tip = (_tip[k] != null && _tip[k] !== n[k])
+        ? ` title="${n[k]} ביקורים · ${_tip[k]} הזמנות — הזמנות שקובצו לביקור משותף מוצגות בשורה אחת"` : '';
+      return `<button type="button" class="chip ${LOGI_SCOPE===k?'active':''}"${tip} onclick="logiScope('${k}')">${l} <b>${n[k]}</b></button>`;
+    }).join('');
 }
 /* 6.24.6 — סינון בתצוגה הטבלאית: רב-בחירת סטטוסים, סינון קריאות שירות, ושמירת ברירת מחדל */
 window.logiFilter = (k,v)=>{ LOGI_F[k]=v; logiRenderTable(); renderLogiFilters(); };
@@ -3219,13 +3295,20 @@ document.addEventListener('change', function(e){
   const t=e.target; if(!t) return;
   if(t.id==='ordSelAll'){
     LOGI_SEL.clear();
-    if(t.checked) LOGI_SHOWN.forEach(o=>LOGI_SEL.add(String(o.id)));
+    if(t.checked) LOGI_SHOWN.forEach(o=>{
+      const f = (window.LOGI_FOLD||{})[o.order_number];
+      if(f) f.ids.forEach(id=>LOGI_SEL.add(id)); else LOGI_SEL.add(String(o.id));
+    });
     document.querySelectorAll('#logi-tbl .ordsel').forEach(cb=>{ cb.checked=t.checked; });
     logiBulkBar(); return;
   }
   if(t.classList && t.classList.contains('ordsel')){
-    const id=String(t.dataset.oid||'');
-    if(t.checked) LOGI_SEL.add(id); else LOGI_SEL.delete(id);
+    /* שורה מקופלת מייצגת ביקור שלם, ולכן הסימון חל על כל חברות הקבוצה.
+       הבחירה בנציג בלבד הייתה משאירה את האחיות פתוחות אחרי סגירה מרוכזת,
+       והשורה "שלא מתה" הייתה נראית כתקלה. פס הפעולות מציג את המספר
+       האמיתי, כך שזה גלוי ולא מפתיע. */
+    const ids = String(t.dataset.fold || t.dataset.oid || '').split(',').filter(Boolean);
+    ids.forEach(id => { if(t.checked) LOGI_SEL.add(id); else LOGI_SEL.delete(id); });
     logiBulkBar();
   }
 });
@@ -3339,6 +3422,12 @@ function logiRenderTable(){
     if(LOGI_F.region)  list = list.filter(o=>o.region===LOGI_F.region);
     if(!doneScope && !pendScope && !openScope && !retScope && !etaScope) list = list.filter(scopeOk);
     list = window.ordSortList(list.slice());
+    /* קיפול רק בהיקפים שסופרים עבודת תיאום. ב"השלמות לתיאום" הלוגיקה
+       הרגילה נשארת במפורש לבקשת רומן — שם כל הזמנה תקועה חייבת לצעוק
+       בעצמה. */
+    const foldScope = (LOGI_SCOPE === 'sched' || LOGI_SCOPE === 'all');
+    if(foldScope){ const r = coordFold(list); list = r.rows; window.LOGI_FOLD = r.fold; }
+    else window.LOGI_FOLD = {};
     LOGI_SHOWN = list;
     const _ids=new Set(list.map(o=>String(o.id))); [...LOGI_SEL].forEach(id=>{ if(!_ids.has(id)) LOGI_SEL.delete(id); });
     $('#logi-tbl').innerHTML = wideScreen() ? ordTable(list,{sel:true,ctx:'logi'}) : capped(list, o=>ordRow(o,'logi'), 'אין הזמנות');
@@ -3518,7 +3607,8 @@ function tgChip(e){
       <div class="c2">${esc(o.order_number||'')}${mates.length?` +${mates.length}`:''}${o.city?` · ${esc(o.city)}`:''}${o.eta_note?` · ${esc(o.eta_note)}`:''}</div>
     </div>`;
   }
-  const mark=evMark(e), ref=e.kind==='svc'?(o.product||''):(o.order_number||'');
+  const mark=evMark(e), mts=(e.mates||[]);
+  const ref=e.kind==='svc'?(o.product||''):((o.order_number||'') + (mts.length?' +'+mts.length:''));
   const line2=[ref, o.city, o.address].filter(Boolean).map(x=>esc(String(x))).join(' · ');
   return `<div class="tg-chip" style="border-inline-start-color:${col};${evDone(e)?'opacity:.55':''}" onclick="${evOpen(e)}" title="${esc(o.customer_name||'')} · ${esc(o.time_slot||'ללא שעה')} · ${esc(evStatus(e)||'')} · ${esc(o.team||'ללא צוות')}${o.phone?' · '+esc(o.phone):''}">
     <div class="c1"><span class="tm">${esc(o.time_slot||'ללא שעה')}</span>${e.kind==='svc'?'🛠️':''}<span style="overflow:hidden;text-overflow:ellipsis">${esc(o.customer_name||'')}</span>${mark?`<span style="color:${col};font-size:10.5px;flex:none">${mark}</span>`:''}</div>
@@ -3562,7 +3652,25 @@ function eventsOn(ds){
     if(idx) evs.push({kind:'order',o,ds,dayIdx:idx,dayTotal:Math.max(1,o.days_count||1)});
   }
   for(const c of SCALLS){ if(c.scheduled_date===ds && c.status!=='בוטלה') evs.push({kind:'svc',o:c,ds}); }
-  const out = CAL_Q ? evs.filter(e=>evMatch(e,CAL_Q)) : evs;
+  let out = CAL_Q ? evs.filter(e=>evMatch(e,CAL_Q)) : evs;
+  /* ביקור משותף הוא נסיעה אחת, ולכן שבב אחד ליום — בדיוק כפי שכרטיסי
+     הצפי כבר מאוחדים ב-etaEventsOn. בלי זה שלוש ההזמנות של בי בטר
+     מציגות שלושה שבבים ב-18/08 ומנפחות את עומס היום. */
+  if(typeof VIS_GRP !== 'undefined' && canView('logi.orders.coord')){
+    const byG = {};
+    out.forEach(e=>{ if(e.kind!=='order') return; const g = VIS_GRP[e.o.order_number]; if(g) (byG[g]=byG[g]||[]).push(e); });
+    const seenG = new Set(); const folded = [];
+    for(const e of out){
+      const g = e.kind==='order' ? VIS_GRP[e.o.order_number] : null;
+      const grp = g ? (byG[g]||[]) : [];
+      if(!g || grp.length < 2){ folded.push(e); continue; }
+      if(seenG.has(g)) continue;
+      seenG.add(g);
+      const srt = grp.slice().sort((a,b)=>String(a.o.order_number).localeCompare(String(b.o.order_number)));
+      folded.push(Object.assign({}, srt[0], { mates: srt.slice(1).map(x=>x.o) }));
+    }
+    out = folded;
+  }
   /* 6.2.5 — מיון לפי שעה אמיתית ולא לפי טקסט: "8:00" חייב לבוא לפני "14:00" */
   return out.sort((a,b)=>evSortKey(a)-evSortKey(b));
 }
@@ -3586,7 +3694,7 @@ function evCard(e, compact){
   return `<div class="ev ${e.kind==='svc'?'svc':''} ${compact?'ev-c':''}" style="border-inline-start-color:${col};${done?'opacity:.55':''}" onclick="${evOpen(e)}">
     <div class="ev-top"><span class="ev-time">${esc(o.time_slot||'ללא שעה')}</span>${mark?`<span class="ev-done" style="color:${col}">${mark}</span>`:''}</div>
     <div class="t">${e.kind==='svc'?'🛠️ ':''}${esc(o.customer_name||'')}</div>
-    <div class="s">${e.kind==='svc'?esc(String(o.product||'').slice(0,30)):esc(o.order_number||'')}${o.items_count?` · ${o.items_count} פר'`:''}</div>
+    <div class="s">${e.kind==='svc'?esc(String(o.product||'').slice(0,30)):esc(o.order_number||'')}${(e.mates&&e.mates.length)?` <span class="tagx" title="${esc('ביקור משותף · '+(e.mates.length+1)+' הזמנות: '+[o.order_number].concat(e.mates.map(m=>m.order_number)).join(', '))}">🔗 +${e.mates.length}</span>`:''}${o.items_count?` · ${o.items_count} פר'`:''}</div>
     ${o.city||o.address?`<div class="s">📍 ${esc(o.city||'')}${o.address?`, ${esc(String(o.address).slice(0,24))}`:''}</div>`:''}
     ${o.phone?`<div class="s" style="text-align:right">${evPh(o.phone)}</div>`:''}
     <div class="s ev-foot">${teamChip(o.team,teamColor(o.team))}${crewChip(e.ds,o.team)}${e.kind==='order'&&e.dayTotal>1?`<span class="tagx">${e.dayIdx>1?'המשך · ':''}יום ${e.dayIdx} מתוך ${e.dayTotal}</span>`:''}${e.kind==='order'&&o.friday_ok?'<span class="tagx" title="אושרה עבודה ביום שישי">🗓️ שישי</span>':''}${e.kind==='order'&&o.order_notes?`<span class="tagx" title="${esc(o.order_notes)}">📝</span>`:''}</div>
@@ -4155,8 +4263,9 @@ function renderCal(){
                 <div class="me-line2"><span class="me-dot" style="background:${col}"></span>${esc(o.order_number||'')}${mates.length?` +${mates.length}`:''}${o.city?` · ${esc(o.city)}`:''}</div>
               </div>`;
             }
-            return `<div class="mini-ev" style="border-inline-start-color:${col};${done?'opacity:.5':''}" title="${esc(o.customer_name||'')} · ${esc(o.time_slot||'ללא שעה')} · ${esc(st||'ללא סטטוס')} · ${esc(o.team||'ללא צוות')}${o.city?' · '+esc(o.city):''}">
-              <div class="me-line1"><span class="me-time">${esc(slotShort(o.time_slot))||'—'}</span><b>${e.kind==='svc'?'🛠️':''}${esc(o.customer_name||'')}</b>${ok?`<span class="me-ok" style="color:${col}">✓</span>`:''}</div>
+            const mts=(e.mates||[]);
+            return `<div class="mini-ev" style="border-inline-start-color:${col};${done?'opacity:.5':''}" title="${esc(o.customer_name||'')} · ${esc(o.time_slot||'ללא שעה')} · ${esc(st||'ללא סטטוס')} · ${esc(o.team||'ללא צוות')}${o.city?' · '+esc(o.city):''}${mts.length?' · ביקור משותף עם '+esc(mts.map(m=>m.order_number).join(', ')):''}">
+              <div class="me-line1"><span class="me-time">${esc(slotShort(o.time_slot))||'—'}</span><b>${e.kind==='svc'?'🛠️':''}${esc(o.customer_name||'')}</b>${mts.length?`<span class="me-time">🔗+${mts.length}</span>`:''}${ok?`<span class="me-ok" style="color:${col}">✓</span>`:''}</div>
               <div class="me-line2"><span class="me-dot" style="background:${col}"></span>${esc(o.team||'ללא צוות')}${(tdNames(d,o.team).length?` · 👷 ${esc(tdNames(d,o.team).map(tdShort).join(', '))}`:'')}${o.city?` · ${esc(o.city)}`:''}</div>
             </div>`;}).join('')}
           ${evs.length>3?`<div class="mini-more">+${evs.length-3} נוספים…</div>`:''}
@@ -9424,7 +9533,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'coordaddr-2026-08-13s';
+const BUILD_ID = 'coordfold-2026-08-13t';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -11903,8 +12012,9 @@ function waProtocolMsg(p,link){
    האתחול נעשה בעטיפת חץ באתר הקריאה, כדי שהאינדקס לא ייכנס בטעות כהקשר. */
 function ordRow(o, ctx){
   const when = o.scheduled_date ? ' · תואם ל-'+fmtD(o.scheduled_date)+(o.time_slot?' '+esc(o.time_slot):'') : '';
-  return `<div class="lead" onclick="openOrd('${o.id}'${ctx?(",'"+ctx+"'"):''})">
-    <div><div class="nm">${esc(o.customer_name||'ללא שם')} <small style="color:#94a3b8;font-weight:400">· ${esc(o.order_number)}</small></div>
+  const _sub = !!(window.LOGI_FOLD||{})['__sub__'+o.order_number];
+  return `<div class="lead ${_sub?'fold-sub':''}" onclick="openOrd('${o.id}'${ctx?(",'"+ctx+"'"):''})">
+    <div><div class="nm">${esc(o.customer_name||'ללא שם')} <small style="color:#94a3b8;font-weight:400">· ${esc(o.order_number)}</small>${window.foldTag?window.foldTag(o):''}</div>
     <div class="meta">${fmtD(o.order_date)}${o.city?' · '+esc(o.city):''}${o.team?' · צוות '+esc(o.team):''}${when}</div></div>
     <span class="pill ${ordStClass(o.order_status)}">${esc(o.order_status||'—')}</span></div>`;
 }
@@ -12278,11 +12388,13 @@ function ordTable(list,opts){
   if(!list.length) return '<div class="empty">לא נמצאו הזמנות מתאימות</div>';
   const rows = list.slice(0,pgLim('orders')).map((o,i)=>{
     const wa = o.phone && o.scheduled_date ? waLink(o.phone, waCoordMsg(o)) : '';
-    return `<tr class="${window.isNewRec(o)?'row-new':''}" onclick="openOrd('${o.id}'${CTX?(",'"+CTX+"'"):''})">
-      ${SEL?`<td class="selcol" onclick="event.stopPropagation()">${window.canEdit('logi.orders.bulk')?`<input type="checkbox" class="ordsel" data-oid="${o.id}">`:''}${window.canEdit('logi.orders')?`<button type="button" class="qdone" title="סימון כהושלם" onclick="ordQuickDone('${o.id}')">✓</button>`:''}</td>`:''}
+    const _f = (window.LOGI_FOLD||{})[o.order_number];
+    const _sub = !!(window.LOGI_FOLD||{})['__sub__'+o.order_number];
+    return `<tr class="${window.isNewRec(o)?'row-new':''} ${_sub?'fold-sub':''}" onclick="openOrd('${o.id}'${CTX?(",'"+CTX+"'"):''})">
+      ${SEL?`<td class="selcol" onclick="event.stopPropagation()">${window.canEdit('logi.orders.bulk')?`<input type="checkbox" class="ordsel" data-oid="${o.id}"${_f?` data-fold="${esc(_f.ids.join(','))}"`:''}>`:''}${window.canEdit('logi.orders')?`<button type="button" class="qdone" title="סימון כהושלם" onclick="ordQuickDone('${o.id}')">✓</button>`:''}</td>`:''}
       <td class="rownum">${i+1}</td>
       <td class="odate">${fmtD(o.order_date)||'—'}</td>
-      <td><b>${esc(o.order_number)}</b>${window.newChip(o)}${o.order_notes?`<div class="note-preview" title="${esc(o.order_notes)}">📝 ${esc(String(o.order_notes).slice(0,28))}${String(o.order_notes).length>28?'…':''}</div>`:''}</td>
+      <td><b>${esc(o.order_number)}</b>${window.newChip(o)}${window.foldTag?window.foldTag(o):''}${o.order_notes?`<div class="note-preview" title="${esc(o.order_notes)}">📝 ${esc(String(o.order_notes).slice(0,28))}${String(o.order_notes).length>28?'…':''}</div>`:''}</td>
       <td title="${esc(o.customer_name||'')}">${esc(o.customer_name||'')}</td>
       <td dir="ltr">${esc(o.phone||'')}</td>
       <td>${ordCityCell(o)}</td>

@@ -1514,7 +1514,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.72.0</div>
+      <div class="ver">גרסה 6.72.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1633,7 +1633,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.72.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.72.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3123,7 +3123,7 @@ function renderOps(){
      היא מחוץ ל-act. בלי זה מנהלת הלוגיסטיקה הייתה רואה "מתואמים היום: 0"
      בזמן שבלוח מופיעה נסיעה (ממצא fable 13/08/2026). אותו עותק רדוד כמו
      ב-fupEventsOn, כדי שיהיה מסלול חישוב אחד ולא שניים. */
-  const fupAct = ORDS.filter(o=>o.followup_date && !['בוטל','מבוטלת'].includes(o.order_status))
+  const fupAct = ORDS.filter(o=>window.fupVisible(o))
     .map(o=>Object.assign({}, o, { scheduled_date:o.followup_date, __fup:true,
       days_count:Math.max(1,o.followup_days||1), team:o.followup_team||null, time_slot:o.followup_slot||null }));
   const tToday=[...act.filter(o=>o.scheduled_date===today),...fupAct.filter(o=>o.scheduled_date===today),...SCALLS.filter(s=>s.scheduled_date===today&&!['בוטלה'].includes(s.status))];
@@ -3721,10 +3721,16 @@ function tgGutter(adH){
 /* ביקור השלמה. השדות נפרדים מהתיאום הרגיל, אבל האירוע נבנה על עותק רדוד
    שבו followup_* ממופים לשמות הרגילים — וכך כל מה שמצייר אירוע (שבב, כרטיס,
    חישוב שעות, צוות) עובד בלי שינוי, ואין מסלול ציור שני שיסטה מהראשון. */
+/* פרדיקט יחיד לשאלה "האם לצייר את ביקור ההשלמה". עד 6.72.1 הלוח והדשבורד
+   בדקו רק תאריך וסטטוס מבוטל, ולכן הזמנה שסומנה "אין השלמות" המשיכה לצייר
+   נסיעה שהכרטיס כבר הכחיש (ממצא fable 13/08/2026). הזמנה שלא שולמה או
+   בוטלה אינה נכנסת לרשימת ההשלמות בשרת, ולכן גם לא לביקור בלוח. */
+window.fupVisible = o => !!(o && o.followup_date) && o.followup_flag !== false
+  && !['בוטל','מבוטלת','ממתין לתשלום'].includes(o.order_status);
 function fupEventsOn(ds){
   const out=[];
   for(const o of ORDS){
-    if(!o.followup_date || ['בוטל','מבוטלת'].includes(o.order_status)) continue;
+    if(!window.fupVisible(o)) continue;
     const oo = Object.assign({}, o, { scheduled_date:o.followup_date,
       days_count:Math.max(1, o.followup_days||1), team:o.followup_team||null,
       time_slot:o.followup_slot||null });
@@ -9627,7 +9633,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'fupflag-2026-08-13a';
+const BUILD_ID = 'fupflag-2026-08-13b';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -12831,6 +12837,13 @@ window.fupBoxHtml = (o)=>{
   const flag = (o.followup_flag === true || o.followup_flag === false) ? o.followup_flag : null;
   const btn  = (val,label,cls)=> can ? `<button class="ghost fup-btn${cls?' '+cls:''}" onclick="fupFlag('${o.id}',${val===null?'null':val})">${esc(label)}</button>` : '';
   const sep  = extra => `<div class="form-sep" style="margin-top:16px">ביקור השלמה ${openBadge(o.order_number)}${extra||''}</div>`;
+  /* ord.order_open_items_v מסווג הזמנה מבוטלת או שטרם שולמה כ"לא רלוונטי"
+     עוד לפני שהוא מסתכל על הדגל, ולכן סימון ידני כאן פשוט נבלע. במקום
+     להציג כפתור שמבטיח מה שלא יקרה — מסבירים למה (ממצא fable 13/08/2026). */
+  const blockSt = ['בוטל','מבוטלת','ממתין לתשלום'].find(s=> s === o.order_status);
+  if(blockSt){
+    return sep('') + `<div class="span4"><div class="fup-off"><span>הזמנה בסטטוס <b>${esc(blockSt)}</b> אינה נכנסת לרשימת ההשלמות ואינה מציגה ביקור בלוח. אם נותרו בה פריטים לאספקה — יש להעביר אותה קודם לסטטוס פעיל.</span></div></div>`;
+  }
   if(flag === false){
     return sep('') + `<div class="span4"><div class="fup-off"><span>🚫 סומן ידנית: <b>אין השלמות בהזמנה זו</b>. היא לא תופיע ברשימת ההשלמות גם אם בפריוריטי נותרה יתרה פתוחה.</span>${btn(null,'ביטול הסימון')}</div></div>`;
   }
@@ -12851,22 +12864,34 @@ window.fupBoxHtml = (o)=>{
 };
 /* ציור מחדש של התיבה בלבד — ולא של הכרטיס כולו, כדי לא לאבד שינויים
    שהמשתמש הקליד בשדות אחרים ועדיין לא שמר. */
-window.fupBoxPaint = (o)=>{
+const FUP_FIELDS = [['oe-fupdate','followup_date'],['oe-fupteam','followup_team'],
+                    ['oe-fupslot','followup_slot'],['oe-fupdays','followup_days']];
+window.fupBoxPaint = (o, keepTyped)=>{
   const box = document.getElementById('oe-fupbox'); if(!box) return;
+  /* ערכים שהמשתמש הקליד ועדיין לא שמר נמחקו בציור מחדש (ממצא fable
+     13/08/2026). שומרים אותם ומחזירים — אלא אם הסימון עצמו איפס אותם. */
+  const typed = {};
+  if(keepTyped) FUP_FIELDS.forEach(([elId])=>{ const el=document.getElementById(elId); if(el) typed[elId]=el.value; });
   box.innerHTML = window.fupBoxHtml(o);
-  [['oe-fupdate','followup_date'],['oe-fupteam','followup_team'],
-   ['oe-fupslot','followup_slot'],['oe-fupdays','followup_days']].forEach(([elId,col])=>{
-    const el = document.getElementById(elId);
-    if(el && !window.ordCardEditable(col)) el.disabled = true;
+  FUP_FIELDS.forEach(([elId,col])=>{
+    const el = document.getElementById(elId); if(!el) return;
+    if(keepTyped && typed[elId] !== undefined && typed[elId] !== '') el.value = typed[elId];
+    if(!window.ordCardEditable(col)) el.disabled = true;
   });
 };
 window.fupFlag = async (id, val)=>{
   const o = ORDS.find(x=>x.id===id); if(!o) return;
   const eb = document.getElementById('oe-err'); if(eb) eb.textContent = '';
   document.querySelectorAll('#oe-fupbox .fup-btn').forEach(b=>{ b.disabled = true; b.textContent = 'שומר…'; });
-  const { data: res, error } = await oldCall('update_order', { id, patch: { followup_flag: val } });
-  if(error){ if(eb) eb.textContent = 'הסימון נכשל — ' + error.message; window.fupBoxPaint(o); return; }
-  Object.assign(o, (res && res.row) || { followup_flag: val });
+  /* "אין השלמות" חייב לנקות גם את הביקור עצמו. בלי זה התאריך נשאר במסד,
+     הכרטיס מסתיר את השדות, והצוות ממשיך לראות נסיעה בלוח בלי שאיש יוכל
+     לבטל אותה מהמסך (ממצא fable 13/08/2026). */
+  const patch = { followup_flag: val };
+  if(val === false) Object.assign(patch, { followup_date:null, followup_team:null,
+                                           followup_slot:null, followup_days:null });
+  const { data: res, error } = await oldCall('update_order', { id, patch });
+  if(error){ if(eb) eb.textContent = 'הסימון נכשל — ' + error.message; window.fupBoxPaint(o, 1); return; }
+  Object.assign(o, (res && res.row) || patch);
   /* השורה ב-order_open_items_v נגזרת מהסימון ומחושבת בשרת. מושכים אותה
      מחדש במקום לנחש כאן, כדי שהשבב, הלוח והכרטיס יראו מצב אחד ויחיד. */
   try{
@@ -12875,7 +12900,7 @@ window.fupFlag = async (id, val)=>{
     if(data){ OPEN_BY[o.order_number] = data; if(ix>=0) OPENIT[ix] = data; else OPENIT.push(data); }
     else { delete OPEN_BY[o.order_number]; if(ix>=0) OPENIT.splice(ix,1); }
   }catch(_e){}
-  window.fupBoxPaint(o);
+  window.fupBoxPaint(o, val !== false);
   renderOrders(); renderLogi(); renderCal(); renderOps();
 };
 window.saveOrd = async (id)=>{

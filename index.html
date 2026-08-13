@@ -1487,7 +1487,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.67.1</div>
+      <div class="ver">גרסה 6.68.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1606,7 +1606,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.67.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.68.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9424,7 +9424,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'etaweek-2026-08-13r';
+const BUILD_ID = 'coordaddr-2026-08-13s';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -12460,7 +12460,7 @@ async function loadVisit(orderNumber, id, ctx){
         .select('group_id,order_number,order_date,erp_price,order_status,scheduled_date,team,open_lines')
         .eq('order_number', orderNumber).maybeSingle(),
       sb.schema('ord').from('coord_suggest_v')
-        .select('cand_order,cand_date,cand_price,cand_status,cand_sched,confidence,reason,score,same_addr,addr_unknown,cand_addr')
+        .select('cand_order,cand_date,cand_price,cand_status,cand_sched,confidence,reason,score,same_addr,same_bill,addr_unknown,cand_addr,cand_city,cand_bill')
         .eq('order_number', orderNumber)
     ]);
     if(!box.isConnected || VIS_ORD !== orderNumber) return;
@@ -12480,6 +12480,21 @@ async function loadVisit(orderNumber, id, ctx){
     if(box.isConnected) box.innerHTML = '<div class="vis-note">לא ניתן לטעון את נתוני הביקור המשותף: ' +
       esc(e && e.message ? e.message : String(e)) + '</div>';
   }
+}
+/* היכן ההזמנה המוצעת. מוצגת הראיה שעליה נשענה ההתאמה: כתובת המשלוח אם
+   יש, אחרת כתובת החיוב כשהיא כתובת האתר, ותמיד העיר — רומן ביקש לראות
+   אותה במפורש (13/08/2026), כי "דניאל יצחקי 1" בלי עיר אינו אומר דבר. */
+function visWhere(s){
+  const cty = s.cand_city ? esc(s.cand_city) : '';
+  if(s.cand_addr){
+    return '<span class="vis-addr" title="כתובת המשלוח של ההזמנה המוצעת">📍 ' +
+      esc(s.cand_addr) + (cty ? ' · ' + cty : '') + '</span>';
+  }
+  if(s.same_bill && s.cand_bill){
+    return '<span class="vis-addr" title="להזמנה המוצעת אין כתובת משלוח בפריוריטי — זו כתובת החיוב מכרטיס הלקוח">🧾 ' +
+      esc(s.cand_bill) + '</span>';
+  }
+  return cty ? '<span class="vis-addr" title="להזמנה המוצעת אין כתובת בפריוריטי — זו העיר בלבד">🏙️ ' + cty + '</span>' : '';
 }
 function visRender(box, on, members, sug, id, ctx){
   const ed = canEdit('logi.orders.coord');
@@ -12510,15 +12525,16 @@ function visRender(box, on, members, sug, id, ctx){
         '<span>' + (s.cand_date ? fmtD(s.cand_date) : '—') + '</span>' +
         '<span>' + (Number(s.cand_price) ? shekel(Number(s.cand_price)) : 'ללא סכום') + '</span>' +
         '<span>' + esc(s.cand_status || '—') + '</span>' +
-        '<span class="vis-why' + (s.same_addr ? ' ok' : (s.addr_unknown ? ' warn' : '')) + '">' +
+        '<span class="vis-why' + ((s.same_addr || s.same_bill) ? ' ok' : (s.addr_unknown ? ' warn' : '')) + '">' +
           esc(s.reason || '') + '</span>' +
-        (s.cand_addr ? '<span class="vis-addr" title="כתובת המשלוח של ההזמנה המוצעת">📍 ' + esc(s.cand_addr) + '</span>' : '') +
+        visWhere(s) +
         (ed ? '<button class="vis-act' + (s.confidence === 'גבוהה' ? ' go' : '') +
           '" onclick="visJoin(\'' + jsq(on) + '\',\'' + jsq(s.cand_order) + '\',\'' + jsq(id) + '\'' +
           (ctx ? ",'" + jsq(ctx) + "'" : '') + ')">צירוף לביקור</button>' : '') +
       '</div>').join('') +
-      '<div class="vis-note">מוצעות רק הזמנות לאותה כתובת משלוח. כשהכתובת חסרה בפריוריטי ההשוואה נופלת לעיר, ' +
-        'וההצעה מסומנת בהתאם. הצירוף אינו אוטומטי בכוונה — הזמנה שנפתחה מאוחר יותר עשויה באמת להיות ביקור נפרד; ' +
+      '<div class="vis-note">מוצעות רק הזמנות לאותו מקום. ההשוואה היא קודם על כתובת המשלוח, ואם היא חסרה בפריוריטי — ' +
+        'על כתובת החיוב מכרטיס הלקוח, אך רק כשהיא כתובת האתר עצמו ולא של המשרד הראשי; אחרת על העיר בלבד. ' +
+        'הצירוף אינו אוטומטי בכוונה — הזמנה שנפתחה מאוחר יותר עשויה באמת להיות ביקור נפרד; ' +
         'כמעט חמישית מההזמנות אצלנו מסופקות ביותר מביקור אחד.</div></div>';
   }
   box.innerHTML = h;

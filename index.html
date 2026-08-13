@@ -1481,7 +1481,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.65.1</div>
+      <div class="ver">גרסה 6.66.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1600,7 +1600,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.65.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.66.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3009,8 +3009,10 @@ const ORD_FIELD_PERM = {
   team:'logi.orders.schedule', scheduled_date:'logi.orders.schedule', time_slot:'logi.orders.schedule',
   days_count:'logi.orders.schedule', week_estimate:'logi.orders.schedule', friday_ok:'logi.orders.schedule',
   /* צפי אספקה הוא שדה תיאום: ההערכה של מנהל הלוגיסטיקה מתי ההזמנה תסופק
-     בפועל, כשעדיין אין תאריך מתואם. הוא אינו תיאום ואינו מחייב איש. */
-  eta_date:'logi.orders.schedule', eta_note:'logi.orders.schedule',
+     בפועל, כשעדיין אין תאריך מתואם. הוא אינו תיאום ואינו מחייב איש.
+     מ-13/08/2026 יש לו מפתח הרשאה משלו, כדי שאפשר יהיה לתת אותו למנהל
+     הלוגיסטיקה בלי לתת אותו לאנשי המכירות. */
+  eta_date:'logi.orders.eta', eta_note:'logi.orders.eta',
   equipment_list:'logi.orders.warehouse', warehouse_notes:'logi.orders.warehouse',
   supply_days:'logi.orders.supply', supply_end_date:'logi.orders.supply',
   deadline:'logi.orders.supply', delivery_method:'logi.orders.supply',
@@ -3147,7 +3149,13 @@ function renderLogiScope(){
     open: ORDS.filter(o=>openStuck(o.order_number)).length,
     ret: ORDS.filter(o=>retPending(o.order_number)).length,
     etastale: ORDS.filter(etaStale).length };
-  box.innerHTML = [['sched','לתיאום'],['ship','משלוחים'],['all','לטיפול'],['open','השלמות לתיאום'],['ret','החזרות לאיסוף'],['etastale','צפי שעבר'],['pend','לא לטיפול'],['done','הושלמו'],['every','הכל']]
+  /* "צפי שעבר" מוצג רק למי שרואה צפי אספקה בכלל. אם המשתמש נמצא בו והוא
+     נשלל ממנו — חוזרים לתצוגת ברירת המחדל במקום להציג רשימה ריקה. */
+  const etaOk = canView('logi.orders.eta');
+  if(!etaOk && LOGI_SCOPE==='etastale') LOGI_SCOPE='sched';
+  box.innerHTML = [['sched','לתיאום'],['ship','משלוחים'],['all','לטיפול'],['open','השלמות לתיאום'],['ret','החזרות לאיסוף']]
+    .concat(etaOk?[['etastale','צפי שעבר']]:[])
+    .concat([['pend','לא לטיפול'],['done','הושלמו'],['every','הכל']])
     .map(([k,l])=>`<button type="button" class="chip ${LOGI_SCOPE===k?'active':''}" onclick="logiScope('${k}')">${l} <b>${n[k]}</b></button>`).join('');
 }
 /* 6.24.6 — סינון בתצוגה הטבלאית: רב-בחירת סטטוסים, סינון קריאות שירות, ושמירת ברירת מחדל */
@@ -3421,7 +3429,7 @@ function etaSpanText(o){
 }
 const ETA_SKIP = ['בוטל','מבוטלת','הושלם','לא לטיפול'];
 function etaEventsOn(ds){
-  if(!CAL_ETA) return [];
+  if(!CAL_ETA || !canView('logi.orders.eta')) return [];
   const out = [];
   const seen = new Set();
   for(const o of ORDS){
@@ -3440,6 +3448,7 @@ function etaEventsOn(ds){
 /* מפת חברות ביקור משותף, לצורך איחוד כרטיסי הצפי בלבד. */
 let VIS_GRP = {};
 async function loadVisGrp(){
+  if(!canView('logi.orders.coord')){ VIS_GRP = {}; return; }
   try{
     const { data } = await sb.schema('ord').from('coord_members').select('group_id,order_number');
     VIS_GRP = {};
@@ -4192,7 +4201,7 @@ function renderCal(){
         <button class="${CAL_VIEW==='week'?'on':''}" onclick="calMode('week')">שבועי</button>
         <button class="${CAL_VIEW==='month'?'on':''}" onclick="calMode('month')">חודשי</button>
       </div>
-      ${CAL_VIEW==='month'?`<label class="cal-eta-tg" title="הזמנות שטרם תואמו, עם צפי אספקה בכרטיס ההזמנה">
+      ${(CAL_VIEW==='month'&&canView('logi.orders.eta'))?`<label class="cal-eta-tg" title="הזמנות שטרם תואמו, עם צפי אספקה בכרטיס ההזמנה">
         <input type="checkbox" ${CAL_ETA?'checked':''} onchange="calEtaToggle(this.checked)"> הצגת צפי</label>`:''}
       <div class="cal-nav">
         <button class="nav-b" onclick="calShift(-1)" title="הקודם">▸</button>
@@ -9396,7 +9405,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'custoffset-2026-08-13n';
+const BUILD_ID = 'etacoordperm-2026-08-13o';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -10627,6 +10636,7 @@ const PAY_ST_CLS = { 'שולמה':'done', 'עודף גבייה':'part', 'ממת�
    לשתי הזמנות, גם התשלום שלפני האספקה נגבה פעם אחת, ומי שקורא את המסך
    שורה-שורה חייב לראות שהסכום האמיתי לגבייה הוא סכום הביקור כולו. */
 function payMates(f){
+  if(!canView('logi.orders.coord')) return [];
   const g = (typeof VIS_GRP !== 'undefined') ? VIS_GRP[f.order_number] : null;
   if(!g) return [];
   return FIN.filter(x => x.order_number !== f.order_number && VIS_GRP[x.order_number] === g);
@@ -12325,9 +12335,9 @@ window.openOrd = (id, ctx)=>{
       <div><label>תאריך מתואם</label><input id="oe-date" type="date" value="${esc(o.scheduled_date||'')}"></div>
       <div><label>מספר ימים</label><input id="oe-days" type="number" min="1" value="${o.days_count||1}" oninput="oeDaysSlot(this.value)"></div>
       <div><label>משבצת זמן</label>${selHtml('oe-slot',TIME_SLOTS,o.time_slot,true)}</div>
-      <div><label>צפי אספקה <small style="font-weight:400;color:#64748b">${o.eta_date&&o.scheduled_date?'(הוחלף בתאריך המתואם)':'(כשאין עדיין תיאום)'}</small></label><input id="oe-eta" type="date" value="${esc(o.eta_date||'')}"${o.eta_date&&o.scheduled_date?' style="opacity:.55"':''}>
+      ${canView('logi.orders.eta')?`<div><label>צפי אספקה <small style="font-weight:400;color:#64748b">${o.eta_date&&o.scheduled_date?'(הוחלף בתאריך המתואם)':'(כשאין עדיין תיאום)'}</small></label><input id="oe-eta" type="date" value="${esc(o.eta_date||'')}"${o.eta_date&&o.scheduled_date?' style="opacity:.55"':''}>
         ${o.eta_date&&!o.scheduled_date?`<div class="eta-span" title="נגזר מ&quot;מספר ימים&quot; ומדילוג על שבת${o.friday_ok?'':' ושישי'}">📅 ${esc(etaSpanText(o))}</div>`:''}</div>
-      <div><label>הערת צפי</label><input id="oe-etanote" value="${esc(o.eta_note||'')}" placeholder="למשל: פרויקט, צפי לפי הלקוח"></div>
+      <div><label>הערת צפי</label><input id="oe-etanote" value="${esc(o.eta_note||'')}" placeholder="למשל: פרויקט, צפי לפי הלקוח"></div>`:''}
       <div class="span2"><label class="chk-line chk-compact" style="margin-top:4px"><input type="checkbox" id="oe-friday" ${o.friday_ok?'checked':''}> <b>לאשר עבודה ביום שישי בהזמנה זו</b></label></div>
       ${showSupply?`<div class="form-sep">אספקה ומחסן</div>`:''}
       ${showSupply?`<div><label>זמן אספקה (ימים)</label><input id="oe-supdays" type="number" value="${o.supply_days??''}"></div>`:''}
@@ -12336,7 +12346,7 @@ window.openOrd = (id, ctx)=>{
       <div class="span4"><label>דו שיח פנימי${SRC_TAG}</label><div class="dialog-box">${o.internal_dialog?esc(o.internal_dialog).replace(/\n/g,'<br>'):'<span class="dialog-empty">אין דו שיח פנימי בהזמנה זו</span>'}</div></div>
       <div class="form-sep sep-items">פירוט ההזמנה${SRC_TAG}${openBadge(o.order_number)}${retBadge(o.order_number)}</div>
       <div class="span4" id="orderItemsBox"><div class="items-loading">טוען פירוט הזמנה מפריוריטי…</div></div>
-      <div class="span4" id="ordVisitBox"></div>
+      ${canView('logi.orders.coord')?'<div class="span4" id="ordVisitBox"></div>':''}
     </div>
     <div class="ord-bottom">
     ${(function(){
@@ -12385,9 +12395,7 @@ window.openOrd = (id, ctx)=>{
    קבלות ופעימות נשארות פר הזמנה כפי שפריוריטי מכתיב. */
 let VIS_ORD = null;
 window.visJoin = async (a, b, id, ctx) => {
-  if(!canEdit('logi.orders.schedule') && !canEdit('logi.orders')){
-    toast('אין לך הרשאת עריכה לתיאום'); return;
-  }
+  if(!canEdit('logi.orders.coord')){ toast('אין לך הרשאה לקיבוץ ביקור משותף'); return; }
   if(!window.confirm('לצרף את ' + b + ' לאותו ביקור עם ' + a + '?\n\n' +
      'מכאן והלאה תאריך, צוות, שעות וסטטוס שיוזנו על אחת מהן יוחלו על שתיהן. ' +
      'החשבוניות והקבלות נשארות נפרדות.')) return;
@@ -12425,6 +12433,8 @@ async function visRefreshOrders(){
   }catch(_e){}
 }
 async function loadVisit(orderNumber, id, ctx){
+  /* בלי הרשאת קיבוץ אין אפילו קריאה לשרת — התיבה אינה קיימת ב-DOM. */
+  if(!canView('logi.orders.coord')) return;
   const box = $('#ordVisitBox'); if(!box || !orderNumber) return;
   VIS_ORD = orderNumber;
   try{
@@ -12455,7 +12465,7 @@ async function loadVisit(orderNumber, id, ctx){
   }
 }
 function visRender(box, on, members, sug, id, ctx){
-  const ed = canEdit('logi.orders.schedule') || canEdit('logi.orders');
+  const ed = canEdit('logi.orders.coord');
   const line = x => esc(x.order_number) + ' · ' + (x.order_date ? fmtD(x.order_date) : '—') +
     ' · ' + (Number(x.erp_price) ? shekel(Number(x.erp_price)) : 'ללא סכום') +
     (x.order_status ? ' · ' + esc(x.order_status) : '');

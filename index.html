@@ -1015,6 +1015,17 @@
      פנימי" 48. הכלל הזה (0,2,1) מחזיר אותן לשורה אחת. */
   .form-grid > .form-sep{ flex-direction:row; align-items:center; flex-wrap:wrap; gap:var(--sp-2); }
   input.ro,select.ro,textarea.ro{ background:#eef0f2 !important; color:#6a7178 !important; border-color:#e2e5e8 !important; cursor:not-allowed; }
+  /* 6.72.6 — בתוך form-grid, input שנעול הוא **נתון מפריוריטי** ולא פקד
+     שנחסם. לכן הוא מוצג כטקסט: בלי מסגרת, בלי רקע, בכהות מלאה. זה גם
+     מקצר את הבלוק בכ-30% וגם מפסיק להבטיח עריכה שלא קיימת. */
+  .form-grid input.ro{ background:transparent !important; border:none !important; color:var(--ink-1) !important; font-weight:600; padding:2px 0 !important; min-height:22px; cursor:default; }
+  /* ערך ריק מוצג כ-"—" חיוור ובמשקל רגיל, כדי שייקרא כ"אין נתון" ולא
+     ייראה כמו ערך אמיתי שסתם קצר. */
+  .form-grid input.ro:placeholder-shown{ color:var(--ink-3) !important; font-weight:400; }
+  /* .is-empty מוסיף רקע אפרפר — הוא נועד לסמן שדה עריכה ריק, ועל שדה
+     קריאה-בלבד בלי מסגרת הוא נראה ככתם. הצבע החיוור למעלה כבר עושה את
+     העבודה. */
+  .form-grid input.ro.is-empty{ background:transparent !important; }
   .src-tag{ background:#eef0f2; color:#8a9199; border-radius:99px; padding:0 7px; font-size:10px; font-weight:700; margin-inline-start:0; }
   .dialog-box{ background:#f6f8fa; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:13px; line-height:1.5; max-height:120px; overflow:auto; }
   .dialog-box .dialog-empty{ color:#94a3b8; }
@@ -1529,7 +1540,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.72.5</div>
+      <div class="ver">גרסה 6.72.6</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1648,7 +1659,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.72.5</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.72.6</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9648,7 +9659,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'sephead-2026-08-14a';
+const BUILD_ID = 'rocompact-2026-08-14a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -12567,25 +12578,25 @@ window.openOrd = (id, ctx)=>{
     <div style="height:10px"></div>
     <div class="form-grid">
       <div class="form-sep">פרטי ההזמנה מפריוריטי</div>
-      <div><label>מס' הזמנה${SRC_TAG}</label>${roIn(o.order_number,{ltr:1})}</div>
-      <div><label>תאריך הזמנה${SRC_TAG}</label>${roIn(fmtD(o.order_date),{ltr:1})}</div>
-      <div><label>מס' לקוח${SRC_TAG}</label>${roIn(o.customer_number,{ltr:1})}</div>
-      <div><label>שם לקוח${SRC_TAG}</label>${roIn(o.customer_name)}</div>
-      <div><label>טלפון${SRC_TAG} ${phBtns(o.phone)}</label>${roIn(o.phone,{ltr:1})}</div>
-      <div><label>איש קשר${SRC_TAG}</label>${roIn(o.contact_name)}</div>
-      <div><label>טלפון איש קשר${SRC_TAG} ${phBtns(o.contact_phone)}</label>${roIn(o.contact_phone,{ltr:1})}</div>
-      <div><label>כמות פריטים${SRC_TAG}</label>${roIn(o.items_count)}</div>
-      <div><label>אופן משלוח${SRC_TAG}</label>${roIn(o.delivery_method)}</div>
-      ${showSales?`<div><label>אימייל לקוח${SRC_TAG}</label>${roIn(o.customer_email,{ltr:1})}</div>`:''}
-      ${showSales?`<div><label>סכום (פריוריטי)${SRC_TAG}</label>${roIn(o.erp_price?shekel(o.erp_price):'')}</div>`:''}
+      <div><label>מס' הזמנה</label>${roIn(o.order_number,{ltr:1})}</div>
+      <div><label>תאריך הזמנה</label>${roIn(fmtD(o.order_date),{ltr:1})}</div>
+      <div><label>מס' לקוח</label>${roIn(o.customer_number,{ltr:1})}</div>
+      <div><label>שם לקוח</label>${roIn(o.customer_name)}</div>
+      <div><label>טלפון ${phBtns(o.phone)}</label>${roIn(o.phone,{ltr:1})}</div>
+      <div><label>איש קשר</label>${roIn(o.contact_name)}</div>
+      <div><label>טלפון איש קשר ${phBtns(o.contact_phone)}</label>${roIn(o.contact_phone,{ltr:1})}</div>
+      <div><label>כמות פריטים</label>${roIn(o.items_count)}</div>
+      <div><label>אופן משלוח</label>${roIn(o.delivery_method)}</div>
+      ${showSales?`<div><label>אימייל לקוח</label>${roIn(o.customer_email,{ltr:1})}</div>`:''}
+      ${showSales?`<div><label>סכום (פריוריטי)</label>${roIn(o.erp_price?shekel(o.erp_price):'')}</div>`:''}
       <div class="addr-row">
-      <div><label>כתובת משלוח${SRC_TAG} ${wazeBtn(shipNav(o))}</label><input value="${esc(o.ship_addr1||o.address||'')}" readonly class="ro" placeholder="—"></div>
-      <div><label>כתובת משלוח2${SRC_TAG}</label><input value="${esc(o.ship_addr2||'')}" readonly class="ro" placeholder="—"></div>
-      <div><label>כתובת משלוח3${SRC_TAG}</label><input value="${esc(o.ship_addr3||'')}" readonly class="ro" placeholder="—"></div>
-      <div><label>עיר${SRC_TAG}</label><input value="${esc(effCity(o))}" readonly class="ro" placeholder="—"></div>
-      <div><label>כתובת חיוב${SRC_TAG} ${wazeBtn(o.customer_address)}</label><input value="${esc(o.customer_address||'')}" readonly class="ro" placeholder="—"${o.customer_address?'':' title="אין כתובת חיוב בכרטיס הלקוח"'}></div>
+      <div><label>כתובת משלוח ${wazeBtn(shipNav(o))}</label><input value="${esc(o.ship_addr1||o.address||'')}" readonly class="ro" placeholder="—"></div>
+      <div><label>כתובת משלוח2</label><input value="${esc(o.ship_addr2||'')}" readonly class="ro" placeholder="—"></div>
+      <div><label>כתובת משלוח3</label><input value="${esc(o.ship_addr3||'')}" readonly class="ro" placeholder="—"></div>
+      <div><label>עיר</label><input value="${esc(effCity(o))}" readonly class="ro" placeholder="—"></div>
+      <div><label>כתובת חיוב ${wazeBtn(o.customer_address)}</label><input value="${esc(o.customer_address||'')}" readonly class="ro" placeholder="—"${o.customer_address?'':' title="אין כתובת חיוב בכרטיס הלקוח"'}></div>
       </div>
-      <div class="span2"><label>הערות הזמנה${SRC_TAG}</label>${roIn(o.order_notes)}</div>
+      <div class="span2"><label>הערות הזמנה</label>${roIn(o.order_notes)}</div>
       ${showSales?ordTermsBlock(o):''}
       <div class="form-sep">שדות למילוי</div>
       <div><label>סטטוס הזמנה</label>${selHtml('oe-status',ORDER_STATUSES,o.order_status)}</div>

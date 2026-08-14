@@ -1029,6 +1029,9 @@
   .sup-chip.sup-warm{ background:#fefce8; color:#854d0e; border-color:#fde68a; }
   .sup-chip.sup-hot{  background:#fff7ed; color:#9a3412; border-color:#fed7aa; }
   .sup-chip.sup-late{ background:#fef2f2; color:#991b1b; border-color:#fecaca; }
+  /* מצב ללא צפי — איסוף עצמי, ממתין לפריטים, או ללא כלל תואם. אפור
+     בכוונה: זו אינה אזהרה אלא היעדר תחזית. */
+  .sup-chip.sup-none{ background:#f1f5f9; color:#475569; border-color:#cbd5e1; }
   .ob-title{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
   #ordModal .form-grid{ gap:10px; }
   #ordModal .form-grid label{ font-size:11.5px; margin-bottom:3px; }
@@ -1591,7 +1594,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.76.0</div>
+      <div class="ver">גרסה 6.76.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1710,7 +1713,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.76.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.76.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1852,6 +1855,21 @@
           <input id="logiSearchCalls" class="hidden" placeholder="חיפוש קריאת שירות — לקוח, מספר קריאה, עיר או מוצר…">
         </div>
         <div class="chips" id="logi-scope"></div>
+        <details class="pay-legend">
+          <summary>מקרא — חלון האספקה</summary>
+          <div class="pl-grid">
+            <div class="pl-i"><b>25 ימי עסקים</b><span>התקן לפרויקטים — כל הזמנה בקטגוריית "לתיאום".</span></div>
+            <div class="pl-i"><b>15 ימי עסקים</b><span>משלוחים: ההזמנה כוללת גם מק"ט משלוח וגם מק"ט התקנה.</span></div>
+            <div class="pl-i"><b>7 ימי עסקים</b><span>משלוחים: משלוח בלבד, ואופן המשלוח יהב לוגיסטיקה.</span></div>
+            <div class="pl-i"><b>10 ימי עסקים</b><span>משלוחים: משלוח בלבד, מוביל אחר.</span></div>
+            <div class="pl-i"><b>ללא צפי</b><span>איסוף עצמי — לפי מק"ט האיסוף או לפי אופן המשלוח. הלקוח אוסף בעצמו.</span></div>
+            <div class="pl-i"><b>ממתין לפריטים</b><span>שורות ההזמנה טרם הגיעו מפריוריטי ולכן אי אפשר לסווג. נפתר מעצמו בסנכרון הבא.</span></div>
+            <div class="pl-i"><b>ימי עסקים</b><span>שישי ושבת אינם נספרים. <b>חגים אינם מנוכים</b> — אין לוח חגים במערכת.</span></div>
+            <div class="pl-i"><b>מילוי ידני</b><span>מספר שהוקלד בכרטיס גובר על הכלל, ונשמר לאותה הזמנה בלבד. השבב מסומן "ידני".</span></div>
+            <div class="pl-i"><b>שינוי הכלל</b><span>שינוי עתידי של החוקים חל <b>רק על הזמנות שנוצרו אחריו</b>. הזמנה קיימת שומרת את הכלל שהיה בתוקף בתאריך ההזמנה שלה.</span></div>
+            <div class="pl-i"><b>הזמנה שהושלמה</b><span>אינה מציגה חלון אספקה כלל — הוא חסר משמעות אחרי האספקה.</span></div>
+          </div>
+        </details>
         <div class="logi-filters hidden" id="logi-filters"></div>
         <div class="logi-filters hidden" id="logi-filters-calls"></div>
         <div id="logi-bulk" class="toolbar hidden"></div>
@@ -3694,26 +3712,60 @@ function workDaysBetween(a, b){
   }
   return n;
 }
-/* NULL במסד פירושו "התקן" — ולכן שתי הפונקציות האלה הן גם מה שמוצג וגם
-   מה ש-CUR משווה אליו. בלי הזהות הזאת, שמירה של כרטיס שלא נגעו בו הייתה
-   כותבת 25 ל-660 שורות. */
-const supplyDaysOf = o => (o && o.supply_days != null) ? o.supply_days : supplyStd();
-const supplyEndOf  = o => (o && o.supply_end_date) ? o.supply_end_date
-                        : ((o && o.order_date) ? addWorkDays(o.order_date, supplyDaysOf(o)) : null);
+/* 6.76.1 — סדר הקדימות: דריסה ידנית ← כלל מהמסד ← כלום.
+   `supply_rule_days` מגיע מ-ord.orders_v, שנבחר לפי החוק שתוקפו החל
+   בתאריך ההזמנה. supplyStd() נשאר כרשת אחרונה בלבד, למקרה שטבלת החוקים
+   ריקה — ואז פרויקט עדיין מקבל 25 ומשלוח לא מקבל דבר.
+   ⚠️ שתי הפונקציות אינן מוזכרות ב-CUR. זו אינה השמטה: אילו CUR נרמל
+   לערך המוצג, שמירת כרטיס לא-נגוע הייתה מקפיאה את ערך-הכלל כדריסה
+   ידנית, ושינוי חוק עתידי היה מדלג עליו. */
+const supplyRuleDays = o => (o && o.supply_rule_days != null) ? o.supply_rule_days : null;
+const supplyDaysEff  = o => (o && o.supply_days != null) ? o.supply_days
+                          : (supplyRuleDays(o) != null ? supplyRuleDays(o)
+                             : ((o && o.supply_rule_class == null && o.needs_scheduling !== false) ? supplyStd() : null));
+const supplyEndEff   = o => {
+  if(o && o.supply_end_date) return o.supply_end_date;
+  const d = supplyDaysEff(o);
+  return (o && o.order_date && d != null) ? addWorkDays(o.order_date, d) : null;
+};
+/* תווית הכלל ליד שם השדה — כדי שיהיה גלוי **למה** התקבל המספר הזה. */
+const SUP_LABEL = { project:'פרויקט', ship:'משלוח', ship_express:'משלוח + יהב',
+                    ship_install:'משלוח + התקנה', pickup:'איסוף עצמי',
+                    pending:'ממתין לפריטים', unmatched:'אין כלל תואם' };
+function supplyRuleLabel(o){
+  if(o && o.supply_days != null) return '(הוקלד ידנית)';
+  const cl = o && o.supply_rule_class; if(!cl) return '';
+  const d = o.supply_rule_days;
+  return '(' + (SUP_LABEL[cl] || cl) + (d != null ? ' — ' + d + ' ימי עסקים' : '') + ')';
+}
 /* שבב ההתקדמות. הספירה בימי עבודה ולא בימי לוח, כדי שתהיה עקבית עם
    הספירה שקבעה את התאריך מלכתחילה. */
 function supplyChip(o){
   if(!o || !o.order_date) return '';
-  const end = supplyEndOf(o); if(!end) return '';
+  /* הזמנה סגורה — חלון האספקה חסר משמעות, ושבב "באיחור" עליה הוא רעש
+     על 561 מתוך 577 המשלוחים. רומן, 14/08/2026: "רק הזמנות פתוחות". */
+  if(['הושלם','בוטל'].includes(o.order_status)) return '';
+  const none = t => '<div class="sup-chip sup-none">' + esc(t) + '</div>';
+  const cl = o.supply_rule_class;
+  if(cl === 'pickup')  return none('איסוף עצמי — ללא צפי אספקה');
+  /* "ממתין" נבדל במכוון מ"אין כלל": שורות ההזמנה טרם הגיעו מפריוריטי,
+     וזה נפתר מעצמו בסנכרון הבא. בלי ההבחנה, תקלת סנכרון ותכנון מכוון
+     נראים זהים על המסך. */
+  if(cl === 'pending') return none('ממתין לשורות ההזמנה מפריוריטי');
+  const end = supplyEndEff(o);
+  if(!end) return (o.supply_days == null && cl === 'unmatched')
+    ? none('אין כלל אספקה תואם — אפשר למלא ידנית') : '';
   const today = new Date().toISOString().slice(0,10);
   const total = Math.max(1, workDaysBetween(o.order_date, end) || 1);
   const left  = workDaysBetween(today, end);
   const gone  = Math.max(0, total - Math.max(0, left));
   const pct   = Math.round(gone / total * 100);
   const cls = left < 0 ? 'sup-late' : pct >= 85 ? 'sup-hot' : pct >= 60 ? 'sup-warm' : 'sup-ok';
-  const txt = left < 0  ? ('באיחור ' + Math.abs(left) + ' ימי עבודה')
-            : left === 0 ? 'היום הוא יום היעד'
-            : ('נותרו ' + left + ' מתוך ' + total + ' ימי עבודה');
+  const txt = 'צפי ' + fmtD(end) + ' · '
+    + (left < 0  ? ('באיחור ' + Math.abs(left) + ' ימי עבודה')
+     : left === 0 ? 'היום הוא יום היעד'
+     : ('נותרו ' + left + ' מתוך ' + total + ' ימי עבודה'))
+    + (o.supply_days != null ? ' · ידני' : '');
   return '<div class="sup-chip ' + cls + '" title="נספר מתאריך ההזמנה בימי עבודה, בלי שישי ושבת. חגים אינם מנוכים.">' + esc(txt) + '</div>';
 }
 /* שינוי מספר הימים גורר את תאריך הסיום. data-od נושא את תאריך ההזמנה כדי
@@ -10235,7 +10287,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'plhead-2026-08-14a';
+const BUILD_ID = 'rosupp2-2026-08-14a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -13190,8 +13242,8 @@ window.openOrd = (id, ctx)=>{
       <div><label class="chk-line chk-compact"><input type="checkbox" id="oe-friday" ${o.friday_ok?'checked':''}> <b>לאשר עבודה ביום שישי בהזמנה זו</b></label></div>
       </div>
       ${showSupply?`<div class="form-sep">אספקה ומחסן</div>`:''}
-      ${showSupply?`<div><label>זמן אספקה (ימים) <small style="font-weight:400;color:#64748b">(תקן ${supplyStd()} ימי עבודה)</small></label><input id="oe-supdays" type="number" min="1" data-od="${esc(o.order_date||'')}" value="${supplyDaysOf(o)}" oninput="oeSupplyRecalc()"></div>`:''}
-      ${showSupply?`<div><label>תאריך סיום אספקה</label><input id="oe-supend" type="date" value="${esc(supplyEndOf(o)||'')}">${supplyChip(o)}</div>`:''}
+      ${showSupply?`<div><label>זמן אספקה (ימים) <small style="font-weight:400;color:#64748b">${esc(supplyRuleLabel(o))}</small></label><input id="oe-supdays" type="number" min="1" data-od="${esc(o.order_date||'')}" placeholder="${supplyDaysEff(o) ?? ''}" value="${o.supply_days ?? ''}" oninput="oeSupplyRecalc()"></div>`:''}
+      ${showSupply?`<div><label>תאריך סיום אספקה</label><input id="oe-supend" type="date" value="${esc(o.supply_end_date||'')}">${supplyChip(o)}</div>`:''}
       ${showSupply?`<div class="span2"><label>הערות למחסן</label><textarea id="oe-wnotes" rows="2">${esc(o.warehouse_notes||'')}</textarea></div>`:''}
       <div id="oe-fupbox" style="display:contents">${fupBoxHtml(o)}</div>
       <div class="form-sep">דו שיח פנימי${SRC_TAG}</div>
@@ -13539,12 +13591,12 @@ window.saveOrd = async (id)=>{
     warehouse_notes: el => el.value || null
   };
   const CUR = { days_count: r => (r.days_count ?? 1), friday_ok: r => !!r.friday_ok, city: r => (effCity(r) || null),
-                followup_days: r => (r.followup_days ?? 1),
-                /* 6.75.3 — שני שדות האספקה מוצגים עם התקן כשהם NULL. הנרמול
-                   כאן חייב להחזיר בדיוק את מה שמוצג, אחרת שמירה של כרטיס
-                   שלא נגעו בו תכתוב את התקן ל-660 שורות ותציף את היומן. */
-                supply_days: r => supplyDaysOf(r),
-                supply_end_date: r => (supplyEndOf(r) || null) };
+                followup_days: r => (r.followup_days ?? 1) };
+  /* 6.76.1 — שני העקיפים של supply_days/supply_end_date הוסרו במכוון.
+     מ-6.76.1 השדות מציגים את ערך-הכלל כ-placeholder ולא כ-value, ולכן
+     הערך הגולמי במסד (NULL) זהה למה שהשדה מחזיר — והשוואת ברירת המחדל
+     `o[col] ?? null` מספיקה. עקיף שהיה מנרמל לערך המוצג היה מקפיא את
+     ערך-הכלל כדריסה ידנית בכל שמירה, ושינוי חוק עתידי היה מדלג עליו. */
   const changed = {};
   ORD_CARD_FIELDS.forEach(([elId, col])=>{
     const el = document.getElementById(elId);

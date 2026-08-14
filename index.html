@@ -1520,7 +1520,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.72.3</div>
+      <div class="ver">גרסה 6.72.4</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1639,7 +1639,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.72.3</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.72.4</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9639,7 +9639,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'uitokens-2026-08-14a';
+const BUILD_ID = 'paylinkoff-2026-08-14a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -13696,6 +13696,13 @@ boot();
     var list = (typeof ORDS !== 'undefined' && ORDS) || [];
     var o = list.find(function(x){ return x.id === id; });
     if(!o) return;
+    /* 6.72.4 (14/08/2026) — כרטיס התשלום המקוון מושהה בהכרעת רומן, עד
+       שנחזור לעבוד על ה-CRM. הפורטל עצמו מושהה מ-13/08, ולכן refreshLinks
+       נכשל בכל פתיחת הזמנה והציג "לא ניתן לטעון קישורים קיימים" — שגיאה
+       גלויה למשתמש על פיצ'ר שאינו פעיל, לצד כפתור שלא עושה דבר.
+       זו השהיה ולא מחיקה: כל הקוד נשאר. להחזרה — true במקום false. */
+    var PAYLINK_ENABLED = false;
+    if(!PAYLINK_ENABLED) return;
     /* 6.24.2 — השער עבר מתפקיד למפתח הרשאה. חיוב לקוח הוא acc.pays ברמת עריכה,
        בדיוק כמו השער שבמסד (portal.create_payment_link). ראו §6.18.8. */
     if(typeof canEdit !== 'function' || !canEdit('acc.pays')) return;

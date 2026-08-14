@@ -1578,7 +1578,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.74.1</div>
+      <div class="ver">גרסה 6.75.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1697,7 +1697,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.74.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.75.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -6799,6 +6799,9 @@ const PV_CSS = `
 #tab-prc .pv-badge.ds{ background:#fdf1e0; color:#8a6100; border-color:#f0dfc4 }
 /* המלצת העיגול לאתר — הצעה, ולכן חלשה מהמחיר עצמו ולא מתחרה בו על העין. */
 #tab-prc .pv-charm{ display:block; font-size:10.5px; font-weight:700; color:var(--pv-ink2); background:#eef2f6; border-radius:10px; padding:1px 6px; margin:3px auto 0; width:fit-content; white-space:nowrap }
+/* הכפתור קטן ושקט — הוא יושב בתוך הצעה, לא בתוך פעולה ראשית. */
+#tab-prc .pv-charmb{ border:1px solid var(--pv-brand); background:#fff; color:var(--pv-brand); border-radius:8px; padding:0 6px; margin-inline-start:4px; font-size:10px; font-weight:800; cursor:pointer; font-family:inherit; line-height:1.5 }
+#tab-prc .pv-charmb:hover{ background:var(--pv-brand); color:#fff }
 #tab-prc .pv-chev{ width:21px; height:21px; line-height:1; border:1px solid var(--pv-line); background:#fff; border-radius:6px; cursor:pointer; font-size:11px; color:var(--pv-brand); margin-inline-end:6px; padding:0; vertical-align:middle; transition:transform .12s ease }
 #tab-prc .pv-chev:hover{ border-color:var(--pv-brand); background:#eaf1f6 }
 #tab-prc .pv-chev.on{ background:var(--pv-brand); color:#fff; border-color:var(--pv-brand); transform:rotate(180deg) }
@@ -7488,13 +7491,26 @@ function charmPrice(v){
   return (((v-down)/down) <= CHARM_TOL)? down : (down+step);
 }
 /* שורת ההמלצה. מוצגת רק בעמודת 'אתר', ורק כשהיא באמת מוסיפה מידע. */
+/* שולי הרווח שמייצרים בדיוק את המחיר המעוגל — היפוך של priceInc.
+   חייב להשתמש בצד המחיר (costAfter(...,true) ו-vatEff), בדיוק כמו priceEx,
+   אחרת המרווח לא יחזיר את המחיר כשרצפת השער או המע״מ פעילה. זהו המקור
+   היחיד לחישוב: אותה פונקציה מזינה גם את האחוז שמוצג וגם את מה שנשמר. */
+function charmMargin(sku, nice){
+  const ca = costAfter(sku, true), ex = (nice==null? null : nice/(1+vatEff()));
+  return (ca==null || ex==null || !(ex>0))? null : 1 - ca/ex;
+}
 function charmLine(sku, inc){
   const nice = charmPrice(inc);
   if(nice==null || Math.abs(nice-inc) < 0.005) return '';
-  const cc = costAfter(sku);
-  const mg = (cc!=null && nice>0)? (1 - cc/(nice/(1+S.vat))) : null;
-  return '<div class="pv-charm" title="מחיר מומלץ לאתר לפי כלל העיגול של הקטלוג — הצעה בלבד, אינה מוחלת ואינה נשמרת">'+
-    'מומלץ <b>'+fmt(nice,0)+' ₪</b>'+(mg==null? '' : ' · '+pc(mg))+'</div>';
+  const mg = charmMargin(sku, nice);
+  /* הכפתור מוצג רק למי שרשאי לערוך, ורק כששולי הרווח הנגזרים חוקיים —
+     מחיר מעוגל שנמוך מהעלות אינו הצעה אלא הפסד. */
+  const can = prcEdit() && mg!=null && mg>0 && mg<1;
+  return '<div class="pv-charm" title="מחיר מומלץ לאתר לפי כלל העיגול של הקטלוג'+
+      (can? '. לחיצה על "החלה" תקבע את שולי הרווח של מחירון אתר כך שהמחיר יצא בדיוק '+fmt(nice,0)+' ₪' : ' — הצעה בלבד')+'">'+
+    'מומלץ <b>'+fmt(nice,0)+' ₪</b>'+(mg==null? '' : ' · '+pc(mg))+
+    (can? ' <button type="button" class="pv-charmb" onclick="prcV13.applyCharm(\''+q1(sku)+'\','+nice+')" title="קביעת שולי הרווח של מחירון אתר כך שהמחיר יהיה '+fmt(nice,0)+' ₪">החלה</button>' : '')+
+  '</div>';
 }
 /* המרווח האפקטיבי בפועל: את המחיר שהלקוח משלם מפשיטים מהמע״מ האמיתי
    (ולא מהרצפה), ומשווים לעלות האמיתית — כך שגם רצפת המע״מ נספרת. */
@@ -9121,9 +9137,16 @@ PV.editMargin = function(td, sku, grp){
           'הוסרה דריסה — חוזר למקדם קטגוריה/כללי')) flashRow(sku);
         return;
       }
+      /* המשתמש לא שינה את מה שראה — לא כותבים כלום. ההשוואה היא מול
+         **המחרוזת שהוצגה** ולא מול הערך המספרי, כי מ-6.75.0 יש מרווחים
+         שנשמרים בדיוק מלא (applyCharm גוזר אותם ממחיר מעוגל). פתיחה ושמירה
+         בלי שינוי הייתה חותכת 0.506276… ל-0.506 ומזיזה את המחיר בכמה שקלים
+         בלי שאיש נגע בו. השוואת מחרוזות נכונה ללא תלות בדיוק השמור, ולכן
+         לא תישבר שוב כשיתווסף מסלול כתיבה שלישי. (14/08/2026) */
+      if(cur!=null && raw === (cur*100).toFixed(1)){ renderBody(); return; }
       const v = parseFloat(raw)/100;
       if(!isNaN(v) && v>=0 && v<1){
-        /* הסבילות מכסה את עיגול התצוגה ל-toFixed(1) ונמוכה בהרבה מהצעד 0.5. */
+        /* הסבילות נשארת לשינויים אמיתיים זעירים (50.60 מול 50.6). */
         if(cur!=null && Math.abs(v-cur) < 5e-5){ renderBody(); return; }
         (DATA.overrides[sku] ||= {})[g] = v;
         renderBody();
@@ -9583,6 +9606,24 @@ PV.edTab = k => {
   el.querySelectorAll('.pvc-tab').forEach((b,i)=>{ if(CARD_TABS[i]) b.classList.toggle('on', CARD_TABS[i][0]===k); });
   const b = el.querySelector('.pvc-body'); if(b) b.scrollTop = 0;
 };
+/* החלת המחיר המומלץ לאתר (6.75.0, רומן).
+   אינה שומרת מחיר — היא שומרת את שולי הרווח שמפיקים אותו, בדיוק באותו
+   מסלול שבו editMargin כותב ל-prc_overrides. כך המחיר ממשיך לנוע עם העלות
+   ועם שער הדולר, ולא קופא על מספר שנכון להיום בלבד.
+   המרווח נשמר במלוא הדיוק ולא מעוגל לעשירית האחוז — עיגול היה מחטיא את
+   המחיר המעוגל בכמה שקלים, וזו כל מטרת הפעולה. */
+PV.applyCharm = async (sku, target)=>{
+  if(!prcEdit()) return noEdit();
+  const g = DISC_BASE_GRP;
+  if(GROUPS.indexOf(g) < 0){ toast('מחירון '+g+' אינו קיים'); return; }
+  const m = charmMargin(sku, target);
+  if(m==null){ toast('אין עלות למק״ט — אי אפשר לגזור שולי רווח'); return; }
+  if(!(m>0) || m>=1){ toast('המחיר המומלץ אינו גבוה מהעלות — לא הוחל'); return; }
+  (DATA.overrides[sku] ||= {})[g] = m;
+  renderBody();
+  if(await dbw(()=>O().from('prc_overrides').upsert({partname:sku, grp:g, margin:m, updated_by:finMe(), updated_at:finNowIso()},{onConflict:'partname,grp'}),
+    'מחיר האתר נקבע ל-'+fmt(target,0)+' ₪ · שולי רווח '+pc(m))) flashRow(sku);
+};
 PV.pupdToday = ()=>{ const e = document.getElementById('pv-ed-pupd'); if(e) e.value = today10(); };
 /* לחיצה על השורה פותחת את הכרטיס — חוץ מלחיצה שנחתה על פקד שיש לו התנהגות
    משלו: סימון מחירון, תא המרווח, קישור המק״ט, שכפול ומחיקה. הבדיקה היא על
@@ -10020,7 +10061,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'rosynclbl-2026-08-14a';
+const BUILD_ID = 'charmprec-2026-08-14a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){

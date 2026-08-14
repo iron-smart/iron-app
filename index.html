@@ -1591,7 +1591,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.75.3</div>
+      <div class="ver">גרסה 6.75.4</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1710,7 +1710,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.75.3</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.75.4</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -7186,6 +7186,11 @@ let cardTab='main';
 let ERP_OFF = new Set();
 const isErpOff = sku => ERP_OFF.has(String(sku));
 function erpOffCount(){ let n=0; for(let i=0;i<DATA.products.length;i++) if(isErpOff(DATA.products[i].sku)) n++; return n; }
+/* מק״ט שסומן "לא פעיל" כאן ואינו כבר מוסתר בגלל פריוריטי — כדי שהמונה לא
+   יספור אותו פעמיים. */
+function prcOffCount(){ let n=0; for(let i=0;i<DATA.products.length;i++){ const p=DATA.products[i];
+  if(!isErpOff(p.sku) && p.status==='לא פעיל') n++; } return n; }
+function offCount(){ return erpOffCount()+prcOffCount(); }
 let plRound=1, plCName='';
 
 const GROUP_COLORS = {
@@ -7821,6 +7826,12 @@ function filteredProducts(){
     /* מק״ט ש"לא פעיל" בפריוריטי אינו מוצג בשום תצוגה — כולן עוברות דרך
        כאן, כולל הייצוא ל-CSV (רומן, 14/08/2026). */
     if(isErpOff(p.sku)) return false;
+    /* גם סימון "לא פעיל" שנעשה כאן מסתיר, ולא רק זה שמגיע מפריוריטי
+       (רומן, 14/08/2026 — 19 מק״טים היו במצב הזה).
+       **אלא אם מסנן הסטטוס מבקש אותם במפורש.** בלי החריג הזה נוצרת מלכודת:
+       מסמנים "לא פעיל" בכרטיס, המק״ט נעלם, ואין שום דרך למצוא אותו כדי
+       לבטל את הסימון. הסתרה בלי דרך חזרה היא באג. */
+    if(p.status==='לא פעיל' && st!=='לא פעיל') return false;
     if(st && p.status!==st) return false;
     if(md && !modeMatch(p, md)) return false;
     if(fc && p.cat!==fc) return false;
@@ -8103,8 +8114,9 @@ function renderPricing(m){
   const subs=[...new Set(DATA.products.map(p=>p.sub).filter(Boolean))];
   let top='<div class="pv-dbbar">'+
     (ed? '<button class="pv-btn" onclick="prcV13.toggleAdd()">＋ הוספת מק״ט חדש</button>':'')+
-    '<span class="pv-hint" style="margin:0">סה״כ במאגר: <b>'+(DATA.products.length-erpOffCount())+'</b> מק״טים'+
-      (erpOffCount()? ' · <b title="סטטוסם בפריוריטי הוא לא פעיל — מוסתרים מהמאגר ומכל המחירונים">'+erpOffCount()+' מוסתרים (לא פעילים בפריוריטי)</b>' : '')+
+    '<span class="pv-hint" style="margin:0">סה״כ במאגר: <b>'+(DATA.products.length-offCount())+'</b> מק״טים'+
+      (offCount()? ' · <b title="מוסתרים מהמאגר ומכל המחירונים. לצפייה במסומנים ידנית: מסנן הסטטוס ← לא פעיל. מק״ט שלא פעיל בפריוריטי מוסתר תמיד.">'+
+        offCount()+' מוסתרים ('+erpOffCount()+' בפריוריטי · '+prcOffCount()+' סימון ידני)</b>' : '')+
       ' · כל שינוי נשמר במסד מיד ✓ — "שמירת גיבוי" מפיק קובץ להעברה ולארכיון</span>'+
   '</div>'+
   '<datalist id="pv-dlCats">'+cats.map(c=>'<option value="'+esc(c)+'">').join('')+'</datalist>'+
@@ -10143,7 +10155,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'rosupply-2026-08-14a';
+const BUILD_ID = 'prcoff2-2026-08-14a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){

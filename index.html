@@ -1594,7 +1594,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.77.0</div>
+      <div class="ver">גרסה 6.78.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1713,7 +1713,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.77.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.78.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -6936,6 +6936,12 @@ const PV_CSS = `
 /* הכפתור קטן ושקט — הוא יושב בתוך הצעה, לא בתוך פעולה ראשית. */
 #tab-prc .pv-charmb{ border:1px solid var(--pv-brand); background:#fff; color:var(--pv-brand); border-radius:8px; padding:0 6px; margin-inline-start:4px; font-size:10px; font-weight:800; cursor:pointer; font-family:inherit; line-height:1.5 }
 #tab-prc .pv-charmb:hover{ background:var(--pv-brand); color:#fff }
+/* שדה מחיר היעד (6.78.0). רוחב קבוע כדי ש-489 ו-11,190 יתפסו אותו מקום
+   ושורת ההמלצה לא תקפוץ בין מק״טים; tabular-nums מיישר את הספרות. */
+#tab-prc .pv-charmi{ width:58px; border:1px solid var(--pv-line); background:#fff; color:inherit;
+  border-radius:6px; padding:0 4px; font:inherit; font-size:10.5px; font-weight:800;
+  text-align:center; font-variant-numeric:tabular-nums }
+#tab-prc .pv-charmi:focus{ outline:2px solid var(--pv-brand); outline-offset:0 }
 #tab-prc .pv-chev{ width:21px; height:21px; line-height:1; border:1px solid var(--pv-line); background:#fff; border-radius:6px; cursor:pointer; font-size:11px; color:var(--pv-brand); margin-inline-end:6px; padding:0; vertical-align:middle; transition:transform .12s ease }
 #tab-prc .pv-chev:hover{ border-color:var(--pv-brand); background:#eaf1f6 }
 #tab-prc .pv-chev.on{ background:var(--pv-brand); color:#fff; border-color:var(--pv-brand); transform:rotate(180deg) }
@@ -7739,13 +7745,21 @@ function charmLine(sku, inc){
   const nice = charmPrice(inc);
   if(nice==null || Math.abs(nice-inc) < 0.005) return '';
   const mg = charmMargin(sku, nice);
-  /* הכפתור מוצג רק למי שרשאי לערוך, ורק כששולי הרווח הנגזרים חוקיים —
-     מחיר מעוגל שנמוך מהעלות אינו הצעה אלא הפסד. */
+  /* השדה והכפתור מוצגים רק למי שרשאי לערוך, ורק כששולי הרווח של ההמלצה
+     חוקיים — מחיר מעוגל שנמוך מהעלות אינו הצעה אלא הפסד. */
   const can = prcEdit() && mg!=null && mg>0 && mg<1;
+  /* ההמלצה ניתנת לעריכה (6.78.0, רומן 14/08/2026). היעד **אינו** נצרב
+     יותר ב-onclick: applyCharmFrom קוראת אותו מה-DOM בזמן הלחיצה, אחרת
+     עריכת השדה לא הייתה משנה דבר והכפתור היה מחיל בשקט את הערך המקורי. */
   return '<div class="pv-charm" title="מחיר מומלץ לאתר לפי כלל העיגול של הקטלוג'+
-      (can? '. לחיצה על "החלה" תקבע את שולי הרווח של מחירון אתר כך שהמחיר יצא בדיוק '+fmt(nice,0)+' ₪' : ' — הצעה בלבד')+'">'+
-    'מומלץ <b>'+fmt(nice,0)+' ₪</b>'+(mg==null? '' : ' · '+pc(mg))+
-    (can? ' <button type="button" class="pv-charmb" onclick="prcV13.applyCharm(\''+q1(sku)+'\','+nice+')" title="קביעת שולי הרווח של מחירון אתר כך שהמחיר יהיה '+fmt(nice,0)+' ₪">החלה</button>' : '')+
+      (can? '. אפשר לערוך את המחיר — שולי הרווח של מחירון אתר ייקבעו כך שהמחיר יצא בדיוק כפי שהוקלד' : ' — הצעה בלבד')+'">'+
+    'מומלץ '+
+    (can? '<input type="text" inputmode="decimal" class="pv-charmi" value="'+fmt(nice,0)+'"'+
+          ' onkeydown="prcV13.charmKey(event,this,\''+q1(sku)+'\')"'+
+          ' title="מחיר יעד. אנטר או \'החלה\' יקבעו את שולי הרווח כך שזה יהיה המחיר"> ₪'
+        : '<b>'+fmt(nice,0)+' ₪</b>')+
+    (mg==null? '' : ' · '+pc(mg))+
+    (can? ' <button type="button" class="pv-charmb" onclick="prcV13.applyCharmFrom(this,\''+q1(sku)+'\')" title="קביעת שולי הרווח של מחירון אתר כך שהמחיר יהיה כפי שהוקלד">החלה</button>' : '')+
   '</div>';
 }
 /* המרווח האפקטיבי בפועל: את המחיר שהלקוח משלם מפשיטים מהמע״מ האמיתי
@@ -9933,6 +9947,30 @@ PV.edTab = k => {
    ועם שער הדולר, ולא קופא על מספר שנכון להיום בלבד.
    המרווח נשמר במלוא הדיוק ולא מעוגל לעשירית האחוז — עיגול היה מחטיא את
    המחיר המעוגל בכמה שקלים, וזו כל מטרת הפעולה. */
+/* המקום היחיד בקוד שקורא את שדה המחיר המומלץ (6.78.0).
+   ⚠️ הערך בשדה נוצר ב-fmt(), כלומר toLocaleString('he-IL'), ולכן 11,190
+   מוצג **עם פסיק**. parseFloat('11,190') מחזיר 11 בלי לזרוק דבר — מחירון
+   האתר היה נקבע לאחד-עשר שקלים, ומשם דרך priceEx('אתר') כל המחירונים.
+   ניקוי המפריד הוא תנאי נכונות, ולכן הוא מרוכז כאן ולא בכל צרכן. */
+function charmTarget(el){
+  const box = (el && el.closest)? el.closest('.pv-charm') : null;
+  const inp = box? box.querySelector('.pv-charmi') : null;
+  if(!inp) return null;
+  const v = parseFloat(String(inp.value).replace(/[^\d.]/g, ''));
+  return isFinite(v)? v : null;
+}
+PV.applyCharmFrom = (el, sku)=>{
+  const t = charmTarget(el);
+  if(t==null || !(t>0)){ toast('מחיר לא חוקי — יש להזין מספר גדול מאפס'); return; }
+  PV.applyCharm(sku, t);
+};
+/* אנטר בשדה שקול ללחיצה על "החלה". preventDefault כי השדה יושב בתוך
+   מסך שיש בו טפסים, ואנטר בלעדיו עלול לשלוח אחד מהם. */
+PV.charmKey = (ev, el, sku)=>{
+  if(ev.key !== 'Enter') return;
+  ev.preventDefault();
+  PV.applyCharmFrom(el, sku);
+};
 PV.applyCharm = async (sku, target)=>{
   if(!prcEdit()) return noEdit();
   const g = DISC_BASE_GRP;
@@ -9943,7 +9981,7 @@ PV.applyCharm = async (sku, target)=>{
   (DATA.overrides[sku] ||= {})[g] = m;
   renderBody();
   if(await dbw(()=>O().from('prc_overrides').upsert({partname:sku, grp:g, margin:m, updated_by:finMe(), updated_at:finNowIso()},{onConflict:'partname,grp'}),
-    'מחיר האתר נקבע ל-'+fmt(target,0)+' ₪ · שולי רווח '+pc(m))) flashRow(sku);
+    'מחיר האתר נקבע ל-'+fmt(target, (target % 1)? 2 : 0)+' ₪ · שולי רווח '+pc(m))) flashRow(sku);
 };
 PV.pupdToday = ()=>{ const e = document.getElementById('pv-ed-pupd'); if(e) e.value = today10(); };
 /* לחיצה על השורה פותחת את הכרטיס — חוץ מלחיצה שנחתה על פקד שיש לו התנהגות
@@ -10382,7 +10420,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'plfull-2026-08-14a';
+const BUILD_ID = 'charmedit-2026-08-14a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){

@@ -452,6 +452,17 @@
   .xref-chip{ background:#fff; border:1px solid #93c5fd; color:#1d4ed8; border-radius:8px; padding:3px 9px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; margin:2px; }
   .xref-chip:hover{ background:#dbeafe; }
   .xref-hint{ color:#64748b; font-weight:400; }
+    /* צ'יפים של מוצרים נבחרים בקריאת שירות (6.78.1). תחילית חדשה לגמרי
+       כדי שלא תתנגש בכלל קיים — ראו לקח .ghost/.fup-btn. */
+    .pchip-box{ display:flex; flex-wrap:wrap; gap:5px; align-items:center; min-height:30px;
+                padding:4px 6px; border:1px solid var(--line); border-radius:10px; background:#fff; }
+    .pchip{ display:inline-flex; align-items:center; gap:6px; background:#eef2ff; border:1px solid #c7d2fe;
+            color:#3730a3; border-radius:8px; padding:3px 6px 3px 9px; font-size:12px; font-weight:700; }
+    .pchip-sku{ font-weight:400; color:#6366f1; font-size:11px; }
+    .pchip-x{ background:none; border:none; color:#4f46e5; cursor:pointer; font-family:inherit;
+              font-size:15px; line-height:1; padding:0 2px; font-weight:700; }
+    .pchip-x:hover{ color:#be123c; }
+    .pchip-empty{ color:#94a3b8; font-size:12.5px; padding:2px 4px; }
   .more{ text-align:center; color:#64748b; font-size:13px; padding:10px; }
 
   /* מודל */
@@ -1594,7 +1605,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.78.0</div>
+      <div class="ver">גרסה 6.78.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1713,7 +1724,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.78.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.78.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3768,6 +3779,77 @@ function supplyChip(o){
     + (o.supply_days != null ? ' · ידני' : '');
   return '<div class="sup-chip ' + cls + '" title="נספר מתאריך ההזמנה בימי עבודה, בלי שישי ושבת. חגים אינם מנוכים.">' + esc(txt) + '</div>';
 }
+/* ===== קריאות שירות — דחיפות, דדליין ומוצרים (6.78.1) ===== */
+/* הכרעת רומן (14/08/2026): "רמת דחיפות רגילה עד 7 ימי עסקים, בינונית עד 5,
+   משביתה עד 3". נספר ב-addWorkDays — בלי שישי ושבת, בלי ניכוי חגים, בדיוק
+   כמו באספקת ההזמנות. */
+const URG_DAYS = { 'משביתה':3, 'בינונית':5, 'רגילה':7 };
+const urgDays  = u => URG_DAYS[u] ?? URG_DAYS['רגילה'];
+const scallDeadline = (opened, urgency) => opened ? addWorkDays(opened, urgDays(urgency)) : null;
+/* שבב ההתקדמות של הקריאה — אותו דפוס בדיוק כמו supplyChip בהזמנות, כולל
+   אותן מחלקות CSS, כדי שסקאלת הצבעים תהיה זהה בשני המסכים. */
+function scallChip(opened, deadline, status){
+  if(!opened || !deadline) return '';
+  /* קריאה סגורה — חלון הטיפול חסר משמעות, ושבב "באיחור" עליה הוא רעש. */
+  if(['הושלם','בוטל','סגור'].includes(String(status||''))) return '';
+  const today = new Date().toISOString().slice(0,10);
+  const total = Math.max(1, workDaysBetween(opened, deadline) || 1);
+  const left  = workDaysBetween(today, deadline);
+  const gone  = Math.max(0, total - Math.max(0, left));
+  const pct   = Math.round(gone / total * 100);
+  const cls = left < 0 ? 'sup-late' : pct >= 85 ? 'sup-hot' : pct >= 60 ? 'sup-warm' : 'sup-ok';
+  const txt = left < 0  ? ('באיחור ' + Math.abs(left) + ' ימי עבודה')
+            : left === 0 ? 'היום הוא יום היעד'
+            : ('נותרו ' + left + ' מתוך ' + total + ' ימי עבודה');
+  return '<div class="sup-chip ' + cls + '" title="נספר מתאריך פתיחת הקריאה בימי עבודה, בלי שישי ושבת. חגים אינם מנוכים.">' + esc(txt) + '</div>';
+}
+/* ⚠️ הדדליין מחושב **רק** מכאן — משינוי מפורש של הדחיפות. לא בציור הכרטיס.
+   saveScall משווה el.value גולמי בלי שכבת CUR, ולכן חישוב בציור היה כותב
+   דדליין ל-68 הקריאות בכל פתיחה+שמירה של שדה אחר. אין כאן רשת שנייה. */
+window.scUrgencyChanged = (prefix)=>{
+  const uEl = document.getElementById(prefix+'-urgency');
+  const dEl = document.getElementById(prefix+'-deadline');
+  if(!uEl || !dEl || dEl.disabled) return;
+  const opened = dEl.getAttribute('data-op');
+  const nd = scallDeadline(opened, uEl.value);
+  if(nd){ dEl.value = nd; }
+  const chip = document.getElementById(prefix+'-dlchip');
+  if(chip) chip.outerHTML = '<div id="'+prefix+'-dlchip">' +
+    scallChip(opened, dEl.value, (document.getElementById(prefix+'-status')||{}).value) + '</div>';
+  try{ window.markEmpty('ordModal'); }catch(_e){}
+};
+/* ── מוצרים מרובים ────────────────────────────────────────────────────────
+   רומן: "תאפשר פה לקלוט יותר ממוצר אחד — בחירה מרובה", ו"חייבים לבחור
+   מהקטלוג". הערך הנשמר הוא **מק"טים** מופרדים ב-' · ', והתצוגה היא התיאור
+   מהקטלוג — כך שהנתון חד-משמעי והמסך קריא.
+   57 הערכים הקיימים הם טקסט חופשי ואינם מק"טים; הם נטענים כצ'יפים גולמיים
+   ונשמרים כמות שהם. נמדד שההמרה הלוך-חזור חסרת אובדן על כל 57. */
+let SC_PRODS = [];
+const scProdParse = v => String(v||'').split(' · ').map(x=>x.trim()).filter(Boolean);
+function scProdLabel(pn){
+  const s = (typeof prodSrc==='function') ? prodSrc().find(x=>String(x.partname)===String(pn)) : null;
+  return s ? (s.partdes || s.partname) : pn;
+}
+function scProdRender(prefix){
+  const hid = document.getElementById(prefix+'-prods');
+  if(hid) hid.value = SC_PRODS.join(' · ');
+  const box = document.getElementById(prefix+'-prodchips');
+  if(box) box.innerHTML = SC_PRODS.length
+    ? SC_PRODS.map((pn,i)=>{
+        const lb = scProdLabel(pn);
+        return '<span class="pchip" title="'+esc(pn)+'">'+esc(lb) +
+          (lb!==pn ? ' <span class="pchip-sku" dir="ltr">'+esc(pn)+'</span>' : '') +
+          '<button type="button" class="pchip-x" title="הסרה" onclick="scProdDrop('+i+',\''+prefix+'\')">×</button></span>';
+      }).join('')
+    : '<span class="pchip-empty">לא נבחר מוצר</span>';
+  try{ window.markEmpty('ordModal'); }catch(_e){}
+}
+window.scProdDrop = (i, prefix)=>{ SC_PRODS.splice(i,1); scProdRender(prefix); };
+window.scProdAdd  = (pn, prefix)=>{
+  pn = String(pn||'').trim(); if(!pn) return;
+  if(!SC_PRODS.includes(pn)) SC_PRODS.push(pn);   /* בדיקת כפילות, כמו ב-xref-chip */
+  scProdRender(prefix);
+};
 /* שינוי מספר הימים גורר את תאריך הסיום. data-od נושא את תאריך ההזמנה כדי
    שלא נצטרך לאתר את ההזמנה מחדש. */
 window.oeSupplyRecalc = ()=>{
@@ -10420,7 +10502,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'charmedit-2026-08-14a';
+const BUILD_ID = 'sccall-2026-08-14a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -12995,8 +13077,17 @@ const evPh = p => phOk(p)
   ? `<span class="ev-ph"><a href="${telUrl(p)}" dir="ltr" onclick="event.stopPropagation()" title="חיוג אל ${esc(p)}">📞 ${esc(p)}</a><a class="wa-ico" target="_blank" rel="noopener" href="${waUrl(p)}" onclick="event.stopPropagation()" title="וואטסאפ עם ${esc(p)}">${WA_SVG}</a></span>`
   : `<span dir="ltr">📞 ${esc(p||'')}</span>`;
 const roIn = (val,{ltr}={}) => `<input value="${esc(val??'')}" readonly class="ro" ${ltr?'dir="ltr"':''} title="${esc(val??'')}">`;
+/* core.customers.id של קריאת שירות, דרך customer_number → priority_id.
+   נמדד 14/08/2026: ל-10 מתוך 68 הקריאות יש customer_number בכלל, ולכן
+   ברוב המקרים יוחזר '' והבורר יציע הקלדה חופשית — במכוון. */
+function scCustId(s){
+  const cn = s && s.customer_number; if(!cn) return '';
+  const list = (typeof CUSTS!=='undefined' && CUSTS) ? CUSTS : [];
+  const c = list.find(x=>String(x.priority_id)===String(cn));
+  return c ? c.id : '';
+}
 /* select-ים בכרטיסים נצבעים לפי הערך ומתעדכנים מיד עם שינוי (איפיון 8א) */
-const selHtml = (id, vals, cur, allowEmpty) => `<select id="${id}" class="pilled ${STATUS_PILL[cur]||''}" onchange="this.className='pilled '+(STATUS_PILL[this.value]||'')">${allowEmpty?'<option value=""></option>':''}${[...new Set([...(vals||[]), ...(cur?[cur]:[])])].map(v=>`<option ${v===cur?'selected':''}>${esc(v)}</option>`).join('')}</select>`;
+const selHtml = (id, vals, cur, allowEmpty, extraOnChange) => `<select id="${id}" class="pilled ${STATUS_PILL[cur]||''}" onchange="this.className='pilled '+(STATUS_PILL[this.value]||'');${extraOnChange||''}">${allowEmpty?'<option value=""></option>':''}${[...new Set([...(vals||[]), ...(cur?[cur]:[])])].map(v=>`<option ${v===cur?'selected':''}>${esc(v)}</option>`).join('')}</select>`;
 
 window.openScall = (id)=>{
   const s = SCALLS.find(x=>x.id===id); if(!s) return;
@@ -13016,20 +13107,23 @@ window.openScall = (id)=>{
       <div><label>שם לקוח${tag}</label>${roIn(s.customer_name)}</div>
       <div><label>טלפון${tag} ${phBtns(s.phone)}</label>${roIn(s.phone,{ltr:1})}</div>
       <div><label>אימייל לקוח${tag}</label>${roIn(s.customer_email,{ltr:1})}</div>
-      <div><label>מהות הקריאה</label>${selHtml('se-type',CALL_TYPES,s.call_type)}</div>
-      <div><label>באחריות?</label>${selHtml('se-warranty',YESNO,s.warranty,true)}</div>
-      <div class="span2"><label>מוצר / תיאור${tag}</label>${roIn(s.product)}</div>
+      <div><label>מהות הקריאה</label>${selHtml('se-type',CALL_TYPES,s.call_type,true)}</div>
+      <div><label>אחריות</label>${selHtml('se-warranty',YESNO,s.warranty,true)}</div>
+      <div class="span2 ac-wrap"><label>מוצרים <span class="note" style="font-weight:400">(בחירה מרובה מהקטלוג)</span></label><input id="se-prodpick" autocomplete="off" placeholder="חיפוש מכרטיסי הפריט — כל בחירה מתווספת…" oninput="neProdSearch(this.value,'se')" onfocus="neProdSearch(this.value,'se')" onblur="setTimeout(()=>{const b=document.getElementById('se-prod-results'); if(b) b.hidden=true;},150)"><div id="se-prod-results" class="ac-menu" hidden></div><input type="hidden" id="se-prods"><div id="se-prodchips" class="pchip-box" style="margin-top:5px"></div></div>
       <div class="span2"><label>🏠 כתובת חיוב${tag} ${wazeBtn(s.customer_address)}</label>${roIn(s.customer_address)}</div>
+      <div class="ac-wrap"><label>איש קשר</label><input id="se-contname" value="${esc(s.contact_name||'')}" autocomplete="off" placeholder="בחירה מאנשי הקשר של הלקוח, או הקלדה" oninput="scContSearch(this.value,'se','${esc(String(scCustId(s)||''))}')" onfocus="scContSearch(this.value,'se','${esc(String(scCustId(s)||''))}')" onblur="setTimeout(()=>{const b=document.getElementById('se-cont-results'); if(b) b.hidden=true;},150)"><div id="se-cont-results" class="ac-menu" hidden></div></div>
+      <div><label>טלפון איש קשר ${phBtns(s.contact_phone)}</label><input id="se-contphone" value="${esc(s.contact_phone||'')}" dir="ltr"></div>
+      <div class="span2 addr-row"><div><label>📦 כתובת משלוח</label><input id="se-ship1" value="${esc(s.ship_addr1||'')}" placeholder="רחוב ומספר"></div><div><label>כתובת משלוח2</label><input id="se-ship2" value="${esc(s.ship_addr2||'')}" placeholder="כניסה / קומה"></div><div><label>כתובת משלוח3</label><input id="se-ship3" value="${esc(s.ship_addr3||'')}" placeholder="הערת מסירה"></div></div>
       <div class="span4"><label>פרטי התקלה${tag}</label>${roIn(s.fault_details)}</div>
       <div><label>סטטוס</label>${selHtml('se-status',CALL_STATUSES,s.status)}</div>
-      <div><label>רמת דחיפות</label>${selHtml('se-urgency',URGENCIES,s.urgency||'רגילה')}</div>
+      <div><label>רמת דחיפות</label>${selHtml('se-urgency',URGENCIES,s.urgency||'רגילה',false,"scUrgencyChanged('se')")}</div>
       <div><label>עיר</label><input id="se-city" value="${esc(s.city||'')}"></div>
       <div><label>אזור גיאוגרפי</label>${selHtml('se-region',REGIONS,s.region,true)}</div>
       <div class="span2"><label>🚚 כתובת הגעה לקריאה ${wazeBtn(s.address?(s.address+' '+(s.city||'')):'')}</label><input id="se-addr" value="${esc(s.address||'')}" placeholder="לאן הצוות מגיע (ניתן לעריכה)"></div>
       <div><label>צוות</label>${selHtml('se-team',teamVals,s.team,true)}${window.tdHint(s.scheduled_date,s.team,'seTdHint')}</div>
       <div><label>תאריך מתואם</label><input id="se-date" type="date" value="${esc(s.scheduled_date||'')}"></div>
       <div><label>משבצת זמן</label>${selHtml('se-slot',TIME_SLOTS,s.time_slot,true)}</div>
-      <div><label>דדליין טיפול</label><input id="se-deadline" type="date" value="${esc(s.deadline||'')}"></div>
+      <div><label>תאריך דדליין</label><input id="se-deadline" type="date" data-op="${esc(s.opened_date||'')}" value="${esc(s.deadline||'')}"><div id="se-dlchip">${scallChip(s.opened_date, s.deadline, s.status)}</div></div>
       <div class="span4"><label>הערות</label><textarea id="se-notes" rows="2">${esc(s.notes||'')}</textarea></div>
     </div>
     ${window.mediaBlock('call', s.id)}
@@ -13037,6 +13131,7 @@ window.openScall = (id)=>{
       ${editable?`<button class="btn btnw" onclick="saveScall('${s.id}')">💾 שמירה</button>`:'<div class="note">אין לך הרשאת עריכה לקריאות שירות.</div>'}
     </div>
     <div class="err" id="se-err"></div>`;
+  SC_PRODS = scProdParse(s.product); scProdRender('se');
   mountCard('ordModal', ()=>openScall(id)); window.markEmpty('ordModal');
   if(!editable) document.querySelectorAll('#ordSheet input,#ordSheet select,#ordSheet textarea').forEach(el=>el.disabled=true);
 };
@@ -13047,7 +13142,14 @@ const SCALL_CARD_FIELDS = [
   ['se-type','call_type'], ['se-warranty','warranty'], ['se-status','status'],
   ['se-urgency','urgency'], ['se-city','city'], ['se-region','region'],
   ['se-addr','address'], ['se-date','scheduled_date'], ['se-slot','time_slot'],
-  ['se-deadline','deadline'], ['se-team','team'], ['se-notes','notes']
+  ['se-deadline','deadline'], ['se-team','team'], ['se-notes','notes'],
+  /* 6.78.1 — שש נוספות. **חייבות להישאר זהות ל-v_map שבתוך
+     ord.service_call_patch**; פער נותן 42501 על patch שלם, או שדה שנעלם
+     מהממשק. השם v_map אינו מופיע בקוד הלקוח — רק במסד.
+     `se-prods` היא תיבה נסתרת ולא תיבת החיפוש: הלולאה קוראת el.value
+     גולמי, ולכן מה שנשמר חייב לשבת באלמנט עצמו. */
+  ['se-prods','product'], ['se-contname','contact_name'], ['se-contphone','contact_phone'],
+  ['se-ship1','ship_addr1'], ['se-ship2','ship_addr2'], ['se-ship3','ship_addr3']
 ];
 window.saveScall = async (id)=>{
   const s = SCALLS.find(x=>x.id===id); if(!s) return;
@@ -13104,19 +13206,22 @@ window.openNewScall = ()=>{
       <div><label>טלפון ${SRC_TAG}</label><input id="ne-phone" class="ro" readonly dir="ltr"></div>
       <div><label>אימייל לקוח ${SRC_TAG}</label><input id="ne-email" class="ro" readonly dir="ltr"></div>
       <div class="span3"><label>🏠 כתובת חיוב ${SRC_TAG}</label><input id="ne-custaddr" class="ro" readonly></div>
+      <div class="ac-wrap"><label>איש קשר</label><input id="ne-contname" autocomplete="off" placeholder="בחירה מאנשי הקשר של הלקוח, או הקלדה" oninput="scContSearch(this.value,'ne',NE_CUST?NE_CUST.id:'')" onfocus="scContSearch(this.value,'ne',NE_CUST?NE_CUST.id:'')" onblur="setTimeout(()=>{const b=document.getElementById('ne-cont-results'); if(b) b.hidden=true;},150)"><div id="ne-cont-results" class="ac-menu" hidden></div></div>
+      <div><label>טלפון איש קשר</label><input id="ne-contphone" dir="ltr" placeholder="מתמלא מהבחירה"></div>
+      <div class="span3 addr-row"><div><label>📦 כתובת משלוח</label><input id="ne-ship1" placeholder="רחוב ומספר"></div><div><label>כתובת משלוח2</label><input id="ne-ship2" placeholder="כניסה / קומה"></div><div><label>כתובת משלוח3</label><input id="ne-ship3" placeholder="הערת מסירה"></div></div>
       <div><label>עיר ${SRC_TAG}</label><input id="ne-custcity" class="ro" readonly title="עיר הלקוח מפריוריטי. אם היא ריקה — מלאו כתובת הגעה לקריאה למטה"></div>
-      <div class="span2 ac-wrap"><label>מק״ט / שם מוצר</label><input id="ne-prodpick" autocomplete="off" placeholder="חיפוש מכרטיסי הפריט או הקלדה חופשית…" oninput="neProdSearch(this.value)" onfocus="neProdSearch(this.value)" onblur="setTimeout(()=>{const b=document.getElementById('ne-prod-results'); if(b) b.hidden=true;},150)"><div id="ne-prod-results" class="ac-menu" hidden></div></div>
+      <div class="span2 ac-wrap"><label>מק״ט / שם מוצר <span class="note" style="font-weight:400">(בחירה מרובה מהקטלוג · חובה)</span></label><input id="ne-prodpick" autocomplete="off" placeholder="חיפוש מכרטיסי הפריט — כל בחירה מתווספת…" oninput="neProdSearch(this.value,'ne')" onfocus="neProdSearch(this.value,'ne')" onblur="setTimeout(()=>{const b=document.getElementById('ne-prod-results'); if(b) b.hidden=true;},150)"><div id="ne-prod-results" class="ac-menu" hidden></div><input type="hidden" id="ne-prods"><div id="ne-prodchips" class="pchip-box" style="margin-top:5px"></div></div>
       <div><label>מהות הקריאה</label>${selHtml('ne-type',CALL_TYPES,'',true)}</div>
-      <div><label>באחריות?</label>${selHtml('ne-warranty',YESNO,'',true)}</div>
+      <div><label>אחריות</label>${selHtml('ne-warranty',YESNO,'',true)}</div>
       <div class="span4" id="ne-order-suggest" hidden></div>
       <div class="span4"><label>פרטי התקלה</label><textarea id="ne-fault" rows="2"></textarea></div>
       <div><label>סטטוס</label>${selHtml('ne-status',CALL_STATUSES,'חדש')}</div>
-      <div><label>רמת דחיפות</label>${selHtml('ne-urgency',URGENCIES,'רגילה')}</div>
+      <div><label>רמת דחיפות</label>${selHtml('ne-urgency',URGENCIES,'רגילה',false,"scUrgencyChanged('ne')")}</div>
       <div class="span2"><label>🚚 כתובת הגעה לקריאה</label><input id="ne-addr" placeholder="מלאו רק אם כתובת הלקוח אינה נכונה — היא גוברת" oninput="neCityReflect()"></div>
       <div><label>צוות</label>${selHtml('ne-team',teamVals,'',true)}</div>
       <div><label>תאריך מתואם</label><input id="ne-date" type="date"></div>
       <div><label>משבצת זמן</label>${selHtml('ne-slot',TIME_SLOTS,'',true)}</div>
-      <div><label>דדליין טיפול</label><input id="ne-deadline" type="date"></div>
+      <div><label>תאריך דדליין</label><input id="ne-deadline" type="date" data-op="${esc(today)}" value="${esc(scallDeadline(today,'רגילה')||'')}"><div id="ne-dlchip">${scallChip(today, scallDeadline(today,'רגילה'), 'חדש')}</div></div>
       <div><label>עיר <span class="note" style="font-weight:400">(לגזירת אזור)</span></label><input id="ne-city" class="ro" readonly title="העיר לגזירת האזור הגיאוגרפי — מעיר הלקוח, או מכתובת ההגעה כשהיא ממולאת (גוברת)"></div>
       <div><label>אזור גיאוגרפי <span class="note" style="font-weight:400">(נגזר מהעיר)</span></label>${selHtml('ne-region',REGIONS,'',true)}</div>
     </div>
@@ -13124,6 +13229,7 @@ window.openNewScall = ()=>{
       <button class="btn btnw" onclick="saveNewScall()">💾 פתיחת קריאה</button>
     </div>
     <div class="err" id="ne-err"></div>`;
+  SC_PRODS = []; scProdRender('ne');
   mountCard('ordModal', ()=>openNewScall());
 };
 window.neCustSearch = (q)=>{
@@ -13149,28 +13255,37 @@ window.neCustChoose = (id)=>{
   const set=(eid,val)=>{ const f=document.getElementById(eid); if(f) f.value=val||''; };
   set('ne-custpick', c.name); set('ne-custname', c.name); set('ne-custnum', c.priority_id);
   set('ne-phone', c.phone); set('ne-email', c.email); set('ne-custaddr', c.address);
+  /* 6.78.1 — החלפת לקוח מנקה את איש הקשר. בלי זה היה נשמר איש קשר של
+     הלקוח הקודם, וזה בדיוק סוג הנתון שאיש לא בודק אחר כך. */
+  set('ne-contname',''); set('ne-contphone','');
   neCityReflect();
   const box=document.getElementById('ne-cust-results'); if(box){ box.hidden=true; box.innerHTML=''; }
   neXref();
 };
-window.neProdSearch = (q)=>{
-  NE_SKU=null; const os=document.getElementById('ne-order-suggest'); if(os){ os.hidden=true; os.innerHTML=''; }
-  const box=document.getElementById('ne-prod-results'); if(!box) return;
+/* 6.78.1 — בחירה מרובה. הבורר מוסיף צ'יפ ואינו כותב לשדה הנשמר; הערך
+   הנשמר יושב בתיבה הנסתרת <prefix>-prods. הודעת "ניתן להקליד חופשי"
+   הוסרה בהכרעת רומן: "חייבים לבחור מהקטלוג". */
+window.neProdSearch = (q, prefix)=>{
+  prefix = prefix || 'ne';
+  const os=document.getElementById('ne-order-suggest'); if(os && prefix==='ne'){ os.hidden=true; os.innerHTML=''; }
+  const box=document.getElementById(prefix+'-prod-results'); if(!box) return;
   q=(q||'').trim();
   if(!q){ box.hidden=true; box.innerHTML=''; return; }
   const ql=q.toLowerCase();
   const res = prodSrc().filter(s=> String(s.erp_status||'')!=='לא פעיל' && (String(s.partdes||'').toLowerCase().includes(ql) || String(s.partname||'').toLowerCase().includes(ql))).slice(0,30);
   box.innerHTML = res.length
-    ? res.map(s=>`<button type="button" class="ac-item" onmousedown="event.preventDefault()" onclick="neProdChoose('${esc(String(s.partname))}')"><b>${esc(s.partdes||s.partname)}</b><span dir="ltr">${esc(s.partname||'')}</span></button>`).join('')
-    : '<div class="ac-empty">לא נמצאו פריטים — ניתן להקליד חופשי</div>';
+    ? res.map(s=>`<button type="button" class="ac-item" onmousedown="event.preventDefault()" onclick="neProdChoose('${esc(String(s.partname))}','${prefix}')"><b>${esc(s.partdes||s.partname)}</b><span dir="ltr">${esc(s.partname||'')}</span></button>`).join('')
+    : '<div class="ac-empty">לא נמצאו פריטים תואמים — יש לבחור מהקטלוג</div>';
   box.hidden=false;
 };
-window.neProdChoose = (pn)=>{
+window.neProdChoose = (pn, prefix)=>{
+  prefix = prefix || 'ne';
   const s = prodSrc().find(x=>String(x.partname)===String(pn)); if(!s) return;
-  NE_SKU = String(s.partname);
-  const el=document.getElementById('ne-prodpick'); if(el) el.value = s.partdes||s.partname;
-  const box=document.getElementById('ne-prod-results'); if(box){ box.hidden=true; box.innerHTML=''; }
-  neXref();
+  NE_SKU = String(s.partname);          /* האחרון שנבחר — עבור neXref */
+  window.scProdAdd(String(s.partname), prefix);
+  const el=document.getElementById(prefix+'-prodpick'); if(el) el.value='';
+  const box=document.getElementById(prefix+'-prod-results'); if(box){ box.hidden=true; box.innerHTML=''; }
+  if(prefix==='ne') neXref();
 };
 async function neXref(){
   const box=document.getElementById('ne-order-suggest'); if(!box) return;
@@ -13185,6 +13300,34 @@ async function neXref(){
     box.hidden=false;
   }catch(_e){ box.hidden=true; box.innerHTML=''; }
 }
+/* בורר איש קשר מ-core.contacts (6.78.1). CONTS כבר בזיכרון מ-loadLeads,
+   ולכן אין שליפה. `cid` הוא core.customers.id — ה-FK של contacts. */
+window.scContSearch = (q, prefix, cid)=>{
+  const box = document.getElementById(prefix+'-cont-results'); if(!box) return;
+  const all = (typeof CONTS!=='undefined' && CONTS) ? CONTS : [];
+  const mine = cid ? all.filter(k=>String(k.customer_id)===String(cid)) : [];
+  q = String(q||'').trim().toLowerCase();
+  const res = (q ? mine.filter(k=>String(k.full_name||'').toLowerCase().includes(q)
+                                || String(k.phone||'').replace(/\D/g,'').includes(q.replace(/\D/g,''))
+                                || String(k.role||'').toLowerCase().includes(q))
+                 : mine).slice(0,30);
+  box.innerHTML = res.length
+    ? res.map(k=>'<button type="button" class="ac-item" onmousedown="event.preventDefault()" onclick="scContChoose(\''+esc(String(k.id))+'\',\''+prefix+'\')"><b>'
+        + esc(k.full_name||'ללא שם') + '</b><span>'
+        + esc([k.phone||k.office_phone, k.role].filter(Boolean).join(' · ')) + '</span></button>').join('')
+    : ('<div class="ac-empty">' + (cid ? 'אין אנשי קשר ללקוח זה — ניתן להקליד חופשי'
+                                       : 'לא נבחר לקוח — ניתן להקליד חופשי') + '</div>');
+  box.hidden = false;
+};
+window.scContChoose = (id, prefix)=>{
+  const all = (typeof CONTS!=='undefined' && CONTS) ? CONTS : [];
+  const k = all.find(x=>String(x.id)===String(id)); if(!k) return;
+  const set=(eid,val)=>{ const f=document.getElementById(eid); if(f) f.value=val||''; };
+  set(prefix+'-contname', k.full_name);
+  set(prefix+'-contphone', k.phone || k.office_phone || '');
+  const box=document.getElementById(prefix+'-cont-results'); if(box){ box.hidden=true; box.innerHTML=''; }
+  try{ window.markEmpty('ordModal'); }catch(_e){}
+};
 window.neXrefPick = (on)=>{
   const f=document.getElementById('ne-fault'); if(!f) return;
   const pre=(f.value||'').trim();
@@ -13206,17 +13349,29 @@ window.neCityReflect = ()=>{
 const NEW_SCALL_FIELDS = [
   ['ne-opened','opened_date'],['ne-custnum','customer_number'],
   ['ne-custname','customer_name'],['ne-phone','phone'],['ne-email','customer_email'],
-  ['ne-type','call_type'],['ne-warranty','warranty'],['ne-prodpick','product'],
+  ['ne-type','call_type'],['ne-warranty','warranty'],['ne-prods','product'],
   ['ne-custaddr','customer_address'],['ne-fault','fault_details'],['ne-status','status'],
   ['ne-urgency','urgency'],['ne-city','city'],['ne-region','region'],['ne-addr','address'],
-  ['ne-team','team'],['ne-date','scheduled_date'],['ne-slot','time_slot'],['ne-deadline','deadline']
+  ['ne-team','team'],['ne-date','scheduled_date'],['ne-slot','time_slot'],['ne-deadline','deadline'],
+  /* 6.78.1 — `ne-prodpick` הוחלף ב-`ne-prods`: תיבת החיפוש אינה נשמרת,
+     התיבה הנסתרת היא שמחזיקה את המק"טים המצטרפים. */
+  ['ne-contname','contact_name'],['ne-contphone','contact_phone'],
+  ['ne-ship1','ship_addr1'],['ne-ship2','ship_addr2'],['ne-ship3','ship_addr3']
+];
+/* חמשת שדות החובה בפתיחת קריאה (רומן, 14/08/2026). **רק בפתיחה** —
+   68 הקריאות הקיימות נשמרות בלי בדיקה, ו-41 מהן בלי שדה אחריות. */
+const NEW_SCALL_REQ = [
+  ['product','מק״ט'], ['call_type','מהות הקריאה'], ['warranty','אחריות'],
+  ['fault_details','פרטי התקלה'], ['urgency','רמת דחיפות']
 ];
 window.saveNewScall = async ()=>{
   const eb=document.getElementById('ne-err'); if(eb) eb.textContent='';
   if(!window.canEdit('logi.calls')){ if(eb) eb.textContent='אין לך הרשאת עריכה לקריאות שירות.'; return; }
   const patch={};
   NEW_SCALL_FIELDS.forEach(([elId,col])=>{ const el=document.getElementById(elId); if(!el) return; const v=(el.value||'').trim(); if(v!=='') patch[col]=v; });
-  if(!patch.customer_name && !patch.product && !patch.fault_details){ if(eb) eb.textContent='יש למלא לפחות שם לקוח, מוצר או תיאור תקלה.'; return; }
+  /* 6.78.1 — ההודעה מונה **מה** חסר בשמו, ולא "יש למלא שדות". */
+  const miss = NEW_SCALL_REQ.filter(([col])=>!patch[col]).map(([,lb])=>lb);
+  if(miss.length){ if(eb) eb.textContent='חסרים שדות חובה: ' + miss.join(' · ') + '.'; return; }
   const { data, error } = await sb.schema('ord').rpc('service_call_create', { p_patch: patch });
   if(error){ if(eb) eb.textContent='הפתיחה נכשלה — '+error.message; return; }
   if(data && data.id) SCALLS.unshift(data);

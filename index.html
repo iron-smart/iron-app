@@ -1578,7 +1578,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.75.1</div>
+      <div class="ver">גרסה 6.75.2</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1697,7 +1697,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.75.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.75.2</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -7528,7 +7528,7 @@ function multiple(sku, group){
 
 /* ---------- עזרים ---------- */
 const fmt = (n,d)=> n==null? '' : n.toLocaleString('he-IL',{minimumFractionDigits:(d==null?2:d),maximumFractionDigits:(d==null?2:d)});
-const pc = n=> n==null? '' : (n*100).toLocaleString('he-IL',{maximumFractionDigits:1})+'%';
+const pc = n=> n==null? '' : (n*100).toLocaleString('he-IL',{maximumFractionDigits:2})+'%';
 const isIncluded = (sku,g)=> !(DATA.excluded[g] && DATA.excluded[g][sku]);
 const gtag = g => '<span class="pv-gtag" style="background:'+gcol(g)+'22; border:1.5px solid '+gcol(g)+'"><span class="pv-dot" style="background:'+gcol(g)+'"></span>'+esc(g)+'</span>';
 /* q1 מיועד אך ורק לערך שנכנס למחרוזת JS בתוך אטריביוט on* של HTML.
@@ -9118,7 +9118,7 @@ PV.editMargin = function(td, sku, grp){
   }
   if(td.querySelector('input')) return;
   const cur = marginFor(sku, g).v;
-  td.innerHTML = '<input type="number" step="0.5" min="0" max="99" value="'+(cur!=null?(cur*100).toFixed(1):'')+'">';
+  td.innerHTML = '<input type="number" step="0.5" min="0" max="99" value="'+(cur!=null?(cur*100).toFixed(2):'')+'">';
   const inp = td.querySelector('input');
   inp.focus(); inp.select();
   let closed = false;
@@ -9143,7 +9143,7 @@ PV.editMargin = function(td, sku, grp){
          בלי שינוי הייתה חותכת 0.506276… ל-0.506 ומזיזה את המחיר בכמה שקלים
          בלי שאיש נגע בו. השוואת מחרוזות נכונה ללא תלות בדיוק השמור, ולכן
          לא תישבר שוב כשיתווסף מסלול כתיבה שלישי. (14/08/2026) */
-      if(cur!=null && raw === (cur*100).toFixed(1)){ renderBody(); return; }
+      if(cur!=null && raw === (cur*100).toFixed(2)){ renderBody(); return; }
       const v = parseFloat(raw)/100;
       if(!isNaN(v) && v>=0 && v<1){
         /* הסבילות נשארת לשינויים אמיתיים זעירים (50.60 מול 50.6). */
@@ -9904,10 +9904,10 @@ PV.exportCSV = async ()=>{
         (sp0==null?'':(sp0/(1+S.vat)).toFixed(2)), (sp0==null?'':sp0.toFixed(2)),
         ...discGroups().flatMap(g=>{ if(!isIncluded(p.sku,g)) return ['','','',''];
           const d=discOf(p.sku,g), dp=discPrice(p.sku,g), dm=discMargin(p.sku,g), df=discProfit(p.sku,g);
-          return [d==null?'':(d*100).toFixed(2)+'%', dp==null?'':dp.toFixed(2), dm==null?'':(dm*100).toFixed(1)+'%', df==null?'':df.toFixed(2)]; }),
+          return [d==null?'':(d*100).toFixed(2)+'%', dp==null?'':dp.toFixed(2), dm==null?'':(dm*100).toFixed(2)+'%', df==null?'':df.toFixed(2)]; }),
         ...GROUPS.flatMap(g=>{ if(!isIncluded(p.sku,g)) return ['','',''];
           const v=finalEx(p.sku,g), mv=finalMargin(p.sku,g), fs=finalSrc(p.sku,g);
-          return [v==null?'':v.toFixed(2), mv==null?'':(mv*100).toFixed(1)+'%',
+          return [v==null?'':v.toFixed(2), mv==null?'':(mv*100).toFixed(2)+'%',
                   fs==='disc'? 'הנחה' : (fs==='nobase'? 'אין מחיר בסיס' : 'מרווח')]; })].map(csvq).join(','));
     });
   } else {
@@ -9918,7 +9918,7 @@ PV.exportCSV = async ()=>{
       const mg = marginFor(p.sku,g), cb = costBefore(p.sku), ca = costAfter(p.sku);
       const ex = finalEx(p.sku,g), inc = finalInc(p.sku,g);
       out.push([p.sku,p.name,p.cat,p.sub,p.source, cb??'', ca!=null?ca.toFixed(2):'',
-        finalMargin(p.sku,g)!=null?(finalMargin(p.sku,g)*100).toFixed(1)+'%':'', ex!=null?ex.toFixed(2):'', inc!=null?inc.toFixed(2):'',
+        finalMargin(p.sku,g)!=null?(finalMargin(p.sku,g)*100).toFixed(2)+'%':'', ex!=null?ex.toFixed(2):'', inc!=null?inc.toFixed(2):'',
         finalSrc(p.sku,g)==='disc'? 'הנחה' : (finalSrc(p.sku,g)==='nobase'? 'אין מחיר בסיס' : 'מרווח')].map(csvq).join(','));
     });
   }
@@ -10061,7 +10061,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'charmprec-2026-08-14a';
+const BUILD_ID = 'pcprec-2026-08-14a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){

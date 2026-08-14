@@ -988,6 +988,8 @@
   .src-tag{ display:inline-flex !important; width:fit-content; max-width:100%; vertical-align:middle; }
   .form-sep{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
   .form-sep.sep-items{ border-bottom:0; padding-bottom:0; margin-bottom:0; }
+  /* תגיות ושבבים בתוך כותרת חוזרים לגודל הרגיל — הכותרת גדלה, הם לא. */
+  .form-sep .src-tag,.form-sep .pill,.form-sep .chip{ font-size:var(--fs-sm); font-weight:700; letter-spacing:0; }
   .chk-line.chk-compact{ width:fit-content; max-width:100%; padding:6px 10px; font-size:13px; }
   .form-grid .is-empty{ background:#fafbfc; border-color:#e8edf3; }
   .ob-title{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
@@ -1004,7 +1006,14 @@
   .form-grid label .ph-btn, .form-grid label .waze-btn, .form-grid label .src-tag{ flex:none; }
   .form-grid input,.form-grid select,.form-grid textarea{ width:100%; padding:var(--field-py) var(--field-px); border:1px solid var(--line); border-radius:var(--r-md); font-size:var(--fs-md); font-family:inherit; box-sizing:border-box; }
   .form-grid input[dir="ltr"]{ text-align:right; }
-  .form-sep{ grid-column:1/-1; font-size:13px; font-weight:800; color:var(--navy); border-bottom:1px solid var(--line); padding-bottom:4px; margin-top:8px; }
+  .form-sep{ grid-column:1/-1; font-size:var(--fs-lg); font-weight:800; letter-spacing:.015em; color:var(--navy); border-bottom:1px solid #cbd5e1; padding-bottom:var(--sp-2); margin-top:var(--sp-5); margin-bottom:var(--sp-1); }
+  /* הכותרת הראשונה בכרטיס צמודה ל-h3 שמעליה — רווח כפול היה נראה כמו חור. */
+  .form-grid > .form-sep:first-child{ margin-top:0; }
+  /* .form-grid > div מגדיר flex-direction:column לכל תא בגריד, וספציפיות
+     0,1,1 שלו גברה על .form-sep שהוא 0,1,0 — ולכן כותרת, תגית פריוריטי
+     ושבב נערמו זה מתחת לזה. "פירוט ההזמנה" תפס 63px במקום 26, ו"דו שיח
+     פנימי" 48. הכלל הזה (0,2,1) מחזיר אותן לשורה אחת. */
+  .form-grid > .form-sep{ flex-direction:row; align-items:center; flex-wrap:wrap; gap:var(--sp-2); }
   input.ro,select.ro,textarea.ro{ background:#eef0f2 !important; color:#6a7178 !important; border-color:#e2e5e8 !important; cursor:not-allowed; }
   .src-tag{ background:#eef0f2; color:#8a9199; border-radius:99px; padding:0 7px; font-size:10px; font-weight:700; margin-inline-start:0; }
   .dialog-box{ background:#f6f8fa; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:13px; line-height:1.5; max-height:120px; overflow:auto; }
@@ -1520,7 +1529,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.72.4</div>
+      <div class="ver">גרסה 6.72.5</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1639,7 +1648,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.72.4</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.72.5</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9639,7 +9648,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'paylinkoff-2026-08-14a';
+const BUILD_ID = 'sephead-2026-08-14a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -12557,6 +12566,7 @@ window.openOrd = (id, ctx)=>{
     <h3>${esc(o.order_number)} — ${esc(o.customer_name||'')}${o.erp_status?` <span class="pill p-violet" title="הסטטוס בפריוריטי — מתעדכן בסנכרון">${PRI_ICO}פריוריטי: ${esc(o.erp_status)}</span>`:''}${o.erp_synced_at?`<span class="pill" style="font-weight:400">סונכרן מפריוריטי ${new Date(o.erp_synced_at).toLocaleDateString('he-IL')}</span>`:''}${window.regressTag?window.regressTag(o):''}${openBadge(o.order_number,1)}${retBadge(o.order_number,1)}</h3>
     <div style="height:10px"></div>
     <div class="form-grid">
+      <div class="form-sep">פרטי ההזמנה מפריוריטי</div>
       <div><label>מס' הזמנה${SRC_TAG}</label>${roIn(o.order_number,{ltr:1})}</div>
       <div><label>תאריך הזמנה${SRC_TAG}</label>${roIn(fmtD(o.order_date),{ltr:1})}</div>
       <div><label>מס' לקוח${SRC_TAG}</label>${roIn(o.customer_number,{ltr:1})}</div>
@@ -12577,7 +12587,7 @@ window.openOrd = (id, ctx)=>{
       </div>
       <div class="span2"><label>הערות הזמנה${SRC_TAG}</label>${roIn(o.order_notes)}</div>
       ${showSales?ordTermsBlock(o):''}
-      <div class="form-sep" style="margin-top:16px">שדות למילוי</div>
+      <div class="form-sep">שדות למילוי</div>
       <div><label>סטטוס הזמנה</label>${selHtml('oe-status',ORDER_STATUSES,o.order_status)}</div>
       <div><label>יצרנו קשר?</label>${selHtml('oe-contact',CONTACT_STATUSES,o.contact_status)}</div>
       <div><label>אזור גיאוגרפי</label>${selHtml('oe-region',REGIONS,o.region,true)}</div>
@@ -12588,12 +12598,13 @@ window.openOrd = (id, ctx)=>{
       ${canView('logi.orders.eta')?`<div><label>צפי אספקה <small style="font-weight:400;color:#64748b">${o.eta_date&&o.scheduled_date?'(הוחלף בתאריך המתואם)':'(כשאין עדיין תיאום)'}</small></label><input id="oe-eta" type="date" value="${esc(o.eta_date||'')}"${o.eta_date&&o.scheduled_date?' style="opacity:.55"':''}>
         ${o.eta_date&&!o.scheduled_date?`<div class="eta-span" title="נגזר מ&quot;מספר ימים&quot; ומדילוג על שבת${o.friday_ok?'':' ושישי'}">📅 ${esc(etaSpanText(o))}</div>`:''}</div>`:''}
       <div class="span2"><label class="chk-line chk-compact" style="margin-top:4px"><input type="checkbox" id="oe-friday" ${o.friday_ok?'checked':''}> <b>לאשר עבודה ביום שישי בהזמנה זו</b></label></div>
-      <div id="oe-fupbox" style="display:contents">${fupBoxHtml(o)}</div>
       ${showSupply?`<div class="form-sep">אספקה ומחסן</div>`:''}
       ${showSupply?`<div><label>זמן אספקה (ימים)</label><input id="oe-supdays" type="number" value="${o.supply_days??''}"></div>`:''}
       ${showSupply?`<div><label>תאריך סיום אספקה</label><input id="oe-supend" type="date" value="${esc(o.supply_end_date||'')}"></div>`:''}
       ${showSupply?`<div class="span2"><label>הערות למחסן</label><textarea id="oe-wnotes" rows="2">${esc(o.warehouse_notes||'')}</textarea></div>`:''}
-      <div class="span4"><label>דו שיח פנימי${SRC_TAG}</label><div class="dialog-box">${o.internal_dialog?esc(o.internal_dialog).replace(/\n/g,'<br>'):'<span class="dialog-empty">אין דו שיח פנימי בהזמנה זו</span>'}</div></div>
+      <div id="oe-fupbox" style="display:contents">${fupBoxHtml(o)}</div>
+      <div class="form-sep">דו שיח פנימי${SRC_TAG}</div>
+      <div class="span4"><div class="dialog-box">${o.internal_dialog?esc(o.internal_dialog).replace(/\n/g,'<br>'):'<span class="dialog-empty">אין דו שיח פנימי בהזמנה זו</span>'}</div></div>
       <div class="form-sep sep-items">פירוט ההזמנה${SRC_TAG}${openBadge(o.order_number)}${retBadge(o.order_number)}</div>
       <div class="span4" id="orderItemsBox"><div class="items-loading">טוען פירוט הזמנה מפריוריטי…</div></div>
       ${canView('logi.orders.coord')?'<div class="span4" id="ordVisitBox"></div>':''}
@@ -12841,7 +12852,7 @@ window.fupBoxHtml = (o)=>{
   const can  = window.ordCardEditable('followup_date');
   const flag = (o.followup_flag === true || o.followup_flag === false) ? o.followup_flag : null;
   const btn  = (val,label,cls)=> can ? `<button class="ghost fup-btn${cls?' '+cls:''}" onclick="fupFlag('${o.id}',${val===null?'null':val})">${esc(label)}</button>` : '';
-  const sep  = extra => `<div class="form-sep" style="margin-top:16px">ביקור השלמה ${openBadge(o.order_number)}${extra||''}</div>`;
+  const sep  = extra => `<div class="form-sep">ביקור השלמה ${openBadge(o.order_number)}${extra||''}</div>`;
   /* ord.order_open_items_v מסווג הזמנה מבוטלת או שטרם שולמה כ"לא רלוונטי"
      עוד לפני שהוא מסתכל על הדגל, ולכן סימון ידני כאן פשוט נבלע. במקום
      להציג כפתור שמבטיח מה שלא יקרה — מסבירים למה (ממצא fable 13/08/2026). */

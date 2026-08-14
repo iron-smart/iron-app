@@ -1018,7 +1018,17 @@
   /* תגיות ושבבים בתוך כותרת חוזרים לגודל הרגיל — הכותרת גדלה, הם לא. */
   .form-sep .src-tag,.form-sep .pill,.form-sep .chip{ font-size:var(--fs-sm); font-weight:700; letter-spacing:0; }
   .chk-line.chk-compact{ width:fit-content; max-width:100%; padding:6px 10px; font-size:13px; }
-  .form-grid .is-empty{ background:#fafbfc; border-color:#e8edf3; }
+  /* ההיגיון התהפך: עד 6.75.3 שדה ריק קיבל רקע אפרפר ומסגרת חיוורת — כלומר
+     "פחות נוכח" — ולכן נראה נעול בדיוק כשצריך היה למלא אותו. מעתה לבן עם
+     מסגרת כהה מעט משדה מלא. מקווקו נפסל במכוון (רומן, 6.72.x). */
+  .form-grid .is-empty{ background:#fff; border-color:#94a3b8; }
+  /* שבב חלון האספקה — מתחמם ככל שהזמן חולף (רומן, 14/08/2026). */
+  .sup-chip{ margin-top:4px; font-size:11.5px; font-weight:700; line-height:1.5;
+             border-radius:var(--r-sm); padding:2px 8px; width:fit-content; border:1px solid transparent; }
+  .sup-chip.sup-ok{   background:#ecfdf5; color:#065f46; border-color:#a7f3d0; }
+  .sup-chip.sup-warm{ background:#fefce8; color:#854d0e; border-color:#fde68a; }
+  .sup-chip.sup-hot{  background:#fff7ed; color:#9a3412; border-color:#fed7aa; }
+  .sup-chip.sup-late{ background:#fef2f2; color:#991b1b; border-color:#fecaca; }
   .ob-title{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
   #ordModal .form-grid{ gap:10px; }
   #ordModal .form-grid label{ font-size:11.5px; margin-bottom:3px; }
@@ -1031,9 +1041,12 @@
   #ordModal .modal-actions.ord-actions #oe-save{ width:auto !important; padding:11px 32px !important; font-size:15px; border-radius:11px; background:linear-gradient(135deg,var(--green),#4e8168); box-shadow:0 6px 18px rgba(106,159,133,.38); }
   .form-grid label{ display:flex; align-items:center; flex-wrap:wrap; gap:4px 5px; min-height:19px; font-size:12px; color:#475569; margin-bottom:4px; font-weight:600; line-height:1.45; }
   .form-grid label .ph-btn, .form-grid label .waze-btn, .form-grid label .src-tag{ flex:none; }
-  .form-grid input,.form-grid select,.form-grid textarea{ width:100%; padding:var(--field-py) var(--field-px); border:1px solid var(--line); border-radius:var(--r-md); font-size:var(--fs-md); font-family:inherit; box-sizing:border-box; }
+  /* 6.75.3 — שדה עריכה מוגדר מעתה במפורש כלבן עם מסגרת נראית. הרקע לא נקבע
+     כאן קודם, ולכן .is-empty יכול היה לצבוע אותו באפרפר ולהשוותו לשדות
+     הנעולים (רומן, 14/08/2026). */
+  .form-grid input,.form-grid select,.form-grid textarea{ width:100%; padding:var(--field-py) var(--field-px); background:#fff; border:1px solid #cbd5e1; border-radius:var(--r-md); font-size:var(--fs-md); font-family:inherit; box-sizing:border-box; }
   .form-grid input[dir="ltr"]{ text-align:right; }
-  .form-sep{ grid-column:1/-1; font-size:var(--fs-lg); font-weight:800; letter-spacing:.015em; color:var(--navy); border-bottom:1px solid #cbd5e1; padding-bottom:var(--sp-2); margin-top:var(--sp-5); margin-bottom:var(--sp-1); }
+  .form-sep{ grid-column:1/-1; font-size:var(--fs-lg); font-weight:800; letter-spacing:.015em; color:var(--navy); border-bottom:2px solid #94a3b8; padding-bottom:var(--sp-2); margin-top:var(--sp-5); margin-bottom:var(--sp-1); }
   /* הכותרת הראשונה בכרטיס צמודה ל-h3 שמעליה — רווח כפול היה נראה כמו חור. */
   .form-grid > .form-sep:first-child{ margin-top:0; }
   /* .form-grid > div מגדיר flex-direction:column לכל תא בגריד, וספציפיות
@@ -1058,7 +1071,7 @@
      המסגרת לא חוזרת — היא זו שגרמה לשדה להיראות כתיבת עריכה שמזמינה
      קליק. רקע בלי מסגרת קורא כ"שדה מידע". הריפוד נשאר צפוף (26px לשורה
      במקום 33px המקוריים) והטקסט כהה ובמשקל 600, כי הנתון הוא העיקר. */
-  .form-grid input.ro{ background:#eef1f4 !important; border:1px solid transparent !important; border-radius:var(--r-md); color:#334155 !important; font-weight:600; padding:5px 9px !important; min-height:26px; cursor:default; }
+  .form-grid input.ro,.form-grid select.ro,.form-grid textarea.ro{ background:#eef1f4 !important; border:1px solid transparent !important; border-radius:var(--r-md); color:#334155 !important; font-weight:600; padding:5px 9px !important; min-height:26px; cursor:default; }
   /* ערך ריק מוצג כ-"—" חיוור ובמשקל רגיל, כדי שייקרא כ"אין נתון" ולא
      ייראה כמו ערך אמיתי שסתם קצר. הרקע נשאר — גם "אין נתון" הוא מידע
      שמגיע מפריוריטי. */
@@ -1578,7 +1591,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.75.2</div>
+      <div class="ver">גרסה 6.75.3</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1697,7 +1710,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.75.2</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.75.3</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3644,6 +3657,75 @@ function etaShowDate(o){
    ההתקנה, והוא אינו תלוי בשאלה אם התאריך ודאי או משוער — ולכן אין שדה
    ימים נפרד לצפי: אותו מספר משמש את שניהם, וכך אין שתי אמיתות לאותה
    עובדה. החישוב זהה ל-workDates, אלא שנקודת המוצא היא eta_date. */
+/* ===== תקן זמן האספקה (6.75.3) ===== */
+/* התקן נקרא מ-ord.settings ולא מהקוד, כדי שרומן ישנה אותו בלי פריסה
+   (הכרעתו, 14/08/2026). 25 היא מה שכבר נהג בפועל: 156 מתוך 818 הזמנות
+   החזיקו בדיוק 25, ורק שתיים חרגו. */
+function supplyStd(){
+  try{
+    const r = (typeof OSET !== 'undefined' ? OSET : []).find(x => x && x.key === 'supply_days_std');
+    const n = r ? parseInt(String(r.value).trim(), 10) : NaN;
+    if(n >= 1 && n <= 400) return n;
+  }catch(_e){}
+  return 25;
+}
+/* הוספת ימי עבודה לתאריך. שישי ושבת אינם נספרים.
+   ⚠️ חגים אינם מטופלים — הכרעת רומן ("עזוב ללא חגים", 14/08/2026). אין
+   לוח חגים במערכת, וניחוש כאן פירושו תאריך אספקה שגוי שנמסר ללקוח. */
+function addWorkDays(iso, n){
+  if(!iso || !(n >= 1)) return null;
+  let d = iso, left = n, guard = 0;
+  while(left > 0 && guard++ < 3000){
+    d = addDaysIso(d, 1);
+    const dw = dowOf(d);
+    if(dw !== CAL_FRIDAY && dw !== CAL_SATURDAY) left--;
+  }
+  return left > 0 ? null : d;
+}
+/* ספירת ימי עבודה בין שני תאריכים. שלילי = ב' לפני א'. */
+function workDaysBetween(a, b){
+  if(!a || !b) return null;
+  if(b < a) return -workDaysBetween(b, a);
+  let d = a, n = 0, guard = 0;
+  while(d < b && guard++ < 3000){
+    d = addDaysIso(d, 1);
+    const dw = dowOf(d);
+    if(dw !== CAL_FRIDAY && dw !== CAL_SATURDAY) n++;
+  }
+  return n;
+}
+/* NULL במסד פירושו "התקן" — ולכן שתי הפונקציות האלה הן גם מה שמוצג וגם
+   מה ש-CUR משווה אליו. בלי הזהות הזאת, שמירה של כרטיס שלא נגעו בו הייתה
+   כותבת 25 ל-660 שורות. */
+const supplyDaysOf = o => (o && o.supply_days != null) ? o.supply_days : supplyStd();
+const supplyEndOf  = o => (o && o.supply_end_date) ? o.supply_end_date
+                        : ((o && o.order_date) ? addWorkDays(o.order_date, supplyDaysOf(o)) : null);
+/* שבב ההתקדמות. הספירה בימי עבודה ולא בימי לוח, כדי שתהיה עקבית עם
+   הספירה שקבעה את התאריך מלכתחילה. */
+function supplyChip(o){
+  if(!o || !o.order_date) return '';
+  const end = supplyEndOf(o); if(!end) return '';
+  const today = new Date().toISOString().slice(0,10);
+  const total = Math.max(1, workDaysBetween(o.order_date, end) || 1);
+  const left  = workDaysBetween(today, end);
+  const gone  = Math.max(0, total - Math.max(0, left));
+  const pct   = Math.round(gone / total * 100);
+  const cls = left < 0 ? 'sup-late' : pct >= 85 ? 'sup-hot' : pct >= 60 ? 'sup-warm' : 'sup-ok';
+  const txt = left < 0  ? ('באיחור ' + Math.abs(left) + ' ימי עבודה')
+            : left === 0 ? 'היום הוא יום היעד'
+            : ('נותרו ' + left + ' מתוך ' + total + ' ימי עבודה');
+  return '<div class="sup-chip ' + cls + '" title="נספר מתאריך ההזמנה בימי עבודה, בלי שישי ושבת. חגים אינם מנוכים.">' + esc(txt) + '</div>';
+}
+/* שינוי מספר הימים גורר את תאריך הסיום. data-od נושא את תאריך ההזמנה כדי
+   שלא נצטרך לאתר את ההזמנה מחדש. */
+window.oeSupplyRecalc = ()=>{
+  const dEl = document.getElementById('oe-supdays'), eEl = document.getElementById('oe-supend');
+  if(!dEl || !eEl || eEl.disabled) return;
+  const od = dEl.getAttribute('data-od'); const n = parseInt(dEl.value, 10);
+  if(!od || !(n >= 1)) return;
+  const nd = addWorkDays(od, n);
+  if(nd){ eEl.value = nd; try{ window.markEmpty('ordModal'); }catch(_e){} }
+};
 function etaWorkDates(o){
   const out = []; if(!o.eta_date) return out;
   let d = etaShowDate(o), guard = 0; const total = Math.max(1, o.days_count || 1);
@@ -10061,7 +10143,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'pcprec-2026-08-14a';
+const BUILD_ID = 'rosupply-2026-08-14a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -13016,8 +13098,8 @@ window.openOrd = (id, ctx)=>{
       <div><label class="chk-line chk-compact"><input type="checkbox" id="oe-friday" ${o.friday_ok?'checked':''}> <b>לאשר עבודה ביום שישי בהזמנה זו</b></label></div>
       </div>
       ${showSupply?`<div class="form-sep">אספקה ומחסן</div>`:''}
-      ${showSupply?`<div><label>זמן אספקה (ימים)</label><input id="oe-supdays" type="number" value="${o.supply_days??''}"></div>`:''}
-      ${showSupply?`<div><label>תאריך סיום אספקה</label><input id="oe-supend" type="date" value="${esc(o.supply_end_date||'')}"></div>`:''}
+      ${showSupply?`<div><label>זמן אספקה (ימים) <small style="font-weight:400;color:#64748b">(תקן ${supplyStd()} ימי עבודה)</small></label><input id="oe-supdays" type="number" min="1" data-od="${esc(o.order_date||'')}" value="${supplyDaysOf(o)}" oninput="oeSupplyRecalc()"></div>`:''}
+      ${showSupply?`<div><label>תאריך סיום אספקה</label><input id="oe-supend" type="date" value="${esc(supplyEndOf(o)||'')}">${supplyChip(o)}</div>`:''}
       ${showSupply?`<div class="span2"><label>הערות למחסן</label><textarea id="oe-wnotes" rows="2">${esc(o.warehouse_notes||'')}</textarea></div>`:''}
       <div id="oe-fupbox" style="display:contents">${fupBoxHtml(o)}</div>
       <div class="form-sep">דו שיח פנימי${SRC_TAG}</div>
@@ -13365,7 +13447,12 @@ window.saveOrd = async (id)=>{
     warehouse_notes: el => el.value || null
   };
   const CUR = { days_count: r => (r.days_count ?? 1), friday_ok: r => !!r.friday_ok, city: r => (effCity(r) || null),
-                followup_days: r => (r.followup_days ?? 1) };
+                followup_days: r => (r.followup_days ?? 1),
+                /* 6.75.3 — שני שדות האספקה מוצגים עם התקן כשהם NULL. הנרמול
+                   כאן חייב להחזיר בדיוק את מה שמוצג, אחרת שמירה של כרטיס
+                   שלא נגעו בו תכתוב את התקן ל-660 שורות ותציף את היומן. */
+                supply_days: r => supplyDaysOf(r),
+                supply_end_date: r => (supplyEndOf(r) || null) };
   const changed = {};
   ORD_CARD_FIELDS.forEach(([elId, col])=>{
     const el = document.getElementById(elId);

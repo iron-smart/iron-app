@@ -1594,7 +1594,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.76.1</div>
+      <div class="ver">גרסה 6.76.3</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1713,7 +1713,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.76.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.76.3</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3761,8 +3761,8 @@ function supplyChip(o){
   const gone  = Math.max(0, total - Math.max(0, left));
   const pct   = Math.round(gone / total * 100);
   const cls = left < 0 ? 'sup-late' : pct >= 85 ? 'sup-hot' : pct >= 60 ? 'sup-warm' : 'sup-ok';
-  const txt = 'צפי ' + fmtD(end) + ' · '
-    + (left < 0  ? ('באיחור ' + Math.abs(left) + ' ימי עבודה')
+  /* התאריך יושב בתיבה שמעליו מ-6.76.3 — שכפולו כאן היה רעש. */
+  const txt = (left < 0  ? ('באיחור ' + Math.abs(left) + ' ימי עבודה')
      : left === 0 ? 'היום הוא יום היעד'
      : ('נותרו ' + left + ' מתוך ' + total + ' ימי עבודה'))
     + (o.supply_days != null ? ' · ידני' : '');
@@ -10287,7 +10287,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'rosupp2-2026-08-14a';
+const BUILD_ID = 'rosupend-2026-08-14a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -12636,7 +12636,7 @@ const ACTIVE_ORD = o => !['הושלם','בוטל','מבוטלת'].includes(o.ord
    בלי תאריך, בלי שורות ובלי סכום. אלה אינם הזמנות לקוח ולכן אינם מוצגים במסך ההזמנות. */
 const SYS_CUSTOMERS = ['Goods'];
 const REAL_ORDER = o => !SYS_CUSTOMERS.includes(String(o.customer_number||'').trim());
-const ORDER_SORTS = [['','מס\' הזמנה (חדשה ראשונה)'],['order_date','תאריך הזמנה (חדש ראשון)'],['scheduled','תאריך מתואם (קרוב ראשון)'],['supply_end','תאריך סיום אספקה'],['customer','שם לקוח (א-ב)'],['city','עיר (א-ב)'],['status','סטטוס הזמנה']];
+const ORDER_SORTS = [['','מס\' הזמנה (חדשה ראשונה)'],['order_date','תאריך הזמנה (חדש ראשון)'],['scheduled','תאריך מתואם (קרוב ראשון)'],['supply_end','תאריך דדליין'],['customer','שם לקוח (א-ב)'],['city','עיר (א-ב)'],['status','סטטוס הזמנה']];
 function renderOrdersTools(){
   const el=$('#ord-tools'); if(!el) return;
   el.innerHTML = `<div class="tools-bar">
@@ -13243,7 +13243,7 @@ window.openOrd = (id, ctx)=>{
       </div>
       ${showSupply?`<div class="form-sep">אספקה ומחסן</div>`:''}
       ${showSupply?`<div><label>זמן אספקה (ימים) <small style="font-weight:400;color:#64748b">${esc(supplyRuleLabel(o))}</small></label><input id="oe-supdays" type="number" min="1" data-od="${esc(o.order_date||'')}" placeholder="${supplyDaysEff(o) ?? ''}" value="${o.supply_days ?? ''}" oninput="oeSupplyRecalc()"></div>`:''}
-      ${showSupply?`<div><label>תאריך סיום אספקה</label><input id="oe-supend" type="date" value="${esc(o.supply_end_date||'')}">${supplyChip(o)}</div>`:''}
+      ${showSupply?`<div><label>תאריך דדליין</label><input id="oe-supend" type="date" value="${esc(supplyEndEff(o)||'')}">${supplyChip(o)}</div>`:''}
       ${showSupply?`<div class="span2"><label>הערות למחסן</label><textarea id="oe-wnotes" rows="2">${esc(o.warehouse_notes||'')}</textarea></div>`:''}
       <div id="oe-fupbox" style="display:contents">${fupBoxHtml(o)}</div>
       <div class="form-sep">דו שיח פנימי${SRC_TAG}</div>
@@ -13406,7 +13406,14 @@ function visRender(box, on, members, sug, id, ctx){
     h += '<div class="vis-box"><div class="vb-title">ללקוח יש עוד ' +
       (open.length === 1 ? 'הזמנה פתוחה' : open.length + ' הזמנות פתוחות') +
       ' — לצרף לאותו ביקור?</div>' +
-      open.map(s=>'<div class="vis-row"><b dir="ltr">' + esc(s.cand_order) + '</b>' +
+      open.map(s=>'<div class="vis-row"><b dir="ltr">' +
+        /* 6.76.3 — מספר ההזמנה נפתח בלחיצה (רומן, 14/08/2026).
+           coord_suggest_v מחזיר cand_order בלי id, ולכן finOpen שמאתרת לפי
+           מספר ונופלת חזרה לשליפה מהמסד. אותו דפוס שכבר קיים במסך התשלומים.
+           stopPropagation חובה — בשורה יושב כפתור "צירוף לביקור", ובלעדיו
+           לחיצה על המספר הייתה מצרפת את ההזמנה במקום לפתוח אותה. */
+        '<a href="#" title="לכרטיס ההזמנה" onclick="event.preventDefault();event.stopPropagation();finOpen(\'' +
+        jsq(s.cand_order) + '\')">' + esc(s.cand_order) + '</a></b>' +
         '<span>' + (s.cand_date ? fmtD(s.cand_date) : '—') + '</span>' +
         '<span>' + (Number(s.cand_price) ? shekel(Number(s.cand_price)) : 'ללא סכום') + '</span>' +
         '<span>' + esc(s.cand_status || '—') + '</span>' +
@@ -13591,12 +13598,16 @@ window.saveOrd = async (id)=>{
     warehouse_notes: el => el.value || null
   };
   const CUR = { days_count: r => (r.days_count ?? 1), friday_ok: r => !!r.friday_ok, city: r => (effCity(r) || null),
-                followup_days: r => (r.followup_days ?? 1) };
-  /* 6.76.1 — שני העקיפים של supply_days/supply_end_date הוסרו במכוון.
-     מ-6.76.1 השדות מציגים את ערך-הכלל כ-placeholder ולא כ-value, ולכן
-     הערך הגולמי במסד (NULL) זהה למה שהשדה מחזיר — והשוואת ברירת המחדל
-     `o[col] ?? null` מספיקה. עקיף שהיה מנרמל לערך המוצג היה מקפיא את
-     ערך-הכלל כדריסה ידנית בכל שמירה, ושינוי חוק עתידי היה מדלג עליו. */
+                followup_days: r => (r.followup_days ?? 1),
+                /* 6.76.3 — תאריך הדדליין מוצג בתוך תיבת התאריך כדי שאפשר
+                   יהיה לבחור ממנה (רומן, 14/08/2026). ברגע שערך מחושב מוצג
+                   כ-value בשדה עריכה נוצר **חוזה**: הנרמול כאן חייב להחזיר
+                   בדיוק את אותו תאריך, אחרת כל שמירה של כרטיס שלא נגעו בו
+                   תכתוב אותו כדריסה ידנית — ושינוי חוקים עתידי ידלג על
+                   אותה הזמנה. יש בדיקה שאוכפת את זה. */
+                supply_end_date: r => (supplyEndEff(r) || null) };
+  /* supply_days **אינו** כאן במכוון: הוא מציג placeholder ולא value, ולכן
+     הערך הגולמי במסד (NULL) זהה למה שהשדה מחזיר. שני שדות, שתי החלטות. */
   const changed = {};
   ORD_CARD_FIELDS.forEach(([elId, col])=>{
     const el = document.getElementById(elId);

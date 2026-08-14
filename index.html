@@ -1591,7 +1591,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.75.4</div>
+      <div class="ver">גרסה 6.76.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1710,7 +1710,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.75.4</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.76.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -7024,11 +7024,40 @@ const PV_CSS = `
 #tab-prc .pv-btn.ghost{ background:#fff; color:var(--pv-ink2); border:1px solid var(--pv-line); font-weight:600 }
 #tab-prc .pv-btn.ghost:hover{ background:#f1f5f9 }
 #tab-prc .pv-pricelist{ background:#fff; border:1px solid var(--pv-line); border-radius:12px; padding:34px 40px; max-width:860px }
-#tab-prc .pv-plhead{ display:flex; justify-content:space-between; align-items:flex-start; border-bottom:3px solid var(--pv-brand); padding-bottom:14px; margin-bottom:6px }
-#tab-prc .pv-pllogo{ font-weight:900; font-size:24px; letter-spacing:2px; color:var(--pv-brand); line-height:1 }
-#tab-prc .pv-pllogo small{ display:block; font-size:11px; font-weight:600; letter-spacing:1px; color:var(--pv-accent); margin-top:3px }
-#tab-prc .pv-plhead .pv-meta{ text-align:left; color:var(--pv-muted); font-size:12.5px; line-height:1.6 }
-#tab-prc .pv-pltitle{ font-size:15px; color:var(--pv-ink2); margin:10px 0 4px }
+/* ---- נייר המכתבים (6.76.0) — לפי הצעת מחיר PQ26000938 ----
+   כל היחידות ב-mm/pt כי היעד האמיתי הוא הדפסה ל-A4; על המסך הן נראות
+   נכון גם כן. עוצב בשיתוף fable. */
+#tab-prc .pv-lh{ direction:rtl; font-family:'Heebo',-apple-system,"Segoe UI",Rubik,Arial,sans-serif;
+  color:#000; background:#fff; line-height:1.4; print-color-adjust:exact; -webkit-print-color-adjust:exact }
+/* כלל גלובלי על שם תגית (header{color:#fff} באפליקציה) דלף לתוך נייר
+   המכתבים וצבע אותו כהה. החיסון הזה מנטרל את המחלקה כולה: כל צאצא
+   יורש צבע מ-.pv-lh ואינו נושא רקע משלו, אלא אם כלל ספציפי שלנו קובע
+   אחרת אחריו. */
+#tab-prc .pv-lh *{ box-sizing:border-box; margin:0; padding:0; color:inherit; background:transparent }
+#tab-prc .pv-lh-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10mm }
+#tab-prc .pv-lh-co{ text-align:right }
+#tab-prc .pv-lh-coname{ font-size:14.5pt; font-weight:700; line-height:1.25; margin-bottom:1.2mm }
+#tab-prc .pv-lh-colines{ font-size:9.5pt; font-weight:600; line-height:1.45 }
+#tab-prc .pv-lh-brand{ direction:ltr; text-align:left; flex:0 0 auto }
+/* סימן המילה כטקסט. הלוגו הרסטרי לא הוטמע בגרסה הזאת — ראה הערה 1. */
+#tab-prc .pv-lh-logo{ display:block; width:48mm; font-size:30pt; font-weight:900; letter-spacing:0.06em;
+  color:var(--pv-brand); line-height:1; text-align:center }
+/* האותיות נפרשות בדיוק לרוחב הלוגו. שינוי הרוחב מחייב שינוי בשני הכללים. */
+#tab-prc .pv-lh-fitness{ width:48mm; display:flex; justify-content:space-between; padding:0.6mm 1mm 0;
+  font-size:10.5pt; font-weight:700; color:var(--pv-brand); line-height:1 }
+#tab-prc .pv-lh-web{ margin-top:2.6mm; font-size:9.5pt; font-weight:700; line-height:1.5; unicode-bidi:isolate }
+#tab-prc .pv-lh-rule{ border-top:0.6pt solid #1a1a1a; margin:3.5mm 0 4.5mm }
+#tab-prc .pv-lh-recip{ display:flex; align-items:flex-start; gap:10mm; font-size:10pt; font-weight:600; line-height:1.5 }
+#tab-prc .pv-lh-cust{ text-align:right }
+#tab-prc .pv-lh-cust[hidden]{ display:none }
+#tab-prc .pv-lh-custlabel, #tab-prc .pv-lh-custname{ font-weight:700 }
+/* נשאר צמוד לשמאל גם כשבלוק הלקוח מוסתר */
+#tab-prc .pv-lh-dates{ margin-inline-start:auto; text-align:right; white-space:nowrap }
+#tab-prc .pv-lh-title{ margin:8mm 0 5mm; text-align:center; font-size:13.5pt; font-weight:700;
+  text-decoration:underline; text-underline-offset:2.5pt; text-decoration-thickness:0.6pt }
+/* שתי עמודות המחיר החדשות */
+#tab-prc .pv-plcat td.pv-plex, #tab-prc .pv-plcat th.pv-plex{ text-align:center; white-space:nowrap; color:var(--pv-ink2) }
+#tab-prc .pv-plcat td.pv-pldisc, #tab-prc .pv-plcat th.pv-pldisc{ text-align:center; white-space:nowrap }
 #tab-prc .pv-plcat{ margin-top:20px }
 #tab-prc .pv-plcat h4{ background:var(--pv-brand); color:#fff; padding:8px 12px; border-radius:8px 8px 0 0; font-size:13px; font-weight:700 }
 #tab-prc .pv-plcat table{ width:100%; border-collapse:collapse; font-size:13.5px }
@@ -7077,6 +7106,8 @@ const PV_CSS = `
   body.pv-print .pv-pricelist, body.pv-print .pv-pricelist *{ visibility:visible !important }
   body.pv-print .pv-pricelist{ position:absolute; inset-inline:0; top:0; border:none; padding:10px; max-width:none; box-shadow:none }
   body.pv-print .pv-plcat{ break-inside:avoid }
+  body.pv-print .pv-lh{ break-inside:avoid }
+  body.pv-print .pv-lh-logo{ width:48mm }
   /* ברירת המחדל של הדפדפן היא לא להדפיס רקעים, ולכן כותרת הקטגוריה —
      לבן על כחול — יצאה לבן על לבן. בהדפסה היא הופכת לטקסט כהה עם קו. */
   body.pv-print .pv-plcat h4{ background:none !important; color:var(--pv-brand) !important; border-bottom:2px solid var(--pv-brand); border-radius:0; padding:6px 0 }
@@ -8588,6 +8619,44 @@ PV.lfCsv = ()=>{
 };
 
 /* ---------- תצוגת מחירון ללקוח ---------- */
+/* נייר המכתבים. עוצב בשיתוף fable לפי PQ26000938 (רומן, 14/08/2026).
+   בלוק "לכבוד" נבנה תמיד ומוסתר כשאין שם, כדי ש-setCName יעדכן טקסט אחד
+   במקום לבנות מחדש את כל המחירון בכל הקשה. */
+function plHead(g){
+  const today = new Date().toLocaleDateString('he-IL');
+  const cust = (plCName||'').trim();
+  return '<div class="pv-lh" dir="rtl">'+
+    '<div class="pv-lh-top">'+
+      '<div class="pv-lh-co">'+
+        '<div class="pv-lh-coname">איירון פיטנס בע"מ</div>'+
+        '<div class="pv-lh-colines">'+
+          '<div>קומבה 32</div><div>חדרה 3850134</div><div>טלפון: 074-7779988</div>'+
+          '<div>עוסק מורשה: 516249547</div><div>מספר תיק במע"מ: 516249547</div>'+
+          '<div>מס. תיק ניכויים: 936327006</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="pv-lh-brand">'+
+        '<div class="pv-lh-logo">IRON</div>'+
+        '<div class="pv-lh-fitness" aria-hidden="true"><span>F</span><span>I</span><span>T</span><span>N</span><span>E</span><span>S</span><span>S</span></div>'+
+        '<div class="pv-lh-web"><div>Website:&nbsp;www.IronFitness.co.il</div>'+
+          '<div>E-mail:&nbsp;office@ironfitness.co.il</div></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="pv-lh-rule"></div>'+
+    '<div class="pv-lh-recip">'+
+      '<div class="pv-lh-cust" id="pv-pl-cust"'+(cust? '' : ' hidden')+'>'+
+        '<div class="pv-lh-custlabel">לכבוד:</div>'+
+        '<div class="pv-lh-custname" id="pv-pl-cname">'+esc(cust)+'</div>'+
+      '</div>'+
+      '<div class="pv-lh-dates">'+
+        '<div>תאריך המחירון: '+today+'</div>'+
+        '<div>תאריך הדפסה: '+today+'</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="pv-lh-title">מחירון '+esc(g)+'</div>'+
+  '</div>';
+}
+
 function renderClient(m){
   const g = state.allGroups? (GROUPS.includes('מסחרי')?'מסחרי':GROUPS[0]) : state.group;
   /* סעיף 14.3 — רכיב פנימי אינו מוצג במחירון ללקוח, גם אם לא הוחרג ידנית. */
@@ -8595,13 +8664,28 @@ function renderClient(m){
   const cats = {};
   rows.forEach(p=>{ (cats[p.cat] ||= []).push(p); });
   const round = plRound;
-  const rf = v=> round<=1? fmt(v) : fmt(Math.ceil(v/round)*round, 0);
-  const today = new Date().toLocaleDateString('he-IL');
+  /* העיגול חל על המחיר כולל מע״מ — המספר שהלקוח משלם — וה-ex נגזר ממנו.
+     עיגול של כל אחד בנפרד היה נותן שתי עמודות שאינן מתיישבות (ex×1.18≠inc),
+     וזה בדיוק מה שלקוח בודק. */
+  const rnd = v=> (v==null? null : (round<=1? v : Math.ceil(v/round)*round));
+  /* עמודת ההנחה מופיעה רק כשיש הנחה כלשהי במחירון הזה — רומן ביקש
+     במפורש "הנחה רק במידה ויש במחירון". */
+  const anyDisc = rows.some(p=>discOf(p.sku,g)!=null);
   let body='';
   Object.keys(cats).forEach(c=>{
-    body += '<div class="pv-plcat"><h4>'+esc(c)+'</h4><table><thead><tr><th class="pv-imgtd">תמונה</th><th style="width:110px">מק״ט</th><th>מוצר</th><th style="width:130px">מחיר כולל מע״מ</th></tr></thead><tbody>';
+    body += '<div class="pv-plcat"><h4>'+esc(c)+'</h4><table><thead><tr>'+
+      '<th class="pv-imgtd">תמונה</th><th style="width:104px">מק״ט</th><th>מוצר</th>'+
+      (anyDisc? '<th class="pv-pldisc" style="width:72px">הנחה</th>' : '')+
+      '<th class="pv-plex" style="width:118px">מחיר ללא מע״מ</th>'+
+      '<th style="width:128px">מחיר כולל מע״מ</th></tr></thead><tbody>';
     cats[c].forEach(p=>{
-      body += '<tr><td class="pv-imgtd">'+imgCell(p)+'</td>'+skuTd(p.sku)+'<td>'+esc(p.name)+'</td><td>'+rf(finalInc(p.sku,g))+' ₪</td></tr>';
+      const inc = rnd(finalInc(p.sku,g));
+      const ex  = (inc==null)? null : inc/(1+vatEff());
+      const d   = discOf(p.sku,g);
+      body += '<tr><td class="pv-imgtd">'+imgCell(p)+'</td>'+skuTd(p.sku)+'<td>'+esc(p.name)+'</td>'+
+        (anyDisc? '<td class="pv-pldisc">'+(d==null? '—' : pc(d))+'</td>' : '')+
+        '<td class="pv-plex">'+(ex==null? '' : fmt(ex)+' ₪')+'</td>'+
+        '<td>'+(inc==null? '' : fmt(inc)+' ₪')+'</td></tr>';
     });
     body += '</tbody></table></div>';
   });
@@ -8618,13 +8702,7 @@ function renderClient(m){
     '<span class="pv-hint" style="margin:0">הסינון והחיפוש בסרגל העליון חלים גם כאן — סנן לפני הדפסה.</span>'+
   '</div>'+
   '<div class="pv-pricelist">'+
-    '<div class="pv-plhead">'+
-      '<div>'+
-        '<div class="pv-pllogo">IRON FITNESS<small>ציוד כושר מקצועי</small></div>'+
-        '<div class="pv-pltitle" style="display:flex; align-items:center; gap:8px">מחירון '+gtag(g)+'<span id="pv-pl-cname" style="font-weight:700">'+(plCName? ' — '+esc(plCName):'')+'</span></div>'+
-      '</div>'+
-      '<div class="pv-meta">תאריך: '+today+'<br>המחירים כוללים מע״מ ('+pc(S.vat)+')<br>'+rows.length+' פריטים</div>'+
-    '</div>'+
+    plHead(g)+
     body+
     '<div class="pv-plfoot">המחירים בתוקף למועד הפקת המחירון בלבד וניתנים לשינוי ללא הודעה מוקדמת · אספקה, הובלה והתקנה יתומחרו בנפרד · איירון פיטנס</div>'+
   '</div>';
@@ -8633,12 +8711,14 @@ function renderClient(m){
 PV.setCName = v => {
   plCName = v;
   const t = document.getElementById('pv-pl-cname');
-  if(t) t.textContent = plCName? ' — '+plCName : '';
+  const b = document.getElementById('pv-pl-cust');
+  const s = (plCName||'').trim();
+  if(t) t.textContent = s;
+  if(b){ if(s) b.removeAttribute('hidden'); else b.setAttribute('hidden',''); }
 };
 PV.setRound = v => { plRound = parseFloat(v)||1; renderBody(); };
 PV.print = () => {
-  const cn = document.getElementById('pv-pl-cname');
-  if(cn) cn.textContent = plCName? ' — '+plCName : '';
+  PV.setCName(plCName);
   document.body.classList.add('pv-print');
   const off = ()=>{ document.body.classList.remove('pv-print'); window.removeEventListener('afterprint', off); };
   window.addEventListener('afterprint', off);
@@ -10155,7 +10235,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'prcoff2-2026-08-14a';
+const BUILD_ID = 'plhead-2026-08-14a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){

@@ -1015,17 +1015,18 @@
      פנימי" 48. הכלל הזה (0,2,1) מחזיר אותן לשורה אחת. */
   .form-grid > .form-sep{ flex-direction:row; align-items:center; flex-wrap:wrap; gap:var(--sp-2); }
   input.ro,select.ro,textarea.ro{ background:#eef0f2 !important; color:#6a7178 !important; border-color:#e2e5e8 !important; cursor:not-allowed; }
-  /* 6.72.6 — בתוך form-grid, input שנעול הוא **נתון מפריוריטי** ולא פקד
-     שנחסם. לכן הוא מוצג כטקסט: בלי מסגרת, בלי רקע, בכהות מלאה. זה גם
-     מקצר את הבלוק בכ-30% וגם מפסיק להבטיח עריכה שלא קיימת. */
-  .form-grid input.ro{ background:transparent !important; border:none !important; color:var(--ink-1) !important; font-weight:600; padding:2px 0 !important; min-height:22px; cursor:default; }
+  /* 6.72.7 — הרקע האפור על נתוני פריוריטי אינו קישוט: רומן קורא ממנו
+     **מאיפה הנתון הגיע**, ומבחין כך בין מה שמגיע מה-ERP למה שנערך אצלנו.
+     ב-6.72.6 הסרתי אותו יחד עם המסגרת והוצאתי מידע. הוא חוזר.
+     המסגרת לא חוזרת — היא זו שגרמה לשדה להיראות כתיבת עריכה שמזמינה
+     קליק. רקע בלי מסגרת קורא כ"שדה מידע". הריפוד נשאר צפוף (26px לשורה
+     במקום 33px המקוריים) והטקסט כהה ובמשקל 600, כי הנתון הוא העיקר. */
+  .form-grid input.ro{ background:#eef1f4 !important; border:1px solid transparent !important; border-radius:var(--r-md); color:#334155 !important; font-weight:600; padding:5px 9px !important; min-height:26px; cursor:default; }
   /* ערך ריק מוצג כ-"—" חיוור ובמשקל רגיל, כדי שייקרא כ"אין נתון" ולא
-     ייראה כמו ערך אמיתי שסתם קצר. */
+     ייראה כמו ערך אמיתי שסתם קצר. הרקע נשאר — גם "אין נתון" הוא מידע
+     שמגיע מפריוריטי. */
   .form-grid input.ro:placeholder-shown{ color:var(--ink-3) !important; font-weight:400; }
-  /* .is-empty מוסיף רקע אפרפר — הוא נועד לסמן שדה עריכה ריק, ועל שדה
-     קריאה-בלבד בלי מסגרת הוא נראה ככתם. הצבע החיוור למעלה כבר עושה את
-     העבודה. */
-  .form-grid input.ro.is-empty{ background:transparent !important; }
+  .form-grid input.ro.is-empty{ background:#eef1f4 !important; }
   .src-tag{ background:#eef0f2; color:#8a9199; border-radius:99px; padding:0 7px; font-size:10px; font-weight:700; margin-inline-start:0; }
   .dialog-box{ background:#f6f8fa; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:13px; line-height:1.5; max-height:120px; overflow:auto; }
   .dialog-box .dialog-empty{ color:#94a3b8; }
@@ -1540,7 +1541,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.72.6</div>
+      <div class="ver">גרסה 6.72.7</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1659,7 +1660,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.72.6</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.72.7</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9659,7 +9660,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'rocompact-2026-08-14a';
+const BUILD_ID = 'robg-2026-08-14a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){

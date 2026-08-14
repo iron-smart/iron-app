@@ -1561,7 +1561,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.72.9</div>
+      <div class="ver">גרסה 6.73.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1680,7 +1680,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.72.9</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.73.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -6973,7 +6973,49 @@ const PV_CSS = `
   body.pv-print .pv-plcat h4{ background:none !important; color:var(--pv-brand) !important; border-bottom:2px solid var(--pv-brand); border-radius:0; padding:6px 0 }
   body.pv-print .pv-pricelist{ print-color-adjust:exact; -webkit-print-color-adjust:exact }
   body.pv-print .pv-plcat tr{ break-inside:avoid }
-}`;
+}
+
+/* ---- כרטיס המק״ט (6.73.0) ----
+   הכרטיס נבנה בתוך #tab-prc ולא ב-body, כדי שכל כללי ה-#tab-prc .pv-* יחולו
+   על פאנל ה-BOM ופאנל מדרגות הייצור שנכנסים לתוכו כמות שהם. .modal הוא
+   position:fixed, ולכן מיקומו ב-DOM אינו משנה את מיקומו על המסך. */
+#pv-card .sheet{ max-width:min(1020px,96vw); width:100%; padding:0; max-height:94vh; display:flex; flex-direction:column; overflow:hidden }
+#pv-card .pvc-head{ display:flex; gap:11px; align-items:center; padding:12px 16px; background:var(--pv-brand); color:#fff }
+#pv-card .pvc-ttl{ display:flex; flex-direction:column; min-width:0 }
+#pv-card .pvc-ttl b{ font-size:15px; direction:ltr; text-align:start }
+#pv-card .pvc-ttl span{ font-size:12.5px; opacity:.85; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+#pv-card .pvc-off{ background:var(--pv-red); color:#fff; border-radius:20px; padding:4px 11px; font-size:11.5px; font-weight:700; white-space:nowrap }
+#pv-card .pvc-x{ margin-inline-start:auto; background:transparent; border:0; color:#fff; font-size:19px; line-height:1; padding:4px 8px; cursor:pointer; font-family:inherit }
+#pv-card .pvc-tabs{ display:flex; gap:4px; padding:8px 12px 0; background:#f1f5f9; border-bottom:1px solid var(--pv-line); overflow-x:auto }
+#pv-card .pvc-tab{ flex:none; background:transparent; border:0; border-bottom:3px solid transparent; padding:9px 14px; font-size:13px; font-weight:600; color:var(--pv-ink2); white-space:nowrap; cursor:pointer; font-family:inherit }
+#pv-card .pvc-tab:hover{ color:var(--pv-ink) }
+#pv-card .pvc-tab.on{ color:var(--pv-brand); border-bottom-color:var(--pv-brand); font-weight:800 }
+#pv-card .pvc-tab i{ font-style:normal; background:var(--pv-line); color:var(--pv-ink2); border-radius:20px; padding:1px 7px; font-size:11px; margin-inline-start:5px }
+#pv-card .pvc-tab.on i{ background:var(--pv-brand); color:#fff }
+#pv-card .pvc-body{ flex:1 1 auto; overflow:auto; padding:16px 18px; background:#fff }
+#pv-card .pvc-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px }
+#pv-card .pvc-f.span2{ grid-column:1/-1 }
+#pv-card .pvc-f label{ display:block; font-size:12px; font-weight:700; color:var(--pv-ink2); margin-bottom:4px }
+#pv-card .pvc-f input, #pv-card .pvc-f select, #pv-card .pvc-f textarea{ width:100%; border:1px solid var(--pv-line); border-radius:9px; padding:8px 10px; font-size:13.5px; color:#334155; background:#fff; font-family:inherit }
+#pv-card .pvc-f input:focus, #pv-card .pvc-f select:focus, #pv-card .pvc-f textarea:focus{ border-color:var(--pv-brand); outline:none; box-shadow:0 0 0 3px rgba(0,45,72,.10) }
+#pv-card .pvc-f input[disabled], #pv-card .pvc-f select[disabled], #pv-card .pvc-f textarea[disabled]{ background:#f8fafc; color:#94a3b8 }
+#pv-card .pvc-f .pv-step input{ width:auto }
+#pv-card .pvc-h{ display:block; margin-top:5px; font-size:11.5px; color:var(--pv-muted); line-height:1.5 }
+#pv-card .pvc-lists{ display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:9px }
+#pv-card .pvc-list{ display:flex; align-items:center; gap:8px; border:1px solid var(--pv-line); border-radius:10px; padding:10px 12px; font-size:13px; cursor:pointer }
+#pv-card .pvc-list:hover{ background:#f8fafc }
+#pv-card .pvc-lp{ margin-inline-start:auto; color:var(--pv-muted); font-size:12px; font-variant-numeric:tabular-nums }
+#pv-card .pvc-foot{ display:flex; gap:9px; align-items:center; flex-wrap:wrap; padding:11px 16px; border-top:1px solid var(--pv-line); background:#f8fafc }
+#pv-card .pvc-foot .pv-hint{ flex:1 1 220px; min-width:0; margin:0 }
+#pv-card .pv-bomedit, #pv-card .pv-mfg{ border:0; padding:0; margin:0; background:transparent }
+#pv-card .pv-stepb.wide{ width:auto; padding:0 11px; font-size:12px }
+/* תיבת התמונה בכותרת נמתחה לגובה השורה — הסגנון הכללי שלה מיועד לתא
+   בטבלה, לא לפריט flex. כאן היא מקובעת. */
+#pv-card .pvc-head .pv-imgbox{ width:44px; height:44px; min-width:44px; min-height:44px; flex:0 0 auto; align-self:center; border-color:rgba(255,255,255,.35) }
+#pv-card .pvc-head .pv-imgbox.empty{ background:rgba(255,255,255,.12); color:rgba(255,255,255,.6); border-style:dashed }
+/* השורה כולה לחיצה, ולכן היא צריכה להיראות לחיצה. */
+#tab-prc tr.pv-clk{ cursor:pointer }
+`;
 
 function pvInjectCss(){
   if(document.getElementById('pv-css')) return;
@@ -7022,9 +7064,19 @@ const bomByParent = {};
    state.group נשאר כברירת מחדל למחירון הבודד ברגע שיוצאים מהמאגר. */
 let state = { group:'מסחרי', allGroups:false, catalog:true };
 let PRC_LOADED = false, prcLoading = false;
-/* dbBomSku הוא קבוצה ולא ערך יחיד, כדי שאפשר יהיה להשוות שני עצים פתוחים
-   זה מול זה בתוך אותו מסך. */
-let dbEditSku=null, dbBomSku=new Set(), dbAddOpen=false, dbArm=null, afDraft=null;
+/* dbEditSku הוא המק״ט שכרטיס המק״ט פתוח עליו. dbBomSku ו-mfgOpen נמחקו
+   ב-6.73.0 יחד עם שורות ה-BOM והייצור שנפתחו בתוך הטבלה — שתיהן עברו
+   ללשוניות בכרטיס. */
+let dbEditSku=null, dbAddOpen=false, dbArm=null, afDraft=null;
+/* הלשונית הפתוחה בכרטיס נשמרת בין רינדורים, אחרת הוספת רכיב ל-BOM הייתה
+   מקפיצה את המשתמש בחזרה ללשונית הראשונה. */
+let cardTab='main';
+/* מק״טים שסטטוסם בפריוריטי "לא פעיל" — מוסתרים מהמאגר ומכל המחירונים
+   (רומן, 14/08/2026). הם נשארים ב-DATA.products ולא נמחקים ממנו, כדי שעץ
+   מוצר שמכיל אותם כרכיב ימשיך להתמחר נכון; ההסתרה היא בתצוגה בלבד. */
+let ERP_OFF = new Set();
+const isErpOff = sku => ERP_OFF.has(String(sku));
+function erpOffCount(){ let n=0; for(let i=0;i<DATA.products.length;i++) if(isErpOff(DATA.products[i].sku)) n++; return n; }
 let plRound=1, plCName='';
 
 const GROUP_COLORS = {
@@ -7150,8 +7202,8 @@ async function prcLoad(force){
   prcLoading = true;
   try{
     const o = sb.schema('ord');
-    const [it, bm, st, gr, mx, ov, ex, tr, dc, pt] = await Promise.all([
-      o.from('prc_item_ext').select('partname,name,cat,sub,source,cost_usd,cost_ils,load_override,prc_status,notes,img,img_full,sort,v13_updated,item_role,reviewed_at,reviewed_by,changed_prc_at,changed_prc_by,changed_site_at,changed_site_by,mfg_qty').order('sort',{ascending:true}).limit(5000),
+    const [it, bm, st, gr, mx, ov, ex, tr, dc, pt, ia] = await Promise.all([
+      o.from('prc_item_ext').select('partname,name,cat,sub,source,cost_usd,cost_ils,load_override,prc_status,notes,img,img_full,sort,v13_updated,item_role,reviewed_at,reviewed_by,changed_prc_at,changed_prc_by,changed_site_at,changed_site_by,mfg_qty,price_updated_on').order('sort',{ascending:true}).limit(5000),
       o.from('prc_bom').select('parent,child,qty').limit(5000),
       o.from('prc_settings').select('*').eq('id',1).maybeSingle(),
       o.from('prc_groups').select('key,margin,descr,colour,sort').order('sort',{ascending:true}),
@@ -7161,7 +7213,9 @@ async function prcLoad(force){
       o.from('prc_mfg_tiers').select('partname,qty,prod_cost,paint_sku,paint_cost,note').limit(20000),
       o.from('prc_discounts').select('partname,grp,discount').limit(20000),
       /* רשימת מק״טי הצבע/גלוון מפריוריטי — לתיעוד המדרגה בלבד. */
-      o.from('inv_items').select('partname,partdes').eq('family','גלוון וצבע').limit(500)
+      o.from('inv_items').select('partname,partdes').eq('family','גלוון וצבע').limit(500),
+      /* סטטוס פריוריטי — נמשכים רק ה"לא פעיל", כדי להסתיר אותם מהתצוגה. */
+      o.from('inv_items').select('partname').eq('erp_status','לא פעיל').limit(5000)
     ]);
     const bad = [it,bm,st,gr,mx,ov,ex,tr,dc].find(r=>r && r.error);
     if(bad) throw bad.error;
@@ -7206,7 +7260,8 @@ async function prcLoad(force){
         revAt:(r.reviewed_at||null),      revBy:(r.reviewed_by||''),
         chpAt:(r.changed_prc_at||null),   chpBy:(r.changed_prc_by||''),
         chsAt:(r.changed_site_at||null),  chsBy:(r.changed_site_by||''),
-        mfgQty:(r.mfg_qty==null? null : Number(r.mfg_qty))
+        mfgQty:(r.mfg_qty==null? null : Number(r.mfg_qty)),
+        pupd:(r.price_updated_on||'')
       };
       if(r.img) p.img = r.img;
       if(r.img_full) p.imgFull = r.img_full;
@@ -7230,6 +7285,10 @@ async function prcLoad(force){
     (ex.data||[]).forEach(r=>{ (DATA.excluded[r.grp] ||= {})[r.partname] = true; });
     DATA.discounts = {};
     ((dc && dc.data)||[]).forEach(r=>{ (DATA.discounts[r.partname] ||= {})[r.grp] = Number(r.discount); });
+
+    /* נקבע אחרי DATA.products, כדי שהמונה בפס העליון יידע כמה מוסתרים.
+       שגיאה כאן לא אמורה להשבית את המסך — במקרה כזה פשוט לא מסתירים. */
+    ERP_OFF = new Set(((ia && ia.data)||[]).map(x=>String(x.partname)));
 
     rebuildIndexes();
     PRC_LOADED = true;
@@ -7398,7 +7457,9 @@ const SORT_ACC = {
   site: p=>sortNum(sitePrice(p.sku)),
   rev:  p=>String(p.revAt||''),
   chp:  p=>String(p.chpAt||''),
-  chs:  p=>String(p.chsAt||'')
+  chs:  p=>String(p.chsAt||''),
+  notes:p=>String(p.notes||''),
+  pupd: p=>String(p.pupd||'')
 };
 function sortNum(v){ return (v==null || v===undefined || isNaN(Number(v)))? -Infinity : Number(v); }
 function sortVal(p, key, g){
@@ -7472,6 +7533,17 @@ function markTd(p, m, ed){
       ' data-fk="mk:'+esc(p.sku)+':'+m.k+'" onchange="prcV13.setMark(\''+q1(p.sku)+'\',\''+m.k+'\',this.checked)" title="'+(on? m.on+revDate(v)+(p[m.by]? ' על ידי '+esc(p[m.by]):'') : m.off)+'">'+
     (on? '<span class="pv-revd '+m.cls+'">'+revDate(v)+'</span>' : '')+
   '</td>';
+}
+/* הערות ותאריך עדכון מחיר (6.73.0, רומן) — שתיהן מוצגות כברירת מחדל וניתנות
+   לכיבוי מתפריט העמודות. תאריך עדכון המחיר נשמר בעמודה נפרדת ולא ב-v13_updated,
+   שנדרסת בכל שמירה של המק״ט ולכן אינה יכולה לתעד עדכון מחיר. */
+function notesTh(){
+  return (colOn('pupd')?  soTh('pupd','עודכן מחיר','pv-num') : '')+
+         (colOn('notes')? soTh('notes','הערות','pv-name')    : '');
+}
+function notesTd(p){
+  return (colOn('pupd')?  '<td class="pv-num pv-catcell">'+(p.pupd? esc(revDate(p.pupd)) : '—')+'</td>' : '')+
+         (colOn('notes')? '<td class="pv-catcell" style="white-space:normal;text-align:start;max-width:220px">'+esc(p.notes||'')+'</td>' : '');
 }
 /* שלוש העמודות נבנות תמיד יחד, כדי שספירת התאים בכל הטבלאות תישאר מסונכרנת. */
 function revTh(ed){ return colOn('marks')? MARKS.map(m=>markTh(m, ed)).join('') : ''; }
@@ -7555,6 +7627,9 @@ function filteredProducts(){
   const ocEl = document.getElementById('pv-onlycost');
   const oc = ocEl? ocEl.checked : false;
   return DATA.products.filter(p=>{
+    /* מק״ט ש"לא פעיל" בפריוריטי אינו מוצג בשום תצוגה — כולן עוברות דרך
+       כאן, כולל הייצוא ל-CSV (רומן, 14/08/2026). */
+    if(isErpOff(p.sku)) return false;
     if(st && p.status!==st) return false;
     if(md && !modeMatch(p, md)) return false;
     if(fc && p.cat!==fc) return false;
@@ -7658,6 +7733,8 @@ function buildColsMenu(){
     '<div class="sep"></div><h6>עמודות נוספות</h6>'+
     '<label><input type="checkbox" '+(colOn('site')?'checked':'')+' onchange="prcV13.colOther(\'site\',this.checked)">מחיר אתר כיום</label>'+
     '<label><input type="checkbox" '+(colOn('marks')?'checked':'')+' onchange="prcV13.colOther(\'marks\',this.checked)">נסקר · שונה במחירון · שונה באתר</label>'+
+    '<label><input type="checkbox" '+(colOn('pupd')?'checked':'')+' onchange="prcV13.colOther(\'pupd\',this.checked)">תאריך עדכון מחיר</label>'+
+    '<label><input type="checkbox" '+(colOn('notes')?'checked':'')+' onchange="prcV13.colOther(\'notes\',this.checked)">הערות</label>'+
     '<button onclick="prcV13.colAll()">הצג את כל העמודות</button>';
 }
 
@@ -7797,6 +7874,7 @@ function renderBody(){
     if(_n){ _n.scrollTop = _t; _n.scrollLeft = _l; }
   }
   try{ window.scrollTo(_sx, _sy); }catch(_e){}
+  edRefresh();
   focusRestore(_f);
 }
 /* איתור שורה לפי data-sku ולא לפי השוואת טקסט בתא — טקסט התא עלול להיות
@@ -7834,7 +7912,9 @@ function renderPricing(m){
   const subs=[...new Set(DATA.products.map(p=>p.sub).filter(Boolean))];
   let top='<div class="pv-dbbar">'+
     (ed? '<button class="pv-btn" onclick="prcV13.toggleAdd()">＋ הוספת מק״ט חדש</button>':'')+
-    '<span class="pv-hint" style="margin:0">סה״כ במאגר: <b>'+DATA.products.length+'</b> מק״טים · כל שינוי נשמר במסד מיד ✓ — "שמירת גיבוי" מפיק קובץ להעברה ולארכיון</span>'+
+    '<span class="pv-hint" style="margin:0">סה״כ במאגר: <b>'+(DATA.products.length-erpOffCount())+'</b> מק״טים'+
+      (erpOffCount()? ' · <b title="סטטוסם בפריוריטי הוא לא פעיל — מוסתרים מהמאגר ומכל המחירונים">'+erpOffCount()+' מוסתרים (לא פעילים בפריוריטי)</b>' : '')+
+      ' · כל שינוי נשמר במסד מיד ✓ — "שמירת גיבוי" מפיק קובץ להעברה ולארכיון</span>'+
   '</div>'+
   '<datalist id="pv-dlCats">'+cats.map(c=>'<option value="'+esc(c)+'">').join('')+'</datalist>'+
   '<datalist id="pv-dlSubs">'+subs.map(s=>'<option value="'+esc(s)+'">').join('')+'</datalist>'+
@@ -7866,14 +7946,13 @@ function renderPricing(m){
     html = '<div class="pv-tblwrap pv-frz'+(dense?' pv-dense':'')+'" style="border-top:3px solid var(--pv-dark)"><table><thead><tr>'+
       '<th class="pv-rn" title="מספר שורה בתצוגה הנוכחית">#</th>'+
       '<th class="pv-imgtd">תמונה</th>'+soTh('sku','מק״ט')+soTh('name','שם מוצר','pv-name')+soTh('cat','קטגוריה · תת קטגוריה')+soTh('src','מקור')+
-      soTh('cost','עלות מקור','pv-num')+soTh('ca','עלות בש״ח','pv-num')+soTh('st','סטטוס')+
+      soTh('cost','עלות מקור','pv-num')+soTh('ca','עלות בש״ח','pv-num')+soTh('st','סטטוס')+notesTh()+
       shownGroups().map(x=>'<th style="border-bottom:3px solid '+gcol(x)+'"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+gcol(x)+';margin-inline-end:4px"></span>'+esc(x)+'</th>').join('')+
       revTh(ed)+'<th>פעולות</th></tr></thead><tbody>';
     rows.forEach((p,i)=>{
       const ca=costAfter(p.sku);
       if(ca==null) noCost++; else priced++;
-      if(dbEditSku===p.sku && ed){ html += catEditRow(p, i); return; }
-      html+='<tr data-sku="'+esc(p.sku)+'" class="'+rowCls(p)+'">'+
+      html+='<tr data-sku="'+esc(p.sku)+'" class="pv-clk '+rowCls(p)+'" onclick="prcV13.rowClick(event,\''+q1(p.sku)+'\')">'+
         '<td class="pv-rn">'+(i+1)+'</td>'+
         '<td class="pv-imgtd">'+imgCell(p)+'</td>'+
         ''+skuTd(p.sku)+'<td class="pv-name">'+esc(p.name)+'</td>'+
@@ -7881,12 +7960,10 @@ function renderPricing(m){
         '<td><span class="pv-src '+(SRC_CLS[p.source]||'')+'">'+esc(p.source||'—')+'</span>'+roleTag(p)+'</td>'+
         '<td class="pv-num pv-cost">'+costSrcCell(p)+'</td>'+
         '<td class="pv-num pv-cost" '+(p.loadOv?'title="מקדם העמסה ידני: '+p.loadOv+'"':'')+'>'+(ca==null?'<span class="pv-nocost">—</span>':fmt(ca)+' ₪'+(p.loadOv?' <span style="color:var(--pv-amber)">*</span>':''))+'</td>'+
-        '<td style="font-size:12px">'+esc(p.status)+'</td>'+
+        '<td style="font-size:12px">'+esc(p.status)+'</td>'+notesTd(p)+
         shownGroups().map(x=>'<td><input type="checkbox" style="width:15px;height:15px;cursor:pointer;accent-color:'+gcol(x)+'" '+(isIncluded(p.sku,x)?'checked':'')+' '+(ed?'':'disabled')+' onchange="prcV13.toggleInclude(\''+q1(p.sku)+'\',\''+q1(x)+'\')" title="כלול במחירון '+esc(x)+'"></td>').join('')+
         revTd(p, ed)+
         '<td style="white-space:nowrap">'+rowActions(p, ed)+'</td></tr>';
-      if(dbBomSku.has(p.sku)) html+=bomEditor(p, ed);
-      if(mfgOpen.has(p.sku))  html+=mfgEditor(p, ed);
     });
     html+='</tbody></table></div>';
   } else if(state.allGroups){
@@ -7904,7 +7981,7 @@ function renderPricing(m){
     rows.forEach((p,i)=>{
       const ca=costAfter(p.sku);
       if(ca==null) noCost++; else priced++;
-      html+='<tr data-sku="'+esc(p.sku)+'" class="'+rowCls(p)+'"><td class="pv-rn">'+(i+1)+'</td><td class="pv-imgtd">'+imgCell(p)+'</td>'+skuTd(p.sku)+'<td class="pv-name">'+esc(p.name)+'</td><td class="pv-catcell">'+esc(p.cat)+(p.sub?' · '+esc(p.sub):'')+'</td>'+
+      html+='<tr data-sku="'+esc(p.sku)+'" class="pv-clk '+rowCls(p)+'" onclick="prcV13.rowClick(event,\''+q1(p.sku)+'\')"><td class="pv-rn">'+(i+1)+'</td><td class="pv-imgtd">'+imgCell(p)+'</td>'+skuTd(p.sku)+'<td class="pv-name">'+esc(p.name)+'</td><td class="pv-catcell">'+esc(p.cat)+(p.sub?' · '+esc(p.sub):'')+'</td>'+
         '<td class="pv-num pv-cost">'+(ca==null?'<span class="pv-nocost">חסר עלות</span>':fmt(ca)+' ₪')+'</td>'+
         (colOn('site')? siteCmpCell(p.sku) : '')+
         shownDisc().map(g=>discCell(p, g, ed)).join('')+
@@ -7917,38 +7994,17 @@ function renderPricing(m){
       '<th class="pv-rn" title="מספר שורה בתצוגה הנוכחית">#</th>'+
       '<th class="pv-imgtd">תמונה</th>'+soTh('sku','מק״ט')+soTh('name','שם מוצר','pv-name')+soTh('cat','קטגוריה · תת קטגוריה')+soTh('src','מקור')+
       soTh('cost','עלות מקור','pv-num')+soTh('ca','עלות בש״ח','pv-num')+
-      soTh('mg','% מרווח','pv-num')+soTh('pex','מחיר ללא מע״מ','pv-num')+soTh('pinc','מחיר כולל מע״מ','pv-num')+soTh('mult','מכפלה','pv-num')+soTh('st','סטטוס')+revTh(ed)+'<th>פעולות</th>'+
+      soTh('mg','% מרווח','pv-num')+soTh('pex','מחיר ללא מע״מ','pv-num')+soTh('pinc','מחיר כולל מע״מ','pv-num')+soTh('mult','מכפלה','pv-num')+soTh('st','סטטוס')+notesTh()+revTh(ed)+'<th>פעולות</th>'+
       '</tr></thead><tbody>';
     rows.forEach((p,i)=>{
-      const editing = (dbEditSku===p.sku) && ed;
       const ca=costAfter(p.sku);
       const mg=marginFor(p.sku,g);
       const ex=priceEx(p.sku,g), inc=priceInc(p.sku,g), mult=multiple(p.sku,g);
       if(inc!=null) priced++; if(ca==null) noCost++;
-      if(editing){
-        html+='<tr class="pv-edrow">'+
-          '<td class="pv-rn">'+(i+1)+'</td>'+
-          '<td class="pv-imgtd">'+imgCell(p)+'</td>'+
-          ''+skuTd(p.sku)+''+
-          '<td class="pv-name"><span class="pv-edf"><i>שם מוצר</i><input class="pv-edin wide" id="pv-ed-name" value="'+esc(p.name)+'" placeholder="שם מוצר"></span></td>'+
-          '<td><span class="pv-edf"><i>קטגוריה</i><input class="pv-edin mid" id="pv-ed-cat" list="pv-dlCats" value="'+esc(p.cat)+'"></span>'+
-            '<span class="pv-edf" style="margin-top:5px"><i>תת קטגוריה</i><input class="pv-edin mid" id="pv-ed-sub" list="pv-dlSubs" value="'+esc(p.sub)+'"></span></td>'+
-          '<td><span class="pv-edf"><i>מקור</i><select class="pv-edin mid" id="pv-ed-src" onchange="prcV13.srcChanged()">'+SRC_LIST.map(s=>'<option '+(p.source===s?'selected':'')+'>'+s+'</option>').join('')+'</select></span></td>'+
-          '<td class="pv-num"><span class="pv-edf"><i>'+(p.source===SRC_IMPORT?'עלות ב-$':'עלות ב-₪')+'</i><input class="pv-edin narrow" id="pv-ed-cost" type="number" step="0.01" value="'+(costLocked(p)?'':(p.source===SRC_IMPORT? (p.cost??'') : (p.costILS??'')))+'" '+(treeKids(p.sku)?'disabled title="מחושב מעץ המוצר"':(mfgCostOf(p)!=null?'disabled title="מחושב ממדרגת הייצור שנבחרה"':''))+'></span></td>'+
-          '<td class="pv-num"><span class="pv-edcalc" title="עלות אחרי מקדם ההעמסה — מחושבת, לא נערכת כאן">'+(ca==null?'—':fmt(ca)+' ₪')+'</span></td>'+
-          '<td class="pv-num pv-cost">'+(mg.v==null?'—':pc(mg.v))+'</td>'+
-          '<td class="pv-num pv-cost">'+(ex==null?'':fmt(ex)+' ₪')+'</td>'+
-          '<td class="pv-num pv-cost">'+(inc==null?'':fmt(inc)+' ₪')+'</td>'+
-          '<td></td>'+
-          '<td><span class="pv-edf"><i>סטטוס</i><select class="pv-edin mid" id="pv-ed-st">'+['פעיל','בהמתנה','לא פעיל'].map(s=>'<option '+(p.status===s?'selected':'')+'>'+s+'</option>').join('')+'</select></span></td>'+
-          revBlank()+
-          '<td style="white-space:nowrap"><button class="pv-rowbtn primary" onclick="prcV13.saveEdit(\''+q1(p.sku)+'\')">שמור</button> <button class="pv-rowbtn" onclick="prcV13.setEdit(null)">ביטול</button></td></tr>'+edExtraRow(p);
-
-      } else {
         const badge = mg.src==='ov'?'<span class="pv-badge ov">ידני</span>'
                     : mg.src==='mx'?'<span class="pv-badge mx">קטגוריה</span>'
                     : '<span class="pv-badge df">כללי</span>';
-        html+='<tr data-sku="'+esc(p.sku)+'" class="'+rowCls(p)+'">'+
+        html+='<tr data-sku="'+esc(p.sku)+'" class="pv-clk '+rowCls(p)+'" onclick="prcV13.rowClick(event,\''+q1(p.sku)+'\')">'+
           '<td class="pv-rn">'+(i+1)+'</td>'+
           '<td class="pv-imgtd">'+imgCell(p)+'</td>'+
           ''+skuTd(p.sku)+'<td class="pv-name">'+esc(p.name)+'</td>'+
@@ -7961,11 +8017,9 @@ function renderPricing(m){
           '<td class="pv-num pv-price vat">'+(inc==null?'':fmt(inc)+' ₪')+'</td>'+
           '<td class="pv-num pv-mult">'+(mult==null?'':fmt(mult,2)+'×')+'</td>'+
           '<td style="font-size:12px">'+esc(p.status)+'</td>'+
+          notesTd(p)+
           revTd(p, ed)+
           '<td style="white-space:nowrap">'+rowActions(p, ed)+'</td></tr>';
-        if(dbBomSku.has(p.sku)) html+=bomEditor(p, ed);
-        if(mfgOpen.has(p.sku))  html+=mfgEditor(p, ed);
-      }
     });
     html+='</tbody></table></div>';
   }
@@ -7980,76 +8034,16 @@ function renderPricing(m){
   '</div>'+html;
 }
 
+/* רומן (14/08/2026): "רק מחיקה ושכפול אתה יכול להשאיר מצד שמאל, כי זו לחיצה
+   חד פעמית במילא שלא גוררת עריכה לאחריה." עריכה, BOM ומדרגות הייצור עברו
+   לכרטיס שנפתח בלחיצה על השורה, ולכן שלושת הכפתורים האלה ירדו מכאן. */
 function rowActions(p, ed){
-  /* גם בצפייה בלבד מציגים את מציג ה-BOM: הנתון קריא ממילא למי שעבר את
-     can_view('prc.pricing'), והמציג עצמו לא חושף כפתורי עריכה.
-     סעיף 14.2 — כפתור העץ זמין לכל מק״ט, לא רק למורכב.
-     מ-6.33.0 הוא נפתח גם למק״ט שהוא רק רכיב באחרים, כי "היכן בשימוש" יושב
-     עכשיו בראש הפאנל וזו הדרך היחידה להגיע אליו. */
-  const kids = treeKids(p.sku);
-  const usedIn = usedInList(p.sku).length;
-  const tiers = mfgList(p.sku).length;
-  const mfgBtn = ' <button class="pv-rowbtn" onclick="prcV13.setMfg(\''+q1(p.sku)+'\')" title="מדרגות מחיר ייצור לפי כמות — עלות ייצור, עלות צבע ובחירת המדרגה שמתמחרת">'+(tiers? 'ייצור ('+tiers+')' : 'ייצור')+'</button>';
-  if(!ed) return (kids || usedIn || tiers)
-    ? ((kids || usedIn)? '<button class="pv-rowbtn" onclick="prcV13.setBom(\''+q1(p.sku)+'\')" title="עץ המוצר והיכן הוא בשימוש">'+(kids? 'BOM ('+kids.length+')' : 'היכן בשימוש')+'</button>' : '')+(tiers? mfgBtn : '')
-    : '<span class="pv-catcell">—</span>';
-  return '<button class="pv-rowbtn" onclick="prcV13.setEdit(\''+q1(p.sku)+'\')">✎ עריכה</button>'+
-    ' <button class="pv-rowbtn" onclick="prcV13.setBom(\''+q1(p.sku)+'\')" title="עץ המוצר — כל מק״ט יכול להיות מורכב מרכיבים">'+(kids?'BOM ('+kids.length+')':'BOM')+'</button>'+
-    mfgBtn+
-    ' <button class="pv-rowbtn" onclick="prcV13.dupSku(\''+q1(p.sku)+'\')">שכפול</button>'+
+  if(!ed) return '<span class="pv-catcell">—</span>';
+  return '<button class="pv-rowbtn" onclick="prcV13.dupSku(\''+q1(p.sku)+'\')">שכפול</button>'+
     ' <button class="pv-rowbtn danger '+(dbArm===p.sku?'arm':'')+'" onclick="prcV13.delSku(\''+q1(p.sku)+'\')">'+(dbArm===p.sku?'לחץ לאישור':'מחיקה')+'</button>';
 }
 
-/* שורת ההמשך של העריכה — כאן יושבים השדות שצריכים הסבר או מקום, וכאן גם
-   כפתורי השמירה, כי הם היו קודם בעמודה האחרונה שדורשת גלילה אופקית. */
-function edExtraRow(p){
-  return '<tr class="pv-edrow2"><td colspan="99"><div class="pv-edx">'+
-    '<div class="acts">'+
-      '<button class="pv-btn" onclick="prcV13.saveEdit(\''+q1(p.sku)+'\')">שמירה</button>'+
-      '<button class="pv-btn ghost" onclick="prcV13.setEdit(null)">ביטול</button>'+
-    '</div><span class="sep"></span>'+
-    '<div class="f"><label>תפקיד הפריט</label>'+
-      '<select class="pv-edin mid" id="pv-ed-role">'+ROLE_LIST.map(s=>'<option '+((p.role||ROLE_SELL)===s?'selected':'')+'>'+s+'</option>').join('')+'</select>'+
-      '<small>"רכיב פנימי" לא יופיע במחירון הלקוח גם אם הוא משויך לכל המחירונים.</small></div>'+
-    '<div class="f"><label>מקדם העמסה (מכפיל את עלות הרכש)</label>'+
-      '<span class="pv-step">'+
-        '<button type="button" class="pv-stepb" onclick="prcV13.lovStep(-1)" title="הקטנה ב-0.01">−</button>'+
-        '<input class="pv-edin narrow" id="pv-ed-lov" type="number" step="0.01" min="0.5" max="5" oninput="prcV13.lovTag()" data-df="'+srcFactor(p).toFixed(2)+'" value="'+(p.loadOv!=null? Number(p.loadOv).toFixed(2) : srcFactor(p).toFixed(2))+'">'+
-        '<button type="button" class="pv-stepb" onclick="prcV13.lovStep(1)" title="הגדלה ב-0.01">+</button>'+
-        '<span class="pv-lovtag '+(p.loadOv!=null?'ov':'df')+'" id="pv-ed-lovtag">'+(p.loadOv!=null?'ידני':'לפי המקור')+'</span>'+
-      '</span>'+
-      '<small>המקדם מכפיל את עלות הרכש ומכסה מכס, שילוח, עמלות והוצאות נלוות — זה בדיוק ה"מקדם" שמופיע בעמודת "עלות בש״ח". '+
-        'ברירת המחדל לפי המקור ('+esc(p.source||'—')+') היא '+fmt(srcFactor(p),2)+'. '+
-        'שינוי כאן חל על המק״ט הזה בלבד ואינו משנה אף מוצר אחר; החזרה ל-'+fmt(srcFactor(p),2)+' מחזירה אותו לברירת המחדל של המקור.</small></div>'+
-    '<div class="f"><label>הערות</label><input class="pv-edin long" id="pv-ed-notes" value="'+esc(p.notes)+'"></div>'+
-    '<div class="f"><label>כתובת תמונה</label><input class="pv-edin long" id="pv-ed-img" value="'+esc(p.img||'')+'" style="direction:ltr;text-align:left" placeholder="https://..."></div>'+
-    '<div class="f"><label>תמונה מלאה</label><input class="pv-edin long" id="pv-ed-imgf" value="'+esc(p.imgFull||'')+'" style="direction:ltr;text-align:left" placeholder="https://..."></div>'+
-    '<div class="f" style="align-self:center"><small>שיוך למחירונים נעול בזמן עריכה — לסיים ואז לסמן בשורה.</small></div>'+
-  '</div></td></tr>';
-}
 
-/* סעיף 12 — עריכה בתוך השורה במסך "מאגר כללי": כל שדה מתחת לעמודה שלו,
-   המק״ט נשאר לקריאה בלבד, והשדות הארוכים יורדים לשורת המשך צרה. */
-function catEditRow(p, ix){
-  const tree = !!treeKids(p.sku);
-  const lockT = !tree && mfgCostOf(p)!=null;
-  const ca = costAfter(p.sku);
-  return '<tr class="pv-edrow">'+
-    '<td class="pv-rn">'+((ix==null?'':ix+1))+'</td>'+
-    '<td class="pv-imgtd">'+imgCell(p)+'</td>'+
-    skuTd(p.sku)+
-    '<td class="pv-name"><span class="pv-edf"><i>שם מוצר</i><input class="pv-edin wide" id="pv-ed-name" value="'+esc(p.name)+'" placeholder="שם מוצר"></span></td>'+
-    '<td><span class="pv-edf"><i>קטגוריה</i><input class="pv-edin mid" id="pv-ed-cat" list="pv-dlCats" value="'+esc(p.cat)+'"></span>'+
-      '<span class="pv-edf" style="margin-top:5px"><i>תת קטגוריה</i><input class="pv-edin mid" id="pv-ed-sub" list="pv-dlSubs" value="'+esc(p.sub)+'"></span></td>'+
-    '<td><span class="pv-edf"><i>מקור</i><select class="pv-edin mid" id="pv-ed-src" onchange="prcV13.srcChanged()">'+SRC_LIST.map(s=>'<option '+(p.source===s?'selected':'')+'>'+s+'</option>').join('')+'</select></span></td>'+
-    '<td class="pv-num"><span class="pv-edf"><i>'+(p.source===SRC_IMPORT?'עלות ב-$':'עלות ב-₪')+'</i><input class="pv-edin narrow" id="pv-ed-cost" type="number" step="0.01" value="'+((tree||lockT)?'':(p.source===SRC_IMPORT? (p.cost??'') : (p.costILS??'')))+'" '+(tree?'disabled title="מחושב מעץ המוצר"':(lockT?'disabled title="מחושב ממדרגת הייצור שנבחרה"':''))+'></span></td>'+
-    '<td class="pv-num"><span class="pv-edcalc" title="עלות אחרי מקדם ההעמסה — מחושבת, לא נערכת כאן">'+(ca==null?'—':fmt(ca)+' ₪')+'</span></td>'+
-    '<td><span class="pv-edf"><i>סטטוס</i><select class="pv-edin mid" id="pv-ed-st">'+['פעיל','בהמתנה','לא פעיל'].map(s=>'<option '+(p.status===s?'selected':'')+'>'+s+'</option>').join('')+'</select></span></td>'+
-    shownGroups().map(x=>'<td><input type="checkbox" style="width:15px;height:15px" '+(isIncluded(p.sku,x)?'checked':'')+' disabled title="לשינוי שיוך מחירון — יש לסיים את העריכה"></td>').join('')+
-    revBlank()+
-    '<td style="white-space:nowrap"><button class="pv-rowbtn primary" onclick="prcV13.saveEdit(\''+q1(p.sku)+'\')">שמור</button> <button class="pv-rowbtn" onclick="prcV13.setEdit(null)">ביטול</button></td>'+
-  '</tr>'+edExtraRow(p);
-}
 
 /* פאנל עץ מוצר — מימוש אחד שמשרת גם את עורך ה-BOM במאגר הכללי וגם את
    האקורדיון במסך עצי המוצר. כל בן שהוא בעצמו אב מקבל חץ משלו ונפתח רמה
@@ -8105,12 +8099,8 @@ function bomPanel(sku, path, ed, depth, head){
     ((kids.length && stored!=null)? '<div class="pv-hint" style="margin-top:6px">עלות שמורה בכרטיס (ערך ביקורת בלבד): '+fmt(stored)+' ₪ · פער מול חישוב העץ: '+diffTag(total,stored)+'</div>' : '')+
   '</div>';
 }
-function bomEditor(p, ed){
-  return '<tr class="pv-bomrow"><td colspan="99">'+bomPanel(p.sku, p.sku, ed, 0, true)+'</td></tr>';
-}
 
 /* ---------- פאנל מדרגות הייצור ---------- */
-let mfgOpen = new Set();
 function paintName(sku){
   if(!sku) return '';
   for(let i=0;i<PAINTS.length;i++) if(PAINTS[i].sku===sku) return PAINTS[i].name;
@@ -8185,9 +8175,6 @@ function mfgPanel(p, ed){
     '</div>' : '')+
     '<div class="pv-hint" style="margin-top:6px">עלות המדרגה = עלות ייצור + עלות צבע, ומקדם ההעמסה ('+fmt(lf,2)+') מוחל אחריה. עלות הצבע מוקלדת ידנית; מק״ט הצבע נשמר לתיעוד בלבד, כי בפריוריטי עלויות הצבע הן 0.</div>'+
   '</div>';
-}
-function mfgEditor(p, ed){
-  return '<tr class="pv-bomrow"><td colspan="99">'+mfgPanel(p, ed)+'</td></tr>';
 }
 
 /* ---------- עצי מוצר: עזרים שנשארו אחרי הקיפול ----------
@@ -8300,7 +8287,7 @@ PV.bnSearch = inp => {
   const q = String(inp.value||'').trim().toLowerCase();
   if(!q){ pop.hidden=true; pop.innerHTML=''; return; }
   const res = DATA.products.filter(p=>
-      p.sku!==parent && !have[p.sku] &&
+      p.sku!==parent && !have[p.sku] && !isErpOff(p.sku) &&
       (String(p.sku).toLowerCase().includes(q) || String(p.name||'').toLowerCase().includes(q)))
     .sort((a,b)=>{
       const ap = String(a.sku).toLowerCase().startsWith(q)?0:1, bp = String(b.sku).toLowerCase().startsWith(q)?0:1;
@@ -8355,7 +8342,10 @@ PV.lfGroup  = v => { state.group = v; renderBody(); };
 PV.openParent = sku => {
   window.PRC_VIEW = 'db';
   state.catalog = true; state.allGroups = false;
-  dbEditSku = null; dbBomSku.add(sku);
+  dbEditSku = null;
+  /* 6.73.0 — עץ המוצר עבר לכרטיס, ולכן הקפיצה לאב פותחת את כרטיסו על לשונית
+     עץ המוצר במקום לפרוס שורה נוספת בטבלה. */
+  cardTab = 'bom';
   const find = ()=>{
     const cells = document.querySelectorAll('#prc-body .pv-tblwrap td.pv-sku');
     for(let i=0;i<cells.length;i++) if(cells[i].textContent.trim() === String(sku).trim()) return cells[i];
@@ -8375,6 +8365,7 @@ PV.openParent = sku => {
     tr.classList.add('pv-flash');
     try{ c.scrollIntoView({block:'center'}); }catch(_e){}
     setTimeout(()=>{ try{ tr.classList.remove('pv-flash'); }catch(_e){} }, 1700);
+    PV.edCard(sku);
   }, 60);
 };
 PV.lfCsv = ()=>{
@@ -9016,15 +9007,13 @@ PV.editMargin = function(td, sku, grp){
 };
 
 /* ---------- BOM ---------- */
-PV.setBom = sku => { if(dbBomSku.has(sku)) dbBomSku.delete(sku); else dbBomSku.add(sku); renderBody(); };
-PV.setMfg = sku => { if(mfgOpen.has(sku)) mfgOpen.delete(sku); else mfgOpen.add(sku); renderBody(); };
 
 /* ---------- צפיפות, עמודות וברירת מחדל (6.40.0) ---------- */
 PV.setDense = v => { dense = !!v; renderBody(); };
 /* מיון לפי עמודה שהוסתרה נשאר פעיל אך בלתי נראה — ולכן הוא מתאפס יחד איתה */
 function dropSort(keys){ if(sortState.key && keys.indexOf(sortState.key)>=0) sortState = { key:null, dir:1 }; }
 PV.colGroup = (g, show)=>{ if(show) hidGroups.delete(g); else { hidGroups.add(g); dropSort(['px:'+g, 'dsc:'+g]); } renderBody(); };
-PV.colOther = (k, show)=>{ if(show) hidCols.delete(k); else { hidCols.add(k); dropSort(k==='site'? ['site'] : MARKS.map(m=>m.k)); } renderBody(); };
+PV.colOther = (k, show)=>{ if(show) hidCols.delete(k); else { hidCols.add(k); dropSort(k==='marks'? MARKS.map(m=>m.k) : [k]); } renderBody(); };
 PV.colAll   = ()=>{ hidGroups.clear(); hidCols.clear(); renderBody(); };
 
 const PRC_DEF_KEY = 'iron_prc_default_v1';
@@ -9043,7 +9032,7 @@ function prcDefApplyState(){
     if(d.sort && d.sort.key) sortState = { key:d.sort.key, dir:(d.sort.dir<0? -1 : 1) };
     dense = !!d.dense;
     hidGroups = new Set(Array.isArray(d.hidG)? d.hidG.filter(g=>GROUPS.indexOf(g)>=0) : []);
-    hidCols   = new Set(Array.isArray(d.hidC)? d.hidC.filter(k=>k==='site'||k==='marks') : []);
+    hidCols   = new Set(Array.isArray(d.hidC)? d.hidC.filter(k=>['site','marks','notes','pupd'].indexOf(k)>=0) : []);
   }catch(_e){}
 }
 function prcDefApplyFilters(){
@@ -9216,7 +9205,7 @@ PV.mfgSupplier = async (sku, src)=>{
     'הספק הפעיל הוחלף ל'+(src===SRC_IMPORT?'יבוא':'ייצור בארץ')+' ✓');
   if(okw) flashRow(sku);
 };
-PV.setEdit = sku => { dbEditSku = sku; if(sku) dbAddOpen=false; renderBody(); };
+PV.setEdit = sku => { if(sku) PV.edCard(sku); else PV.edClose(); };
 
 PV.bomQty = async (parent, i, v)=>{
   if(!prcEdit()) return noEdit();
@@ -9267,6 +9256,210 @@ PV.bomAdd = async (parent, btn)=>{
   await dbw(()=>O().from('prc_bom').upsert({parent, child:sku, qty, updated_by:finMe(), updated_at:finNowIso()},{onConflict:'parent,child'}), 'רכיב נוסף');
 };
 
+/* ---------- כרטיס המק״ט (6.73.0) ----------
+   כל מה שהיה פרוש על רוחב הטבלה מרוכז כאן: פרטים, עלות, עץ מוצר, מדרגות
+   ייצור, שיוך למחירונים והערות. שלוש הערות מימוש שחשוב לשמור עליהן:
+
+   1. כל שש הלשוניות נבנות יחד, וההחלפה ביניהן היא הסתרה ב-CSS ולא בנייה
+      מחדש — אחרת מעבר ללשונית וחזרה היה מוחק טקסט שהוקלד ולא נשמר עדיין.
+   2. מזהי השדות נשארו pv-ed-* בדיוק כפי שהיו בשורת העריכה, ולכן saveEdit()
+      עובד עליהם בלי שינוי.
+   3. bomPanel() ו-mfgPanel() נכנסים לכאן כמות שהם. הם מפעילים renderBody()
+      אחרי כל שמירה, ולכן renderBody() קורא ל-edRefresh() שמרענן רק את שלוש
+      הלשוניות שהמסד עשוי היה לשנות — לא את השדות שמקלידים בהם. */
+const CARD_TABS = [['main','פרטים'],['cost','עלות והעמסה'],['bom','עץ מוצר'],
+                   ['mfg','מדרגות ייצור'],['lists','מחירונים'],['note','הערות ותאריכים']];
+
+function edEl(){
+  let el = document.getElementById('pv-card');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'pv-card'; el.className = 'modal hidden';
+    el.addEventListener('click', e=>{ if(e.target===el) PV.edClose(); });
+    (document.getElementById('tab-prc') || document.body).appendChild(el);
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape' && dbEditSku) PV.edClose(); });
+  }
+  return el;
+}
+function edPane(k, html){ return '<div class="pvc-pane" data-pane="'+k+'"'+(cardTab===k? '' : ' hidden')+'>'+html+'</div>'; }
+
+function edPaneMain(p, ed){
+  const d = ed? '' : ' disabled';
+  return '<div class="pvc-grid">'+
+    '<div class="pvc-f"><label>שם מוצר</label><input id="pv-ed-name" value="'+esc(p.name||'')+'"'+d+'></div>'+
+    '<div class="pvc-f"><label>קטגוריה</label><input id="pv-ed-cat" list="pv-dlCats" value="'+esc(p.cat||'')+'"'+d+'></div>'+
+    '<div class="pvc-f"><label>תת קטגוריה</label><input id="pv-ed-sub" list="pv-dlSubs" value="'+esc(p.sub||'')+'"'+d+'></div>'+
+    '<div class="pvc-f"><label>מקור</label><select id="pv-ed-src" onchange="prcV13.srcChanged()"'+d+'>'+
+      SRC_LIST.map(s=>'<option '+(p.source===s?'selected':'')+'>'+s+'</option>').join('')+'</select></div>'+
+    '<div class="pvc-f"><label>תפקיד הפריט</label><select id="pv-ed-role"'+d+'>'+
+      ROLE_LIST.map(s=>'<option '+((p.role||ROLE_SELL)===s?'selected':'')+'>'+s+'</option>').join('')+'</select>'+
+      '<small class="pvc-h">"רכיב פנימי" לא יופיע במחירון הלקוח גם אם הוא משויך לכל המחירונים.</small></div>'+
+    '<div class="pvc-f"><label>סטטוס</label><select id="pv-ed-st"'+d+'>'+
+      ['פעיל','בהמתנה','לא פעיל'].map(s=>'<option '+(p.status===s?'selected':'')+'>'+s+'</option>').join('')+'</select></div>'+
+    '<div class="pvc-f span2"><label>כתובת תמונה</label><input id="pv-ed-img" value="'+esc(p.img||'')+'" style="direction:ltr;text-align:left" placeholder="https://..."'+d+'></div>'+
+    '<div class="pvc-f span2"><label>תמונה מלאה</label><input id="pv-ed-imgf" value="'+esc(p.imgFull||'')+'" style="direction:ltr;text-align:left" placeholder="https://..."'+d+'></div>'+
+  '</div>';
+}
+
+function edCalc(p){
+  const g = state.group, ca = costAfter(p.sku), cb = costBefore(p.sku), mg = marginFor(p.sku,g);
+  const ex = priceEx(p.sku,g), inc = priceInc(p.sku,g);
+  return '<div class="pv-stats" style="margin:16px 0 0">'+
+    '<div class="pv-stat"><div class="v">'+(cb==null?'—':fmt(cb)+' ₪')+'</div><div class="l">עלות לפני העמסה</div></div>'+
+    '<div class="pv-stat"><div class="v">'+(ca==null?'—':fmt(ca)+' ₪')+'</div><div class="l">עלות בש״ח אחרי העמסה</div></div>'+
+    '<div class="pv-stat"><div class="v">'+(mg.v==null?'—':pc(mg.v))+'</div><div class="l">% מרווח · '+esc(g)+'</div></div>'+
+    '<div class="pv-stat"><div class="v">'+(ex==null?'—':fmt(ex)+' ₪')+'</div><div class="l">מחיר ללא מע״מ · '+esc(g)+'</div></div>'+
+    '<div class="pv-stat"><div class="v">'+(inc==null?'—':fmt(inc)+' ₪')+'</div><div class="l">כולל מע״מ</div></div>'+
+  '</div>';
+}
+
+function edPaneCost(p, ed){
+  const d = ed? '' : ' disabled';
+  const tree = !!treeKids(p.sku);
+  const lockT = !tree && mfgCostOf(p)!=null;
+  const lock = tree? 'מחושב מעץ המוצר' : (lockT? 'מחושב ממדרגת הייצור שנבחרה' : '');
+  return '<div class="pvc-grid">'+
+    '<div class="pvc-f"><label>'+(p.source===SRC_IMPORT?'עלות ב-$':'עלות ב-₪')+'</label>'+
+      '<input id="pv-ed-cost" type="number" step="0.01" style="direction:ltr;text-align:left" value="'+
+        ((tree||lockT)? '' : (p.source===SRC_IMPORT? (p.cost??'') : (p.costILS??'')))+'"'+(lock? ' disabled' : d)+'>'+
+      (lock? '<small class="pvc-h">'+lock+' — השדה אינו נערך כאן.</small>' : '')+'</div>'+
+    '<div class="pvc-f"><label>מקדם העמסה (מכפיל את עלות הרכש)</label>'+
+      '<span class="pv-step">'+
+        '<button type="button" class="pv-stepb" onclick="prcV13.lovStep(-1)" title="הקטנה ב-0.01"'+d+'>−</button>'+
+        '<input class="pv-edin narrow" id="pv-ed-lov" type="number" step="0.01" min="0.5" max="5" oninput="prcV13.lovTag()" data-df="'+srcFactor(p).toFixed(2)+'" value="'+
+          (p.loadOv!=null? Number(p.loadOv).toFixed(2) : srcFactor(p).toFixed(2))+'"'+d+'>'+
+        '<button type="button" class="pv-stepb" onclick="prcV13.lovStep(1)" title="הגדלה ב-0.01"'+d+'>+</button>'+
+        '<span class="pv-lovtag '+(p.loadOv!=null?'ov':'df')+'" id="pv-ed-lovtag">'+(p.loadOv!=null?'ידני':'לפי המקור')+'</span>'+
+      '</span>'+
+      '<small class="pvc-h">המקדם מכפיל את עלות הרכש ומכסה מכס, שילוח, עמלות והוצאות נלוות. ברירת המחדל לפי המקור ('+
+        esc(p.source||'—')+') היא '+fmt(srcFactor(p),2)+'; שינוי כאן חל על המק״ט הזה בלבד, וחזרה לערך הזה מחזירה אותו לברירת המחדל.</small></div>'+
+  '</div><div id="pv-card-calc">'+edCalc(p)+'</div>';
+}
+
+function edPaneLists(p, ed){
+  const d = ed? '' : ' disabled';
+  return '<div class="pvc-lists">'+GROUPS.map(x=>{
+    const pr = priceInc(p.sku,x);
+    return '<label class="pvc-list"><input type="checkbox" '+(isIncluded(p.sku,x)?'checked':'')+d+
+      ' onchange="prcV13.toggleInclude(\''+q1(p.sku)+'\',\''+q1(x)+'\')">'+
+      '<span class="pv-dot" style="width:9px;height:9px;border-radius:50%;display:inline-block;background:'+gcol(x)+'"></span>'+
+      '<b>'+esc(x)+'</b><span class="pvc-lp">'+(pr==null?'—':fmt(pr)+' ₪ כולל מע״מ')+'</span></label>';
+  }).join('')+'</div>'+
+  (isPart(p.sku)? '<div class="pv-hint">המק״ט מסומן "רכיב פנימי", ולכן לא יופיע במחירון הלקוח גם במחירונים שסומנו כאן.</div>' : '')+
+  '<div class="pv-hint">השיוך נשמר במסד מיד ואינו ממתין לכפתור השמירה — בדיוק כמו סימון התיבה בשורת הטבלה.</div>';
+}
+
+function edPaneNote(p, ed){
+  const d = ed? '' : ' disabled';
+  const sig = MARKS.map(m=>'<div class="pv-stat"><div class="v">'+(p[m.at]? esc(revDate(p[m.at])) : '—')+'</div>'+
+    '<div class="l">'+m.lbl+(p[m.by]? ' · '+esc(p[m.by]) : '')+'</div></div>').join('');
+  return '<div class="pvc-grid">'+
+    '<div class="pvc-f"><label>תאריך עדכון מחיר</label>'+
+      '<span class="pv-step"><input id="pv-ed-pupd" type="date" value="'+esc(p.pupd||'')+'"'+d+'>'+
+      (ed? '<button type="button" class="pv-stepb wide" onclick="prcV13.pupdToday()" title="קביעת תאריך היום">היום</button>' : '')+'</span>'+
+      '<small class="pvc-h">נקבע ידנית בכל פעם שמתקבל עדכון מחיר מהיבואן. אינו מתעדכן מעצמו בשמירה — להבדיל מ"עודכן לאחרונה" שלמטה, שנדרס בכל שינוי במק״ט.</small></div>'+
+    '<div class="pvc-f span2"><label>הערות</label><textarea id="pv-ed-notes" rows="3"'+d+'>'+esc(p.notes||'')+'</textarea></div>'+
+  '</div>'+
+  '<div class="pv-stats" style="margin-top:16px">'+
+    '<div class="pv-stat"><div class="v">'+(p.updated? esc(revDate(p.updated)) : '—')+'</div><div class="l">עודכן לאחרונה (כל שינוי)</div></div>'+sig+
+  '</div>';
+}
+
+function edTabs(p){
+  const cnt = k => {
+    if(k==='bom')   { const n=(treeKids(p.sku)||[]).length; return n? '<i>'+n+'</i>' : ''; }
+    if(k==='mfg')   { const n=mfgList(p.sku).length;        return n? '<i>'+n+'</i>' : ''; }
+    if(k==='lists') { const n=GROUPS.filter(x=>isIncluded(p.sku,x)).length; return n? '<i>'+n+'</i>' : ''; }
+    if(k==='note')  { return (p.notes||p.pupd)? '<i>•</i>' : ''; }
+    return '';
+  };
+  return CARD_TABS.map(t=>'<button class="pvc-tab'+(cardTab===t[0]?' on':'')+'" onclick="prcV13.edTab(\''+t[0]+'\')">'+t[1]+cnt(t[0])+'</button>').join('');
+}
+
+function edRender(){
+  const el = edEl();
+  const p = byy[dbEditSku];
+  if(!p){ el.className='modal hidden'; el.innerHTML=''; return; }
+  const ed = prcEdit();
+  el.className = 'modal';
+  el.innerHTML =
+    '<div class="sheet" role="dialog" aria-modal="true" aria-label="כרטיס מק״ט '+esc(p.sku)+'">'+
+      '<div class="pvc-head">'+
+        imgCell(p)+
+        '<div class="pvc-ttl"><b>'+esc(p.sku)+'</b><span>'+esc(p.name||'')+'</span></div>'+
+        (isErpOff(p.sku)? '<span class="pvc-off" title="הסטטוס בפריוריטי הוא לא פעיל — המק״ט מוסתר מהמאגר ומכל המחירונים">לא פעיל בפריוריטי</span>' : '')+
+        '<button class="pvc-x" onclick="prcV13.edClose()" title="סגירה (Esc)">✕</button>'+
+      '</div>'+
+      '<div class="pvc-tabs">'+edTabs(p)+'</div>'+
+      '<div class="pvc-body">'+
+        edPane('main',  edPaneMain(p, ed))+
+        edPane('cost',  edPaneCost(p, ed))+
+        edPane('bom',   bomPanel(p.sku, p.sku, ed, 0, false))+
+        edPane('mfg',   mfgPanel(p, ed))+
+        edPane('lists', edPaneLists(p, ed))+
+        edPane('note',  edPaneNote(p, ed))+
+      '</div>'+
+      '<div class="pvc-foot">'+
+        (ed? '<button class="pv-btn" onclick="prcV13.saveEdit(\''+q1(p.sku)+'\')">שמירה</button>'+
+             '<button class="pv-btn ghost" onclick="prcV13.edClose()">ביטול</button>'+
+             '<span class="pv-hint">עץ המוצר, מדרגות הייצור והשיוך למחירונים נשמרים מיד. כפתור השמירה חל על שאר הלשוניות.</span>'
+           : '<button class="pv-btn ghost" onclick="prcV13.edClose()">סגירה</button>'+
+             '<span class="pv-hint">צפייה בלבד — אין לך הרשאת עריכה במסך התמחור.</span>')+
+      '</div>'+
+    '</div>';
+}
+
+/* רענון חלקי אחרי renderBody: רק הלשוניות שהמסד עשוי היה לשנות מתחת לידיים.
+   הפרטים, העלות וההערות אינם נבנים מחדש — אחרת הוספת רכיב ל-BOM הייתה
+   מוחקת שם מוצר שהוקלד ועדיין לא נשמר. */
+function edRefresh(){
+  const el = document.getElementById('pv-card');
+  if(!el || !dbEditSku) return;
+  const p = byy[dbEditSku];
+  if(!p){ PV.edClose(); return; }
+  const ed = prcEdit();
+  const set = (k, html)=>{ const n = el.querySelector('.pvc-pane[data-pane="'+k+'"]'); if(n) n.innerHTML = html; };
+  set('bom',   bomPanel(p.sku, p.sku, ed, 0, false));
+  set('mfg',   mfgPanel(p, ed));
+  set('lists', edPaneLists(p, ed));
+  const calc = document.getElementById('pv-card-calc');
+  if(calc) calc.innerHTML = edCalc(p);
+  const tabs = el.querySelector('.pvc-tabs');
+  if(tabs) tabs.innerHTML = edTabs(p);
+}
+
+PV.edCard = sku => {
+  const p = byy[sku]; if(!p) return;
+  dbEditSku = sku; dbAddOpen = false;
+  if(!CARD_TABS.some(t=>t[0]===cardTab)) cardTab = 'main';
+  edRender();
+};
+PV.edClose = ()=>{
+  dbEditSku = null;
+  const el = document.getElementById('pv-card');
+  if(el){ el.className='modal hidden'; el.innerHTML=''; }
+};
+PV.edTab = k => {
+  cardTab = k;
+  const el = document.getElementById('pv-card'); if(!el) return;
+  el.querySelectorAll('.pvc-pane').forEach(x=>{
+    if(x.getAttribute('data-pane')===k) x.removeAttribute('hidden'); else x.setAttribute('hidden','');
+  });
+  el.querySelectorAll('.pvc-tab').forEach((b,i)=>{ if(CARD_TABS[i]) b.classList.toggle('on', CARD_TABS[i][0]===k); });
+  const b = el.querySelector('.pvc-body'); if(b) b.scrollTop = 0;
+};
+PV.pupdToday = ()=>{ const e = document.getElementById('pv-ed-pupd'); if(e) e.value = today10(); };
+/* לחיצה על השורה פותחת את הכרטיס — חוץ מלחיצה שנחתה על פקד שיש לו התנהגות
+   משלו: סימון מחירון, תא המרווח, קישור המק״ט, שכפול ומחיקה. הבדיקה היא על
+   קיום onclick ולא על רשימת מחלקות, כדי שפקד שיתווסף בעתיד לא ייפול לכאן. */
+PV.rowClick = (ev, sku)=>{
+  try{
+    const t = ev.target;
+    if(t && t.closest && t.closest('input,button,select,textarea,a,label,[onclick]:not(tr)')) return;
+  }catch(_e){}
+  PV.edCard(sku);
+};
+
 /* ---------- עריכת מק״ט ---------- */
 PV.saveEdit = async (sku)=>{
   if(!prcEdit()) return noEdit();
@@ -9277,6 +9470,9 @@ PV.saveEdit = async (sku)=>{
   const costRaw = gv('pv-ed-cost').trim();
   const lov = gv('pv-ed-lov').trim();
   const status = gv('pv-ed-st').trim(), notes = gv('pv-ed-notes').trim();
+  /* תאריך עדכון מחיר — ידני בלבד (רומן, 14/08/2026: "כרגע באופן ידני, אולי
+     בהמשך אוטומטי"). ריק = לא תועד עדכון מחיר. */
+  const pupd = gv('pv-ed-pupd').trim();
   const imgU = gv('pv-ed-img').trim(), imgF = gv('pv-ed-imgf').trim();
   if(!SRC_LIST.includes(src)){ toast('מקור לא חוקי — יש לבחור מתוך הרשימה'); return; }
   if(role && !ROLE_LIST.includes(role)){ toast('תפקיד פריט לא חוקי'); return; }
@@ -9287,6 +9483,7 @@ PV.saveEdit = async (sku)=>{
     name: name||null, cat: cat||null, sub: sub||null, source: src,
     item_role: role||ROLE_SELL,
     prc_status: status||null, notes: notes||null,
+    price_updated_on: pupd||null,
     img: imgU||null, img_full: imgF||null,
     /* נשמר כדריסה ידנית רק אם הערך שונה מברירת המחדל של המקור. השדה מוצג
        תמיד מלא, ובלי התנאי הזה כל שמירה הייתה מקבעת את המק״ט מול שינוי
@@ -9309,6 +9506,7 @@ PV.saveEdit = async (sku)=>{
   else { row.cost_ils = costRaw===''? null : parseFloat(costRaw); }
 
   p.name=name; p.cat=cat; p.sub=sub; p.source=src; p.status=status; p.notes=notes; p.updated=row.v13_updated;
+  p.pupd=pupd;
   p.role=row.item_role;
   if(imgU) p.img=imgU; else delete p.img;
   if(imgF) p.imgFull=imgF; else delete p.imgFull;
@@ -9319,7 +9517,7 @@ PV.saveEdit = async (sku)=>{
   if(row.load_override==null || isNaN(row.load_override)){ delete p.loadOv; row.load_override=null; }
   else p.loadOv = row.load_override;
 
-  dbEditSku = null;
+  PV.edClose();
   fillCatFilter(); renderBody();
   const okw = await dbw(()=>O().from('prc_item_ext').update(row).eq('partname',sku), 'המק״ט עודכן ונשמר ✓');
   if(okw) flashRow(sku);
@@ -9404,8 +9602,7 @@ PV.delSku = async (sku)=>{
   delete bomByParent[sku];
   delete DATA.overrides[sku];
   GROUPS.forEach(g=>{ if(DATA.excluded[g]) delete DATA.excluded[g][sku]; });
-  dbBomSku.delete(sku);
-  if(dbEditSku===sku) dbEditSku=null;
+  if(dbEditSku===sku) PV.edClose();
   fillCatFilter(); renderBody();
 };
 
@@ -9647,7 +9844,7 @@ async function importSnapshot(d){
       cost_ils: p.costILS==null? null : Number(p.costILS),
       load_override: p.loadOv==null? null : Number(p.loadOv),
       prc_status: p.status||null, notes: p.notes||null,
-      sort: i+j+1, v13_updated: p.updated||today10(),
+      sort: i+j+1, v13_updated: p.updated||today10(), price_updated_on: p.pupd||null,
       updated_by:by, updated_at:at
     })),{onConflict:'partname'}));
   }
@@ -9680,7 +9877,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'rodays-2026-08-14a';
+const BUILD_ID = 'prccard-2026-08-14a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){

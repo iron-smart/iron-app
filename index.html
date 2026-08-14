@@ -1578,7 +1578,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.73.1</div>
+      <div class="ver">גרסה 6.73.2</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1697,7 +1697,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.73.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.73.2</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -6634,7 +6634,9 @@ const PV_CSS = `
 #tab-prc .pv-tblwrap.pv-dense .pv-revd{ display:none }
 #tab-prc .pv-tblwrap.pv-dense .pv-dprice{ font-size:12.5px; margin-top:1px }
 #tab-prc .pv-tblwrap.pv-dense .pv-dmg{ margin-top:1px }
-#tab-prc .pv-tblwrap.pv-dense td.pv-outgc .pv-cmpmain{ text-decoration:line-through; opacity:.55 }
+/* תא של מק״ט מוחרג ריק לגמרי (6.73.2). הפס האלכסוני הוא מה שמבדיל אותו
+   מתא שפשוט אין בו נתון — בלי להציג מספר שאין לו קיום. */
+#tab-prc td.pv-outgc{ background-image:repeating-linear-gradient(135deg, transparent 0 5px, rgba(100,116,139,.10) 5px 10px) }
 /* בצפוף גם תיבת התמונה מצטמצמת, ולכן היסטי העמודות המוקפאות משתנים */
 #tab-prc .pv-frz.pv-dense > table > thead > tr > th:nth-child(2),
 #tab-prc .pv-frz.pv-dense > table > tbody > tr:not(.pv-bomrow):not(.pv-edrow2):not(.pv-nestrow) > td:nth-child(2){ inset-inline-start:44px; width:40px; min-width:40px; max-width:40px }
@@ -6791,7 +6793,6 @@ const PV_CSS = `
 #tab-prc .pv-mgdot.ov{ background:var(--pv-brand) }
 #tab-prc .pv-mgdot.mx{ background:#3f7a5e }
 #tab-prc .pv-mgdot.df{ background:#c3ccd8 }
-#tab-prc .pv-outg{ font-size:10px; font-weight:700; color:#8a6100; background:#fdf1e0; border-radius:5px; padding:1px 5px; display:block; width:fit-content; margin:3px auto 0 }
 #tab-prc .pv-chev{ width:21px; height:21px; line-height:1; border:1px solid var(--pv-line); background:#fff; border-radius:6px; cursor:pointer; font-size:11px; color:var(--pv-brand); margin-inline-end:6px; padding:0; vertical-align:middle; transition:transform .12s ease }
 #tab-prc .pv-chev:hover{ border-color:var(--pv-brand); background:#eaf1f6 }
 #tab-prc .pv-chev.on{ background:var(--pv-brand); color:#fff; border-color:var(--pv-brand); transform:rotate(180deg) }
@@ -8520,6 +8521,10 @@ function discTh(grp){
     'pv-num', 'border-bottom:3px dashed '+gcol(grp));
 }
 function discCell(p, grp, ed){
+  /* אותו כלל כמו בתא המחיר — מחיר מונחת למק״ט שאינו נמכר במחירון הזה הוא
+     אותו מספר חסר קיום. */
+  if(!isIncluded(p.sku, grp))
+    return '<td class="pv-num pv-disctd pv-outgc" title="המק״ט מוחרג ממחירון '+esc(grp)+' ולא יופיע ללקוח"></td>';
   const d  = discOf(p.sku, grp);
   const pr = discPrice(p.sku, grp);
   const mg = discMargin(p.sku, grp);
@@ -8547,6 +8552,9 @@ function discSummary(rows, ed){
   const cards = gs.map(g=>{
     let withD=0, base=0, give=0, keep=0, noCost=0, warn=0, bad=0, priced=0;
     rows.forEach(p=>{
+      /* מק״ט מוחרג אינו נמכר במחירון הזה, ולכן אינו חלק מהרווח שלו ואינו
+         חלק מההנחה שניתנה בו. עד 6.73.2 הוא נספר, והסיכום ניפח את שניהם. */
+      if(!isIncluded(p.sku, g)) return;
       const b = siteEx(p.sku); if(b==null) return;
       base += b;
       const d = discOf(p.sku,g) || 0;
@@ -8580,11 +8588,17 @@ function discSummary(rows, ed){
     'הסיכום מחושב על השורות שבתצוגה הנוכחית, ליחידה אחת מכל מק״ט ובלי לשקלל כמויות מכירה.</div>';
 }
 function cmpCell(p, grp, ed){
+  /* רומן (14/08/2026): "בתצוגת השוואת כולם אני רוצה משבצת ריקה, שלא יראו
+     שום מחיר בכלל." עד 6.73.2 התא הציג כאן מחיר מלא ואחוז מרווח וסימן אותם
+     בשבב "מחוץ למחירון" — כלומר מספר שאף לקוח לא יקבל לעולם, עם הסתייגות
+     קטנה לידו. עכשיו התא ריק; הפס האלכסוני וה-title הם מה שמסביר למה, וזו
+     ההבחנה היחידה שנשארה בין "מוחרג" לבין "אין נתון". */
+  if(!isIncluded(p.sku, grp))
+    return '<td class="pv-num pv-outgc" title="המק״ט מוחרג ממחירון '+esc(grp)+' ולא יופיע ללקוח"></td>';
   const ex = priceEx(p.sku, grp);
   const mg = marginFor(p.sku, grp);
   const cls = mg.src==='ov'? 'ov' : mg.src==='mx'? 'mx' : 'df';
   const ttl = mg.src==='ov'? 'דריסה ידנית למק״ט הזה' : mg.src==='mx'? 'מקדם קטגוריה' : 'מקדם כללי של המחירון';
-  const inc = isIncluded(p.sku, grp);
   const price = (ex==null)
     ? '<div class="pv-cmpmain"><span class="pv-noprice">'+(mg.v===0?'לפי הצעה':'—')+'</span></div>'
     : '<div class="pv-cmpmain">'+fmt(ex)+' ₪</div>';
@@ -8598,12 +8612,7 @@ function cmpCell(p, grp, ed){
      עובדה נשמרת גם ב-title של התא. */
   const pinc = (grp==='אתר')? priceInc(p.sku, grp) : null;
   const incLine = (pinc==null)? '' : '<div class="pv-cmpsub pv-fold">'+fmt(pinc)+' ₪ כולל</div>';
-  const tips = [];
-  if(pinc!=null) tips.push('כולל מע״מ: '+fmt(pinc)+' ₪');
-  if(!inc) tips.push('המק״ט מוחרג מהמחירון הזה ולא יופיע ללקוח');
-  /* בצפוף השורה השלישית מתקפלת, והחריגה מסומנת בקו חוצה על המחיר עצמו. */
-  return '<td class="pv-num'+(inc?'':' pv-outgc')+'"'+(tips.length? ' title="'+esc(tips.join(' · '))+'"' : '')+'>'+price+incLine+mgCell+
-    (inc?'':'<div class="pv-outg pv-fold" title="המק״ט מוחרג מהמחירון הזה ולא יופיע ללקוח">מחוץ למחירון</div>')+'</td>';
+  return '<td class="pv-num"'+(pinc!=null? ' title="כולל מע״מ: '+fmt(pinc)+' ₪"' : '')+'>'+price+incLine+mgCell+'</td>';
 }
 
 /* ---------- תג מרווח אפקטיבי (רצפות) ---------- */
@@ -9743,9 +9752,11 @@ PV.exportCSV = async ()=>{
       const sp0=sitePrice(p.sku);
       out.push([p.sku,p.name,p.cat,p.sub,p.source, costAfter(p.sku)??'',
         (sp0==null?'':(sp0/(1+S.vat)).toFixed(2)), (sp0==null?'':sp0.toFixed(2)),
-        ...discGroups().flatMap(g=>{ const d=discOf(p.sku,g), dp=discPrice(p.sku,g), dm=discMargin(p.sku,g), df=discProfit(p.sku,g);
+        ...discGroups().flatMap(g=>{ if(!isIncluded(p.sku,g)) return ['','','',''];
+          const d=discOf(p.sku,g), dp=discPrice(p.sku,g), dm=discMargin(p.sku,g), df=discProfit(p.sku,g);
           return [d==null?'':(d*100).toFixed(2)+'%', dp==null?'':dp.toFixed(2), dm==null?'':(dm*100).toFixed(1)+'%', df==null?'':df.toFixed(2)]; }),
-        ...GROUPS.flatMap(g=>{ const v=priceEx(p.sku,g), mv=marginFor(p.sku,g).v;
+        ...GROUPS.flatMap(g=>{ if(!isIncluded(p.sku,g)) return ['',''];
+          const v=priceEx(p.sku,g), mv=marginFor(p.sku,g).v;
           return [v==null?'':v.toFixed(2), mv==null?'':(mv*100).toFixed(1)+'%']; })].map(csvq).join(','));
     });
   } else {
@@ -9894,7 +9905,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'rocoord-2026-08-14a';
+const BUILD_ID = 'prcoutg-2026-08-14a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){

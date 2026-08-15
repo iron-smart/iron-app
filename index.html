@@ -1618,7 +1618,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.81.0</div>
+      <div class="ver">גרסה 6.81.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1737,7 +1737,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.81.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.81.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5312,9 +5312,7 @@ function _plXlsx(M){
   const XP='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
   const NS='http://schemas.openxmlformats.org/spreadsheetml/2006/main';
   const RN='http://schemas.openxmlformats.org/officeDocument/2006/relationships';
-  const D=!!M.anyDisc, NC=D?6:5, LAST=_colRef(NC-1);
-  /* שתי עמודות מספריות מוסתרות אחרי הגלויות — ראה ההערה על RS */
-  const HID=NC, NCT=NC+2;
+  const D=!!M.anyDisc, NC=D?7:6, LAST=_colRef(NC-1), NCT=NC;
   const NAVY='002D48', INK='111C28', GRAY='5A6672', HAIR='E8EDF2', LINE='D9E0E7', SOFT='2A3540';
 
   const FN=[], FL=[], BD=[], XF=[];
@@ -5375,9 +5373,8 @@ function _plXlsx(M){
   const RS=[{f:F_SEC,h:'center'},{f:F_SKU,h:'center',ro:2},{f:F_NAME,h:'right',wrap:1,ro:2},
             {f:F_CAT,h:'center',ro:2}];
   if(D) RS.push({f:F_NAME,h:'center',n:165});
-  /* התא המוצג — טקסט דו-שורתי — ואחריו שתי העמודות המספריות המוסתרות */
-  RS.push({f:F_SEC,h:'center',wrap:1});
-  RS.push({f:F_SEC,h:'center',n:164},{f:F_INC,h:'center',n:164});
+  /* שתי עמודות מספריות נפרדות — ללא מע״מ מודגש, כמו במסמך */
+  RS.push({f:F_PEX,h:'center',n:164},{f:F_SEC,h:'center',n:164});
   const S_ROW=RS.map(s=>xf(Object.assign({},s,{b:B_HAIR,v:'center'})));
   const S_END=RS.map(s=>xf(Object.assign({},s,{b:B_NAVY,v:'center'})));
 
@@ -5438,7 +5435,7 @@ function _plXlsx(M){
 
   const HEAD=['תמונה','מק״ט','מוצר','קטגוריה'];
   if(D) HEAD.push('הנחה');
-  HEAD.push('מחיר','מחיר ללא מע״מ','מחיר כולל מע״מ');
+  HEAD.push('מחיר ללא מע״מ','מחיר כולל מע״מ');
   M.cats.forEach(cat=>{
     band(cat.name,S_BAND,21);
     row(HEAD.map((t,i)=>({v:t,s:S_HEAD[i]})),20);
@@ -5460,18 +5457,10 @@ function _plXlsx(M){
       cells[3]={v:it.cat,s:SS[3]};
       let k=4;
       if(D){ cells[k]={v:(it.disc==null? '' : it.disc),s:SS[k]}; k++; }
-      /* התא המוצג — שתי שורות, כל אחת בעיצוב משלה */
-      if(it.ex==null && it.inc==null) cells[k]={v:'',s:SS[k]};
-      else cells[k]={raw:'<c r="'+_colRef(k)+(r+1)+'" s="'+SS[k]+'" t="inlineStr"><is>'+
-        rr2({b:1,sz:10,c:NAVY}, (it.ex==null? '' : fmt2(it.ex)+' ₪'))+
-        rr2({sz:7.5,c:GRAY}, (it.inc==null? '' : '\nכולל מע״מ '+fmt2(it.inc)+' ₪'))+
-        '</is></c>'};
-      k++;
-      /* ושתי המוסתרות — המספרים עצמם, כדי ש-SUM ומיון ימשיכו לעבוד */
       cells[k]={v:(it.ex==null? '' : Math.round(it.ex*100)/100),s:SS[k]}; k++;
       cells[k]={v:(it.inc==null? '' : Math.round(it.inc*100)/100),s:SS[k]};
       r++;
-      let x='<row r="'+r+'" ht="30" customHeight="1">';
+      let x='<row r="'+r+'" ht="26" customHeight="1">';
       cells.forEach((cc,i)=>{ x += cc.raw? cc.raw : cel(i,r,cc.v,cc.s); });
       out.push(x+'</row>');
     });
@@ -5480,9 +5469,9 @@ function _plXlsx(M){
   band('המחירים בתוקף למועד הפקת המחירון בלבד וניתנים לשינוי ללא הודעה מוקדמת · '+
        'אספקה, הובלה והתקנה יתומחרו בנפרד · איירון פיטנס',S_FOOT,34);
 
-  const W=[9,15,44,15]; if(D) W.push(9); W.push(20,14,14);
+  const W=[9,15,44,15]; if(D) W.push(9); W.push(16,16);
   const cols=W.map((w,i)=>'<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+
-    '" customWidth="1"'+(i>=HID? ' hidden="1"':'')+'/>').join('');
+    '" customWidth="1"/>').join('');
 
   /* סדר האלמנטים ב-worksheet הוא רצף מחייב: sheetData ואז mergeCells ואז
      pageMargins. הפרה שלו מחזירה "אקסל מצא תוכן שאינו קריא". */
@@ -7495,10 +7484,10 @@ const PV_CSS = `
 #tab-prc .pv-pricelist [hidden]{ display:none }
 #tab-prc .pv-doc{ position:relative; z-index:1 }
 
-/* סימן המים ברוחב הטבלה, שקיפות 5% (רומן, 15/08/2026 — היה 20%,
-   ולפני כן 10%). בערך הזה הוא רמז ולא רקע, ואינו מתחרה בשום מספר.
-   הסמל צבוע בצבע המותג המדויק (#002D48); מה שמבהיר אותו הוא השקיפות
-   בלבד, שמערבבת עם הלבן ומורידה רוויה. */
+/* סימן המים ברוחב הטבלה, שקיפות 3% (רומן, 15/08/2026 — ירדה מ-20%
+   ל-5% ומשם ל-3%). הסמל צבוע בצבע המותג המדויק (#002D48); מה שמבהיר
+   אותו הוא השקיפות בלבד, שמערבבת עם הלבן ומורידה רוויה — ולכן אי אפשר
+   בו-זמנית "יותר בצבע הלוגו" ו"יותר שקוף". */
 #tab-prc .pv-wm{ position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden }
 /* מתחיל ב-60% מתחתית הדף וממורכז לרוחב (רומן, 15/08/2026) — כלומר הקצה
    העליון של הסמל יושב ב-40% מלמעלה. קודם הוא היה ממורכז אנכית, ולכן חצה
@@ -7506,7 +7495,7 @@ const PV_CSS = `
    אינו יודע לבטא "מתחיל בנקודה מסוימת".
    הרוחב 180mm הוא רוחב הטבלה בפועל: 210 פחות 21 (@page) פחות 8.4 (ריפוד). */
 #tab-prc .pv-wm img{ position:absolute; top:40%; left:50%; transform:translateX(-50%);
-  width:180mm; max-width:90%; height:auto; opacity:.05;
+  width:180mm; max-width:90%; height:auto; opacity:.03;
   print-color-adjust:exact; -webkit-print-color-adjust:exact }
 
 #tab-prc .pv-lh-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10mm }
@@ -7551,6 +7540,12 @@ const PV_CSS = `
 #tab-prc .pv-plhead{ height:8mm; align-items:end; padding-bottom:1.4mm; white-space:nowrap;
   font-size:8.5pt; font-weight:600; color:var(--pv-pl-gray); border-bottom:1pt solid var(--pv-pl-navy) }
 #tab-prc .pv-plrow{ height:var(--pv-pl-rowh); overflow:hidden; border-bottom:.5pt solid var(--pv-pl-hair) }
+/* הפרש צבע מינורי בין שורה לשורה (רומן, 15/08/2026) — מסייע לעין
+   לעקוב לרוחב שורה בטבלה שרובה מספרים. הגוון נבחר בהיר במכוון: ברירת
+   המחדל של הדפדפן היא לא להדפיס רקעים, ולכן print-color-adjust חובה,
+   ובגוון כהה יותר הוא היה מתחרה בפס הקטגוריה. */
+#tab-prc .pv-plcat > .pv-plrow:nth-child(odd){ background:#f7f9fb;
+  print-color-adjust:exact; -webkit-print-color-adjust:exact }
 #tab-prc .pv-plcat > .pv-plrow:last-child{ border-bottom:1pt solid var(--pv-pl-navy) }
 /* הטבלה כולה ממורכזת חוץ משם המוצר (רומן, 15/08/2026). שם המוצר הוא
    הטקסט הזורם היחיד כאן, והוא נשאר מימין לשמאל כדי שהעין תמצא התחלה
@@ -7765,7 +7760,16 @@ function erpOffCount(){ let n=0; for(let i=0;i<DATA.products.length;i++) if(isEr
 function prcOffCount(){ let n=0; for(let i=0;i<DATA.products.length;i++){ const p=DATA.products[i];
   if(!isErpOff(p.sku) && p.status==='לא פעיל') n++; } return n; }
 function offCount(){ return erpOffCount()+prcOffCount(); }
-let plRound=1, plCName='';
+let plRound=1, plCName='', plGroup='';
+/* המחירון שיודפס. עד 6.81.1 הוא נגזר ממצב המסך, וכשמסך ההשוואה היה פעיל
+   הוא נכפה ל'מסחרי' — כך שמסמך שיוצא ללקוח סונן לפי רשימת ההחרגות של
+   מחירון אחר לגמרי (7 מחירונים בפרודקשן, 33 החרגות במסחרי מול 11 בעסקי).
+   הבחירה מפורשת עכשיו, וההחרגות עוקבות אחריה. */
+function plGrp(){
+  if(plGroup && GROUPS.indexOf(plGroup)>=0) return plGroup;
+  if(!state.allGroups && GROUPS.indexOf(state.group)>=0) return state.group;
+  return GROUPS.includes('מסחרי')? 'מסחרי' : GROUPS[0];
+}
 
 const GROUP_COLORS = {
   'אתר':'#2a78d6', 'פרטי-עסקי':'#eb6834', 'עסקי':'#1baf7a', 'מסחרי':'#eda100',
@@ -9223,7 +9227,7 @@ function plHead(g){
    שיום אחד ה-PDF והאקסל יראו ללקוח **שני מחירים שונים על אותו מק״ט**.
    שניהם ניזונים מכאן, ובדיקה סטטית ב-plxlsxtest סופרת שאין עוקפים. */
 function plModel(){
-  const g = state.allGroups? (GROUPS.includes('מסחרי')?'מסחרי':GROUPS[0]) : state.group;
+  const g = plGrp();
   /* סעיף 14.3 — רכיב פנימי אינו מוצג במחירון ללקוח, גם אם לא הוחרג ידנית. */
   const rows = filteredProducts().filter(p=>!isPart(p.sku) && finalInc(p.sku,g)!=null && isIncluded(p.sku,g));
   const round = plRound;
@@ -9293,6 +9297,9 @@ function renderClient(m){
       '<option value="5" '+(round===5?'selected':'')+'>עיגול ל־₪5</option>'+
       '<option value="10" '+(round===10?'selected':'')+'>עיגול ל־₪10</option>'+
     '</select>'+
+    '<select onchange="prcV13.setPlGroup(this.value)" title="המחירון שיודפס. המחירים וגם רשימת המוצרים המוחרגים נגזרים ממנו.">'+
+      GROUPS.map(x=>'<option value="'+esc(x)+'"'+(x===M.group?' selected':'')+'>מחירון '+esc(x)+'</option>').join('')+
+    '</select>'+
     '<button class="pv-btn" onclick="prcV13.print()">🖨 הדפסה / PDF</button>'+
     '<button class="pv-btn ghost" onclick="prcV13.exportPriceXlsx()">⬇ ייצוא לאקסל</button>'+
     '<span class="pv-hint" style="margin:0">הסינון והחיפוש בסרגל העליון חלים גם כאן — סנן לפני הדפסה.</span>'+
@@ -9316,6 +9323,7 @@ PV.setCName = v => {
   if(b){ if(s) b.removeAttribute('hidden'); else b.setAttribute('hidden',''); }
 };
 PV.setRound = v => { plRound = parseFloat(v)||1; renderBody(); };
+PV.setPlGroup = v => { plGroup = v; renderBody(); };
 /* אותו דפוס הורדה בדיוק של skuExport/invExport (הוספה ל-body, לחיצה,
    הסרה, שחרור אחרי 8 שניות) ולא download() — האחרונה אינה מוסיפה את
    העוגן ל-DOM, ושחרור ה-URL אחרי 4 שניות כבר יצר מרוץ. */
@@ -10876,7 +10884,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'sites-2026-08-15a';
+const BUILD_ID = 'plmulti-2026-08-15a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){

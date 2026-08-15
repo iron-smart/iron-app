@@ -1606,7 +1606,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.79.0</div>
+      <div class="ver">גרסה 6.80.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1725,7 +1725,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.79.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.80.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5351,15 +5351,16 @@ function _plXlsx(M){
         S_RULE=xf({b:B_RULE}),
         S_BAND=xf({f:F_BAND,fill:FILL_NAVY,h:'right',v:'center',ind:1,ro:2}),
         S_FOOT=xf({f:F_FOOT,b:B_FOOT,h:'center',v:'center',wrap:1,ro:2});
-  const S_HEAD=[{h:'center'},{h:'right'},{h:'right'},{h:'right'},{h:'center'},{h:'right'},{h:'right'}]
+  /* מרכוז כל העמודות חוץ משם המוצר (רומן, 15/08/2026) — זהה למסמך המודפס */
+  const S_HEAD=[{h:'center'},{h:'center'},{h:'right'},{h:'center'},{h:'center'},{h:'center'},{h:'center'}]
     .slice(0,NC).map(s=>xf({f:F_HEAD,b:B_NAVY,h:s.h,v:'bottom',ro:2}));
   /* מפרט אחד לשורת מוצר, וממנו נגזרות שתי מערכות — מסגרת שיער לשורה רגילה
      ומסגרת נייבי לשורה האחרונה בקטגוריה. כך שתיהן אינן יכולות להתפצל
      ולהסכים על עמודות שונות. */
-  const RS=[{f:F_SEC,h:'center'},{f:F_SKU,h:'right',ro:2},{f:F_NAME,h:'right',wrap:1,ro:2},
-            {f:F_CAT,h:'right',ro:2}];
+  const RS=[{f:F_SEC,h:'center'},{f:F_SKU,h:'center',ro:2},{f:F_NAME,h:'right',wrap:1,ro:2},
+            {f:F_CAT,h:'center',ro:2}];
   if(D) RS.push({f:F_NAME,h:'center',n:165});
-  RS.push({f:F_SEC,h:'right',n:164},{f:F_INC,h:'right',n:164});
+  RS.push({f:F_SEC,h:'center',n:164},{f:F_INC,h:'center',n:164});
   const S_ROW=RS.map(s=>xf(Object.assign({},s,{b:B_HAIR,v:'center'})));
   const S_END=RS.map(s=>xf(Object.assign({},s,{b:B_NAVY,v:'center'})));
 
@@ -5393,25 +5394,26 @@ function _plXlsx(M){
   /* נייר מכתבים טקסטואלי. הלוגו כתמונה הוא שלב שני: עוגן ציור על גיליון
      rightToLeft הוא ההתנהגות היחידה כאן שלא ניתן לאמת מהמקור, וכשל בו
      מחזיר "Excel cannot open the file". מדרגים כך שהכשל יהיה "הלוגו חסר". */
-  row([{v:'איירון פיטנס בע״מ',s:S_CO},null,null,null,{v:'IRON FITNESS',s:S_BRAND}],20);
-  mg.push('A1:C1'); mg.push(_colRef(4)+'1:'+LAST+'1');
+  const BC=3, BCR=_colRef(BC);
+  row([{v:'איירון פיטנס בע״מ',s:S_CO}],42);
+  mg.push('A1:C1');
   CO.forEach((t,i)=>{
     const cells=[{v:t,s:S_ADDR}];
-    if(i===0) cells[4]={v:'Website: www.IronFitness.co.il',s:S_WEB};
-    if(i===1) cells[4]={v:'E-mail: office@ironfitness.co.il',s:S_WEB};
+    if(i===3) cells[BC]={v:'Website: www.IronFitness.co.il',s:S_WEB};
+    if(i===4) cells[BC]={v:'E-mail: office@ironfitness.co.il',s:S_WEB};
     const rr=row(cells,13);
     mg.push('A'+rr+':C'+rr);
-    if(i<2) mg.push(_colRef(4)+rr+':'+LAST+rr);
+    if(i===3||i===4) mg.push(BCR+rr+':'+LAST+rr);
   });
   blank(5);
   band('',S_RULE,4);
-  if(M.cust){ const rr=row([{v:'לכבוד: '+M.cust,s:S_LBL},null,null,null,
-                            {v:'תאריך המחירון: '+today,s:S_DATE}],15);
-              mg.push('A'+rr+':C'+rr); mg.push(_colRef(4)+rr+':'+LAST+rr); }
-  else      { const rr=row([null,null,null,null,{v:'תאריך המחירון: '+today,s:S_DATE}],15);
-              mg.push(_colRef(4)+rr+':'+LAST+rr); }
-  { const rr=row([null,null,null,null,{v:'תאריך הדפסה: '+today,s:S_DATE}],15);
-    mg.push(_colRef(4)+rr+':'+LAST+rr); }
+  { const cells=[]; if(M.cust) cells[0]={v:'לכבוד: '+M.cust,s:S_LBL};
+    cells[BC]={v:'תאריך המחירון: '+today,s:S_DATE};
+    const rr=row(cells,15);
+    if(M.cust) mg.push('A'+rr+':C'+rr);
+    mg.push(BCR+rr+':'+LAST+rr); }
+  { const cells=[]; cells[BC]={v:'תאריך הדפסה: '+today,s:S_DATE};
+    const rr=row(cells,15); mg.push(BCR+rr+':'+LAST+rr); }
   blank(6);
   band('מחירון '+M.group,S_TTL,28);
   blank(6);
@@ -5465,37 +5467,69 @@ function _plXlsx(M){
     '<printOptions horizontalCentered="1"/>'+
     '<pageMargins left="0.35" right="0.35" top="0.4" bottom="0.4" header="0.3" footer="0.3"/>'+
     '<pageSetup paperSize="9" orientation="portrait" fitToWidth="1" fitToHeight="0"/>'+
+    /* drawing הוא הילד האחרון ברצף המחייב של worksheet — אחרי pageSetup */
+    '<drawing r:id="rId1"/>'+
     '</worksheet>';
 
   /* אקסל דוחה חוברת ששם גיליון בה עולה על 31 תווים או מכיל [ ] : * ? / \\
      ושמות הקבוצות מגיעים מהמסד ואיש אינו מאמת אותם. */
+  /* אקסל דוחה חוברת ששם גיליון בה עולה על 31 תווים או מכיל [ ] : * ? / \\
+     ושמות הקבוצות מגיעים מהמסד ואיש אינו מאמת אותם. */
   const shName=(String(M.group||'מחירון').replace(/[\[\]:*?\/\\]/g,' ').trim().slice(0,31))||'מחירון';
 
+  /* ── הלוגו בקובץ (רומן, 15/08/2026) ──────────────────────────────────
+     ⚠️ הבייטים חייבים להגיע כ-Uint8Array. אם מחרוזת בסיס-64 מגיעה
+     ל-_skuZip, TextEncoder מרחיב אותה ל-UTF-8, ה-CRC מחושב על הבייטים
+     המורחבים — **וה-ZIP יוצא תקין לחלוטין** בעוד שהתמונה בתוכו זבל.
+     כשל שקט מושלם, ולכן plxlsxtest בודקת את אורך הבייטים המדויק. */
+  const _b64u8 = b => { const s=atob(b), u=new Uint8Array(s.length);
+    for(let i=0;i<s.length;i++) u[i]=s.charCodeAt(i); return u; };
+  const logoBytes = _b64u8(String(M.logo||'').slice(String(M.logo||'').indexOf(',')+1));
+  /* 52mm ברוחב כמו בהדפסה, והגובה נגזר מיחס המקור 948:255. 1mm = 36000 EMU. */
+  const LW = 52*36000, LH = Math.round(52*255/948*36000);
+  const DNS = 'http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing';
+  const ANS = 'http://schemas.openxmlformats.org/drawingml/2006/main';
+  const drawing = XP+'<xdr:wsDr xmlns:xdr="'+DNS+'" xmlns:a="'+ANS+'" xmlns:r="'+RN+'">'+
+    '<xdr:oneCellAnchor>'+
+      '<xdr:from><xdr:col>'+BC+'</xdr:col><xdr:colOff>0</xdr:colOff>'+
+      '<xdr:row>0</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from>'+
+      '<xdr:ext cx="'+LW+'" cy="'+LH+'"/>'+
+      '<xdr:pic><xdr:nvPicPr><xdr:cNvPr id="2" name="IRON FITNESS"/>'+
+        '<xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr>'+
+        '<xdr:blipFill><a:blip r:embed="rId1"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill>'+
+        '<xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+LW+'" cy="'+LH+'"/></a:xfrm>'+
+        '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr>'+
+      '</xdr:pic><xdr:clientData/></xdr:oneCellAnchor></xdr:wsDr>';
+
+  /* כל חלק נבנה כמחרוזת אחת בשורה אחת. זה אינו סגנון: שורת ה-Override של
+     styles.xml זהה מילה במילה בשלושת כותבי ה-XLSX בקובץ, ו-gendeploy אינו
+     יכול לעגן בה הוספה — הוא נכשל ב"לא הצלחתי לייחד בלוק". שורה ארוכה
+     שמכילה drawing+xml היא ייחודית, וההחלפה ניתנת לעיגון. */
+  const CTYPES = XP+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/></Types>';
+  const PKR = 'http://schemas.openxmlformats.org/package/2006/relationships';
+  const ROOTREL = XP+'<Relationships xmlns="'+PKR+'"><Relationship Id="rId1" Type="'+RN+'/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+  const WBXML = XP+'<workbook xmlns="'+NS+'" xmlns:r="'+RN+'"><sheets><sheet name="'+_xq(shName)+'" sheetId="1" r:id="rId1"/></sheets></workbook>';
+  const WBRELS = XP+'<Relationships xmlns="'+PKR+'"><Relationship Id="rId1" Type="'+RN+'/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="'+RN+'/styles" Target="styles.xml"/></Relationships>';
+  const SHRELS = XP+'<Relationships xmlns="'+PKR+'"><Relationship Id="rId1" Type="'+RN+'/drawing" Target="../drawings/drawing1.xml"/></Relationships>';
+  const DRRELS = XP+'<Relationships xmlns="'+PKR+'"><Relationship Id="rId1" Type="'+RN+'/image" Target="../media/image1.png"/></Relationships>';
+  const STYLES = XP+'<styleSheet xmlns="'+NS+'"><numFmts count="2"><numFmt numFmtId="164" formatCode="#,##0.00&quot; ₪&quot;"/><numFmt numFmtId="165" formatCode="0.##%"/></numFmts>'+
+    '<fonts count="'+FN.length+'">'+FN.join('')+'</fonts><fills count="'+FL.length+'">'+FL.join('')+'</fills>'+
+    '<borders count="'+BD.length+'">'+BD.join('')+'</borders>'+
+    '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'+
+    '<cellXfs count="'+XF.length+'">'+XF.join('')+'</cellXfs>'+
+    '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+
   return _skuZip([
-    {name:'[Content_Types].xml', xml:XP+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
-      '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
-      '<Default Extension="xml" ContentType="application/xml"/>'+
-      '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+
-      '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'+
-      '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'+
-      '</Types>'},
-    {name:'_rels/.rels', xml:XP+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
-      '<Relationship Id="rId1" Type="'+RN+'/officeDocument" Target="xl/workbook.xml"/></Relationships>'},
-    {name:'xl/workbook.xml', xml:XP+'<workbook xmlns="'+NS+'" xmlns:r="'+RN+'"><sheets>'+
-      '<sheet name="'+_xq(shName)+'" sheetId="1" r:id="rId1"/></sheets></workbook>'},
-    {name:'xl/_rels/workbook.xml.rels', xml:XP+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
-      '<Relationship Id="rId1" Type="'+RN+'/worksheet" Target="worksheets/sheet1.xml"/>'+
-      '<Relationship Id="rId2" Type="'+RN+'/styles" Target="styles.xml"/></Relationships>'},
-    {name:'xl/worksheets/sheet1.xml', xml:sheet},
-    {name:'xl/styles.xml', xml:XP+'<styleSheet xmlns="'+NS+'">'+
-      '<numFmts count="2"><numFmt numFmtId="164" formatCode="#,##0.00&quot; ₪&quot;"/>'+
-      '<numFmt numFmtId="165" formatCode="0.##%"/></numFmts>'+
-      '<fonts count="'+FN.length+'">'+FN.join('')+'</fonts>'+
-      '<fills count="'+FL.length+'">'+FL.join('')+'</fills>'+
-      '<borders count="'+BD.length+'">'+BD.join('')+'</borders>'+
-      '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'+
-      '<cellXfs count="'+XF.length+'">'+XF.join('')+'</cellXfs>'+
-      '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>'}
+    {name:'[Content_Types].xml',                  xml:CTYPES},
+    {name:'_rels/.rels',                          xml:ROOTREL},
+    {name:'xl/workbook.xml',                      xml:WBXML},
+    {name:'xl/_rels/workbook.xml.rels',           xml:WBRELS},
+    {name:'xl/worksheets/sheet1.xml',             xml:sheet},
+    {name:'xl/worksheets/_rels/sheet1.xml.rels',  xml:SHRELS},
+    {name:'xl/drawings/drawing1.xml',             xml:drawing},
+    {name:'xl/drawings/_rels/drawing1.xml.rels',  xml:DRRELS},
+    {name:'xl/media/image1.png',                  bin:logoBytes},
+    {name:'xl/styles.xml',                        xml:STYLES}
   ]);
 }
 window.skuExpTgl = (k)=>{
@@ -7469,8 +7503,11 @@ const PV_CSS = `
    חולקות תמיד בדיוק את אותה הגדרת עמודות.
    העמודות הקבועות כווצו במילימטרים בודדים כדי ששם המוצר (1fr) לא יורעב אחרי
    תוספת עמודת הקטגוריה והאוויר הצדי — נשארות לו שתי שורות מלאות בשני המצבים. */
-#tab-prc .pv-plcat{ margin-top:6.5mm; --pv-pl-cols:14mm 25mm 1fr 19mm 24mm 26mm }
-#tab-prc .pv-plcat.pv-has-disc{ --pv-pl-cols:14mm 25mm 1fr 17mm 12mm 24mm 26mm }
+/* עמודת מחיר אחת במקום שתיים (רומן, 15/08/2026): כולל מע״מ למעלה, ללא
+   מע״מ מתחתיו. שתי עמודות נפרדות בזבזו רוחב על אותו מידע, והלקוח קורא
+   בפועל מספר אחד. הרוחב שהתפנה הוחזר לשם המוצר ולקטגוריה. */
+#tab-prc .pv-plcat{ margin-top:6.5mm; --pv-pl-cols:14mm 26mm 1fr 22mm 32mm }
+#tab-prc .pv-plcat.pv-has-disc{ --pv-pl-cols:14mm 26mm 1fr 20mm 14mm 32mm }
 #tab-prc .pv-plcat:not(.pv-has-disc) .pv-c-disc{ display:none }
 #tab-prc .pv-plcat-h{ background:var(--pv-pl-navy); color:#fff; font-size:10.5pt; font-weight:700;
   padding:1.7mm 2.5mm; border-radius:1mm 1mm 0 0; print-color-adjust:exact; -webkit-print-color-adjust:exact }
@@ -7482,9 +7519,12 @@ const PV_CSS = `
   font-size:8.5pt; font-weight:600; color:var(--pv-pl-gray); border-bottom:1pt solid var(--pv-pl-navy) }
 #tab-prc .pv-plrow{ height:var(--pv-pl-rowh); overflow:hidden; border-bottom:.5pt solid var(--pv-pl-hair) }
 #tab-prc .pv-plcat > .pv-plrow:last-child{ border-bottom:1pt solid var(--pv-pl-navy) }
-#tab-prc .pv-c-img{ text-align:center }
-#tab-prc .pv-c-sku, #tab-prc .pv-c-name, #tab-prc .pv-c-cat, #tab-prc .pv-c-ex, #tab-prc .pv-c-inc{ text-align:right }
-#tab-prc .pv-c-disc{ text-align:center }
+/* הטבלה כולה ממורכזת חוץ משם המוצר (רומן, 15/08/2026). שם המוצר הוא
+   הטקסט הזורם היחיד כאן, והוא נשאר מימין לשמאל כדי שהעין תמצא התחלה
+   אחידה בכל השורות — מרכוז טקסט משתנה-אורך שובר בדיוק את זה. */
+#tab-prc .pv-c-img, #tab-prc .pv-c-sku, #tab-prc .pv-c-cat,
+#tab-prc .pv-c-disc, #tab-prc .pv-c-price{ text-align:center }
+#tab-prc .pv-c-name{ text-align:right }
 #tab-prc .pv-plrow .pv-c-img{ display:flex; align-items:center; justify-content:center; height:100% }
 /* מסגרת זהה לתא מלא ולתא ריק (רומן, 15/08/2026).
    ⚠️ הכלל הזה (1,3,0) חייב להישאר חזק משני כללים גלובליים: האיפוס שמאפס
@@ -7505,10 +7545,14 @@ const PV_CSS = `
 #tab-prc .pv-plrow .pv-c-cat{ font-size:8pt; color:var(--pv-pl-gray); line-height:1.3;
   display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; max-height:7.5mm }
 #tab-prc .pv-plrow .pv-c-disc{ font-size:9.5pt; font-variant-numeric:tabular-nums }
-#tab-prc .pv-plrow .pv-c-ex{ font-size:9.5pt; color:var(--pv-pl-gray); white-space:nowrap;
-  font-variant-numeric:tabular-nums }
-#tab-prc .pv-plrow .pv-c-inc{ font-size:10pt; font-weight:700; color:var(--pv-pl-navy); white-space:nowrap;
-  font-variant-numeric:tabular-nums }
+/* שני המחירים בתא אחד. ההיררכיה היא מה שמחליף את הכותרות שהיו בשתי
+   העמודות: המספר שהלקוח משלם גדול ומודגש, והנטו קטן ואפור מתחתיו. */
+#tab-prc .pv-plrow .pv-c-price{ display:flex; flex-direction:column;
+  align-items:center; justify-content:center; line-height:1.25 }
+#tab-prc .pv-plrow .pv-p-inc{ font-size:10pt; font-weight:700; color:var(--pv-pl-navy);
+  white-space:nowrap; font-variant-numeric:tabular-nums }
+#tab-prc .pv-plrow .pv-p-ex{ font-size:7.5pt; color:var(--pv-pl-gray);
+  white-space:nowrap; font-variant-numeric:tabular-nums }
 #tab-prc .pv-plfoot{ margin-top:9mm; padding-top:2.5mm; border-top:.5pt solid var(--pv-pl-line);
   font-size:8.5pt; color:var(--pv-pl-gray); line-height:1.6; text-align:center }
 #tab-prc .pv-dbbar{ display:flex; gap:10px; align-items:center; margin-bottom:12px; flex-wrap:wrap }
@@ -9160,7 +9204,7 @@ function plModel(){
   rows.forEach(p=>{ (cats[p.cat] ||= []).push(p); });
   /* מיון לפי קטגוריה (רומן, 15/08/2026). עד היום הסדר נגזר מסדר ה-sort של
      המוצר הראשון שנתקלו בו בכל קטגוריה — כלומר שרירותי מבחינת הקורא. */
-  return { group:g, cust:(plCName||'').trim(), anyDisc:anyDisc,
+  return { group:g, cust:(plCName||'').trim(), anyDisc:anyDisc, logo:PL_LOGO,
     cats: Object.keys(cats).sort((a,b)=>String(a).localeCompare(String(b),'he')).map(k=>({
       name:k,
       items: cats[k].map(p=>{
@@ -9188,8 +9232,7 @@ function renderClient(m){
           '<div class="pv-c-name">מוצר</div>'+
           '<div class="pv-c-cat">קטגוריה</div>'+
           '<div class="pv-c-disc">הנחה</div>'+
-          '<div class="pv-c-ex">מחיר ללא מע״מ</div>'+
-          '<div class="pv-c-inc">מחיר כולל מע״מ</div>'+
+          '<div class="pv-c-price">מחיר כולל מע״מ</div>'+
         '</div>'+
       '</div>';
     cat.items.forEach(it=>{
@@ -9199,8 +9242,10 @@ function renderClient(m){
         '<div class="pv-c-name">'+esc(it.name)+'</div>'+
         '<div class="pv-c-cat">'+esc(it.cat)+'</div>'+
         '<div class="pv-c-disc">'+(it.disc==null? '—' : pc(it.disc))+'</div>'+
-        '<div class="pv-c-ex">'+(it.ex==null? '' : fmt(it.ex)+' ₪')+'</div>'+
-        '<div class="pv-c-inc">'+(it.inc==null? '' : fmt(it.inc)+' ₪')+'</div>'+
+        '<div class="pv-c-price">'+
+          '<span class="pv-p-inc">'+(it.inc==null? '' : fmt(it.inc)+' ₪')+'</span>'+
+          '<span class="pv-p-ex">'+(it.ex==null? '' : 'ללא מע״מ '+fmt(it.ex)+' ₪')+'</span>'+
+        '</div>'+
       '</div>';
     });
     body += '</div>';
@@ -10797,7 +10842,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'plxlsx-2026-08-15a';
+const BUILD_ID = 'plmerge-2026-08-15a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){

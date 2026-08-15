@@ -1606,7 +1606,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.80.0</div>
+      <div class="ver">גרסה 6.80.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1725,7 +1725,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.80.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.80.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5300,7 +5300,9 @@ function _plXlsx(M){
   const XP='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
   const NS='http://schemas.openxmlformats.org/spreadsheetml/2006/main';
   const RN='http://schemas.openxmlformats.org/officeDocument/2006/relationships';
-  const D=!!M.anyDisc, NC=D?7:6, LAST=_colRef(NC-1);
+  const D=!!M.anyDisc, NC=D?6:5, LAST=_colRef(NC-1);
+  /* שתי עמודות מספריות מוסתרות אחרי הגלויות — ראה ההערה על RS */
+  const HID=NC, NCT=NC+2;
   const NAVY='002D48', INK='111C28', GRAY='5A6672', HAIR='E8EDF2', LINE='D9E0E7', SOFT='2A3540';
 
   const FN=[], FL=[], BD=[], XF=[];
@@ -5339,27 +5341,30 @@ function _plXlsx(M){
   const F_BASE=font(10,INK), F_CO=font(14.5,NAVY,1), F_ADDR=font(9,SOFT),
         F_BAND=font(10.5,'FFFFFF',1), F_HEAD=font(8.5,GRAY,1), F_SKU=font(9,NAVY,1),
         F_NAME=font(9.5,INK), F_SEC=font(9.5,GRAY), F_INC=font(10,NAVY,1),
-        F_FOOT=font(8.5,GRAY), F_LBL=font(9.5,INK,1), F_CAT=font(8,GRAY);
+        F_FOOT=font(8.5,GRAY), F_LBL=font(9.5,INK,1), F_CAT=font(8,GRAY),
+        F_DATE=font(9,INK,1), F_PEX=font(10,NAVY,1), F_PINC=font(7.5,GRAY);
 
   const S_CO=xf({f:F_CO,h:'right',v:'center',ro:2}),
         S_ADDR=xf({f:F_ADDR,h:'right',v:'center',ro:2}),
         S_WEB=xf({f:F_ADDR,h:'left',v:'center',ro:1}),
         S_BRAND=xf({f:F_CO,h:'left',v:'center',ro:1}),
         S_LBL=xf({f:F_LBL,h:'right',v:'center',ro:2}),
-        S_DATE=xf({f:F_ADDR,h:'left',v:'center',ro:2}),
+        S_DATE=xf({f:F_DATE,h:'left',v:'center',ro:2}),
         S_TTL=xf({f:F_CO,h:'center',v:'center',ro:2}),
         S_RULE=xf({b:B_RULE}),
         S_BAND=xf({f:F_BAND,fill:FILL_NAVY,h:'right',v:'center',ind:1,ro:2}),
         S_FOOT=xf({f:F_FOOT,b:B_FOOT,h:'center',v:'center',wrap:1,ro:2});
   /* מרכוז כל העמודות חוץ משם המוצר (רומן, 15/08/2026) — זהה למסמך המודפס */
-  const S_HEAD=[{h:'center'},{h:'center'},{h:'right'},{h:'center'},{h:'center'},{h:'center'},{h:'center'}]
-    .slice(0,NC).map(s=>xf({f:F_HEAD,b:B_NAVY,h:s.h,v:'bottom',ro:2}));
+  const S_HEAD=[{h:'center'},{h:'center'},{h:'right'},{h:'center'},{h:'center'},{h:'center'},{h:'center'},{h:'center'}]
+    .slice(0,NCT).map(s=>xf({f:F_HEAD,b:B_NAVY,h:s.h,v:'bottom',ro:2}));
   /* מפרט אחד לשורת מוצר, וממנו נגזרות שתי מערכות — מסגרת שיער לשורה רגילה
      ומסגרת נייבי לשורה האחרונה בקטגוריה. כך שתיהן אינן יכולות להתפצל
      ולהסכים על עמודות שונות. */
   const RS=[{f:F_SEC,h:'center'},{f:F_SKU,h:'center',ro:2},{f:F_NAME,h:'right',wrap:1,ro:2},
             {f:F_CAT,h:'center',ro:2}];
   if(D) RS.push({f:F_NAME,h:'center',n:165});
+  /* התא המוצג — טקסט דו-שורתי — ואחריו שתי העמודות המספריות המוסתרות */
+  RS.push({f:F_SEC,h:'center',wrap:1});
   RS.push({f:F_SEC,h:'center',n:164},{f:F_INC,h:'center',n:164});
   const S_ROW=RS.map(s=>xf(Object.assign({},s,{b:B_HAIR,v:'center'})));
   const S_END=RS.map(s=>xf(Object.assign({},s,{b:B_NAVY,v:'center'})));
@@ -5367,6 +5372,7 @@ function _plXlsx(M){
   /* תא ריק חייב להיפלט עם s. טווח ממוזג נושא רק את **התוכן** של התא
      השמאלי-עליון; רקע ומסגרת כל תא בטווח נושא בעצמו. בלי זה הפס הכחול
      מצויר בעמודה אחת והמיזוג נראה שבור. */
+  const fmt2=n=>Number(n).toLocaleString('he-IL',{minimumFractionDigits:2,maximumFractionDigits:2});
   const cel=(ci,ri,v,s)=>{
     const rf=_colRef(ci)+ri, sa=(s?' s="'+s+'"':'');
     if(v==null||v==='') return '<c r="'+rf+'"'+sa+'/>';
@@ -5420,7 +5426,7 @@ function _plXlsx(M){
 
   const HEAD=['תמונה','מק״ט','מוצר','קטגוריה'];
   if(D) HEAD.push('הנחה');
-  HEAD.push('מחיר ללא מע״מ','מחיר כולל מע״מ');
+  HEAD.push('מחיר','מחיר ללא מע״מ','מחיר כולל מע״מ');
   M.cats.forEach(cat=>{
     band(cat.name,S_BAND,21);
     row(HEAD.map((t,i)=>({v:t,s:S_HEAD[i]})),20);
@@ -5435,15 +5441,25 @@ function _plXlsx(M){
         cells[0]={raw:'<c r="A'+(r+1)+'" s="'+SS[0]+'" t="str"><f>HYPERLINK(&quot;'+
                       _xq(u)+'&quot;,&quot;תמונה&quot;)</f><v>תמונה</v></c>'};
       } else cells[0]={v:'',s:SS[0]};
+      const rr2=(f,t)=>'<r><rPr>'+(f.b?'<b/>':'')+'<sz val="'+f.sz+'"/><color rgb="FF'+f.c+
+        '"/><rFont val="Arial"/></rPr><t xml:space="preserve">'+_xq(t)+'</t></r>';
       cells[1]={v:it.sku,s:SS[1]};
       cells[2]={v:it.name,s:SS[2]};
       cells[3]={v:it.cat,s:SS[3]};
       let k=4;
       if(D){ cells[k]={v:(it.disc==null? '' : it.disc),s:SS[k]}; k++; }
+      /* התא המוצג — שתי שורות, כל אחת בעיצוב משלה */
+      if(it.ex==null && it.inc==null) cells[k]={v:'',s:SS[k]};
+      else cells[k]={raw:'<c r="'+_colRef(k)+(r+1)+'" s="'+SS[k]+'" t="inlineStr"><is>'+
+        rr2({b:1,sz:10,c:NAVY}, (it.ex==null? '' : fmt2(it.ex)+' ₪'))+
+        rr2({sz:7.5,c:GRAY}, (it.inc==null? '' : '\nכולל מע״מ '+fmt2(it.inc)+' ₪'))+
+        '</is></c>'};
+      k++;
+      /* ושתי המוסתרות — המספרים עצמם, כדי ש-SUM ומיון ימשיכו לעבוד */
       cells[k]={v:(it.ex==null? '' : Math.round(it.ex*100)/100),s:SS[k]}; k++;
       cells[k]={v:(it.inc==null? '' : Math.round(it.inc*100)/100),s:SS[k]};
       r++;
-      let x='<row r="'+r+'" ht="26" customHeight="1">';
+      let x='<row r="'+r+'" ht="30" customHeight="1">';
       cells.forEach((cc,i)=>{ x += cc.raw? cc.raw : cel(i,r,cc.v,cc.s); });
       out.push(x+'</row>');
     });
@@ -5452,8 +5468,9 @@ function _plXlsx(M){
   band('המחירים בתוקף למועד הפקת המחירון בלבד וניתנים לשינוי ללא הודעה מוקדמת · '+
        'אספקה, הובלה והתקנה יתומחרו בנפרד · איירון פיטנס',S_FOOT,34);
 
-  const W=[9,15,44,15]; if(D) W.push(9); W.push(14,14);
-  const cols=W.map((w,i)=>'<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+'" customWidth="1"/>').join('');
+  const W=[9,15,44,15]; if(D) W.push(9); W.push(20,14,14);
+  const cols=W.map((w,i)=>'<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+
+    '" customWidth="1"'+(i>=HID? ' hidden="1"':'')+'/>').join('');
 
   /* סדר האלמנטים ב-worksheet הוא רצף מחייב: sheetData ואז mergeCells ואז
      pageMargins. הפרה שלו מחזירה "אקסל מצא תוכן שאינו קריא". */
@@ -5490,16 +5507,17 @@ function _plXlsx(M){
   const DNS = 'http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing';
   const ANS = 'http://schemas.openxmlformats.org/drawingml/2006/main';
   const drawing = XP+'<xdr:wsDr xmlns:xdr="'+DNS+'" xmlns:a="'+ANS+'" xmlns:r="'+RN+'">'+
-    '<xdr:oneCellAnchor>'+
-      '<xdr:from><xdr:col>'+BC+'</xdr:col><xdr:colOff>0</xdr:colOff>'+
+    '<xdr:twoCellAnchor editAs="oneCell">'+
+      '<xdr:from><xdr:col>'+Math.max(0,NC-2)+'</xdr:col><xdr:colOff>0</xdr:colOff>'+
       '<xdr:row>0</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from>'+
-      '<xdr:ext cx="'+LW+'" cy="'+LH+'"/>'+
+      '<xdr:to><xdr:col>'+NC+'</xdr:col><xdr:colOff>0</xdr:colOff>'+
+      '<xdr:row>1</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to>'+
       '<xdr:pic><xdr:nvPicPr><xdr:cNvPr id="2" name="IRON FITNESS"/>'+
         '<xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr>'+
         '<xdr:blipFill><a:blip r:embed="rId1"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill>'+
         '<xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+LW+'" cy="'+LH+'"/></a:xfrm>'+
         '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr>'+
-      '</xdr:pic><xdr:clientData/></xdr:oneCellAnchor></xdr:wsDr>';
+      '</xdr:pic><xdr:clientData/></xdr:twoCellAnchor></xdr:wsDr>';
 
   /* כל חלק נבנה כמחרוזת אחת בשורה אחת. זה אינו סגנון: שורת ה-Override של
      styles.xml זהה מילה במילה בשלושת כותבי ה-XLSX בקובץ, ו-gendeploy אינו
@@ -7465,10 +7483,10 @@ const PV_CSS = `
 #tab-prc .pv-pricelist [hidden]{ display:none }
 #tab-prc .pv-doc{ position:relative; z-index:1 }
 
-/* סימן המים ברוחב הטבלה, שקיפות 20% (רומן, 15/08/2026 — היה 10%).
-   20% הוא התקרה: המחיר כולל מע"מ נשאר קריא לחלוטין, אבל עמודת "ללא מע"מ"
-   האפורה מאבדת ניגודיות היכן שקצה הלוגו חוצה ספרות. אם בהדפסה זה נראה רך —
-   לרדת ל-15%, לא לעלות. */
+/* סימן המים ברוחב הטבלה, שקיפות 5% (רומן, 15/08/2026 — היה 20%,
+   ולפני כן 10%). בערך הזה הוא רמז ולא רקע, ואינו מתחרה בשום מספר.
+   הסמל צבוע בצבע המותג המדויק (#002D48); מה שמבהיר אותו הוא השקיפות
+   בלבד, שמערבבת עם הלבן ומורידה רוויה. */
 #tab-prc .pv-wm{ position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden }
 /* מתחיל ב-60% מתחתית הדף וממורכז לרוחב (רומן, 15/08/2026) — כלומר הקצה
    העליון של הסמל יושב ב-40% מלמעלה. קודם הוא היה ממורכז אנכית, ולכן חצה
@@ -7476,7 +7494,7 @@ const PV_CSS = `
    אינו יודע לבטא "מתחיל בנקודה מסוימת".
    הרוחב 180mm הוא רוחב הטבלה בפועל: 210 פחות 21 (@page) פחות 8.4 (ריפוד). */
 #tab-prc .pv-wm img{ position:absolute; top:40%; left:50%; transform:translateX(-50%);
-  width:180mm; max-width:90%; height:auto; opacity:.20;
+  width:180mm; max-width:90%; height:auto; opacity:.05;
   print-color-adjust:exact; -webkit-print-color-adjust:exact }
 
 #tab-prc .pv-lh-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10mm }
@@ -7489,7 +7507,10 @@ const PV_CSS = `
 #tab-prc .pv-lh-recip{ display:flex; align-items:flex-start; gap:10mm; font-size:9.5pt; line-height:1.6 }
 #tab-prc .pv-lh-custlabel{ font-weight:700 }
 #tab-prc .pv-lh-custname{ font-weight:500 }
-#tab-prc .pv-lh-dates{ margin-inline-start:auto; text-align:right; white-space:nowrap; color:#2a3540 }
+/* מודגשים לבקשת רומן (15/08/2026) — שני התאריכים הם מה שקובע את תוקף
+   המסמך, ולכן הם צריכים להיקרא בסריקה ראשונה ולא להתערבב בפרטי החברה. */
+#tab-prc .pv-lh-dates{ margin-inline-start:auto; text-align:right; white-space:nowrap;
+  color:var(--pv-pl-ink); font-weight:700 }
 /* בלי קו תחתי (רומן, 15/08/2026) — קו מתחת לטקסט נראה כמו קישור ולא ככותרת
    מסמך. במקומו קו-מבטא קצר וממורכז, מאותה משפחה ויזואלית כמו הקו שמתחת ללוגו. */
 #tab-prc .pv-lh-title{ margin:7mm 0 4mm; text-align:center; font-size:14.5pt; font-weight:700;
@@ -7545,13 +7566,14 @@ const PV_CSS = `
 #tab-prc .pv-plrow .pv-c-cat{ font-size:8pt; color:var(--pv-pl-gray); line-height:1.3;
   display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; max-height:7.5mm }
 #tab-prc .pv-plrow .pv-c-disc{ font-size:9.5pt; font-variant-numeric:tabular-nums }
-/* שני המחירים בתא אחד. ההיררכיה היא מה שמחליף את הכותרות שהיו בשתי
-   העמודות: המספר שהלקוח משלם גדול ומודגש, והנטו קטן ואפור מתחתיו. */
+/* שני המחירים בתא אחד, וההיררכיה הפוכה מ-6.80.0: **ללא מע״מ** הוא
+   המודגש (רומן, 15/08/2026). ההדגשה מסמנת את המספר שעליו מנהלים משא
+   ומתן, ולא את זה שמשלמים בפועל. */
 #tab-prc .pv-plrow .pv-c-price{ display:flex; flex-direction:column;
   align-items:center; justify-content:center; line-height:1.25 }
-#tab-prc .pv-plrow .pv-p-inc{ font-size:10pt; font-weight:700; color:var(--pv-pl-navy);
+#tab-prc .pv-plrow .pv-p-ex{ font-size:10pt; font-weight:700; color:var(--pv-pl-navy);
   white-space:nowrap; font-variant-numeric:tabular-nums }
-#tab-prc .pv-plrow .pv-p-ex{ font-size:7.5pt; color:var(--pv-pl-gray);
+#tab-prc .pv-plrow .pv-p-inc{ font-size:7.5pt; color:var(--pv-pl-gray);
   white-space:nowrap; font-variant-numeric:tabular-nums }
 #tab-prc .pv-plfoot{ margin-top:9mm; padding-top:2.5mm; border-top:.5pt solid var(--pv-pl-line);
   font-size:8.5pt; color:var(--pv-pl-gray); line-height:1.6; text-align:center }
@@ -9232,7 +9254,7 @@ function renderClient(m){
           '<div class="pv-c-name">מוצר</div>'+
           '<div class="pv-c-cat">קטגוריה</div>'+
           '<div class="pv-c-disc">הנחה</div>'+
-          '<div class="pv-c-price">מחיר כולל מע״מ</div>'+
+          '<div class="pv-c-price">מחיר ללא מע״מ</div>'+
         '</div>'+
       '</div>';
     cat.items.forEach(it=>{
@@ -9243,8 +9265,8 @@ function renderClient(m){
         '<div class="pv-c-cat">'+esc(it.cat)+'</div>'+
         '<div class="pv-c-disc">'+(it.disc==null? '—' : pc(it.disc))+'</div>'+
         '<div class="pv-c-price">'+
-          '<span class="pv-p-inc">'+(it.inc==null? '' : fmt(it.inc)+' ₪')+'</span>'+
-          '<span class="pv-p-ex">'+(it.ex==null? '' : 'ללא מע״מ '+fmt(it.ex)+' ₪')+'</span>'+
+          '<span class="pv-p-ex">'+(it.ex==null? '' : fmt(it.ex)+' ₪')+'</span>'+
+          '<span class="pv-p-inc">'+(it.inc==null? '' : 'כולל מע״מ '+fmt(it.inc)+' ₪')+'</span>'+
         '</div>'+
       '</div>';
     });
@@ -10842,7 +10864,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'plmerge-2026-08-15a';
+const BUILD_ID = 'plfix-2026-08-15a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){

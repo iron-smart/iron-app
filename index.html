@@ -463,6 +463,18 @@
               font-size:15px; line-height:1; padding:0 2px; font-weight:700; }
     .pchip-x:hover{ color:#be123c; }
     .pchip-empty{ color:#94a3b8; font-size:12.5px; padding:2px 4px; }
+    /* אתרי לקוח (6.81.0). תחילית ייעודית — .row/.k/.v גלובליות ולא
+       נוגעים בהן. בסוף הגיליון כי בספציפיות זהה המאוחר מנצח. */
+    .csite-row{ display:flex; justify-content:space-between; gap:10px;
+                padding:8px 0; border-bottom:1px solid var(--line); font-size:14px; }
+    .csite-row:last-child{ border-bottom:0; }
+    .csite-nm{ font-weight:700; color:#0f172a; }
+    .csite-cd{ font-weight:400; color:#6366f1; font-size:12px; margin-inline-start:5px; }
+    .csite-ad{ color:#475569; text-align:end; font-size:13px; }
+    .csite-no{ color:#b45309; font-size:12px; font-weight:600; }
+    .csite-main{ background:#eef2ff; border:1px solid #c7d2fe; color:#3730a3;
+                 border-radius:6px; padding:1px 6px; font-size:11px; font-weight:700;
+                 margin-inline-start:6px; }
   .more{ text-align:center; color:#64748b; font-size:13px; padding:10px; }
 
   /* מודל */
@@ -1606,7 +1618,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.80.1</div>
+      <div class="ver">גרסה 6.81.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1725,7 +1737,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.80.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.81.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -10864,7 +10876,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'plfix-2026-08-15a';
+const BUILD_ID = 'sites-2026-08-15a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -11877,6 +11889,11 @@ async function loadLeads(){
   else loadErrBanner(null);
   LEADS = l.data||[]; CUSTS = c.data||[]; TASKS = t.data||[]; DEALS = d.data||[]; MEETS = m.data||[]; CONTS = k.data||[]; PAYS = p.data||[];
   ORDS = o.data||[]; SCALLS = sc.data||[]; OTEAMS = tm.data||[]; SKUS = sk.data||[]; PROTS = pr.data||[]; OSET = st.data||[];
+  /* 6.81.0 — אתרי הלקוח נטענים **מחוץ** למערך _q במכוון: הוא מפורק לפי
+     מיקום ומקביל ל-LOAD_NAMES, וכל תוספת שם מזיזה את כל האינדקסים.
+     136 שורות בסך הכול, ו-fire-and-forget מספיק — הבורר נחוץ רק כשנפתח
+     כרטיס, הרבה אחרי הטעינה. כשל בטעינה פשוט מסתיר את הבורר. */
+  loadSites();
   /* מפת הביקורים המשותפים — ללוח (איחוד כרטיסי צפי) ולמסך התשלומים
      (סימון גבייה משותפת). היא נטענת אחרי הנתונים, ולכן שני המסכים
      מצוירים שוב כשהיא מגיעה. */
@@ -12037,12 +12054,47 @@ window.openCust = async (id)=>{
     ${(()=>{ const cp=PAYS.filter(p=>p.customer_id===c.id); return cp.length?`<h2 class="sec">💳 תשלומים (${cp.length})</h2>`+cp.slice(0,10).map(p=>`<div class="row"><span class="k">${p.due_date?fmtD(p.due_date):'—'}</span><span class="v">${shekel(p.total_amount)} · ${esc(p.status||'')}</span></div>`).join(''):''; })()}
     ${(()=>{ const cm=MEETS.filter(m=>m.linked_type==='customer'&&m.linked_id===c.id); return cm.length?`<h2 class="sec">📅 פגישות (${cm.length})</h2>`+cm.slice(0,10).map(m=>`<div class="row"><span class="k">${m.meet_date?fmtD(m.meet_date):''}</span><span class="v">${esc(m.subject||'')}</span></div>`).join(''):''; })()}
     <h2 class="sec">אנשי קשר (${(contacts||[]).length})</h2>
-    ${(contacts||[]).map(p=>`<div class="row"><span class="k">${esc(p.full_name)}</span><span class="v">${esc(p.phone||p.email||'—')}</span></div>`).join('')||'<div class="empty" style="padding:10px">אין אנשי קשר</div>'}`;
+    ${(contacts||[]).map(p=>`<div class="row"><span class="k">${esc(p.full_name)}</span><span class="v">${esc(p.phone||p.email||'—')}</span></div>`).join('')||'<div class="empty" style="padding:10px">אין אנשי קשר</div>'}
+    ${(()=>{ /* 6.81.0 — אתרי הלקוח מפריוריטי. מוצג רק כשיש, כי ל-4,498
+                מתוך 4,514 הלקוחות אין אף אתר. */
+      const ss = sitesFor(id); if(!ss.length) return '';
+      return `<h2 class="sec">📍 אתרי הלקוח (${ss.length})</h2>` + ss.map(s=>{
+        const ad = siteAddr(s);
+        return `<div class="csite-row"><span><span class="csite-nm">${esc(s.name||'ללא שם')}</span>`
+          + `<span class="csite-cd" dir="ltr">${esc(s.site_code)}</span>`
+          + (s.is_main?`<span class="csite-main">ראשי</span>`:'')
+          + `</span><span class="csite-ad">${ad?esc(ad):'<span class="csite-no">אין כתובת בפריוריטי</span>'}`
+          + (s.city?' · '+esc(s.city):'') + `</span></div>`;
+      }).join('');
+    })()}`;
   mountCard('custModal', ()=>openCust(id));
 };
 $('#custSearch').addEventListener('input', renderCustomers);
 $('#taskSearch').addEventListener('input', renderTasks);
 
+/* ===== אתרי לקוח (6.81.0) ===== */
+/* מראה של core.customer_sites, שהיא עצמה מראה של CUSTDESTS בפריוריטי.
+   נמדד 15/08/2026: 136 אתרים אצל 16 לקוחות מתוך 4,514 — ולכן כל שימוש
+   חייב להסתיר את עצמו כשאין אתרים, אחרת 4,498 לקוחות מקבלים שדה ריק. */
+let SITES = [];
+async function loadSites(){
+  try{
+    const { data } = await sb.schema('core').from('customer_sites')
+      .select('id,customer_id,site_code,name,addr1,addr2,addr3,city,phone,is_main,inactive')
+      .order('site_code',{ascending:true}).limit(5000);
+    SITES = data||[];
+  }catch(_e){ SITES = []; }
+}
+/* אתרים פעילים של לקוח, הראשי ראשון. */
+function sitesFor(custId){
+  if(!custId) return [];
+  return SITES.filter(s=>String(s.customer_id)===String(custId) && !s.inactive)
+              .sort((a,b)=> (b.is_main?1:0)-(a.is_main?1:0) || String(a.name||'').localeCompare(String(b.name||''),'he'));
+}
+/* שלוש שורות הכתובת של אתר כמחרוזת אחת, לתצוגה. */
+function siteAddr(s){
+  return [s.addr1, s.addr2, s.addr3].filter(Boolean).join(' ');
+}
 /* ===== אנשי קשר ===== */
 function contRow(k){
   const cust = k.customer_id ? CUSTS.find(c=>c.id===k.customer_id) : null;
@@ -13478,8 +13530,15 @@ window.openScall = (id)=>{
       <div class="form-sep">איש קשר וכתובת</div>
       <div class="ac-wrap"><label>איש קשר</label><input id="se-contname" value="${esc(s.contact_name||'')}" autocomplete="off" placeholder="בחירה מאנשי הקשר של הלקוח, או הקלדה" oninput="scContSearch(this.value,'se','${esc(String(scCustId(s)||''))}')" onfocus="scContSearch(this.value,'se','${esc(String(scCustId(s)||''))}')" onblur="setTimeout(()=>{const b=document.getElementById('se-cont-results'); if(b) b.hidden=true;},150)"><div id="se-cont-results" class="ac-menu" hidden></div></div>
       <div><label>טלפון איש קשר ${phBtns(s.contact_phone)}</label><input id="se-contphone" value="${esc(s.contact_phone||'')}" dir="ltr"></div>
-      <div class="addr-row"><div><label>📦 כתובת משלוח</label><input id="se-ship1" value="${esc(s.ship_addr1||'')}" placeholder="רחוב ומספר"></div><div><label>כתובת משלוח2</label><input id="se-ship2" value="${esc(s.ship_addr2||'')}" placeholder="כניסה / קומה"></div><div><label>כתובת משלוח3</label><input id="se-ship3" value="${esc(s.ship_addr3||'')}" placeholder="הערת מסירה"></div><div><label>עיר</label><input id="se-city" value="${esc(s.city||'')}"></div><div><label>אזור גיאוגרפי</label>${selHtml('se-region',REGIONS,s.region,true)}</div></div>
-      <div class="span4"><label>🚚 כתובת הגעה לקריאה ${wazeBtn(s.address?(s.address+' '+(s.city||'')):'')}</label><input id="se-addr" value="${esc(s.address||'')}" placeholder="לאן הצוות מגיע — מלאו רק אם שונה מכתובת המשלוח"></div>
+      ${(()=>{ /* 6.81.0 — הבורר מוצג **רק** ללקוח שיש לו אתרים (16 מתוך
+                  4,514). תא span2 נפרד ולא בתוך .addr-row: שם הוא היה תא
+                  שישי בתת-גריד של חמש עמודות, גולש לשורה שנייה ומפיל את
+                  cardlayouttest. */
+        const _cid = scCustId(s); const _ss = sitesFor(_cid);
+        return _ss.length ? `<div class="span2 ac-wrap"><label>📍 אתר הלקוח <small style="font-weight:400;color:#64748b">(${_ss.length} אתרים — הבחירה ממלאת את כתובת המשלוח)</small></label><input id="se-sitepick" autocomplete="off" placeholder="חיפוש לפי שם אתר, קוד, עיר או כתובת…" oninput="scSiteSearch(this.value,'se','${esc(String(_cid))}')" onfocus="scSiteSearch(this.value,'se','${esc(String(_cid))}')" onblur="setTimeout(()=>{const b=document.getElementById('se-site-results'); if(b) b.hidden=true;},150)"><div id="se-site-results" class="ac-menu" hidden></div></div>` : '';
+      })()}
+      <div class="addr-row"><div><label>📦 כתובת משלוח</label><input id="se-ship1" value="${esc(s.ship_addr1||'')}" placeholder="רחוב ומספר"></div><div><label>כתובת משלוח2</label><input id="se-ship2" value="${esc(s.ship_addr2||'')}" placeholder="כניסה / קומה"></div><div><label>כתובת משלוח3</label><input id="se-ship3" value="${esc(s.ship_addr3||'')}" placeholder="הערת מסירה"></div><div><label>עיר</label><input id="se-city" value="${esc(s.city||'')}" oninput="scRegionReflect('se')"></div><div><label>אזור גיאוגרפי</label>${selHtml('se-region',REGIONS,s.region,true)}</div></div>
+      <div class="span4"><label>🚚 כתובת הגעה לקריאה ${wazeBtn(s.address?(s.address+' '+(s.city||'')):'')} <small style="font-weight:400;color:#64748b">(מלאו רק אם כתובת החיוב וגם כתובת המשלוח אינן הכתובת הנכונה, או ששתיהן ריקות)</small></label><input id="se-addr" value="${esc(s.address||'')}" placeholder="לאן הצוות מגיע בפועל" oninput="scRegionReflect('se')"></div>
 
       <div class="form-sep">שדות למילוי</div>
       <!-- span4: הבורר מחזיק תווית + תיבת חיפוש + קופסת צ'יפים, ובתא של
@@ -13589,8 +13648,9 @@ window.openNewScall = ()=>{
       <div class="form-sep">איש קשר וכתובת</div>
       <div class="ac-wrap"><label>איש קשר</label><input id="ne-contname" autocomplete="off" placeholder="בחירה מאנשי הקשר של הלקוח, או הקלדה" oninput="scContSearch(this.value,'ne',NE_CUST?NE_CUST.id:'')" onfocus="scContSearch(this.value,'ne',NE_CUST?NE_CUST.id:'')" onblur="setTimeout(()=>{const b=document.getElementById('ne-cont-results'); if(b) b.hidden=true;},150)"><div id="ne-cont-results" class="ac-menu" hidden></div></div>
       <div><label>טלפון איש קשר</label><input id="ne-contphone" dir="ltr" placeholder="מתמלא מהבחירה"></div>
-      <div class="addr-row"><div><label>📦 כתובת משלוח</label><input id="ne-ship1" placeholder="רחוב ומספר"></div><div><label>כתובת משלוח2</label><input id="ne-ship2" placeholder="כניסה / קומה"></div><div><label>כתובת משלוח3</label><input id="ne-ship3" placeholder="הערת מסירה"></div><div><label>עיר</label><input id="ne-city" class="ro" readonly title="העיר לגזירת האזור הגיאוגרפי — מעיר הלקוח, או מכתובת ההגעה כשהיא ממולאת (גוברת)"></div><div><label>אזור גיאוגרפי</label>${selHtml('ne-region',REGIONS,'',true)}</div></div>
-      <div class="span4"><label>🚚 כתובת הגעה לקריאה</label><input id="ne-addr" placeholder="מלאו רק אם כתובת הלקוח אינה נכונה — היא גוברת" oninput="neCityReflect()"></div>
+      <div class="span2 ac-wrap" id="ne-sitebox" hidden><label>📍 אתר הלקוח <small style="font-weight:400;color:#64748b">(הבחירה ממלאת את כתובת המשלוח)</small></label><input id="ne-sitepick" autocomplete="off" placeholder="חיפוש לפי שם אתר, קוד, עיר או כתובת…" oninput="scSiteSearch(this.value,'ne',NE_CUST?NE_CUST.id:'')" onfocus="scSiteSearch(this.value,'ne',NE_CUST?NE_CUST.id:'')" onblur="setTimeout(()=>{const b=document.getElementById('ne-site-results'); if(b) b.hidden=true;},150)"><div id="ne-site-results" class="ac-menu" hidden></div></div>
+      <div class="addr-row"><div><label>📦 כתובת משלוח</label><input id="ne-ship1" placeholder="רחוב ומספר"></div><div><label>כתובת משלוח2</label><input id="ne-ship2" placeholder="כניסה / קומה"></div><div><label>כתובת משלוח3</label><input id="ne-ship3" placeholder="הערת מסירה"></div><div><label>עיר</label><input id="ne-city" placeholder="מתמלאת מהאתר או מהלקוח" oninput="scRegionReflect('ne')"></div><div><label>אזור גיאוגרפי</label>${selHtml('ne-region',REGIONS,'',true)}</div></div>
+      <div class="span4"><label>🚚 כתובת הגעה לקריאה <small style="font-weight:400;color:#64748b">(מלאו רק אם כתובת החיוב וגם כתובת המשלוח אינן הכתובת הנכונה, או ששתיהן ריקות)</small></label><input id="ne-addr" placeholder="לאן הצוות מגיע בפועל" oninput="neCityReflect()"></div>
 
       <div class="form-sep">שדות למילוי <small style="font-weight:400;color:#64748b">(כולם חובה)</small></div>
       <div class="span4 ac-wrap"><label>מק״ט / שם מוצר <small style="font-weight:400;color:#64748b">(בחירה מרובה מהקטלוג)</small></label><input id="ne-prodpick" autocomplete="off" placeholder="חיפוש מכרטיסי הפריט — כל בחירה מתווספת…" oninput="neProdSearch(this.value,'ne')" onfocus="neProdSearch(this.value,'ne')" onblur="setTimeout(()=>{const b=document.getElementById('ne-prod-results'); if(b) b.hidden=true;},150)"><div id="ne-prod-results" class="ac-menu" hidden></div><input type="hidden" id="ne-prods"><div id="ne-prodchips" class="pchip-box" style="margin-top:5px"></div></div>
@@ -13640,6 +13700,11 @@ window.neCustChoose = (id)=>{
   /* 6.78.1 — החלפת לקוח מנקה את איש הקשר. בלי זה היה נשמר איש קשר של
      הלקוח הקודם, וזה בדיוק סוג הנתון שאיש לא בודק אחר כך. */
   set('ne-contname',''); set('ne-contphone','');
+  /* 6.81.0 — בורר האתר נחשף רק ללקוח שיש לו אתרים, ובחירה קודמת נמחקת
+     יחד עם הלקוח. אחרת היה נשאר אתר של הלקוח הקודם. */
+  set('ne-sitepick','');
+  const _sb = document.getElementById('ne-sitebox');
+  if(_sb) _sb.hidden = !(sitesFor(c.id).length);
   neCityReflect();
   const box=document.getElementById('ne-cust-results'); if(box){ box.hidden=true; box.innerHTML=''; }
   neXref();
@@ -13701,6 +13766,44 @@ window.scContSearch = (q, prefix, cid)=>{
                                        : 'לא נבחר לקוח — ניתן להקליד חופשי') + '</div>');
   box.hidden = false;
 };
+/* ── בורר אתר (6.81.0) ─────────────────────────────────────────────────
+   רומן: "ניתן לבחור אתר וזה ימלא את הכתובת למשלוח".
+   ⚠️ **הבחירה היא פעולה מפורשת של המשתמש ולא חישוב בציור.** לכן אין כאן
+   את המלכודת של "ערך מחושב בשדה עריכה" — כרטיס שלא נגעו בו אינו שולח
+   דבר בשמירה. אותו עיקרון בדיוק כמו scContChoose. */
+window.scSiteSearch = (q, prefix, cid)=>{
+  const box = document.getElementById(prefix+'-site-results'); if(!box) return;
+  const mine = (typeof sitesFor==='function') ? sitesFor(cid) : [];
+  q = String(q||'').trim().toLowerCase();
+  const res = (q ? mine.filter(s=>String(s.name||'').toLowerCase().includes(q)
+                                || String(s.site_code||'').toLowerCase().includes(q)
+                                || String(s.city||'').toLowerCase().includes(q)
+                                || siteAddr(s).toLowerCase().includes(q))
+                 : mine).slice(0,60);
+  box.innerHTML = res.length
+    ? res.map(s=>{
+        const ad = siteAddr(s);
+        return '<button type="button" class="ac-item" onmousedown="event.preventDefault()" onclick="scSiteChoose(\''
+          + esc(String(s.id)) + '\',\'' + prefix + '\')"><b>' + esc(s.name||'ללא שם')
+          + (s.is_main?' ★':'') + '</b><span>'
+          + esc([s.site_code, ad || 'אין כתובת בפריוריטי', s.city].filter(Boolean).join(' · '))
+          + '</span></button>';
+      }).join('')
+    : '<div class="ac-empty">' + (mine.length ? 'אין אתר תואם' : 'אין אתרים ללקוח זה') + '</div>';
+  box.hidden = false;
+};
+window.scSiteChoose = (sid, prefix)=>{
+  const s = SITES.find(x=>String(x.id)===String(sid)); if(!s) return;
+  const set=(eid,val)=>{ const f=document.getElementById(eid); if(f) f.value=val||''; };
+  set(prefix+'-ship1', s.addr1); set(prefix+'-ship2', s.addr2); set(prefix+'-ship3', s.addr3);
+  set(prefix+'-city',  s.city);
+  const pick=document.getElementById(prefix+'-sitepick');
+  if(pick) pick.value = [s.name, s.site_code].filter(Boolean).join(' · ');
+  const box=document.getElementById(prefix+'-site-results'); if(box){ box.hidden=true; box.innerHTML=''; }
+  /* העיר שהאתר הביא היא עיר המשלוח, ולכן היא ראש שרשרת גזירת האזור. */
+  try{ window.scRegionReflect(prefix); }catch(_e){}
+  try{ window.markEmpty('ordModal'); }catch(_e){}
+};
 window.scContChoose = (id, prefix)=>{
   const all = (typeof CONTS!=='undefined' && CONTS) ? CONTS : [];
   const k = all.find(x=>String(x.id)===String(id)); if(!k) return;
@@ -13719,14 +13822,32 @@ window.neXrefPick = (on)=>{
 const BUILTIN_CITIES = ['תל אביב','תל אביב-יפו','ירושלים','חיפה','ראשון לציון','פתח תקווה','אשדוד','נתניה','באר שבע','בני ברק','חולון','רמת גן','אשקלון','רחובות','בת ים','כפר סבא','הרצליה','חדרה','מודיעין','מודיעין מכבים רעות','נצרת','לוד','רמלה','רעננה','גבעתיים','הוד השרון','קרית אתא','קרית גת','נהריה','קרית מוצקין','קרית ביאליק','קרית ים','אילת','ראש העין','עפולה','אור יהודה','יבנה','נס ציונה','דימונה','טבריה','קרית מלאכי','יהוד','נשר','כרמיאל','מגדל העמק','שדרות','טירת כרמל','אריאל','בית שמש','מודיעין עילית','גבעת שמואל','אור עקיבא','יקנעם','טירה','טייבה','אום אל-פחם','רהט','מעלה אדומים','ביתר עילית'];
 function knownCities(){ const s=new Set(BUILTIN_CITIES); custSrc().forEach(c=>{ if(c&&c.city) s.add(String(c.city).trim()); }); return s; }
 function cityFromAddr(addr){ addr=String(addr||'').trim(); if(!addr) return ''; const ks=knownCities(); const w=addr.split(/\s+/); for(let n=Math.min(3,w.length); n>=1; n--){ const cand=w.slice(w.length-n).join(' '); if(ks.has(cand)) return cand; } if(addr.includes(',')) return addr.split(',').pop().trim(); return ''; }
+/* 6.81.0 — סדר הקדימות לגזירת האזור, הכרעת רומן (15/08/2026):
+   **עיר המשלוח ← עיר החיוב ← עיר מתוך כתובת ההגעה.**
+   עד כאן היה הפוך: כתובת ההגעה גברה על עיר הלקוח, ועיר המשלוח לא נשקלה
+   כלל. `zone` של פריוריטי אינו משמש — נמדד שהוא ריק בכל 136 האתרים.
+   ⚠️ הפונקציה **אינה כותבת לשדה העיר** כשהמשתמש מילא אותו; היא רק
+   קוראת אותו. כתיבה הייתה הופכת את השדה לערך מחושב, וזו המלכודת. */
+window.scRegionReflect = (prefix)=>{
+  prefix = prefix || 'ne';
+  const val = eid => { const e=document.getElementById(prefix+'-'+eid); return e ? String(e.value||'').trim() : ''; };
+  const shipCity = val('city');
+  const billCity = (prefix==='ne')
+      ? ((NE_CUST && NE_CUST.city) ? String(NE_CUST.city).trim() : '')
+      : (document.getElementById('se-billcity') ? document.getElementById('se-billcity').value : '');
+  const arrCity  = cityFromAddr(val('addr'));
+  const eff = shipCity || billCity || arrCity;
+  const regEl = document.getElementById(prefix+'-region');
+  if(regEl && !regEl.disabled){
+    const r = CITY_REGION[eff] || '';
+    if(r) regEl.value = r;
+  }
+  return eff;
+};
 window.neCityReflect = ()=>{
   const priCity = (NE_CUST && NE_CUST.city) ? String(NE_CUST.city).trim() : '';
   const top=document.getElementById('ne-custcity'); if(top) top.value = priCity;
-  const addr=((document.getElementById('ne-addr')||{}).value)||'';
-  const eff = addr.trim() ? cityFromAddr(addr) : priCity;
-  const bot=document.getElementById('ne-city'); if(bot) bot.value = eff;
-  const regEl=document.getElementById('ne-region');
-  if(regEl){ let r = CITY_REGION[eff] || ''; if(!r && !addr.trim() && NE_CUST && NE_CUST.region) r = String(NE_CUST.region).trim(); if(r) regEl.value = r; }
+  window.scRegionReflect('ne');
 };
 const NEW_SCALL_FIELDS = [
   ['ne-opened','opened_date'],['ne-custnum','customer_number'],

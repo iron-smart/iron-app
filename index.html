@@ -1621,7 +1621,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.83.1</div>
+      <div class="ver">גרסה 6.84.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1740,7 +1740,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.83.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.84.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2856,6 +2856,22 @@ function mountCard(mid, reopen){
   if(_h){ if(!_h.id) _h.id = 'cardTitle_' + mid; sheet.setAttribute('aria-labelledby', _h.id); }
   sheet.setAttribute('tabindex','-1');
   setTimeout(function(){ try{ sheet.focus(); }catch(e){} }, 30);
+}
+/* ===== מרשם ההרחבות של הכרטיסים (6.84.0) =====
+   בלוק עצמאי שרוצה להוסיף תוכן לכרטיס נרשם כאן במקום לעטוף גלובל.
+   שלושה הבדלים מהותיים מהעטיפה שהייתה כאן עד 6.83.1:
+     · רישום נכשל אינו מפיל את שאר הבלוק — רק ה-hook עצמו נתפס ונרשם ללוג.
+     · הארגומנטים עוברים כמו שהם, ולכן אי אפשר "לבלוע" את ctx בטעות.
+     · אין תלות בסדר ה-<script>: הסדר הוא סדר הרישום, והוא מפורש.
+   נורה בסוף הפותח ולא בתוך mountCard — mountCard אינו המשפט האחרון
+   (openOrd ממשיכה ל-loadOrderItems/loadVisit/markEmpty אחריו). */
+const CARD_HOOKS = {};
+window.onCard = (k, fn) => (CARD_HOOKS[k] = CARD_HOOKS[k] || []).push(fn);
+function runCardHooks(k){
+  const a = [].slice.call(arguments, 1);
+  (CARD_HOOKS[k] || []).forEach(function(fn){
+    try{ fn.apply(null, a); }catch(e){ console.error('hook ' + k, e); }
+  });
 }
 /* אלמנטים שאפשר למקד בהם — לשימוש מלכודת המיקוד של הכרטיס */
 const A11Y_FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
@@ -6433,6 +6449,7 @@ window.openInv = pn => {
     if(act){ ev.stopPropagation(); invAct(act.dataset.invAct, act.dataset.invPn || act.dataset.invVal || ''); }
   };
   mountCard('invModal', ()=>openInv(pn));
+  runCardHooks('inv', pn);
 };
 
 window.invAct = async (kind, val)=>{
@@ -10915,7 +10932,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'visgrp-2026-08-15a';
+const BUILD_ID = 'cardhook-2026-08-15b';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -12107,6 +12124,7 @@ window.openCust = async (id)=>{
       }).join('');
     })()}`;
   mountCard('custModal', ()=>openCust(id));
+  runCardHooks('cust', id);
 };
 $('#custSearch').addEventListener('input', renderCustomers);
 $('#taskSearch').addEventListener('input', renderTasks);
@@ -13259,7 +13277,6 @@ $('#payTermFilter').addEventListener('change', e => setPayTerm(e.target.value));
   if(el) el.addEventListener('focusout', function(){ setTimeout(function(){ if(PAY_PENDING && !payTyping()) renderPays(); }, 0); }); })();
 
 /* ===== הזמנות — מערכת ההזמנות והתיאומים (קריאה בלבד) ===== */
-const ORDERS_URL = 'orders/';
 const digitsOf = s => String(s||'').replace(/\D/g,'');
 /* ===== נרמול טלפון — מראה מדויקת של core.phone_norm שבמסד (6.44.0) =====
    עד 6.43.0 היו כאן שלושה מנרמלים מתחרים (waLink, phDigits, digitsOf גולמי).
@@ -14180,6 +14197,7 @@ window.openOrd = (id, ctx)=>{
   loadOrderItems(o.order_number);
   loadVisit(o.order_number, o.id, ctx);
   window.markEmpty('ordModal');
+  runCardHooks('ord', id, ctx);
 };
 /* ביקור משותף. לקוח מזמין הזמנה ראשית ואז מוסיף פריטים, ופריוריטי פותח
    הזמנה נוספת — אבל הכול מסופק באותו ביקור. עד כה מנהל הלוגיסטיקה תיאם רק
@@ -15245,14 +15263,11 @@ boot();
 (function(){
   'use strict';
   var PFN = 'https://hjibpfavkjqocjvffsbq.supabase.co/functions/v1/portal';
-  if (typeof window.openOrd !== 'function') { console.warn('paylink: openOrd לא נמצא'); return; }
-  var _origOpenOrd = window.openOrd;
-  /* 6.44.0 — העוטף חייב להעביר הלאה את כל הארגומנטים. עד כאן הוא קיבל (id)
-     בלבד, ולכן הפרמטר ctx של openOrd המקורית נבלע ומעולם לא הגיע ליעד. */
-  window.openOrd = function(id, ctx){
-    _origOpenOrd(id, ctx);
+  /* 6.84.0 — רישום במקום עטיפה. תיקון ה-ctx מ-6.44.0 אינו נחוץ עוד:
+     המרשם מעביר את הארגומנטים כמו שהם. */
+  window.onCard('ord', function(id){
     try { injectPay(id); } catch(e) { console.error('paylink inject', e); }
-  };
+  });
 
   function pesc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
@@ -15484,10 +15499,7 @@ boot();
   }
 
   /* --- מחירון בכרטיס הלקוח --- */
-  if(typeof window.openCust === 'function'){
-    var _origOpenCust = window.openCust;
-    window.openCust = async function(id){
-      await _origOpenCust(id);
+  window.onCard('cust', async function(id){
       try{
         var c = (typeof CUSTS !== 'undefined' && CUSTS || []).find(function(x){ return x.id === id; });
         var sheet = document.querySelector('#custSheet');
@@ -15510,8 +15522,7 @@ boot();
         if(anchor && anchor.parentNode) anchor.parentNode.insertBefore(row, anchor.nextSibling);
         else sheet.appendChild(row);
       }catch(e){ console.error('cust pricelist', e); }
-    };
-  }
+  });
 })();
 </script>
 <script>
@@ -15519,13 +15530,11 @@ boot();
    שידור ידני בלחיצה (שלב טסטים) · סטטוס השילוח מוצג במערכת ובפורטל בלבד — לא נכנס לסטטוס ההזמנה. */
 (function(){
   'use strict';
-  if (typeof window.openOrd !== 'function') { console.warn('yahav: openOrd לא נמצא'); return; }
-  var _origOpenOrd = window.openOrd;
-  /* 6.44.0 — אותו תיקון כמו בעוטף הראשון: ctx עובר הלאה. */
-  window.openOrd = function(id, ctx){
-    _origOpenOrd(id, ctx);
+  /* 6.84.0 — רישום במקום עטיפה. עד כאן ה-return שבשומר היה מפיל את כל
+     בלוק יהב — הממשק, נקודת הקצה והסטטוס — עם console.warn אחד בלבד. */
+  window.onCard('ord', function(id){
     try { injectYahav(id); } catch(e){ console.error('yahav inject', e); }
-  };
+  });
 
   var YFN = SB_URL + '/functions/v1/yahav-send';
   var YORIGIN = 'נעורים 37, פרדס חנה';   /* כתובת מוצא קבועה — מוגדרת גם בצד השרת */
@@ -15756,14 +15765,9 @@ boot();
   }
 
   /* --- 3. כרטיס המלאי — קישור לכרטיס הפריט המלא --- */
-  if(typeof window.openInv === 'function'){
-    var _origOpenInv = window.openInv;
-    window.openInv = function(pn){
-      var r = _origOpenInv(pn);
-      try{ invSkuLink(pn); }catch(e){ console.error('sku link inv', e); }
-      return r;
-    };
-  }
+  window.onCard('inv', function(pn){
+    try{ invSkuLink(pn); }catch(e){ console.error('sku link inv', e); }
+  });
   function invSkuLink(pn){
     var modal = document.getElementById('invModal');
     if(!modal || modal.classList.contains('hidden')) return;

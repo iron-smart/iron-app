@@ -1618,7 +1618,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.81.2</div>
+      <div class="ver">גרסה 6.81.3</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1737,7 +1737,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.81.2</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.81.3</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -7445,7 +7445,16 @@ const PV_CSS = `
 #tab-prc .pv-mtx td input:focus{ border-color:var(--pv-brand); background:#fff; outline:none; box-shadow:0 0 0 3px rgba(0,45,72,.10) }
 #tab-prc .pv-hint{ font-size:12px; color:var(--pv-muted); margin-top:10px; line-height:1.6 }
 #tab-prc .pv-clientbar{ display:flex; gap:10px; align-items:center; margin-bottom:14px; flex-wrap:wrap }
-#tab-prc .pv-clientbar input, #tab-prc .pv-clientbar select{ border:1px solid var(--pv-line); border-radius:9px; padding:7px 10px; font-size:12.5px; color:#334155; background:#fff }
+/* ⚠️ width ו-height חייבים להיות כאן במפורש. בגיליון הראשי יש
+   select{ width:100%; padding:12px 14px; font-size:16px } — כלל על שם
+   תגית — ותכונה שהכלל המקומי אינו מצהיר עליה **אינה נדרסת**. בלי
+   width:auto כל תיבה תפסה את מלוא רוחב הסרגל (נמדד 1,185px) וכל אחת
+   קפצה לשורה משלה. עם תיבה אחת זה נראה כמו עיצוב; השנייה חשפה את זה. */
+#tab-prc .pv-clientbar input, #tab-prc .pv-clientbar select{ width:auto; flex:0 0 auto;
+  border:1px solid var(--pv-line); border-radius:9px; padding:5px 8px; font-size:12.5px;
+  line-height:1.3; color:#334155; background:#fff }
+#tab-prc .pv-clientbar select{ max-width:170px }
+#tab-prc .pv-clientbar input{ width:190px }
 #tab-prc .pv-clientbar input:focus, #tab-prc .pv-clientbar select:focus{ border-color:var(--pv-brand); outline:none; box-shadow:0 0 0 3px rgba(0,45,72,.10) }
 #tab-prc .pv-btn{ background:var(--pv-brand); color:#fff; border:1px solid var(--pv-brand); border-radius:10px; padding:8px 16px; cursor:pointer; font-size:12.5px; font-weight:800; white-space:nowrap }
 #tab-prc .pv-btn:hover{ background:var(--pv-brand2); border-color:var(--pv-brand2) }
@@ -7485,19 +7494,10 @@ const PV_CSS = `
 #tab-prc .pv-pricelist [hidden]{ display:none }
 #tab-prc .pv-doc{ position:relative; z-index:1 }
 
-/* סימן המים ברוחב הטבלה, שקיפות 3% (רומן, 15/08/2026 — ירדה מ-20%
-   ל-5% ומשם ל-3%). הסמל צבוע בצבע המותג המדויק (#002D48); מה שמבהיר
-   אותו הוא השקיפות בלבד, שמערבבת עם הלבן ומורידה רוויה — ולכן אי אפשר
-   בו-זמנית "יותר בצבע הלוגו" ו"יותר שקוף". */
-#tab-prc .pv-wm{ position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden }
-/* מתחיל ב-60% מתחתית הדף וממורכז לרוחב (רומן, 15/08/2026) — כלומר הקצה
-   העליון של הסמל יושב ב-40% מלמעלה. קודם הוא היה ממורכז אנכית, ולכן חצה
-   את שורות המחירים באמצע הטבלה. מיקום מוחלט ולא flex, כי מרכוז ב-flex
-   אינו יודע לבטא "מתחיל בנקודה מסוימת".
-   הרוחב 180mm הוא רוחב הטבלה בפועל: 210 פחות 21 (@page) פחות 8.4 (ריפוד). */
-#tab-prc .pv-wm img{ position:absolute; top:40%; left:50%; transform:translateX(-50%);
-  width:180mm; max-width:90%; height:auto; opacity:.03;
-  print-color-adjust:exact; -webkit-print-color-adjust:exact }
+/* סימן המים הוסר מהמסמך (רומן, 15/08/2026): גם ב-3% הוא הפריע להבדל
+   הצבע העדין בין השורות — שני רמזים חיוורים באותו אזור מתחרים זה בזה,
+   והמנצח הוא זה שהעין רואה פחות טוב. PL_SYM נשאר בקוד כי הוא חלק
+   מהבנייה ואינו עולה דבר כשאינו מוצג. */
 
 #tab-prc .pv-lh-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10mm }
 #tab-prc .pv-lh-coname{ font-size:14.5pt; font-weight:700; margin-bottom:1.6mm }
@@ -7638,12 +7638,6 @@ const PV_CSS = `
   body.pv-print #tab-prc .pv-pricelist{ position:absolute; inset-inline:0; top:0;
     width:100%; max-width:none; border:none; border-radius:0; padding:0 4.2mm; overflow:visible;
     print-color-adjust:exact; -webkit-print-color-adjust:exact }
-  /* absolute ממרכז את הסימן באמצע *המסמך* — עמוד אחד מתוך שבעה. נמדד על PDF
-     אמיתי: fixed מצייר בכל עמוד, absolute בעמוד אחד. */
-  body.pv-print #tab-prc .pv-wm{ position:fixed; inset:0 }
-  /* בהדפסה הסימן נמתח על תיבת העמוד המלאה, ותקרת ה-90% של המסך הייתה
-     מקטינה אותו מתחת ל-180mm. */
-  body.pv-print #tab-prc .pv-wm img{ max-width:none }
   body.pv-print #tab-prc .pv-lh{ break-inside:avoid }
   /* כותרת יתומה בתחתית עמוד היא בדיוק מה שנראה שבור ללקוח */
   body.pv-print #tab-prc .pv-plcap{ break-inside:avoid; break-after:avoid }
@@ -7711,7 +7705,7 @@ const PV = window.prcV13 = {};
    'prc.lists' ממשיך לשלוט במסך "פריטים במחירון" (מחירוני פריוריטי) שהוא בלוק נפרד. */
 window.PRC_VIEW_PERM  = { db:'prc.pricing', bom:'prc.pricing', list:'prc.pricing', miss:'prc.pricing', set:'prc.pricing' };
 window.PRC_VIEW_ORDER = ['db','bom','list','miss','set'];
-const VIEW_LABEL = { db:'תמחור וניהול מאגר', bom:'דוח סמנטיקת העמסה', list:'מחירון ללקוח', miss:'מק״טים שאינם בתמחור', set:'הגדרות ומקדמים' };
+const VIEW_LABEL = { db:'תמחור וניהול מאגר', bom:'דוח סמנטיקת העמסה', list:'ייצוא והדפסה', miss:'מק״טים שאינם בתמחור', set:'הגדרות ומקדמים' };
 window.prcAllowedViews = ()=>{ try{ return PRC_VIEW_ORDER.filter(v=>canView(PRC_VIEW_PERM[v]||'prc')); }catch(_e){ return []; } };
 const prcAdmin = () => prcAllowedViews().length > 0;
 const prcEdit  = () => { try{ return canEdit('prc.pricing'); }catch(_e){ return false; } };
@@ -9321,7 +9315,7 @@ function renderClient(m){
   });
   m.innerHTML =
   '<div class="pv-clientbar">'+
-    '<span style="font-weight:700">מחירון ללקוח</span> '+gtag(M.group)+
+    '<span style="font-weight:700">ייצוא והדפסה</span> '+gtag(M.group)+
     '<input type="text" id="pv-cname" placeholder="שם לקוח (אופציונלי)" value="'+esc(plCName)+'" oninput="prcV13.setCName(this.value)">'+
     '<select onchange="prcV13.setRound(this.value)">'+
       '<option value="1" '+(round===1?'selected':'')+'>ללא עיגול</option>'+
@@ -9336,7 +9330,6 @@ function renderClient(m){
     '<span class="pv-hint" style="margin:0">הסינון והחיפוש בסרגל העליון חלים גם כאן — סנן לפני הדפסה.</span>'+
   '</div>'+
   '<div class="pv-pricelist">'+
-    '<div class="pv-wm" aria-hidden="true"><img src="'+PL_SYM+'" alt=""></div>'+
     '<div class="pv-doc">'+
     plHead(M.group)+
     body+
@@ -10915,7 +10908,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'gaptags-2026-08-15a';
+const BUILD_ID = 'plbar-2026-08-15a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){

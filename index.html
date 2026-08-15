@@ -1621,7 +1621,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.84.0</div>
+      <div class="ver">גרסה 6.85.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1740,7 +1740,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.84.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.85.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -7081,6 +7081,16 @@ window.createProtocol = async (orderId)=>{
   renderDocs(); renderOps(); openOrd(orderId,'sales');
 };
 
+/* ===== מזהה הבנייה (6.85.0) =====
+   עד 6.84.0 הקבוע הזה הוגדר **בתוך ה-IIFE של מודול התמחור** ונחשף
+   ב-window.BUILD_ID. הוא הקבוע האפליקטיבי המרכזי — בלוק אכיפת הגרסה בנוי
+   סביבו — ואין לו שום קשר לתמחור; הוא ישב שם כי שם מישהו הקליד.
+   כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
+   המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
+   זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
+const BUILD_ID = 'ordsnap-2026-08-15c';
+window.BUILD_ID = BUILD_ID;
+
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
    מחליף את מודול התמחור הקודם במלואו. המנוע, המסכים וההתנהגות זהים לקובץ ה-HTML
    העצמאי שרומן סיפק; העיצוב הוסב לצבעי ואלמנטי הפלטפורמה בלבד.
@@ -10932,8 +10942,6 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'cardhook-2026-08-15b';
-window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
   pvInjectCss();
@@ -14197,6 +14205,7 @@ window.openOrd = (id, ctx)=>{
   loadOrderItems(o.order_number);
   loadVisit(o.order_number, o.id, ctx);
   window.markEmpty('ordModal');
+  ordSnapshot(id);
   runCardHooks('ord', id, ctx);
 };
 /* ביקור משותף. לקוח מזמין הזמנה ראשית ואז מוסיף פריטים, ופריוריטי פותח
@@ -14495,55 +14504,77 @@ window.fupFlag = async (id, val)=>{
   window.fupBoxPaint(o, val !== false);
   renderOrders(); renderLogi(); renderCal(); renderOps();
 };
+/* ===== חוזה ה-snapshot של כרטיס ההזמנה (6.85.0) =====
+   הועבר לכאן מ-saveScall, שבו הוא רץ בפרודקשן מאז 6.82.0.
+   **מה שנשמר הוא מה שהוצג** — מחרוזת לכל אלמנט בזמן הציור. בשמירה
+   משווים מחרוזת מול מחרוזת מאותו אלמנט, ולכן ההשוואה אינה תלויה בטיפוס,
+   ב-null מול '', בדיוק שמור, או במסלול כתיבה שלישי שיתווסף.
+   ⚠️ תיבת סימון מקודדת '1'/'0': el.value שלה הוא 'on' תמיד. */
+let ORD_SNAP = null;
+function ordSnapField(el){
+  return el.type === 'checkbox' ? (el.checked ? '1' : '0') : String(el.value ?? '');
+}
+function ordSnapshot(id){
+  const snap = { __id: id };
+  ORD_CARD_FIELDS.forEach(([elId])=>{
+    const el = document.getElementById(elId);
+    if(el) snap[elId] = ordSnapField(el);
+  });
+  ORD_SNAP = snap;
+}
 window.saveOrd = async (id)=>{
   const o = ORDS.find(x=>x.id===id); if(!o) return;
   const num = v => v===''||v==null ? null : parseInt(v);
-  const READ = {
-    order_status:    el => el.value,
-    contact_status:  el => el.value,
-    city:            el => el.value || null,
-    region:          el => el.value || null,
-    team:            el => el.value || null,
-    scheduled_date:  el => el.value || null,
-    days_count:      el => num(el.value) || 1,
-    time_slot:       el => el.value || null,
-    friday_ok:       el => !!el.checked,
-    eta_date:        el => el.value || null,
-    eta_note:        el => el.value || null,
-    supply_days:     el => num(el.value),
-    supply_end_date: el => el.value || null,
-    followup_date:   el => el.value || null,
-    followup_team:   el => el.value || null,
-    followup_slot:   el => el.value || null,
-    followup_days:   el => num(el.value) || 1,
-    delivery_note:   el => el.value || null,
-    invoice:         el => el.value || null,
-    warehouse_notes: el => el.value || null
+  /* SEND פועלת על **מחרוזת ה-snapshot** ולא על האלמנט, ורצה רק על שדה
+     שבאמת השתנה. הסמנטיקה הועתקה שדה-שדה מ-READ שהייתה כאן, כדי שהשינוי
+     יהיה מבני בלבד ולא ישנה מה נכתב למסד. */
+  const SEND = {
+    order_status:    v => v,
+    contact_status:  v => v,
+    region:          v => v || null,
+    team:            v => v || null,
+    scheduled_date:  v => v || null,
+    days_count:      v => num(v) || 1,
+    time_slot:       v => v || null,
+    friday_ok:       v => v === '1',
+    eta_date:        v => v || null,
+    eta_note:        v => v || null,
+    supply_days:     v => num(v),
+    supply_end_date: v => v || null,
+    followup_date:   v => v || null,
+    followup_team:   v => v || null,
+    followup_slot:   v => v || null,
+    followup_days:   v => num(v) || 1,
+    warehouse_notes: v => v || null
   };
-  const CUR = { days_count: r => (r.days_count ?? 1), friday_ok: r => !!r.friday_ok, city: r => (effCity(r) || null),
-                followup_days: r => (r.followup_days ?? 1),
-                /* 6.76.3 — תאריך הדדליין מוצג בתוך תיבת התאריך כדי שאפשר
-                   יהיה לבחור ממנה (רומן, 14/08/2026). ברגע שערך מחושב מוצג
-                   כ-value בשדה עריכה נוצר **חוזה**: הנרמול כאן חייב להחזיר
-                   בדיוק את אותו תאריך, אחרת כל שמירה של כרטיס שלא נגעו בו
-                   תכתוב אותו כדריסה ידנית — ושינוי חוקים עתידי ידלג על
-                   אותה הזמנה. יש בדיקה שאוכפת את זה. */
-                supply_end_date: r => (supplyEndEff(r) || null) };
-  /* supply_days **אינו** כאן במכוון: הוא מציג placeholder ולא value, ולכן
-     הערך הגולמי במסד (NULL) זהה למה שהשדה מחזיר. שני שדות, שתי החלטות. */
+  /* ⚠️ אם ה-snapshot אינו של הכרטיס הזה — עוצרים ואומרים, ולא מנחשים דיף.
+     אותה החלטה כמו ב-saveScall: כשל שקט כאן גרוע מהבעיה שה-snapshot פותר. */
+  if(!ORD_SNAP || ORD_SNAP.__id !== id){
+    const eb=document.getElementById('oe-err');
+    if(eb) eb.textContent='הכרטיס נטען מחדש — סגרו ופתחו אותו שוב לפני השמירה.';
+    return;
+  }
   const changed = {};
   ORD_CARD_FIELDS.forEach(([elId, col])=>{
     const el = document.getElementById(elId);
-    if(!el || el.disabled || !READ[col]) return;
+    if(!el || el.disabled || !SEND[col]) return;
     if(!window.ordCardEditable(col)) return;
-    const nv = READ[col](el);
-    const cv = CUR[col] ? CUR[col](o) : (o[col] ?? null);
-    if((nv ?? null) !== (cv ?? null)) changed[col] = nv;
+    const was = ORD_SNAP[elId];
+    if(was === undefined) return;            /* לא היה בציור — לא נוגעים */
+    const now = ordSnapField(el);
+    if(now === was) return;                  /* לא נגעו בו */
+    changed[col] = SEND[col](now);
   });
   if(!Object.keys(changed).length){ closeCards(); return; }
   const { data: res, error } = await oldCall('update_order', { id, patch: changed });
   if(error){ const eb=document.getElementById('oe-err'); if(eb) eb.textContent = 'השמירה נכשלה — ' + error.message; return; }
   Object.assign(o, (res && res.row) || changed);
+  if(ORD_SNAP && ORD_SNAP.__id === id){
+    ORD_CARD_FIELDS.forEach(([elId])=>{
+      const el = document.getElementById(elId);
+      if(el) ORD_SNAP[elId] = ordSnapField(el);
+    });
+  }
   closeCards();
   renderOrders(); renderLogi(); renderCal(); renderOps();
   /* אם ההזמנה חברה בביקור משותף, השרת עדכן גם את אחיותיה — והשורות

@@ -1618,7 +1618,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.81.1</div>
+      <div class="ver">גרסה 6.81.2</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1737,7 +1737,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.81.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.81.2</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -7280,6 +7280,7 @@ const PV_CSS = `
 #tab-prc .pv-src.s3{ background:#efeafa; color:#5b4bb0 }
 #tab-prc .pv-role{ font-size:10.5px; font-weight:700; border-radius:5px; padding:2px 7px; background:#eef1f4; color:var(--pv-ink2); display:inline-block }
 #tab-prc .pv-role.part{ background:#fdf1e0; color:#8a6100 }
+#tab-prc .pv-role.gap{ background:#fdeaea; color:#9b1c1c }
 #tab-prc .pv-bad{ color:var(--pv-red); font-weight:700 }
 #tab-prc .pv-warn{ background:#fdf1e0; border:1px solid #f0d9ae; color:#8a6100; border-radius:10px; padding:10px 12px; font-size:12.5px; margin:10px 0; line-height:1.6 }
 #tab-prc .pv-usedin{ font-size:11.5px; color:var(--pv-muted); direction:ltr; text-align:right; display:inline-block }
@@ -8341,6 +8342,36 @@ function rawCost(p){
   return p.costILS ?? p.cost;
 }
 const roleTag = p => (p.role===ROLE_PART? '<br><span class="pv-role part" title="רכיב פנימי — אינו מוצג במחירון ללקוח">רכיב פנימי</span>' : '');
+/* ---------- תגיות חוסר על שורת המוצר (6.81.2) ----------
+   מסמנות מה חסר במק״ט בלי לפתוח את הכרטיס. שלוש בלבד, ובמכוון:
+   כל תגית נוספת מורידה את ערכן של הקיימות.
+
+   "חסר מחיר" נשען על costBefore ולא על priceEx: רומן ביקש שהתגית תדליק
+   כשאין **עלות**, ולא כשחסר מרווח. costBefore הוא גם הפרדיקט הנכון כי הוא
+   כבר מכיר את שלושת מקורות העלות — עץ מוצר, מדרגת ייצור ועלות שמורה —
+   ומחזיר null רק כששלושתם ריקים.
+
+   שתי האחרות רלוונטיות רק למק״ט מיוצר: ליבוא אין מדרגות כלל, ותגית
+   "חסרה כמות מדרגה" עליו הייתה רעש קבוע.
+
+   mfgTier מחזיר מדרגה כשה-mfg_qty נבחר ויש לו מדרגה תואמת — בלי קשר לכמה
+   מדרגות קיימות. לכן **מדרגה אחת מספיקה**, וזה בדיוק מה שרומן ביקש לאפשר. */
+const MFG_SRC = [SRC_MAKE, SRC_ASM];
+function isMfgSrc(p){ return !!p && MFG_SRC.indexOf(p.source) >= 0; }
+function gapTags(p){
+  if(!p) return '';
+  const t = [];
+  if(costBefore(p.sku) == null)
+    t.push('<span class="pv-role gap" title="אין עלות מאף מקור — לא עלות שמורה, לא עץ מוצר ולא מדרגת ייצור">חסר מחיר</span>');
+  if(isMfgSrc(p)){
+    const tr = mfgTier(p);
+    if(!tr)
+      t.push('<span class="pv-role gap" title="מק״ט מיוצר שלא נבחרה לו כמות מדרגה. מדרגה אחת מספיקה, כל עוד הכמות הוגדרה">חסרה כמות מדרגה</span>');
+    else if(tr.paint == null)
+      t.push('<span class="pv-role gap" title="למדרגה הנבחרת אין עלות צבע">חסר צבע</span>');
+  }
+  return t.length? '<br>' + t.join(' ') : '';
+}
 function costSrcCell(p){
   if(treeKids(p.sku)) return '<span class="pv-catcell">מעץ המוצר</span>';
   const rc = rawCost(p);
@@ -8746,7 +8777,7 @@ function renderPricing(m){
         '<td class="pv-imgtd">'+imgCell(p)+'</td>'+
         ''+skuTd(p.sku)+'<td class="pv-name">'+esc(p.name)+'</td>'+
         '<td class="pv-catcell">'+esc(p.cat)+(p.sub?' · '+esc(p.sub):'')+'</td>'+
-        '<td><span class="pv-src '+(SRC_CLS[p.source]||'')+'">'+esc(p.source||'—')+'</span>'+roleTag(p)+'</td>'+
+        '<td><span class="pv-src '+(SRC_CLS[p.source]||'')+'">'+esc(p.source||'—')+'</span>'+roleTag(p)+gapTags(p)+'</td>'+
         '<td class="pv-num pv-cost">'+costSrcCell(p)+'</td>'+
         '<td class="pv-num pv-cost" '+(p.loadOv?'title="מקדם העמסה ידני: '+p.loadOv+'"':'')+'>'+(ca==null?'<span class="pv-nocost">—</span>':fmt(ca)+' ₪'+(p.loadOv?' <span style="color:var(--pv-amber)">*</span>':''))+'</td>'+
         '<td style="font-size:12px">'+esc(p.status)+'</td>'+notesTd(p)+
@@ -8799,7 +8830,7 @@ function renderPricing(m){
           '<td class="pv-imgtd">'+imgCell(p)+'</td>'+
           ''+skuTd(p.sku)+'<td class="pv-name">'+esc(p.name)+'</td>'+
           '<td class="pv-catcell">'+esc(p.cat)+(p.sub?' · '+esc(p.sub):'')+'</td>'+
-          '<td><span class="pv-src '+(SRC_CLS[p.source]||'')+'">'+esc(p.source||'—')+'</span>'+roleTag(p)+'</td>'+
+          '<td><span class="pv-src '+(SRC_CLS[p.source]||'')+'">'+esc(p.source||'—')+'</span>'+roleTag(p)+gapTags(p)+'</td>'+
           '<td class="pv-num pv-cost">'+costSrcCell(p)+'</td>'+
           '<td class="pv-num pv-cost" '+(p.loadOv?'title="מקדם העמסה ידני: '+p.loadOv+'"':'')+'>'+(ca==null?'<span class="pv-nocost">—</span>':fmt(ca)+' ₪'+(p.loadOv?' <span style="color:var(--pv-amber)">*</span>':''))+'</td>'+
           (fs==='mg'
@@ -10884,7 +10915,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'plmulti-2026-08-15a';
+const BUILD_ID = 'gaptags-2026-08-15a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){

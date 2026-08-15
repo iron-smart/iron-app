@@ -1018,9 +1018,10 @@
   .modal-actions.ord-actions{ border-top:1px solid var(--line); padding-top:14px; margin-top:18px; }
   @media(max-width:640px){ .ord-bottom{ grid-template-columns:1fr; } .modal-actions.ord-actions{ flex-direction:column; align-items:stretch; } .modal-actions.ord-actions > *{ width:100%; } }
   .form-grid .span2{ grid-column:span 2; }
+  .form-grid .span3{ grid-column:span 3; }
   .form-grid .span4{ grid-column:span 4; }
-  @media(max-width:760px){ .form-grid{ grid-template-columns:repeat(2,1fr); } .form-grid .span4{ grid-column:span 2; } }
-  @media(max-width:430px){ .form-grid{ grid-template-columns:1fr; } .form-grid .span2,.form-grid .span4{ grid-column:span 1; } }
+  @media(max-width:760px){ .form-grid{ grid-template-columns:repeat(2,1fr); } .form-grid .span3,.form-grid .span4{ grid-column:span 2; } }
+  @media(max-width:430px){ .form-grid{ grid-template-columns:1fr; } .form-grid .span2,.form-grid .span3,.form-grid .span4{ grid-column:span 1; } }
   .form-grid > div{ display:flex; flex-direction:column; justify-content:flex-start; min-width:0; position:relative; }
   .form-grid .td-hint{ margin:3px 0 0; font-size:11px; line-height:1.35; }
   .src-tag{ display:inline-flex !important; width:fit-content; max-width:100%; vertical-align:middle; }
@@ -1605,7 +1606,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.78.1</div>
+      <div class="ver">גרסה 6.78.2</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1724,7 +1725,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.78.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.78.2</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -10502,7 +10503,7 @@ async function importSnapshot(d){
 }
 
 /* ---------- כניסה למסך ---------- */
-const BUILD_ID = 'sccall-2026-08-14a';
+const BUILD_ID = 'sccards-2026-08-15a';
 window.BUILD_ID = BUILD_ID;
 
 window.renderPrc = async function(){
@@ -13101,30 +13102,40 @@ window.openScall = (id)=>{
     <h3>🛠️ ${esc(s.call_number||'קריאה')} — ${esc(s.customer_name||'')}${s.erp_status?` <span class="pill p-violet" title="הסטטוס בפריוריטי — מתעדכן בסנכרון">${PRI_ICO}פריוריטי: ${esc(s.erp_status)}</span>`:''}</h3>
     <div class="note" style="margin:4px 0 14px">נפתחה ב-${fmtD(s.opened_date)||'—'}</div>
     <div class="form-grid">
-      <div><label>מס' קריאה${tag}</label>${roIn(s.call_number,{ltr:1})}</div>
-      <div><label>תאריך פתיחה${tag}</label>${roIn(fmtD(s.opened_date),{ltr:1})}</div>
-      <div><label>מס' לקוח${tag}</label>${roIn(s.customer_number,{ltr:1})}</div>
-      <div><label>שם לקוח${tag}</label>${roIn(s.customer_name)}</div>
-      <div><label>טלפון${tag} ${phBtns(s.phone)}</label>${roIn(s.phone,{ltr:1})}</div>
-      <div><label>אימייל לקוח${tag}</label>${roIn(s.customer_email,{ltr:1})}</div>
+      <div class="form-sep">פרטי הקריאה והלקוח${tag}</div>
+      <div><label>מס' קריאה</label>${roIn(s.call_number,{ltr:1})}</div>
+      <div><label>תאריך פתיחה</label>${roIn(fmtD(s.opened_date),{ltr:1})}</div>
+      <div><label>מס' לקוח</label>${roIn(s.customer_number,{ltr:1})}</div>
+      <div><label>שם לקוח</label>${roIn(s.customer_name)}</div>
+      <div><label>טלפון ${phBtns(s.phone)}</label>${roIn(s.phone,{ltr:1})}</div>
+      <div><label>אימייל לקוח</label>${roIn(s.customer_email,{ltr:1})}</div>
+      <div class="span2"><label>🏠 כתובת חיוב ${wazeBtn(s.customer_address)}</label>${roIn(s.customer_address)}</div>
+      <!-- פרטי התקלה הם תצוגה בלבד (אינם ב-SCALL_CARD_FIELDS), ולכן מקומם
+           כאן ולא ב"שדות למילוי". שדה readonly בסקשן העריכה הוא באג עיצובי. -->
+      <div class="span4"><label>פרטי התקלה <span class="note" style="font-weight:400">(כפי שנרשמו בפתיחת הקריאה)</span></label>${roIn(s.fault_details)}</div>
+
+      <div class="form-sep">שדות למילוי</div>
+      <div class="span2 ac-wrap"><label>מוצרים <span class="note" style="font-weight:400">(בחירה מרובה מהקטלוג)</span></label><input id="se-prodpick" autocomplete="off" placeholder="חיפוש מכרטיסי הפריט — כל בחירה מתווספת…" oninput="neProdSearch(this.value,'se')" onfocus="neProdSearch(this.value,'se')" onblur="setTimeout(()=>{const b=document.getElementById('se-prod-results'); if(b) b.hidden=true;},150)"><div id="se-prod-results" class="ac-menu" hidden></div><input type="hidden" id="se-prods"><div id="se-prodchips" class="pchip-box" style="margin-top:5px"></div></div>
       <div><label>מהות הקריאה</label>${selHtml('se-type',CALL_TYPES,s.call_type,true)}</div>
       <div><label>אחריות</label>${selHtml('se-warranty',YESNO,s.warranty,true)}</div>
-      <div class="span2 ac-wrap"><label>מוצרים <span class="note" style="font-weight:400">(בחירה מרובה מהקטלוג)</span></label><input id="se-prodpick" autocomplete="off" placeholder="חיפוש מכרטיסי הפריט — כל בחירה מתווספת…" oninput="neProdSearch(this.value,'se')" onfocus="neProdSearch(this.value,'se')" onblur="setTimeout(()=>{const b=document.getElementById('se-prod-results'); if(b) b.hidden=true;},150)"><div id="se-prod-results" class="ac-menu" hidden></div><input type="hidden" id="se-prods"><div id="se-prodchips" class="pchip-box" style="margin-top:5px"></div></div>
-      <div class="span2"><label>🏠 כתובת חיוב${tag} ${wazeBtn(s.customer_address)}</label>${roIn(s.customer_address)}</div>
+      <div><label>סטטוס</label>${selHtml('se-status',CALL_STATUSES,s.status)}</div>
+      <!-- דחיפות ודדליין צמודים במכוון: השינוי באחד גורר את השני. -->
+      <div><label>רמת דחיפות</label>${selHtml('se-urgency',URGENCIES,s.urgency||'רגילה',false,"scUrgencyChanged('se')")}</div>
+      <div><label>תאריך דדליין</label><input id="se-deadline" type="date" data-op="${esc(s.opened_date||'')}" value="${esc(s.deadline||'')}"><div id="se-dlchip">${scallChip(s.opened_date, s.deadline, s.status)}</div></div>
+
+      <div class="form-sep">איש קשר וכתובת</div>
       <div class="ac-wrap"><label>איש קשר</label><input id="se-contname" value="${esc(s.contact_name||'')}" autocomplete="off" placeholder="בחירה מאנשי הקשר של הלקוח, או הקלדה" oninput="scContSearch(this.value,'se','${esc(String(scCustId(s)||''))}')" onfocus="scContSearch(this.value,'se','${esc(String(scCustId(s)||''))}')" onblur="setTimeout(()=>{const b=document.getElementById('se-cont-results'); if(b) b.hidden=true;},150)"><div id="se-cont-results" class="ac-menu" hidden></div></div>
       <div><label>טלפון איש קשר ${phBtns(s.contact_phone)}</label><input id="se-contphone" value="${esc(s.contact_phone||'')}" dir="ltr"></div>
-      <div class="span2 addr-row"><div><label>📦 כתובת משלוח</label><input id="se-ship1" value="${esc(s.ship_addr1||'')}" placeholder="רחוב ומספר"></div><div><label>כתובת משלוח2</label><input id="se-ship2" value="${esc(s.ship_addr2||'')}" placeholder="כניסה / קומה"></div><div><label>כתובת משלוח3</label><input id="se-ship3" value="${esc(s.ship_addr3||'')}" placeholder="הערת מסירה"></div></div>
-      <div class="span4"><label>פרטי התקלה${tag}</label>${roIn(s.fault_details)}</div>
-      <div><label>סטטוס</label>${selHtml('se-status',CALL_STATUSES,s.status)}</div>
-      <div><label>רמת דחיפות</label>${selHtml('se-urgency',URGENCIES,s.urgency||'רגילה',false,"scUrgencyChanged('se')")}</div>
-      <div><label>עיר</label><input id="se-city" value="${esc(s.city||'')}"></div>
-      <div><label>אזור גיאוגרפי</label>${selHtml('se-region',REGIONS,s.region,true)}</div>
-      <div class="span2"><label>🚚 כתובת הגעה לקריאה ${wazeBtn(s.address?(s.address+' '+(s.city||'')):'')}</label><input id="se-addr" value="${esc(s.address||'')}" placeholder="לאן הצוות מגיע (ניתן לעריכה)"></div>
+      <div class="addr-row"><div><label>📦 כתובת משלוח</label><input id="se-ship1" value="${esc(s.ship_addr1||'')}" placeholder="רחוב ומספר"></div><div><label>כתובת משלוח2</label><input id="se-ship2" value="${esc(s.ship_addr2||'')}" placeholder="כניסה / קומה"></div><div><label>כתובת משלוח3</label><input id="se-ship3" value="${esc(s.ship_addr3||'')}" placeholder="הערת מסירה"></div><div><label>עיר</label><input id="se-city" value="${esc(s.city||'')}"></div><div><label>אזור גיאוגרפי</label>${selHtml('se-region',REGIONS,s.region,true)}</div></div>
+      <div class="span4"><label>🚚 כתובת הגעה לקריאה ${wazeBtn(s.address?(s.address+' '+(s.city||'')):'')}</label><input id="se-addr" value="${esc(s.address||'')}" placeholder="לאן הצוות מגיע — מלאו רק אם שונה מכתובת המשלוח"></div>
+
+      <div class="form-sep">תיאום וביצוע</div>
       <div><label>צוות</label>${selHtml('se-team',teamVals,s.team,true)}${window.tdHint(s.scheduled_date,s.team,'seTdHint')}</div>
       <div><label>תאריך מתואם</label><input id="se-date" type="date" value="${esc(s.scheduled_date||'')}"></div>
       <div><label>משבצת זמן</label>${selHtml('se-slot',TIME_SLOTS,s.time_slot,true)}</div>
-      <div><label>תאריך דדליין</label><input id="se-deadline" type="date" data-op="${esc(s.opened_date||'')}" value="${esc(s.deadline||'')}"><div id="se-dlchip">${scallChip(s.opened_date, s.deadline, s.status)}</div></div>
-      <div class="span4"><label>הערות</label><textarea id="se-notes" rows="2">${esc(s.notes||'')}</textarea></div>
+
+      <div class="form-sep">הערות</div>
+      <div class="span4"><textarea id="se-notes" rows="3" placeholder="הערות פנימיות על הקריאה">${esc(s.notes||'')}</textarea></div>
     </div>
     ${window.mediaBlock('call', s.id)}
     <div class="modal-actions">
@@ -13196,34 +13207,41 @@ window.openNewScall = ()=>{
   const today = todayStr();
   $('#ordSheet').innerHTML = `
     <h3>🛠️ פתיחת קריאת שירות חדשה</h3>
-    <div class="note" style="margin:4px 0 14px">בחרו לקוח מהמאגר — הפרטים האפורים יתמלאו אוטומטית; מס' קריאה מוקצה אוטומטית ברצף. בחרו מוצר / מק״ט.</div>
+    <div class="note" style="margin:4px 0 14px">בחרו לקוח מהמאגר — <b>הפרטים האפורים יתמלאו אוטומטית</b> ואינם ניתנים לעריכה. חמשת השדות תחת "שדות למילוי" הם חובה.</div>
     <div class="form-grid">
-      <div><label>מס' קריאה</label><input value="יוקצה אוטומטית — המספר הבא ברצף" readonly class="ro" title="מספר הקריאה מוקצה אוטומטית ברצף רץ (SC…) ואינו ניתן לעריכה"></div>
+      <div class="form-sep">בחירת לקוח</div>
       <div class="span2 ac-wrap"><label>בחירת לקוח מהמאגר</label><input id="ne-custpick" autocomplete="off" placeholder="הקלד שם / טלפון / מספר לקוח…" oninput="neCustSearch(this.value)" onfocus="neCustSearch(this.value)" onblur="setTimeout(()=>{const b=document.getElementById('ne-cust-results'); if(b) b.hidden=true;},150)"><div id="ne-cust-results" class="ac-menu" hidden></div></div>
       <div><label>תאריך פתיחה</label><input id="ne-opened" type="date" value="${esc(today)}"></div>
-      <div><label>מס' לקוח ${SRC_TAG}</label><input id="ne-custnum" class="ro" readonly dir="ltr"></div>
-      <div><label>שם לקוח ${SRC_TAG}</label><input id="ne-custname" class="ro" readonly></div>
-      <div><label>טלפון ${SRC_TAG}</label><input id="ne-phone" class="ro" readonly dir="ltr"></div>
-      <div><label>אימייל לקוח ${SRC_TAG}</label><input id="ne-email" class="ro" readonly dir="ltr"></div>
-      <div class="span3"><label>🏠 כתובת חיוב ${SRC_TAG}</label><input id="ne-custaddr" class="ro" readonly></div>
-      <div class="ac-wrap"><label>איש קשר</label><input id="ne-contname" autocomplete="off" placeholder="בחירה מאנשי הקשר של הלקוח, או הקלדה" oninput="scContSearch(this.value,'ne',NE_CUST?NE_CUST.id:'')" onfocus="scContSearch(this.value,'ne',NE_CUST?NE_CUST.id:'')" onblur="setTimeout(()=>{const b=document.getElementById('ne-cont-results'); if(b) b.hidden=true;},150)"><div id="ne-cont-results" class="ac-menu" hidden></div></div>
-      <div><label>טלפון איש קשר</label><input id="ne-contphone" dir="ltr" placeholder="מתמלא מהבחירה"></div>
-      <div class="span3 addr-row"><div><label>📦 כתובת משלוח</label><input id="ne-ship1" placeholder="רחוב ומספר"></div><div><label>כתובת משלוח2</label><input id="ne-ship2" placeholder="כניסה / קומה"></div><div><label>כתובת משלוח3</label><input id="ne-ship3" placeholder="הערת מסירה"></div></div>
-      <div><label>עיר ${SRC_TAG}</label><input id="ne-custcity" class="ro" readonly title="עיר הלקוח מפריוריטי. אם היא ריקה — מלאו כתובת הגעה לקריאה למטה"></div>
-      <div class="span2 ac-wrap"><label>מק״ט / שם מוצר <span class="note" style="font-weight:400">(בחירה מרובה מהקטלוג · חובה)</span></label><input id="ne-prodpick" autocomplete="off" placeholder="חיפוש מכרטיסי הפריט — כל בחירה מתווספת…" oninput="neProdSearch(this.value,'ne')" onfocus="neProdSearch(this.value,'ne')" onblur="setTimeout(()=>{const b=document.getElementById('ne-prod-results'); if(b) b.hidden=true;},150)"><div id="ne-prod-results" class="ac-menu" hidden></div><input type="hidden" id="ne-prods"><div id="ne-prodchips" class="pchip-box" style="margin-top:5px"></div></div>
+      <div><label>מס' קריאה</label><input value="יוקצה אוטומטית" readonly class="ro" title="מספר הקריאה מוקצה אוטומטית ברצף רץ (SC…) ואינו ניתן לעריכה"></div>
+
+      <div class="form-sep">פרטי הלקוח${SRC_TAG}</div>
+      <div><label>מס' לקוח</label><input id="ne-custnum" class="ro" readonly dir="ltr"></div>
+      <div><label>שם לקוח</label><input id="ne-custname" class="ro" readonly></div>
+      <div><label>טלפון</label><input id="ne-phone" class="ro" readonly dir="ltr"></div>
+      <div><label>אימייל לקוח</label><input id="ne-email" class="ro" readonly dir="ltr"></div>
+      <div class="span2"><label>🏠 כתובת חיוב</label><input id="ne-custaddr" class="ro" readonly></div>
+      <div class="span2"><label>עיר</label><input id="ne-custcity" class="ro" readonly title="עיר הלקוח מפריוריטי. אם היא ריקה — מלאו כתובת הגעה לקריאה למטה"></div>
+
+      <div class="form-sep">שדות למילוי <span class="note" style="font-weight:400">(כולם חובה)</span></div>
+      <div class="span2 ac-wrap"><label>מק״ט / שם מוצר <span class="note" style="font-weight:400">(בחירה מרובה מהקטלוג)</span></label><input id="ne-prodpick" autocomplete="off" placeholder="חיפוש מכרטיסי הפריט — כל בחירה מתווספת…" oninput="neProdSearch(this.value,'ne')" onfocus="neProdSearch(this.value,'ne')" onblur="setTimeout(()=>{const b=document.getElementById('ne-prod-results'); if(b) b.hidden=true;},150)"><div id="ne-prod-results" class="ac-menu" hidden></div><input type="hidden" id="ne-prods"><div id="ne-prodchips" class="pchip-box" style="margin-top:5px"></div></div>
       <div><label>מהות הקריאה</label>${selHtml('ne-type',CALL_TYPES,'',true)}</div>
       <div><label>אחריות</label>${selHtml('ne-warranty',YESNO,'',true)}</div>
-      <div class="span4" id="ne-order-suggest" hidden></div>
-      <div class="span4"><label>פרטי התקלה</label><textarea id="ne-fault" rows="2"></textarea></div>
-      <div><label>סטטוס</label>${selHtml('ne-status',CALL_STATUSES,'חדש')}</div>
       <div><label>רמת דחיפות</label>${selHtml('ne-urgency',URGENCIES,'רגילה',false,"scUrgencyChanged('ne')")}</div>
-      <div class="span2"><label>🚚 כתובת הגעה לקריאה</label><input id="ne-addr" placeholder="מלאו רק אם כתובת הלקוח אינה נכונה — היא גוברת" oninput="neCityReflect()"></div>
+      <div><label>תאריך דדליין <span class="note" style="font-weight:400">(נגזר מהדחיפות)</span></label><input id="ne-deadline" type="date" data-op="${esc(today)}" value="${esc(scallDeadline(today,'רגילה')||'')}"><div id="ne-dlchip">${scallChip(today, scallDeadline(today,'רגילה'), 'חדש')}</div></div>
+      <div><label>סטטוס</label>${selHtml('ne-status',CALL_STATUSES,'חדש')}</div>
+      <div class="span4" id="ne-order-suggest" hidden></div>
+      <div class="span4"><label>פרטי התקלה</label><textarea id="ne-fault" rows="2" placeholder="מה התקלה, ממתי, ומה כבר נוסה"></textarea></div>
+
+      <div class="form-sep">איש קשר וכתובת</div>
+      <div class="ac-wrap"><label>איש קשר</label><input id="ne-contname" autocomplete="off" placeholder="בחירה מאנשי הקשר של הלקוח, או הקלדה" oninput="scContSearch(this.value,'ne',NE_CUST?NE_CUST.id:'')" onfocus="scContSearch(this.value,'ne',NE_CUST?NE_CUST.id:'')" onblur="setTimeout(()=>{const b=document.getElementById('ne-cont-results'); if(b) b.hidden=true;},150)"><div id="ne-cont-results" class="ac-menu" hidden></div></div>
+      <div><label>טלפון איש קשר</label><input id="ne-contphone" dir="ltr" placeholder="מתמלא מהבחירה"></div>
+      <div class="addr-row"><div><label>📦 כתובת משלוח</label><input id="ne-ship1" placeholder="רחוב ומספר"></div><div><label>כתובת משלוח2</label><input id="ne-ship2" placeholder="כניסה / קומה"></div><div><label>כתובת משלוח3</label><input id="ne-ship3" placeholder="הערת מסירה"></div><div><label>עיר <span class="note" style="font-weight:400">(לגזירת אזור)</span></label><input id="ne-city" class="ro" readonly title="העיר לגזירת האזור הגיאוגרפי — מעיר הלקוח, או מכתובת ההגעה כשהיא ממולאת (גוברת)"></div><div><label>אזור גיאוגרפי <span class="note" style="font-weight:400">(נגזר)</span></label>${selHtml('ne-region',REGIONS,'',true)}</div></div>
+      <div class="span4"><label>🚚 כתובת הגעה לקריאה</label><input id="ne-addr" placeholder="מלאו רק אם כתובת הלקוח אינה נכונה — היא גוברת" oninput="neCityReflect()"></div>
+
+      <div class="form-sep">תיאום וביצוע</div>
       <div><label>צוות</label>${selHtml('ne-team',teamVals,'',true)}</div>
       <div><label>תאריך מתואם</label><input id="ne-date" type="date"></div>
       <div><label>משבצת זמן</label>${selHtml('ne-slot',TIME_SLOTS,'',true)}</div>
-      <div><label>תאריך דדליין</label><input id="ne-deadline" type="date" data-op="${esc(today)}" value="${esc(scallDeadline(today,'רגילה')||'')}"><div id="ne-dlchip">${scallChip(today, scallDeadline(today,'רגילה'), 'חדש')}</div></div>
-      <div><label>עיר <span class="note" style="font-weight:400">(לגזירת אזור)</span></label><input id="ne-city" class="ro" readonly title="העיר לגזירת האזור הגיאוגרפי — מעיר הלקוח, או מכתובת ההגעה כשהיא ממולאת (גוברת)"></div>
-      <div><label>אזור גיאוגרפי <span class="note" style="font-weight:400">(נגזר מהעיר)</span></label>${selHtml('ne-region',REGIONS,'',true)}</div>
     </div>
     <div class="modal-actions">
       <button class="btn btnw" onclick="saveNewScall()">💾 פתיחת קריאה</button>

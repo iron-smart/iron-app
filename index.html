@@ -678,19 +678,55 @@
   #board-wrap{ height:calc(100vh - 122px); }
   #board-wrap iframe{ border-radius:0; box-shadow:none; }
   #dash-board-wrap{ margin-bottom:18px; }
-  /* סקשני הדשבורד (6.86.0) — קיפול עם badge; הסדר נקבע ב-style.order
-     מ-applyDashboard כדי שה-DOM יישאר קבוע והבדיקות יציבות */
+  /* סקשני הדשבורד — גרסה דחוסה (6.87.0, רומן: "יותר קומפקטי... יותר יפה").
+     שתי עמודות במסך רחב; grid מכבד את style.order של applyDashboard. */
   #dash-secs{ display:flex; flex-direction:column; }
-  .dash-sec{ background:#fff; border:1px solid #e6eaf0; border-radius:14px; padding:0 14px 12px; margin-bottom:14px; }
-  .dash-hd{ width:100%; display:flex; align-items:center; gap:8px; background:none; border:none; padding:12px 2px; font-size:15px; font-weight:800; color:var(--navy); cursor:pointer; font-family:inherit; text-align:right }
-  .dash-hd .dash-arrow{ transition:transform .15s; display:inline-block }
+  @media(min-width:1100px){
+    #dash-secs{ display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:start; }
+    #dash-secs .dash-sec{ margin-bottom:0 }
+    #dash-secs .dash-sec[data-sec="exc"]{ grid-column:1 / -1 }
+  }
+  .dash-sec{ background:#fff; border:1px solid #e6eaf0; border-radius:12px; padding:0 12px 9px; margin-bottom:10px; }
+  .dash-hd{ width:100%; display:flex; align-items:center; gap:7px; background:none; border:none; padding:9px 2px 7px; font-size:13.5px; font-weight:800; color:var(--navy); cursor:pointer; font-family:inherit; text-align:right }
+  .dash-hd .dash-arrow{ transition:transform .15s; display:inline-block; font-size:11px }
   .dash-sec.folded .dash-hd .dash-arrow{ transform:rotate(90deg) }
-  .dash-badge{ background:#dc2626; color:#fff; border-radius:20px; padding:1px 8px; font-size:12px; font-weight:800; margin-inline-start:auto }
-  .dash-bd{ padding-top:2px }
-  .db-block{ margin-top:12px }
-  .db-block h3{ font-size:13.5px; font-weight:800; color:var(--navy); margin:8px 0 6px }
+  .dash-badge{ background:#dc2626; color:#fff; border-radius:20px; padding:0 7px; font-size:11px; font-weight:800; margin-inline-start:auto }
+  .dash-bd{ padding-top:0 }
+  .db-block{ margin-top:8px }
+  .db-block h3{ font-size:12px; font-weight:800; color:#475569; margin:6px 0 4px; display:flex; align-items:center; gap:6px }
+  /* אריחים דחוסים — auto-fill במקום 4 עמודות; פס-מבטא צבעוני בצד */
+  #dash-secs .stats{ display:grid; grid-template-columns:repeat(auto-fill,minmax(112px,1fr)); gap:7px; margin:0 0 5px }
+  #dash-secs .stat{ padding:7px 9px; border-radius:10px; border:1px solid #e8edf3; background:#fbfcfe; box-shadow:none; min-width:0 }
+  #dash-secs .stat .n{ font-size:19px; line-height:1.15 }
+  #dash-secs .stat .l{ font-size:10.5px; color:#64748b; line-height:1.3 }
+  #dash-secs .stat.good{ border-inline-start:3px solid #16a34a }
+  #dash-secs .stat.warn{ border-inline-start:3px solid #d97706 }
+  #dash-secs .stat.bad{ border-inline-start:3px solid #dc2626 }
+  #dash-secs .lead{ padding:6px 9px; margin-bottom:4px; font-size:12.5px }
+  #dash-secs .lead .nm{ font-size:12.5px }
+  #dash-secs .lead .meta{ font-size:11px }
+  #dash-secs h2.sec{ font-size:12px; margin:8px 0 4px; color:#475569 }
   .stat.clk{ cursor:pointer }
   .stat.clk:hover{ box-shadow:0 2px 8px rgba(2,32,71,.10) }
+  /* פס תקינות הסנכרון */
+  #db-sync{ display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px }
+  .sync-pill{ display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; border-radius:20px; padding:2px 9px; border:1px solid transparent; cursor:pointer }
+  .sync-pill.ok{ background:#f0fdf4; color:#15803d; border-color:#bbf7d0 }
+  .sync-pill.warn{ background:#fffbeb; color:#b45309; border-color:#fde68a }
+  .sync-pill.bad{ background:#fef2f2; color:#b91c1c; border-color:#fecaca }
+  /* שורת חריג */
+  .exc-row{ display:flex; align-items:center; gap:8px; padding:6px 9px; margin-bottom:4px; border:1px solid #eef1f4; border-radius:10px; font-size:12.5px; cursor:pointer; background:#fff }
+  .exc-row .exc-t{ flex:1; min-width:0 }
+  .exc-row.sev3{ border-inline-start:3px solid #dc2626; background:#fffbfb }
+  .exc-row.sev2{ border-inline-start:3px solid #d97706 }
+  .exc-row.sev1{ border-inline-start:3px solid #94a3b8 }
+  /* טריות */
+  .db-asof{ font-size:10px; color:#94a3b8; margin-top:2px }
+  .db-asof.stale{ color:#b45309; font-weight:700 }
+  /* טופס תזכורת inline */
+  .rem-form{ display:grid; grid-template-columns:1.4fr .9fr .9fr .7fr .9fr auto; gap:6px; margin-top:6px }
+  .rem-form input,.rem-form select{ padding:5px 7px; font-size:12px; border:1px solid #dbe3ec; border-radius:8px; width:auto; min-width:0 }
+  @media(max-width:760px){ .rem-form{ grid-template-columns:1fr 1fr } }
   /* שלד טעינה — במקום להציג 0 עד שהנתונים מגיעים (הערת רומן 29/07) */
   .skel{ display:inline-block; border-radius:8px; background:#e9eef3;
          background-image:linear-gradient(90deg,#e9eef3 25%,#f7fafc 37%,#e9eef3 63%);
@@ -1635,7 +1671,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.86.0</div>
+      <div class="ver">גרסה 6.87.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1754,7 +1790,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.86.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.87.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1785,7 +1821,7 @@
       <div id="today-leads"><span class="skel skel-line"></span><span class="skel skel-line"></span></div>
       </div><!-- dash-sales -->
       </div></section>
-      <section class="dash-sec" data-sec="ops" hidden><button type="button" class="dash-hd" onclick="dashSecToggle('ops')"><span class="dash-arrow">◂</span>תיאום ותפעול<span class="dash-badge" hidden></span></button><div class="dash-bd"><div id="dash-board-wrap" class="hidden"><div class="stats"><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div></div><h2 class="sec">עומס צוותים — הזמנות פעילות</h2><div class="tbl-wrap" style="padding:12px"><span class="skel skel-bar"></span><span class="skel skel-bar"></span><span class="skel skel-bar"></span><span class="skel skel-bar"></span><span class="skel skel-bar"></span></div></div><div id="db-coordq" class="db-block"></div><div id="db-calls" class="db-block"></div><div id="db-returns" class="db-block"></div><div id="db-coordsug" class="db-block"></div></div></section>
+      <section class="dash-sec" data-sec="ops" hidden><button type="button" class="dash-hd" onclick="dashSecToggle('ops')"><span class="dash-arrow">◂</span>תיאום ותפעול<span class="dash-badge" hidden></span></button><div class="dash-bd"><div id="dash-board-wrap" class="hidden"><div class="stats"><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div></div><h2 class="sec">עומס צוותים — הזמנות פעילות</h2><div class="tbl-wrap" style="padding:8px 10px"><span class="skel skel-bar"></span><span class="skel skel-bar"></span><span class="skel skel-bar"></span><span class="skel skel-bar"></span><span class="skel skel-bar"></span></div></div><div id="db-coordq" class="db-block"></div><div id="db-calls" class="db-block"></div><div id="db-returns" class="db-block"></div><div id="db-coordsug" class="db-block"></div></div></section>
       </div>
     </section>
 
@@ -2738,6 +2774,7 @@ window.gotoTab = t=>{
   if(t==='po')   renderPo();
   if(t==='prc')  renderPrc();
   if(t==='set') renderSettings();
+  if(t==='today') dashLoad();
   if(window.innerWidth<800) setSide(false);
 };
 document.querySelectorAll('#side .nav-item').forEach(b=> b.onclick=()=>{
@@ -3269,6 +3306,10 @@ window.gotoSkuView = id=>{ gotoTab('skus'); if(id) applySkuView(id); else clearS
    שדה ה-dashboard בפרופיל יצא משימוש בבנייה הזו; העמודה נשארת במסד ואינה נקראת.
    סקשן שאינו ב-DASH_SECS נשאר hidden לכולם — קליפות שלב C לא מוצגות ריקות. */
 const DASH_SECS = [
+  {sec:'exc',  perm:'dash.exceptions'},   /* בלי מפתח דומיין בכוונה — מצרף רק ממקורות שהקורא מורשה להם (ראו renderExceptions) */
+  {sec:'fin',  perm:'dash.fin',       data:'acc.pays'},
+  {sec:'inv',  perm:'dash.inv',       data:'inv.stock'},
+  {sec:'rem',  perm:'dash.reminders'},    /* dash.reminders הוא גם מפתח הנתונים (RLS על ord.reminders) */
   {sec:'sup',  perm:'dash.supervise', data:'logi'},
   {sec:'sales',perm:'dash.sales',     data:'crm'},
   {sec:'ops',  perm:'dash.ops',       data:'logi'},
@@ -3342,6 +3383,8 @@ function renderDash(){
   renderOps();
   renderAgingBlock(); renderCoordQueue(); renderCallsBlock();
   renderReturnsBlock(); renderCoordSugBlock();
+  renderDashData();
+  dashLoad();          /* עצל + TTL — נורה גם מכניסה ללשונית וגם אחרי טעינה */
   dashBadges();
 }
 function renderOps(){
@@ -3379,7 +3422,7 @@ function renderOps(){
       ${canEdit('logi.cal')?`<div class="stat" id="b1a-tile"><div class="n" id="b1a-n">·</div><div class="l">שיבוץ מחר</div></div>`:''}
     </div>
     <h2 class="sec">🧑‍🔧 עומס צוותים — הזמנות פעילות</h2>
-    <div class="tbl-wrap" style="padding:12px">${Object.entries(byTeam).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`
+    <div class="tbl-wrap" style="padding:8px 10px">${Object.entries(byTeam).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;font-size:13.5px${t==='לא משויך'?'':';cursor:pointer'}" ${t==='לא משויך'?'':`onclick="gotoLogiPreset({scope:'all',f:{team:'${esc(t)}'}})"`}>
         <span style="width:110px;flex:none">${esc(t)}</span>
         <div style="flex:1;background:#f1f5f9;border-radius:20px;height:14px;overflow:hidden"><div style="width:${Math.round(n/mx*100)}%;height:100%;background:${t==='לא משויך'?'#c0392b':teamColor(t)}"></div></div>
@@ -3506,6 +3549,228 @@ function renderAgingBlock(){
     '</div>' +
     (oldest ? `<div class="empty">הוותיקה ביותר: ${esc(oldest.customer_name||'')} · ${fmtD(oldest.order_date)}</div>` : '');
   dashAlert('aging', 'sup', oldSched.length + pastCalls.length);
+}
+/* ===== שלב C — בלוקי הנתונים (6.87.0) =====
+   ניזונים מה-RPCs של שלב A; השערים בשרת (can_view מפורש בכל פונקציה),
+   הלקוח רק מסתיר. TTL 5 דקות; כשל → "נסה שוב" מקומי בבלוק. */
+let DASH_DATA = {}, _dashAt = 0, _dashBusy = false;
+/* כסף בקיצור — הדחיסה של רומן: ₪1.04M תופס אריח, לא שורה */
+function ilsK(n){
+  if(n==null || isNaN(+n)) return '—';
+  const v=+n, a=Math.abs(v);
+  if(a >= 1000000) return '₪' + (v/1000000).toFixed(2) + 'M';
+  if(a >= 100000)  return '₪' + Math.round(v/1000) + 'K';
+  return shekel(Math.round(v));
+}
+function dashAsOf(ts, staleH){
+  if(!ts) return '';
+  const d = new Date(ts); if(isNaN(d)) return '';
+  const ageH = (Date.now() - d.getTime())/3600000;
+  const txt = ageH < 20 ? d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})
+                        : d.toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'});
+  const stale = staleH && ageH > staleH;
+  return '<div class="db-asof'+(stale?' stale':'')+'">נכון ל-'+txt+(stale?' ⚠️':'')+'</div>';
+}
+async function dashLoad(force){
+  if(_dashBusy) return;
+  if(!force && Date.now() - _dashAt < 300000) return;
+  const jobs = [];
+  const want = (dataPerm, key, fn)=>{ if(canView(dataPerm)) jobs.push(
+    sb.schema('ord').rpc(fn)
+      .then(r=>{ DASH_DATA[key] = r.error ? {err:r.error.message} : {d:r.data}; })
+      .catch(e=>{ DASH_DATA[key] = {err:String(e)}; })); };
+  if(canView('dash.inv')){ want('inv.stock','inv','dash_inv_summary'); want('inv.po','po','dash_po_summary'); }
+  if(canView('dash.fin')) want('acc.pays','fin','dash_fin_summary');
+  if(canView('dash.strategic')) want('acc.pays','strategic','dash_strategic');
+  want('dash.reminders','rem','dash_reminders');
+  want('dash.sync','sync','dash_sync_health');
+  if(!jobs.length) return;
+  _dashBusy = true;
+  try{ await Promise.all(jobs); _dashAt = Date.now(); }
+  finally{ _dashBusy = false; }
+  renderDashData();
+}
+window.dashRetry = ()=>{ _dashAt = 0; dashLoad(true); };
+function _dbErr(el){ el.innerHTML = '<div class="empty">הטעינה נכשלה · <button type="button" class="chip" onclick="dashRetry()">נסה שוב</button></div>'; }
+/* פס התקינות: אדום = לא מתוזמן או שהריצה התקינה האחרונה מעבר לחלון הצפוי.
+   היעדר תזמון הוא כשל, לא שקט — העיקרון שהיה תופס את po-sync ואת 5 הימים
+   האבודים של ריצת 13:00 (CLAUDE.md §5). */
+function renderSyncStrip(){
+  const el = $('#db-sync'); if(!el) return;
+  if(!canView('dash.sync')){ el.innerHTML=''; return; }
+  const x = DASH_DATA.sync;
+  if(!x){ el.innerHTML=''; return; }
+  if(x.err){ _dbErr(el); return; }
+  const doms = (x.d && x.d.domains) || [];
+  el.innerHTML = doms.map(d=>{
+    const ageH = d.last_ok ? (Date.now() - new Date(d.last_ok).getTime())/3600000 : Infinity;
+    const cls = (!d.scheduled || ageH > (d.expect_h||26)) ? 'bad' : ((d.fails_7d||0) > 2 ? 'warn' : 'ok');
+    const when = d.last_ok ? (ageH < 20 ? new Date(d.last_ok).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})
+                                        : new Date(d.last_ok).toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'}))
+                           : 'מעולם לא';
+    const note = !d.scheduled ? 'לא מתוזמן!' : when;
+    return '<span class="sync-pill '+cls+'" onclick="gotoSet(\'synclog\')" title="'+esc(d.label)+': ריצה תקינה אחרונה '+esc(String(when))+' · '+(d.fails_7d||0)+' כשלים בשבוע">● '+esc(d.label)+' · '+esc(note)+'</span>';
+  }).join('');
+}
+function renderRevBlock(){
+  const el=$('#db-rev'); if(!el) return;
+  const x=DASH_DATA.fin;
+  if(!canView('dash.fin')||!x){ el.innerHTML=''; return; }
+  if(x.err){ _dbErr(el); return; }
+  const d=x.d||{};
+  const dlt = d.rev_prev_ytd>0 ? Math.round((d.rev_ytd-d.rev_prev_ytd)/d.rev_prev_ytd*100) : null;
+  el.innerHTML = '<h3>💰 הכנסות — חשבוניות פחות זיכויים</h3><div class="stats">'+
+    '<div class="stat"><div class="n">'+ilsK(d.rev_mtd)+'</div><div class="l">החודש</div></div>'+
+    '<div class="stat"><div class="n">'+ilsK(d.rev_ytd)+'</div><div class="l">מתחילת השנה'+(dlt==null?'':' · <b style="color:'+(dlt>=0?'#16a34a':'#dc2626')+'">'+(dlt>0?'+':'')+dlt+'%</b> מול אשתקד')+'</div></div>'+
+    '<div class="stat"><div class="n">'+ilsK(d.receipts_mtd)+'</div><div class="l">תקבולים החודש</div></div>'+
+    '</div>'+dashAsOf(d.as_of, 26);
+}
+function renderArBlock(){
+  const el=$('#db-ar'); if(!el) return;
+  const x=DASH_DATA.fin;
+  if(!canView('dash.fin')||!x||x.err){ el.innerHTML=''; return; }
+  const d=x.d||{};
+  el.innerHTML = '<h3>📥 גבייה</h3><div class="stats">'+
+    '<div class="stat clk'+(d.ar_sum>0?' warn':'')+'" onclick="gotoPays(\'open\')"><div class="n">'+ilsK(d.ar_sum)+'</div><div class="l">יתרות פתוחות · '+(d.ar_n||0)+' הזמנות</div></div>'+
+    '<div class="stat clk'+(d.overdue_beats>0?' bad':'')+'" onclick="gotoPays(\'open\')"><div class="n">'+(d.overdue_beats||0)+'</div><div class="l">פעימות תשלום באיחור</div></div>'+
+    '</div>'+
+    (d.top_debtors||[]).slice(0,5).map(t=>'<div class="lead" onclick="gotoPays(\'open\')"><div><div class="nm">'+esc(t.customer||'')+'</div><div class="meta">'+esc(t.order_number||'')+' · '+esc(t.pay_state||'')+'</div></div><b>'+ilsK(t.balance)+'</b></div>').join('');
+  dashAlert('ar','fin', d.overdue_beats||0);
+}
+function renderStrategicBlock(){
+  const el=$('#db-strategic'); if(!el) return;
+  const x=DASH_DATA.strategic;
+  if(!canView('dash.strategic')||!x||x.err){ el.innerHTML=''; return; }
+  const rows=x.d||[];
+  if(!rows.length){ el.innerHTML='<h3>⭐ לקוחות אסטרטגיים</h3><div class="empty">הרשימה ריקה — נערכת בהגדרות ← כללי (strategic_customers)</div>'; return; }
+  el.innerHTML = '<h3>⭐ לקוחות אסטרטגיים</h3>'+rows.map(r=>
+    '<div class="lead"><div><div class="nm">'+esc(r.label||r.customer_number||'')+'</div><div class="meta">שנה: '+ilsK(r.rev_ytd)+' · חודש: '+ilsK(r.rev_mtd)+(r.last_invoice?' · חשבונית אחרונה '+fmtD(r.last_invoice):'')+'</div></div>'+(r.open_balance>0?'<b style="color:#b45309">'+ilsK(r.open_balance)+'</b>':'')+'</div>').join('');
+}
+function renderInvBlock(){
+  const el=$('#db-inv'); if(!el) return;
+  const x=DASH_DATA.inv;
+  if(!canView('dash.inv')||!x){ el.innerHTML=''; return; }
+  if(x.err){ _dbErr(el); return; }
+  const d=x.d||{};
+  el.innerHTML = '<h3>📦 מלאי — פעולות נדרשות</h3><div class="stats">'+
+    '<div class="stat clk '+(d.buy_n?'bad':'good')+'" onclick="gotoTab(\'inv\')"><div class="n">'+(d.buy_n||0)+'</div><div class="l">להזמין · '+ilsK(d.buy_value)+' בסיכון</div></div>'+
+    '<div class="stat clk '+(d.late_n?'warn':'good')+'" onclick="gotoTab(\'inv\')"><div class="n">'+(d.late_n||0)+'</div><div class="l">הזמנה מאחרת · '+ilsK(d.late_value)+'</div></div>'+
+    '</div>'+
+    (d.top||[]).map(t=>'<div class="lead" onclick="gotoTab(\'inv\')"><div class="nm">'+esc(t.partname||'')+'</div><b>'+ilsK(t.value)+'</b></div>').join('')+
+    dashAsOf(d.as_of, 30);
+  dashAlert('inv','inv', d.buy_n||0);
+}
+function renderPoBlock(){
+  const el=$('#db-po'); if(!el) return;
+  const x=DASH_DATA.po;
+  if(!canView('dash.inv')||!canView('inv.po')||!x||x.err){ el.innerHTML=''; return; }
+  const d=x.d||{};
+  const ageH = d.data_as_of ? (Date.now()-new Date(d.data_as_of).getTime())/3600000 : Infinity;
+  const stale = !d.scheduled || ageH > 48;
+  el.innerHTML = '<h3>🚢 הזמנות רכש</h3><div class="stats">'+
+    '<div class="stat clk" onclick="gotoTab(\'po\')"><div class="n">'+(d.open_n||0)+'</div><div class="l">פתוחות</div></div>'+
+    '<div class="stat clk'+(d.overdue_lines?' warn':'')+'" onclick="gotoTab(\'po\')"><div class="n">'+(d.overdue_lines||0)+'</div><div class="l">שורות אחרי תאריך יעד</div></div>'+
+    '</div>'+
+    (stale?'<div class="empty" style="color:#b91c1c">⚠️ נתוני הרכש אינם מסונכרנים'+(!d.scheduled?' — הסנכרון אינו מתוזמן':'')+'</div>':'')+
+    dashAsOf(d.data_as_of, 48);
+}
+function renderRemBlock(){
+  const el=$('#db-rem'); if(!el) return;
+  const x=DASH_DATA.rem;
+  if(!canView('dash.reminders')||!x){ el.innerHTML=''; return; }
+  if(x.err){ _dbErr(el); return; }
+  const d=x.d||{};
+  const canE = canEdit('dash.reminders');
+  const today = isoD(new Date());
+  el.innerHTML = '<h3>⏰ תזכורות — טסטים, אגרות ותשלומים'+(canE?' <button type="button" class="chip" onclick="remFormToggle()">＋ חדשה</button>':'')+'</h3>'+
+    '<div class="stats">'+
+    '<div class="stat'+(d.overdue_n?' bad':' good')+'"><div class="n">'+(d.overdue_n||0)+'</div><div class="l">באיחור · '+ilsK(d.overdue_sum)+'</div></div>'+
+    '<div class="stat'+(d.due30_n?' warn':'')+'"><div class="n">'+(d.due30_n||0)+'</div><div class="l">ב-30 הימים · '+ilsK(d.due30_sum)+'</div></div>'+
+    '<div class="stat"><div class="n">'+ilsK(d.pending_sum)+'</div><div class="l">סה"כ ממתין</div></div>'+
+    '</div>'+
+    ((d.next||[]).map(r=>
+      '<div class="lead"><div><div class="nm">'+esc(r.title||'')+'</div><div class="meta">'+esc(r.kind||'')+' · יעד '+fmtD(r.due_date)+(r.amount?' · '+ilsK(+r.amount):'')+'</div></div>'+
+      (r.due_date<today?'<span class="pill p-red">באיחור</span>':'')+
+      (canE?'<button type="button" class="chip" onclick="remPaid(\''+r.id+'\')">✓ שולם</button>':'')+'</div>').join('')
+     ||'<div class="empty">אין תזכורות ממתינות ✨</div>')+
+    '<div id="rem-form" hidden></div>';
+  dashAlert('rem','rem', d.overdue_n||0);
+}
+window.remFormToggle = ()=>{
+  const f = $('#rem-form'); if(!f) return;
+  if(!f.hidden){ f.hidden = true; f.innerHTML=''; return; }
+  f.hidden = false;
+  /* select הסוג מתחיל ריק בכוונה — מלכודת 6.78.1: select בלי allowEmpty
+     כותב ערך שאיש לא בחר. כאן הריק נאכף בוולידציה של remSave. */
+  f.innerHTML = '<div class="rem-form">'+
+    '<input id="rem-title" placeholder="כותרת — למשל: טסט משאית מאן">'+
+    '<select id="rem-kind"><option value="">סוג…</option><option>טסט</option><option>ביטוח</option><option>אגרה</option><option>תשלום לרשות</option><option>אחר</option></select>'+
+    '<input id="rem-due" type="date">'+
+    '<input id="rem-amt" type="number" inputmode="decimal" placeholder="₪ (רשות)">'+
+    '<select id="rem-rec"><option value="">חד-פעמי</option><option value="12">שנתי</option><option value="6">חצי-שנתי</option><option value="1">חודשי</option></select>'+
+    '<button type="button" class="chip" onclick="remSave()">שמירה</button></div>';
+};
+window.remSave = async ()=>{
+  const t=($('#rem-title').value||'').trim(), k=$('#rem-kind').value, du=$('#rem-due').value;
+  if(!t || !k || !du){ toast('כותרת, סוג ותאריך יעד — חובה'); return; }
+  const amt = parseFloat($('#rem-amt').value); const rec = parseInt($('#rem-rec').value)||null;
+  const r = await sb.schema('ord').from('reminders').insert({ title:t, kind:k, due_date:du,
+    amount: isNaN(amt)?null:amt, recur_months:rec });
+  if(r.error){ toast('שמירה נכשלה: '+r.error.message); return; }
+  toast('התזכורת נשמרה ✓'); dashRetry();
+};
+window.remPaid = async id=>{
+  if(!confirm('לסמן את התזכורת כשולמה? תזכורת מחזורית תיצור את המופע הבא אוטומטית.')) return;
+  const r = await sb.schema('ord').rpc('reminder_close', { p_id:id });
+  if(r.error){ toast('סימון נכשל: '+r.error.message); return; }
+  toast('סומן כשולם ✓'); dashRetry();
+};
+/* חריגי המנכ"ל: מיזוג מדורג של כל הדגלים האדומים למקום אחד. כל מקור
+   נבדק בהרשאתו שלו — הבלוק לעולם אינו חושף נתון שהקורא לא רואה במקור. */
+function renderExceptions(){
+  const el=$('#db-exc'); if(!el) return;
+  if(!canView('dash.exceptions')){ el.innerHTML=''; return; }
+  const rows=[];
+  const add=(icon,txt,val,fn,sev)=>rows.push({icon:icon,txt:txt,val:val,fn:fn,sev:sev});
+  ((DASH_DATA.sync&&DASH_DATA.sync.d&&DASH_DATA.sync.d.domains)||[]).forEach(d=>{
+    const ageH = d.last_ok ? (Date.now()-new Date(d.last_ok).getTime())/3600000 : Infinity;
+    if(!d.scheduled) add('🔴','סנכרון '+d.label+' אינו מתוזמן','',"gotoSet('synclog')",3);
+    else if(ageH > (d.expect_h||26)) add('🔴','סנכרון '+d.label+' לא רץ בהצלחה',Math.round(ageH)+' שעות',"gotoSet('synclog')",3);
+  });
+  const fin=(DASH_DATA.fin&&DASH_DATA.fin.d)||null;
+  if(fin && fin.overdue_beats>0) add('💸','פעימות תשלום באיחור', String(fin.overdue_beats), "gotoPays('open')",2);
+  const inv=(DASH_DATA.inv&&DASH_DATA.inv.d)||null;
+  if(inv && inv.buy_n>0) add('📦', inv.buy_n+' פריטים להזמנה', ilsK(inv.buy_value)+' בסיכון', "gotoTab('inv')",2);
+  if(canView('logi')){
+    const today=isoD(new Date());
+    const act=ORDS.filter(o=>!['הושלם','בוטל','ממתין לתשלום'].includes(o.order_status));
+    const cut=(function(){ const d2=new Date(); d2.setDate(d2.getDate()-(+(OSET['dash_age_sched_days']||7))); return isoD(d2); })();
+    const oldSched=act.filter(o=>!o.scheduled_date&&(o.order_date||'')<cut);
+    if(oldSched.length) add('📋','הזמנות ותיקות ללא שיבוץ', String(oldSched.length), "gotoLogiPreset({scope:'sched',noDate:true})",2);
+    const past=SCALLS.filter(s=>!['הושלם','הושלמה','בוטלה','סגורה'].includes(s.status)&&s.deadline&&s.deadline<today);
+    if(past.length) add('🛠️','קריאות שירות אחרי דדליין', String(past.length), "gotoLogiPreset({view:'calls'})",2);
+    const lateRet=(RETPEND||[]).filter(r=>(+r.days_waiting||0)>=RET_LATE_DAYS);
+    if(lateRet.length) add('↩️','החזרות ממתינות מעל שבועיים', String(lateRet.length), "gotoLogiPreset({scope:'ret'})",1);
+  }
+  const rem=(DASH_DATA.rem&&DASH_DATA.rem.d)||null;
+  if(rem && rem.overdue_n>0) add('⏰','תזכורות באיחור', rem.overdue_n+' · '+ilsK(rem.overdue_sum), "dashSecFocus('rem')",1);
+  rows.sort((a,b)=>b.sev-a.sev);
+  const top=rows.slice(0,8);
+  el.innerHTML = top.length ? top.map(r=>
+    '<div class="exc-row sev'+r.sev+'" onclick="'+r.fn.replace(/"/g,'&quot;')+'"><span>'+r.icon+'</span><span class="exc-t">'+esc(r.txt)+'</span><b>'+esc(String(r.val||''))+'</b></div>').join('')
+    : '<div class="empty">אין חריגים פתוחים ✨</div>';
+  dashAlert('exc','exc', top.filter(r=>r.sev>=3).length);
+}
+window.dashSecFocus = sec=>{
+  const st=dashSecState();
+  if(st[sec]){ st[sec]=false; try{ localStorage.setItem('iron_dash_sec_v1', JSON.stringify(st)); }catch(_e){} applyDashboard(); }
+  const el2=document.querySelector('.dash-sec[data-sec="'+sec+'"]');
+  if(el2) el2.scrollIntoView({behavior:'smooth'});
+};
+function renderDashData(){
+  renderSyncStrip(); renderRevBlock(); renderArBlock(); renderStrategicBlock();
+  renderInvBlock(); renderPoBlock(); renderRemBlock(); renderExceptions();
+  dashBadges();
 }
 /* לוגיסטיקה — שלוש תצוגות בתוך אותו מסך, בלי לקפוץ לקטגוריה אחרת (הערה 19) */
 let LOGI_VIEW='cal';
@@ -7304,7 +7569,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'dashreg-2026-08-16a';
+const BUILD_ID = 'dashdata-2026-08-16a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====

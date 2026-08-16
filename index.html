@@ -727,6 +727,26 @@
   .rem-form{ display:grid; grid-template-columns:1.4fr .9fr .9fr .7fr .9fr auto; gap:6px; margin-top:6px }
   .rem-form input,.rem-form select{ padding:5px 7px; font-size:12px; border:1px solid #dbe3ec; border-radius:8px; width:auto; min-width:0 }
   @media(max-width:760px){ .rem-form{ grid-template-columns:1fr 1fr } }
+  /* "היום שלי" — כרטיס ביקור לטכנאי, בנוי לטלפון */
+  #dash-secs .dash-sec[data-sec="myday"]{ grid-column:1 / -1 }
+  .md-tog{ display:flex; gap:6px; margin-bottom:6px }
+  .md-card{ border:1px solid #e6eaf0; border-radius:12px; padding:9px 11px; margin-bottom:7px; background:#fff }
+  .md-card.svc{ border-inline-start:3px solid #d97706 }
+  .md-card.fup{ border-inline-start:3px solid #c026d3 }
+  .md-hd{ display:flex; align-items:center; gap:7px; flex-wrap:wrap; font-size:13px }
+  .md-nm{ font-weight:800; font-size:14.5px; margin:3px 0 1px }
+  .md-meta{ font-size:12px; color:#64748b; margin-bottom:5px }
+  .md-act{ display:flex; gap:6px; flex-wrap:wrap }
+  .md-act .chip{ font-size:12.5px; padding:5px 11px; text-decoration:none }
+  .md-day{ font-size:12.5px; font-weight:800; color:var(--navy); margin:9px 0 5px; display:flex; gap:8px; align-items:center }
+  .md-day small{ color:#94a3b8; font-weight:600 }
+  /* משפך המכירות */
+  .fun-row{ display:flex; align-items:center; gap:8px; margin-bottom:5px; font-size:12.5px; cursor:pointer }
+  .fun-l{ width:150px; flex:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  .fun-bar{ flex:1; background:#f1f5f9; border-radius:20px; height:12px; overflow:hidden }
+  .fun-bar div{ height:100%; background:var(--navy); border-radius:20px }
+  .fun-row b{ width:30px; text-align:center; flex:none }
+  .fun-a{ width:68px; flex:none; font-size:11px; color:#64748b; text-align:left }
   /* שלד טעינה — במקום להציג 0 עד שהנתונים מגיעים (הערת רומן 29/07) */
   .skel{ display:inline-block; border-radius:8px; background:#e9eef3;
          background-image:linear-gradient(90deg,#e9eef3 25%,#f7fafc 37%,#e9eef3 63%);
@@ -1671,7 +1691,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.87.0</div>
+      <div class="ver">גרסה 6.88.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1790,7 +1810,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.87.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.88.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1801,6 +1821,7 @@
     <section id="tab-today">
       <div id="db-sync"></div>
       <div id="dash-secs">
+      <section class="dash-sec" data-sec="myday" hidden><button type="button" class="dash-hd" onclick="dashSecToggle('myday')"><span class="dash-arrow">◂</span>🛠️ היום שלי<span class="dash-badge" hidden></span></button><div class="dash-bd"><div id="db-myday"></div></div></section>
       <section class="dash-sec" data-sec="exc" hidden><button type="button" class="dash-hd" onclick="dashSecToggle('exc')"><span class="dash-arrow">◂</span>חריגים מרכזיים<span class="dash-badge" hidden></span></button><div class="dash-bd"><div id="db-exc"></div></div></section>
       <section class="dash-sec" data-sec="fin" hidden><button type="button" class="dash-hd" onclick="dashSecToggle('fin')"><span class="dash-arrow">◂</span>כספים<span class="dash-badge" hidden></span></button><div class="dash-bd"><div id="db-rev"></div><div id="db-ar"></div><div id="db-strategic"></div></div></section>
       <section class="dash-sec" data-sec="inv" hidden><button type="button" class="dash-hd" onclick="dashSecToggle('inv')"><span class="dash-arrow">◂</span>מלאי ורכש<span class="dash-badge" hidden></span></button><div class="dash-bd"><div id="db-inv"></div><div id="db-po"></div></div></section>
@@ -1820,6 +1841,7 @@
       <h2 class="sec">לידים חדשים שממתינים לך</h2>
       <div id="today-leads"><span class="skel skel-line"></span><span class="skel skel-line"></span></div>
       </div><!-- dash-sales -->
+      <div id="db-funnel" class="db-block"></div><div id="db-salesrc" class="db-block"></div>
       </div></section>
       <section class="dash-sec" data-sec="ops" hidden><button type="button" class="dash-hd" onclick="dashSecToggle('ops')"><span class="dash-arrow">◂</span>תיאום ותפעול<span class="dash-badge" hidden></span></button><div class="dash-bd"><div id="dash-board-wrap" class="hidden"><div class="stats"><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div></div><h2 class="sec">עומס צוותים — הזמנות פעילות</h2><div class="tbl-wrap" style="padding:8px 10px"><span class="skel skel-bar"></span><span class="skel skel-bar"></span><span class="skel skel-bar"></span><span class="skel skel-bar"></span><span class="skel skel-bar"></span></div></div><div id="db-coordq" class="db-block"></div><div id="db-calls" class="db-block"></div><div id="db-returns" class="db-block"></div><div id="db-coordsug" class="db-block"></div></div></section>
       </div>
@@ -3306,6 +3328,7 @@ window.gotoSkuView = id=>{ gotoTab('skus'); if(id) applySkuView(id); else clearS
    שדה ה-dashboard בפרופיל יצא משימוש בבנייה הזו; העמודה נשארת במסד ואינה נקראת.
    סקשן שאינו ב-DASH_SECS נשאר hidden לכולם — קליפות שלב C לא מוצגות ריקות. */
 const DASH_SECS = [
+  {sec:'myday',perm:'dash.myday'},        /* נתוני הדומיין ממוסכים ממילא ב-field_policy; MD_HIDE מסתיר ממנהלים לא-משובצים */
   {sec:'exc',  perm:'dash.exceptions'},   /* בלי מפתח דומיין בכוונה — מצרף רק ממקורות שהקורא מורשה להם (ראו renderExceptions) */
   {sec:'fin',  perm:'dash.fin',       data:'acc.pays'},
   {sec:'inv',  perm:'dash.inv',       data:'inv.stock'},
@@ -3347,9 +3370,11 @@ function applyDashboard(){
   document.querySelectorAll('#dash-secs .dash-sec').forEach(el=>{
     const s = DASH_SECS.find(x=>x.sec===el.dataset.sec);
     if(!s){ el.hidden = true; return; }          /* סקשן של שלב עתידי */
-    const show = canView(s.perm) && (!s.data || canView(s.data));
+    let show = canView(s.perm) && (!s.data || canView(s.data));
+    /* מנהל שאינו משובץ לא רואה "היום שלי" — הדגל מנוהל ב-renderMyDay */
+    if(s.sec==='myday' && window.MD_HIDE) show = false;
     el.hidden = !show;
-    el.style.order = String(ord.indexOf(s.sec)+1);
+    el.style.order = s.sec==='myday' ? '0' : String(ord.indexOf(s.sec)+1);
     const folded = (el.dataset.sec in st) ? !!st[el.dataset.sec]
                                           : !!(DASH_FOLD_DEF[prof]||{})[el.dataset.sec];
     el.classList.toggle('folded', folded);
@@ -3384,6 +3409,7 @@ function renderDash(){
   renderAgingBlock(); renderCoordQueue(); renderCallsBlock();
   renderReturnsBlock(); renderCoordSugBlock();
   renderDashData();
+  renderMyDay();       /* אסינכרוני — טוען team_days בעצמו (TTL) */
   dashLoad();          /* עצל + TTL — נורה גם מכניסה ללשונית וגם אחרי טעינה */
   dashBadges();
 }
@@ -3584,6 +3610,10 @@ async function dashLoad(force){
   if(canView('dash.strategic')) want('acc.pays','strategic','dash_strategic');
   want('dash.reminders','rem','dash_reminders');
   want('dash.sync','sync','dash_sync_health');
+  if(canView('dash.sales')) jobs.push(
+    sb.schema('crm').rpc('sales_dash', { p_scope: canView('dash.salesteam') ? 'team' : 'me' })
+      .then(r=>{ DASH_DATA.sales = r.error ? {err:r.error.message} : {d:r.data}; })
+      .catch(e=>{ DASH_DATA.sales = {err:String(e)}; }));
   if(!jobs.length) return;
   _dashBusy = true;
   try{ await Promise.all(jobs); _dashAt = Date.now(); }
@@ -3767,9 +3797,135 @@ window.dashSecFocus = sec=>{
   const el2=document.querySelector('.dash-sec[data-sec="'+sec+'"]');
   if(el2) el2.scrollIntoView({behavior:'smooth'});
 };
+/* ===== שלב D — "היום שלי" לטכנאי (6.88.0) ===== */
+let MD_VIEW = 'day', _mdAt = 0;
+window.MD_HIDE = false;
+window.mdView = v=>{ MD_VIEW = v==='week' ? 'week' : 'day'; renderMyDay(); };
+function myTeams(ds){
+  const d = TD_MAP[ds] || {}; const out = [];
+  Object.keys(d).forEach(t=>{
+    if((d[t]||[]).some(p=>String(p.profile_id||'')===String(ME && ME.id))) out.push(t);
+  });
+  return out;
+}
+/* אירועי היום שלי: eventsOn הקיים (ריבוי-ימים, השלמות, קיפול) מסונן לצוותים
+   שאני משובץ בהם. CAL_Q מרוקן סביב הקריאה — חיפוש הלוח לא מסנן את היום שלי. */
+function mdEventsOn(ds){
+  const q = CAL_Q; CAL_Q = '';
+  let evs = [];
+  try{ evs = eventsOn(ds); } finally{ CAL_Q = q; }
+  const mine = myTeams(ds);
+  return evs.filter(e=> mine.includes(e.o.team||''));
+}
+function mdCard(e){
+  const o = e.o, svc = e.kind==='svc';
+  const addr = [o.address||o.customer_address||'', o.city||''].filter(Boolean).join(', ');
+  const phone = o.contact_phone||o.phone||'';
+  const items = svc ? [o.product, o.fault_details].filter(Boolean).join(' — ')
+                    : [o.equipment_list, o.warehouse_notes?('מחסן: '+o.warehouse_notes):''].filter(Boolean).join(' · ');
+  const canDone = svc && window.pLevel('dash.myday')>=2
+                  && !['הושלם','הושלמה','בוטלה','סגורה'].includes(o.status);
+  return '<div class="md-card'+(svc?' svc':'')+(o.__fup?' fup':'')+'">'+
+    '<div class="md-hd"><b>'+esc(o.time_slot||'ללא שעה')+'</b>'+
+      (svc?'<span class="pill '+(o.urgency==='משביתה'?'p-red':'p-gray')+'">🛠️ '+esc(o.urgency||'קריאת שירות')+'</span>':'')+
+      (o.__fup?'<span class="pill" style="background:#fae8ff;color:#86198f">🔧 השלמה</span>':'')+
+      ((e.dayTotal||1)>1?'<span class="pill p-gray">יום '+e.dayIdx+' מתוך '+e.dayTotal+'</span>':'')+
+    '</div>'+
+    '<div class="md-nm">'+esc(o.customer_name||'')+'</div>'+
+    (addr?'<div class="md-meta">📍 '+esc(addr)+'</div>':'')+
+    (items?'<div class="md-meta">'+esc(items)+'</div>':'')+
+    '<div class="md-act">'+
+      (addr?'<a class="chip" target="_blank" rel="noopener" href="'+wazeUrl(addr)+'" onclick="event.stopPropagation()">🚗 ניווט</a>':'')+
+      (phone?'<a class="chip" href="tel:'+esc(String(phone))+'">📞 חיוג</a>':'')+
+      '<button type="button" class="chip" onclick="'+(svc?"openScall('"+o.id+"')":"openOrd('"+o.id+"')")+'">כרטיס</button>'+
+      (window.canEdit('docs.media.upload')?'<button type="button" class="chip" onclick="uploadMedia(\''+(svc?'call':'order')+'\',\''+o.id+'\')">📷 תמונות</button>':'')+
+      (canDone?'<button type="button" class="chip" style="font-weight:800;color:#15803d" onclick="mdDone(\''+o.id+'\')">✓ בוצע</button>':'')+
+    '</div></div>';
+}
+window.mdDone = async id=>{
+  if(!confirm('לסמן את קריאת השירות כבוצעה?')) return;
+  const r = await sb.schema('ord').rpc('scall_mark_done', { p_id: id });
+  if(r.error){ toast('סימון נכשל: '+r.error.message); return; }
+  const s = SCALLS.find(x=>String(x.id)===String(id));
+  if(s && r.data) Object.assign(s, r.data);
+  toast('סומן כבוצע ✓');
+  try{ renderOrders(); renderLogi(); renderCal(); }catch(_e){}
+  renderMyDay();
+};
+async function renderMyDay(){
+  const secEl = document.querySelector('.dash-sec[data-sec="myday"]');
+  const el = $('#db-myday'); if(!el || !secEl) return;
+  if(!canView('dash.myday')){ el.innerHTML=''; return; }
+  const from = isoD(new Date()), to = addDaysIso(from, 7);
+  if(Date.now() - _mdAt > 300000){ _mdAt = Date.now(); await loadTeamDays(from, to); }
+  const days = []; for(let d=from; d<=to; d=addDaysIso(d,1)){ if(dowOf(d)!==CAL_SATURDAY) days.push(d); }
+  const myDays = days.filter(d=>myTeams(d).length);
+  /* מנהל לא-משובץ: הסקשן יורד. טכנאי לא-משובץ: מצב ריק כן — ההיעדר הוא המידע. */
+  const hide = window.canEdit('logi.cal') && !myDays.length;
+  if(hide !== window.MD_HIDE){ window.MD_HIDE = hide; applyDashboard(); }
+  if(hide){ el.innerHTML=''; return; }
+  const tog = '<div class="md-tog">'+
+    '<button type="button" class="chip '+(MD_VIEW==='day'?'active':'')+'" onclick="mdView(\'day\')">היום</button>'+
+    '<button type="button" class="chip '+(MD_VIEW==='week'?'active':'')+'" onclick="mdView(\'week\')">השבוע</button>'+
+    (myTeams(from).length?'<span class="pill p-gray">👷 '+esc(myTeams(from).join(' · '))+'</span>':'')+
+    '</div>';
+  if(MD_VIEW === 'day'){
+    if(!myTeams(from).length){
+      el.innerHTML = tog + '<div class="empty">לא שובצת להיום'+
+        (myDays.length ? ' — הימים שלך השבוע: '+myDays.map(d=>fmtD(d)).join(', ') :
+         ' — השיבוץ היומי (👷) טרם מולא השבוע; פנו למנהל הלוגיסטיקה')+'</div>';
+      dashAlert('myday','myday',0); return;
+    }
+    const evs = mdEventsOn(from);
+    el.innerHTML = tog + (evs.map(mdCard).join('') ||
+      '<div class="empty">משובץ אך אין ביקורים משויכים לצוות שלך היום ✨</div>');
+  } else {
+    el.innerHTML = tog + days.map(d=>{
+      const mine = myTeams(d);
+      const evs = mine.length ? mdEventsOn(d) : [];
+      return '<div class="md-day">'+esc(dayNameHe(d))+' <small>'+fmtD(d)+'</small>'+
+        (mine.length?'<span class="pill p-gray">👷 '+esc(mine.join(' · '))+'</span>':'<small>— לא שובצת</small>')+'</div>'+
+        (mine.length ? (evs.map(mdCard).join('')||'<div class="empty">אין ביקורים</div>') : '');
+    }).join('');
+  }
+  dashAlert('myday','myday',0);
+}
+/* ===== שלב D — בלוקי המכירות (תצוגה על הקיים; הכרעת רומן 16/08/2026) ===== */
+function renderFunnelBlock(){
+  const el = $('#db-funnel'); if(!el) return;
+  const x = DASH_DATA.sales;
+  if(!canView('dash.sales')||!x){ el.innerHTML=''; return; }
+  if(x.err){ _dbErr(el); return; }
+  const d = x.d||{}, f = d.funnel||[];
+  const mx = Math.max(1, ...f.map(r=>+r.n||0));
+  const asof = d.as_of||{};
+  el.innerHTML = '<h3>📈 משפך תהליכי מכירה — כלל הצוות</h3>'+
+    f.map(r=>'<div class="fun-row" onclick="gotoTab(\'deals\')"><span class="fun-l">'+esc(r.stage||'')+'</span>'+
+      '<div class="fun-bar"><div style="width:'+Math.round((+r.n||0)/mx*100)+'%"></div></div>'+
+      '<b>'+(r.n||0)+'</b><span class="fun-a">'+ilsK(r.amount)+'</span></div>').join('')+
+    '<div class="db-asof stale">נתוני מאנדיי — קפואים מ-'+
+      (asof.deals?new Date(asof.deals).toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'}):'?')+
+      ' · הסנכרון החי יחובר בהמשך</div>';
+}
+function renderSalesSrcBlock(){
+  const el = $('#db-salesrc'); if(!el) return;
+  const x = DASH_DATA.sales;
+  if(!canView('dash.sales')||!x||x.err){ el.innerHTML=''; return; }
+  const d = x.d||{}, w = d.won_month||{}, src = d.leads_by_source||[];
+  const mx = Math.max(1, ...src.map(r=>+r.n||0));
+  el.innerHTML = '<div class="stats">'+
+    '<div class="stat clk" onclick="gotoTab(\'leads\')"><div class="n">'+(d.new_leads_n||0)+'</div><div class="l">לידים חדשים</div></div>'+
+    '<div class="stat clk" onclick="gotoTab(\'leads\')"><div class="n">'+(d.followups_n||0)+'</div><div class="l">פולואפים פתוחים</div></div>'+
+    '<div class="stat clk" onclick="gotoTab(\'deals\')"><div class="n">'+(w.n||0)+'</div><div class="l">סגירות בחודש האחרון · '+ilsK(w.amount)+'</div></div>'+
+    '<div class="stat clk" onclick="gotoTab(\'meets\')"><div class="n">'+(d.meets_week_n||0)+'</div><div class="l">פגישות השבוע (Outlook — חי)</div></div>'+
+    '</div><h3>🎯 לידים לפי מקור — החודש האחרון בנתונים</h3>'+
+    src.map(r=>'<div class="fun-row" onclick="gotoTab(\'leads\')"><span class="fun-l">'+esc(r.source||'')+'</span>'+
+      '<div class="fun-bar"><div style="width:'+Math.round((+r.n||0)/mx*100)+'%"></div></div><b>'+(r.n||0)+'</b></div>').join('');
+}
 function renderDashData(){
   renderSyncStrip(); renderRevBlock(); renderArBlock(); renderStrategicBlock();
   renderInvBlock(); renderPoBlock(); renderRemBlock(); renderExceptions();
+  renderFunnelBlock(); renderSalesSrcBlock();
   dashBadges();
 }
 /* לוגיסטיקה — שלוש תצוגות בתוך אותו מסך, בלי לקפוץ לקטגוריה אחרת (הערה 19) */
@@ -7569,7 +7725,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'dashdata-2026-08-16a';
+const BUILD_ID = 'myday-2026-08-16a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====

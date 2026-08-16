@@ -686,13 +686,18 @@
     #dash-secs .dash-sec{ margin-bottom:0 }
     #dash-secs .dash-sec[data-sec="exc"]{ grid-column:1 / -1 }
   }
-  .dash-sec{ background:#fff; border:1px solid #e6eaf0; border-radius:12px; padding:0 12px 9px; margin-bottom:10px; }
-  .dash-hd{ width:100%; display:flex; align-items:center; gap:7px; background:none; border:none; padding:9px 2px 7px; font-size:13.5px; font-weight:800; color:var(--navy); cursor:pointer; font-family:inherit; text-align:right }
-  .dash-hd .dash-arrow{ transition:transform .15s; display:inline-block; font-size:11px }
-  .dash-sec.folded .dash-hd .dash-arrow{ transform:rotate(90deg) }
-  .dash-badge{ background:#dc2626; color:#fff; border-radius:20px; padding:0 7px; font-size:11px; font-weight:800; margin-inline-start:auto }
+  /* 6.89.0 — השטחה: הסקשן הוא מעטפת הרשאות בלבד, בלי כותרת ובלי קיפול.
+     הכרטיס (.db-block) הוא יחידת התצוגה. משוב רומן: "אופן תצוגה מאוד לא נוח". */
+  .dash-sec{ background:none; border:none; padding:0; margin-bottom:0; }
+  .dash-hd{ display:none }
+  .dash-badge{ display:none }
   .dash-bd{ padding-top:0 }
-  .db-block{ margin-top:8px }
+  .db-block{ margin-top:10px; background:#fff; border:1px solid #e6eaf0; border-radius:12px; padding:8px 12px 10px }
+  /* הקוקפיט — גריד אריחים אחיד אחד לכל המספרים */
+  #db-kpis{ margin-bottom:4px }
+  #db-kpis .stats{ margin:0 }
+  .k-sub{ font-size:10px; color:#64748b; line-height:1.3; margin-top:1px }
+  .k-sub.red{ color:#dc2626; font-weight:800 }
   .db-block h3{ font-size:12px; font-weight:800; color:#475569; margin:6px 0 4px; display:flex; align-items:center; gap:6px }
   /* אריחים דחוסים — auto-fill במקום 4 עמודות; פס-מבטא צבעוני בצד */
   #dash-secs .stats{ display:grid; grid-template-columns:repeat(auto-fill,minmax(112px,1fr)); gap:7px; margin:0 0 5px }
@@ -708,6 +713,10 @@
   #dash-secs h2.sec{ font-size:12px; margin:8px 0 4px; color:#475569 }
   .stat.clk{ cursor:pointer }
   .stat.clk:hover{ box-shadow:0 2px 8px rgba(2,32,71,.10) }
+  /* מכירות מקוצץ (רומן: "ארוך מדי") — הקפוא יורד, החי נשאר */
+  #dash-sales > .stats{ display:none }
+  #today-tasks, #today-leads{ display:none }
+  #dash-sales h2.sec:has(+ #today-tasks), #dash-sales h2.sec:has(+ #today-leads){ display:none }
   /* פס תקינות הסנכרון */
   #db-sync{ display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px }
   .sync-pill{ display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; border-radius:20px; padding:2px 9px; border:1px solid transparent; cursor:pointer }
@@ -1691,7 +1700,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.88.0</div>
+      <div class="ver">גרסה 6.89.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1753,7 +1762,7 @@
       <span>תפריט</span>
     </div>
     <nav aria-label="תפריט ראשי">
-    <button class="nav-item active" data-tab="today"><span>לובי</span></button>
+    <button class="nav-item active" data-tab="today"><span>דשבורד</span></button>
     <!-- CRM — שבעת מסכי ניהול הלקוחות והמכירה תחת קטגוריית אב אחת (רומן 29/07/2026) -->
     <div class="nav-wrap" data-tabs="tasks,leads,deals,customers,contacts,meets,orders">
       <button class="nav-item" data-tab="tasks">CRM <span class="nav-arrow"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span></button>
@@ -1810,7 +1819,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.88.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.89.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1820,6 +1829,7 @@
     <!-- היום שלי -->
     <section id="tab-today">
       <div id="db-sync"></div>
+      <div id="db-kpis"></div>
       <div id="dash-secs">
       <section class="dash-sec" data-sec="myday" hidden><button type="button" class="dash-hd" onclick="dashSecToggle('myday')"><span class="dash-arrow">◂</span>🛠️ היום שלי<span class="dash-badge" hidden></span></button><div class="dash-bd"><div id="db-myday"></div></div></section>
       <section class="dash-sec" data-sec="exc" hidden><button type="button" class="dash-hd" onclick="dashSecToggle('exc')"><span class="dash-arrow">◂</span>חריגים מרכזיים<span class="dash-badge" hidden></span></button><div class="dash-bd"><div id="db-exc"></div></div></section>
@@ -3333,7 +3343,7 @@ const DASH_SECS = [
   {sec:'fin',  perm:'dash.fin',       data:'acc.pays'},
   {sec:'inv',  perm:'dash.inv',       data:'inv.stock'},
   {sec:'rem',  perm:'dash.reminders'},    /* dash.reminders הוא גם מפתח הנתונים (RLS על ord.reminders) */
-  {sec:'sup',  perm:'dash.supervise', data:'logi'},
+  /* 'sup' בוטל ב-6.89.0 — ההתיישנות היא שורות-משנה בקוקפיט (dash.supervise) */
   {sec:'sales',perm:'dash.sales',     data:'crm'},
   {sec:'ops',  perm:'dash.ops',       data:'logi'},
 ];
@@ -3375,10 +3385,9 @@ function applyDashboard(){
     if(s.sec==='myday' && window.MD_HIDE) show = false;
     el.hidden = !show;
     el.style.order = s.sec==='myday' ? '0' : String(ord.indexOf(s.sec)+1);
-    const folded = (el.dataset.sec in st) ? !!st[el.dataset.sec]
-                                          : !!(DASH_FOLD_DEF[prof]||{})[el.dataset.sec];
-    el.classList.toggle('folded', folded);
-    const bd = el.querySelector('.dash-bd'); if(bd) bd.hidden = folded;
+    /* 6.89.0 — אין קיפול: המידע גלוי תמיד. דגלים ישנים ב-localStorage מנוטרלים. */
+    el.classList.remove('folded');
+    const bd = el.querySelector('.dash-bd'); if(bd) bd.hidden = false;
   });
   /* הבלוקים הפנימיים אינם מוסתרים עוד בנפרד — הסקשן שולט */
   const ops = $('#dash-board-wrap'), sal = $('#dash-sales');
@@ -3436,17 +3445,6 @@ function renderOps(){
   const mx=Math.max(1,...Object.values(byTeam));
   const upcoming=[...act,...fupAct].filter(o=>o.scheduled_date&&o.scheduled_date>=today).sort((a,b)=>a.scheduled_date.localeCompare(b.scheduled_date)).slice(0,8);
   el.innerHTML=`
-    <div class="stats">
-      <div class="stat clk" onclick="gotoLogiPreset({scope:'all'})"><div class="n">${act.length}</div><div class="l">הזמנות פעילות בלוח</div></div>
-      <div class="stat clk" onclick="gotoLogiPreset({scope:'sched',f:{contact:'טרם נוצר קשר'}})"><div class="n" style="color:#c0392b">${noContact.length}</div><div class="l">ממתין לקשר ראשוני</div></div>
-      <div class="stat clk" onclick="gotoLogiPreset({scope:'sched',noDate:true})"><div class="n" style="color:#d97706">${noSched.length}</div><div class="l">ממתין לשיבוץ</div></div>
-      <div class="stat clk" onclick="gotoLogi('cal')"><div class="n">${tToday.length}</div><div class="l">מתואמים היום</div></div>
-      <div class="stat clk" onclick="gotoLogi('cal')"><div class="n">${tWeek.length}</div><div class="l">השבוע הקרוב</div></div>
-      <div class="stat"><div class="n">${inProto.length}</div><div class="l">בתהליך פרוטוקול</div></div>
-      <div class="stat clk" onclick="gotoCalls()"><div class="n" style="color:#c0392b">${openCalls.length}</div><div class="l">קריאות שירות פתוחות</div></div>
-      <div class="stat clk" onclick="gotoDocs('sent')"><div class="n">${PROTS.filter(p=>p.status!=='נחתם').length}</div><div class="l">מסמכים ממתינים לחתימה</div></div>
-      ${canEdit('logi.cal')?`<div class="stat" id="b1a-tile"><div class="n" id="b1a-n">·</div><div class="l">שיבוץ מחר</div></div>`:''}
-    </div>
     <h2 class="sec">🧑‍🔧 עומס צוותים — הזמנות פעילות</h2>
     <div class="tbl-wrap" style="padding:8px 10px">${Object.entries(byTeam).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;font-size:13.5px${t==='לא משויך'?'':';cursor:pointer'}" ${t==='לא משויך'?'':`onclick="gotoLogiPreset({scope:'all',f:{team:'${esc(t)}'}})"`}>
@@ -3458,7 +3456,6 @@ function renderOps(){
     ${upcoming.map(o=>`<div class="lead" onclick="openOrd('${o.id}')">
       <div><div class="nm">${esc(o.customer_name||'')}</div><div class="meta">${fmtD(o.scheduled_date)}${o.time_slot?' · '+esc(o.time_slot):''}${o.city?' · '+esc(o.city):''}${o.team?' · '+esc(o.team):''}</div></div>
       ${o.__fup?`<span class="pill" style="background:#fae8ff;color:#86198f">🔧 השלמה</span>`:`<span class="pill ${ordStClass(o.order_status)}">${esc(o.order_status)}</span>`}</div>`).join('')||'<div class="empty">אין שיבוצים קרובים</div>'}`;
-  b1aRefresh();
 }
 /* ── "שיבוץ מחר: לא מולא" (B1a) ──────────────────────────────────────────
    האריח שמייצר את ההרגל שבלוק "היום שלי" של הטכנאים (שלב D) תלוי בו:
@@ -3489,21 +3486,96 @@ async function b1aRefresh(){
 /* B2 — תור ההשלמות: supply_state מ-order_open_items_v (OPENIT). ארבעה דליים;
    'לא רלוונטי' מסונן במקור. האיחור נמדד מ-next_due — נכון להיום כל השורות
    הפתוחות באיחור, וזו בדיוק התמונה שהבלוק נועד להציג. */
+/* ===== הקוקפיט (6.89.0) — כל המספרים בגריד אחד, התיישנות כשורת-משנה =====
+   מקור אחד לכל מושג: האריח מציג את המספר המלא, ו-dash.supervise מוסיף
+   שורת-משנה אדומה "מתוכן N מעל X ימים" — לא סקשן נפרד עם מספר אחר. */
+function kTile(icon, label, val, fn, extra){
+  return '<div class="stat clk" onclick="'+String(fn||'').replace(/"/g,'&quot;')+'">'+
+    '<div class="n">'+val+'</div><div class="l">'+icon+' '+label+'</div>'+(extra||'')+'</div>';
+}
+function kSub(txt, red){ return '<div class="k-sub'+(red?' red':'')+'">'+txt+'</div>'; }
+function renderKpiStrip(){
+  const el = $('#db-kpis'); if(!el) return;
+  const T = [];
+  const today = isoD(new Date());
+  const sup = canView('dash.supervise');
+  if(canView('dash.ops') && canView('logi')){
+    const act = ORDS.filter(o=>!['הושלם','בוטל','ממתין לתשלום'].includes(o.order_status));
+    const cutS = n => { const d=new Date(); d.setDate(d.getDate()-n); return isoD(d); };
+    const dsched = +(OSET['dash_age_sched_days']||7), dcont = +(OSET['dash_age_contact_days']||3);
+    const noC = act.filter(o=>o.contact_status==='טרם נוצר קשר');
+    const noCOld = noC.filter(o=>(o.order_date||'') < cutS(dcont));
+    const noS = act.filter(o=>!o.scheduled_date);
+    const noSOld = noS.filter(o=>(o.order_date||'') < cutS(dsched));
+    const fupT = ORDS.filter(o=>window.fupVisible(o)).filter(o=>o.followup_date===today).length;
+    const tToday = act.filter(o=>o.scheduled_date===today).length + fupT +
+                   SCALLS.filter(s=>s.scheduled_date===today && s.status!=='בוטלה').length;
+    const openC = SCALLS.filter(s=>!['הושלם','הושלמה','בוטלה','סגורה'].includes(s.status));
+    const pastC = openC.filter(s=>s.deadline && s.deadline < today);
+    const coordN = (OPENIT||[]).filter(r=>r && r.supply_state==='השלמה לתיאום').length;
+    const retN = (RETPEND||[]).length;
+    const lateRet = (RETPEND||[]).filter(r=>(+r.days_waiting||0) >= RET_LATE_DAYS).length;
+    T.push(kTile('📋','הזמנות פעילות', act.length, "gotoLogiPreset({scope:'all'})", ''));
+    T.push(kTile('☎️','ממתין לקשר', noC.length, "gotoLogiPreset({scope:'sched',f:{contact:'טרם נוצר קשר'}})",
+      (sup && noCOld.length) ? kSub('מתוכן '+noCOld.length+' מעל '+dcont+' ימים', true) : ''));
+    T.push(kTile('🗓','ממתין לשיבוץ', noS.length, "gotoLogiPreset({scope:'sched',noDate:true})",
+      (sup && noSOld.length) ? kSub('מתוכן '+noSOld.length+' מעל '+dsched+' ימים', true) : ''));
+    T.push(kTile('📅','מתואמים היום', tToday, "gotoLogi('cal')", ''));
+    T.push(kTile('🛠️','קריאות פתוחות', openC.length, "gotoCalls()",
+      pastC.length ? kSub(pastC.length+' אחרי דדליין', true) : ''));
+    if(coordN) T.push(kTile('📦','השלמות לתיאום', coordN, "gotoLogiPreset({scope:'open'})", ''));
+    if(retN) T.push(kTile('↩️','החזרות לאיסוף', retN, "gotoLogiPreset({scope:'ret'})",
+      lateRet ? kSub(lateRet+' מעל שבועיים', true) : ''));
+    if(canEdit('logi.cal')) T.push('<div class="stat clk" id="b1a-tile" onclick="gotoLogi(\'cal\')"><div class="n" id="b1a-n">·</div><div class="l">👷 שיבוץ מחר</div></div>');
+  }
+  const fin = DASH_DATA.fin && DASH_DATA.fin.d;
+  if(canView('dash.fin') && fin){
+    T.push(kTile('💰','הכנסות החודש', ilsK(fin.rev_mtd), "gotoTab('pays')", ''));
+    const dlt = fin.rev_prev_ytd>0 ? Math.round((fin.rev_ytd-fin.rev_prev_ytd)/fin.rev_prev_ytd*100) : null;
+    T.push(kTile('📈','מתחילת השנה', ilsK(fin.rev_ytd), "gotoTab('pays')",
+      dlt==null ? '' : kSub((dlt>=0?'+':'')+dlt+'% מול אשתקד', dlt<0)));
+    T.push(kTile('📥','יתרות לגבייה', ilsK(fin.ar_sum), "gotoPays('open')",
+      fin.overdue_beats ? kSub(fin.overdue_beats+' פעימות באיחור', true) : ''));
+  }
+  const inv = DASH_DATA.inv && DASH_DATA.inv.d;
+  if(canView('dash.inv') && inv){
+    T.push(kTile('🏷','מלאי להזמנה', inv.buy_n||0, "gotoTab('inv')",
+      inv.buy_value ? kSub(ilsK(inv.buy_value)+' בסיכון', (inv.buy_n||0)>0) : ''));
+    const po = DASH_DATA.po && DASH_DATA.po.d;
+    if(po && canView('inv.po')) T.push(kTile('🚢','רכש פתוחות', po.open_n||0, "gotoTab('po')",
+      po.overdue_lines ? kSub(po.overdue_lines+' שורות אחרי יעד', false) : ''));
+  }
+  const rem = DASH_DATA.rem && DASH_DATA.rem.d;
+  if(canView('dash.reminders') && rem && ((rem.overdue_n||0)+(rem.due30_n||0) > 0)){
+    T.push(kTile('⏰','תזכורות קרובות', (rem.overdue_n||0)+(rem.due30_n||0), "dashSecFocus('rem')",
+      rem.overdue_n ? kSub(rem.overdue_n+' באיחור', true) : ''));
+  }
+  const sal = DASH_DATA.sales && DASH_DATA.sales.d;
+  if(canView('dash.sales') && sal){
+    T.push(kTile('🎯','לידים חדשים', sal.new_leads_n||0, "gotoTab('leads')", ''));
+    T.push(kTile('🔁','פולואפים', sal.followups_n||0, "gotoTab('leads')", ''));
+    const w = sal.won_month||{};
+    T.push(kTile('🏆','סגירות החודש האחרון', w.n||0, "gotoTab('deals')",
+      w.amount ? kSub(ilsK(w.amount), false) : ''));
+  }
+  el.innerHTML = T.length ? '<div class="stats">'+T.join('')+'</div>' : '';
+  if(document.getElementById('b1a-n')) b1aRefresh();
+}
 function renderCoordQueue(){
   const el = $('#db-coordq'); if(!el) return;
   const rows = (OPENIT||[]).filter(r=>r && r.supply_state && r.supply_state!=='לא רלוונטי');
+  if(!rows.length){ el.innerHTML=''; el.classList.remove('db-block'); return; }
+  el.classList.add('db-block');
   const today = isoD(new Date());
   const buckets = ['השלמה לתיאום','השלמה מתואמת','אספקה בהמשך','בתהליך'];
   const by = {};
   rows.forEach(r=>{ (by[r.supply_state] = by[r.supply_state]||[]).push(r); });
   const late = rows.filter(r=>r.next_due && r.next_due < today).length;
-  el.innerHTML = '<h3>📦 תור השלמות — נותר לספק</h3><div class="stats">' +
-    buckets.map(b=>{
-      const g = by[b]||[], lines = g.reduce((a,r)=>a+(+r.open_lines||0),0);
-      return `<div class="stat clk" onclick="gotoLogiPreset({scope:'open'})"><div class="n">${g.length}</div><div class="l">${b}${lines?' · '+lines+' שורות':''}</div></div>`;
-    }).join('') + '</div>' +
-    (late ? `<div class="empty" style="color:#c0392b">⚠️ ${late} הזמנות עם שורות פתוחות אחרי תאריך היעד</div>` : '');
-  dashAlert('coordq', 'ops', (by['השלמה לתיאום']||[]).length);
+  /* שורת סיכום אחת במקום גריד — המספר הראשי כבר בקוקפיט */
+  el.innerHTML = '<h3>📦 תור השלמות — נותר לספק</h3>' +
+    '<div class="lead clk" onclick="gotoLogiPreset({scope:\'open\'})"><div class="meta">' +
+    buckets.map(b=>b+' <b>'+((by[b]||[]).length)+'</b>').join(' · ') +
+    (late ? ' · <b style="color:#c0392b">'+late+' באיחור</b>' : '') + '</div></div>';
 }
 /* B3 — קריאות שירות: דחיפות + חריגות דדליין (deadline מאוכלס 52/68) */
 function renderCallsBlock(){
@@ -3513,29 +3585,15 @@ function renderCallsBlock(){
   const past = open.filter(s=>s.deadline && s.deadline < today);
   const urg = u => open.filter(s=>(s.urgency||'רגילה')===u).length;
   const top = open.slice().sort((a,b)=>String(a.deadline||'9').localeCompare(String(b.deadline||'9'))).slice(0,5);
-  el.innerHTML = '<h3>🛠️ קריאות שירות פתוחות</h3><div class="stats">' +
-    `<div class="stat clk" onclick="gotoLogiPreset({view:'calls',scf:{urgency:'משביתה'}})"><div class="n" style="color:#c0392b">${urg('משביתה')}</div><div class="l">משביתה</div></div>` +
-    `<div class="stat clk" onclick="gotoLogiPreset({view:'calls',scf:{urgency:'בינונית'}})"><div class="n" style="color:#d97706">${urg('בינונית')}</div><div class="l">בינונית</div></div>` +
-    `<div class="stat clk" onclick="gotoLogiPreset({view:'calls'})"><div class="n">${urg('רגילה')}</div><div class="l">רגילה</div></div>` +
-    `<div class="stat clk" onclick="gotoLogiPreset({view:'calls'})"><div class="n" style="color:${past.length?'#c0392b':'#16a34a'}">${past.length}</div><div class="l">עברו דדליין</div></div>` +
-    '</div>' +
-    top.map(s=>`<div class="lead" onclick="gotoCalls()"><div><div class="nm">${esc(s.customer_name||'')}</div><div class="meta">${esc(s.call_number||'')} · ${esc(s.urgency||'רגילה')}${s.deadline?' · יעד '+fmtD(s.deadline):''}${s.scheduled_date?' · תואם '+fmtD(s.scheduled_date):''}</div></div><span class="pill ${s.status==='חדש'?'p-red':'p-green'}">${esc(s.status)}</span></div>`).join('') +
-    (open.length ? '' : '<div class="empty">אין קריאות פתוחות ✨</div>');
-  dashAlert('calls', 'ops', past.length);
+  /* המונים בקוקפיט — כאן רק חמש הדחופות */
+  el.innerHTML = '<h3>🛠️ קריאות שירות — הדחופות</h3>' +
+    (top.map(s=>`<div class="lead" onclick="gotoCalls()"><div><div class="nm">${esc(s.customer_name||'')}</div><div class="meta">${esc(s.call_number||'')} · ${esc(s.urgency||'רגילה')}${s.deadline?' · יעד '+fmtD(s.deadline):''}${s.scheduled_date?' · תואם '+fmtD(s.scheduled_date):''}</div></div><span class="pill ${s.status==='חדש'?'p-red':'p-green'}">${esc(s.status)}</span></div>`).join('') ||
+    '<div class="empty">אין קריאות פתוחות ✨</div>');
 }
 /* B6 — החזרות לאיסוף (pending_returns_v); אדום מעל RET_LATE_DAYS ימים */
 function renderReturnsBlock(){
-  const el = $('#db-returns'); if(!el) return;
-  const rows = RETPEND||[];
-  if(!rows.length){ el.innerHTML=''; dashAlert('returns','ops',0); return; }
-  const lines = rows.reduce((a,r)=>a+(+r.lines||0),0);
-  const mx = Math.max(...rows.map(r=>+r.days_waiting||0));
-  const lateN = rows.filter(r=>(+r.days_waiting||0) >= RET_LATE_DAYS).length;
-  el.innerHTML = '<h3>↩️ החזרות לאיסוף</h3><div class="stats">' +
-    `<div class="stat clk" onclick="gotoLogiPreset({scope:'ret'})"><div class="n">${rows.length}</div><div class="l">הזמנות · ${lines} שורות</div></div>` +
-    `<div class="stat clk" onclick="gotoLogiPreset({scope:'ret'})"><div class="n" style="color:${mx>=RET_LATE_DAYS?'#c0392b':'inherit'}">${mx}</div><div class="l">ימי המתנה — הוותיקה</div></div>` +
-    '</div>';
-  dashAlert('returns', 'ops', lateN);
+  /* 6.89.0 — ההחזרות עברו לקוקפיט; אין כרטיס נפרד */
+  const el = $('#db-returns'); if(el){ el.innerHTML=''; el.classList.remove('db-block'); }
 }
 /* B7 — הצעות ביקור משותף: count עצל מ-coord_suggest_v (ה-view מוגן ממילא
    ב-logi.orders.coord), TTL 5 דקות — לא מוסיפים שאילתה כבדה לכל ציור */
@@ -3557,7 +3615,9 @@ function renderCoordSugBlock(){
 }
 /* B8 — פיקוח-התיישנות (סמנכ"ל/מנכ"ל): הספים נערכים ב-ord.settings, לא בקוד */
 function renderAgingBlock(){
-  const el = $('#db-aging'); if(!el) return;
+  /* 6.89.0 — הפיקוח נבלע בקוקפיט (שורות-משנה של dash.supervise); הכרטיס בוטל */
+  const el = $('#db-aging'); if(el) el.innerHTML='';
+  return;
   const secEl = document.querySelector('.dash-sec[data-sec="sup"]');
   if(secEl && secEl.hidden){ el.innerHTML=''; return; }
   const dsched = +(OSET['dash_age_sched_days']||7), dcont = +(OSET['dash_age_contact_days']||3);
@@ -3648,24 +3708,18 @@ function renderRevBlock(){
   if(!canView('dash.fin')||!x){ el.innerHTML=''; return; }
   if(x.err){ _dbErr(el); return; }
   const d=x.d||{};
-  const dlt = d.rev_prev_ytd>0 ? Math.round((d.rev_ytd-d.rev_prev_ytd)/d.rev_prev_ytd*100) : null;
-  el.innerHTML = '<h3>💰 הכנסות — חשבוניות פחות זיכויים</h3><div class="stats">'+
-    '<div class="stat"><div class="n">'+ilsK(d.rev_mtd)+'</div><div class="l">החודש</div></div>'+
-    '<div class="stat"><div class="n">'+ilsK(d.rev_ytd)+'</div><div class="l">מתחילת השנה'+(dlt==null?'':' · <b style="color:'+(dlt>=0?'#16a34a':'#dc2626')+'">'+(dlt>0?'+':'')+dlt+'%</b> מול אשתקד')+'</div></div>'+
-    '<div class="stat"><div class="n">'+ilsK(d.receipts_mtd)+'</div><div class="l">תקבולים החודש</div></div>'+
-    '</div>'+dashAsOf(d.as_of, 26);
+  /* המספרים בקוקפיט — הכרטיס מציג רק תקבולים וטריות */
+  el.innerHTML = '<h3>💰 כספים</h3>'+
+    '<div class="lead clk" onclick="gotoTab(\'pays\')"><div class="meta">תקבולים החודש: <b>'+ilsK(d.receipts_mtd)+'</b></div></div>'+
+    dashAsOf(d.as_of, 26);
 }
 function renderArBlock(){
   const el=$('#db-ar'); if(!el) return;
   const x=DASH_DATA.fin;
   if(!canView('dash.fin')||!x||x.err){ el.innerHTML=''; return; }
   const d=x.d||{};
-  el.innerHTML = '<h3>📥 גבייה</h3><div class="stats">'+
-    '<div class="stat clk'+(d.ar_sum>0?' warn':'')+'" onclick="gotoPays(\'open\')"><div class="n">'+ilsK(d.ar_sum)+'</div><div class="l">יתרות פתוחות · '+(d.ar_n||0)+' הזמנות</div></div>'+
-    '<div class="stat clk'+(d.overdue_beats>0?' bad':'')+'" onclick="gotoPays(\'open\')"><div class="n">'+(d.overdue_beats||0)+'</div><div class="l">פעימות תשלום באיחור</div></div>'+
-    '</div>'+
-    (d.top_debtors||[]).slice(0,5).map(t=>'<div class="lead" onclick="gotoPays(\'open\')"><div><div class="nm">'+esc(t.customer||'')+'</div><div class="meta">'+esc(t.order_number||'')+' · '+esc(t.pay_state||'')+'</div></div><b>'+ilsK(t.balance)+'</b></div>').join('');
-  dashAlert('ar','fin', d.overdue_beats||0);
+  el.innerHTML = '<h3>📥 גבייה — החייבים הגדולים ('+(d.ar_n||0)+' הזמנות · '+ilsK(d.ar_sum)+')</h3>'+
+    ((d.top_debtors||[]).slice(0,5).map(t=>'<div class="lead" onclick="gotoPays(\'open\')"><div><div class="nm">'+esc(t.customer||'')+'</div><div class="meta">'+esc(t.order_number||'')+' · '+esc(t.pay_state||'')+'</div></div><b>'+ilsK(t.balance)+'</b></div>').join('')||'<div class="empty">אין יתרות פתוחות ✨</div>');
 }
 function renderStrategicBlock(){
   const el=$('#db-strategic'); if(!el) return;
@@ -3682,13 +3736,9 @@ function renderInvBlock(){
   if(!canView('dash.inv')||!x){ el.innerHTML=''; return; }
   if(x.err){ _dbErr(el); return; }
   const d=x.d||{};
-  el.innerHTML = '<h3>📦 מלאי — פעולות נדרשות</h3><div class="stats">'+
-    '<div class="stat clk '+(d.buy_n?'bad':'good')+'" onclick="gotoTab(\'inv\')"><div class="n">'+(d.buy_n||0)+'</div><div class="l">להזמין · '+ilsK(d.buy_value)+' בסיכון</div></div>'+
-    '<div class="stat clk '+(d.late_n?'warn':'good')+'" onclick="gotoTab(\'inv\')"><div class="n">'+(d.late_n||0)+'</div><div class="l">הזמנה מאחרת · '+ilsK(d.late_value)+'</div></div>'+
-    '</div>'+
-    (d.top||[]).map(t=>'<div class="lead" onclick="gotoTab(\'inv\')"><div class="nm">'+esc(t.partname||'')+'</div><b>'+ilsK(t.value)+'</b></div>').join('')+
+  el.innerHTML = '<h3>📦 מלאי — הפריטים בסיכון הגבוה ('+(d.late_n||0)+' בהזמנה מאחרת)</h3>'+
+    ((d.top||[]).map(t=>'<div class="lead" onclick="gotoTab(\'inv\')"><div class="nm">'+esc(t.partname||'')+'</div><b>'+ilsK(t.value)+'</b></div>').join('')||'<div class="empty">אין פריטים בסיכון ✨</div>')+
     dashAsOf(d.as_of, 30);
-  dashAlert('inv','inv', d.buy_n||0);
 }
 function renderPoBlock(){
   const el=$('#db-po'); if(!el) return;
@@ -3712,12 +3762,7 @@ function renderRemBlock(){
   const d=x.d||{};
   const canE = canEdit('dash.reminders');
   const today = isoD(new Date());
-  el.innerHTML = '<h3>⏰ תזכורות — טסטים, אגרות ותשלומים'+(canE?' <button type="button" class="chip" onclick="remFormToggle()">＋ חדשה</button>':'')+'</h3>'+
-    '<div class="stats">'+
-    '<div class="stat'+(d.overdue_n?' bad':' good')+'"><div class="n">'+(d.overdue_n||0)+'</div><div class="l">באיחור · '+ilsK(d.overdue_sum)+'</div></div>'+
-    '<div class="stat'+(d.due30_n?' warn':'')+'"><div class="n">'+(d.due30_n||0)+'</div><div class="l">ב-30 הימים · '+ilsK(d.due30_sum)+'</div></div>'+
-    '<div class="stat"><div class="n">'+ilsK(d.pending_sum)+'</div><div class="l">סה"כ ממתין</div></div>'+
-    '</div>'+
+  el.innerHTML = '<h3>⏰ תזכורות — טסטים, אגרות ותשלומים · ממתין '+ilsK(d.pending_sum)+(canE?' <button type="button" class="chip" onclick="remFormToggle()">＋ חדשה</button>':'')+'</h3>'+
     ((d.next||[]).map(r=>
       '<div class="lead"><div><div class="nm">'+esc(r.title||'')+'</div><div class="meta">'+esc(r.kind||'')+' · יעד '+fmtD(r.due_date)+(r.amount?' · '+ilsK(+r.amount):'')+'</div></div>'+
       (r.due_date<today?'<span class="pill p-red">באיחור</span>':'')+
@@ -3923,6 +3968,7 @@ function renderSalesSrcBlock(){
       '<div class="fun-bar"><div style="width:'+Math.round((+r.n||0)/mx*100)+'%"></div></div><b>'+(r.n||0)+'</b></div>').join('');
 }
 function renderDashData(){
+  renderKpiStrip();
   renderSyncStrip(); renderRevBlock(); renderArBlock(); renderStrategicBlock();
   renderInvBlock(); renderPoBlock(); renderRemBlock(); renderExceptions();
   renderFunnelBlock(); renderSalesSrcBlock();
@@ -7725,7 +7771,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'myday-2026-08-16a';
+const BUILD_ID = 'cockpit-2026-08-16a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====

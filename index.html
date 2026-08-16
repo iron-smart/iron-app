@@ -678,6 +678,19 @@
   #board-wrap{ height:calc(100vh - 122px); }
   #board-wrap iframe{ border-radius:0; box-shadow:none; }
   #dash-board-wrap{ margin-bottom:18px; }
+  /* סקשני הדשבורד (6.86.0) — קיפול עם badge; הסדר נקבע ב-style.order
+     מ-applyDashboard כדי שה-DOM יישאר קבוע והבדיקות יציבות */
+  #dash-secs{ display:flex; flex-direction:column; }
+  .dash-sec{ background:#fff; border:1px solid #e6eaf0; border-radius:14px; padding:0 14px 12px; margin-bottom:14px; }
+  .dash-hd{ width:100%; display:flex; align-items:center; gap:8px; background:none; border:none; padding:12px 2px; font-size:15px; font-weight:800; color:var(--navy); cursor:pointer; font-family:inherit; text-align:right }
+  .dash-hd .dash-arrow{ transition:transform .15s; display:inline-block }
+  .dash-sec.folded .dash-hd .dash-arrow{ transform:rotate(90deg) }
+  .dash-badge{ background:#dc2626; color:#fff; border-radius:20px; padding:1px 8px; font-size:12px; font-weight:800; margin-inline-start:auto }
+  .dash-bd{ padding-top:2px }
+  .db-block{ margin-top:12px }
+  .db-block h3{ font-size:13.5px; font-weight:800; color:var(--navy); margin:8px 0 6px }
+  .stat.clk{ cursor:pointer }
+  .stat.clk:hover{ box-shadow:0 2px 8px rgba(2,32,71,.10) }
   /* שלד טעינה — במקום להציג 0 עד שהנתונים מגיעים (הערת רומן 29/07) */
   .skel{ display:inline-block; border-radius:8px; background:#e9eef3;
          background-image:linear-gradient(90deg,#e9eef3 25%,#f7fafc 37%,#e9eef3 63%);
@@ -1273,7 +1286,7 @@
   .set-nav button.active{ background:#f2f8f5; color:var(--navy); font-weight:800; border-inline-start:4px solid var(--green); }
   .set-body{ flex:1; min-width:0; }
   @media(max-width:760px){ .set-layout{ flex-direction:column; } .set-nav{ width:100%; position:static; display:flex; overflow-x:auto; } .set-nav button{ border-bottom:none; border-inline-end:1px solid #eef1f4; white-space:nowrap; } }
-  .usr-row{ display:grid; grid-template-columns:1.25fr .9fr .9fr 1fr 1.05fr auto auto; gap:8px; align-items:center; padding:8px 0; border-bottom:1px solid #eef1f4; font-size:13.5px; }
+  .usr-row{ display:grid; grid-template-columns:1.25fr .9fr 1fr 1.05fr auto auto; gap:8px; align-items:center; padding:8px 0; border-bottom:1px solid #eef1f4; font-size:13.5px; }
   .usr-row select,.usr-row input{ padding:7px 8px; font-size:13px; border:1px solid var(--line); border-radius:8px; width:100%; box-sizing:border-box; }
   @media(max-width:760px){ .usr-row{ grid-template-columns:1fr 1fr; } }
 
@@ -1622,7 +1635,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.85.3</div>
+      <div class="ver">גרסה 6.86.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1741,7 +1754,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.85.3</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.86.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1750,8 +1763,14 @@
   <main>
     <!-- היום שלי -->
     <section id="tab-today">
-      <div id="dash-board-wrap" class="hidden"><div class="stats"><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div></div><h2 class="sec">עומס צוותים — הזמנות פעילות</h2><div class="tbl-wrap" style="padding:12px"><span class="skel skel-bar"></span><span class="skel skel-bar"></span><span class="skel skel-bar"></span><span class="skel skel-bar"></span><span class="skel skel-bar"></span></div></div>
-      <div id="dash-sales">
+      <div id="db-sync"></div>
+      <div id="dash-secs">
+      <section class="dash-sec" data-sec="exc" hidden><button type="button" class="dash-hd" onclick="dashSecToggle('exc')"><span class="dash-arrow">◂</span>חריגים מרכזיים<span class="dash-badge" hidden></span></button><div class="dash-bd"><div id="db-exc"></div></div></section>
+      <section class="dash-sec" data-sec="fin" hidden><button type="button" class="dash-hd" onclick="dashSecToggle('fin')"><span class="dash-arrow">◂</span>כספים<span class="dash-badge" hidden></span></button><div class="dash-bd"><div id="db-rev"></div><div id="db-ar"></div><div id="db-strategic"></div></div></section>
+      <section class="dash-sec" data-sec="inv" hidden><button type="button" class="dash-hd" onclick="dashSecToggle('inv')"><span class="dash-arrow">◂</span>מלאי ורכש<span class="dash-badge" hidden></span></button><div class="dash-bd"><div id="db-inv"></div><div id="db-po"></div></div></section>
+      <section class="dash-sec" data-sec="rem" hidden><button type="button" class="dash-hd" onclick="dashSecToggle('rem')"><span class="dash-arrow">◂</span>תזכורות ותשלומים<span class="dash-badge" hidden></span></button><div class="dash-bd"><div id="db-rem"></div></div></section>
+      <section class="dash-sec" data-sec="sup" hidden><button type="button" class="dash-hd" onclick="dashSecToggle('sup')"><span class="dash-arrow">◂</span>פיקוח — מה מתעכב<span class="dash-badge" hidden></span></button><div class="dash-bd"><div id="db-aging"></div></div></section>
+      <section class="dash-sec" data-sec="sales" hidden><button type="button" class="dash-hd" onclick="dashSecToggle('sales')"><span class="dash-arrow">◂</span>מכירות<span class="dash-badge" hidden></span></button><div class="dash-bd"><div id="dash-sales">
       <div class="stats">
         <div class="stat"><div class="n" id="s-open"><span class="skel"></span></div><div class="l">לידים פתוחים</div></div>
         <div class="stat"><div class="n" id="s-rel"><span class="skel"></span></div><div class="l">רלוונטיים</div></div>
@@ -1765,6 +1784,9 @@
       <h2 class="sec">לידים חדשים שממתינים לך</h2>
       <div id="today-leads"><span class="skel skel-line"></span><span class="skel skel-line"></span></div>
       </div><!-- dash-sales -->
+      </div></section>
+      <section class="dash-sec" data-sec="ops" hidden><button type="button" class="dash-hd" onclick="dashSecToggle('ops')"><span class="dash-arrow">◂</span>תיאום ותפעול<span class="dash-badge" hidden></span></button><div class="dash-bd"><div id="dash-board-wrap" class="hidden"><div class="stats"><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div><div class="stat"><div class="n"><span class="skel"></span></div><div class="l">&nbsp;</div></div></div><h2 class="sec">עומס צוותים — הזמנות פעילות</h2><div class="tbl-wrap" style="padding:12px"><span class="skel skel-bar"></span><span class="skel skel-bar"></span><span class="skel skel-bar"></span><span class="skel skel-bar"></span><span class="skel skel-bar"></span></div></div><div id="db-coordq" class="db-block"></div><div id="db-calls" class="db-block"></div><div id="db-returns" class="db-block"></div><div id="db-coordsug" class="db-block"></div></div></section>
+      </div>
     </section>
 
     <!-- עסקאות -->
@@ -2932,7 +2954,6 @@ try{
    פרטים אישיים ניתנים לעריכה עצמית דרך core.update_my_profile (SECURITY DEFINER),
    כדי שמשתמש לא יוכל לשנות לעצמו הרשאה או דשבורד. הרשאה ודשבורד לצפייה בלבד. */
 const ROLE_HE = {admin:'אדמיניסטרטור',manager:'מנהל',rep:'נציג',viewer:'צפייה'};
-const DASH_HE = {sales:'מכירות',logistics:'לוגיסטיקה',combined:'משולב'};
 const initOf = u => (u.full_name||u.email||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('');
 function setSideAva(url, init){
   const el=$('#sideInit'); if(!el) return;
@@ -3078,7 +3099,6 @@ window.openProfile = ()=>{
         <div class="em">${esc(ME.email||'')}</div>
         <div class="pf-tags">
           <span class="pf-tag">${esc(ME.perm_group||ROLE_HE[ME.role]||ME.role||'—')}</span>
-          <span class="pf-tag">${esc(DASH_HE[ME.dashboard]||'דשבורד לפי הרשאה')}</span>
           ${ME.department?`<span class="pf-tag">${esc(ME.department)}</span>`:''}
         </div>
       </div>
@@ -3093,9 +3113,8 @@ window.openProfile = ()=>{
           <div class="pf-f"><label for="pfPhone">טלפון</label><input id="pfPhone" dir="ltr" inputmode="tel" value="${esc(ME.phone||'')}" placeholder="050-0000000"></div>
           <div class="pf-f"><label for="pfEmail">דוא"ל</label><input id="pfEmail" dir="ltr" readonly value="${esc(ME.email||'')}" title="שינוי דוא&quot;ל מתבצע על ידי מנהל המערכת"></div>
           <div class="pf-f"><label>הרשאה</label><input readonly value="${esc(ME.perm_group||ROLE_HE[ME.role]||ME.role||'')}"></div>
-          <div class="pf-f"><label>דשבורד</label><input readonly value="${esc(DASH_HE[ME.dashboard]||'לפי הרשאה')}"></div>
         </div>
-        <p class="pf-note">הרשאה, דשבורד ודוא"ל נקבעים על ידי מנהל המערכת ואינם ניתנים לעריכה עצמית.</p>
+        <p class="pf-note">הרשאה ודוא"ל נקבעים על ידי מנהל המערכת ואינם ניתנים לעריכה עצמית. הדשבורד נגזר מההרשאות.</p>
         <div class="pf-act" style="margin-top:10px">
           <button class="pf-save" onclick="pfSave(this)">שמירה</button>
           ${ME.avatar_url?`<button class="pf-lnk" onclick="pfClearAva()">הסרת תמונה</button>`:''}
@@ -3241,18 +3260,89 @@ window.gotoDocs = f=>{ DOC_FILTER=f||'sent'; gotoTab('docs'); renderDocs(); navM
 window.gotoSet  = v=>{ const cats=settingsCats(); if(!cats.length){ try{ toast('אין לך הרשאה למסך זה'); }catch(_e){} return; } v = v||'general'; if(!cats.some(c=>c[0]===v)) v = cats[0][0]; SET_VIEW=v; gotoTab('set'); };
 window.gotoSkuView = id=>{ gotoTab('skus'); if(id) applySkuView(id); else clearSkuView(); };
 /* ===== דשבורד אחד, מותאם לתפקיד — נטיבי לגמרי ===== */
-/* 6.24.17 — ברירת המחדל אינה עוד 'sales'. מיפוי role→dashboard הישן הסתיר את
-   דשבורד הלוגיסטיקה מכל משתמש שלא הוגדר לו dashboard במפורש — כולל מנהלת
-   הלוגיסטיקה עצמה, שראתה דשבורד מכירות. מעתה ברירת המחדל היא 'combined',
-   וכל בלוק נחשף רק אם למשתמש יש הרשאת צפייה למודול שלו: סינון לפי הרשאה
-   ולא לפי role. ההרשאות כבר נטענו בשלב זה (טעינה כושלת עוצרת קודם לכן). */
+/* ===== רג'יסטרי הדשבורדים (6.86.0, תוכנית רומן 16/08/2026) =====
+   ממשיך את עקרון 6.24.17 — סינון לפי הרשאה ולא לפי role — ומכליל אותו:
+   הלובי מורכב מסקשנים, כל סקשן נשלט במפתח מתת-עץ dash.* (נזרע בשלב A).
+   ⚠️ תת-העץ dash הוא שורש חדש בכוונה: מפתח-בן חסר יורש את רמת האב
+   (perm_effective_map), ולכן מפתח חדש תחת home.today היה נפתח אוטומטית
+   לכל מי שרואה את הלובי — נמדד 16/08/2026, כמעט דלף לטכנאים ברמה 2.
+   שדה ה-dashboard בפרופיל יצא משימוש בבנייה הזו; העמודה נשארת במסד ואינה נקראת.
+   סקשן שאינו ב-DASH_SECS נשאר hidden לכולם — קליפות שלב C לא מוצגות ריקות. */
+const DASH_SECS = [
+  {sec:'sup',  perm:'dash.supervise', data:'logi'},
+  {sec:'sales',perm:'dash.sales',     data:'crm'},
+  {sec:'ops',  perm:'dash.ops',       data:'logi'},
+];
+const DASH_ALERTS = {};
+function dashAlert(id, sec, n){ DASH_ALERTS[id] = {sec:sec, n:(n||0)}; }
+function dashSecState(){ try{ return JSON.parse(localStorage.getItem('iron_dash_sec_v1')||'{}'); }catch(_e){ return {}; } }
+window.dashSecToggle = sec=>{ const st=dashSecState();
+  /* הופכים את המצב האפקטיבי, לא את השמור: סקשן שמקופל כברירת-מחדל ואין לו
+     רשומה — לחיצה ראשונה חייבת לפתוח אותו. !undefined היה שומר "מקופל"
+     והלחיצה לא הייתה עושה דבר (נתפס ב-dashtest, 16/08/2026). */
+  const cur = (sec in st) ? !!st[sec] : !!(DASH_FOLD_DEF[dashProfile()]||{})[sec];
+  st[sec] = !cur;
+  try{ localStorage.setItem('iron_dash_sec_v1', JSON.stringify(st)); }catch(_e){}
+  applyDashboard(); };
+/* הפרופיל נגזר מההרשאות עצמן — לעולם לא מ-role/job_title (עקרון 6.24.17) */
+function dashProfile(){
+  if(canView('dash.exceptions')) return 'ceo';
+  if(canView('dash.supervise'))  return 'vp';
+  if(canView('dash.ops'))        return 'mgr';
+  if(canView('dash.sales'))      return 'sales';
+  return 'min';
+}
+const DASH_ORDER = {
+  ceo:  ['exc','fin','inv','rem','sales','sup','ops'],
+  vp:   ['sup','ops','inv','rem','fin','exc','sales'],
+  mgr:  ['ops','rem','sup','inv','fin','exc','sales'],
+  sales:['sales','ops','exc','fin','inv','rem','sup'],
+  min:  ['ops','sales','exc','fin','inv','rem','sup'],
+};
+/* למנכ"ל סקשנים משניים מתקפלים כברירת מחדל — רואים את הדגלים ב-badge בלי לגלול */
+const DASH_FOLD_DEF = { ceo:{sales:true,sup:true,ops:true}, vp:{}, mgr:{}, sales:{}, min:{} };
 function applyDashboard(){
-  const d = ME.dashboard || 'combined';
+  const prof = dashProfile(), st = dashSecState(), ord = DASH_ORDER[prof]||DASH_ORDER.min;
+  document.querySelectorAll('#dash-secs .dash-sec').forEach(el=>{
+    const s = DASH_SECS.find(x=>x.sec===el.dataset.sec);
+    if(!s){ el.hidden = true; return; }          /* סקשן של שלב עתידי */
+    const show = canView(s.perm) && (!s.data || canView(s.data));
+    el.hidden = !show;
+    el.style.order = String(ord.indexOf(s.sec)+1);
+    const folded = (el.dataset.sec in st) ? !!st[el.dataset.sec]
+                                          : !!(DASH_FOLD_DEF[prof]||{})[el.dataset.sec];
+    el.classList.toggle('folded', folded);
+    const bd = el.querySelector('.dash-bd'); if(bd) bd.hidden = folded;
+  });
+  /* הבלוקים הפנימיים אינם מוסתרים עוד בנפרד — הסקשן שולט */
   const ops = $('#dash-board-wrap'), sal = $('#dash-sales');
-  const showOps   = (d==='logistics' || d==='combined') && canView('logi');
-  const showSales = (d==='sales'     || d==='combined') && canView('crm');
-  if(ops) ops.classList.toggle('hidden', !showOps);
-  if(sal) sal.classList.toggle('hidden', !showSales);
+  if(ops) ops.classList.remove('hidden');
+  if(sal) sal.classList.remove('hidden');
+  dashBadges();
+}
+function dashBadges(){
+  document.querySelectorAll('#dash-secs .dash-sec').forEach(el=>{
+    const b = el.querySelector('.dash-badge'); if(!b) return;
+    let n = 0;
+    Object.keys(DASH_ALERTS).forEach(k=>{ const a=DASH_ALERTS[k]; if(a && a.sec===el.dataset.sec) n += a.n; });
+    b.hidden = !n; b.textContent = n;
+  });
+}
+/* דריל-דאון מאריח: קובע scope/סינונים ואז עובר למסך — preset מלא, לא מצטבר */
+window.gotoLogiPreset = p=>{ p=p||{};
+  logiInit();
+  if(p.scope) LOGI_SCOPE = p.scope;
+  LOGI_F = Object.assign({status:[],team:'',region:'',contact:''}, p.f||{});
+  if(p.scf) SC_F = Object.assign({status:[],urgency:'',team:'',region:''}, p.scf);
+  LOGI_NODATE = !!p.noDate;
+  LOGI_SEL.clear();
+  gotoLogi(p.view||'orders');
+};
+function renderDash(){
+  renderOps();
+  renderAgingBlock(); renderCoordQueue(); renderCallsBlock();
+  renderReturnsBlock(); renderCoordSugBlock();
+  dashBadges();
 }
 function renderOps(){
   const el=$('#dash-board-wrap'); if(!el) return;
@@ -3278,18 +3368,19 @@ function renderOps(){
   const upcoming=[...act,...fupAct].filter(o=>o.scheduled_date&&o.scheduled_date>=today).sort((a,b)=>a.scheduled_date.localeCompare(b.scheduled_date)).slice(0,8);
   el.innerHTML=`
     <div class="stats">
-      <div class="stat"><div class="n">${act.length}</div><div class="l">הזמנות פעילות בלוח</div></div>
-      <div class="stat"><div class="n" style="color:#c0392b">${noContact.length}</div><div class="l">ממתין לקשר ראשוני</div></div>
-      <div class="stat"><div class="n" style="color:#d97706">${noSched.length}</div><div class="l">ממתין לשיבוץ</div></div>
-      <div class="stat"><div class="n">${tToday.length}</div><div class="l">מתואמים היום</div></div>
-      <div class="stat"><div class="n">${tWeek.length}</div><div class="l">השבוע הקרוב</div></div>
+      <div class="stat clk" onclick="gotoLogiPreset({scope:'all'})"><div class="n">${act.length}</div><div class="l">הזמנות פעילות בלוח</div></div>
+      <div class="stat clk" onclick="gotoLogiPreset({scope:'sched',f:{contact:'טרם נוצר קשר'}})"><div class="n" style="color:#c0392b">${noContact.length}</div><div class="l">ממתין לקשר ראשוני</div></div>
+      <div class="stat clk" onclick="gotoLogiPreset({scope:'sched',noDate:true})"><div class="n" style="color:#d97706">${noSched.length}</div><div class="l">ממתין לשיבוץ</div></div>
+      <div class="stat clk" onclick="gotoLogi('cal')"><div class="n">${tToday.length}</div><div class="l">מתואמים היום</div></div>
+      <div class="stat clk" onclick="gotoLogi('cal')"><div class="n">${tWeek.length}</div><div class="l">השבוע הקרוב</div></div>
       <div class="stat"><div class="n">${inProto.length}</div><div class="l">בתהליך פרוטוקול</div></div>
-      <div class="stat"><div class="n" style="color:#c0392b">${openCalls.length}</div><div class="l">קריאות שירות פתוחות</div></div>
-      <div class="stat"><div class="n">${PROTS.filter(p=>p.status!=='נחתם').length}</div><div class="l">מסמכים ממתינים לחתימה</div></div>
+      <div class="stat clk" onclick="gotoCalls()"><div class="n" style="color:#c0392b">${openCalls.length}</div><div class="l">קריאות שירות פתוחות</div></div>
+      <div class="stat clk" onclick="gotoDocs('sent')"><div class="n">${PROTS.filter(p=>p.status!=='נחתם').length}</div><div class="l">מסמכים ממתינים לחתימה</div></div>
+      ${canEdit('logi.cal')?`<div class="stat" id="b1a-tile"><div class="n" id="b1a-n">·</div><div class="l">שיבוץ מחר</div></div>`:''}
     </div>
     <h2 class="sec">🧑‍🔧 עומס צוותים — הזמנות פעילות</h2>
     <div class="tbl-wrap" style="padding:12px">${Object.entries(byTeam).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;font-size:13.5px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;font-size:13.5px${t==='לא משויך'?'':';cursor:pointer'}" ${t==='לא משויך'?'':`onclick="gotoLogiPreset({scope:'all',f:{team:'${esc(t)}'}})"`}>
         <span style="width:110px;flex:none">${esc(t)}</span>
         <div style="flex:1;background:#f1f5f9;border-radius:20px;height:14px;overflow:hidden"><div style="width:${Math.round(n/mx*100)}%;height:100%;background:${t==='לא משויך'?'#c0392b':teamColor(t)}"></div></div>
         <b style="width:34px;text-align:center">${n}</b>
@@ -3298,6 +3389,123 @@ function renderOps(){
     ${upcoming.map(o=>`<div class="lead" onclick="openOrd('${o.id}')">
       <div><div class="nm">${esc(o.customer_name||'')}</div><div class="meta">${fmtD(o.scheduled_date)}${o.time_slot?' · '+esc(o.time_slot):''}${o.city?' · '+esc(o.city):''}${o.team?' · '+esc(o.team):''}</div></div>
       ${o.__fup?`<span class="pill" style="background:#fae8ff;color:#86198f">🔧 השלמה</span>`:`<span class="pill ${ordStClass(o.order_status)}">${esc(o.order_status)}</span>`}</div>`).join('')||'<div class="empty">אין שיבוצים קרובים</div>'}`;
+  b1aRefresh();
+}
+/* ── "שיבוץ מחר: לא מולא" (B1a) ──────────────────────────────────────────
+   האריח שמייצר את ההרגל שבלוק "היום שלי" של הטכנאים (שלב D) תלוי בו:
+   team_days מולא לאחרונה רק עד 12/08. שישי→ראשון (אין עבודה בשבת). */
+let _b1aAt = 0, _b1aN = null, _b1aDay = '';
+async function b1aRefresh(){
+  const el = document.getElementById('b1a-n'); if(!el) return;
+  const d = new Date(); d.setDate(d.getDate() + (d.getDay()===5 ? 2 : 1));
+  const ds = isoD(d);
+  if(_b1aDay !== ds || Date.now() - _b1aAt > 300000){
+    _b1aDay = ds; _b1aAt = Date.now();
+    try{
+      const r = await sb.schema('ord').from('team_days').select('id',{count:'exact',head:true}).eq('work_date', ds);
+      _b1aN = (r && typeof r.count==='number') ? r.count : null;
+    }catch(_e){ _b1aN = null; }
+  }
+  const box = document.getElementById('b1a-tile');
+  const el2 = document.getElementById('b1a-n'); if(!el2) return;
+  if(_b1aN == null){ el2.textContent = '·'; return; }
+  el2.textContent = _b1aN>0 ? '✓' : '!';
+  el2.style.color = _b1aN>0 ? '#16a34a' : '#c0392b';
+  if(box){ box.title = _b1aN>0 ? 'השיבוץ היומי למחר מולא ('+_b1aN+' שיבוצים)'
+                               : 'השיבוץ היומי למחר טרם מולא — 👷 שיבוץ יומי בלוח השנה';
+           box.classList.add('clk'); box.onclick = ()=> gotoLogi('cal'); }
+  dashAlert('b1a', 'ops', _b1aN===0 ? 1 : 0); dashBadges();
+}
+/* ===== בלוקי הדשבורד (6.86.0) — כולם מהגלובלים, אפס עלות רשת ===== */
+/* B2 — תור ההשלמות: supply_state מ-order_open_items_v (OPENIT). ארבעה דליים;
+   'לא רלוונטי' מסונן במקור. האיחור נמדד מ-next_due — נכון להיום כל השורות
+   הפתוחות באיחור, וזו בדיוק התמונה שהבלוק נועד להציג. */
+function renderCoordQueue(){
+  const el = $('#db-coordq'); if(!el) return;
+  const rows = (OPENIT||[]).filter(r=>r && r.supply_state && r.supply_state!=='לא רלוונטי');
+  const today = isoD(new Date());
+  const buckets = ['השלמה לתיאום','השלמה מתואמת','אספקה בהמשך','בתהליך'];
+  const by = {};
+  rows.forEach(r=>{ (by[r.supply_state] = by[r.supply_state]||[]).push(r); });
+  const late = rows.filter(r=>r.next_due && r.next_due < today).length;
+  el.innerHTML = '<h3>📦 תור השלמות — נותר לספק</h3><div class="stats">' +
+    buckets.map(b=>{
+      const g = by[b]||[], lines = g.reduce((a,r)=>a+(+r.open_lines||0),0);
+      return `<div class="stat clk" onclick="gotoLogiPreset({scope:'open'})"><div class="n">${g.length}</div><div class="l">${b}${lines?' · '+lines+' שורות':''}</div></div>`;
+    }).join('') + '</div>' +
+    (late ? `<div class="empty" style="color:#c0392b">⚠️ ${late} הזמנות עם שורות פתוחות אחרי תאריך היעד</div>` : '');
+  dashAlert('coordq', 'ops', (by['השלמה לתיאום']||[]).length);
+}
+/* B3 — קריאות שירות: דחיפות + חריגות דדליין (deadline מאוכלס 52/68) */
+function renderCallsBlock(){
+  const el = $('#db-calls'); if(!el) return;
+  const open = SCALLS.filter(s=>!['הושלם','הושלמה','בוטלה','סגורה'].includes(s.status));
+  const today = isoD(new Date());
+  const past = open.filter(s=>s.deadline && s.deadline < today);
+  const urg = u => open.filter(s=>(s.urgency||'רגילה')===u).length;
+  const top = open.slice().sort((a,b)=>String(a.deadline||'9').localeCompare(String(b.deadline||'9'))).slice(0,5);
+  el.innerHTML = '<h3>🛠️ קריאות שירות פתוחות</h3><div class="stats">' +
+    `<div class="stat clk" onclick="gotoLogiPreset({view:'calls',scf:{urgency:'משביתה'}})"><div class="n" style="color:#c0392b">${urg('משביתה')}</div><div class="l">משביתה</div></div>` +
+    `<div class="stat clk" onclick="gotoLogiPreset({view:'calls',scf:{urgency:'בינונית'}})"><div class="n" style="color:#d97706">${urg('בינונית')}</div><div class="l">בינונית</div></div>` +
+    `<div class="stat clk" onclick="gotoLogiPreset({view:'calls'})"><div class="n">${urg('רגילה')}</div><div class="l">רגילה</div></div>` +
+    `<div class="stat clk" onclick="gotoLogiPreset({view:'calls'})"><div class="n" style="color:${past.length?'#c0392b':'#16a34a'}">${past.length}</div><div class="l">עברו דדליין</div></div>` +
+    '</div>' +
+    top.map(s=>`<div class="lead" onclick="gotoCalls()"><div><div class="nm">${esc(s.customer_name||'')}</div><div class="meta">${esc(s.call_number||'')} · ${esc(s.urgency||'רגילה')}${s.deadline?' · יעד '+fmtD(s.deadline):''}${s.scheduled_date?' · תואם '+fmtD(s.scheduled_date):''}</div></div><span class="pill ${s.status==='חדש'?'p-red':'p-green'}">${esc(s.status)}</span></div>`).join('') +
+    (open.length ? '' : '<div class="empty">אין קריאות פתוחות ✨</div>');
+  dashAlert('calls', 'ops', past.length);
+}
+/* B6 — החזרות לאיסוף (pending_returns_v); אדום מעל RET_LATE_DAYS ימים */
+function renderReturnsBlock(){
+  const el = $('#db-returns'); if(!el) return;
+  const rows = RETPEND||[];
+  if(!rows.length){ el.innerHTML=''; dashAlert('returns','ops',0); return; }
+  const lines = rows.reduce((a,r)=>a+(+r.lines||0),0);
+  const mx = Math.max(...rows.map(r=>+r.days_waiting||0));
+  const lateN = rows.filter(r=>(+r.days_waiting||0) >= RET_LATE_DAYS).length;
+  el.innerHTML = '<h3>↩️ החזרות לאיסוף</h3><div class="stats">' +
+    `<div class="stat clk" onclick="gotoLogiPreset({scope:'ret'})"><div class="n">${rows.length}</div><div class="l">הזמנות · ${lines} שורות</div></div>` +
+    `<div class="stat clk" onclick="gotoLogiPreset({scope:'ret'})"><div class="n" style="color:${mx>=RET_LATE_DAYS?'#c0392b':'inherit'}">${mx}</div><div class="l">ימי המתנה — הוותיקה</div></div>` +
+    '</div>';
+  dashAlert('returns', 'ops', lateN);
+}
+/* B7 — הצעות ביקור משותף: count עצל מ-coord_suggest_v (ה-view מוגן ממילא
+   ב-logi.orders.coord), TTL 5 דקות — לא מוסיפים שאילתה כבדה לכל ציור */
+let _sugAt = 0, _sugN = null;
+function renderCoordSugBlock(){
+  const el = $('#db-coordsug'); if(!el) return;
+  if(!canView('logi.orders.coord')){ el.innerHTML=''; return; }
+  const paint = ()=>{
+    if(_sugN == null || _sugN === 0){ el.innerHTML=''; return; }
+    el.innerHTML = `<div class="lead clk" onclick="gotoLogiPreset({scope:'sched'})"><div><div class="nm">🔗 ${_sugN} הצעות לביקור משותף</div><div class="meta">הזמנות סמוכות שאפשר לקבץ לנסיעה אחת — מוצגות בכרטיסי ההזמנה בלוח</div></div></div>`;
+  };
+  if(Date.now() - _sugAt > 300000){
+    _sugAt = Date.now();
+    sb.schema('ord').from('coord_suggest_v').select('*',{count:'exact',head:true})
+      .then(r=>{ _sugN = (r && typeof r.count==='number') ? r.count : null; paint(); })
+      .catch(()=>{ _sugN = null; paint(); });
+  }
+  paint();
+}
+/* B8 — פיקוח-התיישנות (סמנכ"ל/מנכ"ל): הספים נערכים ב-ord.settings, לא בקוד */
+function renderAgingBlock(){
+  const el = $('#db-aging'); if(!el) return;
+  const secEl = document.querySelector('.dash-sec[data-sec="sup"]');
+  if(secEl && secEl.hidden){ el.innerHTML=''; return; }
+  const dsched = +(OSET['dash_age_sched_days']||7), dcont = +(OSET['dash_age_contact_days']||3);
+  const act = ORDS.filter(o=>!['הושלם','בוטל','ממתין לתשלום'].includes(o.order_status));
+  const today = isoD(new Date());
+  const cut = n => { const d=new Date(); d.setDate(d.getDate()-n); return isoD(d); };
+  const oldSched = act.filter(o=>!o.scheduled_date && (o.order_date||'') < cut(dsched));
+  const oldCont  = act.filter(o=>o.contact_status==='טרם נוצר קשר' && (o.order_date||'') < cut(dcont));
+  const pastCalls = SCALLS.filter(s=>!['הושלם','הושלמה','בוטלה','סגורה'].includes(s.status) && s.deadline && s.deadline < today);
+  const oldest = oldSched.slice().sort((a,b)=>String(a.order_date||'').localeCompare(String(b.order_date||'')))[0];
+  el.innerHTML = '<div class="stats">' +
+    `<div class="stat clk" onclick="gotoLogiPreset({scope:'sched',noDate:true})"><div class="n" style="color:${oldSched.length?'#c0392b':'#16a34a'}">${oldSched.length}</div><div class="l">ממתינות לשיבוץ מעל ${dsched} ימים</div></div>` +
+    `<div class="stat clk" onclick="gotoLogiPreset({scope:'sched',f:{contact:'טרם נוצר קשר'}})"><div class="n" style="color:${oldCont.length?'#c0392b':'#16a34a'}">${oldCont.length}</div><div class="l">ללא קשר ראשוני מעל ${dcont} ימים</div></div>` +
+    `<div class="stat clk" onclick="gotoLogiPreset({view:'calls'})"><div class="n" style="color:${pastCalls.length?'#c0392b':'#16a34a'}">${pastCalls.length}</div><div class="l">קריאות אחרי דדליין</div></div>` +
+    '</div>' +
+    (oldest ? `<div class="empty">הוותיקה ביותר: ${esc(oldest.customer_name||'')} · ${fmtD(oldest.order_date)}</div>` : '');
+  dashAlert('aging', 'sup', oldSched.length + pastCalls.length);
 }
 /* לוגיסטיקה — שלוש תצוגות בתוך אותו מסך, בלי לקפוץ לקטגוריה אחרת (הערה 19) */
 let LOGI_VIEW='cal';
@@ -3308,6 +3516,8 @@ window.logiView = ()=> renderLogi();
 /* 6.5.0 — הזמנות שאינן דורשות תיאום: היקף תצוגה בלוח + סגירה מהירה */
 let LOGI_SCOPE='sched';
 let LOGI_F = { status:[], team:'', region:'', contact:'' };
+/* דריל "ממתין לשיבוץ" מהדשבורד — מתאפס בכל מעבר scope ידני */
+let LOGI_NODATE = false;
 let SC_F   = { status:[], urgency:'', team:'', region:'' };
 function scDefLoad(){ try{ const r=JSON.parse(localStorage.getItem('iron_calls_default_v1')||'null'); return (r&&typeof r==='object')?r:null; }catch(_e){ return null; } }
 function scDefExists(){ return !!scDefLoad(); }
@@ -3419,7 +3629,7 @@ const needsSched = o => o.needs_scheduling !== false;
 const etaStale = o => !!o.eta_date && !o.scheduled_date && o.eta_date < todayStr()
   && !['בוטל','מבוטלת','הושלם','ממתין לתשלום'].includes(o.order_status);
 const scopeOk = o => (LOGI_SCOPE==='all'||LOGI_SCOPE==='every') ? true : (LOGI_SCOPE==='ship' ? !needsSched(o) : needsSched(o));
-window.logiScope = v => { LOGI_SCOPE=v; LOGI_SEL.clear(); renderLogi(); };
+window.logiScope = v => { LOGI_SCOPE=v; LOGI_NODATE=false; LOGI_SEL.clear(); renderLogi(); };
 window.logiSelClear = () => { LOGI_SEL.clear(); renderLogi(); };
 function renderLogiScope(){
   const box=$('#logi-scope'); if(!box) return;
@@ -3449,7 +3659,7 @@ function renderLogiScope(){
 /* 6.24.6 — סינון בתצוגה הטבלאית: רב-בחירת סטטוסים, סינון קריאות שירות, ושמירת ברירת מחדל */
 window.logiFilter = (k,v)=>{ LOGI_F[k]=v; logiRenderTable(); renderLogiFilters(); };
 window.logiStatusToggle = (st,on)=>{ const set=new Set(LOGI_F.status||[]); on?set.add(st):set.delete(st); LOGI_F.status=[...set]; logiRenderTable(); renderLogiFilters(); const d=document.querySelector('#logi-filters .lf-multi'); if(d) d.open=true; };
-window.logiFilterClear = ()=>{ LOGI_F={status:[],team:'',region:'',contact:''}; renderLogiFilters(); logiRenderTable(); };
+window.logiFilterClear = ()=>{ LOGI_F={status:[],team:'',region:'',contact:''}; LOGI_NODATE=false; renderLogiFilters(); logiRenderTable(); };
 function logiFilterActive(){ return !!((LOGI_F.status&&LOGI_F.status.length)||LOGI_F.team||LOGI_F.region||LOGI_F.contact); }
 function renderLogiFilters(){
   const box=$('#logi-filters'); if(!box) return;
@@ -3627,6 +3837,7 @@ function logiRenderTable(){
     if(q) list = list.filter(o=>[o.customer_name,o.order_number,o.city,o.address,o.team,o.phone]
       .some(v=>String(v||'').includes(q)));
     if(stF.length) list = list.filter(o=>stF.includes(o.order_status));
+    if(LOGI_NODATE)    list = list.filter(o=>!o.scheduled_date);
     if(LOGI_F.contact) list = list.filter(o=>o.contact_status===LOGI_F.contact);
     if(LOGI_F.team)    list = list.filter(o=> LOGI_F.team==='__none__' ? !o.team : o.team===LOGI_F.team);
     if(LOGI_F.region)  list = list.filter(o=>o.region===LOGI_F.region);
@@ -7093,7 +7304,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'openrefresh-2026-08-16a';
+const BUILD_ID = 'dashreg-2026-08-16a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -11104,7 +11315,6 @@ function paintSyncLog(){
 /* ===== הגדרות — תתי-קטגוריות מסודרות + ניהול משתמשים (הערה 10) ===== */
 const JOB_TITLES = ['סמנכ"ל לוגיסטיקה','מנהל/ת לוגיסטיקה','מנהל/ת מחסן','מחסנאי','טכנאי','איש מכירות','מנהל/ת מכירות','מנהל/ת חשבונות'];
 const ROLE_OPTS = [['admin','אדמיניסטרטור'],['manager','מנהל'],['rep','נציג'],['viewer','צפייה'],['pending','ממתין לאישור']];
-const DASH_OPTS = [['','לפי הרשאה'],['sales','מכירות'],['logistics','לוגיסטיקה'],['combined','משולב']];
 let SET_VIEW='users', SET_USERS=null;
 window.setMode = v=>{ SET_VIEW=v; renderSettings(); navMark(); };
 /* מקור אחד לתתי-הקטגוריות של ההגדרות — משמש גם את המסך וגם את התפריט הצף בסרגל */
@@ -11486,11 +11696,10 @@ async function renderUsers(){
   try{ const ng=$('#nu-group'); if(ng) ng.innerHTML='<option value="">— ללא קבוצת הרשאות —</option>'+gs.map(g=>`<option value="${g.id}">${esc(g.name)}</option>`).join(''); }catch(_e){}
   const uEdit = canEdit('set.users');
   box.innerHTML = `<div class="usr-row" style="font-weight:800;color:var(--navy);border-bottom:2px solid var(--line)">
-      <span>משתמש</span><span>הרשאה</span><span>דשבורד</span><span>תפקיד</span><span>קבוצת הרשאות</span><span>פעיל</span><span></span></div>` +
+      <span>משתמש</span><span>הרשאה</span><span>תפקיד</span><span>קבוצת הרשאות</span><span>פעיל</span><span></span></div>` +
     SET_USERS.map(u=>`<div class="usr-row">
       <span><b>${esc(u.full_name||'—')}</b><br><small style="color:#94a3b8" dir="ltr">${esc(u.email)}</small></span>
       <select id="ur-${u.id}" ${uEdit?'':'disabled'}>${ROLE_OPTS.map(([v,l])=>`<option value="${v}" ${v===u.role?'selected':''}>${l}</option>`).join('')}</select>
-      <select id="ud-${u.id}" ${uEdit?'':'disabled'}>${DASH_OPTS.map(([v,l])=>`<option value="${v}" ${v===(u.dashboard||'')?'selected':''}>${l}</option>`).join('')}</select>
       <select id="uj-${u.id}" ${uEdit?'':'disabled'}><option value="">—</option>${JOB_TITLES.map(j=>`<option ${j===u.job_title?'selected':''}>${j}</option>`).join('')}</select>
       <span class="pm-gcell"><select id="ug-${u.id}" ${uEdit?'':'disabled'} onchange="pmApplyGroup('${u.id}')">${gOpts(u)}</select>${pmDiffBadge(u.id)}</span>
       <label style="display:flex;align-items:center;gap:4px;font-size:12px"><input type="checkbox" id="ua-${u.id}" ${uEdit?'':'disabled'} ${u.active!==false?'checked':''}>פעיל</label>
@@ -11695,7 +11904,7 @@ window.saveUser = async id=>{
   if(id===ME.id && ($('#ur-'+id).value!==ME.role || !$('#ua-'+id).checked)){
     if(!confirm('שינוי ההרשאה של עצמך או כיבוי המשתמש שלך עלול לנעול אותך מחוץ למערכת. להמשיך?')) return;
   }
-  const upd={ role:$('#ur-'+id).value, dashboard:$('#ud-'+id).value||null, job_title:$('#uj-'+id).value||null, active:$('#ua-'+id).checked };
+  const upd={ role:$('#ur-'+id).value, job_title:$('#uj-'+id).value||null, active:$('#ua-'+id).checked };
   const { error } = await sb.schema('core').from('profiles').update(upd).eq('id', id);
   if(error){ alert('שמירה נכשלה: '+error.message); return; }
   alert('המשתמש עודכן ✓');
@@ -12009,7 +12218,7 @@ async function loadLeads(){
 }
 /* ציור כל המסכים מחדש — משמש גם במעבר בין תצוגת טבלה לכרטיסים (תיקון ממצא 24) */
 function renderAllViews(){
-  renderStats(); renderToday(); renderLeads(); renderCustomers(); renderTasks(); renderDeals(); renderMeets(); renderConts(); renderPays(); renderOrdersTools(); renderOrders(); renderSkuTools(); renderSkus(); renderLogi(); renderDocs(); renderInvIfLoaded(); renderPrcIfLoaded(); renderOps();
+  renderStats(); renderToday(); renderLeads(); renderCustomers(); renderTasks(); renderDeals(); renderMeets(); renderConts(); renderPays(); renderOrdersTools(); renderOrders(); renderSkuTools(); renderSkus(); renderLogi(); renderDocs(); renderInvIfLoaded(); renderPrcIfLoaded(); renderDash();
 }
 /* עימוד — כפתור "הצג עוד" בכל מסכי הרשימות (הערת רומן 28/07) */
 const PGSTEP=300; const PGL={};

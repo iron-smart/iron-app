@@ -1701,6 +1701,17 @@
   .pm-d1 .pm-lbl{ padding-inline-start:12px; }
   .pm-d2 .pm-lbl{ padding-inline-start:24px; }
 }
+
+/* ===== בורד הלידים (6.93.0) ===== */
+.tbl tr.lb-grp td{ background:#eef2f7; font-weight:800; font-size:13px; color:#0f172a; cursor:pointer; padding:7px 10px; user-select:none; }
+.tbl tr.lb-grp:hover td{ background:#e4eaf2; }
+.lb-arr{ display:inline-block; width:15px; color:#64748b; }
+.lb-cnt{ color:#64748b; font-weight:600; font-size:12px; margin-inline-start:4px; }
+.pill.lb-mine{ background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; }
+td.lb-ov{ color:#c0392b; font-weight:700; }
+.lb-links{ padding:8px 2px; font-size:13px; }
+.lb-own{ display:flex; align-items:center; min-height:34px; }
+.lb-grpfoot td{ padding:4px 10px; background:#fafbfc; }
 </style>
 </head>
 <body>
@@ -1728,7 +1739,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.92.0</div>
+      <div class="ver">גרסה 6.93.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1855,7 +1866,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.92.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.93.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1907,10 +1918,11 @@
       <div id="meets-list"></div>
     </section>
 
-    <!-- לידים -->
+    <!-- לידים — בורד מלא (6.93.0): שלוש תצוגות + קיבוץ לפי סטטוס -->
     <section id="tab-leads" class="hidden">
+      <div class="chips" id="lb-chips"></div>
       <div class="toolbar">
-        <input id="search" placeholder="חיפוש לפי שם או טלפון…">
+        <input id="search" placeholder="חיפוש לפי שם, טלפון או חברה…">
         <button class="add" id="addBtn" title="ליד חדש">+</button>
       </div>
       <div id="leads-list"></div>
@@ -2149,6 +2161,25 @@
 <!-- מודל כרטיס ליד -->
 <div class="modal hidden" id="leadModal">
   <div class="sheet" id="leadSheet"></div>
+</div>
+
+<!-- מודל פגישה חדשה מכרטיס ליד (6.93.0) -->
+<div class="modal hidden" id="lbMeetModal">
+  <div class="sheet">
+    <h3>פגישה חדשה</h3>
+    <div class="field"><label>נושא *</label><input id="lm-subj"></div>
+    <div class="field"><label>תאריך *</label><input id="lm-date" type="date"></div>
+    <div class="field"><label>שעת התחלה</label><input id="lm-start" type="time" value="10:00"></div>
+    <div class="field"><label>שעת סיום</label><input id="lm-end" type="time" value="11:00"></div>
+    <div class="field"><label>סוג פגישה</label>
+      <select id="lm-type"><option>פרונטלי</option><option>מקוונת</option><option>טלפונית</option><option>פגישת מכירה</option></select></div>
+    <div class="field"><label>מיקום</label><input id="lm-loc" placeholder="כתובת מלאה, או ריק"></div>
+    <div class="actions">
+      <button class="btn green" id="lm-save">שמירה</button>
+      <button class="ghost" id="lm-cancel">ביטול</button>
+    </div>
+    <div class="err" id="lm-err"></div>
+  </div>
 </div>
 
 <!-- מודל כרטיס עסקה -->
@@ -7845,7 +7876,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'notifbell-2026-08-17a';
+const BUILD_ID = 'leadsboard-2026-08-17a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -12702,7 +12733,7 @@ async function loadLeads(){
   oldBoot(true);   /* טעינה טרייה של נתוני ההזמנות בכל רענון */
   try{
   _q = await Promise.all([
-    sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at').order('created_at',{ascending:false}).limit(10000),
+    sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at,position,address,notes,task_summary,inquiry_subject,form_name,landing_page_url,chat_url,package,priority_customer_id,utm_campaign,utm_source,utm_medium,utm_term,send_whatsapp_catalog,owner_id,updated_at').order('created_at',{ascending:false}).limit(10000),
     sb.schema('core').from('customers').select('id,name,phone,email,priority_id,status,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes').order('created_at',{ascending:false}).limit(10000),
     sb.schema('crm').from('tasks').select('id,name,status,value_tag,category,due_at,closed_at,linked_type,linked_id,owner_id').order('due_at',{ascending:true}).limit(10000),
     sb.schema('crm').from('deals').select('id,name,stage,amount,quote_status,irrelevant_reason,priority_quote_id,customer_id,contact_id,send_channel,sign_link,approved_at,closed_at,created_at').order('created_at',{ascending:false}).limit(10000),
@@ -12834,15 +12865,20 @@ window.doneTask = async (id)=>{
   await loadLeads();
 };
 $('#addTaskBtn').onclick = ()=>{ $('#t-name').value=''; $('#t-err').textContent='';
+  LB_TASK_LINK=null; $('#t-name').placeholder='';   /* מהכפתור הכללי — בלי קישור לליד */
   $('#t-due').value = todayStr(); /* תיקון ממצא 27 — תאריך מקומי ולא UTC */
   mountCard('taskModal', ()=>$('#taskModal').classList.remove('hidden')); };
 $('#t-cancel').onclick = ()=> closeCards();
 $('#t-save').onclick = async ()=>{
   const name=$('#t-name').value.trim(), d=$('#t-due').value, tm=$('#t-time').value||'09:00';
   if(!name||!d){ $('#t-err').textContent='שם ותאריך יעד חובה'; return; }
-  const { error } = await sb.schema('crm').from('tasks').insert({ name, owner_id: ME.id, due_at: new Date(d+'T'+tm).toISOString(), category:'ליד' });
+  /* 6.93.0 — משימה שנפתחה מכרטיס ליד נקשרת אליו (linked_type='lead');
+     כך ההתראות של automation_tick והמיון בבורד עובדים */
+  const _lnk=(typeof LB_TASK_LINK!=='undefined' && LB_TASK_LINK)?LB_TASK_LINK:null;
+  const { error } = await sb.schema('crm').from('tasks').insert({ name, owner_id: ME.id, due_at: new Date(d+'T'+tm).toISOString(), category:'ליד', linked_type:_lnk?_lnk.type:null, linked_id:_lnk?_lnk.id:null });
   if(error){ $('#t-err').textContent='שגיאה בשמירה'; console.error(error); return; }
   $('#taskModal').classList.add('hidden'); await loadLeads();
+  if(_lnk && _lnk.type==='lead') openLead(_lnk.id);
 };
 
 function custRow(c){
@@ -15740,7 +15776,9 @@ window.openMeet = (id)=>{
 };
 
 function renderStats(){
-  const open = LEADS.filter(l=>['ליד חדש','ללא מענה','ללא מענה 2','ללא מענה 3'].includes(l.status)).length;
+  /* 6.93.0 — הסטטוסים במסד הם 'ללא מענה2'/'ללא מענה3' בלי רווח; הרשימה
+     הישנה כללה רווח, ולכן המונה פספס אותם מאז ומעולם. */
+  const open = LEADS.filter(l=>['ליד חדש','ללא מענה','ללא מענה2','ללא מענה3'].includes(l.status)).length;
   const rel = LEADS.filter(l=>l.status==='רלוונטי').length;
   $('#s-open').textContent=open; $('#s-rel').textContent=rel;
   $('#s-total').textContent=LEADS.length; $('#s-tasks').textContent=myOpenTodayTasks().length;
@@ -15760,27 +15798,110 @@ function renderToday(){
   const tm = MEETS.filter(m=>m.meet_date===todayStr() && m.status!=='בוטלה');
   $('#today-meets').innerHTML = tm.length? tm.map(meetRow).join('') : '<div class="empty">אין פגישות היום</div>';
 }
-function leadTable(list){
-  if(!list.length) return '<div class="empty">לא נמצאו לידים</div>';
-  const rows=list.slice(0,pgLim('leads')).map((l,i)=>{
-    const sub=l.sub_status||l.reject_reason||l.irrelevant_reason;
-    return `<tr onclick="openLead('${l.id}')">
-      <td class="rownum">${i+1}</td>
+/* ===== בורד הלידים (6.93.0) — טבלה מקובצת + שלוש תצוגות =====
+   לפי מפרט המעבר ממאנדיי (הארטיפקט, 15/08/2026).
+   ⚠️ תצוגת "כל הלידים בתהליך" של מאנדיי הייתה שבורה והפילטר שלה לא הועתק
+   בכוונה: שם (סטטוס ≠ לא רלוונטי, רלוונטי) הציג 630 סירובים והסתיר 1,290
+   רלוונטיים. כאן "בתהליך" = כל סטטוס שאינו סופי (סירוב / לא רלוונטי). */
+const LB_ACTIVE = ['ליד חדש','ללא מענה','ללא מענה2','ללא מענה3','רלוונטי'];
+let LB_VIEW = 'active';   /* mine | active | main */
+const LB_FOLD = new Set();
+function lbMe(){ return (typeof ME!=='undefined' && ME) ? ME.id : null; }
+/* המשימה הפתוחה והפגישה הקרובה לכל ליד — התחליף לעמודות ה"מראה" של מאנדיי
+   (ת. המשימה הבאה / ת. הפגישה הבאה), מחושב מהנתונים שכבר בזיכרון */
+function lbNextMaps(){
+  const nt={}, nm={};
+  for(const t of (TASKS||[])){
+    if(t.linked_type!=='lead' || !t.linked_id || t.status==='הושלם' || !t.due_at) continue;
+    if(!nt[t.linked_id] || t.due_at < nt[t.linked_id]) nt[t.linked_id]=t.due_at;
+  }
+  const td=todayStr();
+  for(const m of (MEETS||[])){
+    if(m.linked_type!=='lead' || !m.linked_id || !m.meet_date) continue;
+    if(['בוטלה','התקיימה','לא התקיימה'].includes(m.status) || m.meet_date<td) continue;
+    if(!nm[m.linked_id] || m.meet_date < nm[m.linked_id]) nm[m.linked_id]=m.meet_date;
+  }
+  return {nt,nm};
+}
+function lbViewList(){
+  if(LB_VIEW==='mine')   return LEADS.filter(l=>l.owner_id && l.owner_id===lbMe() && LB_ACTIVE.includes(l.status) && l.sub_status!=='הצעת מחיר');
+  if(LB_VIEW==='active') return LEADS.filter(l=>LB_ACTIVE.includes(l.status));
+  return LEADS;
+}
+window.lbSetView = v=>{ LB_VIEW=v; renderLeads(); };
+window.lbFold = st=>{ if(LB_FOLD.has(st)) LB_FOLD.delete(st); else LB_FOLD.add(st); renderLeads(); };
+function lbChips(){
+  const el=document.getElementById('lb-chips'); if(!el) return;
+  const mine=LEADS.filter(l=>l.owner_id && l.owner_id===lbMe() && LB_ACTIVE.includes(l.status) && l.sub_status!=='הצעת מחיר').length;
+  const act=LEADS.filter(l=>LB_ACTIVE.includes(l.status)).length;
+  el.innerHTML = `
+    <button class="chip ${LB_VIEW==='mine'?'active':''}" onclick="lbSetView('mine')">שלי בתהליך ${mine}</button>
+    <button class="chip ${LB_VIEW==='active'?'active':''}" onclick="lbSetView('active')">כל הלידים בתהליך ${act}</button>
+    <button class="chip ${LB_VIEW==='main'?'active':''}" onclick="lbSetView('main')">ראשי ${LEADS.length}</button>`;
+}
+function lbRow(l, i, nt, nm){
+  const sub=l.sub_status||l.reject_reason||l.irrelevant_reason;
+  const t=nt[l.id], m=nm[l.id];
+  const tOver = t && new Date(t) < new Date();
+  const mine = l.owner_id && l.owner_id===lbMe();
+  return `<tr onclick="openLead('${l.id}')">
+      <td class="rownum">${i}</td>
       <td><b>${esc(l.full_name)}</b>${l.company?`<div class="note-preview">${esc(l.company)}</div>`:''}</td>
       <td dir="ltr">${esc(l.phone||'')}</td>
-      <td>${esc(l.city||'—')}</td>
       <td>${ieSel('lead',l.id,'source',LEAD_SOURCES,l.source,{allowEmpty:true})}</td>
+      <td>${esc(l.customer_type||'—')}</td>
       <td>${ieSel('lead',l.id,'status',LEAD_STATUSES,l.status,{mdColors:LEAD_ST_COLORS})}</td>
       <td>${sub?esc(sub):'—'}</td>
-      <td>${l.created_at?new Date(l.created_at).toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit'}):'—'}</td>
-    </tr>`;}).join('');
-  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="rownum">#</th><th>שם</th><th>טלפון</th><th>עיר</th><th>מקור הגעה</th><th>סטטוס</th><th>תת-סטטוס</th><th>נוצר</th></tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('leads',list.length,'לידים')}`;
+      <td>${mine?'<span class="pill lb-mine">שלי</span>':(l.owner_id?'<span class="pill st-def">משויך</span>':'—')}</td>
+      <td data-sort="${esc(t||'')}"${tOver?' class="lb-ov"':''}>${t?new Date(t).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'}${tOver?' · באיחור!':''}</td>
+      <td data-sort="${esc(m||'')}">${m?new Date(m+'T00:00').toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'}):'—'}</td>
+      <td data-sort="${esc(l.created_at||'')}">${l.created_at?new Date(l.created_at).toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit'}):'—'}</td>
+    </tr>`;
+}
+const LB_HEAD = '<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="rownum">#</th><th>שם</th><th>טלפון</th><th>מקור הגעה</th><th>סוג לקוח</th><th>סטטוס</th><th>תת-סטטוס</th><th>בעלים</th><th>משימה הבאה</th><th>פגישה הבאה</th><th>נוצר</th></tr></thead><tbody>';
+/* משימה קרובה קודם (בלי-משימה בסוף), ואז מהחדש לישן — הסדר של תצוגות
+   העבודה במאנדיי ("ת. המשימה הבאה ↑") */
+function lbSort(nt){
+  return (a,b)=>{
+    const ta=nt[a.id]||'', tb=nt[b.id]||'';
+    if(ta&&tb&&ta!==tb) return ta<tb?-1:1;
+    if(!!ta!==!!tb) return ta?-1:1;
+    return (b.created_at||'').localeCompare(a.created_at||'');
+  };
+}
+function lbTable(list, grouped){
+  if(!list.length) return '<div class="empty">לא נמצאו לידים</div>';
+  const {nt,nm}=lbNextMaps();
+  let body='';
+  if(grouped){
+    for(const st of LEAD_STATUSES){
+      const grp=list.filter(l=>l.status===st); if(!grp.length) continue;
+      const cc=LEAD_ST_COLORS[st]||'#94a3b8';
+      const folded=LB_FOLD.has(st);
+      body+=`<tr class="lb-grp" onclick="lbFold('${st}')"><td colspan="11" style="border-inline-start:4px solid ${cc}"><span class="lb-arr">${folded?'◂':'▾'}</span>${esc(st)} <span class="lb-cnt">${grp.length}</span></td></tr>`;
+      if(folded) continue;
+      const lim=pgLim('leads:'+st);
+      const shown=grp.slice().sort(lbSort(nt)).slice(0,lim);
+      shown.forEach((l,i)=>{ body+=lbRow(l,i+1,nt,nm); });
+      if(grp.length>lim) body+=`<tr class="lb-grpfoot"><td colspan="11"><div class="count-line2">מציג ${shown.length} מתוך ${grp.length} ${pgBtn(`pgMore('leads:${st}')`,'הצג עוד')}</div></td></tr>`;
+    }
+    return LB_HEAD+body+'</tbody></table></div>';
+  }
+  list.slice().sort(lbSort(nt)).slice(0,pgLim('leads')).forEach((l,i)=>{ body+=lbRow(l,i+1,nt,nm); });
+  return LB_HEAD+body+'</tbody></table></div>'+pgFoot('leads',list.length,'לידים');
 }
 function renderLeads(){
+  lbChips();
   const q = ($('#search').value||'').trim();
-  let list = LEADS;
-  if(q) list = LEADS.filter(l=>(l.full_name||'').includes(q)||(l.phone||'').includes(q)||(l.company||'').includes(q));
-  $('#leads-list').innerHTML = wideScreen() ? leadTable(list) : capped(list, leadRow, 'לא נמצאו לידים');
+  /* חיפוש חוצה-תצוגות: רשימה שטוחה על כל הלידים — ליד בסטטוס סופי חייב
+     להימצא גם כשהתצוגה הפעילה מסתירה אותו */
+  if(q){
+    const list = LEADS.filter(l=>(l.full_name||'').includes(q)||(l.phone||'').includes(q)||(l.company||'').includes(q));
+    $('#leads-list').innerHTML = wideScreen() ? lbTable(list,false) : capped(list, leadRow, 'לא נמצאו לידים');
+    return;
+  }
+  const list = lbViewList();
+  $('#leads-list').innerHTML = wideScreen() ? lbTable(list,true) : capped(list, leadRow, LB_VIEW==='mine'?'אין לך לידים בתהליך 🎉':'לא נמצאו לידים');
 }
 $('#search').addEventListener('input', renderLeads);
 
@@ -15799,62 +15920,202 @@ $('#a-save').onclick = async ()=>{
   $('#addModal').classList.add('hidden'); await loadLeads();
 };
 
-// כרטיס ליד — סטטוס + תת-סטטוס + מקור, אחד-לאחד מהמאנדיי (הערות 9, 11–14)
+/* ===== כרטיס הליד המלא (6.93.0) =====
+   הסדר לפי שפת הכרטיסים (card-layout): מה שנקלט אוטומטית למעלה (ro),
+   מה שממלאים למטה, כותרת form-sep מפרידה. השמירה בחוזה ה-snapshot של
+   saveScall (6.82.0): משווים את מה שהוצג מול מה שיש עכשיו — שתי מחרוזות
+   מאותו אלמנט — ולא "מה בשדה מול מה במסד". */
+const LEAD_TYPES = ['בסיס','פ.ע','עסקי','ארגוני','מוסדי','מסחרי','סטונאי'];
+const LEAD_CARD_FIELDS = [
+  ['lb-name','full_name'], ['lb-phone','phone'], ['lb-email','email'],
+  ['lb-company','company'], ['lb-position','position'], ['lb-city','city'],
+  ['lb-addr','address'], ['lb-ctype','customer_type'], ['lb-source','source'],
+  ['lb-tsum','task_summary'], ['lb-notes','notes'], ['lb-wacat','__wacat']
+];
+let LEAD_SNAP = null, LB_TASK_LINK = null, LB_MEET_LEAD = null;
+/* תת-הסטטוס: עמודה אחת לכל סטטוס-אב. בורר יחיד בכרטיס מצייר את הרשימה של
+   הסטטוס הנוכחי; ההמרה לעמודה הנכונה קורית בשמירה בלבד. */
+function lbSubCol(st){ return st==='רלוונטי'?'sub_status' : st==='סירוב'?'reject_reason' : st==='לא רלוונטי'?'irrelevant_reason' : null; }
+function lbSubOpts(st){ return st==='רלוונטי'?SUB_RELEVANT : st==='סירוב'?SUB_REFUSAL : st==='לא רלוונטי'?SUB_IRRELEVANT : null; }
+function lbSubLabel(st){ return st==='רלוונטי'?'סטטוס רלוונטי' : st==='סירוב'?'סיבת סירוב' : 'סיבת לא רלוונטי'; }
 window.leadSubUI = ()=>{
-  const st=$('#l-status') ? $('#l-status').value : '';
-  const box=$('#l-subbox'); if(!box) return;
-  let label='', opts=null, cur='';
+  const stEl=document.getElementById('lb-status'); const box=document.getElementById('lb-subbox');
+  if(!stEl||!box) return;
+  const st=stEl.value;
   const l = LEADS.find(x=>x.id===box.dataset.lead) || {};
-  if(st==='רלוונטי'){ label='סטטוס רלוונטי'; opts=SUB_RELEVANT; cur=l.sub_status||''; }
-  else if(st==='סירוב'){ label='סיבת סירוב'; opts=SUB_REFUSAL; cur=l.reject_reason||''; }
-  else if(st==='לא רלוונטי'){ label='סיבת לא רלוונטי'; opts=SUB_IRRELEVANT; cur=l.irrelevant_reason||''; }
-  box.innerHTML = opts ? `<label style="display:block;font-size:13px;color:#475569;margin:10px 0 6px">${label}</label>
-    <select id="l-sub"><option value=""></option>${opts.map(o=>`<option ${o===cur?'selected':''}>${o}</option>`).join('')}</select>` : '';
+  const opts=lbSubOpts(st);
+  if(!opts){ box.innerHTML=''; return; }
+  /* חזרו לסטטוס שצויר — הערך השמור; סטטוס אחר — מתחילים ריק */
+  const cur = (st===(l.status||'')) ? (l[lbSubCol(st)]||'') : '';
+  box.innerHTML = `<label>${lbSubLabel(st)}</label>
+    <select id="lb-sub"><option value=""></option>${opts.map(o=>`<option ${o===cur?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
 };
+function lbSnapshot(id){
+  const snap={ __id:id };
+  LEAD_CARD_FIELDS.forEach(([elId])=>{ const el=document.getElementById(elId); if(el) snap[elId]=String(el.value ?? ''); });
+  const st=document.getElementById('lb-status'); if(st) snap['lb-status']=String(st.value ?? '');
+  /* תת-הסטטוס נרשם תמיד — גם כשאין בורר על המסך (סטטוס בלי תתי-סטטוסים),
+     כדי שסיבוב סטטוס הלוך-ושוב לא ייקרא בטעות "שינוי" */
+  const sub=document.getElementById('lb-sub'); snap['lb-sub']= sub ? String(sub.value ?? '') : '';
+  LEAD_SNAP=snap;
+}
+/* קישור מאומת-סכימה — landing_page_url/chat_url מגיעים מטפסים חיצוניים */
+const lbLink=(u,txt)=>{ const s=esc(safeUrl(u)); return s?`<a href="${s}" target="_blank" rel="noopener">${esc(txt)} ↗</a>`:''; };
 window.openLead = (id)=>{
   const l = LEADS.find(x=>x.id===id); if(!l) return;
   const canConvert = l.status!=='רלוונטי';
-  /* 6.44.0 — עד כאן הבדיקה הייתה על ME.role הישן, ולכן היא לא כיבדה את מפת
-     ההרשאות שכל שאר המערכת עובדת לפיה. */
   const editable = window.canEdit('crm.leads');
+  const fmtDT = v=> v?new Date(v).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+  const utm=[l.utm_campaign,l.utm_source,l.utm_medium,l.utm_term].filter(Boolean).join(' · ');
+  const cust=l.customer_id?(CUSTS||[]).find(x=>x.id===l.customer_id):null;
+  const meId=lbMe();
+  const ownHtml = l.owner_id ? (l.owner_id===meId?'<span class="pill lb-mine">שלי</span>':'<span class="pill st-def">משויך למשתמש אחר</span>')
+                             : (editable?`<button type="button" class="chip" onclick="lbClaim('${l.id}')">קבל בעלות</button>`:'—');
+  const myTasks=(TASKS||[]).filter(t=>t.linked_type==='lead'&&t.linked_id===id&&t.status!=='הושלם').sort((a,b)=>(a.due_at||'').localeCompare(b.due_at||''));
+  const myMeets=(MEETS||[]).filter(m=>m.linked_type==='lead'&&m.linked_id===id&&m.status!=='בוטלה').sort((a,b)=>(b.meet_date||'').localeCompare(a.meet_date||''));
   $('#leadSheet').innerHTML = `
-    <h3>${esc(l.full_name)}</h3>
-    <div class="row"><span class="k">טלפון</span><span class="v" dir="ltr">${esc(l.phone||'—')}</span></div>
-    ${l.company?`<div class="row"><span class="k">חברה</span><span class="v">${esc(l.company)}</span></div>`:''}
-    ${l.city?`<div class="row"><span class="k">עיר</span><span class="v">${esc(l.city)}</span></div>`:''}
-    <div class="row"><span class="k">סוג לקוח</span><span class="v">${esc(l.customer_type||'—')}</span></div>
-    ${editable?`
-    <div class="field" style="margin-top:12px"><label>סטטוס ליד</label>
-      <select id="l-status" onchange="leadSubUI()">${LEAD_STATUSES.map(s=>`<option ${s===l.status?'selected':''}>${s}</option>`).join('')}</select></div>
-    <div id="l-subbox" data-lead="${l.id}"></div>
-    <div class="field" style="margin-top:10px"><label>מקור הגעה</label>
-      <select id="l-source"><option value=""></option>${LEAD_SOURCES.map(s=>`<option ${s===l.source?'selected':''}>${s}</option>`).join('')}</select></div>
-    <button class="btn" onclick="saveLead('${l.id}')">שמירת עדכון</button>
-    <div class="err" id="l-err"></div>`
-    :`<div class="row"><span class="k">סטטוס</span><span class="v">${mdPill(l.status,LEAD_ST_COLORS)}</span></div>
-      <div class="row"><span class="k">מקור</span><span class="v">${esc(l.source||'—')}</span></div>`}
+    <h3>${esc(l.full_name)} ${mdPill(l.status||'—',LEAD_ST_COLORS)}</h3>
+    <div class="form-grid">
+      <div class="form-sep">פרטי הפנייה — נקלט אוטומטית</div>
+      <div><label>נוצר</label>${roIn(fmtDT(l.created_at),{ltr:1})}</div>
+      <div><label>עודכן לאחרונה</label>${roIn(fmtDT(l.updated_at),{ltr:1})}</div>
+      <div><label>טופס מקור</label>${roIn(l.form_name)}</div>
+      <div><label>נושא הפנייה</label>${roIn(l.inquiry_subject)}</div>
+      ${(l.landing_page_url||l.chat_url)?`<div class="span2"><label>קישורים</label><div class="lb-links">${[lbLink(l.landing_page_url,'דף הנחיתה שממנו הגיע'),lbLink(l.chat_url,"צ'אט עם הלקוח")].filter(Boolean).join(' · ')||'—'}</div></div>`:''}
+      ${utm?`<div class="span2"><label>קמפיין (UTM)</label>${roIn(utm)}</div>`:''}
+      ${l.package?`<div><label>חבילה</label>${roIn(l.package)}</div>`:''}
+      ${l.priority_customer_id?`<div><label>לקוח בפריוריטי</label>${roIn(l.priority_customer_id,{ltr:1})}</div>`:''}
+      ${cust?`<div class="span2"><label>לקוח מקושר</label><div class="lb-links"><a href="#" onclick="event.preventDefault();openCust('${cust.id}')">${esc(cust.name)} ↗</a></div></div>`:''}
+
+      <div class="form-sep">שדות למילוי</div>
+      <div><label>שם מלא <span class="note">(חובה)</span></label><input id="lb-name" value="${esc(l.full_name||'')}"></div>
+      <div><label>טלפון ${phBtns(l.phone)}</label><input id="lb-phone" value="${esc(l.phone||'')}" dir="ltr"></div>
+      <div><label>אימייל</label><input id="lb-email" value="${esc(l.email||'')}" dir="ltr"></div>
+      <div><label>שם חברה</label><input id="lb-company" value="${esc(l.company||'')}"></div>
+      <div><label>תפקיד</label><input id="lb-position" value="${esc(l.position||'')}"></div>
+      <div><label>עיר</label><input id="lb-city" value="${esc(l.city||'')}"></div>
+      <div><label>כתובת</label><input id="lb-addr" value="${esc(l.address||'')}"></div>
+      <div><label>סוג לקוח</label>${selHtml('lb-ctype',LEAD_TYPES,l.customer_type,true)}</div>
+      <div><label>מקור הגעה</label>${selHtml('lb-source',LEAD_SOURCES,l.source,true)}</div>
+      <div><label>לשלוח קטלוג בוואטסאפ?</label>${selHtml('lb-wacat',['כן','לא'],l.send_whatsapp_catalog===true?'כן':(l.send_whatsapp_catalog===false?'לא':null),true)}</div>
+      <div><label>בעלים</label><div class="lb-own">${ownHtml}</div></div>
+      <div><label>סטטוס</label>${selHtml('lb-status',LEAD_STATUSES,l.status,false,'leadSubUI()')}</div>
+      <div id="lb-subbox" data-lead="${l.id}"></div>
+      <div class="span4"><label>תקציר משימה</label><textarea id="lb-tsum" rows="2" placeholder="הערת סטטוס קצרה לעבודה השוטפת">${esc(l.task_summary||'')}</textarea></div>
+
+      <div class="form-sep">הערות</div>
+      <div class="span4"><textarea id="lb-notes" rows="3" placeholder="הערות פנימיות על הליד">${esc(l.notes||'')}</textarea></div>
+    </div>
+    <div class="modal-actions">
+      ${editable?`<button class="btn btnw" onclick="saveLead('${l.id}')">💾 שמירה</button>`:'<div class="note">אין לך הרשאת עריכה ללידים.</div>'}
+    </div>
+    <div class="err" id="lb-err"></div>
+    <section class="ob-card"><h2 class="sec">משימות ופגישות (${myTasks.length+myMeets.length})</h2>
+      ${myTasks.map(t=>`<div class="row"><span class="k">משימה · ${t.due_at?new Date(t.due_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'}</span><span class="v">${esc(t.name)} ${mdPill(t.status,TASK_ST_COLORS)}</span></div>`).join('')}
+      ${myMeets.map(m=>`<div class="row"><span class="k">פגישה · ${m.meet_date?new Date(m.meet_date+'T00:00').toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'}):'—'}</span><span class="v"><a href="#" onclick="event.preventDefault();openMeet('${m.id}')">${esc(m.subject||'פגישה')}</a> <span class="pill ${meetStClass(m.status)}">${esc(m.status)}</span></span></div>`).join('')}
+      ${(!myTasks.length&&!myMeets.length)?'<div class="note">אין משימות או פגישות מקושרות.</div>':''}
+      ${window.canEdit('crm.tasks')?`<button type="button" class="chip" onclick="leadTask('${l.id}')">＋ משימה</button>`:''}
+      ${window.canEdit('crm.meets')?`<button type="button" class="chip" onclick="leadMeet('${l.id}')">＋ פגישה</button>`:''}
+    </section>
     <div class="actions">
       ${canConvert? `<button class="btn green" onclick="convertLead('${l.id}')">העבר לרלוונטי ← פתח לקוח והצעה בפריוריטי</button>`:''}
     </div>
     ${canConvert? '<div class="note">הפעולה תפתח לקוח זמני והצעת מחיר בפריוריטי, ותקשר אותם לליד.</div>':''}
     <div id="convResult"></div>
     <div id="lead-acts"></div>`;
-  mountCard('leadModal', ()=>openLead(id));
   leadSubUI();
+  /* ה-snapshot נלקח אחרי שכל השדות צוירו — כולל בורר תת-הסטטוס */
+  lbSnapshot(id);
+  mountCard('leadModal', ()=>openLead(id));
+  try{ window.markEmpty('leadModal'); }catch(_e){}
+  if(!editable) document.querySelectorAll('#leadSheet input,#leadSheet select,#leadSheet textarea').forEach(el=>el.disabled=true);
   activityHtml('lead', id).then(h=>{ const el=$('#lead-acts'); if(el) el.innerHTML=h; });
 };
 window.saveLead = async (id)=>{
   const l = LEADS.find(x=>x.id===id); if(!l) return;
-  const st=$('#l-status').value, sub=$('#l-sub')?$('#l-sub').value||null:null;
-  /* תיקון ממצא 22 — החלפת סטטוס מנקה את תתי-הסטטוס שאינם שייכים לו */
-  const upd={ status:st, source:$('#l-source').value||null,
-    sub_status: st==='רלוונטי'?sub:null,
-    reject_reason: st==='סירוב'?sub:null,
-    irrelevant_reason: st==='לא רלוונטי'?sub:null };
+  if(!window.canEdit('crm.leads')){ const eb=document.getElementById('lb-err'); if(eb) eb.textContent='אין לך הרשאת עריכה ללידים.'; return; }
+  /* ⚠️ אם ה-snapshot אינו של הכרטיס הזה — עוצרים ואומרים, ולא מנחשים דיף.
+     אותה החלטה כמו ב-saveScall: כשל שקט כאן גרוע מהבעיה שה-snapshot פותר. */
+  if(!LEAD_SNAP || LEAD_SNAP.__id !== id){
+    const eb=document.getElementById('lb-err');
+    if(eb) eb.textContent='הכרטיס נטען מחדש — סגרו ופתחו אותו שוב לפני השמירה.';
+    return;
+  }
+  const upd={};
+  LEAD_CARD_FIELDS.forEach(([elId,col])=>{
+    const el=document.getElementById(elId);
+    if(!el || el.disabled) return;
+    const was=LEAD_SNAP[elId];
+    if(was===undefined) return;              /* לא היה בציור — לא נוגעים */
+    const now=String(el.value ?? '');
+    if(now===was) return;                    /* לא נגעו בו */
+    if(col==='__wacat'){ upd.send_whatsapp_catalog = now===''?null:(now==='כן'); return; }
+    upd[col]= now===''?null:now;
+  });
+  /* full_name הוא NOT NULL במסד — עוצרים עם שם השדה, לא עם שגיאת שרת */
+  if(upd.full_name===null){ document.getElementById('lb-err').textContent='חסרים שדות חובה: שם מלא.'; return; }
+  /* סטטוס + תת-סטטוס מחוץ ללולאה: בורר אחד מזין שלוש עמודות, והחלפת
+     סטטוס מנקה את התתי-סטטוסים שאינם שלה (ממצא 22 המקורי נשמר) */
+  const stEl=document.getElementById('lb-status'), subEl=document.getElementById('lb-sub');
+  const stNow= stEl?String(stEl.value ?? ''):'';
+  const subNow= subEl?String(subEl.value ?? ''):'';
+  if(stEl && !stEl.disabled && (stNow!==LEAD_SNAP['lb-status'] || subNow!==LEAD_SNAP['lb-sub'])){
+    upd.status=stNow;
+    upd.sub_status        = stNow==='רלוונטי'    ? (subNow||null) : null;
+    upd.reject_reason     = stNow==='סירוב'      ? (subNow||null) : null;
+    upd.irrelevant_reason = stNow==='לא רלוונטי' ? (subNow||null) : null;
+  }
+  if(!Object.keys(upd).length){ closeCards(); return; }
   const { error } = await sb.schema('crm').from('leads').update(upd).eq('id', id);
-  if(error){ $('#l-err').textContent='השמירה נכשלה — '+error.message; return; }
+  if(error){ document.getElementById('lb-err').textContent='השמירה נכשלה — '+error.message; return; }
   Object.assign(l, upd);
+  /* רענון ה-snapshot אחרי שמירה מוצלחת — שמירה שנייה בלי פתיחה מחדש לא
+     שולחת שוב את מה שכבר נשמר */
+  lbSnapshot(id);
   closeCards(); renderLeads(); renderToday(); renderStats();
+};
+window.lbClaim = async (id)=>{
+  if(!window.canEdit('crm.leads')){ toast('אין לך הרשאת עריכה ללידים'); return; }
+  const l=LEADS.find(x=>x.id===id); if(!l || l.owner_id) return;
+  const { error } = await sb.schema('crm').from('leads').update({ owner_id: lbMe() }).eq('id', id);
+  if(error){ toast('שגיאה: '+error.message); return; }
+  l.owner_id=lbMe(); toast('הליד שויך אליך ✓');
+  openLead(id); renderLeads();
+};
+window.leadTask = (id)=>{
+  const l=LEADS.find(x=>x.id===id); if(!l) return;
+  LB_TASK_LINK={ type:'lead', id };
+  $('#t-name').value=''; $('#t-err').textContent='';
+  $('#t-name').placeholder='משימה על '+(l.full_name||'');
+  $('#t-due').value=todayStr();
+  mountCard('taskModal', ()=>$('#taskModal').classList.remove('hidden'));
+};
+window.leadMeet = (id)=>{
+  const l=LEADS.find(x=>x.id===id); if(!l) return;
+  LB_MEET_LEAD=id;
+  $('#lm-subj').value='פגישה — '+(l.full_name||''); $('#lm-err').textContent='';
+  $('#lm-date').value=todayStr();
+  mountCard('lbMeetModal', ()=>$('#lbMeetModal').classList.remove('hidden'));
+};
+$('#lm-cancel').onclick = ()=> closeCards();
+$('#lm-save').onclick = async ()=>{
+  const id=LB_MEET_LEAD; if(!id) return;
+  const subj=$('#lm-subj').value.trim(), d=$('#lm-date').value;
+  const miss=[!subj?'נושא':null, !d?'תאריך':null].filter(Boolean);
+  if(miss.length){ $('#lm-err').textContent='חסרים שדות חובה: '+miss.join(' · ')+'.'; return; }
+  /* location נשלח מפורשות (גם null): ברירת המחדל במסד היא כתובת המשרד,
+     ופגישת מכירה אצל לקוח עם "קומבה 32 חדרה" שאיש לא בחר היא בדיוק
+     המחלקה של ה-select שנופל לאפשרות הראשונה */
+  const { error } = await sb.schema('crm').from('meetings').insert({
+    subject: subj, meet_date: d,
+    start_time: $('#lm-start').value||null, end_time: $('#lm-end').value||null,
+    meet_type: $('#lm-type').value||null, location: $('#lm-loc').value.trim()||null,
+    status:'מתוכננת', source:'platform', linked_type:'lead', linked_id:id,
+    owner_id: lbMe(), organizer_name: (ME.full_name||ME.email||null), organizer_email: ME.email||null
+  });
+  if(error){ $('#lm-err').textContent='השמירה נכשלה — '+error.message; return; }
+  $('#lbMeetModal').classList.add('hidden'); LB_MEET_LEAD=null;
+  await loadLeads(); openLead(id);
 };
 
 window.convertLead = async (id)=>{

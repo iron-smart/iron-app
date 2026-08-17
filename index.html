@@ -979,6 +979,11 @@
   .tg-now{ position:absolute; inset-inline:0; height:2px; background:#dc2626; z-index:2; }
   .tg-ev{ position:absolute; }
   .tg-ev .ev{ height:100%; margin:0; overflow:hidden; box-sizing:border-box; }
+/* "יום מלא" נפרס על כל הרצועה, ולכן הוא נראה כמו שיבוץ 08:00–17:00.
+   הטקסט "יום מלא" בשורת השעה הוא הסימן הראשי; הפס האלכסוני הוא השני,
+   ומבדיל בין תפיסת יום לבין שיבוץ תשע שעות אמיתי. (רומן, 17/08/2026) */
+.tg-ev.tg-full .ev{ background:repeating-linear-gradient(135deg,#f7f9fb 0 9px,#eef2f7 9px 18px); }
+.tg-ev.tg-full .ev .ev-time{ background:#e0e7ff; color:#3730a3; border-radius:5px; padding:1px 6px; }
   .ev.ev-c{ font-size:11.5px; padding:5px 7px; line-height:1.35; }
   .ev.ev-c .t{ font-size:12px; }
   .ev.ev-c .s{ font-size:10.5px; }
@@ -1700,7 +1705,7 @@
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.89.0</div>
+      <div class="ver">גרסה 6.90.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1819,7 +1824,7 @@
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.89.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.90.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -4656,18 +4661,31 @@ function evSpan(e){
      שייך לרצועת "ללא שעה" ולא לרשת השעות. */
   if(e.kind==='eta') return null;
   const s=String(e.o.time_slot||'').trim();
-  if(!s || s==='יום מלא') return null;
+  /* שיבוץ בלי שעה כלל אינו תופס יום עבודה, ולכן נשאר ברצועה העליונה. */
+  if(!s) return null;
+  /* 6.90.0 — "יום מלא" נפרס על כל רצועת העבודה במקום לשבת כשבב של 52px
+     מעל הרשת (רומן, 17/08/2026). עד כאן לקוח שתפוס יום שלם הצטייר קטן
+     יותר מלקוח שתפוס שלוש שעות. `full` מסמן שזו פריסה ולא שיבוץ
+     08:00–17:00 אמיתי, וזה מה שמבדיל אותם בציור וב-CSS. */
+  if(s==='יום מלא') return {s:CAL_H0*60, e:CAL_H1*60, full:true};
   const m=s.match(/(\d{1,2}):(\d{2})\s*[-–—]\s*(\d{1,2}):(\d{2})/);
   if(m){ let a=(+m[1])*60+(+m[2]), b=(+m[3])*60+(+m[4]); if(b<=a) b=a+60; return {s:a,e:b}; }
   const one=s.match(/(\d{1,2}):(\d{2})/);
   if(one){ const a=(+one[1])*60+(+one[2]); return {s:a,e:a+60}; }
   return null;
 }
-const evSortKey=e=>{ if(e.kind==='eta') return 9999; const sp=evSpan(e); if(sp) return sp.s;
-  return String(e.o.time_slot||'').trim()==='יום מלא' ? -2 : -1; };
+const evSortKey=e=>{ if(e.kind==='eta') return 9999;
+  if(String(e.o.time_slot||'').trim()==='יום מלא') return -2;
+  const sp=evSpan(e); if(sp) return sp.s;
+  return -1; };
 function layoutDay(evs){
   const timed=evs.filter(e=>evSpan(e)).slice(), allday=evs.filter(e=>!evSpan(e));
-  timed.sort((a,b)=>{const x=evSpan(a),y=evSpan(b);return x.s-y.s||x.e-y.e;});
+  /* היום המלא נערם אחרון ולכן מקבל תמיד את העמודה האחרונה. בלי זה
+     העמודה שלו הייתה תלויה בשאלה אם קיים שיבוץ שמתחיל ב-08:00 בדיוק
+     (שם ההשוואה על e מקדימה אותו), והבלוק היה קופץ מצד לצד בין יום
+     ליום — אותו לוח, פריסה לא יציבה. */
+  timed.sort((a,b)=>{const x=evSpan(a),y=evSpan(b);
+    return (x.full?1:0)-(y.full?1:0) || x.s-y.s || x.e-y.e;});
   const ends=[], place=[];
   for(const e of timed){
     const sp=evSpan(e);
@@ -4715,7 +4733,7 @@ function tgDay(ds, evs, compact, adH, adCap){
       ${CAL_HOURS.slice(0,-1).map((h,i)=>`<div class="tg-line half" style="top:${i*CAL_PX+CAL_PX/2}px"></div>`).join('')}
       ${tgNowLine(ds)}
       ${place.map(p=>{ const t=tgTop(p.sp.s), b=tgTop(p.sp.e);
-        return `<div class="tg-ev" style="top:${t}px;height:${Math.max(34,b-t-3)}px;inset-inline-start:calc(${p.ci*100/n}% + 1px);width:calc(${100/n}% - 4px)">${evCard(p.e,compact)}</div>`;}).join('')}
+        return `<div class="tg-ev${p.sp.full?' tg-full':''}" style="top:${t}px;height:${Math.max(34,b-t-3)}px;inset-inline-start:calc(${p.ci*100/n}% + 1px);width:calc(${100/n}% - 4px)">${evCard(p.e,compact)}</div>`;}).join('')}
     </div>`;
 }
 function tgGutter(adH){
@@ -7771,7 +7789,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'cockpit-2026-08-16a';
+const BUILD_ID = 'fulldayspan-2026-08-17a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====

@@ -1765,6 +1765,23 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
   #leads-list .tbl > tbody > tr:not(.lb-grp):not(.lb-grpfoot) > td:nth-child(3){ position:static }
 }
 .lb-dt{ font-size:11.5px; padding:3px 5px; border:1px solid var(--line); border-radius:7px; font-family:inherit; background:#fff; }
+/* ---- בורר הבעלים בכרטיס (6.98.0) ----
+   רומן ביקש תמונות. האווטארים הם data-URL בבלוק #lb-ava-css (ראו lbAvaCss),
+   ולכן .lbo-b יורש את אותה מחלקת .lb-ava ומקבל את התמונה מאותו כלל. */
+.lbo-wrap{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.lbo-b{ background:none; border:0; padding:2px; cursor:pointer; border-radius:50%; line-height:0; }
+.lbo-b .lb-ava{ width:38px; height:38px; font-size:13px; }
+.lbo-b.on .lb-ava{ outline:3px solid var(--navy); outline-offset:1px; }
+.lbo-b:disabled{ cursor:default; opacity:.55; }
+.lbo-none .lb-ava{ font-size:16px; }
+/* ---- יומן העדכונים ---- */
+.lbu-add{ display:flex; gap:8px; align-items:flex-start; }
+.lbu-add textarea{ flex:1; }
+.lbu-list{ margin-top:10px; }
+.lbu-row{ display:flex; gap:10px; padding:7px 0; border-bottom:1px solid #f1f5f9; align-items:baseline; }
+.lbu-who{ font-weight:800; font-size:12.5px; color:#0f172a; white-space:nowrap; }
+.lbu-when{ font-size:11.5px; color:#94a3b8; white-space:nowrap; }
+.lbu-body{ font-size:13px; color:#334155; white-space:pre-wrap; overflow-wrap:anywhere; flex:1; }
 .lb-ovb{ display:inline-block; background:#fde8e6; color:#c0392b; border:1px solid #f5c6c1; border-radius:6px; font-size:10.5px; font-weight:800; padding:1px 6px; margin-inline-end:5px; vertical-align:middle; }
 .lb-links{ padding:8px 2px; font-size:13px; }
 .lb-own{ display:flex; align-items:center; min-height:34px; }
@@ -1796,7 +1813,7 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.97.0</div>
+      <div class="ver">גרסה 6.98.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1923,7 +1940,7 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.97.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.98.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2218,7 +2235,7 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
 
 <!-- מודל כרטיס ליד -->
 <div class="modal hidden" id="leadModal">
-  <div class="sheet" id="leadSheet"></div>
+  <div class="sheet wide" id="leadSheet"></div>
 </div>
 
 <!-- מודל פגישה חדשה מכרטיס ליד (6.93.0) -->
@@ -8026,7 +8043,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'leadstable-2026-08-18a';
+const BUILD_ID = 'leadcard-2026-08-18a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -12943,6 +12960,10 @@ async function loadLeads(){
        למשתמש רגיל את הפרופיל שלו בלבד (ראו lownApply). שגיאה כאן אינה
        מפילה את הטעינה: הבורד ייפול חזרה לראשי תיבות ריקים. */
     sb.schema('crm').rpc('lead_owner_dir'),
+    /* שורות הבעלות הראשיות. **לא מיותר מול leads.owner_id**: המראה מחזיקה
+       profile_id בלבד, ולעובד לשעבר אין חשבון — 694 לידים היו מוצגים
+       כחסרי בעלים. RLS: can_view('crm.leads'). */
+    sb.schema('crm').from('lead_owners').select('lead_id,profile_id,legacy_owner').eq('is_primary',true).limit(10000),
     /* תמצית מצב הסנכרון — זמינה לכל אנשי הצוות. היומן המלא נשאר
        לאדמיניסטרטור בלבד (הגדרות ← יומן סנכרון). */
     sb.schema('ord').rpc('sync_status'),
@@ -12962,6 +12983,7 @@ async function loadLeads(){
   if(_bad.length){ _bad.forEach(b=>console.error('טעינת נתונים נכשלה —', b.n, b.e)); loadErrBanner(_bad.map(b=>b.n)); }
   else loadErrBanner(null);
   try{ lownApply((_q[13]||{}).data); }catch(_e){ console.error('lead_owner_dir',_e); }
+  try{ lownOfApply((_q[14]||{}).data); }catch(_e){ console.error('lead_owners',_e); }
   LEADS = l.data||[]; CUSTS = c.data||[]; TASKS = t.data||[]; DEALS = d.data||[]; MEETS = m.data||[]; CONTS = k.data||[]; PAYS = p.data||[];
   ORDS = o.data||[]; SCALLS = sc.data||[]; OTEAMS = tm.data||[]; SKUS = sk.data||[]; PROTS = pr.data||[]; OSET = st.data||[];
   /* 6.81.0 — אתרי הלקוח נטענים **מחוץ** למערך _q במכוון: הוא מפורק לפי
@@ -13019,6 +13041,16 @@ function lownApply(rows){
   lbAvaCss();
 }
 const lbInit = u => String(u||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('');
+/* מפתח הבעלים לכל ליד — מקור אחד לטבלה, למיון, לסינון ולכרטיס.
+   ⚠️ **אל תקרא l.owner_id ישירות בשום צרכן.** הוא מראה חלקית: היא מחזיקה
+   profile_id בלבד, ובעלים שהוא עובד לשעבר יושב ב-legacy_owner ולכן נראה
+   שם כ-NULL. יש assert בבנייה שסופר את הצרכנים. */
+let LOWN_OF = {};
+function lownOfApply(rows){
+  LOWN_OF = {};
+  for(const r of (rows||[])) LOWN_OF[r.lead_id] = r.profile_id || (r.legacy_owner ? 'legacy:'+r.legacy_owner : null);
+}
+const lbOwnerOf = l => (l && (LOWN_OF[l.id] || l.owner_id)) || '';
 /* ⚠️ avatar_url הוא **data-URL** של 11–27KB (pfShrink כותב canvas.toDataURL),
    ולא כתובת. שתי מסקנות מחייבות:
    1. safeUrl חוסם data: — אסור לנתב אותו דרכה, היא תחזיר ריק.
@@ -15675,10 +15707,10 @@ window.saveOrd = async (id)=>{
 
 /* ===== ציר פעילות (לכרטיסי ליד/עסקה) ===== */
 async function activityHtml(linkedType, id){
-  const { data } = await sb.schema('crm').from('activities').select('at,kind,body').eq('linked_type',linkedType).eq('linked_id',id).order('at',{ascending:false}).limit(30);
+  const { data } = await sb.schema('crm').from('activities').select('at,kind,body,actor_id').eq('linked_type',linkedType).eq('linked_id',id).order('at',{ascending:false}).limit(200);
   if(!data || !data.length) return '';
   return `<h2 class="sec">ציר פעילות</h2>` + data.map(a=>
-    `<div class="row"><span class="k" style="font-size:12px;white-space:nowrap">${new Date(a.at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span><span class="v" style="font-weight:400;font-size:13px">${esc(a.body||a.kind)}</span></div>`).join('');
+    `<div class="row"><span class="k" style="font-size:12px;white-space:nowrap">${new Date(a.at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}${a.actor_id&&LOWN_BY[a.actor_id]?' · '+esc(LOWN_BY[a.actor_id].name):''}</span><span class="v" style="font-weight:400;font-size:13px">${esc(a.body||a.kind)}</span></div>`).join('');
 }
 
 /* ===== עסקאות ===== */
@@ -16128,7 +16160,7 @@ function lbRow(l, i, nt, nm, ntid){
       <td><b>${esc(l.full_name)}</b></td>
       <td>${cust}</td>
       <td>${esc(l.company||'')||'<span class="lb-na">·</span>'}</td>
-      <td>${lbAva(l.owner_id)}</td>
+      <td>${lbAva(lbOwnerOf(l))}</td>
       <td dir="ltr">${esc(l.phone||'')}</td>
       <td dir="ltr" class="note-preview" title="${esc(l.email||'')}">${esc(l.email||'')}</td>
       <td data-sort="${esc(t||'')}"${tOver?' class="lb-ov"':''}>${dueCell}</td>
@@ -16169,7 +16201,7 @@ function lbSort(nt){
 let LB_SORT = [null, 1];
 const LB_KEY = {
   1:l=>l.full_name||'', 2:l=>{const m=lbMatch(l); return m?(m.amb?'~':(m.name||'')):'';},
-  3:l=>l.company||'',   4:l=>((LOWN_BY[l.owner_id]||{}).name)||'',
+  3:l=>l.company||'',   4:l=>((LOWN_BY[lbOwnerOf(l)]||{}).name)||'',
   8:l=>l.source||'',    9:l=>String(LEAD_STATUSES.indexOf(l.status)),
   13:l=>l.customer_type||''
 };
@@ -16240,9 +16272,12 @@ $('#a-save').onclick = async ()=>{
   if(!full_name||!phone){ $('#a-err').textContent='שם וטלפון חובה'; return; }
   const { error } = await sb.schema('crm').from('leads').insert({
     full_name, phone, source:$('#a-source').value, customer_type:$('#a-type').value,
-    status:'ליד חדש', owner_id: ME.id
-  });
+    status:'ליד חדש'
+  }).select('id').maybeSingle();
   if(error){ $('#a-err').textContent='שגיאה בשמירה'; console.error(error); return; }
+  /* הבעלות **אחרי** ההכנסה ודרך ה-RPC: owner_id הוא מראה של crm.lead_owners,
+     והכנסה ישירה יצרה ליד שנראה משויך אך אין לו שורת בעלות (נמדד: 2 כאלה). */
+  try{ if(data && data.id) await sb.schema('crm').rpc('lead_set_owner',{ p_lead:data.id, p_owner:ME.id }); }catch(_e){ console.error('lead_set_owner',_e); }
   $('#addModal').classList.add('hidden'); await loadLeads();
 };
 
@@ -16255,7 +16290,7 @@ const LEAD_CARD_FIELDS = [
   ['lb-name','full_name'], ['lb-phone','phone'], ['lb-email','email'],
   ['lb-company','company'], ['lb-position','position'], ['lb-city','city'],
   ['lb-addr','address'], ['lb-ctype','customer_type'], ['lb-source','source'],
-  ['lb-tsum','task_summary'], ['lb-notes','notes'], ['lb-wacat','__wacat']
+  ['lb-notes','notes'], ['lb-wacat','__wacat']
 ];
 let LEAD_SNAP = null, LB_TASK_LINK = null, LB_MEET_LEAD = null;
 /* תת-הסטטוס: עמודה אחת לכל סטטוס-אב. בורר יחיד בכרטיס מצייר את הרשימה של
@@ -16294,8 +16329,6 @@ window.openLead = (id)=>{
   const utm=[l.utm_campaign,l.utm_source,l.utm_medium,l.utm_term].filter(Boolean).join(' · ');
   const cust=l.customer_id?(CUSTS||[]).find(x=>x.id===l.customer_id):null;
   const meId=lbMe();
-  const ownHtml = l.owner_id ? (l.owner_id===meId?'<span class="pill lb-mine">שלי</span>':'<span class="pill st-def">משויך למשתמש אחר</span>')
-                             : (editable?`<button type="button" class="chip" onclick="lbClaim('${l.id}')">קבל בעלות</button>`:'—');
   const myTasks=(TASKS||[]).filter(t=>t.linked_type==='lead'&&t.linked_id===id&&t.status!=='הושלם').sort((a,b)=>(a.due_at||'').localeCompare(b.due_at||''));
   const myMeets=(MEETS||[]).filter(m=>m.linked_type==='lead'&&m.linked_id===id&&m.status!=='בוטלה').sort((a,b)=>(b.meet_date||'').localeCompare(a.meet_date||''));
   $('#leadSheet').innerHTML = `
@@ -16312,6 +16345,9 @@ window.openLead = (id)=>{
       ${l.priority_customer_id?`<div><label>לקוח בפריוריטי</label>${roIn(l.priority_customer_id,{ltr:1})}</div>`:''}
       ${cust?`<div class="span2"><label>לקוח מקושר</label><div class="lb-links"><a href="#" onclick="event.preventDefault();openCust('${cust.id}')">${esc(cust.name)} ↗</a></div></div>`:''}
 
+      <div class="form-sep">הערות ליד</div>
+      <div class="span4"><label>מה השאיר הליד בטופס או בשיחה <span class="note" style="font-weight:400">(נשמר עם הכרטיס)</span></label><textarea id="lb-notes" rows="3" placeholder="הערות שהגיעו מהקמפיין, או רקע שאספתם בשיחה">${esc(l.notes||'')}</textarea></div>
+
       <div class="form-sep">שדות למילוי</div>
       <div><label>שם מלא <span class="note">(חובה)</span></label><input id="lb-name" value="${esc(l.full_name||'')}"></div>
       <div><label>טלפון ${phBtns(l.phone)}</label><input id="lb-phone" value="${esc(l.phone||'')}" dir="ltr"></div>
@@ -16323,13 +16359,18 @@ window.openLead = (id)=>{
       <div><label>סוג לקוח</label>${selHtml('lb-ctype',LEAD_TYPES,l.customer_type,true)}</div>
       <div><label>מקור הגעה</label>${selHtml('lb-source',LEAD_SOURCES,l.source,true)}</div>
       <div><label>לשלוח קטלוג בוואטסאפ?</label>${selHtml('lb-wacat',['כן','לא'],l.send_whatsapp_catalog===true?'כן':(l.send_whatsapp_catalog===false?'לא':null),true)}</div>
-      <div><label>בעלים</label><div class="lb-own">${ownHtml}</div></div>
+
+      <div class="form-sep">סטטוס ובעלות</div>
       <div><label>סטטוס</label>${selHtml('lb-status',LEAD_STATUSES,l.status,false,'leadSubUI()')}</div>
       <div id="lb-subbox" data-lead="${l.id}"></div>
-      <div class="span4"><label>תקציר משימה</label><textarea id="lb-tsum" rows="2" placeholder="הערת סטטוס קצרה לעבודה השוטפת">${esc(l.task_summary||'')}</textarea></div>
+      <div class="span2"><label>בעלים ליד</label>${lbOwnerBox(l, editable)}</div>
 
-      <div class="form-sep">הערות</div>
-      <div class="span4"><textarea id="lb-notes" rows="3" placeholder="הערות פנימיות על הליד">${esc(l.notes||'')}</textarea></div>
+      <div class="form-sep">עדכונים</div>
+      <div class="span4">
+        <div class="note" style="margin-bottom:6px">כל עדכון נשמר בשם הכותב ובשעת הכתיבה, ואינו ניתן לעריכה או למחיקה.</div>
+        ${editable?`<div class="lbu-add"><textarea id="lb-upd" rows="2" placeholder="מה קרה עם הליד הזה?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${l.id}')">הוספה</button></div>`:''}
+        <div class="lbu-list" id="lb-updlist"><div class="note">טוען…</div></div>
+      </div>
     </div>
     <div class="modal-actions">
       ${editable?`<button class="btn btnw" onclick="saveLead('${l.id}')">💾 שמירה</button>`:'<div class="note">אין לך הרשאת עריכה ללידים.</div>'}
@@ -16354,6 +16395,7 @@ window.openLead = (id)=>{
   mountCard('leadModal', ()=>openLead(id));
   try{ window.markEmpty('leadModal'); }catch(_e){}
   if(!editable) document.querySelectorAll('#leadSheet input,#leadSheet select,#leadSheet textarea').forEach(el=>el.disabled=true);
+  lbLoadUpdates(id);
   activityHtml('lead', id).then(h=>{ const el=$('#lead-acts'); if(el) el.innerHTML=h; });
 };
 window.saveLead = async (id)=>{
@@ -16402,10 +16444,10 @@ window.saveLead = async (id)=>{
 window.lbClaim = async (id)=>{
   if(!window.canEdit('crm.leads')){ toast('אין לך הרשאת עריכה ללידים'); return; }
   const l=LEADS.find(x=>x.id===id); if(!l || l.owner_id) return;
-  const { error } = await sb.schema('crm').from('leads').update({ owner_id: lbMe() }).eq('id', id);
-  if(error){ toast('שגיאה: '+error.message); return; }
-  l.owner_id=lbMe(); toast('הליד שויך אליך ✓');
-  openLead(id); renderLeads();
+  /* 🔴 עובר דרך ה-RPC ולא דרך update על crm.leads: owner_id הוא מראה
+     שמתוחזקת בטריגר, וכתיבה ישירה אליה נדרסת בעדכון הבא של lead_owners.
+     ה-RPC גם רושם שורת יומן, כך שגם לקיחה עצמית מתועדת. */
+  await window.lbSetOwner(id, lbMe());
 };
 /* ===== סרגל הסינון של הלידים (6.97.0) =====
    רומן: "תוסיף אפשרויות סינון במסך ותעשה שמירת סינון ברירה מחדל".
@@ -16437,7 +16479,8 @@ function lbInitDef(){
 }
 function lbApplyF(list){
   return list.filter(l=>{
-    if(LB_F.owner && (LB_F.owner==='__none__' ? !!l.owner_id : l.owner_id!==LB_F.owner)) return false;
+    const _ow = lbOwnerOf(l);
+    if(LB_F.owner && (LB_F.owner==='__none__' ? !!_ow : _ow!==LB_F.owner)) return false;
     if(LB_F.source && l.source!==LB_F.source) return false;
     if(LB_F.ctype  && l.customer_type!==LB_F.ctype) return false;
     if(LB_F.match==='cust' && !lbMatch(l)) return false;
@@ -16454,7 +16497,7 @@ function renderLbFilters(){
   const sel=(k,ph,pairs)=>`<select class="lf-sel ${LB_F[k]?'lf-on':''}" onchange="lbFilter('${k}',this.value)"><option value="">${ph}</option>${pairs.map(([v,l])=>opt(v,l,LB_F[k])).join('')}</select>`;
   /* בעלים שאינו assignable מוצג רק אם יש לו לידים בפועל — אחרת הרשימה
      מתמלאת בעובדים לשעבר ובמי שאינו במכירות כלל. */
-  const has = new Set(LEADS.map(l=>l.owner_id).filter(Boolean));
+  const has = new Set(LEADS.map(lbOwnerOf).filter(Boolean));
   const owners = LOWN.filter(o=>o.assignable || has.has(o.owner_key))
                      .map(o=>[o.owner_key, o.name + (o.kind==='legacy'?' (לשעבר)':'')]);
   box.innerHTML =
@@ -16465,6 +16508,67 @@ function renderLbFilters(){
     (lbFilterActive()?`<button type="button" class="lf-clear" onclick="lbFilterClear()">✕ ניקוי סינון</button>`:'')+
     `<button type="button" class="lf-save" onclick="lbDefSave()" title="שמירת התצוגה והסינון הנוכחיים כברירת מחדל בדפדפן זה">★ שמור כברירת מחדל</button>`+
     (lbDefExists()?`<button type="button" class="lf-clear" onclick="lbDefClear()">↺ אפס ברירת מחדל</button>`:'');
+}
+/* ===== בורר הבעלים ויומן העדכונים בכרטיס (6.98.0) =====
+   🔴 **אסור לכתוב ל-crm.leads.owner_id.** הוא מראה שמתוחזקת בטריגר
+   zz_sync_lead_primary_owner, ומקור האמת הוא crm.lead_owners עם אינדקס
+   ייחודי חלקי לבעלים ראשי. crm.lead_set_owner עושה את שתי הפעולות
+   בטרנזקציה אחת וגם רושמת שורת יומן. יש assert בבנייה שאוכף זאת. */
+function lbOwnerBox(l, editable){
+  const pick = LOWN.filter(o=>o.assignable);
+  const cur  = lbOwnerOf(l);
+  /* בעלים שאינו ברשימה (עובד לשעבר) מוצג כתווית ולא כאפשרות — אחרת
+     "העברה חזרה" הייתה נראית אפשרית ונדחית ב-22023 מהשרת. */
+  const orphan = cur && !pick.some(o=>o.owner_key===cur) ? LOWN_BY[cur] : null;
+  const btn = (key,label)=>`<button type="button" class="lbo-b ${cur===key?'on':''}${key?'':' lbo-none'}"
+      ${editable?`onclick="lbSetOwner('${l.id}',${key?`'${key}'`:'null'})"`:'disabled'}
+      title="${esc(label)}">${key?lbAva(key):'<span class="lb-ava lb-ava-none">–</span>'}</button>`;
+  return `<div class="lbo-wrap">
+      ${btn('','ללא בעלים')}
+      ${pick.map(o=>btn(o.owner_key,o.name)).join('')}
+      ${orphan?`<span class="pill st-def" title="עובד לשעבר — לא ניתן להקצות אליו מחדש">${esc(orphan.name)} (לשעבר)</span>`:''}
+    </div>`;
+}
+window.lbSetOwner = async (leadId, ownerKey)=>{
+  const { error } = await sb.schema('crm').rpc('lead_set_owner', { p_lead: leadId, p_owner: ownerKey || null });
+  if(error){ toast('העברת הבעלות נכשלה — '+error.message); return; }
+  /* המראה owner_id מתעדכנת בטריגר בשרת; בזיכרון מעדכנים אותה ידנית כדי
+     שהטבלה והכרטיס לא יציגו את המצב הישן עד רענון דף (הכלל מ-6.83.1). */
+  /* שתי הצורות מתעדכנות יחד: LOWN_OF הוא מה שכל הצרכנים קוראים, ו-owner_id
+     הוא המראה שמסלולים ותיקים עדיין נוגעים בה. פיצול ביניהן היה מחזיר את
+     מחלקת "שני מטמונים לאותו נתון" (6.85.2). */
+  LOWN_OF[leadId] = ownerKey || null;
+  const l = LEADS.find(x=>x.id===leadId); if(l) l.owner_id = (ownerKey && ownerKey.indexOf('legacy:')!==0) ? ownerKey : null;
+  toast('הבעלות עודכנה ✓');
+  openLead(leadId); renderLeads();
+};
+/* יומן העדכונים — הוספה בלבד.
+   ⚠️ actor_id נשלח מהלקוח **אבל אינו נסמך עליו**: policy רסטריקטיבית
+   (activities_actor_is_self) דוחה ב-42501 כל שורה שבה actor_id אינו
+   auth.uid(). בלי זה "החותמת" הייתה ניתנת לזיוף בידי כל מי שיש לו
+   can_edit('crm'), וחותמת שניתן לזייף אינה חותמת. */
+window.lbAddUpdate = async (leadId)=>{
+  const el = document.getElementById('lb-upd'); if(!el) return;
+  const body = (el.value||'').trim();
+  if(!body){ toast('אין מה להוסיף'); return; }
+  const { error } = await sb.schema('crm').from('activities').insert({
+    actor_id: ME.id, linked_type:'lead', linked_id: leadId, kind:'עדכון', body: body });
+  if(error){ toast('שמירת העדכון נכשלה — '+error.message); return; }
+  el.value=''; toast('העדכון נשמר ✓');
+  lbLoadUpdates(leadId);
+};
+async function lbLoadUpdates(leadId){
+  const box = document.getElementById('lb-updlist'); if(!box) return;
+  const { data, error } = await sb.schema('crm').from('activities')
+    .select('at,body,actor_id,kind').eq('linked_type','lead').eq('linked_id',leadId)
+    .eq('kind','עדכון').order('at',{ascending:false}).limit(200);
+  if(error){ box.innerHTML='<div class="note">טעינת העדכונים נכשלה.</div>'; return; }
+  if(!data || !data.length){ box.innerHTML='<div class="note">אין עדכונים עדיין.</div>'; return; }
+  box.innerHTML = data.map(a=>{
+    const who = (a.actor_id && LOWN_BY[a.actor_id]) ? LOWN_BY[a.actor_id].name : 'משתמש שאינו ברשימה';
+    const when = new Date(a.at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+    return `<div class="lbu-row"><span class="lbu-who">${esc(who)}</span><span class="lbu-when">${esc(when)}</span><span class="lbu-body">${esc(a.body||'')}</span></div>`;
+  }).join('');
 }
 window.leadTask = (id)=>{
   const l=LEADS.find(x=>x.id===id); if(!l) return;

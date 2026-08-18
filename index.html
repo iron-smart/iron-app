@@ -705,18 +705,27 @@
   .dash-hd{ display:none }
   .dash-badge{ display:none }
   .dash-bd{ padding-top:0 }
-  .db-block{ margin-top:10px; background:#fff; border:1px solid #e6eaf0; border-radius:12px; padding:8px 12px 10px }
+  .db-block{ margin-top:14px; background:#fff; border:1px solid #dbe3ec; border-radius:12px; padding:10px 12px 12px }
+  /* 6.95.0 — קו תחת הכותרת, כדי שכל בלוק ייקרא כיחידה נפרדת ולא כרצף
+     (רומן, 18/08/2026: "הפרדה ברורה יותר"). ספציפיות (0,2,0) — זהה
+     לכלל `.db-block h3` שמוגדר אחריו, ולכן הוא **חייב** לשבת אחריו
+     בגיליון; בפרויקט הזה בספציפיות זהה המאוחר מנצח. */
   /* הקוקפיט — גריד אריחים אחיד אחד לכל המספרים */
   #db-kpis{ margin-bottom:4px }
   #db-kpis .stats{ margin:0 }
   .k-sub{ font-size:10px; color:#64748b; line-height:1.3; margin-top:1px }
   .k-sub.red{ color:#dc2626; font-weight:800 }
-  .db-block h3{ font-size:12px; font-weight:800; color:#475569; margin:6px 0 4px; display:flex; align-items:center; gap:6px }
+  .db-block h3{ font-size:12px; font-weight:800; color:#475569; margin:2px 0 8px; padding-bottom:6px;
+    border-bottom:1px solid #eef2f7; display:flex; align-items:center; gap:6px }
   /* אריחים דחוסים — auto-fill במקום 4 עמודות; פס-מבטא צבעוני בצד */
-  #dash-secs .stats{ display:grid; grid-template-columns:repeat(auto-fill,minmax(112px,1fr)); gap:7px; margin:0 0 5px }
-  #dash-secs .stat{ padding:7px 9px; border-radius:10px; border:1px solid #e8edf3; background:#fbfcfe; box-shadow:none; min-width:0 }
-  #dash-secs .stat .n{ font-size:19px; line-height:1.15 }
-  #dash-secs .stat .l{ font-size:10.5px; color:#64748b; line-height:1.3 }
+  /* 6.95.0 — הגרסה הקומפקטית חלה גם על רצועת הקוקפיט. `#db-kpis` הוא
+     **אח** של `#dash-secs` ולא צאצא, ולכן עד כאן הוא נפל לבסיס
+     padding:18px / font-size:32px והמסך "התפרס" (רומן, 18/08/2026).
+     ⚠️ לא נוגעים בבסיס `.stat` — הוא משמש גם את מסך המלאי. */
+  #dash-secs .stats, #db-kpis .stats{ display:grid; grid-template-columns:repeat(auto-fill,minmax(112px,1fr)); gap:7px; margin:0 0 5px }
+  #dash-secs .stat, #db-kpis .stat{ padding:7px 9px; border-radius:10px; border:1px solid #e8edf3; background:#fbfcfe; box-shadow:none; min-width:0 }
+  #dash-secs .stat .n, #db-kpis .stat .n{ font-size:19px; line-height:1.15 }
+  #dash-secs .stat .l, #db-kpis .stat .l{ font-size:10.5px; color:#64748b; line-height:1.3 }
   #dash-secs .stat.good{ border-inline-start:3px solid #16a34a }
   #dash-secs .stat.warn{ border-inline-start:3px solid #d97706 }
   #dash-secs .stat.bad{ border-inline-start:3px solid #dc2626 }
@@ -1739,7 +1748,7 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.94.0</div>
+      <div class="ver">גרסה 6.95.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1866,7 +1875,7 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.94.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.95.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3513,17 +3522,21 @@ function renderOps(){
   const mx=Math.max(1,...Object.values(byTeam));
   const upcoming=[...act,...fupAct].filter(o=>o.scheduled_date&&o.scheduled_date>=today).sort((a,b)=>a.scheduled_date.localeCompare(b.scheduled_date)).slice(0,8);
   el.innerHTML=`
-    <h2 class="sec">🧑‍🔧 עומס צוותים — הזמנות פעילות</h2>
+    <div class="db-block">
+    <h3>עומס צוותים — הזמנות פעילות</h3>
     <div class="tbl-wrap" style="padding:8px 10px">${Object.entries(byTeam).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;font-size:13.5px${t==='לא משויך'?'':';cursor:pointer'}" ${t==='לא משויך'?'':`onclick="gotoLogiPreset({scope:'all',f:{team:'${esc(t)}'}})"`}>
         <span style="width:110px;flex:none">${esc(t)}</span>
         <div style="flex:1;background:#f1f5f9;border-radius:20px;height:14px;overflow:hidden"><div style="width:${Math.round(n/mx*100)}%;height:100%;background:${t==='לא משויך'?'#c0392b':teamColor(t)}"></div></div>
         <b style="width:34px;text-align:center">${n}</b>
       </div>`).join('')}</div>
-    <h2 class="sec">📅 השיבוצים הקרובים</h2>
+    </div>
+    <div class="db-block">
+    <h3>השיבוצים הקרובים</h3>
     ${upcoming.map(o=>`<div class="lead" onclick="openOrd('${o.id}')">
       <div><div class="nm">${esc(o.customer_name||'')}</div><div class="meta">${fmtD(o.scheduled_date)}${o.time_slot?' · '+esc(o.time_slot):''}${o.city?' · '+esc(o.city):''}${o.team?' · '+esc(o.team):''}</div></div>
-      ${o.__fup?`<span class="pill" style="background:#fae8ff;color:#86198f">🔧 השלמה</span>`:`<span class="pill ${ordStClass(o.order_status)}">${esc(o.order_status)}</span>`}</div>`).join('')||'<div class="empty">אין שיבוצים קרובים</div>'}`;
+      ${o.__fup?`<span class="pill" style="background:#fae8ff;color:#86198f">השלמה</span>`:`<span class="pill ${ordStClass(o.order_status)}">${esc(o.order_status)}</span>`}</div>`).join('')||'<div class="empty">אין שיבוצים קרובים</div>'}
+    </div>`;
 }
 /* ── "שיבוץ מחר: לא מולא" (B1a) ──────────────────────────────────────────
    האריח שמייצר את ההרגל שבלוק "היום שלי" של הטכנאים (שלב D) תלוי בו:
@@ -3531,22 +3544,34 @@ function renderOps(){
 let _b1aAt = 0, _b1aN = null, _b1aDay = '';
 async function b1aRefresh(){
   const el = document.getElementById('b1a-n'); if(!el) return;
-  const d = new Date(); d.setDate(d.getDate() + (d.getDay()===5 ? 2 : 1));
-  const ds = isoD(d);
-  if(_b1aDay !== ds || Date.now() - _b1aAt > 300000){
-    _b1aDay = ds; _b1aAt = Date.now();
+  /* 6.95.0 — מיום בודד לשבוע: כמה ימי עבודה בטווח [היום … היום+7]
+     אין בהם אף שיבוץ (רומן, 18/08/2026: "להציג במידה ויש ימים שלא
+     שובצו"). נמדד שהלוח ריק מ-12/08 — יום בודד לא היה מראה את זה. */
+  const from = isoD(new Date()), to = addDaysIso(from, 7);
+  if(_b1aDay !== from || Date.now() - _b1aAt > 300000){
+    _b1aDay = from; _b1aAt = Date.now();
     try{
-      const r = await sb.schema('ord').from('team_days').select('id',{count:'exact',head:true}).eq('work_date', ds);
-      _b1aN = (r && typeof r.count==='number') ? r.count : null;
+      const r = await sb.schema('ord').from('team_days').select('work_date')
+                  .gte('work_date', from).lte('work_date', to);
+      if(r && r.data){
+        const has = new Set(r.data.map(x=>String(x.work_date)));
+        let miss = 0;
+        for(let d2=from; d2<=to; d2=addDaysIso(d2,1)){
+          if(dowOf(d2)===CAL_SATURDAY) continue;   /* שבת אינה יום עבודה */
+          if(!has.has(d2)) miss++;
+        }
+        _b1aN = miss;
+      } else _b1aN = null;
     }catch(_e){ _b1aN = null; }
   }
   const box = document.getElementById('b1a-tile');
   const el2 = document.getElementById('b1a-n'); if(!el2) return;
   if(_b1aN == null){ el2.textContent = '·'; return; }
-  el2.textContent = _b1aN>0 ? '✓' : '!';
-  el2.style.color = _b1aN>0 ? '#16a34a' : '#c0392b';
-  if(box){ box.title = _b1aN>0 ? 'השיבוץ היומי למחר מולא ('+_b1aN+' שיבוצים)'
-                               : 'השיבוץ היומי למחר טרם מולא — 👷 שיבוץ יומי בלוח השנה';
+  /* המספר עצמו הוא החיווי — גם בלי סמל וגם אומר יותר מ-✓/!. */
+  el2.textContent = String(_b1aN);
+  el2.style.color = _b1aN>0 ? '#c0392b' : '#16a34a';
+  if(box){ box.title = _b1aN>0 ? _b1aN+' ימי עבודה בשבוע הקרוב טרם שובצו — שיבוץ יומי בלוח השנה'
+                               : 'כל ימי העבודה בשבוע הקרוב שובצו';
            box.classList.add('clk'); box.onclick = ()=> gotoLogi('cal'); }
   dashAlert('b1a', 'ops', _b1aN===0 ? 1 : 0); dashBadges();
 }
@@ -3557,9 +3582,21 @@ async function b1aRefresh(){
 /* ===== הקוקפיט (6.89.0) — כל המספרים בגריד אחד, התיישנות כשורת-משנה =====
    מקור אחד לכל מושג: האריח מציג את המספר המלא, ו-dash.supervise מוסיף
    שורת-משנה אדומה "מתוכן N מעל X ימים" — לא סקשן נפרד עם מספר אחר. */
-function kTile(icon, label, val, fn, extra){
+/* 6.95.0 — הלובי בלי סמלים (רומן, 18/08/2026). הפרמטר הוסר לגמרי ולא
+   רק הרינדור שלו — ארגומנט מת ב-16 קריאות היה משאיר את הסמלים בקוד
+   ומזמין החזרה שקטה שלהם. */
+function kTile(label, val, fn, extra){
   return '<div class="stat clk" onclick="'+String(fn||'').replace(/"/g,'&quot;')+'">'+
-    '<div class="n">'+val+'</div><div class="l">'+icon+' '+label+'</div>'+(extra||'')+'</div>';
+    '<div class="n">'+val+'</div><div class="l">'+label+'</div>'+(extra||'')+'</div>';
+}
+/* 6.95.0 — 🔴 `OSET` הוא **מערך** של {key,value} (`OSET = st.data||[]`),
+   ולכן `OSET['key']` מחזיר תמיד undefined והלובי נפל תמיד לברירות
+   המחדל. הבאג היה בלתי נראה כי הערכים במסד הם בדיוק הפולבקים (7 ו-3).
+   אותה צורה בדיוק כמו `waTpl`, אבל מוגדרת כאן ליד השימוש. */
+function osetNum(key, fallback){
+  const r = (typeof OSET!=='undefined' && OSET || []).find(x=>x && x.key===key);
+  const v = r && r.value; const n = +v;
+  return (v===undefined || v===null || v==='' || !isFinite(n)) ? fallback : n;
 }
 function kSub(txt, red){ return '<div class="k-sub'+(red?' red':'')+'">'+txt+'</div>'; }
 function renderKpiStrip(){
@@ -3570,7 +3607,7 @@ function renderKpiStrip(){
   if(canView('dash.ops') && canView('logi')){
     const act = ORDS.filter(o=>!['הושלם','בוטל','ממתין לתשלום'].includes(o.order_status));
     const cutS = n => { const d=new Date(); d.setDate(d.getDate()-n); return isoD(d); };
-    const dsched = +(OSET['dash_age_sched_days']||7), dcont = +(OSET['dash_age_contact_days']||3);
+    const dsched = osetNum('dash_age_sched_days',7), dcont = osetNum('dash_age_contact_days',3);
     const noC = act.filter(o=>o.contact_status==='טרם נוצר קשר');
     const noCOld = noC.filter(o=>(o.order_date||'') < cutS(dcont));
     const noS = act.filter(o=>!o.scheduled_date);
@@ -3583,47 +3620,47 @@ function renderKpiStrip(){
     const coordN = (OPENIT||[]).filter(r=>r && r.supply_state==='השלמה לתיאום').length;
     const retN = (RETPEND||[]).length;
     const lateRet = (RETPEND||[]).filter(r=>(+r.days_waiting||0) >= RET_LATE_DAYS).length;
-    T.push(kTile('📋','הזמנות פעילות', act.length, "gotoLogiPreset({scope:'all'})", ''));
-    T.push(kTile('☎️','ממתין לקשר', noC.length, "gotoLogiPreset({scope:'sched',f:{contact:'טרם נוצר קשר'}})",
+    T.push(kTile('הזמנות פעילות', act.length, "gotoLogiPreset({scope:'all'})", ''));
+    T.push(kTile('ממתין לקשר', noC.length, "gotoLogiPreset({scope:'sched',f:{contact:'טרם נוצר קשר'}})",
       (sup && noCOld.length) ? kSub('מתוכן '+noCOld.length+' מעל '+dcont+' ימים', true) : ''));
-    T.push(kTile('🗓','ממתין לשיבוץ', noS.length, "gotoLogiPreset({scope:'sched',noDate:true})",
+    T.push(kTile('ממתין לשיבוץ', noS.length, "gotoLogiPreset({scope:'sched',noDate:true})",
       (sup && noSOld.length) ? kSub('מתוכן '+noSOld.length+' מעל '+dsched+' ימים', true) : ''));
-    T.push(kTile('📅','מתואמים היום', tToday, "gotoLogi('cal')", ''));
-    T.push(kTile('🛠️','קריאות פתוחות', openC.length, "gotoCalls()",
+    T.push(kTile('מתואמים היום', tToday, "gotoLogi('cal')", ''));
+    T.push(kTile('קריאות פתוחות', openC.length, "gotoCalls()",
       pastC.length ? kSub(pastC.length+' אחרי דדליין', true) : ''));
-    if(coordN) T.push(kTile('📦','השלמות לתיאום', coordN, "gotoLogiPreset({scope:'open'})", ''));
-    if(retN) T.push(kTile('↩️','החזרות לאיסוף', retN, "gotoLogiPreset({scope:'ret'})",
+    if(coordN) T.push(kTile('השלמות לתיאום', coordN, "gotoLogiPreset({scope:'open'})", ''));
+    if(retN) T.push(kTile('החזרות לאיסוף', retN, "gotoLogiPreset({scope:'ret'})",
       lateRet ? kSub(lateRet+' מעל שבועיים', true) : ''));
-    if(canEdit('logi.cal')) T.push('<div class="stat clk" id="b1a-tile" onclick="gotoLogi(\'cal\')"><div class="n" id="b1a-n">·</div><div class="l">👷 שיבוץ מחר</div></div>');
+    if(canEdit('logi.cal')) T.push('<div class="stat clk" id="b1a-tile" onclick="gotoLogi(\'cal\')"><div class="n" id="b1a-n">·</div><div class="l">ימים לא משובצים</div></div>');
   }
   const fin = DASH_DATA.fin && DASH_DATA.fin.d;
   if(canView('dash.fin') && fin){
-    T.push(kTile('💰','הכנסות החודש', ilsK(fin.rev_mtd), "gotoTab('pays')", ''));
+    T.push(kTile('הכנסות החודש', ilsK(fin.rev_mtd), "gotoTab('pays')", ''));
     const dlt = fin.rev_prev_ytd>0 ? Math.round((fin.rev_ytd-fin.rev_prev_ytd)/fin.rev_prev_ytd*100) : null;
-    T.push(kTile('📈','מתחילת השנה', ilsK(fin.rev_ytd), "gotoTab('pays')",
+    T.push(kTile('מתחילת השנה', ilsK(fin.rev_ytd), "gotoTab('pays')",
       dlt==null ? '' : kSub((dlt>=0?'+':'')+dlt+'% מול אשתקד', dlt<0)));
-    T.push(kTile('📥','יתרות לגבייה', ilsK(fin.ar_sum), "gotoPays('open')",
+    T.push(kTile('יתרות לגבייה', ilsK(fin.ar_sum), "gotoPays('open')",
       fin.overdue_beats ? kSub(fin.overdue_beats+' פעימות באיחור', true) : ''));
   }
   const inv = DASH_DATA.inv && DASH_DATA.inv.d;
   if(canView('dash.inv') && inv){
-    T.push(kTile('🏷','מלאי להזמנה', inv.buy_n||0, "gotoTab('inv')",
+    T.push(kTile('מלאי להזמנה', inv.buy_n||0, "gotoTab('inv')",
       inv.buy_value ? kSub(ilsK(inv.buy_value)+' בסיכון', (inv.buy_n||0)>0) : ''));
     const po = DASH_DATA.po && DASH_DATA.po.d;
-    if(po && canView('inv.po')) T.push(kTile('🚢','רכש פתוחות', po.open_n||0, "gotoTab('po')",
+    if(po && canView('inv.po')) T.push(kTile('רכש פתוחות', po.open_n||0, "gotoTab('po')",
       po.overdue_lines ? kSub(po.overdue_lines+' שורות אחרי יעד', false) : ''));
   }
   const rem = DASH_DATA.rem && DASH_DATA.rem.d;
   if(canView('dash.reminders') && rem && ((rem.overdue_n||0)+(rem.due30_n||0) > 0)){
-    T.push(kTile('⏰','תזכורות קרובות', (rem.overdue_n||0)+(rem.due30_n||0), "dashSecFocus('rem')",
+    T.push(kTile('תזכורות קרובות', (rem.overdue_n||0)+(rem.due30_n||0), "dashSecFocus('rem')",
       rem.overdue_n ? kSub(rem.overdue_n+' באיחור', true) : ''));
   }
   const sal = DASH_DATA.sales && DASH_DATA.sales.d;
   if(canView('dash.sales') && sal){
-    T.push(kTile('🎯','לידים חדשים', sal.new_leads_n||0, "gotoTab('leads')", ''));
-    T.push(kTile('🔁','פולואפים', sal.followups_n||0, "gotoTab('leads')", ''));
+    T.push(kTile('לידים חדשים', sal.new_leads_n||0, "gotoTab('leads')", ''));
+    T.push(kTile('פולואפים', sal.followups_n||0, "gotoTab('leads')", ''));
     const w = sal.won_month||{};
-    T.push(kTile('🏆','סגירות החודש האחרון', w.n||0, "gotoTab('deals')",
+    T.push(kTile('סגירות החודש האחרון', w.n||0, "gotoTab('deals')",
       w.amount ? kSub(ilsK(w.amount), false) : ''));
   }
   el.innerHTML = T.length ? '<div class="stats">'+T.join('')+'</div>' : '';
@@ -3640,7 +3677,7 @@ function renderCoordQueue(){
   rows.forEach(r=>{ (by[r.supply_state] = by[r.supply_state]||[]).push(r); });
   const late = rows.filter(r=>r.next_due && r.next_due < today).length;
   /* שורת סיכום אחת במקום גריד — המספר הראשי כבר בקוקפיט */
-  el.innerHTML = '<h3>📦 תור השלמות — נותר לספק</h3>' +
+  el.innerHTML = '<h3>תור השלמות — נותר לספק</h3>' +
     '<div class="lead clk" onclick="gotoLogiPreset({scope:\'open\'})"><div class="meta">' +
     buckets.map(b=>b+' <b>'+((by[b]||[]).length)+'</b>').join(' · ') +
     (late ? ' · <b style="color:#c0392b">'+late+' באיחור</b>' : '') + '</div></div>';
@@ -3654,9 +3691,9 @@ function renderCallsBlock(){
   const urg = u => open.filter(s=>(s.urgency||'רגילה')===u).length;
   const top = open.slice().sort((a,b)=>String(a.deadline||'9').localeCompare(String(b.deadline||'9'))).slice(0,5);
   /* המונים בקוקפיט — כאן רק חמש הדחופות */
-  el.innerHTML = '<h3>🛠️ קריאות שירות — הדחופות</h3>' +
+  el.innerHTML = '<h3>קריאות שירות — הדחופות</h3>' +
     (top.map(s=>`<div class="lead" onclick="gotoCalls()"><div><div class="nm">${esc(s.customer_name||'')}</div><div class="meta">${esc(s.call_number||'')} · ${esc(s.urgency||'רגילה')}${s.deadline?' · יעד '+fmtD(s.deadline):''}${s.scheduled_date?' · תואם '+fmtD(s.scheduled_date):''}</div></div><span class="pill ${s.status==='חדש'?'p-red':'p-green'}">${esc(s.status)}</span></div>`).join('') ||
-    '<div class="empty">אין קריאות פתוחות ✨</div>');
+    '<div class="empty">אין קריאות פתוחות</div>');
 }
 /* B6 — החזרות לאיסוף (pending_returns_v); אדום מעל RET_LATE_DAYS ימים */
 function renderReturnsBlock(){
@@ -3671,7 +3708,7 @@ function renderCoordSugBlock(){
   if(!canView('logi.orders.coord')){ el.innerHTML=''; return; }
   const paint = ()=>{
     if(_sugN == null || _sugN === 0){ el.innerHTML=''; return; }
-    el.innerHTML = `<div class="lead clk" onclick="gotoLogiPreset({scope:'sched'})"><div><div class="nm">🔗 ${_sugN} הצעות לביקור משותף</div><div class="meta">הזמנות סמוכות שאפשר לקבץ לנסיעה אחת — מוצגות בכרטיסי ההזמנה בלוח</div></div></div>`;
+    el.innerHTML = `<div class="lead clk" onclick="gotoLogiPreset({scope:'sched'})"><div><div class="nm">${_sugN} הצעות לביקור משותף</div><div class="meta">הזמנות סמוכות שאפשר לקבץ לנסיעה אחת — מוצגות בכרטיסי ההזמנה בלוח</div></div></div>`;
   };
   if(Date.now() - _sugAt > 300000){
     _sugAt = Date.now();
@@ -3688,7 +3725,7 @@ function renderAgingBlock(){
   return;
   const secEl = document.querySelector('.dash-sec[data-sec="sup"]');
   if(secEl && secEl.hidden){ el.innerHTML=''; return; }
-  const dsched = +(OSET['dash_age_sched_days']||7), dcont = +(OSET['dash_age_contact_days']||3);
+  const dsched = osetNum('dash_age_sched_days',7), dcont = osetNum('dash_age_contact_days',3);
   const act = ORDS.filter(o=>!['הושלם','בוטל','ממתין לתשלום'].includes(o.order_status));
   const today = isoD(new Date());
   const cut = n => { const d=new Date(); d.setDate(d.getDate()-n); return isoD(d); };
@@ -3723,7 +3760,7 @@ function dashAsOf(ts, staleH){
   const txt = ageH < 20 ? d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})
                         : d.toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'});
   const stale = staleH && ageH > staleH;
-  return '<div class="db-asof'+(stale?' stale':'')+'">נכון ל-'+txt+(stale?' ⚠️':'')+'</div>';
+  return '<div class="db-asof'+(stale?' stale':'')+'">נכון ל-'+txt+''+'</div>';
 }
 async function dashLoad(force){
   if(_dashBusy) return;
@@ -3767,7 +3804,7 @@ function renderSyncStrip(){
                                         : new Date(d.last_ok).toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'}))
                            : 'מעולם לא';
     const note = !d.scheduled ? 'לא מתוזמן!' : when;
-    return '<span class="sync-pill '+cls+'" onclick="gotoSet(\'synclog\')" title="'+esc(d.label)+': ריצה תקינה אחרונה '+esc(String(when))+' · '+(d.fails_7d||0)+' כשלים בשבוע">● '+esc(d.label)+' · '+esc(note)+'</span>';
+    return '<span class="sync-pill '+cls+'" onclick="gotoSet(\'synclog\')" title="'+esc(d.label)+': ריצה תקינה אחרונה '+esc(String(when))+' · '+(d.fails_7d||0)+' כשלים בשבוע">'+esc(d.label)+' · '+esc(note)+'</span>';
   }).join('');
 }
 function renderRevBlock(){
@@ -3777,7 +3814,7 @@ function renderRevBlock(){
   if(x.err){ _dbErr(el); return; }
   const d=x.d||{};
   /* המספרים בקוקפיט — הכרטיס מציג רק תקבולים וטריות */
-  el.innerHTML = '<h3>💰 כספים</h3>'+
+  el.innerHTML = '<h3>כספים</h3>'+
     '<div class="lead clk" onclick="gotoTab(\'pays\')"><div class="meta">תקבולים החודש: <b>'+ilsK(d.receipts_mtd)+'</b></div></div>'+
     dashAsOf(d.as_of, 26);
 }
@@ -3786,16 +3823,16 @@ function renderArBlock(){
   const x=DASH_DATA.fin;
   if(!canView('dash.fin')||!x||x.err){ el.innerHTML=''; return; }
   const d=x.d||{};
-  el.innerHTML = '<h3>📥 גבייה — החייבים הגדולים ('+(d.ar_n||0)+' הזמנות · '+ilsK(d.ar_sum)+')</h3>'+
-    ((d.top_debtors||[]).slice(0,5).map(t=>'<div class="lead" onclick="gotoPays(\'open\')"><div><div class="nm">'+esc(t.customer||'')+'</div><div class="meta">'+esc(t.order_number||'')+' · '+esc(t.pay_state||'')+'</div></div><b>'+ilsK(t.balance)+'</b></div>').join('')||'<div class="empty">אין יתרות פתוחות ✨</div>');
+  el.innerHTML = '<h3>גבייה — החייבים הגדולים ('+(d.ar_n||0)+' הזמנות · '+ilsK(d.ar_sum)+')</h3>'+
+    ((d.top_debtors||[]).slice(0,5).map(t=>'<div class="lead" onclick="gotoPays(\'open\')"><div><div class="nm">'+esc(t.customer||'')+'</div><div class="meta">'+esc(t.order_number||'')+' · '+esc(t.pay_state||'')+'</div></div><b>'+ilsK(t.balance)+'</b></div>').join('')||'<div class="empty">אין יתרות פתוחות</div>');
 }
 function renderStrategicBlock(){
   const el=$('#db-strategic'); if(!el) return;
   const x=DASH_DATA.strategic;
   if(!canView('dash.strategic')||!x||x.err){ el.innerHTML=''; return; }
   const rows=x.d||[];
-  if(!rows.length){ el.innerHTML='<h3>⭐ לקוחות אסטרטגיים</h3><div class="empty">הרשימה ריקה — נערכת בהגדרות ← כללי (strategic_customers)</div>'; return; }
-  el.innerHTML = '<h3>⭐ לקוחות אסטרטגיים</h3>'+rows.map(r=>
+  if(!rows.length){ el.innerHTML='<h3>לקוחות אסטרטגיים</h3><div class="empty">הרשימה ריקה — נערכת בהגדרות ← כללי (strategic_customers)</div>'; return; }
+  el.innerHTML = '<h3>לקוחות אסטרטגיים</h3>'+rows.map(r=>
     '<div class="lead"><div><div class="nm">'+esc(r.label||r.customer_number||'')+'</div><div class="meta">שנה: '+ilsK(r.rev_ytd)+' · חודש: '+ilsK(r.rev_mtd)+(r.last_invoice?' · חשבונית אחרונה '+fmtD(r.last_invoice):'')+'</div></div>'+(r.open_balance>0?'<b style="color:#b45309">'+ilsK(r.open_balance)+'</b>':'')+'</div>').join('');
 }
 function renderInvBlock(){
@@ -3804,8 +3841,8 @@ function renderInvBlock(){
   if(!canView('dash.inv')||!x){ el.innerHTML=''; return; }
   if(x.err){ _dbErr(el); return; }
   const d=x.d||{};
-  el.innerHTML = '<h3>📦 מלאי — הפריטים בסיכון הגבוה ('+(d.late_n||0)+' בהזמנה מאחרת)</h3>'+
-    ((d.top||[]).map(t=>'<div class="lead" onclick="gotoTab(\'inv\')"><div class="nm">'+esc(t.partname||'')+'</div><b>'+ilsK(t.value)+'</b></div>').join('')||'<div class="empty">אין פריטים בסיכון ✨</div>')+
+  el.innerHTML = '<h3>מלאי — הפריטים בסיכון הגבוה ('+(d.late_n||0)+' בהזמנה מאחרת)</h3>'+
+    ((d.top||[]).map(t=>'<div class="lead" onclick="gotoTab(\'inv\')"><div class="nm">'+esc(t.partname||'')+'</div><b>'+ilsK(t.value)+'</b></div>').join('')||'<div class="empty">אין פריטים בסיכון</div>')+
     dashAsOf(d.as_of, 30);
 }
 function renderPoBlock(){
@@ -3815,11 +3852,11 @@ function renderPoBlock(){
   const d=x.d||{};
   const ageH = d.data_as_of ? (Date.now()-new Date(d.data_as_of).getTime())/3600000 : Infinity;
   const stale = !d.scheduled || ageH > 48;
-  el.innerHTML = '<h3>🚢 הזמנות רכש</h3><div class="stats">'+
+  el.innerHTML = '<h3>הזמנות רכש</h3><div class="stats">'+
     '<div class="stat clk" onclick="gotoTab(\'po\')"><div class="n">'+(d.open_n||0)+'</div><div class="l">פתוחות</div></div>'+
     '<div class="stat clk'+(d.overdue_lines?' warn':'')+'" onclick="gotoTab(\'po\')"><div class="n">'+(d.overdue_lines||0)+'</div><div class="l">שורות אחרי תאריך יעד</div></div>'+
     '</div>'+
-    (stale?'<div class="empty" style="color:#b91c1c">⚠️ נתוני הרכש אינם מסונכרנים'+(!d.scheduled?' — הסנכרון אינו מתוזמן':'')+'</div>':'')+
+    (stale?'<div class="empty" style="color:#b91c1c">נתוני הרכש אינם מסונכרנים'+(!d.scheduled?' — הסנכרון אינו מתוזמן':'')+'</div>':'')+
     dashAsOf(d.data_as_of, 48);
 }
 function renderRemBlock(){
@@ -3830,12 +3867,12 @@ function renderRemBlock(){
   const d=x.d||{};
   const canE = canEdit('dash.reminders');
   const today = isoD(new Date());
-  el.innerHTML = '<h3>⏰ תזכורות — טסטים, אגרות ותשלומים · ממתין '+ilsK(d.pending_sum)+(canE?' <button type="button" class="chip" onclick="remFormToggle()">＋ חדשה</button>':'')+'</h3>'+
+  el.innerHTML = '<h3>תזכורות — טסטים, אגרות ותשלומים · ממתין '+ilsK(d.pending_sum)+(canE?' <button type="button" class="chip" onclick="remFormToggle()">＋ חדשה</button>':'')+'</h3>'+
     ((d.next||[]).map(r=>
       '<div class="lead"><div><div class="nm">'+esc(r.title||'')+'</div><div class="meta">'+esc(r.kind||'')+' · יעד '+fmtD(r.due_date)+(r.amount?' · '+ilsK(+r.amount):'')+'</div></div>'+
       (r.due_date<today?'<span class="pill p-red">באיחור</span>':'')+
-      (canE?'<button type="button" class="chip" onclick="remPaid(\''+r.id+'\')">✓ שולם</button>':'')+'</div>').join('')
-     ||'<div class="empty">אין תזכורות ממתינות ✨</div>')+
+      (canE?'<button type="button" class="chip" onclick="remPaid(\''+r.id+'\')">שולם</button>':'')+'</div>').join('')
+     ||'<div class="empty">אין תזכורות ממתינות</div>')+
     '<div id="rem-form" hidden></div>';
   dashAlert('rem','rem', d.overdue_n||0);
 }
@@ -3874,34 +3911,35 @@ function renderExceptions(){
   const el=$('#db-exc'); if(!el) return;
   if(!canView('dash.exceptions')){ el.innerHTML=''; return; }
   const rows=[];
-  const add=(icon,txt,val,fn,sev)=>rows.push({icon:icon,txt:txt,val:val,fn:fn,sev:sev});
+  const add=(txt,val,fn,sev)=>rows.push({txt:txt,val:val,fn:fn,sev:sev});
   ((DASH_DATA.sync&&DASH_DATA.sync.d&&DASH_DATA.sync.d.domains)||[]).forEach(d=>{
     const ageH = d.last_ok ? (Date.now()-new Date(d.last_ok).getTime())/3600000 : Infinity;
-    if(!d.scheduled) add('🔴','סנכרון '+d.label+' אינו מתוזמן','',"gotoSet('synclog')",3);
-    else if(ageH > (d.expect_h||26)) add('🔴','סנכרון '+d.label+' לא רץ בהצלחה',Math.round(ageH)+' שעות',"gotoSet('synclog')",3);
+    if(!d.scheduled) add('סנכרון '+d.label+' אינו מתוזמן','',"gotoSet('synclog')",3);
+    else if(ageH > (d.expect_h||26)) add('סנכרון '+d.label+' לא רץ בהצלחה',Math.round(ageH)+' שעות',"gotoSet('synclog')",3);
   });
   const fin=(DASH_DATA.fin&&DASH_DATA.fin.d)||null;
-  if(fin && fin.overdue_beats>0) add('💸','פעימות תשלום באיחור', String(fin.overdue_beats), "gotoPays('open')",2);
+  if(fin && fin.overdue_beats>0) add('פעימות תשלום באיחור', String(fin.overdue_beats), "gotoPays('open')",2);
   const inv=(DASH_DATA.inv&&DASH_DATA.inv.d)||null;
-  if(inv && inv.buy_n>0) add('📦', inv.buy_n+' פריטים להזמנה', ilsK(inv.buy_value)+' בסיכון', "gotoTab('inv')",2);
+  if(inv && inv.buy_n>0) add(inv.buy_n+' פריטים להזמנה', ilsK(inv.buy_value)+' בסיכון', "gotoTab('inv')",2);
   if(canView('logi')){
     const today=isoD(new Date());
     const act=ORDS.filter(o=>!['הושלם','בוטל','ממתין לתשלום'].includes(o.order_status));
-    const cut=(function(){ const d2=new Date(); d2.setDate(d2.getDate()-(+(OSET['dash_age_sched_days']||7))); return isoD(d2); })();
+    const cut=(function(){ const d2=new Date(); d2.setDate(d2.getDate()-osetNum('dash_age_sched_days',7)); return isoD(d2); })();
     const oldSched=act.filter(o=>!o.scheduled_date&&(o.order_date||'')<cut);
-    if(oldSched.length) add('📋','הזמנות ותיקות ללא שיבוץ', String(oldSched.length), "gotoLogiPreset({scope:'sched',noDate:true})",2);
+    if(oldSched.length) add('הזמנות ותיקות ללא שיבוץ', String(oldSched.length), "gotoLogiPreset({scope:'sched',noDate:true})",2);
     const past=SCALLS.filter(s=>!['הושלם','הושלמה','בוטלה','סגורה'].includes(s.status)&&s.deadline&&s.deadline<today);
-    if(past.length) add('🛠️','קריאות שירות אחרי דדליין', String(past.length), "gotoLogiPreset({view:'calls'})",2);
+    if(past.length) add('קריאות שירות אחרי דדליין', String(past.length), "gotoLogiPreset({view:'calls'})",2);
     const lateRet=(RETPEND||[]).filter(r=>(+r.days_waiting||0)>=RET_LATE_DAYS);
-    if(lateRet.length) add('↩️','החזרות ממתינות מעל שבועיים', String(lateRet.length), "gotoLogiPreset({scope:'ret'})",1);
+    if(lateRet.length) add('החזרות ממתינות מעל שבועיים', String(lateRet.length), "gotoLogiPreset({scope:'ret'})",1);
   }
   const rem=(DASH_DATA.rem&&DASH_DATA.rem.d)||null;
-  if(rem && rem.overdue_n>0) add('⏰','תזכורות באיחור', rem.overdue_n+' · '+ilsK(rem.overdue_sum), "dashSecFocus('rem')",1);
+  if(rem && rem.overdue_n>0) add('תזכורות באיחור', rem.overdue_n+' · '+ilsK(rem.overdue_sum), "dashSecFocus('rem')",1);
   rows.sort((a,b)=>b.sev-a.sev);
   const top=rows.slice(0,8);
   el.innerHTML = top.length ? top.map(r=>
-    '<div class="exc-row sev'+r.sev+'" onclick="'+r.fn.replace(/"/g,'&quot;')+'"><span>'+r.icon+'</span><span class="exc-t">'+esc(r.txt)+'</span><b>'+esc(String(r.val||''))+'</b></div>').join('')
-    : '<div class="empty">אין חריגים פתוחים ✨</div>';
+    /* 6.95.0 — ללא סמל. החומרה נשארת ב-`sev{n}` שנושא את הצבע ב-CSS. */
+    '<div class="exc-row sev'+r.sev+'" onclick="'+r.fn.replace(/"/g,'&quot;')+'"><span class="exc-t">'+esc(r.txt)+'</span><b>'+esc(String(r.val||''))+'</b></div>').join('')
+    : '<div class="empty">אין חריגים פתוחים</div>';
   dashAlert('exc','exc', top.filter(r=>r.sev>=3).length);
 }
 window.dashSecFocus = sec=>{
@@ -3940,19 +3978,19 @@ function mdCard(e){
                   && !['הושלם','הושלמה','בוטלה','סגורה'].includes(o.status);
   return '<div class="md-card'+(svc?' svc':'')+(o.__fup?' fup':'')+'">'+
     '<div class="md-hd"><b>'+esc(o.time_slot||'ללא שעה')+'</b>'+
-      (svc?'<span class="pill '+(o.urgency==='משביתה'?'p-red':'p-gray')+'">🛠️ '+esc(o.urgency||'קריאת שירות')+'</span>':'')+
-      (o.__fup?'<span class="pill" style="background:#fae8ff;color:#86198f">🔧 השלמה</span>':'')+
+      (svc?'<span class="pill '+(o.urgency==='משביתה'?'p-red':'p-gray')+'">'+esc(o.urgency||'קריאת שירות')+'</span>':'')+
+      (o.__fup?'<span class="pill" style="background:#fae8ff;color:#86198f">השלמה</span>':'')+
       ((e.dayTotal||1)>1?'<span class="pill p-gray">יום '+e.dayIdx+' מתוך '+e.dayTotal+'</span>':'')+
     '</div>'+
     '<div class="md-nm">'+esc(o.customer_name||'')+'</div>'+
-    (addr?'<div class="md-meta">📍 '+esc(addr)+'</div>':'')+
+    (addr?'<div class="md-meta">'+esc(addr)+'</div>':'')+
     (items?'<div class="md-meta">'+esc(items)+'</div>':'')+
     '<div class="md-act">'+
-      (addr?'<a class="chip" target="_blank" rel="noopener" href="'+wazeUrl(addr)+'" onclick="event.stopPropagation()">🚗 ניווט</a>':'')+
-      (phone?'<a class="chip" href="tel:'+esc(String(phone))+'">📞 חיוג</a>':'')+
+      (addr?'<a class="chip" target="_blank" rel="noopener" href="'+wazeUrl(addr)+'" onclick="event.stopPropagation()">ניווט</a>':'')+
+      (phone?'<a class="chip" href="tel:'+esc(String(phone))+'">חיוג</a>':'')+
       '<button type="button" class="chip" onclick="'+(svc?"openScall('"+o.id+"')":"openOrd('"+o.id+"')")+'">כרטיס</button>'+
-      (window.canEdit('docs.media.upload')?'<button type="button" class="chip" onclick="uploadMedia(\''+(svc?'call':'order')+'\',\''+o.id+'\')">📷 תמונות</button>':'')+
-      (canDone?'<button type="button" class="chip" style="font-weight:800;color:#15803d" onclick="mdDone(\''+o.id+'\')">✓ בוצע</button>':'')+
+      (window.canEdit('docs.media.upload')?'<button type="button" class="chip" onclick="uploadMedia(\''+(svc?'call':'order')+'\',\''+o.id+'\')">תמונות</button>':'')+
+      (canDone?'<button type="button" class="chip" style="font-weight:800;color:#15803d" onclick="mdDone(\''+o.id+'\')">בוצע</button>':'')+
     '</div></div>';
 }
 window.mdDone = async id=>{
@@ -3980,24 +4018,24 @@ async function renderMyDay(){
   const tog = '<div class="md-tog">'+
     '<button type="button" class="chip '+(MD_VIEW==='day'?'active':'')+'" onclick="mdView(\'day\')">היום</button>'+
     '<button type="button" class="chip '+(MD_VIEW==='week'?'active':'')+'" onclick="mdView(\'week\')">השבוע</button>'+
-    (myTeams(from).length?'<span class="pill p-gray">👷 '+esc(myTeams(from).join(' · '))+'</span>':'')+
+    (myTeams(from).length?'<span class="pill p-gray">'+esc(myTeams(from).join(' · '))+'</span>':'')+
     '</div>';
   if(MD_VIEW === 'day'){
     if(!myTeams(from).length){
       el.innerHTML = tog + '<div class="empty">לא שובצת להיום'+
         (myDays.length ? ' — הימים שלך השבוע: '+myDays.map(d=>fmtD(d)).join(', ') :
-         ' — השיבוץ היומי (👷) טרם מולא השבוע; פנו למנהל הלוגיסטיקה')+'</div>';
+         ' — השיבוץ היומי טרם מולא השבוע; פנו למנהל הלוגיסטיקה')+'</div>';
       dashAlert('myday','myday',0); return;
     }
     const evs = mdEventsOn(from);
     el.innerHTML = tog + (evs.map(mdCard).join('') ||
-      '<div class="empty">משובץ אך אין ביקורים משויכים לצוות שלך היום ✨</div>');
+      '<div class="empty">משובץ אך אין ביקורים משויכים לצוות שלך היום</div>');
   } else {
     el.innerHTML = tog + days.map(d=>{
       const mine = myTeams(d);
       const evs = mine.length ? mdEventsOn(d) : [];
       return '<div class="md-day">'+esc(dayNameHe(d))+' <small>'+fmtD(d)+'</small>'+
-        (mine.length?'<span class="pill p-gray">👷 '+esc(mine.join(' · '))+'</span>':'<small>— לא שובצת</small>')+'</div>'+
+        (mine.length?'<span class="pill p-gray">'+esc(mine.join(' · '))+'</span>':'<small>— לא שובצת</small>')+'</div>'+
         (mine.length ? (evs.map(mdCard).join('')||'<div class="empty">אין ביקורים</div>') : '');
     }).join('');
   }
@@ -4012,7 +4050,7 @@ function renderFunnelBlock(){
   const d = x.d||{}, f = d.funnel||[];
   const mx = Math.max(1, ...f.map(r=>+r.n||0));
   const asof = d.as_of||{};
-  el.innerHTML = '<h3>📈 משפך תהליכי מכירה — כלל הצוות</h3>'+
+  el.innerHTML = '<h3>משפך תהליכי מכירה — כלל הצוות</h3>'+
     f.map(r=>'<div class="fun-row" onclick="gotoTab(\'deals\')"><span class="fun-l">'+esc(r.stage||'')+'</span>'+
       '<div class="fun-bar"><div style="width:'+Math.round((+r.n||0)/mx*100)+'%"></div></div>'+
       '<b>'+(r.n||0)+'</b><span class="fun-a">'+ilsK(r.amount)+'</span></div>').join('')+
@@ -4031,7 +4069,7 @@ function renderSalesSrcBlock(){
     '<div class="stat clk" onclick="gotoTab(\'leads\')"><div class="n">'+(d.followups_n||0)+'</div><div class="l">פולואפים פתוחים</div></div>'+
     '<div class="stat clk" onclick="gotoTab(\'deals\')"><div class="n">'+(w.n||0)+'</div><div class="l">סגירות בחודש האחרון · '+ilsK(w.amount)+'</div></div>'+
     '<div class="stat clk" onclick="gotoTab(\'meets\')"><div class="n">'+(d.meets_week_n||0)+'</div><div class="l">פגישות השבוע (Outlook — חי)</div></div>'+
-    '</div><h3>🎯 לידים לפי מקור — החודש האחרון בנתונים</h3>'+
+    '</div><h3>לידים לפי מקור — החודש האחרון בנתונים</h3>'+
     src.map(r=>'<div class="fun-row" onclick="gotoTab(\'leads\')"><span class="fun-l">'+esc(r.source||'')+'</span>'+
       '<div class="fun-bar"><div style="width:'+Math.round((+r.n||0)/mx*100)+'%"></div></div><b>'+(r.n||0)+'</b></div>').join('');
 }
@@ -7889,7 +7927,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'etafullday-2026-08-18a';
+const BUILD_ID = 'dashclean-2026-08-18a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====

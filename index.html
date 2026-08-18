@@ -1712,12 +1712,60 @@
 }
 
 /* ===== בורד הלידים (6.93.0) ===== */
-.tbl tr.lb-grp td{ background:#eef2f7; font-weight:800; font-size:13px; color:#0f172a; cursor:pointer; padding:7px 10px; user-select:none; }
-.tbl tr.lb-grp:hover td{ background:#e4eaf2; }
+/* 🔴 background-color ו-background-image **בנפרד**, לעולם לא shorthand.
+   `background:linear-gradient(...)` אינו מוסיף שכבה — הוא מחליף, ומאפס את
+   background-color לשקוף. כתבתי אותו כאן כ-shorthand, ו-prccss/leadstest
+   מדדו rgba(0,0,0,0) על כותרת הקבוצה. זו בדיוק המחלקה שהכתה ב-6.90.0
+   ביומן ("יום מלא" מחק את הוורוד של קריאת שירות) ומתועדת ב-CLAUDE.md. */
+.tbl tr.lb-grp td{ background-color:#e3ebf5; background-image:linear-gradient(#e8eef7,#dde5f0); font-weight:900; font-size:14.5px; color:#0f172a; cursor:pointer; padding:11px 14px; user-select:none; text-align:right; letter-spacing:.2px; border-top:2px solid #b9c6d8; border-bottom:1px solid #cbd5e1; }
+.tbl tr.lb-grp:hover td{ background-color:#d7e1ef; background-image:linear-gradient(#dee7f3,#d2dcea); }
 .lb-arr{ display:inline-block; width:15px; color:#64748b; }
-.lb-cnt{ color:#64748b; font-weight:600; font-size:12px; margin-inline-start:4px; }
+.lb-cnt{ color:#475569; font-weight:700; font-size:12.5px; margin-inline-start:8px; background:#fff; border:1px solid #cbd5e1; border-radius:999px; padding:1px 9px; }
 .pill.lb-mine{ background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; }
 td.lb-ov{ color:#c0392b; font-weight:700; }
+/* ---- עמודת הבעלים (6.97.0) ---- */
+.lb-ava{ display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:#e2e8f0; color:#475569; font-weight:800; font-size:11px; border:1px solid #cbd5e1; overflow:hidden; }
+.lb-ava-old{ filter:grayscale(1); opacity:.75; border-style:dashed; }
+.lb-ava-none{ background:#f8fafc; color:#cbd5e1; border-style:dashed; }
+/* ---- הצלבת הלקוח ---- */
+.lb-cust{ display:inline-block; max-width:118px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:middle; }
+.pill.lb-cx{ background:#e0f2fe; color:#075985; border:1px solid #bae6fd; }
+.pill.lb-cxamb{ background:#fef3c7; color:#92400e; border:1px solid #fde68a; }
+.lb-cxnew{ color:#94a3b8; font-size:11.5px; }
+/* ---- שלוש עמודות תת-הסטטוס ---- */
+.lb-na{ color:#dbe2ea; }
+/* ---- מיון משלנו: כותרת לחיצה ---- */
+#leads-list th.srt{ cursor:pointer; user-select:none; }
+#leads-list th.srt:hover{ text-decoration:underline; }
+#leads-list th.srt.on::after{ content:attr(data-ar); margin-inline-start:4px; }
+/* ---- שלוש העמודות הפותחות מוקפאות ----
+   שלוש עמודות תת-סטטוס שכמעט תמיד ריקות (הן בלעדיות הדדית) מוסיפות ~292px,
+   והטבלה רחבה מהמסך גם בדסקטופ. בלי הקפאה, תא בקצה הנגלל מנותק מזהות הליד.
+   ⚠️ שרשרת ה-:not חובה — nth-child סופר גם את שורות ה-colspan של הקבוצות,
+   ובלעדיה כותרת הקבוצה הייתה נדבקת ומכסה את העמודה הראשונה.
+   ⚠️ border-box חובה — היסטי sticky מצטברים מהרוחבים, וב-content-box הריפוד
+   מוסיף ~9px לכל תא והעמודות נערמות (הלקח מ-pv-frz, 6.39.0). */
+#leads-list .tbl > thead > tr > th:nth-child(-n+3),
+#leads-list .tbl > tbody > tr:not(.lb-grp):not(.lb-grpfoot) > td:nth-child(-n+3){ position:sticky; box-sizing:border-box; background:#fff; }
+#leads-list .tbl > thead > tr > th:nth-child(-n+3){ z-index:7 }
+#leads-list .tbl > tbody > tr:not(.lb-grp):not(.lb-grpfoot) > td:nth-child(-n+3){ z-index:3 }
+#leads-list .tbl > thead > tr > th:nth-child(1),
+#leads-list .tbl > tbody > tr:not(.lb-grp):not(.lb-grpfoot) > td:nth-child(1){ inset-inline-start:0; width:42px; min-width:42px; max-width:42px }
+#leads-list .tbl > thead > tr > th:nth-child(2),
+#leads-list .tbl > tbody > tr:not(.lb-grp):not(.lb-grpfoot) > td:nth-child(2){ inset-inline-start:42px; width:158px; min-width:158px; max-width:158px; text-align:right; overflow:hidden; text-overflow:ellipsis }
+#leads-list .tbl > thead > tr > th:nth-child(3),
+#leads-list .tbl > tbody > tr:not(.lb-grp):not(.lb-grpfoot) > td:nth-child(3){ inset-inline-start:200px; width:132px; min-width:132px; max-width:132px }
+/* צל שמפריד את הגוש הקפוא. הכיוון פיזי והמסך RTL — ולכן ההיסט שלילי. */
+#leads-list .tbl > tbody > tr:not(.lb-grp):not(.lb-grpfoot) > td:nth-child(3){ box-shadow:-9px 0 12px -10px rgba(6,24,39,.30) }
+#leads-list .tbl > thead > tr > th:nth-child(3){ box-shadow:inset 0 -1px 0 rgba(255,255,255,.14), -9px 0 12px -10px rgba(6,24,39,.30) }
+@media (max-width:1100px){
+  /* גוש קפוא של 332px גוזל יותר מדי במסך צר — נשאר השם בלבד. הבוררים
+     חייבים לשאת בדיוק את אותה צורה, כי media query אינו מוסיף ספציפיות. */
+  #leads-list .tbl > thead > tr > th:nth-child(3),
+  #leads-list .tbl > tbody > tr:not(.lb-grp):not(.lb-grpfoot) > td:nth-child(3){ position:static }
+}
+.lb-dt{ font-size:11.5px; padding:3px 5px; border:1px solid var(--line); border-radius:7px; font-family:inherit; background:#fff; }
+.lb-ovb{ display:inline-block; background:#fde8e6; color:#c0392b; border:1px solid #f5c6c1; border-radius:6px; font-size:10.5px; font-weight:800; padding:1px 6px; margin-inline-end:5px; vertical-align:middle; }
 .lb-links{ padding:8px 2px; font-size:13px; }
 .lb-own{ display:flex; align-items:center; min-height:34px; }
 .lb-grpfoot td{ padding:4px 10px; background:#fafbfc; }
@@ -1748,7 +1796,7 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.96.0</div>
+      <div class="ver">גרסה 6.97.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1875,7 +1923,7 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.96.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.97.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -1930,6 +1978,7 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
     <!-- לידים — בורד מלא (6.93.0): שלוש תצוגות + קיבוץ לפי סטטוס -->
     <section id="tab-leads" class="hidden">
       <div class="chips" id="lb-chips"></div>
+      <div class="logi-filters" id="lb-filters"></div>
       <div class="toolbar">
         <input id="search" placeholder="חיפוש לפי שם, טלפון או חברה…">
         <button class="add" id="addBtn" title="ליד חדש">+</button>
@@ -2336,6 +2385,50 @@ const LEAD_ST_COLORS = {'ליד חדש':'#fdab3d','ללא מענה':'#ffadad','�
 const SUB_RELEVANT = ['פולואפ','תואמה פגישה','הצעת מחיר','הפניה לאתר'];
 const SUB_REFUSAL = ['מחיר יקר','העדיף מתחרים','אין מענה מספר פעמים','ירד מהעניין','היה צריך ציוד כללי שאין לנו','אין הבשלה כלכלית','מועד רחוק מדי','ייצור קשר עצמאית','אפשרות לשותפות','לקוח פעיל'];
 const SUB_IRRELEVANT = ['ליד פיקטיבי','טוען שלא השאיר פניה','לא הבין את המוצר','חיפשו חדר כושר','כפל'];
+/* ===== טבלת הלידים — צבעים, עמודות והצלבה (6.97.0) =====
+   רומן, 18/08/2026: "סוג לקוח תוסיף צבעים, מקור הגעה גם". הצבעים עוברים
+   דרך mdPill/tint כמו צבעי הסטטוס, ולכן הם פסטל אחיד ולא כתם רווי. */
+const LEAD_TYPES = ['בסיס','פ.ע','עסקי','ארגוני','מוסדי','מסחרי','סטונאי'];
+const LEAD_TYPE_COLORS = {'בסיס':'#a1a8b5','פ.ע':'#579bfc','עסקי':'#00c875','ארגוני':'#784bd1','מוסדי':'#ff642e','מסחרי':'#fdab3d','סטונאי':'#0086c0'};
+const LEAD_SRC_COLORS  = {'קשרים אישיים':'#00c875','Paycall - שיחה נכנסת':'#0086c0','המלצת לקוח':'#037f4c','דף נחיתה':'#fdab3d','אתר אינטרנט':'#579bfc','פייסבוק / אינסטגרם':'#a25ddc','סושיאל':'#ff158a','ידנית':'#a1a8b5','Calendly':'#9aadbd','דף נחיתה - וואטסאפ':'#66ccff','גוגל':'#e2445c'};
+/* סדר העמודות הוא **בדיוק** הרשימה של רומן. colspan של שורות הקבוצה נגזר
+   מהאורך ולא מקודד — עמודה שתתווסף לא תשבור את הכותרות בשקט. */
+const LB_COLS = [
+  ['#','rownum'], ['שם מלא','srt'], ['לקוח','srt'], ['שם חברה','srt'], ['בעלים ליד','srt'],
+  ['טלפון',''], ['אימייל',''], ['תאריך משימה הבאה','srt'], ['מקור הגעה','srt'],
+  ['סטטוס','srt'], ['סטטוס רלוונטי',''], ['סטטוס לסירוב',''], ['סטטוס לא רלוונטי',''], ['סוג לקוח','srt']
+];
+/* ---- הצלבת הליד מול לקוח קיים ----
+   רומן: "יש לידים שמשאירים פניה אבל הם כבר לקוחות במערכת והאיש מכירות
+   חייב לדעת מזה" · "חובה לבדוק, לא למלא".
+   🔴 **ההצלבה לעולם אינה נכתבת ל-customer_id.** היא תצוגה בלבד. יש assert
+   בסקריפט הבנייה שנופל אם מישהו יוסיף כתיבה כזאת בטבלה.
+   נמדד 18/08/2026 על הנתונים החיים: מתוך 2,910 לידים — **1,201 מוצלבים
+   ללקוח קיים לפי טלפון** (978 התאמה יחידה · 103 כפילויות פריוריטי של אותו
+   שם · 120 עמומים באמת) ועוד 24 דרך איש קשר. כלומר 42% מהלידים כבר לקוחות.
+   ⚠️ הגנת אורך חובה: ל-207 לקוחות ול-15 לידים יש טלפון פגום ('0', '7'),
+   ובלי הסינון הם היו מתאימים זה לזה בהמוניהם. */
+const lbP9 = s => { const d=String(s||'').replace(/\D/g,''); return d.length>=9 ? d.slice(-9) : ''; };
+const lbNm = s => String(s||'').trim().replace(/\s+/g,' ').toLowerCase();
+let LB_CX = null, LB_CX_SIG = '';
+/* נקודת הריענון היחידה של המטמון (הכלל מ-6.83.1). החתימה משתנה רק כשנטענו
+   לקוחות או אנשי קשר, ולכן הבנייה מחדש קורית פעם אחת לטעינה ולא לכל ציור. */
+function lbCx(){
+  const sig = CUSTS.length+'/'+CONTS.length;
+  if(LB_CX && LB_CX_SIG===sig) return LB_CX;
+  const m = new Map();
+  const put = (p9,cid,name)=>{ if(!p9||!cid) return; let e=m.get(p9); if(!e){ e={ids:new Set(),names:new Set(),cid:cid,name:name}; m.set(p9,e); } e.ids.add(cid); if(name) e.names.add(lbNm(name)); };
+  for(const k of CUSTS) put(lbP9(k.phone), k.id, k.name);
+  for(const t of CONTS){ const e0=m.get(lbP9(t.phone)); const nm=(CUSTS.find(x=>x.id===t.customer_id)||{}).name; put(lbP9(t.phone), t.customer_id, nm); }
+  LB_CX=m; LB_CX_SIG=sig; return m;
+}
+/* null = לקוח חדש · {n:1} = התאמה ודאית · {amb:true} = כמה לקוחות שונים.
+   כפילויות פריוריטי של אותו שם (דן כהן ×4) נחשבות התאמה אחת בכוונה —
+   הכלל "ריבוי ⇒ לא נבחר" היה מכבה את התכונה דווקא אצל הלקוחות החוזרים. */
+function lbMatch(l){
+  const e = lbCx().get(lbP9(l.phone)); if(!e) return null;
+  return { n:e.ids.size, name:e.name, cid:e.cid, amb: e.names.size>1 };
+}
 const TASK_STATUSES = ['חדש','בעדיפות','תקוע','הושלם','20K+','50K+','100K+'];
 const TASK_ST_COLORS = {'חדש':'#c4c4c4','בעדיפות':'#579bfc','תקוע':'#df2f4a','הושלם':'#00c875','20K+':'#175a63','50K+':'#5559df','100K+':'#fdab3d'};
 const QUOTE_STATUSES = ['בדיקות מימון','ממתין ליועץ עסקי','משווה מול מתחרים','טרם סגר את המקום','בבדיקות'];
@@ -3385,6 +3478,11 @@ const ORD_CARD_FIELDS = [
 window.ordCardEditable = (col)=>{ const pk = window.ordFieldPerm('ord', col); return !!pk && window.canEdit(pk); };
 const canIE = (kind, field)=>{
   if(kind==='ord' || kind==='scall'){ const pk = window.ordFieldPerm(kind, field); return !!pk && window.canEdit(pk); }
+  /* 🔴 6.97.0 — לידים לפי הרשאה ולא לפי role. שלושת אנשי המכירות (נח · ניב ·
+     מעיין) הם role='rep', ולכן הענף שמתחת נעל בפניהם את **כל** העריכה בטבלה,
+     כולל בורר הסטטוס שנפרס ב-6.93.0 במיוחד עבורם: הוא הוצג להם כתווית קפואה.
+     נמדד 18/08/2026. עקרון 6.24.17 — הרשאה, לא תפקיד. */
+  if(kind==='lead') return window.canEdit('crm.leads');
   return ['admin','manager'].includes(ME.role);
 };
 /* select צבעוני בתא — צבעי הלוח (pilled) או צבעי מאנדיי (mdc) */
@@ -7928,7 +8026,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'notifsettings-2026-08-18a';
+const BUILD_ID = 'leadstable-2026-08-18a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -12841,6 +12939,10 @@ async function loadLeads(){
     sb.schema('ord').from('inv_items').select(SKU_LIST_COLS).order('partname',{ascending:true}).limit(10000),
     sb.schema('ord').from('protocols_v').select('id,order_id,call_id,deal_id,order_number,customer_name,phone,doc_type,category,status,sent_at,signed_at,signer_name').order('sent_at',{ascending:false}).limit(10000),
     sb.schema('ord').from('settings').select('key,value').order('key',{ascending:true}),
+    /* ספריית בעלי הלידים — RPC ולא טבלה, כי RLS על core.profiles מחזיר
+       למשתמש רגיל את הפרופיל שלו בלבד (ראו lownApply). שגיאה כאן אינה
+       מפילה את הטעינה: הבורד ייפול חזרה לראשי תיבות ריקים. */
+    sb.schema('crm').rpc('lead_owner_dir'),
     /* תמצית מצב הסנכרון — זמינה לכל אנשי הצוות. היומן המלא נשאר
        לאדמיניסטרטור בלבד (הגדרות ← יומן סנכרון). */
     sb.schema('ord').rpc('sync_status'),
@@ -12859,6 +12961,7 @@ async function loadLeads(){
   const _bad = _q.map((r,i)=>(r&&r.error)?{n:LOAD_NAMES[i],e:r.error}:null).filter(Boolean);
   if(_bad.length){ _bad.forEach(b=>console.error('טעינת נתונים נכשלה —', b.n, b.e)); loadErrBanner(_bad.map(b=>b.n)); }
   else loadErrBanner(null);
+  try{ lownApply((_q[13]||{}).data); }catch(_e){ console.error('lead_owner_dir',_e); }
   LEADS = l.data||[]; CUSTS = c.data||[]; TASKS = t.data||[]; DEALS = d.data||[]; MEETS = m.data||[]; CONTS = k.data||[]; PAYS = p.data||[];
   ORDS = o.data||[]; SCALLS = sc.data||[]; OTEAMS = tm.data||[]; SKUS = sk.data||[]; PROTS = pr.data||[]; OSET = st.data||[];
   /* 6.81.0 — אתרי הלקוח נטענים **מחוץ** למערך _q במכוון: הוא מפורק לפי
@@ -12901,6 +13004,68 @@ function pgFoot(k,total,noun){
 window.pgMore=(k)=>{ PGL[k]=pgLim(k)+PGSTEP; renderAllViews(); };
 window.pgAll=(k,t)=>{ PGL[k]=t; renderAllViews(); };
 window.pgReset=(k)=>{ PGL[k]=PGSTEP; renderAllViews(); };
+/* ===== ספריית בעלי הלידים (6.97.0) =====
+   רומן: "בעלים ליד ... בטבלה רק התמונה הקטנה".
+   🔴 למה RPC ולא select על core.profiles: ה-RLS שם הוא
+   `id = auth.uid() OR can_view('set.users')`, ו-set.users הוא 0/חסר לכל
+   מי שאינו רומן. איש מכירות שפותח את הבורד רואה **פרופיל אחד — שלו**,
+   ולכן עמודת הבעלים על 2,846 לידים הייתה מציגה שם אחד ו-2,845 ריקים.
+   נמדד 18/08/2026. crm.lead_owner_dir() רצה security definer עם שער
+   can_view('crm.leads') מפורש, ומחזירה שם · אווטאר · assignable בלבד. */
+let LOWN = [], LOWN_BY = {};
+function lownApply(rows){
+  LOWN = rows||[]; LOWN_BY = {};
+  for(const o of LOWN) LOWN_BY[o.owner_key] = o;
+  lbAvaCss();
+}
+const lbInit = u => String(u||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('');
+/* ⚠️ avatar_url הוא **data-URL** של 11–27KB (pfShrink כותב canvas.toDataURL),
+   ולא כתובת. שתי מסקנות מחייבות:
+   1. safeUrl חוסם data: — אסור לנתב אותו דרכה, היא תחזיר ריק.
+   2. <img> פר-שורה היה 15KB × 300 שורות = 4.5MB לקבוצה אחת. לכן **בלוק
+      style אחד** עם כלל background-image לכל בעלים, והשורה נושאת מחלקה.
+   האימות הוא רשימת היתר ולא בריחה: data-URL של תמונה בבסיס 64 ותו לא.
+   כל דבר אחר נדחה ונופל לראשי תיבות. */
+const LB_AVA_OK = /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/;
+function lbAvaCss(){
+  let el = document.getElementById('lb-ava-css');
+  if(!el){ el = document.createElement('style'); el.id='lb-ava-css'; document.head.appendChild(el); }
+  el.textContent = LOWN.filter(o=>o.avatar_url && LB_AVA_OK.test(o.avatar_url))
+    .map((o,i)=>`.lb-ava[data-ok="${i}"]{ background-image:url("${o.avatar_url}"); background-size:cover; background-position:center; color:transparent }`).join('\n');
+  LOWN.filter(o=>o.avatar_url && LB_AVA_OK.test(o.avatar_url)).forEach((o,i)=>{ LOWN_BY[o.owner_key]._i = i; });
+}
+/* עיגול הבעלים. אין כלל .ph גלובלי בגיליון (הוא מסולם ל-.pf-ava בלבד),
+   ולכן .lb-ava מגדיר את הצורה בעצמו. */
+function lbAva(key){
+  const o = LOWN_BY[key];
+  if(!o) return '<span class="lb-ava lb-ava-none" title="ללא בעלים">–</span>';
+  const ok = (o._i!==undefined) ? ` data-ok="${o._i}"` : '';
+  const cls = 'lb-ava' + (o.kind==='legacy' ? ' lb-ava-old' : '');
+  return `<span class="${cls}"${ok} title="${esc(o.name)}${o.kind==='legacy'?' · עובד לשעבר':''}">${esc(lbInit(o.name))}</span>`;
+}
+/* ISO(UTC) → הערך ש-<input type="datetime-local"> מצפה לו, בשעון מקומי.
+   ההמרה חייבת להיות מפורשת: toISOString().slice(0,16) היה מציג 06:00
+   למשימה של 09:00 בשעון ישראל, והמשתמש היה "מתקן" אותה בשלוש שעות. */
+function lbDtLocal(iso){
+  if(!iso) return ''; const d=new Date(iso); if(isNaN(d.getTime())) return '';
+  const p=n=>String(n).padStart(2,'0');
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes());
+}
+/* עריכת מועד המשימה מהטבלה. הכתיבה היא ל-crm.tasks ולא ל-crm.leads —
+   "תאריך משימה הבאה" הוא מראה של המשימה הפתוחה, לא שדה על הליד.
+   ⚠️ ריק אינו מנקה: משימה בלי מועד יוצאת מכל תור העבודה בלי שאיש יבחין.
+   מי שרוצה לבטל — סוגר את המשימה. */
+window.lbTaskDue = async (el)=>{
+  const id = el.dataset.task, v = el.value;
+  if(!id) return;
+  if(!v){ toast('כדי לבטל מועד — יש לסגור את המשימה'); renderLeads(); return; }
+  const d = new Date(v); if(isNaN(d.getTime())){ toast('תאריך לא תקין'); return; }
+  const iso = d.toISOString();
+  const { error } = await sb.schema('crm').from('tasks').update({ due_at: iso }).eq('id', id);
+  if(error){ toast('שגיאה בשמירה: '+error.message); renderLeads(); return; }
+  const t = (TASKS||[]).find(x=>x.id===id); if(t) t.due_at = iso;
+  toast('נשמר ✓'); renderLeads(); renderTasks(); renderToday();
+};
 function capped(list, rowFn, emptyMsg){
   if(!list.length) return `<div class="empty">${emptyMsg}</div>`;
   const html = list.slice(0,pgLim('cards')).map(rowFn).join('');
@@ -15905,10 +16070,12 @@ function lbMe(){ return (typeof ME!=='undefined' && ME) ? ME.id : null; }
 /* המשימה הפתוחה והפגישה הקרובה לכל ליד — התחליף לעמודות ה"מראה" של מאנדיי
    (ת. המשימה הבאה / ת. הפגישה הבאה), מחושב מהנתונים שכבר בזיכרון */
 function lbNextMaps(){
-  const nt={}, nm={};
+  const nt={}, nm={}, ntid={};
   for(const t of (TASKS||[])){
     if(t.linked_type!=='lead' || !t.linked_id || t.status==='הושלם' || !t.due_at) continue;
-    if(!nt[t.linked_id] || t.due_at < nt[t.linked_id]) nt[t.linked_id]=t.due_at;
+    /* ntid היא מפה **נפרדת** ולא שדה בתוך nt: כך חוזה nt נשאר
+       `leadId → מחרוזת מועד`, ו-lbSort ממשיכה לעבוד בלי שינוי. */
+    if(!nt[t.linked_id] || t.due_at < nt[t.linked_id]){ nt[t.linked_id]=t.due_at; ntid[t.linked_id]=t.id; }
   }
   const td=todayStr();
   for(const m of (MEETS||[])){
@@ -15916,7 +16083,7 @@ function lbNextMaps(){
     if(['בוטלה','התקיימה','לא התקיימה'].includes(m.status) || m.meet_date<td) continue;
     if(!nm[m.linked_id] || m.meet_date < nm[m.linked_id]) nm[m.linked_id]=m.meet_date;
   }
-  return {nt,nm};
+  return {nt,nm,ntid};
 }
 function lbViewList(){
   if(LB_VIEW==='mine')   return LEADS.filter(l=>l.owner_id && l.owner_id===lbMe() && LB_ACTIVE.includes(l.status) && l.sub_status!=='הצעת מחיר');
@@ -15934,26 +16101,59 @@ function lbChips(){
     <button class="chip ${LB_VIEW==='active'?'active':''}" onclick="lbSetView('active')">כל הלידים בתהליך ${act}</button>
     <button class="chip ${LB_VIEW==='main'?'active':''}" onclick="lbSetView('main')">ראשי ${LEADS.length}</button>`;
 }
-function lbRow(l, i, nt, nm){
-  const sub=l.sub_status||l.reject_reason||l.irrelevant_reason;
-  const t=nt[l.id], m=nm[l.id];
+/* תא תת-סטטוס. שלוש עמודות נפרדות לפי בקשת רומן, אבל **נערכת רק זו
+   ששייכת לסטטוס הנוכחי** — כתיבת sub_status לליד שסטטוסו 'סירוב' הייתה
+   יוצרת ערך שאינו נראה בכרטיס וצץ מחדש אם הסטטוס יוחזר. */
+function lbSubCell(l, st, opts, col){
+  if(l.status!==st) return '<td class="lb-na">·</td>';
+  return `<td>${ieSel('lead',l.id,col,opts,l[col],{allowEmpty:true})}</td>`;
+}
+function lbRow(l, i, nt, nm, ntid){
+  const t=nt[l.id], tid=ntid&&ntid[l.id], m=lbMatch(l);
   const tOver = t && new Date(t) < new Date();
-  const mine = l.owner_id && l.owner_id===lbMe();
+  /* 🔴 סימון האיחור חייב להיות **אלמנט משלו** ולא צבע על התא. עד 6.96.0 התא
+     נשא class="lb-ov" (color:#c0392b) והטקסט "· באיחור!". עכשיו התוכן הוא
+     <input>, ולקלט יש צבע משלו — הצבע של התא אינו נראה בו, והאיחור נעלם
+     מהמסך בשקט. נתפס ב-leadstest 18/08/2026. */
+  const ovb = tOver ? '<b class="lb-ovb">באיחור</b>' : '';
+  const dueCell = tid && canIE('lead','x')
+    ? ovb+`<input type="datetime-local" class="inline-edit lb-dt" data-task="${esc(tid)}" value="${esc(lbDtLocal(t))}" onclick="event.stopPropagation()" onchange="lbTaskDue(this)">`
+    : (t ? ovb+esc(new Date(t).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}))
+         : `<button class="ghost" style="width:auto;padding:2px 9px;font-size:11.5px" onclick="event.stopPropagation();leadTask('${l.id}')">+ משימה</button>`);
+  const cust = !m ? '<span class="lb-cxnew">לקוח חדש</span>'
+    : (m.amb ? `<span class="pill lb-cxamb" title="נמצאו ${m.n} לקוחות שונים עם טלפון זהה — לבחור בכרטיס">${m.n} לקוחות</span>`
+             : `<span class="pill lb-cx lb-cust" title="${esc(m.name||'')}">${esc(m.name||'לקוח קיים')}</span>`);
   return `<tr onclick="openLead('${l.id}')">
       <td class="rownum">${i}</td>
-      <td><b>${esc(l.full_name)}</b>${l.company?`<div class="note-preview">${esc(l.company)}</div>`:''}</td>
+      <td><b>${esc(l.full_name)}</b></td>
+      <td>${cust}</td>
+      <td>${esc(l.company||'')||'<span class="lb-na">·</span>'}</td>
+      <td>${lbAva(l.owner_id)}</td>
       <td dir="ltr">${esc(l.phone||'')}</td>
-      <td>${ieSel('lead',l.id,'source',LEAD_SOURCES,l.source,{allowEmpty:true})}</td>
-      <td>${esc(l.customer_type||'—')}</td>
+      <td dir="ltr" class="note-preview" title="${esc(l.email||'')}">${esc(l.email||'')}</td>
+      <td data-sort="${esc(t||'')}"${tOver?' class="lb-ov"':''}>${dueCell}</td>
+      <td>${ieSel('lead',l.id,'source',LEAD_SOURCES,l.source,{allowEmpty:true,mdColors:LEAD_SRC_COLORS})}</td>
       <td>${ieSel('lead',l.id,'status',LEAD_STATUSES,l.status,{mdColors:LEAD_ST_COLORS})}</td>
-      <td>${sub?esc(sub):'—'}</td>
-      <td>${mine?'<span class="pill lb-mine">שלי</span>':(l.owner_id?'<span class="pill st-def">משויך</span>':'—')}</td>
-      <td data-sort="${esc(t||'')}"${tOver?' class="lb-ov"':''}>${t?new Date(t).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'}${tOver?' · באיחור!':''}</td>
-      <td data-sort="${esc(m||'')}">${m?new Date(m+'T00:00').toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'}):'—'}</td>
-      <td data-sort="${esc(l.created_at||'')}">${l.created_at?new Date(l.created_at).toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit'}):'—'}</td>
+      ${lbSubCell(l,'רלוונטי',SUB_RELEVANT,'sub_status')}
+      ${lbSubCell(l,'סירוב',SUB_REFUSAL,'reject_reason')}
+      ${lbSubCell(l,'לא רלוונטי',SUB_IRRELEVANT,'irrelevant_reason')}
+      <td>${ieSel('lead',l.id,'customer_type',LEAD_TYPES,l.customer_type,{allowEmpty:true,mdColors:LEAD_TYPE_COLORS})}</td>
     </tr>`;
 }
-const LB_HEAD = '<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="rownum">#</th><th>שם</th><th>טלפון</th><th>מקור הגעה</th><th>סוג לקוח</th><th>סטטוס</th><th>תת-סטטוס</th><th>בעלים</th><th>משימה הבאה</th><th>פגישה הבאה</th><th>נוצר</th></tr></thead><tbody>';
+/* data-gs="own" — 🔴 בלעדיו מנוע המיון הגנרי משתלט: gsSort זורק כל שורה עם
+   colspan לתחתית הטבלה, ו-GSMEM משמר את הבחירה לכל הסשן לפי מזהה המכולה.
+   כלומר לחיצה אחת על כותרת פיזרה את כל כותרות הקבוצות לתחתית עד רענון דף.
+   🔴 פונקציה ולא const — **שתי סיבות, שתיהן נמדדו:**
+   1. const מחושב בעליית המודול, ו-LB_SORT מוגדרת אחריו (let, בבלוק lbTable).
+      התוצאה: `Cannot access 'LB_SORT' before initialization` — שגיאת טעינה
+      שהפילה את כל 23 חבילות הבדיקה, לא רק את של הלידים. נתפס 18/08/2026.
+   2. גם בלי זה הכותרת הייתה מחושבת פעם אחת לכל החיים, ולכן **חץ המיון
+      לעולם לא היה מתעדכן** — הכותרת הייתה קופאת על מצב הטעינה. */
+function lbHead(){
+  return '<div class="tbl-wrap"><table class="tbl" data-gs="own"><thead><tr>'
+    + LB_COLS.map(([lbl,cls],i)=>`<th class="${lbl==='#'?'rownum':cls}${cls==='srt'&&LB_SORT[0]===i?' on':''}"${cls==='srt'?` data-ar="${LB_SORT[1]>0?'▲':'▼'}" onclick="lbSortBy(${i})"`:''}>${lbl}</th>`).join('')
+    + '</tr></thead><tbody>';
+}
 /* משימה קרובה קודם (בלי-משימה בסוף), ואז מהחדש לישן — הסדר של תצוגות
    העבודה במאנדיי ("ת. המשימה הבאה ↑") */
 function lbSort(nt){
@@ -15964,38 +16164,69 @@ function lbSort(nt){
     return (b.created_at||'').localeCompare(a.created_at||'');
   };
 }
+/* מיון משלנו — **בתוך** כל קבוצה, ולעולם לא על פני הקבוצות. [עמודה, כיוון];
+   null בעמודה = סדר העבודה המקורי (lbSort: משימה קרובה קודם). */
+let LB_SORT = [null, 1];
+const LB_KEY = {
+  1:l=>l.full_name||'', 2:l=>{const m=lbMatch(l); return m?(m.amb?'~':(m.name||'')):'';},
+  3:l=>l.company||'',   4:l=>((LOWN_BY[l.owner_id]||{}).name)||'',
+  8:l=>l.source||'',    9:l=>String(LEAD_STATUSES.indexOf(l.status)),
+  13:l=>l.customer_type||''
+};
+window.lbSortBy = i=>{ LB_SORT = (LB_SORT[0]===i) ? [i,-LB_SORT[1]] : [i,1]; renderLeads(); };
+function lbOrder(grp, nt){
+  const f = LB_KEY[LB_SORT[0]];
+  if(!f) return grp.slice().sort(lbSort(nt));
+  const col = new Intl.Collator('he');
+  /* ריקים תמיד בסוף, **בשני הכיוונים** — מוכרע לפני היפוך הכיוון, אחרת
+     במיון יורד ליד בלי בעלים קופץ לראש הקבוצה (הדפוס של gsCompare).
+     🔴 כאן ישב קודם סנטינל של תו יוניקוד גבוה (U+FFFF), שנכתב כרצף בריחה
+     בקוד המקור. הוא היה שגוי בשתי דרכים: הוא מיין
+     ריקים לראש במיון יורד, **וגם** רצף הבריחה נשבר בדרך למסד: הפריסה
+     המירה אותו לתו הממשי, שני מופעים ירדו מ-6 תווים לתו אחד, הקובץ יצא
+     קצר ב-10 בייט בדיוק, ובדיקת ה-md5 הפר-statement עצרה את הפריסה
+     (18/08/2026 — המלכודת המתועדת בכלל 3 של CLAUDE.md).
+     ⚠️ ולכן יש assert בבנייה שאוסר רצף בריחה כזה במודול הזה — כולל בהערות. */
+  return grp.slice().sort((a,b)=>{
+    const x=String(f(a)), y=String(f(b));
+    if(!x || !y) return x===y ? 0 : (x ? -1 : 1);
+    return LB_SORT[1] * col.compare(x,y);
+  });
+}
 function lbTable(list, grouped){
   if(!list.length) return '<div class="empty">לא נמצאו לידים</div>';
-  const {nt,nm}=lbNextMaps();
+  const {nt,nm,ntid}=lbNextMaps();
+  const CS = LB_COLS.length;
   let body='';
   if(grouped){
     for(const st of LEAD_STATUSES){
       const grp=list.filter(l=>l.status===st); if(!grp.length) continue;
       const cc=LEAD_ST_COLORS[st]||'#94a3b8';
       const folded=LB_FOLD.has(st);
-      body+=`<tr class="lb-grp" onclick="lbFold('${st}')"><td colspan="11" style="border-inline-start:4px solid ${cc}"><span class="lb-arr">${folded?'◂':'▾'}</span>${esc(st)} <span class="lb-cnt">${grp.length}</span></td></tr>`;
+      body+=`<tr class="lb-grp" onclick="lbFold('${st}')"><td colspan="${CS}" style="border-inline-start:6px solid ${cc}"><span class="lb-arr">${folded?'◂':'▾'}</span>${esc(st)} <span class="lb-cnt">${grp.length}</span></td></tr>`;
       if(folded) continue;
       const lim=pgLim('leads:'+st);
-      const shown=grp.slice().sort(lbSort(nt)).slice(0,lim);
-      shown.forEach((l,i)=>{ body+=lbRow(l,i+1,nt,nm); });
-      if(grp.length>lim) body+=`<tr class="lb-grpfoot"><td colspan="11"><div class="count-line2">מציג ${shown.length} מתוך ${grp.length} ${pgBtn(`pgMore('leads:${st}')`,'הצג עוד')}</div></td></tr>`;
+      const shown=lbOrder(grp,nt).slice(0,lim);
+      shown.forEach((l,i)=>{ body+=lbRow(l,i+1,nt,nm,ntid); });
+      if(grp.length>lim) body+=`<tr class="lb-grpfoot"><td colspan="${CS}"><div class="count-line2">מציג ${shown.length} מתוך ${grp.length} ${pgBtn(`pgMore('leads:${st}')`,'הצג עוד')}</div></td></tr>`;
     }
-    return LB_HEAD+body+'</tbody></table></div>';
+    return lbHead()+body+'</tbody></table></div>';
   }
-  list.slice().sort(lbSort(nt)).slice(0,pgLim('leads')).forEach((l,i)=>{ body+=lbRow(l,i+1,nt,nm); });
-  return LB_HEAD+body+'</tbody></table></div>'+pgFoot('leads',list.length,'לידים');
+  lbOrder(list,nt).slice(0,pgLim('leads')).forEach((l,i)=>{ body+=lbRow(l,i+1,nt,nm,ntid); });
+  return lbHead()+body+'</tbody></table></div>'+pgFoot('leads',list.length,'לידים');
 }
 function renderLeads(){
-  lbChips();
+  lbChips(); lbInitDef(); renderLbFilters();
   const q = ($('#search').value||'').trim();
   /* חיפוש חוצה-תצוגות: רשימה שטוחה על כל הלידים — ליד בסטטוס סופי חייב
-     להימצא גם כשהתצוגה הפעילה מסתירה אותו */
+     להימצא גם כשהתצוגה הפעילה מסתירה אותו. הסינון **אינו** חל על חיפוש:
+     מי שמקליד שם מצפה למצוא אותו, לא ל"אין תוצאות" בגלל מסנן שנשמר אתמול. */
   if(q){
     const list = LEADS.filter(l=>(l.full_name||'').includes(q)||(l.phone||'').includes(q)||(l.company||'').includes(q));
     $('#leads-list').innerHTML = wideScreen() ? lbTable(list,false) : capped(list, leadRow, 'לא נמצאו לידים');
     return;
   }
-  const list = lbViewList();
+  const list = lbApplyF(lbViewList());
   $('#leads-list').innerHTML = wideScreen() ? lbTable(list,true) : capped(list, leadRow, LB_VIEW==='mine'?'אין לך לידים בתהליך 🎉':'לא נמצאו לידים');
 }
 $('#search').addEventListener('input', renderLeads);
@@ -16020,7 +16251,6 @@ $('#a-save').onclick = async ()=>{
    מה שממלאים למטה, כותרת form-sep מפרידה. השמירה בחוזה ה-snapshot של
    saveScall (6.82.0): משווים את מה שהוצג מול מה שיש עכשיו — שתי מחרוזות
    מאותו אלמנט — ולא "מה בשדה מול מה במסד". */
-const LEAD_TYPES = ['בסיס','פ.ע','עסקי','ארגוני','מוסדי','מסחרי','סטונאי'];
 const LEAD_CARD_FIELDS = [
   ['lb-name','full_name'], ['lb-phone','phone'], ['lb-email','email'],
   ['lb-company','company'], ['lb-position','position'], ['lb-city','city'],
@@ -16177,6 +16407,65 @@ window.lbClaim = async (id)=>{
   l.owner_id=lbMe(); toast('הליד שויך אליך ✓');
   openLead(id); renderLeads();
 };
+/* ===== סרגל הסינון של הלידים (6.97.0) =====
+   רומן: "תוסיף אפשרויות סינון במסך ותעשה שמירת סינון ברירה מחדל".
+   הדפוס זהה ל-logiDefSave/scDefSave — ארבע פונקציות ו-localStorage.
+   ⚠️ **לא core.profiles.** ה-UPDATE היחיד שם מותנה ב-can_edit('set.users'),
+   שהוא 0/חסר לכל מי שאינו רומן: מעיין וניב היו מקבלים 0 שורות **בלי
+   שגיאה**, המסך היה אומר "נשמר", וברענון הסינון היה נעלם. זו בדיוק מחלקת
+   "השדה כותב את עצמו בשקט", בכיוון ההפוך. */
+const LB_DEF_KEY = 'iron_leads_default_v1';
+let LB_F = { owner:'', source:'', ctype:'', match:'' }, LB_DEF_INIT = false;
+function lbDefLoad(){ try{ const r=JSON.parse(localStorage.getItem(LB_DEF_KEY)||'null'); return (r&&typeof r==='object')?r:null; }catch(_e){ return null; } }
+function lbDefExists(){ return !!lbDefLoad(); }
+window.lbDefSave = ()=>{ try{ localStorage.setItem(LB_DEF_KEY, JSON.stringify({v:LB_VIEW,f:LB_F})); toast('התצוגה נשמרה כברירת מחדל ✓'); renderLbFilters(); }catch(_e){ toast('הדפדפן חוסם שמירת ברירת מחדל'); } };
+window.lbDefClear = ()=>{ try{ localStorage.removeItem(LB_DEF_KEY); }catch(_e){} toast('ברירת המחדל נמחקה'); renderLbFilters(); };
+/* מוחל פעם אחת. ⚠️ ערך שנשמר ואינו קיים עוד (בעלים שיצא, מקור שנמחק) היה
+   מסנן החוצה כל שורה בלי שאף תיבה תיראה מסומנת — טבלה ריקה בלי הסבר.
+   הלקח מ-logiInit (ממצא fable, 13/08/2026): מנרמלים, ומה שאינו קיים יורד. */
+function lbInitDef(){
+  if(LB_DEF_INIT) return; LB_DEF_INIT = true;
+  const d = lbDefLoad(); if(!d) return;
+  if(d.v && ['mine','active','main'].includes(d.v)) LB_VIEW = d.v;
+  if(d.f && typeof d.f==='object'){
+    LB_F = Object.assign({owner:'',source:'',ctype:'',match:''}, d.f);
+    if(LB_F.owner && !LOWN_BY[LB_F.owner]) LB_F.owner='';
+    if(LB_F.source && !LEAD_SOURCES.includes(LB_F.source)) LB_F.source='';
+    if(LB_F.ctype && !LEAD_TYPES.includes(LB_F.ctype)) LB_F.ctype='';
+    if(!['','cust','new'].includes(LB_F.match)) LB_F.match='';
+  }
+}
+function lbApplyF(list){
+  return list.filter(l=>{
+    if(LB_F.owner && (LB_F.owner==='__none__' ? !!l.owner_id : l.owner_id!==LB_F.owner)) return false;
+    if(LB_F.source && l.source!==LB_F.source) return false;
+    if(LB_F.ctype  && l.customer_type!==LB_F.ctype) return false;
+    if(LB_F.match==='cust' && !lbMatch(l)) return false;
+    if(LB_F.match==='new'  &&  lbMatch(l)) return false;
+    return true;
+  });
+}
+window.lbFilter = (k,v)=>{ LB_F[k]=v; renderLeads(); };
+window.lbFilterClear = ()=>{ LB_F={owner:'',source:'',ctype:'',match:''}; renderLeads(); };
+function lbFilterActive(){ return !!(LB_F.owner||LB_F.source||LB_F.ctype||LB_F.match); }
+function renderLbFilters(){
+  const box = document.getElementById('lb-filters'); if(!box) return;
+  const opt=(v,lbl,cur)=>`<option value="${esc(v)}" ${String(cur)===String(v)?'selected':''}>${esc(lbl)}</option>`;
+  const sel=(k,ph,pairs)=>`<select class="lf-sel ${LB_F[k]?'lf-on':''}" onchange="lbFilter('${k}',this.value)"><option value="">${ph}</option>${pairs.map(([v,l])=>opt(v,l,LB_F[k])).join('')}</select>`;
+  /* בעלים שאינו assignable מוצג רק אם יש לו לידים בפועל — אחרת הרשימה
+     מתמלאת בעובדים לשעבר ובמי שאינו במכירות כלל. */
+  const has = new Set(LEADS.map(l=>l.owner_id).filter(Boolean));
+  const owners = LOWN.filter(o=>o.assignable || has.has(o.owner_key))
+                     .map(o=>[o.owner_key, o.name + (o.kind==='legacy'?' (לשעבר)':'')]);
+  box.innerHTML =
+    sel('owner','בעלים — הכל',[['__none__','ללא בעלים']].concat(owners))+
+    sel('source','מקור הגעה — הכל',LEAD_SOURCES.map(s=>[s,s]))+
+    sel('ctype','סוג לקוח — הכל',LEAD_TYPES.map(s=>[s,s]))+
+    sel('match','לקוח קיים — הכל',[['cust','לקוח קיים במערכת'],['new','ליד חדש למערכת']])+
+    (lbFilterActive()?`<button type="button" class="lf-clear" onclick="lbFilterClear()">✕ ניקוי סינון</button>`:'')+
+    `<button type="button" class="lf-save" onclick="lbDefSave()" title="שמירת התצוגה והסינון הנוכחיים כברירת מחדל בדפדפן זה">★ שמור כברירת מחדל</button>`+
+    (lbDefExists()?`<button type="button" class="lf-clear" onclick="lbDefClear()">↺ אפס ברירת מחדל</button>`:'');
+}
 window.leadTask = (id)=>{
   const l=LEADS.find(x=>x.id===id); if(!l) return;
   LB_TASK_LINK={ type:'lead', id };

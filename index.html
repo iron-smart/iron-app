@@ -195,6 +195,25 @@
   #paySheet .pc-legend b{ color:#0f172a }
   /* המקרא יושב במסך ולא בכרטיס: הוא מסביר את כל המסך, ולא שורה אחת בו.
      מקופל כברירת מחדל כדי שלא יגזול מקום ממי שכבר מכיר את המונחים. */
+  .pay-tiles{ display:flex; gap:10px; flex-wrap:wrap; margin:0 0 10px }
+  .payt{ flex:1 1 150px; min-width:142px; display:flex; flex-direction:column; gap:2px;
+         border:1px solid var(--line); border-radius:12px; padding:10px 12px;
+         background-color:#fff; cursor:pointer; text-align:start; font:inherit }
+  .payt:hover{ border-color:#94a3b8 }
+  .payt.active{ border-color:#2a78d6; box-shadow:0 0 0 2px #dbeafe }
+  .payt-n{ font-size:22px; font-weight:800; line-height:1.1; color:#0f172a }
+  .payt-l{ font-size:11.5px; color:#64748b; font-weight:700 }
+  .payt-a{ font-size:12.5px; font-weight:800; color:#0f172a }
+  .payt-late .payt-n, .payt-late .payt-a{ color:#c0392b }
+  .payt-month .payt-n{ color:#b45309 }
+  .payt-nodue .payt-n{ color:#7c3aed }
+  .chip-sep{ display:inline-block; width:1px; height:18px; background-color:var(--line);
+             margin:0 5px; vertical-align:middle }
+  #tab-pays .chip.chip-sec{ opacity:.72; font-weight:600 }
+  #tab-pays th.selcol, #tab-pays td.selcol{ width:30px; text-align:center; padding-left:4px; padding-right:4px }
+  .pay-bulk{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:0 0 10px;
+             border:1px solid #2a78d6; border-radius:12px; padding:8px 12px; background-color:#eff6ff }
+  .pay-bulk.hidden{ display:none }
   .pay-legend{ margin:0 0 10px; border:1px solid var(--line); border-radius:12px; background:#fff }
   .pay-legend summary{ cursor:pointer; padding:9px 14px; font-size:13px; font-weight:800; color:#334155 }
   .pay-legend[open] summary{ border-bottom:1px solid var(--line) }
@@ -1817,7 +1836,7 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.99.0</div>
+      <div class="ver">גרסה 6.100.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1944,7 +1963,7 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.99.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.100.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2025,6 +2044,7 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
 
     <!-- תשלומים -->
     <section id="tab-pays" class="hidden">
+      <div class="pay-tiles" id="pay-tiles"></div>
       <div class="chips" id="pay-chips"></div>
       <details class="pay-legend">
         <summary>מקרא — מה כל מונח אומר</summary>
@@ -2054,8 +2074,8 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
         <input id="paySearch" placeholder="חיפוש לפי מספר הזמנה או שם לקוח…">
         <select id="payTermFilter" title="סינון לפי תנאי תשלום"><option value="">כל תנאי התשלום</option></select>
         <select id="paySort" title="מיון הרשימה" onchange="setPaySort(this.value)">
-          <option value="bal">מיון: יתרה מהגבוהה לנמוכה</option>
           <option value="due">מיון: מועד התשלום הקרוב ביותר</option>
+          <option value="bal">מיון: יתרה מהגבוהה לנמוכה</option>
           <option value="duedesc">מיון: מועד התשלום הרחוק ביותר</option>
           <option value="date">מיון: תאריך הזמנה מהחדש לישן</option>
         </select>
@@ -2064,6 +2084,7 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
         <span class="pv-sep"></span>
         <span class="who2" id="paySync" style="color:#64748b;font-size:12px"></span>
       </div>
+      <div class="pay-bulk hidden" id="pay-bulk"></div>
       <div id="pays-list"></div>
     </section>
 
@@ -8047,7 +8068,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'ownerpicker-2026-08-18a';
+const BUILD_ID = 'paysboard-2026-08-18a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -12764,7 +12785,11 @@ window.saveSetting = async i=>{
 let CUSTS=[], TASKS=[], DEALS=[], MEETS=[], CONTS=[], PAYS=[], ORDS=[], SCALLS=[], OTEAMS=[], SKUS=[], PROTS=[], OSET=[];
 /* 6.47.0 — מסך התשלומים עבר להישען על ההזמנה. FIN היא התצוגה המסונכרנת
    מפריוריטי, PTERMS קטלוג תנאי התשלום. crm.payments נשארת כארכיון בלבד. */
-let FIN=[], PTERMS=[], PAY_TERM_F='', PAY_SORT='bal', POFF=[], POFF_SUG=[];
+let FIN=[], PTERMS=[], PAY_TERM_F='', PAY_SORT='due', POFF=[], POFF_SUG=[];
+/* הבחירה המרוכזת. PAY_SEL הוא מספרי ההזמנות שסומנו, ו-PAY_SHOWN הוא מה
+   שמצויר בפועל אחרי הקיטום ל-pgLim — "בחר הכל" חייב לסמן בדיוק את מה
+   שרואים, אחרת הוא מסמן שורות שאינן על המסך. */
+let PAY_SEL = new Set(), PAY_SHOWN = [];
 /* מיון לפי מועד התשלום הבא — הזמנה בלי מועד (פעימה שממתינה לאירוע, או
    הזמנה בלי לוח) יורדת לסוף בשני הכיוונים, כי "אין תאריך" אינו מוקדם
    ואינו מאוחר. */
@@ -12813,15 +12838,26 @@ window.finSyncNow = async () => {
   }catch(e){ toast('הפעלת הסנכרון נכשלה: ' + (e && e.message ? e.message : e)); }
 };
 window.setPaySort = v => {
-  PAY_SORT = v || 'bal';
+  PAY_SORT = v || 'due';
   /* המיון נקבע משני מקומות — הבורר בסרגל וכותרת העמודה — ולכן השני חייב
      להשתקף בראשון, אחרת הבורר משקר על מה שמוצג בפועל. */
   const sel = $('#paySort'); if(sel && sel.value !== PAY_SORT) sel.value = PAY_SORT;
   renderPays();
 };
+/* תאריך צפי שכבר עבר אינו "איחור של 9 ימים" אלא "מצופה עכשיו": האירוע
+   שהפעימה עוגנה בו — אספקה או חשבונית — פשוט טרם קרה, והמקרא במסך כבר
+   מבטיח ש"פעימה בצפי לעולם אינה נספרת כאיחור". מיון גולמי לפי התאריך היה
+   מציב אותה מעל הזמנה שבאמת איחרה, כלומר הופך את ראש רשימת הגבייה
+   למטעה בדיוק במקום שבו הוא אמור להיות החד ביותר. לצורך המיון בלבד הצפי
+   נקטע להיום; הערך המוצג בעמודה אינו משתנה. (6.100.0) */
+function paySortDue(f){
+  const d = f.next_due || ''; if(!d) return '';
+  const t = todayStr();
+  return (f.next_is_est && d < t) ? t : d;
+}
 function paySortFn(a,b){
   if(PAY_SORT === 'due' || PAY_SORT === 'duedesc'){
-    const da = a.next_due || '', db = b.next_due || '';
+    const da = paySortDue(a), db = paySortDue(b);
     if(!da && !db) return finNum(b.balance) - finNum(a.balance);
     if(!da) return 1;
     if(!db) return -1;
@@ -13306,6 +13342,22 @@ $('#contSearch').addEventListener('input', renderConts);
 
 /* ===== מעקב תשלומים ===== */
 let PAY_FILTER = 'open';
+/* "לגבייה החודש" נספר עד סוף החודש **הקלנדרי** ולא 30 יום קדימה: מנהל
+   שמסתכל על המסך ב-28 בחודש שואל כמה ייכנס עד הראשון, לא כמה ייכנס עד
+   ה-27 בחודש הבא. */
+function payMonthEnd(){
+  const d = new Date(), e = new Date(d.getFullYear(), d.getMonth()+1, 0);
+  return e.getFullYear() + '-' + String(e.getMonth()+1).padStart(2,'0') + '-' + String(e.getDate()).padStart(2,'0');
+}
+/* "באיחור" נמדד ב-overdue_beats ולא בהשוואת next_due להיום: פעימה
+   שעוגנה באירוע שטרם קרה נושאת תאריך צפי, ו-ord.order_pay_state_v סופרת
+   ב-overdue רק due_eff הוודאי. המקרא במסך מבטיח במפורש ש"פעימה בצפי
+   לעולם אינה נספרת כאיחור" — הבטחה שהשוואה נאיבית הייתה שוברת. */
+const payIsLate = f => finNum(f.overdue_beats) > 0;
+const payDueIn = (f, days) => { const t = todayStr();
+  return !!f.next_due && f.next_due >= t && f.next_due <= addDaysIso(t, days); };
+const payDueThisMonth = f => { const t = todayStr();
+  return !!f.next_due && f.next_due >= t && f.next_due <= payMonthEnd(); };
 const payStClass = s => s==='שולמה' ? 'st-rel' : (s==='שולמה חלקית' ? 'st-def' : 'st-no');
 const remaining = p => Math.max(0, Number(p.total_amount||0) - Number(p.paid_amount||0));
 /* ===== מסך התשלומים (6.47.1) — סביב ההזמנה ולא סביב רשומת תשלום =====
@@ -13407,6 +13459,10 @@ function finUnlinked(list){
 function finRows(){
   let list = FIN.filter(finLive);
   if(PAY_FILTER === 'open')   list = list.filter(finIsOpen);
+  if(PAY_FILTER === 'late')   list = list.filter(f => finIsOpen(f) && payIsLate(f));
+  if(PAY_FILTER === 'week')   list = list.filter(f => finIsOpen(f) && payDueIn(f, 7));
+  if(PAY_FILTER === 'month')  list = list.filter(f => finIsOpen(f) && payDueThisMonth(f));
+  if(PAY_FILTER === 'nodue')  list = list.filter(f => finIsOpen(f) && !f.next_due);
   if(PAY_FILTER === 'uninv')  list = list.filter(f => finNum(f.delivered_uninvoiced) > 0);
   if(PAY_FILTER === 'noterm') list = list.filter(f => !f.pay_code && finIsOpen(f));
   if(PAY_FILTER === 'unlink') list = list.filter(f => finNum(f.cust_unlinked_cnt) > 0);
@@ -13432,18 +13488,28 @@ function payChips(){
   const uninv  = live.filter(f => finNum(f.delivered_uninvoiced) > 0);
   const sumUninv = uninv.reduce((a,f)=>a+finNum(f.delivered_uninvoiced_sum), 0);
   const noterm = open.filter(f => !f.pay_code);
+  const late   = open.filter(f => payIsLate(f));
+  const week   = open.filter(f => payDueIn(f, 7));
+  const month  = open.filter(f => payDueThisMonth(f));
+  const nodue  = open.filter(f => !f.next_due);
+  const sumOf  = l => l.reduce((a,f)=>a+finNum(f.balance), 0);
   const unlink = live.filter(f => finNum(f.cust_unlinked_cnt) > 0);
   const unl = finUnlinked(live);
   const el = $('#pay-chips'); if(!el) return;
   el.innerHTML =
+    '<button class="chip ' + (PAY_FILTER==='late'?'active':'') + '" onclick="setPayFilter(\'late\')" title="פעימה שעברה את מועדה הוודאי ולא כוסתה. פעימה בצפי אינה נספרת כאן.">באיחור ' + late.length + (late.length ? ' <small>· ' + shekel(sumOf(late)) + '</small>' : '') + '</button>' +
+    '<button class="chip ' + (PAY_FILTER==='week'?'active':'') + '" onclick="setPayFilter(\'week\')" title="פעימה פתוחה שמועדה בשבעת הימים הקרובים">השבוע ' + week.length + (week.length ? ' <small>· ' + shekel(sumOf(week)) + '</small>' : '') + '</button>' +
+    '<button class="chip ' + (PAY_FILTER==='month'?'active':'') + '" onclick="setPayFilter(\'month\')" title="פעימה פתוחה שמועדה עד סוף החודש הקלנדרי">החודש ' + month.length + (month.length ? ' <small>· ' + shekel(sumOf(month)) + '</small>' : '') + '</button>' +
+    '<button class="chip ' + (PAY_FILTER==='nodue'?'active':'') + '" onclick="setPayFilter(\'nodue\')" title="יתרה פתוחה בלי מועד גבייה — אין לה לוח פעימות, ולכן היא אינה נספרת בשום חלון זמן ואינה נכנסת לצפי">ללא מועד ' + nodue.length + (nodue.length ? ' <small>· ' + shekel(sumOf(nodue)) + '</small>' : '') + '</button>' +
     '<button class="chip ' + (PAY_FILTER==='open'?'active':'') + '" onclick="setPayFilter(\'open\')">יתרה פתוחה ' + open.length + ' <small>· ' + shekel(sumRem) + '</small></button>' +
-    '<button class="chip ' + (PAY_FILTER==='uninv'?'active':'') + '" onclick="setPayFilter(\'uninv\')" title="תעודות משלוח סופיות שלא יצאה כנגדן חשבונית — נספרות מ-27/07/2026">סופק ולא חויב ' + uninv.length + ' <small>· ' + shekel(sumUninv) + '</small></button>' +
-    (unl.custs ? '<button class="chip ' + (PAY_FILTER==='unlink'?'active':'') + '" onclick="setPayFilter(\'unlink\')" title="קבלות שנקלטו מפריוריטי בלי מספר הזמנה — הכסף התקבל אך אינו יורד מאף הזמנה">קבלות ללא שיוך ' + unl.custs + ' <small>· ' + shekel(unl.sum) + '</small></button>' : '') +
     '<button class="chip ' + (PAY_FILTER==='noterm'?'active':'') + '" onclick="setPayFilter(\'noterm\')">בלי תנאי תשלום ' + noterm.length + '</button>' +
+    '<span class="chip-sep"></span>' +
+    '<button class="chip chip-sec ' + (PAY_FILTER==='uninv'?'active':'') + '" onclick="setPayFilter(\'uninv\')" title="תעודות משלוח סופיות שלא יצאה כנגדן חשבונית — נספרות מ-27/07/2026">סופק ולא חויב ' + uninv.length + ' <small>· ' + shekel(sumUninv) + '</small></button>' +
+    (unl.custs ? '<button class="chip chip-sec ' + (PAY_FILTER==='unlink'?'active':'') + '" onclick="setPayFilter(\'unlink\')" title="קבלות שנקלטו מפריוריטי בלי מספר הזמנה — הכסף התקבל אך אינו יורד מאף הזמנה">קבלות ללא שיוך ' + unl.custs + ' <small>· ' + shekel(unl.sum) + '</small></button>' : '') +
     (function(){ const cr = finCreditSum(live); const n = live.filter(finHasCredit).length;
-       return n ? '<button class="chip ' + (PAY_FILTER==='credit'?'active':'') + '" onclick="setPayFilter(\'credit\')" title="הזמנות שכוסו בקיזוז מהזמנה אחרת של אותו לקוח, ולקוחות שנשארו ביתרת זכות. מחוץ לצפי הגבייה — אין שם מה לגבות">יתרת זכות ' + n + (cr.sum ? ' <small>· ' + shekel(cr.sum) + '</small>' : '') + '</button>' : ''; })() +
-    '<button class="chip ' + (PAY_FILTER==='paid'?'active':'') + '" onclick="setPayFilter(\'paid\')">נסגר ' + live.filter(f=>!finMasked(f) && finNum(f.balance)<=1).length + '</button>' +
-    '<button class="chip ' + (PAY_FILTER==='all'?'active':'') + '" onclick="setPayFilter(\'all\')">הכל ' + live.length + '</button>';
+       return n ? '<button class="chip chip-sec ' + (PAY_FILTER==='credit'?'active':'') + '" onclick="setPayFilter(\'credit\')" title="הזמנות שכוסו בקיזוז מהזמנה אחרת של אותו לקוח, ולקוחות שנשארו ביתרת זכות. מחוץ לצפי הגבייה — אין שם מה לגבות">יתרת זכות ' + n + (cr.sum ? ' <small>· ' + shekel(cr.sum) + '</small>' : '') + '</button>' : ''; })() +
+    '<button class="chip chip-sec ' + (PAY_FILTER==='paid'?'active':'') + '" onclick="setPayFilter(\'paid\')">נסגר ' + live.filter(f=>!finMasked(f) && finNum(f.balance)<=1).length + '</button>' +
+    '<button class="chip chip-sec ' + (PAY_FILTER==='all'?'active':'') + '" onclick="setPayFilter(\'all\')">הכל ' + live.length + '</button>';
   renderPaySync();
   const ab = $('#payAddBtn'); if(ab) ab.classList.toggle('hidden', !canEdit('acc.pays'));
   const tf = $('#payTermFilter');
@@ -13453,6 +13519,96 @@ function payChips(){
 }
 window.setPayFilter = f => { PAY_FILTER = f; renderPays(); navMark(); };
 window.setPayTerm  = v => { PAY_TERM_F = v || ''; renderPays(); };
+
+/* ===== רצועת האריחים — תמונת מצב להנהלה (6.100.0) ===== */
+/* הכול נגזר מ-FIN שכבר בזיכרון, בלי שאילתה נוספת, ולכן הרצועה מתעדכנת
+   יחד עם כל ציור של המסך ואינה יכולה להתיישן מולו.
+   כל אריח לחיץ ומסנן: מספר שאי אפשר להגיע ממנו לשורות שמאחוריו הוא
+   מספר שאי אפשר לפעול לפיו. */
+function payTiles(){
+  const el = $('#pay-tiles'); if(!el) return;
+  const live = FIN.filter(finLive), open = live.filter(finIsOpen);
+  const late  = open.filter(f => payIsLate(f));
+  const month = open.filter(f => payDueThisMonth(f));
+  const nodue = open.filter(f => !f.next_due);
+  const sumOf = l => l.reduce((a,f)=>a+finNum(f.balance), 0);
+  const tile = (key, cls, label, list, tip) =>
+    '<button class="payt ' + cls + (PAY_FILTER===key ? ' active' : '') + '" title="' + esc(tip) +
+      '" onclick="setPayFilter(\'' + key + '\')">' +
+      '<span class="payt-n">' + list.length + '</span>' +
+      '<span class="payt-l">' + esc(label) + '</span>' +
+      '<span class="payt-a">' + shekel(sumOf(list)) + '</span></button>';
+  el.innerHTML =
+    tile('open','payt-open','סך יתרה פתוחה',open,'כל ההזמנות החיות שנותר בהן לגבות') +
+    tile('late','payt-late','באיחור',late,'פעימה שעברה את מועדה הוודאי ולא כוסתה. פעימה בצפי אינה נספרת.') +
+    tile('month','payt-month','לגבייה החודש',month,'פעימה פתוחה שמועדה עד סוף החודש הקלנדרי') +
+    tile('nodue','payt-nodue','ללא מועד גבייה',nodue,'יתרה פתוחה בלי לוח פעימות — אינה נספרת בשום חלון זמן ואינה נכנסת לצפי');
+}
+
+/* ===== החלה מרוכזת של תנאי תשלום (6.100.0) ===== */
+/* רומן, 18/08/2026: "ידני — אבל תעשה שיהיה מהיר." נמדד באותו יום ש-57
+   מתוך 66 ההזמנות הפתוחות בלי תנאי תשלום; שורה-שורה זה 57 פעולות, וכל
+   עוד אין תנאי אין מועד גבייה ואין תזרים.
+   הדפוס משוכפל מ-LOGI_SEL בלוח הלוגיסטיקה — Set, checkbox בכותרת, פס
+   פעולות שמופיע כשיש בחירה, ומאזין change מואצל ברמת המסמך. */
+function payBulkBar(){
+  const bar = $('#pay-bulk'); if(!bar) return;
+  const n = PAY_SEL.size;
+  bar.classList.toggle('hidden', n === 0 || !canEdit('acc.pays'));
+  if(!n) return;
+  bar.innerHTML = '<span>נבחרו <b>' + n + '</b> הזמנות</span>' +
+    '<select id="payBulkTerm"><option value="">— תנאי תשלום —</option>' +
+    PTERMS.map(t => '<option value="' + esc(t.code) + '">' + esc(t.name) + '</option>').join('') +
+    '</select>' +
+    '<button type="button" class="btn" onclick="payBulkApply()">החל על הנבחרות</button>' +
+    '<button type="button" class="tb-clear" onclick="paySelClear()">ניקוי בחירה</button>';
+}
+window.paySelClear = () => { PAY_SEL.clear(); renderPays(); };
+
+/* ההחלה עוברת דרך finmApply ולא נוגעת ב-FIN ישירות: FIN ו-FINM_BY הם
+   שני מטמונים נפרדים לאותו נתון, וזה הבאג שתוקן ב-6.85.2.
+   ord.order_beats_seed מחזירה 0 כשכבר קיימות פעימות (בלי p_force), ולכן
+   החלה על הזמנה שכבר יש לה לוח אינה משכפלת אותו — ולכן גם אין כאן
+   "דריסה שקטה" של לוח שמישהו בנה ידנית. */
+window.payBulkApply = async () => {
+  if(!canEdit('acc.pays')) return finNoEdit();
+  const sel = $('#payBulkTerm'), code = sel ? sel.value : '';
+  if(!code) return toast('בחר תנאי תשלום');
+  const ons = Array.from(PAY_SEL);
+  if(!ons.length) return;
+  const rows = ons.map(on => ({ order_number: on, pay_code: code, updated_by: finMe(), updated_at: finNowIso() }));
+  const r = await sb.schema('ord').from('order_finance_meta').upsert(rows, { onConflict: 'order_number' });
+  if(r && r.error){ toast('שגיאה בשמירה: ' + (r.error.message || r.error)); return; }
+  ons.forEach(on => finmApply(on, { pay_code: code }));
+  let seeded = 0, failed = 0;
+  for(const on of ons){
+    try{
+      const { data: k, error } = await sb.schema('ord').rpc('order_beats_seed', { p_order: on, p_code: code });
+      if(error) throw error;
+      if(Number(k) > 0) seeded++;
+    }catch(_e){ failed++; }
+  }
+  for(const on of ons){ await finRefreshRow(on); }
+  PAY_SEL.clear();
+  toast('תנאי התשלום הוחל על ' + ons.length + ' הזמנות · לוח פעימות נוצר ל-' + seeded +
+        (failed ? ' · ' + failed + ' נכשלו' : ''));
+  renderPays();
+};
+
+document.addEventListener('change', function(e){
+  const t = e.target; if(!t) return;
+  if(t.id === 'paySelAll'){
+    PAY_SEL.clear();
+    if(t.checked) PAY_SHOWN.forEach(on => PAY_SEL.add(on));
+    document.querySelectorAll('#pays-list .paysel').forEach(cb => { cb.checked = t.checked; });
+    payBulkBar(); return;
+  }
+  if(t.classList && t.classList.contains('paysel')){
+    const on = String(t.dataset.on || ''); if(!on) return;
+    if(t.checked) PAY_SEL.add(on); else PAY_SEL.delete(on);
+    payBulkBar();
+  }
+});
 /* שכבת הכתיבה של המסך הזה. dbw הכללי שייך למודול התמחור ובכישלון הוא טוען
    מחדש את המחירון — כאן זה לא רלוונטי, ומשאיר את התצוגה האופטימית שקרית.
    לכן: החזרת הערך הקודם ואז ציור מחדש של מסך התשלומים בלבד. */
@@ -14316,9 +14472,11 @@ async function payLoadBeats(on){
   }catch(e){ if(box.isConnected) box.innerHTML = '<div class="items-empty">לא ניתן לטעון את לוח הפעימות</div>'; }
 }
 function payTable(list){
+  const shown = list.slice(0, pgLim('pays'));
+  PAY_SHOWN = shown.map(f => String(f.order_number));
   if(!list.length) return '<div class="empty">אין הזמנות בסינון הזה</div>';
   const ed = canEdit('acc.pays');
-  const rows = list.slice(0, pgLim('pays')).map((f,i)=>{
+  const rows = shown.map((f,i)=>{
     const c = finCell(f);
     const termSel = ed
       ? '<select class="fin-term" onchange="finSetTerm(\'' + jsq(f.order_number) + '\', this.value)"><option value="">— בחר —</option>' +
@@ -14328,12 +14486,14 @@ function payTable(list){
       ? '<input class="fin-note" value="' + esc(f.notes||'') + '" placeholder="הערה…" onchange="finSetNote(\'' + jsq(f.order_number) + '\', this.value)">'
       : esc(f.notes||'');
     return '<tr class="pay-row" onclick="payOpen(\'' + jsq(f.order_number) + '\')">' +
+      (ed ? '<td class="selcol" onclick="event.stopPropagation()"><input type="checkbox" class="paysel" data-on="' +
+            esc(f.order_number) + '"' + (PAY_SEL.has(String(f.order_number)) ? ' checked' : '') + '></td>' : '') +
       '<td class="rownum">' + (i+1) + '</td>' +
       /* מספר ההזמנה הוא הדרך היחידה לכרטיס ההזמנה; כל שאר השורה פותחת את
          כרטיס התשלום. בלי stopPropagation הלחיצה המשיכה לשורה, ו-payOpen
          נפתח מעל כרטיס ההזמנה — כלומר הקישור "לא עבד" אף שהוא כן רץ.
          שורה ידנית אינה הזמנה ולכן אינה קישור. */
-      '<td dir="ltr" style="white-space:nowrap"><b>' +
+      '<td class="payc-on" dir="ltr" style="white-space:nowrap"><b>' +
         (f.is_manual ? esc(f.order_number)
           : '<a href="#" title="לכרטיס ההזמנה" onclick="event.preventDefault();event.stopPropagation();finOpen(\'' +
             jsq(f.order_number) + '\')">' + esc(f.order_number) + '</a>') + '</b></td>' +
@@ -14349,6 +14509,7 @@ function payTable(list){
       '<td onclick="event.stopPropagation()">' + note + '</td>' +
     '</tr>'; }).join('');
   return '<div class="tbl-wrap"><table class="tbl"><thead><tr>' +
+    (ed ? '<th class="selcol"><input type="checkbox" id="paySelAll" title="בחירת כל השורות המוצגות"></th>' : '') +
     '<th class="rownum">#</th><th>מס\' הזמנה</th><th>שם לקוח</th><th>ת. הזמנה</th>' +
     '<th>סה"כ</th><th>שולם</th><th>נותר לתשלום</th><th title="נגזר מלוח הפעימות — אינו נערך ידנית">סטטוס תשלום</th>' +
     '<th class="th-sort" title="הפעימה הפתוחה הקרובה. לחיצה ממיינת מהקרוב לרחוק ובחזרה." onclick="setPaySort(PAY_SORT===\'due\'?\'duedesc\':\'due\')">מועד לגבייה' +
@@ -14404,11 +14565,17 @@ function renderPays(){
   if(payTyping()){ PAY_PENDING = true; return; }
   PAY_PENDING = false;
   payChips();
+  payTiles();
   const q = (($('#paySearch')||{}).value||'').trim();
   let list = finRows();
   if(q) list = list.filter(f => String(f.order_number||'').includes(q) || String(f.customer_name||'').includes(q));
   list = list.slice().sort(paySortFn);
+  /* במובייל אין עמודת סימון, ולכן בחירה שנשארה מהמסך הרחב אינה ניתנת
+     לניהול ואינה נראית — מנקים במקום להשאיר פס פעולות מרחף על בחירה
+     שאי אפשר לבטל. */
+  if(!wideScreen()){ PAY_SEL.clear(); PAY_SHOWN = []; }
   $('#pays-list').innerHTML = wideScreen() ? payTable(list) : capped(list, payRow, 'אין הזמנות בסינון הזה');
+  payBulkBar();
 }
 $('#paySearch').addEventListener('input', renderPays);
 $('#payTermFilter').addEventListener('change', e => setPayTerm(e.target.value));

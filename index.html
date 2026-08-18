@@ -1748,7 +1748,7 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.95.0</div>
+      <div class="ver">גרסה 6.96.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1875,7 +1875,7 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.95.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.96.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2463,7 +2463,7 @@ window.TAB_PERM = {
   skus:'sku.cards', docs:'docs', inv:'inv.stock', po:'inv.po', prc:'prc', pays:'acc.pays'
 };
 window.LOGI_PERM = { orders:'logi.orders', calls:'logi.calls', cal:'logi.cal' };
-window.SET_PERM  = { users:'set.users', teams:'set.teams', texts:'set.texts', conn:'set.conn', synclog:'set.synclog', general:'set.general' };
+window.SET_PERM  = { users:'set.users', teams:'set.teams', texts:'set.texts', conn:'set.conn', synclog:'set.synclog', notif:'set.notif', general:'set.general' };
 window.LOGI_VIEWS = ['orders','calls','cal'];
 window.navCanTab = t=>{
   if(t==='logi') return LOGI_VIEWS.some(v=>canView(LOGI_PERM[v]));
@@ -3595,8 +3595,9 @@ function kTile(label, val, fn, extra){
    אותה צורה בדיוק כמו `waTpl`, אבל מוגדרת כאן ליד השימוש. */
 function osetNum(key, fallback){
   const r = (typeof OSET!=='undefined' && OSET || []).find(x=>x && x.key===key);
-  const v = r && r.value; const n = +v;
-  return (v===undefined || v===null || v==='' || !isFinite(n)) ? fallback : n;
+  const v = r && r.value; const s = (v===undefined||v===null) ? '' : String(v).trim();
+  const n = +s;   /* trim לפני: ' ' אינו '' אבל +' ' הוא 0, ו-isFinite(0) אמת */
+  return (s==='' || !isFinite(n)) ? fallback : n;
 }
 function kSub(txt, red){ return '<div class="k-sub'+(red?' red':'')+'">'+txt+'</div>'; }
 function renderKpiStrip(){
@@ -7927,7 +7928,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'dashclean-2026-08-18a';
+const BUILD_ID = 'notifsettings-2026-08-18a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -11944,7 +11945,7 @@ window.setMode = v=>{ SET_VIEW=v; renderSettings(); navMark(); };
 function settingsCats(){
   /* 6.24.0 — התפריט נגזר ממפתחות ההרשאה set.*, לא מתפקיד המשתמש.
      ללא אימוג׳ים — רומן 29/07/2026 */
-  const all = [['users','משתמשים והרשאות'],['teams','צוותי לוגיסטיקה'],['texts','טקסטים ומסמכים'],['conn','חיבורים'],['synclog','יומן סנכרון'],['general','כללי']];
+  const all = [['users','משתמשים והרשאות'],['teams','צוותי לוגיסטיקה'],['texts','טקסטים ומסמכים'],['conn','חיבורים'],['synclog','יומן סנכרון'],['notif','התראות'],['general','כללי']];
   try{ return all.filter(c=> canView(SET_PERM[c[0]])); }catch(_e){ return []; }
 }
 /* תפריט ההגדרות בסרגל נבנה לפי ההרשאה בפועל — פריטי אדמין אינם מוצגים למי שאינו אדמין */
@@ -12282,6 +12283,8 @@ function renderSettings(){
     const rest=OSET.filter(s=>!used.has(s.key));
     if(rest.length) gHtml+=`<h2 class="sec">⚙️ אחר</h2>`+rest.map(tbox).join('');
     body = `<h2 class="sec" style="margin-top:0">טקסטים ומסמכים — מקובץ לפי קטגוריה</h2>`+(gHtml||'<div class="empty">אין טקסטים מוגדרים</div>');
+  } else if(SET_VIEW==='notif' && canView('set.notif')){
+    body = notifSettingsHtml();
   } else if(SET_VIEW==='conn'){
     body = integHtml();
   } else if(SET_VIEW==='synclog' && canView('set.synclog')){
@@ -12304,6 +12307,47 @@ function renderSettings(){
   if(SET_VIEW==='users' && canView('set.users')) renderUsers();
   if(SET_VIEW==='synclog' && canView('set.synclog')) loadSyncLog();
   if(SET_VIEW==='conn') loadIntegrations();
+}
+/* ===== הגדרות ← התראות (6.96.0) =====
+   רומן, 18/08/2026: "משימה שמגיע מועד זמנה, אפשר גם לבקש התראה זמן מסוים
+   לפני ושיהיה ממש הגדרות להתראות לניהול של האדמין בלבד."
+
+   המסך אינו מחזיק לוגיקה — הוא עורך ארבע שורות ב-ord.settings שהשרת כבר
+   קורא: core.automation_tick (המעבר החמישי, task_due_soon) והטריגר
+   crm.zz_notify_lead_assigned. שינוי כאן משפיע על התיקתוק הבא, בלי פריסה.
+
+   ⚠️ מפתח שאינו קיים ב-OSET מוצג כשורה מושבתת עם הסבר, ולא נעלם בשקט —
+   אחרת אדמין היה רואה מסך חלקי בלי לדעת למה. */
+const NOTIF_SETTINGS = [
+  ['notif_task_due_lead_min','כמה דקות לפני מועד המשימה להתריע','מספר בדקות, 0–1440. ברירת המחדל בשרת היא 60 אם הערך ריק או פגום.','num'],
+  ['notif_task_due_enabled','התראה על מועד משימה','כולל ההתראה המוקדמת ותזכורת הבוקר של יום הדדליין.','yn'],
+  ['notif_task_overdue_enabled','התראה על משימה באיחור','נשלחת בבוקר שאחרי מועד המשימה, אם לא הושלמה.','yn'],
+  ['notif_lead_assigned_enabled','התראה על הקצאת ליד','נשלחת למי שהוקצה לו ליד. לקיחה עצמית אינה מתריעה.','yn'],
+];
+function notifSettingsHtml(){
+  const rows = NOTIF_SETTINGS.map(([key,label,hint,kind])=>{
+    const i = OSET.findIndex(s=>s&&s.key===key);
+    if(i < 0) return `<div class="tbl-wrap" style="padding:12px;margin-bottom:10px">
+      <b style="font-size:13px">${esc(label)}</b>
+      <div class="note" style="margin-top:6px">ההגדרה <code>${esc(key)}</code> אינה קיימת ב-ord.settings ולכן השרת משתמש בברירת המחדל שלו. אפשר להוסיף אותה במסך "טקסטים ומסמכים".</div>
+    </div>`;
+    const val = String(OSET[i].value ?? '');
+    const ctl = kind==='yn'
+      ? `<select id="sv-${i}" ${canEdit('set.notif')?'':'disabled'} style="width:auto;min-width:120px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13.5px">
+           <option ${val==='כן'?'selected':''}>כן</option><option ${val==='לא'?'selected':''}>לא</option></select>`
+      : `<input id="sv-${i}" type="number" min="0" max="1440" step="5" value="${esc(val)}" ${canEdit('set.notif')?'':'disabled'}
+              style="width:120px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13.5px">`;
+    return `<div class="tbl-wrap" style="padding:12px;margin-bottom:10px">
+      <b style="font-size:13px">${esc(label)}</b>
+      <div class="note" style="margin:4px 0 8px">${esc(hint)}</div>
+      <div style="display:flex;gap:8px;align-items:center">${ctl}
+        ${canEdit('set.notif')?`<button class="chip" onclick="saveSetting(${i})">שמירה</button>`:''}</div>
+    </div>`;
+  }).join('');
+  return `<h2 class="sec" style="margin-top:0">התראות</h2>
+    <div class="note" style="margin-bottom:12px">ההתראות מגיעות לפעמון שבסרגל העליון. השינוי חל על התיקתוק הבא של המערכת (כל 15 דקות) ואינו דורש פריסה.</div>
+    ${rows}
+    <div class="note" style="margin-top:14px">התראות הפגישות (יום לפני, ובוקר הפגישה) נשלחות בוואטסאפ ומנוהלות בנפרד — הנוסחים במסך "טקסטים ומסמכים".</div>`;
 }
 async function renderUsers(){
   const box=$('#usersBox'); if(!box) return;

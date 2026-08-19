@@ -107,7 +107,11 @@
   /* 6.2.2 — מונה תוצאות לצד שדה החיפוש בלוח השנה */
   .qinfo{ font-size:12.5px; color:#64748b; white-space:nowrap; }
   .toolbar input{ flex:1; padding:11px 14px; border:1px solid var(--line); border-radius:10px; font-size:15px; }
-  .toolbar .add{ background:var(--green); color:#fff; border:none; border-radius:10px; padding:0 18px; font-size:22px; font-weight:700; }
+/* ⚠️ גובה מפורש: עד 6.102.0 לא היה כאן גובה כלל, והכפתור נשען על
+   align-items:center — כלומר הוא יצא **נמוך מהשדה** שלצדו בדסקטופ.
+   ה-min-height שקיים ב-media query של 900px הסתיר את זה במובייל בלבד.
+   הגודל ירד מ-22px כי עכשיו יש בו מלל ולא סימן בודד. */
+  .toolbar .add{ background:var(--green); color:#fff; border:none; border-radius:10px; padding:0 18px; font-size:15px; font-weight:700; min-height:46px; white-space:nowrap; }
 
   .lead{ background:#fff; border-radius:12px; padding:14px; margin-bottom:10px; box-shadow:0 1px 3px rgba(0,0,0,.06); display:flex; justify-content:space-between; align-items:center; gap:10px; }
   .lead:active{ background:#f8fafc; }
@@ -1741,7 +1745,13 @@
 .lb-arr{ display:inline-block; width:15px; color:#64748b; }
 .lb-cnt{ color:#475569; font-weight:700; font-size:12.5px; margin-inline-start:8px; background:#fff; border:1px solid #cbd5e1; border-radius:999px; padding:1px 9px; }
 .pill.lb-mine{ background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; }
-td.lb-ov{ color:#c0392b; font-weight:700; }
+/* רומן, 19/08/2026: "תאריך משימה הבאה — במקום להוסיף טקסט 'באיחור', פשוט
+   תצבע את איפה שרשום תאריך ושעה בצבע אדמדם." הרקע על **התא** ולא על אלמנט
+   פנימי, כי התוכן הוא <input> שיש לו צבע משלו.
+   ⚠️ background-color ולא shorthand — התא הזה אינו קפוא, אבל הכלל הכללי
+   .tbl td עלול לקבל שכבה בעתיד, ו-shorthand היה מוחק אותה (6.90.0). */
+td.lb-ov{ color:#c0392b; font-weight:700; background-color:#fdeceb; }
+td.lb-ov .lb-dt{ border-color:#f0bcbc; background-color:#fff6f5; }
 /* ---- עמודת הבעלים (6.97.0) ---- */
 .lb-ava{ display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:#e2e8f0; color:#475569; font-weight:800; font-size:11px; border:1px solid #cbd5e1; overflow:hidden; }
 .lb-ava-old{ filter:grayscale(1); opacity:.75; border-style:dashed; }
@@ -1764,8 +1774,43 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
    ובלעדיה כותרת הקבוצה הייתה נדבקת ומכסה את העמודה הראשונה.
    ⚠️ border-box חובה — היסטי sticky מצטברים מהרוחבים, וב-content-box הריפוד
    מוסיף ~9px לכל תא והעמודות נערמות (הלקח מ-pv-frz, 6.39.0). */
-#leads-list .tbl > thead > tr > th:nth-child(-n+3),
-#leads-list .tbl > tbody > tr:not(.lb-grp):not(.lb-grpfoot) > td:nth-child(-n+3){ position:sticky; box-sizing:border-box; background:#fff; }
+/* 🔴 שני כללים ולא אחד. עד 6.102.0 הבורר הזה כלל **גם** את `thead th`, ונתן
+   לו background:#fff על גבי color:#fff — שלוש כותרות לבן על לבן. הספציפיות
+   כאן (#id + מחלקה + פסאודו) גוברת בקלות על `.tbl th{background:var(--navy)}`,
+   ולכן הכותרת נעלמה בלי שאף בדיקה תפסה. רומן קרא לזה "כתם לבן".
+   🔴 ואותו כלל על ה-td כיסה את רקע השורה, והרג בעמודות "שם מלא" ו"לקוח"
+   את פס הזברה, את הריחוף ואת סימון row-new. `inherit` מחזיר אותם: התא
+   יורש את רקע ה-tr, ולכן הוא עדיין אטום מספיק כדי להסתיר את מה שנגלל
+   תחתיו — וזו כל מטרת ה-background בהקפאה.
+   ⚠️ background-color ולא shorthand בשני הכללים. */
+#leads-list .tbl > thead > tr > th:nth-child(-n+3){ position:sticky; box-sizing:border-box; background-color:var(--navy); }
+#leads-list .tbl > tbody > tr:not(.lb-grp):not(.lb-grpfoot) > td:nth-child(-n+3){ position:sticky; box-sizing:border-box; background-color:inherit; }
+/* ---- סימון הגלילה האופקית (6.103.0) ----
+   🔴 **נמדד ב-19/08/2026: הגלילה עצמה כבר עבדה.** ב-pay4485 העוטף גליל
+   (over=182px ב-1700, 577px ב-1280) ו-scrollLeft נקלט. שלוש היפותזות
+   שנבדקו ונפסלו במדידה, ולכן **אינן** בקוד: `min-width:max-content` על
+   הטבלה (הטבלה כבר מתרחבת מעבר ל-100% מעצמה), `scrollbar-width:thin`,
+   ו-`::-webkit-scrollbar`. חמש הווריאציות נתנו פס בגובה **0px** — כרום
+   על מק משתמש ב-overlay scrollbar, ו-`scrollbar-width` אף **מבטל** את
+   כללי ה-webkit כשמגדירים את שניהם. קוד מת שנראה כמו תיקון.
+   מה שכן שבור: (א) מיקום הגלילה מתאפס בכל ציור — מטופל ב-lbPaint;
+   (ב) אין שום רמז ויזואלי שיש מה לגלול. הצללית כאן היא (ב): גרדיאנטים
+   ב-background-attachment:local נצמדים לתוכן ונעלמים בקצוות, ולכן הם
+   נראים בדיוק כשיש עוד תוכן בכיוון הזה — בלי JS ובלי מאזין scroll.
+   ⚠️ background-image בלבד. ל-.tbl-wrap יש background:#fff משלו, ו-
+   shorthand היה מוחק אותו (המלכודת של 6.90.0).
+   ⚠️ מסולם ל-#leads-list. .tbl-wrap משמשת 20+ מסכים אחרים. */
+#leads-list .tbl-wrap{
+  background-image:
+    linear-gradient(to left, #fff 30%, rgba(255,255,255,0)),
+    linear-gradient(to left, rgba(255,255,255,0), #fff 70%),
+    linear-gradient(to left, rgba(15,42,66,.16), rgba(15,42,66,0)),
+    linear-gradient(to right, rgba(15,42,66,.16), rgba(15,42,66,0));
+  background-position: right center, left center, right center, left center;
+  background-repeat:no-repeat;
+  background-size: 34px 100%, 34px 100%, 13px 100%, 13px 100%;
+  background-attachment: local, local, scroll, scroll;
+}
 #leads-list .tbl > thead > tr > th:nth-child(-n+3){ z-index:7 }
 #leads-list .tbl > tbody > tr:not(.lb-grp):not(.lb-grpfoot) > td:nth-child(-n+3){ z-index:3 }
 #leads-list .tbl > thead > tr > th:nth-child(1),
@@ -1805,7 +1850,6 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
 .lbu-who{ font-weight:800; font-size:12.5px; color:#0f172a; white-space:nowrap; }
 .lbu-when{ font-size:11.5px; color:#94a3b8; white-space:nowrap; }
 .lbu-body{ font-size:13px; color:#334155; white-space:pre-wrap; overflow-wrap:anywhere; flex:1; }
-.lb-ovb{ display:inline-block; background:#fde8e6; color:#c0392b; border:1px solid #f5c6c1; border-radius:6px; font-size:10.5px; font-weight:800; padding:1px 6px; margin-inline-end:5px; vertical-align:middle; }
 .lb-del{ width:auto; font-size:13px; font-weight:700; padding:9px 16px; border:1px solid #f0bcbc; background-color:#fbe0e0; color:#a92f2f; border-radius:10px; cursor:pointer; font-family:inherit; }
 .lb-del:hover{ background-color:#f7cfcf; }
 .lb-links{ padding:8px 2px; font-size:13px; }
@@ -1838,7 +1882,7 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.102.0</div>
+      <div class="ver">גרסה 6.103.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1965,7 +2009,7 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.102.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.103.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2023,7 +2067,7 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
       <div class="logi-filters" id="lb-filters"></div>
       <div class="toolbar">
         <input id="search" placeholder="חיפוש לפי שם, טלפון או חברה…">
-        <button class="add" id="addBtn" title="ליד חדש">+</button>
+        <button class="add" id="addBtn" title="ליד חדש">+ יצירת ליד חדש</button>
       </div>
       <div id="leads-list"></div>
     </section>
@@ -2432,13 +2476,21 @@ const SUB_IRRELEVANT = ['ליד פיקטיבי','טוען שלא השאיר פנ
    רומן, 18/08/2026: "סוג לקוח תוסיף צבעים, מקור הגעה גם". הצבעים עוברים
    דרך mdPill/tint כמו צבעי הסטטוס, ולכן הם פסטל אחיד ולא כתם רווי. */
 const LEAD_TYPES = ['בסיס','פ.ע','עסקי','ארגוני','מוסדי','מסחרי','סטונאי'];
+/* צבעי תת-הסטטוס (6.103.0). **הועתקו מהגדרות הלוח במאנדיי** (1756633625,
+   העמודות color_mkyyvh6e / color_mkkpnwqx / color_mkyyyvhg) כדי שרומן יראה
+   את אותם צבעים שהוא מכיר משם. עוברים דרך tint/onWhite כמו כל השאר, ולכן
+   יוצאים פסטל אחיד — גם #333333 נהיה אפור קריא ולא ריבוע שחור. */
+const SUB_RELEVANT_COLORS = {'פולואפ':'#5559df','תואמה פגישה':'#9d50dd','הצעת מחיר':'#00c875','הפניה לאתר':'#9cd326'};
+const SUB_REFUSAL_COLORS = {'מחיר יקר':'#faa1f1','העדיף מתחרים':'#ffadad','אין מענה מספר פעמים':'#784bd1','ירד מהעניין':'#7e3b8a','היה צריך ציוד כללי שאין לנו':'#9d99b9','אין הבשלה כלכלית':'#333333','מועד רחוק מדי':'#bca58a','ייצור קשר עצמאית':'#4eccc6','אפשרות לשותפות':'#cab641','לקוח פעיל':'#ff007f'};
+const SUB_IRRELEVANT_COLORS = {'ליד פיקטיבי':'#9d50dd','טוען שלא השאיר פניה':'#faa1f1','לא הבין את המוצר':'#df2f4a','חיפשו חדר כושר':'#333333','כפל':'#563e3e'};
+const SUB_COLORS = {'רלוונטי':SUB_RELEVANT_COLORS,'סירוב':SUB_REFUSAL_COLORS,'לא רלוונטי':SUB_IRRELEVANT_COLORS};
 const LEAD_TYPE_COLORS = {'בסיס':'#a1a8b5','פ.ע':'#579bfc','עסקי':'#00c875','ארגוני':'#784bd1','מוסדי':'#ff642e','מסחרי':'#fdab3d','סטונאי':'#0086c0'};
 const LEAD_SRC_COLORS  = {'קשרים אישיים':'#00c875','Paycall - שיחה נכנסת':'#0086c0','המלצת לקוח':'#037f4c','דף נחיתה':'#fdab3d','אתר אינטרנט':'#579bfc','פייסבוק / אינסטגרם':'#a25ddc','סושיאל':'#ff158a','ידנית':'#a1a8b5','Calendly':'#9aadbd','דף נחיתה - וואטסאפ':'#66ccff','גוגל':'#e2445c'};
 /* סדר העמודות הוא **בדיוק** הרשימה של רומן. colspan של שורות הקבוצה נגזר
    מהאורך ולא מקודד — עמודה שתתווסף לא תשבור את הכותרות בשקט. */
 const LB_COLS = [
   ['#','rownum'], ['שם מלא','srt'], ['לקוח','srt'], ['שם חברה','srt'], ['בעלים ליד','srt'],
-  ['טלפון',''], ['אימייל',''], ['תאריך משימה הבאה','srt'], ['מקור הגעה','srt'],
+  ['טלפון',''], ['תאריך משימה הבאה','srt'], ['מקור הגעה','srt'],
   ['סטטוס','srt'], ['סטטוס רלוונטי',''], ['סטטוס לסירוב',''], ['סטטוס לא רלוונטי',''], ['סוג לקוח','srt']
 ];
 /* ---- הצלבת הליד מול לקוח קיים ----
@@ -8069,7 +8121,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'leaddelete-2026-08-19a';
+const BUILD_ID = 'leadstable-fix-2026-08-19a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -16316,8 +16368,8 @@ function lbChips(){
    ששייכת לסטטוס הנוכחי** — כתיבת sub_status לליד שסטטוסו 'סירוב' הייתה
    יוצרת ערך שאינו נראה בכרטיס וצץ מחדש אם הסטטוס יוחזר. */
 function lbSubCell(l, st, opts, col){
-  if(l.status!==st) return '<td class="lb-na">·</td>';
-  return `<td>${ieSel('lead',l.id,col,opts,l[col],{allowEmpty:true})}</td>`;
+  if(l.status!==st) return `<td class="lb-na" title="נפתח לעריכה כשהליד בסטטוס «${esc(st)}»">·</td>`;
+  return `<td>${ieSel('lead',l.id,col,opts,l[col],{allowEmpty:true,mdColors:SUB_COLORS[st]})}</td>`;
 }
 function lbRow(l, i, nt, nm, ntid){
   const t=nt[l.id], tid=ntid&&ntid[l.id], m=lbMatch(l);
@@ -16326,12 +16378,11 @@ function lbRow(l, i, nt, nm, ntid){
      נשא class="lb-ov" (color:#c0392b) והטקסט "· באיחור!". עכשיו התוכן הוא
      <input>, ולקלט יש צבע משלו — הצבע של התא אינו נראה בו, והאיחור נעלם
      מהמסך בשקט. נתפס ב-leadstest 18/08/2026. */
-  const ovb = tOver ? '<b class="lb-ovb">באיחור</b>' : '';
   const dueCell = tid && canIE('lead','x')
-    ? ovb+`<input type="datetime-local" class="inline-edit lb-dt" data-task="${esc(tid)}" value="${esc(lbDtLocal(t))}" onclick="event.stopPropagation()" onchange="lbTaskDue(this)">`
-    : (t ? ovb+esc(new Date(t).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}))
+    ? `<input type="datetime-local" class="inline-edit lb-dt" data-task="${esc(tid)}" value="${esc(lbDtLocal(t))}" onclick="event.stopPropagation()" onchange="lbTaskDue(this)">`
+    : (t ? esc(new Date(t).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}))
          : `<button class="ghost" style="width:auto;padding:2px 9px;font-size:11.5px" onclick="event.stopPropagation();leadTask('${l.id}')">+ משימה</button>`);
-  const cust = !m ? '<span class="lb-cxnew">לקוח חדש</span>'
+  const cust = !m ? '<span class="lb-cxnew">ליד חדש</span>'
     : (m.amb ? `<span class="pill lb-cxamb" title="נמצאו ${m.n} לקוחות שונים עם טלפון זהה — לבחור בכרטיס">${m.n} לקוחות</span>`
              : `<span class="pill lb-cx lb-cust" title="${esc(m.name||'')}">${esc(m.name||'לקוח קיים')}</span>`);
   return `<tr onclick="openLead('${l.id}')">
@@ -16341,7 +16392,6 @@ function lbRow(l, i, nt, nm, ntid){
       <td>${esc(l.company||'')||'<span class="lb-na">·</span>'}</td>
       <td>${lbAva(lbOwnerOf(l))}</td>
       <td dir="ltr">${esc(l.phone||'')}</td>
-      <td dir="ltr" class="note-preview" title="${esc(l.email||'')}">${esc(l.email||'')}</td>
       <td data-sort="${esc(t||'')}"${tOver?' class="lb-ov"':''}>${dueCell}</td>
       <td>${ieSel('lead',l.id,'source',LEAD_SOURCES,l.source,{allowEmpty:true,mdColors:LEAD_SRC_COLORS})}</td>
       <td>${ieSel('lead',l.id,'status',LEAD_STATUSES,l.status,{mdColors:LEAD_ST_COLORS})}</td>
@@ -16381,8 +16431,8 @@ let LB_SORT = [null, 1];
 const LB_KEY = {
   1:l=>l.full_name||'', 2:l=>{const m=lbMatch(l); return m?(m.amb?'~':(m.name||'')):'';},
   3:l=>l.company||'',   4:l=>((LOWN_BY[lbOwnerOf(l)]||{}).name)||'',
-  8:l=>l.source||'',    9:l=>String(LEAD_STATUSES.indexOf(l.status)),
-  13:l=>l.customer_type||''
+  7:l=>l.source||'',    8:l=>String(LEAD_STATUSES.indexOf(l.status)),
+  12:l=>l.customer_type||''
 };
 window.lbSortBy = i=>{ LB_SORT = (LB_SORT[0]===i) ? [i,-LB_SORT[1]] : [i,1]; renderLeads(); };
 function lbOrder(grp, nt){
@@ -16426,6 +16476,18 @@ function lbTable(list, grouped){
   lbOrder(list,nt).slice(0,pgLim('leads')).forEach((l,i)=>{ body+=lbRow(l,i+1,nt,nm,ntid); });
   return lbHead()+body+'</tbody></table></div>'+pgFoot('leads',list.length,'לידים');
 }
+/* הציור עובר דרך נקודה אחת שמשמרת את הגלילה. ⚠️ בלי זה כל מיון, קיפול,
+   החלפת תצוגה או הקלדה בחיפוש מחזירים את הטבלה לקצה הימני — כי כולם
+   קוראים ל-renderLeads() שמחליף innerHTML. הדפוס לקוח מ-ieSave (6.24.5),
+   שם הוא כבר פותר בדיוק את אותה בעיה עבור עריכה בתא. */
+function lbPaint(html){
+  const host = $('#leads-list');
+  const oldW = host.querySelector('.tbl-wrap');
+  const sl = oldW ? oldW.scrollLeft : 0, st = oldW ? oldW.scrollTop : 0;
+  host.innerHTML = html;
+  const w = host.querySelector('.tbl-wrap');
+  if(w && (sl || st)){ w.scrollLeft = sl; w.scrollTop = st; }
+}
 function renderLeads(){
   lbChips(); lbInitDef(); renderLbFilters();
   const q = ($('#search').value||'').trim();
@@ -16434,11 +16496,11 @@ function renderLeads(){
      מי שמקליד שם מצפה למצוא אותו, לא ל"אין תוצאות" בגלל מסנן שנשמר אתמול. */
   if(q){
     const list = LEADS.filter(l=>(l.full_name||'').includes(q)||(l.phone||'').includes(q)||(l.company||'').includes(q));
-    $('#leads-list').innerHTML = wideScreen() ? lbTable(list,false) : capped(list, leadRow, 'לא נמצאו לידים');
+    lbPaint(wideScreen() ? lbTable(list,false) : capped(list, leadRow, 'לא נמצאו לידים'));
     return;
   }
   const list = lbApplyF(lbViewList());
-  $('#leads-list').innerHTML = wideScreen() ? lbTable(list,true) : capped(list, leadRow, LB_VIEW==='mine'?'אין לך לידים בתהליך 🎉':'לא נמצאו לידים');
+  lbPaint(wideScreen() ? lbTable(list,true) : capped(list, leadRow, LB_VIEW==='mine'?'אין לך לידים בתהליך 🎉':'לא נמצאו לידים'));
 }
 $('#search').addEventListener('input', renderLeads);
 
@@ -16523,6 +16585,17 @@ let LEAD_SNAP = null, LB_TASK_LINK = null, LB_MEET_LEAD = null;
    הסטטוס הנוכחי; ההמרה לעמודה הנכונה קורית בשמירה בלבד. */
 function lbSubCol(st){ return st==='רלוונטי'?'sub_status' : st==='סירוב'?'reject_reason' : st==='לא רלוונטי'?'irrelevant_reason' : null; }
 function lbSubOpts(st){ return st==='רלוונטי'?SUB_RELEVANT : st==='סירוב'?SUB_REFUSAL : st==='לא רלוונטי'?SUB_IRRELEVANT : null; }
+/* אותה נוסחת פסטל של ieSel, לבורר שנבנה ידנית בכרטיס */
+function lbSubStyle(st, val){
+  const map = SUB_COLORS[st] || {}; const bg = map[val];
+  return bg ? `background:${tint(bg,.85)};color:${onWhite(bg)};border:1px solid ${tint(bg,.68)}` : '';
+}
+window.lbSubTint = ()=>{
+  const el = document.getElementById('lb-sub'); const box = document.getElementById('lb-subbox');
+  if(!el || !box) return;
+  const stEl = document.getElementById('lb-status');
+  el.setAttribute('style', lbSubStyle(stEl?stEl.value:'', el.value));
+};
 function lbSubLabel(st){ return st==='רלוונטי'?'סטטוס רלוונטי' : st==='סירוב'?'סיבת סירוב' : 'סיבת לא רלוונטי'; }
 window.leadSubUI = ()=>{
   const stEl=document.getElementById('lb-status'); const box=document.getElementById('lb-subbox');
@@ -16534,7 +16607,8 @@ window.leadSubUI = ()=>{
   /* חזרו לסטטוס שצויר — הערך השמור; סטטוס אחר — מתחילים ריק */
   const cur = (st===(l.status||'')) ? (l[lbSubCol(st)]||'') : '';
   box.innerHTML = `<label>${lbSubLabel(st)}</label>
-    <select id="lb-sub"><option value=""></option>${opts.map(o=>`<option ${o===cur?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+    <select id="lb-sub" onchange="lbSubTint()" style="${lbSubStyle(st,cur)}"><option value=""></option>${opts.map(o=>`<option ${o===cur?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+  lbSubTint();
 };
 function lbSnapshot(id){
   const snap={ __id:id };

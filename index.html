@@ -1742,6 +1742,8 @@
    ביומן ("יום מלא" מחק את הוורוד של קריאת שירות) ומתועדת ב-CLAUDE.md. */
 .tbl tr.lb-grp td{ background-color:#e3ebf5; background-image:linear-gradient(#e8eef7,#dde5f0); font-weight:900; font-size:14.5px; color:#0f172a; cursor:pointer; padding:11px 14px; user-select:none; text-align:right; letter-spacing:.2px; border-top:2px solid #b9c6d8; border-bottom:1px solid #cbd5e1; }
 .tbl tr.lb-grp:hover td{ background-color:#d7e1ef; background-image:linear-gradient(#dee7f3,#d2dcea); }
+/* קבוצה יחידה — אינה קליקבילית, ולכן גם אינה מתנהגת כאילו (6.104.0) */
+.tbl tr.lb-grp1 td, .tbl tr.lb-grp1:hover td{ cursor:default; background-color:#e3ebf5; background-image:linear-gradient(#e8eef7,#dde5f0); }
 .lb-arr{ display:inline-block; width:15px; color:#64748b; }
 .lb-cnt{ color:#475569; font-weight:700; font-size:12.5px; margin-inline-start:8px; background:#fff; border:1px solid #cbd5e1; border-radius:999px; padding:1px 9px; }
 .pill.lb-mine{ background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; }
@@ -1761,6 +1763,8 @@ td.lb-ov .lb-dt{ border-color:#f0bcbc; background-color:#fff6f5; }
 .pill.lb-cx{ background:#e0f2fe; color:#075985; border:1px solid #bae6fd; }
 .pill.lb-cxamb{ background:#fef3c7; color:#92400e; border:1px solid #fde68a; }
 .lb-cxnew{ color:#94a3b8; font-size:11.5px; }
+.lb-cxgo{ cursor:pointer; }
+.lb-cxgo:hover{ filter:brightness(.94); text-decoration:underline; }
 /* ---- שלוש עמודות תת-הסטטוס ---- */
 .lb-na{ color:#dbe2ea; }
 /* ---- מיון משלנו: כותרת לחיצה ---- */
@@ -1882,7 +1886,7 @@ td.lb-ov .lb-dt{ border-color:#f0bcbc; background-color:#fff6f5; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.103.0</div>
+      <div class="ver">גרסה 6.104.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2009,7 +2013,7 @@ td.lb-ov .lb-dt{ border-color:#f0bcbc; background-color:#fff6f5; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.103.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.104.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2520,6 +2524,15 @@ function lbCx(){
 /* null = לקוח חדש · {n:1} = התאמה ודאית · {amb:true} = כמה לקוחות שונים.
    כפילויות פריוריטי של אותו שם (דן כהן ×4) נחשבות התאמה אחת בכוונה —
    הכלל "ריבוי ⇒ לא נבחר" היה מכבה את התכונה דווקא אצל הלקוחות החוזרים. */
+/* מזהה הלקוח לניווט. ⚠️ `customer_id` ראשון בעדיפות אבל **לבדו הוא חסר
+   משמעות מעשית**: נמדד 19/08/2026 ש-1,147 מתוך 1,256 ההצלבות (91.3%)
+   אין להן אחד. `lbMatch().cid` היה קיים מ-6.93.0 ואיש לא קרא אותו.
+   ⚠️ עמום (amb) מוחזר null בכוונה — שם `cid` הוא הראשון שנכנס למפה,
+   כלומר שרירותי, וניווט אליו היה פותח כרטיס של לקוח אחר בלי לומר. */
+function lbCustId(l, m){
+  if(l && l.customer_id) return l.customer_id;
+  return (m && !m.amb && m.cid) ? m.cid : '';
+}
 function lbMatch(l){
   const e = lbCx().get(lbP9(l.phone)); if(!e) return null;
   return { n:e.ids.size, name:e.name, cid:e.cid, amb: e.names.size>1 };
@@ -8121,7 +8134,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'leadstable-fix-2026-08-19a';
+const BUILD_ID = 'leadsfilter-2026-08-19a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -16382,9 +16395,12 @@ function lbRow(l, i, nt, nm, ntid){
     ? `<input type="datetime-local" class="inline-edit lb-dt" data-task="${esc(tid)}" value="${esc(lbDtLocal(t))}" onclick="event.stopPropagation()" onchange="lbTaskDue(this)">`
     : (t ? esc(new Date(t).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}))
          : `<button class="ghost" style="width:auto;padding:2px 9px;font-size:11.5px" onclick="event.stopPropagation();leadTask('${l.id}')">+ משימה</button>`);
+  const _cid = lbCustId(l, m);
   const cust = !m ? '<span class="lb-cxnew">ליד חדש</span>'
     : (m.amb ? `<span class="pill lb-cxamb" title="נמצאו ${m.n} לקוחות שונים עם טלפון זהה — לבחור בכרטיס">${m.n} לקוחות</span>`
-             : `<span class="pill lb-cx lb-cust" title="${esc(m.name||'')}">${esc(m.name||'לקוח קיים')}</span>`);
+             : (_cid
+                ? `<span class="pill lb-cx lb-cust lb-cxgo" title="${esc(m.name||'')} — פתיחת כרטיס הלקוח" onclick="event.stopPropagation();goCard(()=>openCust('${jsq(_cid)}'))">${esc(m.name||'לקוח קיים')} ↗</span>`
+                : `<span class="pill lb-cx lb-cust" title="${esc(m.name||'')}">${esc(m.name||'לקוח קיים')}</span>`));
   return `<tr onclick="openLead('${l.id}')">
       <td class="rownum">${i}</td>
       <td><b>${esc(l.full_name)}</b></td>
@@ -16460,11 +16476,15 @@ function lbTable(list, grouped){
   const CS = LB_COLS.length;
   let body='';
   if(grouped){
+    /* 🔴 קבוצה יחידה אינה מקפלת. אחרי סינון לסטטוס אחד, קליק על הכותרת
+       היה מרוקן את הטבלה מיד — ונקרא "הסינון לא מצא כלום". הכותרת נשארת
+       ומראה את הספירה, פשוט בלי onclick ובלי חץ. */
+    const _only = LEAD_STATUSES.filter(s=>list.some(l=>l.status===s)).length===1;
     for(const st of LEAD_STATUSES){
       const grp=list.filter(l=>l.status===st); if(!grp.length) continue;
       const cc=LEAD_ST_COLORS[st]||'#94a3b8';
-      const folded=LB_FOLD.has(st);
-      body+=`<tr class="lb-grp" onclick="lbFold('${st}')"><td colspan="${CS}" style="border-inline-start:6px solid ${cc}"><span class="lb-arr">${folded?'◂':'▾'}</span>${esc(st)} <span class="lb-cnt">${grp.length}</span></td></tr>`;
+      const folded=!_only && LB_FOLD.has(st);
+      body+=`<tr class="lb-grp${_only?' lb-grp1':''}" ${_only?'':`onclick="lbFold('${jsq(st)}')"`}><td colspan="${CS}" style="border-inline-start:6px solid ${cc}">${_only?'':`<span class="lb-arr">${folded?'◂':'▾'}</span>`}${esc(st)} <span class="lb-cnt">${grp.length}</span></td></tr>`;
       if(folded) continue;
       const lim=pgLim('leads:'+st);
       const shown=lbOrder(grp,nt).slice(0,lim);
@@ -16627,7 +16647,8 @@ window.openLead = (id)=>{
   const editable = window.canEdit('crm.leads');
   const fmtDT = v=> v?new Date(v).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
   const utm=[l.utm_campaign,l.utm_source,l.utm_medium,l.utm_term].filter(Boolean).join(' · ');
-  const cust=l.customer_id?(CUSTS||[]).find(x=>x.id===l.customer_id):null;
+  const _lm=lbMatch(l), _lcid=lbCustId(l,_lm);
+  const cust=_lcid?((CUSTS||[]).find(x=>x.id===_lcid)||(_lm&&!_lm.amb?{id:_lcid,name:_lm.name}:null)):null;
   const meId=lbMe();
   const myTasks=(TASKS||[]).filter(t=>t.linked_type==='lead'&&t.linked_id===id&&t.status!=='הושלם').sort((a,b)=>(a.due_at||'').localeCompare(b.due_at||''));
   const myMeets=(MEETS||[]).filter(m=>m.linked_type==='lead'&&m.linked_id===id&&m.status!=='בוטלה').sort((a,b)=>(b.meet_date||'').localeCompare(a.meet_date||''));
@@ -16643,7 +16664,7 @@ window.openLead = (id)=>{
       ${utm?`<div class="span2"><label>קמפיין (UTM)</label>${roIn(utm)}</div>`:''}
       ${l.package?`<div><label>חבילה</label>${roIn(l.package)}</div>`:''}
       ${l.priority_customer_id?`<div><label>לקוח בפריוריטי</label>${roIn(l.priority_customer_id,{ltr:1})}</div>`:''}
-      ${cust?`<div class="span2"><label>לקוח מקושר</label><div class="lb-links"><a href="#" onclick="event.preventDefault();openCust('${cust.id}')">${esc(cust.name)} ↗</a></div></div>`:''}
+      ${cust?`<div class="span2"><label>לקוח מקושר${l.customer_id?'':' <span class="note" style="font-weight:400">(הוצלב לפי טלפון)</span>'}</label><div class="lb-links"><a href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(cust.id)}'))">${esc(cust.name||'כרטיס הלקוח')} ↗</a></div></div>`:''}
 
       <div class="form-sep">הערות ליד</div>
       <div class="span4"><label>מה השאיר הליד בטופס או בשיחה <span class="note" style="font-weight:400">(נשמר עם הכרטיס)</span></label><textarea id="lb-notes" rows="3" placeholder="הערות שהגיעו מהקמפיין, או רקע שאספתם בשיחה">${esc(l.notes||'')}</textarea></div>
@@ -16761,7 +16782,10 @@ window.lbClaim = async (id)=>{
    שגיאה**, המסך היה אומר "נשמר", וברענון הסינון היה נעלם. זו בדיוק מחלקת
    "השדה כותב את עצמו בשקט", בכיוון ההפוך. */
 const LB_DEF_KEY = 'iron_leads_default_v1';
-let LB_F = { owner:'', source:'', ctype:'', match:'' }, LB_DEF_INIT = false;
+/* ⚠️ status הוא **מערך**, ושאר המפתחות סקלרים. כל קורא חייב `(LB_F.status||[])`
+   — גם ברירת המחדל השמורה מ-6.97.0 אינה מכילה אותו כלל. */
+let LB_F = { status:[], owner:'', source:'', ctype:'', match:'' }, LB_DEF_INIT = false;
+const LB_F0 = ()=>({ status:[], owner:'', source:'', ctype:'', match:'' });
 function lbDefLoad(){ try{ const r=JSON.parse(localStorage.getItem(LB_DEF_KEY)||'null'); return (r&&typeof r==='object')?r:null; }catch(_e){ return null; } }
 function lbDefExists(){ return !!lbDefLoad(); }
 window.lbDefSave = ()=>{ try{ localStorage.setItem(LB_DEF_KEY, JSON.stringify({v:LB_VIEW,f:LB_F})); toast('התצוגה נשמרה כברירת מחדל ✓'); renderLbFilters(); }catch(_e){ toast('הדפדפן חוסם שמירת ברירת מחדל'); } };
@@ -16774,7 +16798,12 @@ function lbInitDef(){
   const d = lbDefLoad(); if(!d) return;
   if(d.v && ['mine','active','main'].includes(d.v)) LB_VIEW = d.v;
   if(d.f && typeof d.f==='object'){
-    LB_F = Object.assign({owner:'',source:'',ctype:'',match:''}, d.f);
+    LB_F = Object.assign(LB_F0(), d.f);
+    /* נרמול הסטטוסים: ברירת מחדל שנשמרה לפני 6.104.0 אין בה `status` כלל,
+       ואם מישהו שמר סקלר — הופכים למערך. סטטוס שכבר אינו קיים יורד, אחרת
+       הוא מסנן החוצה כל שורה בלי שתיבה אחת תיראה מסומנת. */
+    if(!Array.isArray(LB_F.status)) LB_F.status = LB_F.status ? [LB_F.status] : [];
+    LB_F.status = LB_F.status.filter(s=>LEAD_STATUSES.includes(s));
     if(LB_F.owner && !LOWN_BY[LB_F.owner]) LB_F.owner='';
     if(LB_F.source && !LEAD_SOURCES.includes(LB_F.source)) LB_F.source='';
     if(LB_F.ctype && !LEAD_TYPES.includes(LB_F.ctype)) LB_F.ctype='';
@@ -16782,8 +16811,10 @@ function lbInitDef(){
   }
 }
 function lbApplyF(list){
+  const _st = (LB_F.status||[]);
   return list.filter(l=>{
     const _ow = lbOwnerOf(l);
+    if(_st.length && !_st.includes(l.status)) return false;
     if(LB_F.owner && (LB_F.owner==='__none__' ? !!_ow : _ow!==LB_F.owner)) return false;
     if(LB_F.source && l.source!==LB_F.source) return false;
     if(LB_F.ctype  && l.customer_type!==LB_F.ctype) return false;
@@ -16793,8 +16824,16 @@ function lbApplyF(list){
   });
 }
 window.lbFilter = (k,v)=>{ LB_F[k]=v; renderLeads(); };
-window.lbFilterClear = ()=>{ LB_F={owner:'',source:'',ctype:'',match:''}; renderLeads(); };
-function lbFilterActive(){ return !!(LB_F.owner||LB_F.source||LB_F.ctype||LB_F.match); }
+/* 🔴 `d.open=true` בסוף — renderLeads בונה מחדש את סרגל הסינון, וה-<details>
+   נסגר אחרי כל סימון. בלי זה אי אפשר לסמן שני סטטוסים ברצף. הדפוס מ-
+   logiStatusToggle (6.24.6), שם הוא נכתב בדיוק מאותה סיבה. */
+window.lbStatusToggle = (st,on)=>{
+  const set=new Set(LB_F.status||[]); on?set.add(st):set.delete(st); LB_F.status=[...set];
+  renderLeads();
+  const d=document.querySelector('#lb-filters .lf-multi'); if(d) d.open=true;
+};
+window.lbFilterClear = ()=>{ LB_F=LB_F0(); renderLeads(); };
+function lbFilterActive(){ return !!((LB_F.status||[]).length||LB_F.owner||LB_F.source||LB_F.ctype||LB_F.match); }
 function renderLbFilters(){
   const box = document.getElementById('lb-filters'); if(!box) return;
   const opt=(v,lbl,cur)=>`<option value="${esc(v)}" ${String(cur)===String(v)?'selected':''}>${esc(lbl)}</option>`;
@@ -16804,7 +16843,10 @@ function renderLbFilters(){
   const has = new Set(LEADS.map(lbOwnerOf).filter(Boolean));
   const owners = LOWN.filter(o=>o.assignable || has.has(o.owner_key))
                      .map(o=>[o.owner_key, o.name + (o.kind==='legacy'?' (לשעבר)':'')]);
+  const stSel=(LB_F.status||[]);
+  const stItems=LEAD_STATUSES.map(st=>`<label class="lf-opt"><input type="checkbox" ${stSel.includes(st)?'checked':''} onchange="lbStatusToggle('${jsq(st)}',this.checked)">${mdPill(st,LEAD_ST_COLORS)}</label>`).join('');
   box.innerHTML =
+    `<details class="lf-multi ${stSel.length?'lf-on':''}"><summary>${stSel.length?`סטטוס (${stSel.length})`:'סטטוס — הכל'}</summary><div class="lf-menu">${stItems}</div></details>`+
     sel('owner','בעלים — הכל',[['__none__','ללא בעלים']].concat(owners))+
     sel('source','מקור הגעה — הכל',LEAD_SOURCES.map(s=>[s,s]))+
     sel('ctype','סוג לקוח — הכל',LEAD_TYPES.map(s=>[s,s]))+

@@ -1756,8 +1756,8 @@
    פנימי, כי התוכן הוא <input> שיש לו צבע משלו.
    ⚠️ background-color ולא shorthand — התא הזה אינו קפוא, אבל הכלל הכללי
    .tbl td עלול לקבל שכבה בעתיד, ו-shorthand היה מוחק אותה (6.90.0). */
-td.lb-ov{ color:#c0392b; font-weight:700; background-color:#fdeceb; }
-td.lb-ov .lb-dt{ border-color:#f0bcbc; background-color:#fff6f5; }
+td.lb-ov{ color:#c0392b; font-weight:700; }
+td.lb-ov .lb-dt{ color:#c0392b; font-weight:700; border-color:#f0bcbc; background-color:#fff6f5; }
 /* ---- עמודת הבעלים (6.97.0) ---- */
 .lb-ava{ display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:#e2e8f0; color:#475569; font-weight:800; font-size:11px; border:1px solid #cbd5e1; overflow:hidden; }
 .lb-ava-old{ filter:grayscale(1); opacity:.75; border-style:dashed; }
@@ -1777,6 +1777,16 @@ td.lb-ov .lb-dt{ border-color:#f0bcbc; background-color:#fff6f5; }
 .pill.lb-cx{ background:#e0f2fe; color:#075985; border:1px solid #bae6fd; }
 .pill.lb-cxamb{ background:#fef3c7; color:#92400e; border:1px solid #fde68a; }
 .lb-cxnew{ color:#94a3b8; font-size:11.5px; }
+/* 6.107.0 — התגית העמומה הופכת ללחיצה. ⚠️ .lb-cxgo לבדה אינה מספיקה
+   כי .pill.lb-cxamb מאוחרת ממנה בגיליון באותה ספציפיות; לכן הבורר
+   המשולב, ולא הסתמכות על סדר. */
+.pill.lb-cxamb.lb-cxgo{ cursor:pointer; }
+.lb-cxdup{ font-size:10px; font-weight:800; opacity:.75; margin-inline-start:3px; }
+.lb-cxrow{ display:flex; align-items:center; gap:10px; padding:9px 10px; border:1px solid var(--line);
+  border-radius:10px; margin-bottom:7px; cursor:pointer; background-color:#fff; }
+.lb-cxrow:hover{ background-color:#f4f7fb; }
+.lb-cxrow b{ font-size:13.5px; }
+.lb-cxrow span{ font-size:11.5px; color:var(--ink-3); }
 .lb-cxgo{ cursor:pointer; }
 .lb-cxgo:hover{ filter:brightness(.94); text-decoration:underline; }
 /* ---- שלוש עמודות תת-הסטטוס ---- */
@@ -1886,6 +1896,15 @@ td.lb-ov .lb-dt{ border-color:#f0bcbc; background-color:#fff6f5; }
 .lb-links{ padding:8px 2px; font-size:13px; }
 .lb-own{ display:flex; align-items:center; min-height:34px; }
 .lb-grpfoot td{ padding:4px 10px; background:#fafbfc; }
+/* ---- רוחב שלוש עמודות תת-הסטטוס (6.107.0) ----
+   רומן: "בשדות הסטטוסים תקטין טיפה את העמודות אם ניתן".
+   נמדד שהן 146px כל אחת = 438px, ובכל שורה לכל היותר אחת מאוכלסת
+   (1,988 מתוך 3,091 הלידים ריקים בשלושתן). הצמצום ל-108px מוריד
+   ~114px — כלומר הגלישה של 35px ב-1920 נסגרת לגמרי. */
+#leads-list .tbl > thead > tr > th:nth-child(n+10):nth-child(-n+12),
+#leads-list .tbl > tbody > tr:not(.lb-grp):not(.lb-grpfoot) > td:nth-child(n+10):nth-child(-n+12){
+  width:108px; min-width:108px; max-width:108px; overflow:hidden; text-overflow:ellipsis; }
+#leads-list .tbl > tbody > tr > td:nth-child(n+10):nth-child(-n+12) select.inline-edit{ max-width:100%; }
 </style>
 </head>
 <body>
@@ -1913,7 +1932,7 @@ td.lb-ov .lb-dt{ border-color:#f0bcbc; background-color:#fff6f5; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.106.0</div>
+      <div class="ver">גרסה 6.107.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2040,7 +2059,7 @@ td.lb-ov .lb-dt{ border-color:#f0bcbc; background-color:#fff6f5; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.106.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.107.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2362,6 +2381,9 @@ td.lb-ov .lb-dt{ border-color:#f0bcbc; background-color:#fff6f5; }
 <div class="modal hidden" id="lbOwnModal">
   <div class="sheet" id="lbOwnSheet"></div>
 </div>
+<div class="modal hidden" id="lbCxModal">
+  <div class="sheet" id="lbCxSheet"></div>
+</div>
 
 <!-- מודל כרטיס עסקה -->
 <div class="modal hidden" id="dealModal">
@@ -2520,6 +2542,11 @@ const SUB_RELEVANT_COLORS = {'פולואפ':'#5559df','תואמה פגישה':'#
 const SUB_REFUSAL_COLORS = {'מחיר יקר':'#faa1f1','העדיף מתחרים':'#ffadad','אין מענה מספר פעמים':'#784bd1','ירד מהעניין':'#7e3b8a','היה צריך ציוד כללי שאין לנו':'#9d99b9','אין הבשלה כלכלית':'#333333','מועד רחוק מדי':'#bca58a','ייצור קשר עצמאית':'#4eccc6','אפשרות לשותפות':'#cab641','לקוח פעיל':'#ff007f'};
 const SUB_IRRELEVANT_COLORS = {'ליד פיקטיבי':'#9d50dd','טוען שלא השאיר פניה':'#faa1f1','לא הבין את המוצר':'#df2f4a','חיפשו חדר כושר':'#333333','כפל':'#563e3e'};
 const SUB_COLORS = {'רלוונטי':SUB_RELEVANT_COLORS,'סירוב':SUB_REFUSAL_COLORS,'לא רלוונטי':SUB_IRRELEVANT_COLORS};
+/* 6.107.0 — עוצמת הגוון בבורד הלידים בלבד (רומן: "צבעים בולטים").
+   ⚠️ אל תחיל את זה על mdPill/ieSel מחוץ ללידים בלי למדוד onWhite:
+   היא בוחרת צבע טקסט לפי WCAG, ורקע כהה יותר עלול להפוך טקסט כהה
+   ללבן במסכים אחרים. יש ספירת עוקפים בסקריפט הבנייה. */
+const LB_TK = .70;
 const LEAD_TYPE_COLORS = {'בסיס':'#a1a8b5','פ.ע':'#579bfc','עסקי':'#00c875','ארגוני':'#784bd1','מוסדי':'#ff642e','מסחרי':'#fdab3d','סטונאי':'#0086c0'};
 const LEAD_SRC_COLORS  = {'קשרים אישיים':'#00c875','Paycall - שיחה נכנסת':'#0086c0','המלצת לקוח':'#037f4c','דף נחיתה':'#fdab3d','אתר אינטרנט':'#579bfc','פייסבוק / אינסטגרם':'#a25ddc','סושיאל':'#ff158a','ידנית':'#a1a8b5','Calendly':'#9aadbd','דף נחיתה - וואטסאפ':'#66ccff','גוגל':'#e2445c'};
 /* סדר העמודות הוא **בדיוק** הרשימה של רומן. colspan של שורות הקבוצה נגזר
@@ -2565,9 +2592,31 @@ function lbCustId(l, m){
   if(l && l.customer_id) return l.customer_id;
   return (m && !m.amb && m.cid) ? m.cid : '';
 }
+/* 6.107.0 — בורר הכפילות. 139 לידים שבהם כמה לקוחות חולקים טלפון.
+   עד כה התגית הייתה מבוי סתום: היא אמרה "3 לקוחות" ולא נתנה דרך
+   להגיע לאף אחד מהם. הבחירה מפורשת ולא שקטה — זו הסיבה ש-lbCustId
+   מחזיר '' כאן ונשאר כך. */
+window.lbCxPick = (idsJson)=>{
+  let ids=[]; try{ ids=JSON.parse(idsJson)||[]; }catch(e){ ids=[]; }
+  const rows = ids.map(id=>CUSTS.find(x=>x.id===id)).filter(Boolean);
+  const body = rows.length
+    ? rows.map(k=>`<div class="lb-cxrow" onclick="lbCxGo('${jsq(k.id)}')">`
+        + `<b>${esc(k.name||'ללא שם')}</b>`
+        + `<span>${esc([k.phone,k.city,k.priority_id].filter(Boolean).join(' · '))}</span></div>`).join('')
+    : '<div class="lb-na">לא נמצאו כרטיסי לקוח תואמים</div>';
+  $('#lbCxSheet').innerHTML = `<h3>אותו טלפון, כמה לקוחות</h3>`
+    + `<div class="lb-links">נמצאו ${rows.length} כרטיסי לקוח עם מספר הטלפון הזה. בחר את הכרטיס הרצוי.</div>`
+    + body
+    + `<div class="modal-actions"><button class="ghost" onclick="document.getElementById('lbCxModal').classList.add('hidden')">סגירה</button></div>`;
+  mountCard('lbCxModal', 'בחירת לקוח');
+};
+window.lbCxGo = (id)=>{ document.getElementById('lbCxModal').classList.add('hidden'); goCard(()=>openCust(id)); };
 function lbMatch(l){
   const e = lbCx().get(lbP9(l.phone)); if(!e) return null;
-  return { n:e.ids.size, name:e.name, cid:e.cid, amb: e.names.size>1 };
+  /* 6.107.0 — ids נדרש לבורר הכפילות. הוא היה קיים ב-lbCx מ-6.93.0
+     ונזרק כאן; בלעדיו התגית העמומה הייתה מבוי סתום (רומן, 19/08/2026:
+     "תאפשר צלילה גם בפנים"). */
+  return { n:e.ids.size, name:e.name, cid:e.cid, amb: e.names.size>1, ids:[...e.ids] };
 }
 const TASK_STATUSES = ['חדש','בעדיפות','תקוע','הושלם','20K+','50K+','100K+'];
 const TASK_ST_COLORS = {'חדש':'#c4c4c4','בעדיפות':'#579bfc','תקוע':'#df2f4a','הושלם':'#00c875','20K+':'#175a63','50K+':'#5559df','100K+':'#fdab3d'};
@@ -2605,10 +2654,13 @@ function onWhite(bg){
 }
 /* 6.24.4 — גוון בהיר של צבע בסיס, לשבב פסטל אחיד בכל המערכת (הנחיית רומן 04/08) */
 function tint(bg, k){ const c=_rgbOf(bg); if(!c) return '#f1f5f9'; const m=x=>Math.round(x+(255-x)*k); return `rgb(${m(c[0])},${m(c[1])},${m(c[2])})`; }
-const mdPill = (v, colors) => {
+/* 6.107.0 — k אופציונלי: עוצמת הגוון. ברירת המחדל .85/.68 היא הפסטל
+   של 6.24.4 ואינה זזה. LB_TK מועבר רק מאתרי הקריאה של הלידים. */
+const mdPill = (v, colors, k) => {
   if(!v) return '';
   const bg = (colors && colors[v]) || '';
-  return bg ? `<span class="pill" style="background:${tint(bg,.85)};color:${onWhite(bg)};border:1px solid ${tint(bg,.68)}">${esc(v)}</span>`
+  const _kb = (k==null? .85 : k), _kd = (k==null? .68 : Math.max(0,k-.20));
+  return bg ? `<span class="pill" style="background:${tint(bg,_kb)};color:${onWhite(bg)};border:1px solid ${tint(bg,_kd)}">${esc(v)}</span>`
             : `<span class="pill" style="background:#f1f5f9;color:#475569">${esc(v)}</span>`;
 };
 
@@ -3631,7 +3683,9 @@ function ieSel(kind,id,field,options,val,opts){
   if(!canIE(kind,field)) return opts.mdColors ? mdPill(val,opts.mdColors) : (STATUS_PILL[val]?`<span class="pill ${STATUS_PILL[val]}">${esc(val)}</span>`:`<span>${esc(val||'—')}</span>`);
   const list=(opts.allowEmpty?[['',opts.emptyLabel||'—']]:[]).concat([...new Set([...(options||[]), ...(val?[val]:[])])].map(o=>[o,o]));
   let cls='inline-edit', style='';
-  if(opts.mdColors){ cls+=' mdc'; const _bg=opts.mdColors[val]||'#94a3b8'; style=`background:${tint(_bg,.85)};color:${onWhite(_bg)};border:1px solid ${tint(_bg,.68)}`; } /* 6.24.4 — שבב פסטל אחיד */
+  if(opts.mdColors){ cls+=' mdc'; const _bg=opts.mdColors[val]||'#94a3b8';
+    const _kb=(opts.mdK==null? .85 : opts.mdK), _kd=(opts.mdK==null? .68 : Math.max(0,opts.mdK-.20));
+    style=`background:${tint(_bg,_kb)};color:${onWhite(_bg)};border:1px solid ${tint(_bg,_kd)}`; } /* 6.24.4 — שבב פסטל אחיד · 6.107.0 — mdK אופציונלי */
   else if(STATUS_PILL[val]) cls+=` pilled ${STATUS_PILL[val]}`;
   return `<select class="${cls}" style="${style}" data-ie="${esc(kind+'|'+id+'|'+field)}" onclick="event.stopPropagation()" onchange="ieSave(this)">${list.map(([v,l])=>`<option value="${esc(v)}" ${String(val||'')===v?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
 }
@@ -8166,7 +8220,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'paymethod-2026-08-19a';
+const BUILD_ID = 'leadboard-2026-08-19a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -16515,7 +16569,7 @@ function leadRow(l){
   return `<div class="lead" onclick="openLead('${l.id}')">
     <div><div class="nm">${esc(l.full_name)}</div>
     <div class="meta">${esc(l.phone||'')} · ${esc(l.source||'—')}${sub?' · '+esc(sub):''}</div></div>
-    ${mdPill(l.status||'—',LEAD_ST_COLORS)}</div>`;
+    ${mdPill(l.status||'—',LEAD_ST_COLORS,LB_TK)}</div>`;
 }
 function renderToday(){
   const news = LEADS.filter(l=>l.status==='ליד חדש').slice(0,20);
@@ -16573,7 +16627,7 @@ function lbChips(){
    יוצרת ערך שאינו נראה בכרטיס וצץ מחדש אם הסטטוס יוחזר. */
 function lbSubCell(l, st, opts, col){
   if(l.status!==st) return `<td class="lb-na" title="נפתח לעריכה כשהליד בסטטוס «${esc(st)}»">·</td>`;
-  return `<td>${ieSel('lead',l.id,col,opts,l[col],{allowEmpty:true,mdColors:SUB_COLORS[st]})}</td>`;
+  return `<td>${ieSel('lead',l.id,col,opts,l[col],{allowEmpty:true,mdColors:SUB_COLORS[st],mdK:LB_TK})}</td>`;
 }
 function lbRow(l, i, nt, nm, ntid){
   const t=nt[l.id], tid=ntid&&ntid[l.id], m=lbMatch(l);
@@ -16588,7 +16642,7 @@ function lbRow(l, i, nt, nm, ntid){
          : `<button class="ghost" style="width:auto;padding:2px 9px;font-size:11.5px" onclick="event.stopPropagation();leadTask('${l.id}')">+ משימה</button>`);
   const _cid = lbCustId(l, m);
   const cust = !m ? '<span class="lb-cxnew">ליד חדש</span>'
-    : (m.amb ? `<span class="pill lb-cxamb" title="נמצאו ${m.n} לקוחות שונים עם טלפון זהה — לבחור בכרטיס">${m.n} לקוחות</span>`
+    : (m.amb ? `<span class="pill lb-cxamb lb-cxgo" title="נמצאו ${m.n} לקוחות שונים עם טלפון זהה — לחיצה לבחירה" onclick="event.stopPropagation();lbCxPick(${jsq(JSON.stringify(m.ids))})">${m.n} לקוחות<span class="lb-cxdup">⧉ כפל</span></span>`
              : (_cid
                 ? `<span class="pill lb-cx lb-cust lb-cxgo" title="${esc(m.name||'')} — פתיחת כרטיס הלקוח" onclick="event.stopPropagation();goCard(()=>openCust('${jsq(_cid)}'))">${esc(m.name||'לקוח קיים')} ↗</span>`
                 : `<span class="pill lb-cx lb-cust" title="${esc(m.name||'')}">${esc(m.name||'לקוח קיים')}</span>`));
@@ -16600,12 +16654,12 @@ function lbRow(l, i, nt, nm, ntid){
       <td>${lbOwnerCell(l)}</td>
       <td dir="ltr">${esc(l.phone||'')}</td>
       <td data-sort="${esc(t||'')}"${tOver?' class="lb-ov"':''}>${dueCell}</td>
-      <td>${ieSel('lead',l.id,'source',LEAD_SOURCES,l.source,{allowEmpty:true,mdColors:LEAD_SRC_COLORS})}</td>
-      <td>${ieSel('lead',l.id,'status',LEAD_STATUSES,l.status,{mdColors:LEAD_ST_COLORS})}</td>
+      <td>${ieSel('lead',l.id,'source',LEAD_SOURCES,l.source,{allowEmpty:true,mdColors:LEAD_SRC_COLORS,mdK:LB_TK})}</td>
+      <td>${ieSel('lead',l.id,'status',LEAD_STATUSES,l.status,{mdColors:LEAD_ST_COLORS,mdK:LB_TK})}</td>
       ${lbSubCell(l,'רלוונטי',SUB_RELEVANT,'sub_status')}
       ${lbSubCell(l,'סירוב',SUB_REFUSAL,'reject_reason')}
       ${lbSubCell(l,'לא רלוונטי',SUB_IRRELEVANT,'irrelevant_reason')}
-      <td>${ieSel('lead',l.id,'customer_type',LEAD_TYPES,l.customer_type,{allowEmpty:true,mdColors:LEAD_TYPE_COLORS})}</td>
+      <td>${ieSel('lead',l.id,'customer_type',LEAD_TYPES,l.customer_type,{allowEmpty:true,mdColors:LEAD_TYPE_COLORS,mdK:LB_TK})}</td>
     </tr>`;
 }
 /* data-gs="own" — 🔴 בלעדיו מנוע המיון הגנרי משתלט: gsSort זורק כל שורה עם
@@ -16799,7 +16853,7 @@ function lbSubOpts(st){ return st==='רלוונטי'?SUB_RELEVANT : st==='סיר
 /* אותה נוסחת פסטל של ieSel, לבורר שנבנה ידנית בכרטיס */
 function lbSubStyle(st, val){
   const map = SUB_COLORS[st] || {}; const bg = map[val];
-  return bg ? `background:${tint(bg,.85)};color:${onWhite(bg)};border:1px solid ${tint(bg,.68)}` : '';
+  return bg ? `background:${tint(bg,LB_TK)};color:${onWhite(bg)};border:1px solid ${tint(bg,LB_TK-.20)}` : '';
 }
 window.lbSubTint = ()=>{
   const el = document.getElementById('lb-sub'); const box = document.getElementById('lb-subbox');
@@ -16844,7 +16898,7 @@ window.openLead = (id)=>{
   const myTasks=(TASKS||[]).filter(t=>t.linked_type==='lead'&&t.linked_id===id&&t.status!=='הושלם').sort((a,b)=>(a.due_at||'').localeCompare(b.due_at||''));
   const myMeets=(MEETS||[]).filter(m=>m.linked_type==='lead'&&m.linked_id===id&&m.status!=='בוטלה').sort((a,b)=>(b.meet_date||'').localeCompare(a.meet_date||''));
   $('#leadSheet').innerHTML = `
-    <h3>${esc(l.full_name)} ${mdPill(l.status||'—',LEAD_ST_COLORS)}</h3>
+    <h3>${esc(l.full_name)} ${mdPill(l.status||'—',LEAD_ST_COLORS,LB_TK)}</h3>
     <div class="form-grid">
       <div class="form-sep">פרטי הפנייה — נקלט אוטומטית</div>
       <div><label>נוצר</label>${roIn(fmtDT(l.created_at),{ltr:1})}</div>
@@ -17042,7 +17096,7 @@ function renderLbFilters(){
   const owners = LOWN.filter(o=>o.assignable || has.has(o.owner_key))
                      .map(o=>[o.owner_key, o.name + (o.kind==='legacy'?' (לשעבר)':'')]);
   const stSel=(LB_F.status||[]);
-  const stItems=LEAD_STATUSES.map(st=>`<label class="lf-opt"><input type="checkbox" ${stSel.includes(st)?'checked':''} onchange="lbStatusToggle('${jsq(st)}',this.checked)">${mdPill(st,LEAD_ST_COLORS)}</label>`).join('');
+  const stItems=LEAD_STATUSES.map(st=>`<label class="lf-opt"><input type="checkbox" ${stSel.includes(st)?'checked':''} onchange="lbStatusToggle('${jsq(st)}',this.checked)">${mdPill(st,LEAD_ST_COLORS,LB_TK)}</label>`).join('');
   box.innerHTML =
     `<details class="lf-multi ${stSel.length?'lf-on':''}"><summary>${stSel.length?`סטטוס (${stSel.length})`:'סטטוס — הכל'}</summary><div class="lf-menu">${stItems}</div></details>`+
     sel('owner','בעלים — הכל',[['__none__','ללא בעלים']].concat(owners))+

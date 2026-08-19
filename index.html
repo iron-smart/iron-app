@@ -211,6 +211,24 @@
   .payt-late .payt-n, .payt-late .payt-a{ color:#c0392b }
   .payt-month .payt-n{ color:#b45309 }
   .payt-nodue .payt-n{ color:#7c3aed }
+  .pay-closed{ display:inline-block; margin-top:3px; font-size:10.5px; font-weight:800;
+               color:#166534; background-color:#dcfce7; border:1px solid #bbf7d0;
+               border-radius:999px; padding:1px 8px; white-space:nowrap }
+  .pay-close{ display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+              border:1px solid var(--line); border-radius:12px; padding:10px 12px;
+              background-color:#fff; margin:0 0 10px }
+  .pay-close.is-on{ border-color:#bbf7d0; background-color:#f0fdf4 }
+  .pay-close .pc-hint{ flex:1 1 100%; font-size:11.5px; color:#64748b; line-height:1.5 }
+  .pay-close .pc-who{ font-size:11px; color:#64748b }
+  .pay-close .pc-note{ font-size:11.5px; color:#334155; font-style:italic }
+  .pay-close input{ border:1px solid var(--line); border-radius:7px; padding:4px 8px; font:inherit }
+  .pay-close #pc-note{ flex:1 1 220px }
+  .pay-close #pc-cred{ width:120px }
+  /* לוח פעימות של הזמנה שנסגרה ידנית — מעומעם ולא פעיל. הנתונים שורדים
+     במסד; זו תצוגה בלבד, ולכן ביטול הסימון מחזיר הכול. */
+  #payBeats.beats-closed{ opacity:.5 }
+  #payBeats.beats-closed::before{ content:'ההזמנה נסגרה ידנית — הפעימות אינן פעילות';
+     display:block; font-size:11.5px; font-weight:700; color:#166534; margin-bottom:6px }
   .pay-meth{ display:inline-block; margin-top:3px; font-size:10.5px; font-weight:700;
              color:#475569; background-color:#f1f5f9; border:1px solid var(--line);
              border-radius:999px; padding:1px 7px; white-space:nowrap }
@@ -1969,7 +1987,7 @@ td.lb-ov .lb-dt{ color:#c0392b; font-weight:700; border-color:#f0bcbc; backgroun
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.108.0</div>
+      <div class="ver">גרסה 6.109.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2096,7 +2114,7 @@ td.lb-ov .lb-dt{ color:#c0392b; font-weight:700; border-color:#f0bcbc; backgroun
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.108.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.109.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -8257,7 +8275,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'leadcard-2026-08-19a';
+const BUILD_ID = 'payclose-2026-08-19a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -13204,7 +13222,7 @@ async function loadLeads(){
     sb.schema('ord').from('order_finance_v').select('*').order('order_date',{ascending:false}).limit(10000),
     sb.schema('ord').from('payment_terms').select('*').eq('active',true).order('sort_order',{ascending:true}),
     sb.schema('ord').from('order_open_items_v').select('*').limit(10000),
-    sb.schema('ord').from('order_finance_meta').select('order_number,pay_code,notes,pay_method,pay_installments').limit(10000),
+    sb.schema('ord').from('order_finance_meta').select('order_number,pay_code,notes,pay_method,pay_installments,fin_close,fin_close_by,fin_close_at,fin_close_note,fin_credit_amt').limit(10000),
     sb.schema('ord').from('pending_returns_v').select('*').limit(5000),
     /* קיזוזים מאושרים והצעות קיזוז — ריקים למי שאין לו acc.pays */
     sb.schema('ord').from('pay_offsets_v').select('*').limit(5000),
@@ -13575,6 +13593,10 @@ const PAY_BAL_OPTS = {
   n90: { label:'שוטף מהחשבונית',  anchor:'invoice',  days:90 }
 };
 const payHasInst = v => PAY_INST_METHODS.indexOf(String(v||'')) >= 0;
+/* סגירה ידנית — הצהרה של המשתמש ולא חישוב. נקראת מ-finmOf כי היא יושבת
+   ב-order_finance_meta; FIN מגיע מ-order_finance_v ואינו מכיל אותה. */
+const finClosed  = f => !!(finmOf(typeof f === 'string' ? f : f.order_number).fin_close);
+const finCloseOf = on => finmOf(on) || {};
 /* מ-finmOf ולא מ-FIN — ראו ההערה ב-payTable. */
 function payMethTag(on){
   const m = finmOf(on); if(!m || !m.pay_method) return '';
@@ -13685,7 +13707,7 @@ const finMasked = f => (f.ordered === null || f.ordered === undefined);
    ולכן אסור להציגה כ"עודף גבייה", שמשתמע ממנו שקיבלנו כסף מיותר. */
 const finCredit = f => !finMasked(f) && finNum(f.ordered) < 0;
 const finLive   = f => !FIN_DEAD_ST.includes(String(f.erp_status||''));
-const finIsOpen = f => finLive(f) && !finMasked(f) && finNum(f.balance) > 1;
+const finIsOpen = f => finLive(f) && !finMasked(f) && finNum(f.balance) > 1 && !finClosed(f);
 function finTermName(code){ const t = PTERMS.find(x=>x.code===code); return t ? t.name : ''; }
 /* סכום הקבלות שאינן משויכות להזמנה — נמדד לפי לקוח ולא לפי הזמנה, ולכן
    נספר פעם אחת לכל לקוח ולא פעם לכל שורה שלו. */
@@ -13707,6 +13729,7 @@ function finRows(){
   if(PAY_FILTER === 'unlink') list = list.filter(f => finNum(f.cust_unlinked_cnt) > 0);
   if(PAY_FILTER === 'paid')   list = list.filter(f => !finMasked(f) && finNum(f.balance) <= 1);
   if(PAY_FILTER === 'credit') list = list.filter(finHasCredit);
+  if(PAY_FILTER === 'closed') list = list.filter(finClosed);
   if(PAY_TERM_F) list = list.filter(f => String(f.pay_code||'') === PAY_TERM_F);
   return list;
 }
@@ -13748,6 +13771,10 @@ function payChips(){
     (function(){ const cr = finCreditSum(live); const n = live.filter(finHasCredit).length;
        return n ? '<button class="chip chip-sec ' + (PAY_FILTER==='credit'?'active':'') + '" onclick="setPayFilter(\'credit\')" title="הזמנות שכוסו בקיזוז מהזמנה אחרת של אותו לקוח, ולקוחות שנשארו ביתרת זכות. מחוץ לצפי הגבייה — אין שם מה לגבות">יתרת זכות ' + n + (cr.sum ? ' <small>· ' + shekel(cr.sum) + '</small>' : '') + '</button>' : ''; })() +
     '<button class="chip chip-sec ' + (PAY_FILTER==='paid'?'active':'') + '" onclick="setPayFilter(\'paid\')">נסגר ' + live.filter(f=>!finMasked(f) && finNum(f.balance)<=1).length + '</button>' +
+    (function(){ const cl = live.filter(finClosed);
+       return cl.length ? '<button class="chip chip-sec ' + (PAY_FILTER==='closed'?'active':'') +
+         '" onclick="setPayFilter(\'closed\')" title="הזמנות שנסגרו ידנית — מאופס כרטסת או יתרת זכות. אינן נספרות ביתרה הפתוחה ואינן נעלמות מהמסך.">נסגר ידנית ' +
+         cl.length + ' <small>· ' + shekel(cl.reduce((a,f)=>a+finNum(f.balance),0)) + '</small></button>' : ''; })() +
     '<button class="chip chip-sec ' + (PAY_FILTER==='all'?'active':'') + '" onclick="setPayFilter(\'all\')">הכל ' + live.length + '</button>';
   renderPaySync();
   const ab = $('#payAddBtn'); if(ab) ab.classList.toggle('hidden', !canEdit('acc.pays'));
@@ -13803,6 +13830,90 @@ function payBulkBar(){
     '<button type="button" class="tb-clear" onclick="paySelClear()">ניקוי בחירה</button>';
 }
 window.paySelClear = () => { PAY_SEL.clear(); renderPays(); };
+
+/* ===== סגירה ידנית של הזמנה בלוח הגבייה (6.109.0) ===== */
+/* רומן, 19/08/2026: הלוח מחשב יתרה לפי הזמנה, והכרטסת האמיתית היא לפי
+   לקוח — החזרות והזמנות נוספות שאיננו רואים (רצפת המסמכים 27/07). נמדד
+   שרק 4 לקוחות מתוך 38 מתאפסים בחישוב שלנו, ולכן זו הצהרה ולא חישוב. */
+const PAY_CLOSE_KINDS = ['מאופס כרטסת','יתרת זכות'];
+
+function payCloseTag(on){
+  const m = finCloseOf(on); if(!m.fin_close) return '';
+  const amt = finNum(m.fin_credit_amt);
+  return '<span class="pay-closed" title="' + esc('נסגר ידנית' +
+      (m.fin_close_by ? ' · ' + m.fin_close_by : '') +
+      (m.fin_close_note ? ' · ' + m.fin_close_note : '')) + '">' +
+    esc(m.fin_close) + (amt > 0 ? ' ' + shekel(amt) : '') + '</span>';
+}
+
+/* הצהרה חייבת להיות מיוחסת והפיכה — אחרת היא מלכודת. הכרטיס מציג מי
+   סימן, מתי, ולמה, וכפתור ביטול לצדם. */
+function payCloseBox(f){
+  if(!canEdit('acc.pays')) return '';
+  const on = f.order_number, m = finCloseOf(on);
+  if(m.fin_close){
+    const amt = finNum(m.fin_credit_amt);
+    return '<h2 class="sec">סגירה ידנית</h2><div class="pay-close is-on">' +
+      '<span class="pay-closed">' + esc(m.fin_close) + (amt > 0 ? ' ' + shekel(amt) : '') + '</span>' +
+      '<span class="pc-who">' + esc(m.fin_close_by || '') +
+        (m.fin_close_at ? ' · ' + new Date(m.fin_close_at).toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '') +
+      '</span>' +
+      (m.fin_close_note ? '<span class="pc-note">' + esc(m.fin_close_note) + '</span>' : '') +
+      '<button type="button" class="tb-clear" onclick="payCloseClear(\'' + jsq(on) + '\')">ביטול הסימון</button>' +
+      '</div>';
+  }
+  return '<h2 class="sec">סגירה ידנית</h2><div class="pay-close">' +
+    '<span class="pc-hint">הלוח מחשב יתרה לפי הזמנה. אם הלקוח מאופס בכרטסת — סמן כאן, וההזמנה תצא מהגבייה בלי להיעלם מהמסך.</span>' +
+    '<input id="pc-note" placeholder="הערה — למה נסגר">' +
+    '<input id="pc-cred" type="number" min="0" step="1" placeholder="סכום זכות">' +
+    PAY_CLOSE_KINDS.map(k=>'<button type="button" class="btn" onclick="payCloseSet(\'' + jsq(on) + '\',\'' + k + '\')">' + k + '</button>').join('') +
+    '</div>';
+}
+
+window.payCloseSet = async (on, kind) => {
+  if(!canEdit('acc.pays')) return finNoEdit();
+  if(PAY_CLOSE_KINDS.indexOf(kind) < 0) return toast('סוג סגירה לא מוכר');
+  /* Number('') הוא 0 ו-isFinite(0) אמת — ריק חייב להיות null ולא אפס,
+     אחרת "יתרת זכות ₪0" שאיש לא הקליד. trim לפני ההשוואה. */
+  const rawN = String((($('#pc-note')||{}).value) || '').trim();
+  const rawC = String((($('#pc-cred')||{}).value) || '').trim();
+  const cred = rawC === '' ? null : Number(rawC);
+  if(cred !== null && (!isFinite(cred) || cred < 0)) return toast('סכום הזכות חייב להיות מספר אי-שלילי');
+  if(kind === 'יתרת זכות' && cred === null) return toast('ליתרת זכות צריך להזין סכום');
+  const was = { fin_close: finmWas(on,'fin_close'), fin_close_by: finmWas(on,'fin_close_by'),
+                fin_close_at: finmWas(on,'fin_close_at'), fin_close_note: finmWas(on,'fin_close_note'),
+                fin_credit_amt: finmWas(on,'fin_credit_amt') };
+  const now = finNowIso(), me = finMe();
+  finmApply(on, { fin_close:kind, fin_close_by:me, fin_close_at:now,
+                  fin_close_note: rawN || null, fin_credit_amt: cred });
+  const ok = await finDbw(()=>sb.schema('ord').from('order_finance_meta')
+      .upsert({ order_number:on, fin_close:kind, fin_close_by:me, fin_close_at:now,
+                fin_close_note: rawN || null, fin_credit_amt: cred,
+                updated_by:me, updated_at:now }, { onConflict:'order_number' }),
+    'ההזמנה סומנה: ' + kind, ()=>{ finmApply(on, was); });
+  if(!ok) return;
+  await finRefreshRow(on);
+  try{ payOpen(on); }catch(_e){}
+  try{ renderPays(); }catch(_e){}
+};
+
+window.payCloseClear = async on => {
+  if(!canEdit('acc.pays')) return finNoEdit();
+  const was = { fin_close: finmWas(on,'fin_close'), fin_close_by: finmWas(on,'fin_close_by'),
+                fin_close_at: finmWas(on,'fin_close_at'), fin_close_note: finmWas(on,'fin_close_note'),
+                fin_credit_amt: finmWas(on,'fin_credit_amt') };
+  finmApply(on, { fin_close:null, fin_close_by:null, fin_close_at:null,
+                  fin_close_note:null, fin_credit_amt:null });
+  const ok = await finDbw(()=>sb.schema('ord').from('order_finance_meta')
+      .upsert({ order_number:on, fin_close:null, fin_close_by:null, fin_close_at:null,
+                fin_close_note:null, fin_credit_amt:null,
+                updated_by:finMe(), updated_at:finNowIso() }, { onConflict:'order_number' }),
+    'הסימון בוטל — ההזמנה חזרה לגבייה', ()=>{ finmApply(on, was); });
+  if(!ok) return;
+  await finRefreshRow(on);
+  try{ payOpen(on); }catch(_e){}
+  try{ renderPays(); }catch(_e){}
+};
 
 /* ההחלה עוברת דרך finmApply ולא נוגעת ב-FIN ישירות: FIN ו-FINM_BY הם
    שני מטמונים נפרדים לאותו נתון, וזה הבאג שתוקן ב-6.85.2.
@@ -14316,6 +14427,7 @@ window.payOpen = on => {
         '. היא תיעלם מהמסך מעצמה ברגע שתסונכרן הזמנה באותו מספר.' +
         (canEdit('acc.pays') ? ' <a href="#" onclick="event.preventDefault();payManOpen(FIN.find(x=>x.order_number===\'' + jsq(f.order_number) + '\'))">עריכה</a>' : '') +
       '</div>' : '') +
+    payCloseBox(f) +
     '<h2 class="sec">לוח פעימות</h2><div id="payBeats"><div class="items-loading">טוען…</div></div>' +
     '<div id="beEditor"></div>' +
     '<h2 class="sec">כרטסת הלקוח</h2><div id="payLedger"><div class="items-loading">טוען…</div></div>';
@@ -14784,7 +14896,11 @@ window.beSave = async () => {
 /* הפעימות נטענות בפתיחה ולא נשמרות ב-FIN, כדי שכרטיס פתוח יציג תמיד את
    התאריכים המעודכנים — הם נגזרים ויכולים לזוז עם תאריך האספקה. */
 async function payLoadBeats(on){
+  const _cl = finCloseOf(on);
   const box = $('#payBeats'); if(!box) return;
+  if(_cl.fin_close){
+    box.classList.add('beats-closed');
+  } else { box.classList.remove('beats-closed'); }
   try{
     const { data, error } = await sb.schema('ord').from('order_beats_v')
       .select('seq,notes,amount,anchor,offset_days,due_date,due_is_final,due_eff,due_proj,due_show,due_is_est,due_src,is_paid,covered,beat_state').eq('order_number', on).order('seq');
@@ -14858,7 +14974,7 @@ function payTable(list){
       '<td>' + finBalCell(c) + '</td>' +
       '<td>' + payStateCell(f) + '</td>' +
       '<td>' + payDueCell(f) + '</td>' +
-      '<td onclick="event.stopPropagation()">' + termSel + payMethTag(f.order_number) + '</td>' +
+      '<td onclick="event.stopPropagation()">' + termSel + payMethTag(f.order_number) + payCloseTag(f.order_number) + '</td>' +
       '<td onclick="event.stopPropagation()">' + note + '</td>' +
     '</tr>'; }).join('');
   return '<div class="tbl-wrap"><table class="tbl"><thead><tr>' +

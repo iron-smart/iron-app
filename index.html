@@ -211,6 +211,10 @@
   .payt-late .payt-n, .payt-late .payt-a{ color:#c0392b }
   .payt-month .payt-n{ color:#b45309 }
   .payt-nodue .payt-n{ color:#7c3aed }
+  .pay-meth{ display:inline-block; margin-top:3px; font-size:10.5px; font-weight:700;
+             color:#475569; background-color:#f1f5f9; border:1px solid var(--line);
+             border-radius:999px; padding:1px 7px; white-space:nowrap }
+  #tab-pays #oe-payinst{ width:100% }
   .chip-sep{ display:inline-block; width:1px; height:18px; background-color:var(--line);
              margin:0 5px; vertical-align:middle }
   #tab-pays .chip.chip-sec{ opacity:.72; font-weight:600 }
@@ -1909,7 +1913,7 @@ td.lb-ov .lb-dt{ border-color:#f0bcbc; background-color:#fff6f5; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.105.1</div>
+      <div class="ver">גרסה 6.106.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2036,7 +2040,7 @@ td.lb-ov .lb-dt{ border-color:#f0bcbc; background-color:#fff6f5; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.105.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.106.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -8162,7 +8166,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'leadownfilter-2026-08-19a';
+const BUILD_ID = 'paymethod-2026-08-19a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -13109,7 +13113,7 @@ async function loadLeads(){
     sb.schema('ord').from('order_finance_v').select('*').order('order_date',{ascending:false}).limit(10000),
     sb.schema('ord').from('payment_terms').select('*').eq('active',true).order('sort_order',{ascending:true}),
     sb.schema('ord').from('order_open_items_v').select('*').limit(10000),
-    sb.schema('ord').from('order_finance_meta').select('order_number,pay_code,notes').limit(10000),
+    sb.schema('ord').from('order_finance_meta').select('order_number,pay_code,notes,pay_method,pay_installments').limit(10000),
     sb.schema('ord').from('pending_returns_v').select('*').limit(5000),
     /* קיזוזים מאושרים והצעות קיזוז — ריקים למי שאין לו acc.pays */
     sb.schema('ord').from('pay_offsets_v').select('*').limit(5000),
@@ -13467,6 +13471,25 @@ $('#contSearch').addEventListener('input', renderConts);
 
 /* ===== מעקב תשלומים ===== */
 let PAY_FILTER = 'open';
+/* אופן החיוב — אחד לכל ההזמנה (הכרעת רומן, 19/08/2026). הרשימה חייבת
+   להיות זהה בייט-בייט ל-order_finance_meta_pay_method_check שבמסד. */
+const PAY_METHODS = ['העברה בנקאית','אשראי','הוראת קבע','צ׳קים','מזומן'];
+/* רק לשניים האלה יש מספר תשלומים. אשראי והוראת קבע הם **פעימה אחת בלוח**
+   שנפרסת בתזרים — הכסף מובטח במועד החיוב, אבל נכנס לאורך חודשים. */
+const PAY_INST_METHODS = ['אשראי','הוראת קבע'];
+const PAY_BAL_OPTS = {
+  del: { label:'לאחר אספקה',      anchor:'delivery', days:0  },
+  n30: { label:'שוטף מהחשבונית',  anchor:'invoice',  days:30 },
+  n60: { label:'שוטף מהחשבונית',  anchor:'invoice',  days:60 },
+  n90: { label:'שוטף מהחשבונית',  anchor:'invoice',  days:90 }
+};
+const payHasInst = v => PAY_INST_METHODS.indexOf(String(v||'')) >= 0;
+/* מ-finmOf ולא מ-FIN — ראו ההערה ב-payTable. */
+function payMethTag(on){
+  const m = finmOf(on); if(!m || !m.pay_method) return '';
+  const n = finNum(m.pay_installments);
+  return '<span class="pay-meth">' + esc(m.pay_method) + (n > 1 ? ' ×' + n : '') + '</span>';
+}
 /* "לגבייה החודש" נספר עד סוף החודש **הקלנדרי** ולא 30 יום קדימה: מנהל
    שמסתכל על המסך ב-28 בחודש שואל כמה ייכנס עד הראשון, לא כמה ייכנס עד
    ה-27 בחודש הבא. */
@@ -13589,7 +13612,7 @@ function finRows(){
   if(PAY_FILTER === 'month')  list = list.filter(f => finIsOpen(f) && payDueThisMonth(f));
   if(PAY_FILTER === 'nodue')  list = list.filter(f => finIsOpen(f) && !f.next_due);
   if(PAY_FILTER === 'uninv')  list = list.filter(f => finNum(f.delivered_uninvoiced) > 0);
-  if(PAY_FILTER === 'noterm') list = list.filter(f => !f.pay_code && finIsOpen(f));
+  if(PAY_FILTER === 'noterm') list = list.filter(f => finNum(f.n_beats) === 0 && finIsOpen(f));
   if(PAY_FILTER === 'unlink') list = list.filter(f => finNum(f.cust_unlinked_cnt) > 0);
   if(PAY_FILTER === 'paid')   list = list.filter(f => !finMasked(f) && finNum(f.balance) <= 1);
   if(PAY_FILTER === 'credit') list = list.filter(finHasCredit);
@@ -13612,7 +13635,7 @@ function payChips(){
   const sumRem = open.reduce((a,f)=>a+finNum(f.balance), 0);
   const uninv  = live.filter(f => finNum(f.delivered_uninvoiced) > 0);
   const sumUninv = uninv.reduce((a,f)=>a+finNum(f.delivered_uninvoiced_sum), 0);
-  const noterm = open.filter(f => !f.pay_code);
+  const noterm = open.filter(f => finNum(f.n_beats) === 0);
   const late   = open.filter(f => payIsLate(f));
   const week   = open.filter(f => payDueIn(f, 7));
   const month  = open.filter(f => payDueThisMonth(f));
@@ -13627,7 +13650,7 @@ function payChips(){
     '<button class="chip ' + (PAY_FILTER==='month'?'active':'') + '" onclick="setPayFilter(\'month\')" title="פעימה פתוחה שמועדה עד סוף החודש הקלנדרי">החודש ' + month.length + (month.length ? ' <small>· ' + shekel(sumOf(month)) + '</small>' : '') + '</button>' +
     '<button class="chip ' + (PAY_FILTER==='nodue'?'active':'') + '" onclick="setPayFilter(\'nodue\')" title="יתרה פתוחה בלי מועד גבייה — אין לה לוח פעימות, ולכן היא אינה נספרת בשום חלון זמן ואינה נכנסת לצפי">ללא מועד ' + nodue.length + (nodue.length ? ' <small>· ' + shekel(sumOf(nodue)) + '</small>' : '') + '</button>' +
     '<button class="chip ' + (PAY_FILTER==='open'?'active':'') + '" onclick="setPayFilter(\'open\')">יתרה פתוחה ' + open.length + ' <small>· ' + shekel(sumRem) + '</small></button>' +
-    '<button class="chip ' + (PAY_FILTER==='noterm'?'active':'') + '" onclick="setPayFilter(\'noterm\')">בלי תנאי תשלום ' + noterm.length + '</button>' +
+    '<button class="chip ' + (PAY_FILTER==='noterm'?'active':'') + '" onclick="setPayFilter(\'noterm\')" title="יתרה פתוחה בלי לוח פעימות — ולכן בלי מועד גבייה ובלי צפי">בלי לוח תשלומים ' + noterm.length + '</button>' +
     '<span class="chip-sep"></span>' +
     '<button class="chip chip-sec ' + (PAY_FILTER==='uninv'?'active':'') + '" onclick="setPayFilter(\'uninv\')" title="תעודות משלוח סופיות שלא יצאה כנגדן חשבונית — נספרות מ-27/07/2026">סופק ולא חויב ' + uninv.length + ' <small>· ' + shekel(sumUninv) + '</small></button>' +
     (unl.custs ? '<button class="chip chip-sec ' + (PAY_FILTER==='unlink'?'active':'') + '" onclick="setPayFilter(\'unlink\')" title="קבלות שנקלטו מפריוריטי בלי מספר הזמנה — הכסף התקבל אך אינו יורד מאף הזמנה">קבלות ללא שיוך ' + unl.custs + ' <small>· ' + shekel(unl.sum) + '</small></button>' : '') +
@@ -13788,19 +13811,29 @@ window.finSetTerm = async (ord, code) => {
       .upsert({ order_number:ord, pay_code:code||null, updated_by:finMe(), updated_at:finNowIso() }, { onConflict:'order_number' }),
     code ? ('תנאי התשלום עודכן ל' + finTermName(code)) : 'תנאי התשלום נוקה',
     ()=>{ finmApply(ord, { pay_code: was }); });
-  if(ok && code) await finSeedBeats(ord);
+  if(ok && code) await finSeedBeats(ord, code);
   if(ok) renderPays();
 };
 /* בחירת תנאי תשלום זורעת לוח פעימות עריכות. הזריעה אינה דורסת לוח קיים —
    מרגע שנוצר, השורות הן האמת והתבנית לא כותבת עליהן שוב, אחרת דחיית פעימה
    בודדת הייתה נמחקת בכל שינוי תנאי. */
-async function finSeedBeats(ord){
+/* הקוד מגיע כפרמטר ולא מ-FIN. עד 6.106.0 הוא נשלף מ-FIN, שריק בדיוק אצל
+   מי שיש לו crm.orders.terms בלי acc.pays (RLS על order_finance_v) — כלומר
+   הפונקציה הייתה נשברת **רק אצל הפרסונה שנבנתה עבורה**, ולא אצל הבודק
+   שהוא אדמין ואצלו FIN מלא. אותה מחלקה של canIE. (ממצא Fable, 19/08/2026)
+   ⚠️ הזריעה מחזירה 0 כשכבר קיים לוח — וזה מכוון, אבל בכרטיס ההזמנה אין
+   תצוגת לוח, ולכן שתיקה שם נקראת כהצלחה. המשוב מפורש. */
+async function finSeedBeats(ord, code){
+  const cd = code !== undefined ? code : ((FIN.find(f=>f.order_number===ord)||{}).pay_code || finmOf(ord).pay_code || null);
+  if(!cd) return 0;
   try{
-    const { data:n, error } = await sb.schema('ord').rpc('order_beats_seed', { p_order: ord, p_code: (FIN.find(f=>f.order_number===ord)||{}).pay_code || null });
+    const { data:n, error } = await sb.schema('ord').rpc('order_beats_seed', { p_order: ord, p_code: cd });
     if(error) throw error;
     if(Number(n) > 0) toast('נוצר לוח של ' + n + (Number(n)===1?' פעימה':' פעימות'));
+    else toast('קיים כבר לוח פעימות ולא עודכן — לעריכה במסך התשלומים');
     await finRefreshRow(ord);
-  }catch(e){ toast('לוח הפעימות לא נוצר: ' + (e && e.message ? e.message : e)); }
+    return Number(n) || 0;
+  }catch(e){ toast('לוח הפעימות לא נוצר: ' + (e && e.message ? e.message : e)); return 0; }
 }
 /* רענון שורה בודדת אחרי שינוי שנגזר בשרת, במקום טעינה מחדש של כל המסך */
 async function finRefreshRow(ord, addIfNew){
@@ -13834,6 +13867,10 @@ window.ordSetTerm = async (on, code) => {
       .upsert({ order_number:on, pay_code:code||null, updated_by:finMe(), updated_at:finNowIso() }, { onConflict:'order_number' }),
     code ? ('תנאי התשלום עודכן ל' + finTermName(code)) : 'תנאי התשלום נוקה',
     ()=>{ finmApply(on, { pay_code: was }); });
+  /* עד 6.106.0 בחירת תנאי מהכרטיס עדכנה pay_code בלבד ולא יצרה לוח, בעוד
+     finSetTerm במסך התשלומים כן זרעה — כלומר איש מכירות בחר תנאי וההזמנה
+     נשארה "ללא מועד גבייה". זה בדיוק המסלול של תרחיש 2. */
+  if(code) await finSeedBeats(on, code);
 };
 window.ordSetFinNote = async (on, txt) => {
   if(!window.canEdit('crm.orders.terms')) return finNoEdit();
@@ -13847,7 +13884,7 @@ window.ordSetFinNote = async (on, txt) => {
 };
 function ordTermsBlock(o){
   if(!window.canView('crm.orders.terms')) return '';
-  const m = finmOf(o.order_number), ed = window.canEdit('crm.orders.terms');
+  const m = finmOf(o.order_number), ed = window.canEdit('crm.orders.terms'), on = o.order_number;
   const sel = ed
     ? '<select id="oe-payterm" onchange="ordSetTerm(\'' + jsq(o.order_number) + '\', this.value)"><option value="">— בחר —</option>' +
       PTERMS.map(t=>'<option value="' + esc(t.code) + '"' + (String(m.pay_code||'')===t.code?' selected':'') + '>' + esc(t.name) + '</option>').join('') + '</select>'
@@ -13855,10 +13892,110 @@ function ordTermsBlock(o){
   const note = ed
     ? '<input id="oe-paynote" value="' + esc(m.notes||'') + '" placeholder="הערה לגבייה…" onchange="ordSetFinNote(\'' + jsq(o.order_number) + '\', this.value)">'
     : '<input value="' + esc(m.notes||'') + '" readonly class="ro" placeholder="—">';
+  /* 🔴 allowEmpty מפורש: העמודה חדשה ולכן NULL הוא המצב של כל ההזמנות
+     הקיימות. בורר בלי אפשרות ריקה נופל לאפשרות הראשונה, ולולאת השמירה
+     משווה '' מול null, מוצאת הבדל, וכותבת ערך שאיש לא בחר — בדיוק הבאג
+     שהכתיב call_type='תקלה' ל-31 קריאות שירות. */
+  const meth = ed
+    ? '<select id="oe-paymethod" onchange="ordSetMethod(\'' + jsq(on) + '\', this.value)"><option value="">— לא נקבע —</option>' +
+      PAY_METHODS.map(x=>'<option value="' + esc(x) + '"' + (String(m.pay_method||'')===x?' selected':'') + '>' + esc(x) + '</option>').join('') + '</select>'
+    : '<input value="' + esc(m.pay_method||'') + '" readonly class="ro" placeholder="—">';
+  const inst = ed
+    ? '<input id="oe-payinst" type="number" min="1" max="36" step="1" value="' + esc(m.pay_installments||'') +
+      '" placeholder="מס\' תשלומים" onchange="ordSetInst(\'' + jsq(on) + '\', this.value)">'
+    : '<input value="' + esc(m.pay_installments||'') + '" readonly class="ro" placeholder="—">';
+  /* הבונה — התשובה ל"ידני אבל מהיר". במקום 12 שורות קטלוג (מקדמה ×
+     שוטף), שני בוררים שמרכיבים את הלוח. "תאריכים ידניים" מפנה לעורך
+     הפעימות, שהוא המסלול של הצ'קים (עוגן fixed + תאריך לכל צ'ק). */
+  const bld = ed
+    ? '<div><label>בונה — מקדמה</label><select id="oe-bldadv">' +
+        ['0','20','30','40','50'].map(p=>'<option value="' + p + '">' + (p==='0'?'ללא מקדמה':p + '%') + '</option>').join('') +
+      '</select></div>' +
+      '<div><label>היתרה</label><select id="oe-bldbal"><option value="">— בחר —</option>' +
+        '<option value="del">לאחר אספקה</option><option value="n30">שוטף + 30</option>' +
+        '<option value="n60">שוטף + 60</option><option value="n90">שוטף + 90</option>' +
+        '<option value="manual">תאריכים ידניים / צ׳קים</option>' +
+      '</select></div>' +
+      '<div><label>&nbsp;</label><button type="button" class="ghost" onclick="ordBuildPlan(\'' + jsq(on) + '\')">בנה לוח פעימות</button></div>'
+    : '';
   return '<div class="form-sep">תשלום</div>' +
          '<div><label>תנאי תשלום</label>' + sel + '</div>' +
+         '<div><label>אופן חיוב</label>' + meth + '</div>' +
+         '<div id="oe-payinst-wrap"' + (payHasInst(m.pay_method) ? '' : ' class="hidden"') + '><label>מספר תשלומים</label>' + inst + '</div>' +
+         bld +
          '<div class="span3"><label>הערת גבייה</label>' + note + '</div>';
 }
+
+/* ===== אופן חיוב ובונה תוכנית תשלום (6.106.0) ===== */
+/* שתי הכתיבות עוברות דרך finmApply ולא נוגעות ב-FIN ישירות — FIN ו-FINM_BY
+   הם שני מטמונים נפרדים לאותו נתון, וזה הבאג שתוקן ב-6.85.2. */
+window.ordSetMethod = async (on, val) => {
+  if(!window.canEdit('crm.orders.terms')) return finNoEdit();
+  const v = String(val||'').trim() || null;
+  const was = finmWas(on, 'pay_method');
+  if(String(was||'') === String(v||'')) return;
+  /* אופן חיוב שאינו אשראי/הו״ק אינו נושא מספר תשלומים — מנקים יחד, אחרת
+     נשאר "צ׳קים ×6" שאיש לא בחר. */
+  const keepInst = payHasInst(v) ? (finmOf(on).pay_installments || null) : null;
+  const wasInst  = finmWas(on, 'pay_installments');
+  finmApply(on, { pay_method: v, pay_installments: keepInst });
+  const w = $('#oe-payinst-wrap'); if(w) w.classList.toggle('hidden', !payHasInst(v));
+  await finDbw(()=>sb.schema('ord').from('order_finance_meta')
+      .upsert({ order_number:on, pay_method:v, pay_installments:keepInst, updated_by:finMe(), updated_at:finNowIso() }, { onConflict:'order_number' }),
+    v ? ('אופן החיוב עודכן ל' + v) : 'אופן החיוב נוקה',
+    ()=>{ finmApply(on, { pay_method: was, pay_installments: wasInst }); });
+  try{ renderPays(); }catch(_e){}
+};
+
+window.ordSetInst = async (on, val) => {
+  if(!window.canEdit('crm.orders.terms')) return finNoEdit();
+  /* Number('') הוא 0 ו-isFinite(0) אמת — ולכן ריק היה נשמר כאפס תשלומים.
+     trim לפני ההשוואה, ובדיקה מפורשת על ריק. (המלכודת שחזרה שלוש פעמים
+     במודול ההתראות, CLAUDE.md פרק 7) */
+  const raw = String(val==null?'':val).trim();
+  const n = raw === '' ? null : Number(raw);
+  if(n !== null && (!isFinite(n) || n < 1 || n > 36)) return toast('מספר תשלומים חייב להיות בין 1 ל-36');
+  const was = finmWas(on, 'pay_installments');
+  if(String(was||'') === String(n||'')) return;
+  finmApply(on, { pay_installments: n });
+  await finDbw(()=>sb.schema('ord').from('order_finance_meta')
+      .upsert({ order_number:on, pay_installments:n, updated_by:finMe(), updated_at:finNowIso() }, { onConflict:'order_number' }),
+    n ? (n + ' תשלומים') : 'מספר התשלומים נוקה',
+    ()=>{ finmApply(on, { pay_installments: was }); });
+  try{ renderPays(); }catch(_e){}
+};
+
+/* 🔴 ord.order_beats_set פותחת ב-delete בלי שום שער "כבר קיים לוח".
+   והמשתמש שהבונה נועד לו — עורך crm.orders.terms בלי acc.pays — **אינו
+   יכול לראות שקיים לוח**, כי ord.order_beats_v חסומה ב-can_view('acc.pays')
+   וכרטיס ההזמנה אינו מציג פעימות. כלומר בלי השער הזה זה UI שמוחק נתונים
+   שהמוחק אינו רשאי לראות: לוח צ'קים עם תאריכים היה נמחק בלי אזהרה.
+   הספירה היא מהטבלה הגולמית ord.order_payments, שהפוליסי שלה הוא
+   is_approved() ולכן קריאה לכל עובד מאושר — בשונה מה-view.
+   (ממצא Fable, 19/08/2026) */
+window.ordBuildPlan = async on => {
+  if(!window.canEdit('crm.orders.terms')) return finNoEdit();
+  const adv = Number(($('#oe-bldadv')||{}).value || 0);
+  const bal = String(($('#oe-bldbal')||{}).value || '');
+  if(!bal) return toast('בחר את תנאי היתרה');
+  if(bal === 'manual') return toast('תאריכים ידניים וצ׳קים נקבעים בעורך לוח הפעימות, במסך התשלומים');
+  const B = PAY_BAL_OPTS[bal];
+  if(!B) return toast('תנאי יתרה לא מוכר');
+  try{
+    const { data, error } = await sb.schema('ord').from('order_payments')
+      .select('seq').eq('order_number', on).limit(1);
+    if(error) throw error;
+    if(data && data.length) return toast('כבר קיים לוח פעימות להזמנה — לשינוי במסך התשלומים');
+  }catch(e){ return toast('לא ניתן לבדוק אם קיים לוח: ' + (e && e.message ? e.message : e)); }
+  const beats = [];
+  if(adv > 0) beats.push({ label:'מקדמה', pct:adv, anchor:'order', offset_days:0, amount:null, due_date:null });
+  beats.push({ label:B.label, pct:100-adv, anchor:B.anchor, offset_days:B.days, amount:null, due_date:null });
+  const ok = await finDbw(()=>sb.schema('ord').rpc('order_beats_set', { p_order:on, p_beats:beats }),
+    adv > 0 ? ('נבנה לוח: מקדמה ' + adv + '% ויתרה') : 'נבנה לוח פעימה אחת');
+  if(!ok) return;
+  await finRefreshRow(on);
+  try{ renderPays(); }catch(_e){}
+};
 function finCell(f){
   const masked  = finMasked(f);
   const ordered = masked ? null : finNum(f.ordered);
@@ -14559,7 +14696,7 @@ async function payLoadBeats(on){
   const box = $('#payBeats'); if(!box) return;
   try{
     const { data, error } = await sb.schema('ord').from('order_beats_v')
-      .select('seq,notes,amount,anchor,offset_days,due_date,due_is_final,due_eff,due_proj,due_show,due_is_est,covered,beat_state').eq('order_number', on).order('seq');
+      .select('seq,notes,amount,anchor,offset_days,due_date,due_is_final,due_eff,due_proj,due_show,due_is_est,due_src,is_paid,covered,beat_state').eq('order_number', on).order('seq');
     if(error) throw error;
     if(!box.isConnected) return;
     const rows = data || [];
@@ -14630,7 +14767,7 @@ function payTable(list){
       '<td>' + finBalCell(c) + '</td>' +
       '<td>' + payStateCell(f) + '</td>' +
       '<td>' + payDueCell(f) + '</td>' +
-      '<td onclick="event.stopPropagation()">' + termSel + '</td>' +
+      '<td onclick="event.stopPropagation()">' + termSel + payMethTag(f.order_number) + '</td>' +
       '<td onclick="event.stopPropagation()">' + note + '</td>' +
     '</tr>'; }).join('');
   return '<div class="tbl-wrap"><table class="tbl"><thead><tr>' +

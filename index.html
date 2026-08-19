@@ -1836,7 +1836,7 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.100.0</div>
+      <div class="ver">גרסה 6.101.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -1963,7 +1963,7 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.100.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.101.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2239,17 +2239,16 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
 <div class="modal hidden" id="addModal">
   <div class="sheet">
     <h3>ליד חדש</h3>
-    <div class="field"><label>שם מלא *</label><input id="a-name"></div>
-    <div class="field"><label>טלפון *</label><input id="a-phone" type="tel"></div>
-    <div class="field"><label>מקור הגעה</label>
-      <select id="a-source">
-        <option>קשרים אישיים</option><option>Paycall - שיחה נכנסת</option><option>המלצת לקוח</option>
-        <option>דף נחיתה</option><option>אתר אינטרנט</option><option>פייסבוק / אינסטגרם</option>
-        <option>סושיאל</option><option>ידנית</option><option>Calendly</option>
-        <option>דף נחיתה - וואטסאפ</option><option>גוגל</option>
-      </select></div>
-    <div class="field"><label>סוג לקוח</label>
-      <select id="a-type"><option>בסיס</option><option>עסקי</option><option>מסחרי</option><option>סיטונאי</option><option>פ.ע</option></select></div>
+    <div class="field"><label>שם מלא <span class="note">(חובה)</span></label><input id="a-name" oninput="lbDupCheck()"></div>
+    <div class="field"><label>טלפון <span class="note">(חובה)</span></label><input id="a-phone" type="tel" dir="ltr" oninput="lbDupCheck()"></div>
+    <div class="field"><label>אימייל</label><input id="a-email" type="email" dir="ltr" oninput="lbDupCheck()"></div>
+    <div id="a-dup"></div>
+    <div class="field"><label>שם חברה</label><input id="a-company"></div>
+    <div class="field"><label>עיר</label><input id="a-city"></div>
+    <div class="field"><label>מקור הגעה <span class="note">(חובה)</span></label><select id="a-source"></select></div>
+    <div class="field"><label>סוג לקוח <span class="note">(חובה)</span></label><select id="a-type"></select></div>
+    <div class="field"><label>האם לשלוח וואטסאפ?</label><select id="a-wacat"><option value="">—</option><option>כן</option><option>לא</option></select></div>
+    <div class="field"><label>מידע על הליד</label><textarea id="a-notes" rows="3" placeholder="מתחם אימונים ראשון? גודל המקום? איזה סוג אימונים…"></textarea></div>
     <div class="actions">
       <button class="btn green" id="a-save">שמירה</button>
       <button class="ghost" id="a-cancel">ביטול</button>
@@ -8068,7 +8067,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'paysboard-2026-08-18a';
+const BUILD_ID = 'leadpipeline-2026-08-19a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -11976,7 +11975,12 @@ let SYNC_STATUS = [];
 let SYNCLOG=null, SYNCLOG_ERR=null, SYNCLOG_BUSY=false, SYNCLOG_LIM=50, SYNCLOG_OPEN={};
 let SYNCLOG_F={fn:'',st:'',days:'30'};
 /* שורות ישנות מגרסה 11 של priority-sync נשמרו בלי מפתח fn */
-function syncFnOf(r){ return (r && r.details && String(r.details.fn||'').trim()) || 'priority-sync'; }
+/* fn → source → ברירת מחדל. ⚠️ הנפילה הישירה ל-'priority-sync' ייחסה כל
+   שורת יומן חסרת fn לסנכרון פריוריטי — ובפועל 578 שורות של
+   outlook-calendar-sync (שרץ כל 15 דקות) נספרו כך, והמחוון הראה "סונכרן
+   לפני 15 דקות" לנצח. תוקן בשרת ב-17/08; זה הצד של הלקוח. */
+function syncFnOf(r){ const d = r && r.details || {};
+  return String(d.fn||'').trim() || String(d.source||'').trim() || 'priority-sync'; }
 function syncMeta(fn){ return SYNC_FNS[fn] || { ic:'🔄', label:fn, sub:'' }; }
 function syncDur(ms){ if(ms==null||ms==='') return '—'; const s=Number(ms)/1000; return s<60 ? s.toFixed(1)+' שנ׳' : Math.floor(s/60)+':'+String(Math.round(s%60)).padStart(2,'0')+' דק׳'; }
 function syncWhen(ts){ if(!ts) return '—'; return new Date(ts).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}); }
@@ -15305,7 +15309,9 @@ window.saveNewScall = async ()=>{
   toast('קריאת שירות נפתחה ✓');
   renderOrders(); renderLogi(); renderCal();
 };
-const wideScreen = ()=> window.matchMedia('(min-width:700px)').matches;
+/* 760 ולא 700: ה-CSS עובר לתצוגת כרטיסים ב-760px, ובפער שביניהם ה-JS בנה
+   טבלה בזמן שהעיצוב כבר היה במובייל. שני המספרים חייבים להיות זהים. */
+const wideScreen = ()=> window.matchMedia('(min-width:760px)').matches;
 /* תיקון ממצא 24 — סיבוב מסך או שינוי גודל חוצה את סף 700px: מציירים מחדש כדי לעבור טבלה⇄כרטיסים */
 let _wideNow = wideScreen(), _vpTimer = null;
 function _viewportChanged(){
@@ -16435,20 +16441,67 @@ function renderLeads(){
 $('#search').addEventListener('input', renderLeads);
 
 // ליד חדש
-$('#addBtn').onclick = ()=>{ $('#a-name').value='';$('#a-phone').value='';$('#a-err').textContent='';
+/* הרשימות מיוצרות מהקבועים ולא משוכפלות ב-HTML. עד 6.100.0 הטופס הציע
+   'סיטונאי' בעוד ש-LEAD_TYPES מגדיר 'סטונאי', וחסרו 'ארגוני' ו'מוסדי' —
+   כלומר הטופס יכול היה לכתוב ערך שאינו קיים בשום מקום אחר. */
+function lbFillOpts(){
+  const fill=(id,arr)=>{ const el=document.getElementById(id); if(!el) return;
+    el.innerHTML = '<option value="">—</option>' + arr.map(v=>`<option>${esc(v)}</option>`).join(''); };
+  fill('a-source', LEAD_SOURCES); fill('a-type', LEAD_TYPES);
+}
+/* ההצלבה בהקלדה. רומן: "המערכת בודקת ומצליבה אם כבר הליד או הלקוח קיימים
+   ומתריעה לאיש מכירות שלא יהיו כפיליות".
+   ⚠️ **מתריעה ואינה חוסמת** — יש מקרים לגיטימיים של פנייה חוזרת, והחסימה
+   הייתה מעבירה את איש המכירות לעקוף את הטופס.
+   ⚠️ עובדת על lbCx/lbMatch שכבר משמשות את הטבלה — אותה נקודת חנק, ולכן
+   אין סיכוי שהטופס והטבלה יחלקו על מה נחשב כפילות. */
+window.lbDupCheck = ()=>{
+  const box=document.getElementById('a-dup'); if(!box) return;
+  const nm=($('#a-name').value||'').trim(), ph=($('#a-phone').value||'').trim(),
+        em=($('#a-email').value||'').trim().toLowerCase();
+  const p9=lbP9(ph);
+  const hits=[];
+  if(p9){ const m=lbMatch({phone:ph}); if(m) hits.push('לקוח קיים: '+(m.amb?m.n+' לקוחות עם טלפון זהה':(m.name||'ללא שם'))); }
+  const dl=(LEADS||[]).filter(l=> (p9 && lbP9(l.phone)===p9) ||
+                                  (em && String(l.email||'').trim().toLowerCase()===em) ||
+                                  (nm.length>=3 && lbNm(l.full_name)===lbNm(nm)));
+  if(dl.length) hits.push('ליד קיים: '+dl.slice(0,3).map(l=>l.full_name+' ('+(l.status||'')+')').join(' · ')+(dl.length>3?` ועוד ${dl.length-3}`:''));
+  box.innerHTML = hits.length
+    ? `<div class="err" style="display:block">⚠️ ${hits.map(esc).join('<br>')}<div class="note" style="margin-top:4px">אפשר להמשיך — זו התראה ולא חסימה.</div></div>`
+    : '';
+};
+$('#addBtn').onclick = ()=>{
+  ['a-name','a-phone','a-email','a-company','a-city','a-notes'].forEach(k=>{ const e=document.getElementById(k); if(e) e.value=''; });
+  lbFillOpts();
+  ['a-wacat'].forEach(k=>{ const e=document.getElementById(k); if(e) e.value=''; });
+  $('#a-err').textContent=''; const d=document.getElementById('a-dup'); if(d) d.innerHTML='';
   mountCard('addModal', ()=>$('#addModal').classList.remove('hidden')); };
 $('#a-cancel').onclick = ()=> closeCards();
 $('#a-save').onclick = async ()=>{
-  const full_name=$('#a-name').value.trim(), phone=$('#a-phone').value.trim();
-  if(!full_name||!phone){ $('#a-err').textContent='שם וטלפון חובה'; return; }
-  const { error } = await sb.schema('crm').from('leads').insert({
-    full_name, phone, source:$('#a-source').value, customer_type:$('#a-type').value,
+  const g = id => (document.getElementById(id) ? document.getElementById(id).value : '').trim();
+  /* ההודעה מונה את השדות החסרים בשמם, ולא "יש למלא שדות" (שפת הכרטיסים) */
+  const miss = [['a-name','שם מלא'],['a-phone','טלפון'],['a-source','מקור הגעה'],['a-type','סוג לקוח']]
+                 .filter(([k])=>!g(k)).map(([,lb])=>lb);
+  if(miss.length){ $('#a-err').textContent='חסרים שדות חובה: '+miss.join(' · ')+'.'; return; }
+  const wa = g('a-wacat');
+  /* 🔴 `data` **מפורק**. עד 6.100.0 היה כאן `const { error } = ...` בלבד,
+     והשורה שמתחת השתמשה ב-data שאינו מוגדר: הקריאה זרקה, ה-try בלע,
+     ו-lead_set_owner לעולם לא נקראה — כלומר כל ליד שנפתח בטופס נשאר בלי
+     בעלים. נמדד 19/08 שהבאג חי ~16 שעות ואפס לידים ילידיים נפתחו. */
+  const { data, error } = await sb.schema('crm').from('leads').insert({
+    full_name:g('a-name'), phone:g('a-phone'), email:g('a-email')||null,
+    company:g('a-company')||null, city:g('a-city')||null, notes:g('a-notes')||null,
+    source:g('a-source'), customer_type:g('a-type'),
+    send_whatsapp_catalog: wa==='' ? null : (wa==='כן'),
     status:'ליד חדש'
   }).select('id').maybeSingle();
-  if(error){ $('#a-err').textContent='שגיאה בשמירה'; console.error(error); return; }
+  if(error){ $('#a-err').textContent='השמירה נכשלה — '+error.message; console.error(error); return; }
   /* הבעלות **אחרי** ההכנסה ודרך ה-RPC: owner_id הוא מראה של crm.lead_owners,
-     והכנסה ישירה יצרה ליד שנראה משויך אך אין לו שורת בעלות (נמדד: 2 כאלה). */
-  try{ if(data && data.id) await sb.schema('crm').rpc('lead_set_owner',{ p_lead:data.id, p_owner:ME.id }); }catch(_e){ console.error('lead_set_owner',_e); }
+     והכנסה ישירה יוצרת ליד שנראה משויך אך אין לו שורת בעלות. */
+  if(data && data.id){
+    const { error:oe } = await sb.schema('crm').rpc('lead_set_owner',{ p_lead:data.id, p_owner:ME.id });
+    if(oe) toast('הליד נוצר, אך שיוך הבעלות נכשל — '+oe.message);
+  }
   $('#addModal').classList.add('hidden'); await loadLeads();
 };
 
@@ -16535,6 +16588,9 @@ window.openLead = (id)=>{
       <div><label>סטטוס</label>${selHtml('lb-status',LEAD_STATUSES,l.status,false,'leadSubUI()')}</div>
       <div id="lb-subbox" data-lead="${l.id}"></div>
       <div class="span2"><label>בעלים ליד</label>${lbOwnerBox(l, editable)}</div>
+      ${(editable && ['ליד חדש','ללא מענה','ללא מענה2','ללא מענה3'].includes(l.status||''))?`<div class="span2"><label>לא ענה לטלפון</label>
+        <button type="button" class="btn ghost" style="width:auto" onclick="lbNoAnswer('${l.id}','${esc(l.status||'')}')">📵 אין מענה — סגור משימה ופתח את הבאה</button>
+        <div class="note" style="margin-top:4px">${l.status==='ללא מענה3'?'זו הפעם האחרונה — הליד יעבור לסירוב.':'המשימה הנוכחית תיסגר ותיפתח חדשה, ותישלח הודעת "אין מענה".'}</div></div>`:''}
 
       <div class="form-sep">עדכונים</div>
       <div class="span4">
@@ -16741,6 +16797,22 @@ async function lbLoadUpdates(leadId){
     return `<div class="lbu-row"><span class="lbu-who">${esc(who)}</span><span class="lbu-when">${esc(when)}</span><span class="lbu-body">${esc(a.body||'')}</span></div>`;
   }).join('');
 }
+/* ===== שרשרת "אין מענה" (6.101.0) =====
+   🔴 **כל הלוגיקה בשרת.** crm.lead_step עושה בטרנזקציה אחת: סוגר את כל
+   המשימות הפתוחות, פותח חדשה (3 שעות → יום → יום), כותב שורת וואטסאפ עם
+   dedupe_key, מעדכן סטטוס, ורושם ביומן. הלקוח רק לוחץ ומרענן.
+   ⚠️ `l.status` נשלח כ-p_expect: אם מישהו אחר כבר הזיז את הליד, השרת
+   מחזיר הודעה במקום לבצע פעולה שנייה. זו ההגנה מפני שתי לחיצות בו-זמנית —
+   בלעדיה היו נוצרות שתי משימות ונשלחות שתי הודעות ללקוח. */
+window.lbNoAnswer = async (id, expect)=>{
+  const { data, error } = await sb.schema('crm').rpc('lead_step', { p_lead:id, p_expect:expect||null });
+  if(error){ toast('הפעולה נכשלה — '+error.message); return; }
+  const r = Array.isArray(data) ? data[0] : data;
+  if(r && r.note){ toast(r.note); await loadLeads(); openLead(id); return; }
+  toast(r && r.new_status==='סירוב' ? 'הליד עבר לסירוב — אין מענה מספר פעמים'
+                                    : 'נסגרה משימה ונפתחה חדשה ✓');
+  await loadLeads(); openLead(id);
+};
 window.leadTask = (id)=>{
   const l=LEADS.find(x=>x.id===id); if(!l) return;
   LB_TASK_LINK={ type:'lead', id };

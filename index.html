@@ -2022,7 +2022,7 @@ td.lb-ov .lb-dt{ color:#c0392b; font-weight:700; border-color:#f0bcbc; backgroun
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.110.0</div>
+      <div class="ver">גרסה 6.111.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2131,10 +2131,11 @@ td.lb-ov .lb-dt{ color:#c0392b; font-weight:700; border-color:#f0bcbc; backgroun
     <div class="nav-wrap" data-tabs="prc" id="nav-prc" hidden>
       <button class="nav-item" data-tab="prc">תמחור ומחירונים</button>
     </div>
-    <div class="nav-wrap" data-tabs="pays">
+    <div class="nav-wrap" data-tabs="pays,sup">
       <button class="nav-item" data-tab="pays">הנהלת חשבונות <span class="nav-arrow"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span></button>
       <div class="submenu">
         <button data-tab="pays" onclick="gotoPays('open')">תשלומים</button>
+        <button data-tab="sup" onclick="gotoTab('sup')">ספקים</button>
       </div>
     </div>
     <div class="nav-wrap" data-tabs="set">
@@ -2149,7 +2150,7 @@ td.lb-ov .lb-dt{ color:#c0392b; font-weight:700; border-color:#f0bcbc; backgroun
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.110.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.111.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2229,6 +2230,15 @@ td.lb-ov .lb-dt{ color:#c0392b; font-weight:700; border-color:#f0bcbc; backgroun
     </div>
 
     <!-- תשלומים -->
+    <section id="tab-sup" class="hidden">
+      <div id="si-note"></div>
+      <div class="si-bar">
+        <input id="si-q" class="si-q" type="search" placeholder="חיפוש ספק — שם, מספר או ח.פ.">
+        <div class="chips" id="si-chips"></div>
+      </div>
+      <div id="si-body"></div>
+    </section>
+
     <section id="tab-pays" class="hidden">
       <div class="pay-tiles" id="pay-tiles"></div>
       <div class="chips" id="pay-chips"></div>
@@ -2843,7 +2853,8 @@ window.pLevel  = k => { const P=window.PERM; if(typeof ME!=='undefined' && ME &&
 window.TAB_PERM = {
   today:'home.today', tasks:'crm.tasks', leads:'crm.leads', deals:'crm.deals',
   customers:'crm.customers', contacts:'crm.contacts', meets:'crm.meets', orders:'crm.orders',
-  skus:'sku.cards', docs:'docs', inv:'inv.stock', po:'inv.po', prc:'prc', pays:'acc.pays'
+  skus:'sku.cards', docs:'docs', inv:'inv.stock', po:'inv.po', prc:'prc', pays:'acc.pays',
+  sup:'acc.sup'
 };
 window.LOGI_PERM = { orders:'logi.orders', calls:'logi.calls', cal:'logi.cal' };
 window.SET_PERM  = { users:'set.users', teams:'set.teams', texts:'set.texts', conn:'set.conn', synclog:'set.synclog', notif:'set.notif', general:'set.general' };
@@ -2854,7 +2865,7 @@ window.navCanTab = t=>{
   const k = TAB_PERM[t];
   return k ? canView(k) : true;
 };
-window.NAV_LAND_ORDER = ['today','tasks','leads','deals','customers','contacts','meets','orders','logi','docs','skus','inv','po','pays','prc','set'];
+window.NAV_LAND_ORDER = ['today','tasks','leads','deals','customers','contacts','meets','orders','logi','docs','skus','inv','po','pays','sup','prc','set'];
 window.navLanding = ()=> NAV_LAND_ORDER.find(t=>navCanTab(t)) || null;
 window.canView = k => window.pLevel(k) >= 1;
 window.canEdit = k => window.pLevel(k) >= 2;
@@ -3185,7 +3196,7 @@ $('#logoutBtn').onclick = async ()=>{
    עד 6.1.0 הניווט התבצע דרך b.click() על כפתור התפריט, ולכן כל מסך היה חייב
    כפתור ראשי משלו בסרגל. משנכנסו שבעת מסכי ה-CRM תחת קטגוריית אב אחת, אין
    לכל מסך כפתור ראשי — ולכן הניווט עבר לפונקציה אחת שאינה תלויה ב-DOM. */
-const NAV_TABS = ['today','leads','deals','meets','customers','contacts','pays','tasks','orders','logi','skus','inv','po','prc','docs','set'];
+const NAV_TABS = ['today','leads','deals','meets','customers','contacts','pays','sup','tasks','orders','logi','skus','inv','po','prc','docs','set'];
 let CUR_TAB = 'today';
 /* התצוגה הפנימית הנוכחית של כל מסך שיש לו תתי-קטגוריות — לצורך סימון הפריט הפעיל */
 const NAV_VIEW = {
@@ -3265,6 +3276,7 @@ window.gotoTab = t=>{
   if(t==='inv')  renderInv();
   if(t==='po')   renderPo();
   if(t==='prc')  renderPrc();
+  if(t==='sup')  siRender();
   if(t==='set') renderSettings();
   if(t==='today') dashLoad();
   if(window.innerWidth<800) setSide(false);
@@ -8318,7 +8330,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'leadowner-2026-08-19b';
+const BUILD_ID = 'suppliers-2026-08-20a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -17711,6 +17723,222 @@ function numIn(raw){
    הזמנות דרך ordSortBy) מסומנות data-gs="own" ומדולגות — כדי לא לשבור מיון
    שחוצה עמודים. המיון כאן יציב, ערכים ריקים תמיד בסוף, ועמודת המספור
    (td.rownum) ממוספרת מחדש 1..n אחרי כל מיון. */
+
+/* ===== ספקים — מילון הספקים וכללי הקידוד (6.111.0) =====
+   יושב על ord.sinv_suppliers / sinv_accounts / sinv_rules / sinv_history.
+   🔴 אין כאן לוגיקת קידוד. החשבון והנימוק מגיעים מ-ord.sinv_suggest,
+      כדי שלא תיווצר הגדרה שנייה של "מה החשבון של הספק הזה". */
+const SI_CSS = `
+#tab-sup .si-bar{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:0 0 12px; }
+#tab-sup .si-q{ flex:0 0 320px; max-width:100%; padding:8px 12px; border:1px solid var(--line);
+  border-radius:9px; font:inherit; }
+#tab-sup .si-warn{ background:#fff7e6; border:1px solid #f0c36d; border-radius:10px;
+  padding:10px 14px; margin:0 0 12px; font-size:13px; line-height:1.5; }
+#tab-sup .si-kind{ display:inline-block; padding:1px 9px; border-radius:999px; font-size:11.5px;
+  font-weight:700; }
+#tab-sup .si-kind.goods{ background:#e6f0ff; color:#1d4ed8; }
+#tab-sup .si-kind.exp{ background:#eef2f5; color:#475569; }
+#tab-sup .si-kind.none{ background:#fdf1f1; color:#b91c1c; }
+#tab-sup .si-inactive td{ color:#94a3b8; }
+#tab-sup tr.si-row{ cursor:pointer; }
+#tab-sup .si-card{ background:#fff; border:1px solid var(--line); border-radius:12px;
+  padding:16px 18px; margin:0 0 14px; }
+#tab-sup .si-card h3{ margin:0 0 4px; font-size:17px; }
+#tab-sup .si-sub{ color:#64748b; font-size:12.5px; margin:0 0 14px; }
+#tab-sup .si-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
+  gap:10px 18px; margin:0 0 16px; }
+#tab-sup .si-f label{ display:block; font-size:11.5px; color:#64748b; margin:0 0 2px; }
+#tab-sup .si-f div{ font-size:13.5px; }
+#tab-sup .si-sep{ font-weight:700; font-size:13px; color:var(--navy);
+  border-top:1px solid var(--line); padding-top:12px; margin:16px 0 10px; }
+#tab-sup .si-rule{ font-size:12.5px; padding:5px 0; border-bottom:1px dashed #eef1f4; }
+#tab-sup .si-rule b{ color:var(--navy); }
+#tab-sup .si-back{ cursor:pointer; color:#1d4ed8; font-size:13px; margin:0 0 12px;
+  display:inline-block; }
+@media (max-width:760px){ #tab-sup .si-q{ flex:1 1 100%; } }
+`;
+function siInjectCss(){
+  if(document.getElementById('si-css')) return;
+  const st=document.createElement('style'); st.id='si-css'; st.textContent=SI_CSS;
+  document.head.appendChild(st);
+}
+
+let SI_SUPS=null, SI_ACCS=null, SI_RULES=null, SI_LOADING=false, SI_ERR='';
+let SI_FILTER='all', SI_OPEN=null;
+
+const siNum = v => (v==null||v==='') ? '—' : Number(v).toLocaleString('he-IL');
+const siMoney = v => (v==null||v==='') ? '—'
+  : Number(v).toLocaleString('he-IL',{minimumFractionDigits:0, maximumFractionDigits:0}) + ' ₪';
+
+/* טעינה עצלה. ⚠️ במכוון אינה נוגעת ב-Promise.all של loadLeads — שאילתה
+   שנוספת שם באמצע מסיטה בשקט כל גלובל שאחריה. */
+async function siLoad(force){
+  if(SI_LOADING) return;
+  if(SI_SUPS && !force) return;
+  SI_LOADING=true; SI_ERR='';
+  try{
+    const [s,a,r] = await Promise.all([
+      sb.schema('ord').from('sinv_suppliers')
+        .select('supplier_no,name,gs_name,vatnum,address,city,phone,email,country,currency,paycode,paydes,pri_status,kind,source,doc_count,total_amount,first_seen,last_seen,default_accname,notes,active')
+        .order('doc_count',{ascending:false}).limit(2000),
+      sb.schema('ord').from('sinv_accounts')
+        .select('accname,accdes,use_count,last_used,active').limit(500),
+      sb.schema('ord').from('sinv_rules')
+        .select('id,supplier_no,match_kind,match_value,accname,confidence,support,priority,source,active')
+        .eq('active',true).limit(5000)
+    ]);
+    const bad=[s,a,r].find(x=>x&&x.error);
+    if(bad) throw bad.error;
+    SI_SUPS=s.data||[]; SI_ACCS=a.data||[]; SI_RULES=r.data||[];
+  }catch(e){
+    SI_ERR = (e && e.message) ? e.message : String(e);
+    SI_SUPS=SI_SUPS||[]; SI_ACCS=SI_ACCS||[]; SI_RULES=SI_RULES||[];
+  }finally{ SI_LOADING=false; }
+}
+
+function siAccDes(acc){
+  if(!acc) return '';
+  const h=(SI_ACCS||[]).find(x=>x.accname===acc);
+  return h && h.accdes ? h.accdes : '';
+}
+function siRulesOf(no){
+  return (SI_RULES||[]).filter(r=>r.supplier_no===no)
+    .sort((x,y)=>(x.priority-y.priority)||(y.support-x.support));
+}
+/* החשבון האופייני, עם המספרים שמאחוריו. כלל 'always' הוא ברירת המחדל
+   של הספק; אם אין כזה, מציגים את כלל הטקסט החזק ביותר. */
+function siMainAcc(no){
+  const rs=siRulesOf(no);
+  const always=rs.find(r=>r.match_kind==='always');
+  return always || rs[0] || null;
+}
+
+function siFiltered(){
+  const q=(($('#si-q')&&$('#si-q').value)||'').trim().toLowerCase();
+  return (SI_SUPS||[]).filter(s=>{
+    if(SI_FILTER==='goods'  && s.kind!=='סחורה') return false;
+    if(SI_FILTER==='exp'    && s.kind!=='הוצאה') return false;
+    if(SI_FILTER==='unseen' && siMainAcc(s.supplier_no)) return false;
+    if(!q) return true;
+    return [s.supplier_no,s.name,s.gs_name,s.vatnum]
+      .some(v=>String(v||'').toLowerCase().includes(q));
+  });
+}
+
+function siChips(){
+  const n=(SI_SUPS||[]).length;
+  const g=(SI_SUPS||[]).filter(s=>s.kind==='סחורה').length;
+  const e=(SI_SUPS||[]).filter(s=>s.kind==='הוצאה').length;
+  const u=(SI_SUPS||[]).filter(s=>!siMainAcc(s.supplier_no)).length;
+  const one=(k,lab,cnt)=>'<button class="chip'+(SI_FILTER===k?' on':'')+
+    '" onclick="siSetFilter(\''+k+'\')">'+lab+' <b>'+cnt+'</b></button>';
+  return one('all','הכל',n)+one('goods','סחורה',g)+one('exp','הוצאה',e)+
+         one('unseen','טרם נלמד',u);
+}
+window.siSetFilter = k => { SI_FILTER=k; siPaint(); };
+
+/* ⚠️ שקיפות על מה שהמסך *אינו* יודע. במצב derived המילון נבנה
+   מהמסמכים בלבד, וספק בלי חשבונית או הזמנה כלל אינו מופיע. */
+function siNote(){
+  const el=$('#si-note'); if(!el) return;
+  if(SI_ERR){
+    el.innerHTML='<div class="si-warn">לא ניתן לטעון את מילון הספקים: '+esc(SI_ERR)+'</div>';
+    return;
+  }
+  const derived=(SI_SUPS||[]).some(s=>s.source!=='suppliers');
+  const anyMaster=(SI_SUPS||[]).some(s=>s.source==='suppliers');
+  el.innerHTML = (derived && !anyMaster)
+    ? '<div class="si-warn">המאגר נבנה מהמסמכים ולא ממסך הספקים בפריוריטי. ספק שאין לו חשבונית או הזמנת רכש לא יופיע כאן.</div>'
+    : '';
+}
+
+function siTable(rows){
+  if(!rows.length) return '<div class="empty">אין ספקים תואמים.</div>';
+  const head='<thead><tr><th>מספר</th><th>שם</th><th>סוג</th><th>חשבון אופייני</th>'+
+    '<th>חשבוניות</th><th>מצטבר</th><th>אחרונה</th></tr></thead>';
+  const body=rows.map(s=>{
+    const r=siMainAcc(s.supplier_no);
+    const kind = s.kind==='סחורה' ? '<span class="si-kind goods">סחורה</span>'
+               : s.kind==='הוצאה' ? '<span class="si-kind exp">הוצאה</span>'
+               : '<span class="si-kind none">טרם נלמד</span>';
+    const acc = r ? esc(r.accname)+(siAccDes(r.accname)?' — '+esc(siAccDes(r.accname)):'')
+                  : '<span style="color:#b91c1c">טרם נלמד</span>';
+    return '<tr class="si-row'+(s.active===false?' si-inactive':'')+
+      '" onclick="siOpen(\''+esc(s.supplier_no)+'\')">'+
+      '<td>'+esc(s.supplier_no)+'</td>'+
+      '<td style="text-align:start">'+esc(s.name||'—')+'</td>'+
+      '<td>'+kind+'</td>'+
+      '<td style="text-align:start">'+acc+'</td>'+
+      '<td>'+siNum(s.doc_count)+'</td>'+
+      '<td>'+siMoney(s.total_amount)+'</td>'+
+      '<td>'+esc(s.last_seen||'—')+'</td></tr>';
+  }).join('');
+  return '<div class="tbl-wrap"><table class="tbl">'+head+'<tbody>'+body+'</tbody></table></div>';
+}
+
+window.siOpen = no => { SI_OPEN=no; siPaint(); };
+window.siBack = () => { SI_OPEN=null; siPaint(); };
+
+function siCard(no){
+  const s=(SI_SUPS||[]).find(x=>x.supplier_no===no);
+  if(!s) return '<div class="empty">ספק לא נמצא.</div>';
+  const f=(lab,val)=>'<div class="si-f"><label>'+lab+'</label><div>'+
+    (val==null||val===''?'—':esc(String(val)))+'</div></div>';
+  const rs=siRulesOf(no);
+  const rules = rs.length
+    ? rs.map(r=>{
+        const hits=Math.round((r.confidence||0)*(r.support||0));
+        const how = r.match_kind==='contains'
+          ? 'כשמופיע <b>'+esc(r.match_value||'')+'</b> בתיאור'
+          : 'ברירת המחדל של הספק';
+        return '<div class="si-rule">'+how+' → <b>'+esc(r.accname)+'</b>'+
+          (siAccDes(r.accname)?' '+esc(siAccDes(r.accname)):'')+
+          ' <span style="color:#64748b">('+hits+' מתוך '+(r.support||0)+' שורות'+
+          (r.source==='ידני'?', כלל ידני':'')+')</span></div>';
+      }).join('')
+    : '<div class="empty" style="text-align:start">טרם נלמד כלל לספק הזה. נדרשות לפחות 3 שורות עם אותו חשבון כדי שייווצר כלל, או 2 שורות עם מילה מבחינה בתיאור.</div>';
+
+  return '<div class="si-back" onclick="siBack()">← חזרה לרשימה</div>'+
+    '<div class="si-card">'+
+      '<h3>'+esc(s.name||s.supplier_no)+'</h3>'+
+      '<div class="si-sub">ספק '+esc(s.supplier_no)+
+        (s.source==='suppliers'?' · מהמאסטר בפריוריטי':' · נגזר מהמסמכים')+
+        (s.pri_status?' · '+esc(s.pri_status):'')+'</div>'+
+      '<div class="si-grid">'+
+        f('ח.פ. / ע.מ.', s.vatnum)+ f('טלפון', s.phone)+ f('אימייל', s.email)+
+        f('כתובת', [s.address,s.city].filter(Boolean).join(', '))+
+        f('מדינה', s.country)+ f('מטבע', s.currency)+
+        f('תנאי תשלום', s.paydes)+
+        f('סוג', s.kind||'טרם נלמד')+
+        f('חשבוניות', siNum(s.doc_count))+
+        f('מצטבר', siMoney(s.total_amount))+
+        f('ראשונה', s.first_seen)+ f('אחרונה', s.last_seen)+
+      '</div>'+
+      '<div class="si-sep">כללי הקידוד</div>'+ rules +
+      (s.notes ? '<div class="si-sep">הערות</div><div style="font-size:13px">'+esc(s.notes)+'</div>' : '')+
+    '</div>';
+}
+
+function siPaint(){
+  const b=$('#si-body'); if(!b) return;
+  siNote();
+  const ch=$('#si-chips'); if(ch) ch.innerHTML = SI_OPEN ? '' : siChips();
+  const q=$('#si-q'); if(q) q.style.display = SI_OPEN ? 'none' : '';
+  b.innerHTML = SI_OPEN ? siCard(SI_OPEN) : siTable(siFiltered());
+}
+
+window.siRender = async function(){
+  siInjectCss();
+  const b=$('#si-body'); if(!b) return;
+  if(!SI_SUPS){ b.innerHTML='<div class="empty">טוען ספקים…</div>'; await siLoad(); }
+  const q=$('#si-q');
+  if(q && !q._siWired){
+    q._siWired=true;
+    q.addEventListener('input', ()=>{ SI_OPEN=null; siPaint(); });
+  }
+  siPaint();
+};
+
 (function(){
   /* זיכרון מיון לפי מזהה המכולה — כל רינדור מחדש בונה <table> חדשה,
      ובלי זה כל עריכה בשורה הייתה מאפסת את המיון שהמשתמש בחר. */

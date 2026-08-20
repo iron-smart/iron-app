@@ -1800,9 +1800,32 @@
    ⚠️ background-color ולא shorthand (המחלקה של 6.90.0).
    ⚠️ tr.lb-on td הוא !important וגובר על הרקע בבחירה מרובה — ולכן
       **האייקון** הוא מה שמבטיח שהסימון אינו נעלם שם. */
-td.lb-ov{ background-color:#fdecea; color:#c0392b; font-weight:700; }
+/* 6.119.0 — רומן, 20/08/2026: "כל השורה צריכה להיות צבועה לא רק
+   העמודה של תאריך משימה הבאה". הוכרע: **שורה אחידה**, בלי תא מודגש.
+   🔴 **הספציפיות היא כל העניין כאן, לא הצבע.** רקעי השורות יושבים על
+      ה-tr (שורות 656-662) וכולם (0,2,2): הזברה `tr:nth-child(even)`
+      והריחוף `tr:hover`. כלל בצורת `tr.lb-ovr` הוא (0,1,1) — הזברה
+      הייתה גוברת עליו ו**השורות הזוגיות לא היו נצבעות כלל**, בלי
+      שגיאה ובלי סימן. העיגון ב-#leads-list מעלה ל-(1,2,2).
+   ⚠️ **וריאנט ריחוף חובה.** בלעדיו הכלל החדש גובר על tr:hover,
+      והמשוב בריחוף נעלם דווקא בשורות הדחופות ביותר.
+   🟢 העמודות הקפואות פותרות את עצמן: td:nth-child(-n+3) מוגדר
+      background-color:inherit, ולכן יורש את הגוון מה-tr. זו בדיוק
+      הסיבה שנבחר inherit ולא #fff.
+   🟢 row-new אינו קיים בטבלת הלידים (רק בקריאות שירות ובהזמנות),
+      ולכן אין כאן !important להילחם בו.
+   ⚠️ tr.lb-on td (!important) ימשיך לגבור בבחירה מרובה — רצוי;
+      האייקון הוא שמשאיר את הדחיפות נראית שם. */
+#leads-list .tbl tbody tr.lb-ovr{ background-color:#fdecea; }
+#leads-list .tbl tbody tr.lb-todr{ background-color:#fff4e5; }
+#leads-list .tbl tbody tr.lb-ovr:hover{ background-color:#fbdcd8; }
+#leads-list .tbl tbody tr.lb-todr:hover{ background-color:#ffe9cc; }
+/* הטקסט האדום נשאר על התא — הוא שמסמן איזו עמודה גרמה לצביעה. */
+td.lb-ov{ color:#c0392b; font-weight:700; }
+/* 🔴 האיפוס של רקע הקלט חיוני **יותר** מקודם: .lb-dt מוגדר
+   background:#fff, ובלעדיו הקלט הוא מלבן לבן שצף על רקע **השורה**.
+   אותה מחלקה של 6.103.0, על שטח גדול יותר. */
 td.lb-ov .lb-dt{ background-color:transparent; color:#c0392b; font-weight:700; }
-td.lb-today{ background-color:#fff4e5; }
 td.lb-today .lb-dt{ background-color:transparent; }
 .lb-duew{ display:inline-flex; align-items:center; gap:5px; }
 .lb-bang, .lb-clk{ width:15px; height:15px; flex:none; display:block; }
@@ -2009,6 +2032,13 @@ td.lb-today .lb-dt{ background-color:transparent; }
 .lb-acc[open] > summary::before{ content:"▾"; }
 .lb-acc > div{ padding:4px 12px 10px; }
 .lb-convrow{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:0 0 12px; }
+/* 6.119.0 — רומן: "כפתור פתח לקוח והצעת מחיר בפריוריטי אמרנו
+   שמקטינים ועושים קומפקטי". ⚠️ ממוקד #leadModal: .btn ו-.note
+   משותפים לכל המערכת, ושינוי גלובלי היה מקטין כפתורים בחמישה
+   מודולים בבת אחת (אותו שיקול כמו .card-x ב-6.118.0). */
+#leadModal .lb-convrow{ gap:8px; margin:0 0 8px; }
+#leadModal .lb-convrow .btn{ padding:6px 14px; font-size:12.5px; border-radius:8px; }
+#leadModal .lb-convrow .note{ font-size:11px; line-height:1.35; }
 .lb-convrow .note{ flex:1; min-width:200px; }
 /* ---- בחירה מרובה (6.115.0) ---- */
 .lb-selbar{ display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin:0 0 9px;
@@ -2122,7 +2152,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.118.0</div>
+      <div class="ver">גרסה 6.119.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2251,7 +2281,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.118.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.119.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3561,6 +3591,13 @@ document.addEventListener('click', e=>{ if(e.target.classList && e.target.classL
 document.addEventListener('keydown', function(e){
   /* Esc — סגירת כרטיס פתוח, אחרת סגירת התפריט הצף במובייל */
   if(e.key === 'Escape'){
+    /* 🔴 6.119.0 — שער ל-popover. מ-6.119.0 בורר הבעלים נפתח כחלון צף
+       **מעל** כרטיס הליד, ויש שני מאזיני keydown גלובליים בלתי תלויים:
+       זה, ו-`if(Escape) lbPopClose()` שרשום מאוחר יותר. בלי השער הזה
+       לחיצת Esc אחת הייתה סוגרת את הכרטיס **וגם** את החלון, כי שניהם
+       יורים. עד 6.118.0 זה לא קרה רק מפני שה-popover נפתח מהטבלה
+       בלבד, שם אין מודאל פתוח — כלומר ההתנגשות ישבה בקוד ולא נורתה. */
+    if(document.getElementById('lb-pop')) return;
     if(_openModal()){ e.preventDefault(); closeCards(); return; }
     if(window.innerWidth < 800 && !document.getElementById('side').classList.contains('closed')){ setSide(false); }
     return;
@@ -8452,7 +8489,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'leadduecol-2026-08-20a';
+const BUILD_ID = 'leadrow-2026-08-20b';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -13562,15 +13599,18 @@ function lbClock(f){
 /* נקודת החנק היחידה שקובעת את מצב התא. כל צרכן חדש חייב לעבור כאן
    ולא לחשב "עבר זמנו" בעצמו — אחרת "היום" יתפצל לשתי הגדרות. */
 function lbDueMark(iso){
-  if(!iso) return {cls:'', ico:''};
-  const d = new Date(iso); if(isNaN(d.getTime())) return {cls:'', ico:''};
+  /* 6.119.0 — `rowCls` נוסף לצד `cls`: הצביעה עברה לשורה כולה, אבל
+     הטקסט האדום נשאר על התא. שני שדות ולא אחד, כדי ששתי הרמות
+     יישארו בנקודת החנק הזאת ולא יתפצלו לשני חישובים. */
+  if(!iso) return {cls:'', rowCls:'', ico:''};
+  const d = new Date(iso); if(isNaN(d.getTime())) return {cls:'', rowCls:'', ico:''};
   const now = new Date(), ms = d.getTime() - now.getTime();
-  if(ms < 0) return {cls:'lb-ov', ico:LB_BANG};
+  if(ms < 0) return {cls:'lb-ov', rowCls:'lb-ovr', ico:LB_BANG};
   const sameDay = d.getFullYear()===now.getFullYear()
                && d.getMonth()===now.getMonth()
                && d.getDate()===now.getDate();
-  if(sameDay) return {cls:'lb-today', ico:LB_BANG};
-  return {cls:'', ico:lbClock(ms / 604800000)};   /* 7 ימים במילישניות */
+  if(sameDay) return {cls:'lb-today', rowCls:'lb-todr', ico:LB_BANG};
+  return {cls:'', rowCls:'', ico:lbClock(ms / 604800000)};   /* 7 ימים במילישניות */
 }
 function lbDtLocal(iso){
   if(!iso) return ''; const d=new Date(iso); if(isNaN(d.getTime())) return '';
@@ -17052,7 +17092,7 @@ function lbRow(l, i, nt, nm, ntid){
              : (_cid
                 ? `<span class="pill lb-cx lb-cust lb-cxgo" title="${esc(m.name||'')} — פתיחת כרטיס הלקוח" onclick="event.stopPropagation();goCard(()=>openCust('${jsq(_cid)}'))">${esc(m.name||'לקוח קיים')} ↗</span>`
                 : `<span class="pill lb-cx lb-cust" title="${esc(m.name||'')}">${esc(m.name||'לקוח קיים')}</span>`));
-  return `<tr class="${LB_SEL.has(l.id)?'lb-on':''}" onclick="openLead('${l.id}')">
+  return `<tr class="${LB_SEL.has(l.id)?'lb-on':''}${dmk.rowCls?' '+dmk.rowCls:''}" onclick="openLead('${l.id}')">
       ${LB_BULK?`<td class="lb-ck" onclick="event.stopPropagation()"><input type="checkbox" ${LB_SEL.has(l.id)?'checked':''} onclick="lbSelOne('${jsq(l.id)}',this.checked)"></td>`:''}
       <td class="rownum">${i}</td>
       <td><b>${esc(l.full_name)}</b></td>
@@ -17439,12 +17479,19 @@ function lbPipeDraw(id){
         582 לידים מחזיקים ערכים חריגים, ורצועה לבנה לגמרי נראית שבורה.
      ⚠️ .on נשאר: בלעדיו "רלוונטי" ו"ללא מענה3" ייראו זהים כששניהם
         צבועים, ואי אפשר יהיה לדעת היכן הליד באמת עומד. */
+  /* 🔴 6.119.0 — היפוך של הכרעה בת שעות. רומן, 20/08/2026:
+     "אם סימנתי ללא מענה אז גם כל השרשרת תהיה בצבע של ללא מענה.
+      אותה לוגיקה בכל סטטוס בפייפליין."
+     בבוקר נבחר "כל שלב בצבע שלו"; הוא ראה חי (ליד חדש כתום + ללא מענה
+     ורוד באותה רצועה) וקבע אחרת. הצבע נלקח מ-cur ולא מ-st.
+     ⚠️ **.on קריטי עכשיו יותר מקודם:** כשכל המלאים באותו גוון, הוא הסימן
+        היחיד שמפריד בין "ללא מענה2" ל"ללא מענה3". אסור להסירו. */
+  const curBg = LEAD_ST_COLORS[cur]||'#94a3b8';
   const ci = LEAD_STATUSES.indexOf(cur);
   const segs = LEAD_STATUSES.map((st,i)=>{
     const on = st===cur;
     const done = (ci < 0) ? on : (i <= ci);
-    const bg = LEAD_ST_COLORS[st]||'#94a3b8';
-    const stl = done ? `background-color:${bg};border-color:${bg};color:${onWhite(bg)}`
+    const stl = done ? `background-color:${curBg};border-color:${curBg};color:${onWhite(curBg)}`
                      : `background-color:#fff;border-color:#e2e8f0;color:#94a3b8`;
     return `<button type="button" class="lb-pseg${on?' on':''}" style="${stl}"`
       + `${ed?'':' disabled'} title="${esc(st)}"`
@@ -17812,16 +17859,17 @@ function renderLbFilters(){
 let LBOWN_LEAD = null;
 window.lbOwnerPick = (leadId, ev)=>{
   LBOWN_LEAD = leadId;
-  /* 🔴 6.115.0 — רומן: "אני לא רוצה בתצוגה הטבלאית שיפתח לי מסך בחלון
-     מרכזי נפרד. אני רוצה שיפתח לי חלון צף."
-     ⇒ **מהטבלה** — popover ליד התא. **מהכרטיס** — המודל המרכזי נשאר,
-       כי שם הוא נכון ו-goCard מחזיר לכרטיס.
-     ⚠️ mountCard סוגר כל מודאל אחר ומוסיף card-bar; ה-popover **אינו**
-        עובר דרכו, ולכן הוא מנוהל ידנית עם רקע לסגירה וב-Esc. */
-  const inCard = !!document.querySelector('#leadModal:not(.hidden)');
-  if(inCard || !ev){
-    const open = ()=>{ lbOwnerDraw(); mountCard('lbOwnModal', ()=>$('#lbOwnModal').classList.remove('hidden')); };
-    if(inCard) goCard(open); else open();
+  /* 🔴 6.119.0 — רומן, 20/08/2026: "במסך הליד בעלים ושותפויות פותח
+     חלון צף לא חלון חדש. בדיוק כמו בתצוגה הטבלאית."
+     היפוך מכוון של 6.115.0, שם נכתב "מהכרטיס — המודל המרכזי נשאר, כי
+     שם הוא נכון ו-goCard מחזיר לכרטיס". עכשיו popover בשני המקומות.
+     🟢 ה-z-index כבר תמך בזה בלי שינוי: .modal=50, .lb-popbd=59,
+        .lb-pop=60 — החלון מרונדר מעל הכרטיס.
+     ⚠️ המודל המרכזי נשאר **רק** כפולבק לקריאה בלי אירוע (למשל קריאה
+        תוכניתית), שאין ממנה נקודת עיגון לחלון צף.
+     ⚠️ goCard ירד מהמסלול: אין ניווט, ואין למה לחזור. */
+  if(!ev){
+    lbOwnerDraw(); mountCard('lbOwnModal', ()=>$('#lbOwnModal').classList.remove('hidden'));
     return;
   }
   lbPopClose();
@@ -17834,6 +17882,14 @@ window.lbOwnerPick = (leadId, ev)=>{
   const w = pop.offsetWidth || 330, h = pop.offsetHeight || 300;
   pop.style.top  = Math.max(8, Math.min(window.innerHeight - h - 8, r.bottom + 6)) + 'px';
   pop.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, r.left)) + 'px';
+};
+/* 🔴 6.119.0 — סגירה תלוית-מצב. עד כאן הכפתור קרא `lbPopClose();
+   closeCards()` — בטבלה זה בלתי מזיק (אין כרטיס פתוח), אבל מרגע
+   שהבורר נפתח כחלון צף **מעל** כרטיס הליד, closeCards() היה סוגר את
+   הכרטיס עצמו. במצב popover סוגרים את החלון בלבד. */
+window.lbOwnerClose = ()=>{
+  if(document.getElementById('lb-pop')){ lbPopClose(); return; }
+  lbPopClose(); closeCards();
 };
 window.lbPopClose = ()=>{
   ['lb-pop','lb-popbd'].forEach(id=>{ const e=document.getElementById(id); if(e) e.remove(); });
@@ -17888,7 +17944,7 @@ function lbOwnerDraw(keepQ){
     </div>
     ${can?`<div class="lbop-hint">אנשי מכירות שאפשר לשייך</div>
     <div class="lbop-list">${rows || '<div class="lbop-empty">'+(q?'אין התאמה לחיפוש.':'כל אנשי המכירות כבר משויכים.')+'</div>'}</div>`:''}
-    <div class="modal-actions"><button class="btn btnw" onclick="lbPopClose();closeCards()">סגירה</button></div>`;
+    <div class="modal-actions"><button class="btn btnw" onclick="lbOwnerClose()">סגירה</button></div>`;
   if(can && LBOWN_Q){ const qi=document.getElementById('lbop-q');
     if(qi){ qi.focus(); qi.setSelectionRange(qi.value.length, qi.value.length); } }
 }
@@ -17932,7 +17988,13 @@ window.lbOwnerClear = async ()=>{ await window.lbSetOwner(LBOWN_LEAD, null, true
 /* הכרטיס הפתוח מאחורי המודאל חייב להתרענן, אחרת הוא מציג את המצב הישן
    עד סגירה ופתיחה (הכלל מ-6.83.1: לכל מטמון נקודת ריענון אחת). */
 function lbOwnerSync(id){
-  if(document.querySelector('#leadModal:not(.hidden)')) return;
+  /* 🔴 6.119.0 — השער `if(#leadModal:not(.hidden)) return` הוסר.
+     הוא היה נכון **רק** למסלול המודאל: mountCard מסתיר את #leadModal,
+     ולכן השער עבר והקופסה התרעננה לפני החזרה דרך goCard. מרגע
+     שהבורר הוא חלון צף, הכרטיס **נשאר גלוי** — השער היה יורה תמיד,
+     ו-#lb-ownbox לא היה מתעדכן: החלפת בעלים נראית בטבלה ובחלון אבל
+     לא בכרטיס שמאחוריהם, עד סגירה ופתיחה. זו בדיוק המחלקה של VIS_GRP
+     (6.83.1): מטמון עם צרכן שנשכח. הריענון בטוח גם כשהכרטיס גלוי. */
   const box = document.getElementById('lb-ownbox');
   if(box){ const l = LEADS.find(x=>x.id===id); if(l) box.innerHTML = lbOwnerCell(l); }
 }

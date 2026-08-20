@@ -1775,7 +1775,7 @@
    ⚠️ background-color ולא shorthand — התא הזה אינו קפוא, אבל הכלל הכללי
    .tbl td עלול לקבל שכבה בעתיד, ו-shorthand היה מוחק אותה (6.90.0). */
 td.lb-ov{ color:#c0392b; font-weight:700; }
-td.lb-ov .lb-dt{ color:#c0392b; font-weight:700; border-color:#f0bcbc; background-color:#fff6f5; }
+td.lb-ov .lb-dt{ color:#c0392b; font-weight:700; }
 /* ---- עמודת הבעלים (6.97.0) ---- */
 .lb-ava{ display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:#e2e8f0; color:#475569; font-weight:800; font-size:11px; border:1px solid #cbd5e1; overflow:hidden; }
 .lb-ava-old{ filter:grayscale(1); opacity:.75; border-style:dashed; }
@@ -2022,7 +2022,7 @@ td.lb-ov .lb-dt{ color:#c0392b; font-weight:700; border-color:#f0bcbc; backgroun
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.112.0</div>
+      <div class="ver">גרסה 6.113.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2151,7 +2151,7 @@ td.lb-ov .lb-dt{ color:#c0392b; font-weight:700; border-color:#f0bcbc; backgroun
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.112.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.113.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -8345,7 +8345,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'supinvoices-2026-08-20b';
+const BUILD_ID = 'leadfast-2026-08-20a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -13265,7 +13265,7 @@ async function loadLeads(){
   oldBoot(true);   /* טעינה טרייה של נתוני ההזמנות בכל רענון */
   try{
   _q = await Promise.all([
-    sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at,position,address,notes,task_summary,inquiry_subject,form_name,landing_page_url,chat_url,package,priority_customer_id,utm_campaign,utm_source,utm_medium,utm_term,send_whatsapp_catalog,owner_id,updated_at').order('created_at',{ascending:false}).limit(10000),
+    sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at,position,address,notes,utm_campaign,utm_source,utm_medium,utm_term,send_whatsapp_catalog,owner_id,updated_at').order('created_at',{ascending:false}).limit(10000),
     sb.schema('core').from('customers').select('id,name,phone,email,priority_id,status,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes').order('created_at',{ascending:false}).limit(10000),
     sb.schema('crm').from('tasks').select('id,name,status,value_tag,category,due_at,closed_at,linked_type,linked_id,owner_id').order('due_at',{ascending:true}).limit(10000),
     sb.schema('crm').from('deals').select('id,name,stage,amount,quote_status,irrelevant_reason,priority_quote_id,customer_id,contact_id,send_channel,sign_link,approved_at,closed_at,created_at').order('created_at',{ascending:false}).limit(10000),
@@ -16915,9 +16915,16 @@ let LB_SORT = [null, 1];
 const LB_KEY = {
   1:l=>l.full_name||'', 2:l=>{const m=lbMatch(l); return m?(m.amb?'~':(m.name||'')):'';},
   3:l=>l.company||'',   4:l=>((LOWN_BY[lbOwnerOf(l)]||{}).name)||'',
+  6:(l,nt)=>(nt&&nt[l.id])||'',
   7:l=>l.source||'',    8:l=>String(LEAD_STATUSES.indexOf(l.status)),
   12:l=>l.customer_type||''
 };
+/* 🔴 6.113.0 — מפתח 6 ("תאריך משימה הבאה") היה חסר, בעוד LB_COLS מסמן
+   את העמודה כ-'srt'. lbOrder נפל בשקט ל-lbSort, החץ בכותרת התהפך
+   והשורות לא. ולמה זה נראה "לפעמים עובד": lbSort **היא כבר** מיון לפי
+   משימה קרובה, ולכן מעבר ממיון אחר נראה נכון — אבל כיוון יורד מעולם
+   לא היה נגיש. יש assert בבנייה שדורש התאמה בין העמודות המסומנות
+   'srt' לבין מפתחות LB_KEY, כדי שהפער לא ייווצר שוב בעמודה הבאה. */
 window.lbSortBy = i=>{ LB_SORT = (LB_SORT[0]===i) ? [i,-LB_SORT[1]] : [i,1]; renderLeads(); };
 function lbOrder(grp, nt){
   const f = LB_KEY[LB_SORT[0]];
@@ -16933,7 +16940,7 @@ function lbOrder(grp, nt){
      (18/08/2026 — המלכודת המתועדת בכלל 3 של CLAUDE.md).
      ⚠️ ולכן יש assert בבנייה שאוסר רצף בריחה כזה במודול הזה — כולל בהערות. */
   return grp.slice().sort((a,b)=>{
-    const x=String(f(a)), y=String(f(b));
+    const x=String(f(a,nt)), y=String(f(b,nt));
     if(!x || !y) return x===y ? 0 : (x ? -1 : 1);
     return LB_SORT[1] * col.compare(x,y);
   });
@@ -17112,10 +17119,18 @@ function lbPipeDraw(id){
   const l = LEADS.find(x=>x.id===id); if(!l) return;
   const ed = window.canEdit('crm.leads');
   const cur = l.status||'';
+  /* 6.113.0 — רומן: "לחיצה על 'לא רלוונטי' ועיצובית שכל הפייפליין ימלא
+     בצבע האדום, והלוגיקה הזאת תהיה גם בשאר הסטטוסים".
+     ⇒ הסגמנט הנוכחי מלא בגוון הסטטוס, וכל השאר בגוון בהיר של **אותו**
+       צבע — כך שהרצועה כולה נצבעת, והנוכחי עדיין בולט.
+     ⚠️ background-color ולא shorthand: shorthand מאפס שכבות ומחק את
+        הוורוד ביומן ב-6.90.0. */
+  const curBg = LEAD_ST_COLORS[cur]||'#94a3b8';
   const segs = LEAD_STATUSES.map(st=>{
     const on = st===cur;
     const bg = LEAD_ST_COLORS[st]||'#94a3b8';
-    const stl = on ? `background-color:${bg};border-color:${bg}` : '';
+    const stl = on ? `background-color:${bg};border-color:${bg}`
+                   : `background-color:${tint(curBg,.80)};border-color:${tint(curBg,.62)};color:${onWhite(curBg)}`;
     return `<button type="button" class="lb-pseg${on?' on':''}" style="${stl}"`
       + `${ed?'':' disabled'} title="${esc(st)}"`
       + ` onclick="lbPipeSet('${jsq(id)}','${jsq(st)}','')">${esc(st)}</button>`;
@@ -17141,6 +17156,36 @@ function lbPipeDraw(id){
       יורה change, leadSubUI לא רץ, ותת-הסטטוס הישן היה נכתב לעמודה של
       היעד — נמדד reject_reason='הצעת מחיר'. לכן כתיבה ישירה של שלוש
       העמודות, ורק זו של היעד מקבלת ערך. */
+/* 🔴 6.113.0 — עדכון מקומי במקום loadLeads מלא.
+   נמדד: loadLeads = 26 קריאות רשת ו-~12.2MB JSON בכל לחיצה על שלב
+   (2.8MB לידים · 2.5MB משימות · 1.6MB לקוחות · 1.6MB עסקאות · …).
+   קליק מקצה לקצה: 336ms רצפה, 605–763ms ב-RTT מדומה, 0.6–1.5ש בפרודקשן.
+   openLead לעומתו הוא **5.0ms** ו-lbPipeDraw **0.0ms** — כלומר 100%
+   מהעיכוב היה בטעינה מחדש, ולא בציור. אחרי: **203ms, אפס קריאות רשת.**
+
+   ⚠️ openLead **נשאר** ומצייר מחדש: הוא זול, והוא זה שמרענן את
+      LEAD_SNAP ומריץ leadSubUI — כלומר מקיים בחינם את שני האינווריאנטים
+      של חוזה ה-snapshot. ניתוח כירורגי במקום היה מסלול מקביל שיסחף.
+   ⚠️ TASKS **חייב** עדכון ידני: בלעדיו lbNextMaps תזין את עמודת
+      "תאריך משימה הבאה" בתאריך של משימה שכבר נסגרה, ו-renderTasks
+      תמשיך להציג אותה. זה הצרכן שהכי קל לשכוח. */
+function lbLocalApply(id, o){
+  const l = LEADS.find(x=>x.id===id); if(!l) return;
+  if(o.status){
+    l.status = o.status;
+    l.sub_status = null; l.reject_reason = null; l.irrelevant_reason = null;
+    const col = lbSubCol(o.status); if(col) l[col] = o.sub || null;
+  }
+  l.updated_at = new Date().toISOString();
+  if(o.closedTasks){
+    const nowIso = l.updated_at;
+    (TASKS||[]).forEach(t=>{ if(t.linked_type==='lead' && t.linked_id===id && t.status!=='הושלם'){
+      t.status='הושלם'; t.closed_at=nowIso; t.updated_at=nowIso; } });
+  }
+  if(o.newTask && o.newTask.id && !(TASKS||[]).some(t=>t.id===o.newTask.id)) TASKS.push(o.newTask);
+  renderLeads(); renderTasks(); renderToday(); renderStats();
+  openLead(id);
+}
 window.lbPipeSet = async (id, st, sub)=>{
   const l = LEADS.find(x=>x.id===id); if(!l) return;
   if(!window.canEdit('crm.leads')){ toast('אין לך הרשאת עריכה ללידים.'); return; }
@@ -17161,20 +17206,24 @@ window.lbPipeSet = async (id, st, sub)=>{
   if(CH.indexOf(cur)>=0 && (CH.indexOf(st)>=0 || st==='סירוב') && nextOf(cur)!==st){
     if(!confirm('זו קפיצה לא סדורה בשרשרת "אין מענה".\nלא תישלח הודעה ללקוח, והמשימה הפתוחה לא תסתובב.\nלהמשיך?')) return;
   }
-  const upd = { status: st, sub_status:null, reject_reason:null, irrelevant_reason:null };
-  const col = lbSubCol(st); if(col) upd[col] = sub || null;
-  const { error } = await sb.schema('crm').from('leads').update(upd).eq('id', id);
+  /* 🔴 crm.lead_set_status — סטטוס + איפוס שלוש עמודות תת-הסטטוס +
+     סגירת המשימות, **בטרנזקציה אחת**. עד 6.112.0 אלה היו שתי כתיבות
+     נפרדות ותוצאת השנייה נזרקה בלי בדיקת error; נפילת רשת ביניהן
+     השאירה ליד בסטטוס סופי עם משימה פתוחה. כל עוד רץ loadLeads מלא
+     הרענון הסתיר את זה — **עם עדכון מקומי זה היה הופך לשקר מתמשך.**
+     (סקירת בקרה, 20/08/2026.) */
+  const { data, error } = await sb.schema('crm').rpc('lead_set_status',
+    { p_lead:id, p_status:st, p_sub: sub || null });
   if(error){ toast('שינוי השלב נכשל — '+error.message); return; }
-  /* ⚠️ מעבר לסטטוס סופי — לסגור את המשימות הפתוחות. היום יש 0 כאלה על
-     לידים בסירוב/לא-רלוונטי, ו-ensure_lead_tasks מפסיקה לטפל בליד ברגע
-     שיצא מ-LB_ACTIVE. בלי זה הרצועה הייתה מתחילה לייצר משימות יתומות. */
-  if(LB_ACTIVE.indexOf(st) < 0){
-    const nowIso = new Date().toISOString();
-    await sb.schema('crm').from('tasks').update({ status:'הושלם', closed_at:nowIso, updated_at:nowIso })
-      .eq('linked_type','lead').eq('linked_id',id).neq('status','הושלם');
+  const r = Array.isArray(data) ? data[0] : data;
+  /* ⚠️ ok=false פירושו שהשרת פגע ב-0 שורות — ליד שנמחק או חסום ב-RLS.
+     שם **אסור** לעדכן מקומית: המצב המקומי ידוע כשגוי, ולכן טעינה מלאה. */
+  if(!r || r.ok !== true){
+    toast((r && r.note) || 'הליד לא נמצא — טוען מחדש');
+    await loadLeads(); return;
   }
   toast('השלב עודכן ✓');
-  await loadLeads(); openLead(id);
+  lbLocalApply(id, { status: st, sub: sub || null, closedTasks: (r.tasks_closed||0) > 0 });
 };
 function lbSnapshot(id){
   const snap={ __id:id };
@@ -17630,10 +17679,19 @@ window.lbNoAnswer = async (id, expect)=>{
   const { data, error } = await sb.schema('crm').rpc('lead_step', { p_lead:id, p_expect:expect||null });
   if(error){ toast('הפעולה נכשלה — '+error.message); return; }
   const r = Array.isArray(data) ? data[0] : data;
+  /* ⚠️ note = השרת סירב כי מישהו אחר כבר הזיז את הליד (הגנת p_expect).
+     **המצב המקומי ידוע כשגוי** — זה בדיוק המקום שבו טעינה מלאה נכונה. */
   if(r && r.note){ toast(r.note); await loadLeads(); openLead(id); return; }
   toast(r && r.new_status==='סירוב' ? 'הליד עבר לסירוב — אין מענה מספר פעמים'
                                     : 'נסגרה משימה ונפתחה חדשה ✓');
-  await loadLeads(); openLead(id);
+  /* 🟢 lead_step כבר מחזירה next_due ו-task_id — עד 6.112.0 הלקוח זרק
+     אותם. אלה בדיוק שני השדות שדרושים לתקן את TASKS בזיכרון.
+     ⚠️ name ו-owner_id אינם בהחזרה: השם יוצג ריק עד הרענון הבא,
+     ו-owner_id מוצב מהבעלים הראשי כדי ש"היום שלי" לא יאבד את המשימה. */
+  lbLocalApply(id, { status: r && r.new_status, closedTasks: true,
+    newTask: (r && r.task_id) ? { id:r.task_id, name:'להתקשר ל'+((LEADS.find(x=>x.id===id)||{}).full_name||'ליד'),
+      status:'חדש', due_at:r.next_due, category:'ליד', linked_type:'lead', linked_id:id,
+      owner_id: lbOwnUuid(lbOwnerOf(LEADS.find(x=>x.id===id)||{})) } : null });
 };
 /* ===== מחיקת ליד (6.102.0) =====
    🔴 **מחיקה רכה בלבד.** crm.lead_delete מסמנת deleted_at, ו-policy

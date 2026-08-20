@@ -1951,6 +1951,32 @@ td.lb-ov .lb-dt{ color:#c0392b; font-weight:700; }
 .lbu-act button:hover{ background-color:#f4f7fb; }
 .lbu-edit{ display:flex; gap:6px; align-items:flex-start; flex:1; }
 .lbu-edit textarea{ flex:1; font-size:13px; }
+/* ---- כרטיס הליד: יישור ודחיסה (6.114.0) ----
+   רומן: "ליישר את כל השדות. שים לב שם מלא ברח למטה" + "יותר דחוס".
+   ⚠️ הבריחה נגרמה משדות בגבהים שונים בתוך שורת גריד — label בשורה
+   אחת מול label שנשבר לשתיים. align-items:end מיישר את הפקדים
+   עצמם לתחתית התא, ולכן כל התיבות בשורה על אותו קו. */
+#leadSheet .form-grid, #addModal .form-grid{ align-items:end; }
+#leadSheet .form-grid > div, #addModal .form-grid > div{ min-width:0; }
+#leadSheet label, #addModal label{ min-height:17px; }
+/* ---- סטטוס ובעלות קומפקטי (6.114.0) ---- */
+.lb-sob{ display:flex; flex-wrap:wrap; align-items:center; gap:10px;
+  padding:8px 10px; border:1px solid var(--line); border-radius:10px;
+  background-color:#fbfcfe; }
+.lb-sob > label{ font-size:11.5px; color:var(--ink-3); margin:0 0 0 2px; min-height:0; }
+.lb-sob select{ width:auto; min-width:130px; }
+.lb-sob .lbo-wrap{ margin:0; }
+/* ---- ציר פעילות מקובץ (6.114.0) ---- */
+.lb-acc{ margin-top:12px; border:1px solid var(--line); border-radius:10px;
+  background-color:#fff; overflow:hidden; }
+.lb-acc > summary{ cursor:pointer; padding:9px 12px; font-size:13px; font-weight:800;
+  color:var(--ink-2); background-color:#f7f9fc; list-style:none; }
+.lb-acc > summary::-webkit-details-marker{ display:none; }
+.lb-acc > summary::before{ content:"▸"; margin-inline-end:6px; display:inline-block; }
+.lb-acc[open] > summary::before{ content:"▾"; }
+.lb-acc > div{ padding:4px 12px 10px; }
+.lb-convrow{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:0 0 12px; }
+.lb-convrow .note{ flex:1; min-width:200px; }
 /* ---- בורר הבעלים הקומפקטי (6.110.0) ----
    הצורה מהצילום של רומן: שדה עם הצ'יפים הנבחרים ו-✕, ומתחתיו
    רשימת מועמדים עם אווטאר, שם ותפקיד.
@@ -2022,7 +2048,7 @@ td.lb-ov .lb-dt{ color:#c0392b; font-weight:700; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.113.0</div>
+      <div class="ver">גרסה 6.114.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2151,7 +2177,7 @@ td.lb-ov .lb-dt{ color:#c0392b; font-weight:700; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.113.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.114.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2451,25 +2477,23 @@ td.lb-ov .lb-dt{ color:#c0392b; font-weight:700; }
     <h3>ליד חדש</h3>
     <div class="form-grid">
       <div class="form-sep">מי הליד</div>
-      <div class="span2"><label>שם מלא <span class="note">(חובה)</span></label><input id="a-name" oninput="lbDupCheck()"></div>
-      <div><label>טלפון <span class="note">(חובה)</span></label><input id="a-phone" type="tel" dir="ltr" oninput="lbDupCheck()"></div>
+      <div class="span2"><label>שם מלא<span class="req">*</span></label><input id="a-name" oninput="lbDupCheck()"></div>
+      <div><label>טלפון<span class="req">*</span></label><input id="a-phone" type="tel" dir="ltr" oninput="lbDupCheck()"></div>
       <div><label>אימייל</label><input id="a-email" type="email" dir="ltr" oninput="lbDupCheck()"></div>
       <div class="span4" id="a-dup"></div>
       <div class="span2"><label>שם חברה</label><input id="a-company"></div>
       <div><label>עיר</label><input id="a-city"></div>
-      <div><label>סוג לקוח <span class="note">(חובה)</span></label><select id="a-type"></select></div>
+      <div><label>סוג לקוח<span class="req">*</span></label><select id="a-type"></select><div class="note" style="margin-top:3px">יש לשאול לאן מיועד הציוד, כדי להבין את סוג הלקוח.</div></div>
 
       <div class="form-sep">מאיפה הגיע</div>
-      <div class="span2"><label>מקור הגעה <span class="note">(חובה)</span></label><select id="a-source"></select></div>
-      <div class="span2"><label>האם לשלוח וואטסאפ?</label><select id="a-wacat"><option value="">—</option><option>כן</option><option>לא</option></select></div>
+      <div><label>מקור הגעה<span class="req">*</span></label><select id="a-source"></select></div>
+      <div><label>האם לשלוח וואטסאפ?</label><select id="a-wacat"><option value="">—</option><option>כן</option><option>לא</option></select></div>
       <div class="span4"><label>מידע על הליד</label><textarea id="a-notes" rows="2" placeholder="מתחם אימונים ראשון? גודל המקום? איזה סוג אימונים…"></textarea></div>
 
-      <div class="form-sep">בעלות</div>
       <div class="span4"><div class="a-ownline" id="a-ownline"></div></div>
     </div>
     <div class="modal-actions">
       <button class="btn green" id="a-save">שמירה</button>
-      <button class="ghost" id="a-cancel">ביטול</button>
     </div>
     <div class="err" id="a-err"></div>
   </div>
@@ -8345,7 +8369,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'leadfast-2026-08-20a';
+const BUILD_ID = 'leadcard2-2026-08-20a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -17039,7 +17063,6 @@ $('#addBtn').onclick = ()=>{
     + '</b> — וגם המשימה שתיפתח לו אוטומטית.</span>';
   $('#a-err').textContent=''; const d=document.getElementById('a-dup'); if(d) d.innerHTML='';
   mountCard('addModal', ()=>$('#addModal').classList.remove('hidden')); };
-$('#a-cancel').onclick = ()=> closeCards();
 $('#a-save').onclick = async ()=>{
   const g = id => (document.getElementById(id) ? document.getElementById(id).value : '').trim();
   /* ההודעה מונה את השדות החסרים בשמם, ולא "יש למלא שדות" (שפת הכרטיסים) */
@@ -17053,7 +17076,7 @@ $('#a-save').onclick = async ()=>{
      בעלים. נמדד 19/08 שהבאג חי ~16 שעות ואפס לידים ילידיים נפתחו. */
   const { data, error } = await sb.schema('crm').from('leads').insert({
     full_name:g('a-name'), phone:g('a-phone'), email:g('a-email')||null,
-    company:g('a-company')||null, city:g('a-city')||null, notes:g('a-notes')||null,
+    company:g('a-company')||null, city:g('a-city')||null,
     source:g('a-source'), customer_type:g('a-type'),
     send_whatsapp_catalog: wa==='' ? null : (wa==='כן'),
     status:'ליד חדש'
@@ -17064,6 +17087,19 @@ $('#a-save').onclick = async ()=>{
   if(data && data.id){
     const { error:oe } = await sb.schema('crm').rpc('lead_set_owner',{ p_lead:data.id, p_owner:ME.id });
     if(oe) toast('הליד נוצר, אך שיוך הבעלות נכשל — '+oe.message);
+    /* 🔴 6.114.0 — רומן: "מידע על הליד שממלאים בטופס יגיע ישירות
+       לעדכונים בכרטיס". crm.leads.notes מפסיק להיות נקודת קלט.
+       ⚠️ actor_id=ME.id: זו כתיבה של אדם, ולכן היא **כן** ניתנת
+       לעריכה ולמחיקה על ידו — בשונה מ-1,839 שורות המיגרציה
+       שנכתבו עם actor_id=NULL ונעולות בכוונה. */
+    const _n = g('a-notes');
+    if(_n){ await sb.schema('crm').from('activities').insert({
+      actor_id: ME.id, linked_type:'lead', linked_id:data.id, kind:'עדכון', body:_n }); }
+    /* משימה מיידית — עד כה היא נפתחה רק בתיקתוק הבא של ה-cron
+       (כל 15 דק', 08:00–20:00, לא שבת). ליד שנפתח ב-20:05 קיבל משימה
+       למחרת בבוקר. רומן: "שתיפתח מיד". */
+    const { error:te } = await sb.schema('crm').rpc('lead_task_now',{ p_lead:data.id });
+    if(te) console.warn('lead_task_now', te);
   }
   $('#addModal').classList.add('hidden'); await loadLeads();
 };
@@ -17077,7 +17113,7 @@ const LEAD_CARD_FIELDS = [
   ['lb-name','full_name'], ['lb-phone','phone'], ['lb-email','email'],
   ['lb-company','company'], ['lb-position','position'], ['lb-city','city'],
   ['lb-addr','address'], ['lb-ctype','customer_type'], ['lb-source','source'],
-  ['lb-notes','notes'], ['lb-wacat','__wacat']
+  ['lb-wacat','__wacat']
 ];
 let LEAD_SNAP = null, LB_TASK_LINK = null, LB_MEET_LEAD = null;
 /* תת-הסטטוס: עמודה אחת לכל סטטוס-אב. בורר יחיד בכרטיס מצייר את הרשימה של
@@ -17238,7 +17274,6 @@ function lbSnapshot(id){
 const lbLink=(u,txt)=>{ const s=esc(safeUrl(u)); return s?`<a href="${s}" target="_blank" rel="noopener">${esc(txt)} ↗</a>`:''; };
 window.openLead = (id)=>{
   const l = LEADS.find(x=>x.id===id); if(!l) return;
-  const canConvert = l.status!=='רלוונטי';
   const editable = window.canEdit('crm.leads');
   const fmtDT = v=> v?new Date(v).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
   const utm=[l.utm_campaign,l.utm_source,l.utm_medium,l.utm_term].filter(Boolean).join(' · ');
@@ -17250,30 +17285,42 @@ window.openLead = (id)=>{
   $('#leadSheet').innerHTML = `
     <h3>${esc(l.full_name)} ${mdPill(l.status||'—',LEAD_ST_COLORS,LB_TK)}</h3>
     <div class="lb-pipe" id="lb-pipe" data-lead="${esc(l.id)}"></div>
+    <!-- 🔴 6.114.0 — הכפתור עלה לראש הכרטיס וקיבל את שמו האמיתי.
+         עד כה הוא נקרא "העבר לרלוונטי", וזה תיאר את תופעת הלוואי הקטנה
+         והסתיר את הגדולה: הוא פותח **לקוח והצעת מחיר בפריוריטי**
+         ויוצר **עסקה**. מרגע שהרצועה הפכה ללחיצה (6.108.0) היו שתי
+         דרכים שנראות זהות ועושות דברים שונים.
+         ⇒ חלוקת התפקידים: הרצועה = רישום מצב. הכפתור = יצירת מסמכים.
+         🟢 רומן, 20/08/2026: "תמיד להציג את הכפתור" — canConvert ירד.
+            ההגנה מפני עסקה כפולה נשארת בשרת (crm-convert-lead בודקת
+            eq('lead_id') לפני היצירה ומחזירה את ההצעה הקיימת). -->
+    ${editable?`<div class="lb-convrow">
+      <button class="btn green" style="width:auto" onclick="convertLead('${l.id}')">פתח לקוח והצעת מחיר בפריוריטי</button>
+      <span class="note">הפעולה תפתח לקוח זמני והצעה בפריוריטי, תקשר אותם לליד, ותסמן אותו «רלוונטי · הצעת מחיר».</span>
+    </div>`:''}
     <div class="form-grid">
-      <div class="form-sep">פרטי הפנייה והערות</div>
-      <div><label>נוצר</label>${roIn(fmtDT(l.created_at),{ltr:1})}</div>
-      <div><label>עודכן לאחרונה</label>${roIn(fmtDT(l.updated_at),{ltr:1})}</div>
-      ${utm?`<div class="span2"><label>קמפיין (UTM)</label>${roIn(utm)}</div>`:''}
-      ${cust?`<div class="span2"><label>לקוח מקושר${l.customer_id?'':' <span class="note" style="font-weight:400">(הוצלב לפי טלפון)</span>'}</label><div class="lb-links"><a href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(cust.id)}'))">${esc(cust.name||'כרטיס הלקוח')} ↗</a></div></div>`:''}
-      <div class="span4"><label>הערות ליד <span class="note" style="font-weight:400">(מה השאיר בטופס או בשיחה)</span></label><textarea id="lb-notes" rows="2" placeholder="הערות שהגיעו מהקמפיין, או רקע שאספתם בשיחה">${esc(l.notes||'')}</textarea></div>
-
-      <div class="form-sep">שדות למילוי</div>
-      <div><label>שם מלא <span class="note">(חובה)</span></label><input id="lb-name" value="${esc(l.full_name||'')}"></div>
+      <div class="form-sep">פרטי הפנייה</div>
+      <div><label>שם מלא<span class="req">*</span></label><input id="lb-name" value="${esc(l.full_name||'')}"></div>
       <div><label>טלפון ${phBtns(l.phone)}</label><input id="lb-phone" value="${esc(l.phone||'')}" dir="ltr"></div>
       <div><label>אימייל</label><input id="lb-email" value="${esc(l.email||'')}" dir="ltr"></div>
       <div><label>שם חברה</label><input id="lb-company" value="${esc(l.company||'')}"></div>
       <div><label>תפקיד</label><input id="lb-position" value="${esc(l.position||'')}"></div>
       <div><label>עיר</label><input id="lb-city" value="${esc(l.city||'')}"></div>
-      <div><label>כתובת</label><input id="lb-addr" value="${esc(l.address||'')}"></div>
+      <div class="span2"><label>כתובת</label><input id="lb-addr" value="${esc(l.address||'')}"></div>
       <div><label>סוג לקוח</label>${selHtml('lb-ctype',LEAD_TYPES,l.customer_type,true)}</div>
       <div><label>מקור הגעה</label>${selHtml('lb-source',LEAD_SOURCES,l.source,true)}</div>
       <div><label>לשלוח קטלוג בוואטסאפ?</label>${selHtml('lb-wacat',['כן','לא'],l.send_whatsapp_catalog===true?'כן':(l.send_whatsapp_catalog===false?'לא':null),true)}</div>
+      ${utm?`<div class="span2"><label>קמפיין (UTM)</label>${roIn(utm)}</div>`:''}
+      ${cust?`<div class="span2"><label>לקוח מקושר${l.customer_id?'':' <span class="note" style="font-weight:400">(הוצלב לפי טלפון)</span>'}</label><div class="lb-links"><a href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(cust.id)}'))">${esc(cust.name||'כרטיס הלקוח')} ↗</a></div></div>`:''}
+      <div><label>נוצר</label>${roIn(fmtDT(l.created_at),{ltr:1})}</div>
+      <div><label>עודכן לאחרונה</label>${roIn(fmtDT(l.updated_at),{ltr:1})}</div>
 
       <div class="form-sep">סטטוס ובעלות</div>
-      <div><label>סטטוס</label>${selHtml('lb-status',LEAD_STATUSES,l.status,false,'leadSubUI()')}</div>
-      <div id="lb-subbox" data-lead="${l.id}"></div>
-      <div class="span2"><label>בעלים ליד</label><div id="lb-ownbox">${lbOwnerBox(l, editable)}</div></div>
+      <div class="span4"><div class="lb-sob">
+        <label>סטטוס</label>${selHtml('lb-status',LEAD_STATUSES,l.status,false,'leadSubUI()')}
+        <span id="lb-subbox" data-lead="${l.id}"></span>
+        <label>בעלים</label><span id="lb-ownbox">${lbOwnerBox(l, editable)}</span>
+      </div></div>
       ${(editable && ['ליד חדש','ללא מענה','ללא מענה2','ללא מענה3'].includes(l.status||''))?`<div class="span2"><label>לא ענה לטלפון</label>
         <button type="button" class="btn ghost" style="width:auto" onclick="lbNoAnswer('${l.id}','${esc(l.status||'')}')">📵 אין מענה — סגור משימה ופתח את הבאה</button>
         <div class="note" style="margin-top:4px">${l.status==='ללא מענה3'?'זו הפעם האחרונה — הליד יעבור לסירוב.':'המשימה הנוכחית תיסגר ותיפתח חדשה, ותישלח הודעת "אין מענה".'}</div></div>`:''}
@@ -17297,12 +17344,16 @@ window.openLead = (id)=>{
       ${window.canEdit('crm.tasks')?`<button type="button" class="chip" onclick="leadTask('${l.id}')">＋ משימה</button>`:''}
       ${window.canEdit('crm.meets')?`<button type="button" class="chip" onclick="leadMeet('${l.id}')">＋ פגישה</button>`:''}
     </section>
-    <div class="actions">
-      ${canConvert? `<button class="btn green" onclick="convertLead('${l.id}')">העבר לרלוונטי ← פתח לקוח והצעה בפריוריטי</button>`:''}
-    </div>
-    ${canConvert? '<div class="note">הפעולה תפתח לקוח זמני והצעת מחיר בפריוריטי, ותקשר אותם לליד.</div>':''}
+    <div id="convResultSlot"></div>
     <div id="convResult"></div>
-    <div id="lead-acts"></div>`;
+    <!-- 🔴 6.114.0 — רומן: "ציר פעילות הצג בתחתית מקובץ. רק אם ארצה
+         לראות את ההיסטוריה אני אפתח."
+         ⚠️ הטעינה עצלה: activityHtml שולפת 200 שורות מהמסד, ואחרי
+         מיגרציית 1,839 ההערות יש הרבה יותר מה לשלוף. אין סיבה לשלם
+         על זה בכל פתיחת כרטיס. -->
+    <details class="lb-acc" id="lb-acc" ontoggle="lbActsLoad('${jsq(l.id)}')">
+      <summary>ציר פעילות</summary><div id="lead-acts"><div class="note">לחצו כדי לטעון…</div></div>
+    </details>`;
   leadSubUI();
   /* ה-snapshot נלקח אחרי שכל השדות צוירו — כולל בורר תת-הסטטוס */
   lbSnapshot(id);
@@ -17311,7 +17362,12 @@ window.openLead = (id)=>{
   try{ window.markEmpty('leadModal'); }catch(_e){}
   if(!editable) document.querySelectorAll('#leadSheet input,#leadSheet select,#leadSheet textarea,#leadSheet .lb-pseg,#leadSheet .lb-psub button').forEach(el=>el.disabled=true);
   lbLoadUpdates(id);
-  activityHtml('lead', id).then(h=>{ const el=$('#lead-acts'); if(el) el.innerHTML=h; });
+};
+/* טעינה עצלה של ציר הפעילות — פעם אחת לפתיחה, ורק כשנפתח בפועל. */
+window.lbActsLoad = (id)=>{
+  const d = document.getElementById('lb-acc'); if(!d || !d.open || d.dataset.loaded) return;
+  d.dataset.loaded = '1';
+  activityHtml('lead', id).then(h=>{ const el=document.getElementById('lead-acts'); if(el) el.innerHTML=h; });
 };
 window.saveLead = async (id)=>{
   const l = LEADS.find(x=>x.id===id); if(!l) return;

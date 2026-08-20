@@ -1162,6 +1162,16 @@
 
   /* ===== כרטיסי הזמנה/קריאה מלאים — עיצוב הלוח הישן (הערות 20–22) ===== */
   .modal .sheet.wide{ max-width:960px; }
+  /* 6.118.0 — רומן: "תעשה יותר קטן וקומפקטי (כפתור סגירה תקטין,
+     כותרת וכו')" · "תקטין כפתור. אני אוהב יותר קומפקטי."
+     ⚠️ ממוקד #leadModal בהכרעתו — הבוררים האלה משותפים לכרטיס
+        ההזמנה, קריאת השירות, הלקוח והמק"ט, ושינוי גלובלי היה
+        נוגע בחמישה מודולים בבת אחת. */
+  #leadModal .sheet{ padding:14px; }
+  #leadModal .sheet h3{ margin:0 0 8px; font-size:16px; }
+  #leadModal .card-x{ width:24px; height:24px; font-size:12px; }
+  #leadModal .card-bar{ margin-bottom:4px; }
+  #leadModal .form-sep{ margin-top:10px; }
   .form-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
   /* 6.25.0 — שורת הכתובות: חמישה שדות באותה שורה, מצטמצמת לפי רוחב המסך */
   .form-grid .addr-row{ grid-column:span 4; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; }
@@ -1777,8 +1787,29 @@
    פנימי, כי התוכן הוא <input> שיש לו צבע משלו.
    ⚠️ background-color ולא shorthand — התא הזה אינו קפוא, אבל הכלל הכללי
    .tbl td עלול לקבל שכבה בעתיד, ו-shorthand היה מוחק אותה (6.90.0). */
-td.lb-ov{ color:#c0392b; font-weight:700; }
-td.lb-ov .lb-dt{ color:#c0392b; font-weight:700; }
+/* 6.118.0 — רומן, 20/08/2026 (צילום מונדיי): "תעשה ככה על עמודה
+   תאריך משימה הבאה", ואישר במפורש "רקע גם להיום".
+   🔴 היפוך מכוון של 6.107.0 ("לצבוע רק את התאריך ושעה, לא כל
+      המשבצת"). הבדיקה שאכפה את הישן הפוכה ב-leadstest עם הציטוט.
+   🔴 **`background-color:transparent` על ה-input אינו קישוט.**
+      .lb-dt מוגדר background:#fff, ובלעדיו הקלט הוא מלבן לבן שצף
+      בתוך הרקע הצבוע והצבע נראה רק כמסגרת. זו בדיוק המחלקה של באג
+      ה-color מ-6.103.0 — הקלט אינו יורש, וכלל מפורש גובר.
+   ⚠️ שני מסלולים: עריך (input) ולא-עריך (טקסט על ה-td). מי שיתקן
+      בעתיד רק את האחד יכבה את הסימון לחצי מהמשתמשים.
+   ⚠️ background-color ולא shorthand (המחלקה של 6.90.0).
+   ⚠️ tr.lb-on td הוא !important וגובר על הרקע בבחירה מרובה — ולכן
+      **האייקון** הוא מה שמבטיח שהסימון אינו נעלם שם. */
+td.lb-ov{ background-color:#fdecea; color:#c0392b; font-weight:700; }
+td.lb-ov .lb-dt{ background-color:transparent; color:#c0392b; font-weight:700; }
+td.lb-today{ background-color:#fff4e5; }
+td.lb-today .lb-dt{ background-color:transparent; }
+.lb-duew{ display:inline-flex; align-items:center; gap:5px; }
+.lb-bang, .lb-clk{ width:15px; height:15px; flex:none; display:block; }
+/* טלפון לחיץ בטבלאות (6.118.0). צבע ההיפר-קישור מוחלף בצבע הטקסט
+   הרגיל — חמש הטבלאות צפופות, וכחול על כל שורה היה רועש. */
+.lb-tel{ color:inherit; text-decoration:none; border-bottom:1px dotted #94a3b8; }
+.lb-tel:hover{ color:#0b3552; border-bottom-color:#0b3552; }
 /* ---- עמודת הבעלים (6.97.0) ---- */
 .lb-ava{ display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:#e2e8f0; color:#475569; font-weight:800; font-size:11px; border:1px solid #cbd5e1; overflow:hidden; }
 .lb-ava-old{ filter:grayscale(1); opacity:.75; border-style:dashed; }
@@ -1939,7 +1970,6 @@ td.lb-ov .lb-dt{ color:#c0392b; font-weight:700; }
 .lb-psub button{ font-size:11.5px; font-weight:700; padding:3px 10px; border-radius:999px;
   border:1px solid var(--line); background-color:#fff; color:#475569; cursor:pointer; font-family:inherit; }
 .lb-psub button:disabled{ cursor:default; }
-.lb-pnote{ margin-top:6px; font-size:11px; color:#94a3b8; }
 /* ---- דחיסת כרטיס הליד (6.108.0, רומן: "יותר דחוס וקומפקטי") ---- */
 #leadSheet .form-grid{ gap:9px 12px; }
 #leadSheet .form-sep{ margin-top:10px; padding-bottom:3px; }
@@ -2092,7 +2122,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.117.0</div>
+      <div class="ver">גרסה 6.118.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2221,7 +2251,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.117.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.118.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2745,7 +2775,7 @@ const LEAD_SRC_COLORS  = {'קשרים אישיים':'#00c875','Paycall - שיח�
    מהאורך ולא מקודד — עמודה שתתווסף לא תשבור את הכותרות בשקט. */
 const LB_COLS = [
   ['#','rownum'], ['שם מלא','srt'], ['לקוח','srt'], ['שם חברה','srt'], ['בעלים ליד','srt'],
-  ['טלפון',''], ['תאריך משימה הבאה','srt'], ['מקור הגעה','srt'],
+  ['טלפון',''], ['ת.משימה הבאה','srt'], ['מקור הגעה','srt'],
   ['סטטוס','srt'], ['סטטוס רלוונטי',''], ['סטטוס לסירוב',''], ['סטטוס לא רלוונטי',''], ['סוג לקוח','srt']
 ];
 /* ---- הצלבת הליד מול לקוח קיים ----
@@ -8422,7 +8452,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'yahavlabel-2026-08-20a';
+const BUILD_ID = 'leadduecol-2026-08-20a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -13503,6 +13533,45 @@ function lbAva(key, small){
 /* ISO(UTC) → הערך ש-<input type="datetime-local"> מצפה לו, בשעון מקומי.
    ההמרה חייבת להיות מפורשת: toISOString().slice(0,16) היה מציג 06:00
    למשימה של 09:00 בשעון ישראל, והמשתמש היה "מתקן" אותה בשלוש שעות. */
+/* ═══ סימון מצב המשימה בעמודה (6.118.0) ═══════════════════════
+   רומן ביקש את השפה של עמודת "דד ליין" במונדיי: אייקון מצב לפני
+   התאריך, ורקע לתא. שלושה מצבים בלבד, לפי הכרעתו:
+     · עבר זמנה   → "!" אדום + רקע ורוד
+     · היום        → "!" אדום + רקע כתום בהיר ("רקע גם להיום")
+     · עתידי       → שעון שמילויו = **כמה זמן נשאר**, מתוך חלון של
+                     7 ימים. מחר כמעט ריק (דוחק), שבוע ומעלה מלא.
+   ⚠️ הכיוון הזה הוא הכרעת רומן ואינו שרירותי: עיגול ריק = לטפל
+      עכשיו. היפוך המשמעות יהפוך את המחוון למטעה בלי לשנות דבר
+      במראה, ולכן יש בדיקה שמודדת ערך מילוי ולא רק נוכחות. */
+const LB_BANG = '<svg class="lb-bang" viewBox="0 0 16 16" aria-hidden="true">'
+  + '<circle cx="8" cy="8" r="7" fill="none" stroke="#c0392b" stroke-width="1.6"/>'
+  + '<path d="M8 4.2v4.4" stroke="#c0392b" stroke-width="1.8" stroke-linecap="round"/>'
+  + '<circle cx="8" cy="11.5" r="1" fill="#c0392b"/></svg>';
+/* פרוסת עוגה בלי חשבון קשתות: מעגל ברדיוס 3.5 עם stroke ברוחב 7
+   ממלא בדיוק את הטווח 0..7, ו-stroke-dasharray חותך אותו לפי החלק.
+   rotate(-90) כדי שהמילוי יתחיל למעלה כמו שעון. */
+function lbClock(f){
+  const C = 21.99;                      /* היקף: 2*pi*3.5 */
+  const on = (Math.max(0, Math.min(1, f)) * C).toFixed(2);
+  return '<svg class="lb-clk" viewBox="0 0 16 16" aria-hidden="true">'
+    + '<circle cx="8" cy="8" r="7" fill="#fff"/>'
+    + '<circle cx="8" cy="8" r="3.5" fill="none" stroke="#94a3b8" stroke-width="7"'
+    + ' stroke-dasharray="' + on + ' ' + C + '" transform="rotate(-90 8 8)"/>'
+    + '<circle cx="8" cy="8" r="7" fill="none" stroke="#94a3b8" stroke-width="1.2"/></svg>';
+}
+/* נקודת החנק היחידה שקובעת את מצב התא. כל צרכן חדש חייב לעבור כאן
+   ולא לחשב "עבר זמנו" בעצמו — אחרת "היום" יתפצל לשתי הגדרות. */
+function lbDueMark(iso){
+  if(!iso) return {cls:'', ico:''};
+  const d = new Date(iso); if(isNaN(d.getTime())) return {cls:'', ico:''};
+  const now = new Date(), ms = d.getTime() - now.getTime();
+  if(ms < 0) return {cls:'lb-ov', ico:LB_BANG};
+  const sameDay = d.getFullYear()===now.getFullYear()
+               && d.getMonth()===now.getMonth()
+               && d.getDate()===now.getDate();
+  if(sameDay) return {cls:'lb-today', ico:LB_BANG};
+  return {cls:'', ico:lbClock(ms / 604800000)};   /* 7 ימים במילישניות */
+}
 function lbDtLocal(iso){
   if(!iso) return ''; const d=new Date(iso); if(isNaN(d.getTime())) return '';
   const p=n=>String(n).padStart(2,'0');
@@ -13611,7 +13680,7 @@ function custTable(list){
     <td class="rownum">${i+1}</td>
     <td><b>${esc(c.name)}</b></td>
     <td dir="ltr">${esc(c.priority_id||'—')}</td>
-    <td dir="ltr">${esc(c.phone||'')}</td>
+    <td dir="ltr">${phCell(c.phone)}</td>
     <td>${esc(c.city||'')}${c.address?`<div class="note-preview" title="${esc(c.address)}">🏠 ${esc(String(c.address).slice(0,22))}</div>`:''}</td>
     <td>${esc(c.customer_type||'—')}</td>
     <td>${esc(c.price_group||'—')}</td>
@@ -13710,7 +13779,7 @@ function contTable(list){
     return `<tr onclick="${cust?`openCust('${cust.id}')`:''}">
       <td class="rownum">${i+1}</td>
       <td><b>${esc(k.full_name)}</b></td>
-      <td dir="ltr">${esc(k.phone||k.office_phone||'')}</td>
+      <td dir="ltr">${phCell(k.phone||k.office_phone)}</td>
       <td dir="ltr">${esc(k.email||'—')}</td>
       <td>${esc(k.role||'—')}</td>
       <td>${cust?esc(cust.name):'<span style="color:#94a3b8">ללא לקוח</span>'}</td>
@@ -15414,7 +15483,7 @@ function scTable(list){
       <td class="rownum">${i+1}</td>
       <td dir="ltr"><b>${esc(s.call_number||'')}</b>${window.newChip(s)}</td>
       <td><b>${esc(s.customer_name||'')}</b></td>
-      <td dir="ltr">${esc(s.phone||'')}</td>
+      <td dir="ltr">${phCell(s.phone)}</td>
       <td title="${esc(s.product||'')}">${esc(String(s.product||'').slice(0,30))}</td>
       <td>${esc(s.city||'')}${s.region?`<div class="note-preview">${esc(s.region)}</div>`:''}</td>
       <td>${ieSel('scall',s.id,'status',CALL_STATUSES,s.status)}</td>
@@ -15468,6 +15537,17 @@ const phBtns = p => phOk(p) ? `<span class="ph-group"><a class="ph-btn call" hre
 const evPh = p => phOk(p)
   ? `<span class="ev-ph"><a href="${telUrl(p)}" dir="ltr" onclick="event.stopPropagation()" title="חיוג אל ${esc(p)}">📞 ${esc(p)}</a><a class="wa-ico" target="_blank" rel="noopener" href="${waUrl(p)}" onclick="event.stopPropagation()" title="וואטסאפ עם ${esc(p)}">${WA_SVG}</a></span>`
   : `<span dir="ltr">📞 ${esc(p||'')}</span>`;
+/* טלפון לחיץ בתצוגה טבלאית (6.118.0). רומן: "כל טלפון בתצוגה
+   טבלאית תעשה שיהיה לחיץ לחיוג מהיר."
+   ⚠️ phOk הוא שער ולא קישוט: 207 לקוחות ו-15 לידים מחזיקים טלפון
+      פגום ('0','7'), ו-tel:+9720 גרוע מטקסט רגיל.
+   ⚠️ stopPropagation חובה — לכל חמש השורות יש onclick שפותח כרטיס.
+   ⚠️ אינו עובר ב-safeUrl **במכוון**: telUrl בונה tel:+ מספרות בלבד
+      דרך phDigits, ואין בו משטח הזרקה. כך גם phBtns/evPh הקיימים,
+      ולכן מונה העוקפים של xsstest (esc(safeUrl( == 5) אינו זז. */
+const phCell = p => phOk(p)
+  ? `<a class="lb-tel" dir="ltr" href="${telUrl(p)}" onclick="event.stopPropagation()" title="חיוג אל ${esc(p)}">${esc(p)}</a>`
+  : esc(p||'');
 const roIn = (val,{ltr}={}) => `<input value="${esc(val??'')}" readonly class="ro" ${ltr?'dir="ltr"':''} title="${esc(val??'')}">`;
 /* core.customers.id של קריאת שירות, דרך customer_number → priority_id.
    נמדד 14/08/2026: ל-10 מתוך 68 הקריאות יש customer_number בכלל, ולכן
@@ -15991,7 +16071,7 @@ function ordTable(list,opts){
       <td class="odate">${fmtD(o.order_date)||'—'}</td>
       <td><b>${esc(o.order_number)}</b>${window.newChip(o)}${window.foldTag?window.foldTag(o):''}${window.regressTag?window.regressTag(o):''}${openBadge(o.order_number)}${o.order_notes?`<div class="note-preview" title="${esc(o.order_notes)}">📝 ${esc(String(o.order_notes).slice(0,28))}${String(o.order_notes).length>28?'…':''}</div>`:''}</td>
       <td title="${esc(o.customer_name||'')}">${esc(o.customer_name||'')}</td>
-      <td dir="ltr">${esc(o.phone||'')}</td>
+      <td dir="ltr">${phCell(o.phone)}</td>
       <td>${ordCityCell(o)}</td>
       <td class="stcell">${ieSel('ord',o.id,'order_status',ORDER_STATUSES,o.order_status)}</td>
       <td class="stcell">${ieSel('ord',o.id,'contact_status',CONTACT_STATUSES,o.contact_status)}</td>
@@ -16957,7 +17037,7 @@ function lbSubCell(l, st, opts, col){
 }
 function lbRow(l, i, nt, nm, ntid){
   const t=nt[l.id], tid=ntid&&ntid[l.id], m=lbMatch(l);
-  const tOver = t && new Date(t) < new Date();
+  const dmk = lbDueMark(t);
   /* 🔴 סימון האיחור חייב להיות **אלמנט משלו** ולא צבע על התא. עד 6.96.0 התא
      נשא class="lb-ov" (color:#c0392b) והטקסט "· באיחור!". עכשיו התוכן הוא
      <input>, ולקלט יש צבע משלו — הצבע של התא אינו נראה בו, והאיחור נעלם
@@ -16979,8 +17059,8 @@ function lbRow(l, i, nt, nm, ntid){
       <td>${cust}</td>
       <td>${esc(l.company||'')||'<span class="lb-na">·</span>'}</td>
       <td>${lbOwnerCell(l)}</td>
-      <td dir="ltr">${esc(l.phone||'')}</td>
-      <td data-sort="${esc(t||'')}"${tOver?' class="lb-ov"':''}>${dueCell}</td>
+      <td dir="ltr">${phCell(l.phone)}</td>
+      <td data-sort="${esc(t||'')}"${dmk.cls?` class="${dmk.cls}"`:''}><span class="lb-duew">${dmk.ico}${dueCell}</span></td>
       <td>${ieSel('lead',l.id,'source',LEAD_SOURCES,l.source,{allowEmpty:true,mdColors:LEAD_SRC_COLORS,mdK:LB_TK})}</td>
       <td>${ieSel('lead',l.id,'status',LEAD_STATUSES,l.status,{mdColors:LEAD_ST_COLORS,mdK:LB_TK})}</td>
       ${lbSubCell(l,'רלוונטי',SUB_RELEVANT,'sub_status')}
@@ -17343,12 +17423,29 @@ function lbPipeDraw(id){
        צבע — כך שהרצועה כולה נצבעת, והנוכחי עדיין בולט.
      ⚠️ background-color ולא shorthand: shorthand מאפס שכבות ומחק את
         הוורוד ביומן ב-6.90.0. */
-  const curBg = LEAD_ST_COLORS[cur]||'#94a3b8';
-  const segs = LEAD_STATUSES.map(st=>{
+  /* 6.118.0 — רומן, 20/08/2026: "פיין ליין תמיד צבוע עד השלב בוא הוא
+     נמצא. כלומר ליד חדש צבוע רק כתום כל היתר לבן. ללא מענה צבוע רק
+     ליד חדשה+ללא מענה כל היתר בלבן."
+     🔴 היפוך מכוון של הכרעה #1 מ-19/08 ("נוכחי מול לא-נוכחי בלבד —
+        אין 'בוצע', אין היסטוריה"). ולכן גם lb-pnote יורדת: מהרגע
+        שהמילוי מצטבר, "אין היסטוריית מעברים" מצהיר על אינווריאנט
+        שהקוד אינו מקיים — הערה שהופכת לשקר היא בדיוק מה שהמדריך
+        מזהיר מפניו.
+     ⚠️ **כל שלב בצבע שלו** (הכרעת רומן) ולא בצבע הנוכחי — כך הרצועה
+        מראה את המסע ולא רק את הסוף.
+     ⚠️ סירוב / לא רלוונטי צובעים הכל עד אליהם, לפי הכלל כפשוטו
+        (הכרעת רומן). הם אחרונים ברשימה ולכן צובעים אותה כמעט כולה.
+     ⚠️ ci<0 (סטטוס מחוץ לרשימה) נופל ל"נוכחי בלבד" ולא לרצועה ריקה —
+        582 לידים מחזיקים ערכים חריגים, ורצועה לבנה לגמרי נראית שבורה.
+     ⚠️ .on נשאר: בלעדיו "רלוונטי" ו"ללא מענה3" ייראו זהים כששניהם
+        צבועים, ואי אפשר יהיה לדעת היכן הליד באמת עומד. */
+  const ci = LEAD_STATUSES.indexOf(cur);
+  const segs = LEAD_STATUSES.map((st,i)=>{
     const on = st===cur;
+    const done = (ci < 0) ? on : (i <= ci);
     const bg = LEAD_ST_COLORS[st]||'#94a3b8';
-    const stl = on ? `background-color:${bg};border-color:${bg}`
-                   : `background-color:${tint(curBg,.80)};border-color:${tint(curBg,.62)};color:${onWhite(curBg)}`;
+    const stl = done ? `background-color:${bg};border-color:${bg};color:${onWhite(bg)}`
+                     : `background-color:#fff;border-color:#e2e8f0;color:#94a3b8`;
     return `<button type="button" class="lb-pseg${on?' on':''}" style="${stl}"`
       + `${ed?'':' disabled'} title="${esc(st)}"`
       + ` onclick="lbPipeSet('${jsq(id)}','${jsq(st)}','')">${esc(st)}</button>`;
@@ -17366,8 +17463,7 @@ function lbPipeDraw(id){
       return `<button type="button" style="${stl}"${ed?'':' disabled'}`
         + ` onclick="lbPipeSet('${jsq(id)}','${jsq(cur)}','${jsq(on?'':o)}')">${esc(o)}</button>`;
     }).join('') + `</div>` : '';
-  box.innerHTML = `<div class="lb-piperow">${segs}</div>${subs}`
-    + `<div class="lb-pnote">המצב הנוכחי מודגש. אין במערכת היסטוריית מעברים, ולכן שלב שאינו נוכחי אינו מסומן כ"בוצע".</div>`;
+  box.innerHTML = `<div class="lb-piperow">${segs}</div>${subs}`;
 }
 /* 🔴 נקודת החנק היחידה לשינוי שלב מהרצועה.
    ⚠️ **אינה נוגעת ב-#lb-status ולא ב-#lb-sub.** הצבת .value בקוד אינה
@@ -17496,16 +17592,7 @@ window.openLead = (id)=>{
       ${cust?`<div class="span2"><label>לקוח מקושר${l.customer_id?'':' <span class="note" style="font-weight:400">(הוצלב לפי טלפון)</span>'}</label><div class="lb-links"><a href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(cust.id)}'))">${esc(cust.name||'כרטיס הלקוח')} ↗</a></div></div>`:''}
       <div><label>נוצר</label>${roIn(fmtDT(l.created_at),{ltr:1})}</div>
       <div><label>עודכן לאחרונה</label>${roIn(fmtDT(l.updated_at),{ltr:1})}</div>
-
-      <div class="form-sep">סטטוס ובעלות</div>
-      <div class="span4"><div class="lb-sob">
-        <label>סטטוס</label>${selHtml('lb-status',LEAD_STATUSES,l.status,false,'leadSubUI()')}
-        <span id="lb-subbox" data-lead="${l.id}"></span>
-        <label>בעלים</label><span id="lb-ownbox">${lbOwnerBox(l, editable)}</span>
-      </div></div>
-      ${(editable && ['ליד חדש','ללא מענה','ללא מענה2','ללא מענה3'].includes(l.status||''))?`<div class="span2"><label>לא ענה לטלפון</label>
-        <button type="button" class="btn ghost" style="width:auto" onclick="lbNoAnswer('${l.id}','${esc(l.status||'')}')">📵 אין מענה — סגור משימה ופתח את הבאה</button>
-        <div class="note" style="margin-top:4px">${l.status==='ללא מענה3'?'זו הפעם האחרונה — הליד יעבור לסירוב.':'המשימה הנוכחית תיסגר ותיפתח חדשה, ותישלח הודעת "אין מענה".'}</div></div>`:''}
+      <div><label>בעלים ושותפים</label><span id="lb-ownbox">${lbOwnerCell(l)}</span></div>
 
       <div class="form-sep">עדכונים</div>
       <div class="span4">
@@ -17536,8 +17623,12 @@ window.openLead = (id)=>{
     <details class="lb-acc" id="lb-acc" ontoggle="lbActsLoad('${jsq(l.id)}')">
       <summary>ציר פעילות</summary><div id="lead-acts"><div class="note">לחצו כדי לטעון…</div></div>
     </details>`;
+  /* 6.118.0 — no-op מוגן מאז שבורר הסטטוס ירד מהכרטיס: תת-הסטטוס
+     נערך ברצועה (lb-psub). נשארת כי הסרתה מייתמת שלוש פונקציות
+     עזר, ואין בכך רווח. ניקוי המשך, לא חוב שקט. */
   leadSubUI();
-  /* ה-snapshot נלקח אחרי שכל השדות צוירו — כולל בורר תת-הסטטוס */
+  /* ה-snapshot נלקח אחרי שכל השדות צוירו. lb-sub כבר אינו קיים,
+     ו-lbSnapshot רושם עבורו מחרוזת ריקה — הטרנרי שם כבר טיפל בזה. */
   lbSnapshot(id);
   lbPipeDraw(id);
   mountCard('leadModal', ()=>openLead(id));
@@ -17712,26 +17803,6 @@ function renderLbFilters(){
    zz_sync_lead_primary_owner, ומקור האמת הוא crm.lead_owners עם אינדקס
    ייחודי חלקי לבעלים ראשי. crm.lead_set_owner עושה את שתי הפעולות
    בטרנזקציה אחת וגם רושמת שורת יומן. יש assert בבנייה שאוכף זאת. */
-function lbOwnerBox(l, editable){
-  const pick = LOWN.filter(o=>o.assignable);
-  const cur  = lbOwnerOf(l);
-  /* בעלים שאינו ברשימה (עובד לשעבר) מוצג כתווית ולא כאפשרות — אחרת
-     "העברה חזרה" הייתה נראית אפשרית ונדחית ב-22023 מהשרת. */
-  const orphan = cur && !pick.some(o=>o.owner_key===cur) ? LOWN_BY[cur] : null;
-  const btn = (key,label)=>`<button type="button" class="lbo-b ${cur===key?'on':''}${key?'':' lbo-none'}"
-      ${editable?`onclick="lbSetOwner('${l.id}',${key?`'${key}'`:'null'})"`:'disabled'}
-      title="${esc(label)}">${key?lbAva(key):'<span class="lb-ava lb-ava-none">–</span>'}<span class="lbo-nm">${esc(label)}</span></button>`;
-  /* השותפים מוצגים כאן כתצוגה בלבד; העריכה שלהם בבורר, כדי שלא יהיו
-     שני מסלולי כתיבה לאותו נתון (הלקח מ-finSetTerm מול ordSetTerm). */
-  const parts = lbPartnersOf(l);
-  return `<div class="lbo-wrap">
-      ${btn('','ללא בעלים')}
-      ${pick.map(o=>btn(o.owner_key,o.name)).join('')}
-      ${orphan?`<span class="pill st-def" title="עובד לשעבר — לא ניתן להקצות אליו מחדש">${esc(orphan.name)} (לשעבר)</span>`:''}
-    </div>
-    ${parts.length?`<div class="lb-owp">שותפים: ${parts.map(k=>`<span class="lbo-tag">${esc((LOWN_BY[k]||{}).name||'—')}</span>`).join(' ')}</div>`:''}
-    <div class="lb-owp"><button type="button" class="lbo-act" onclick="lbOwnerPick('${jsq(l.id)}')">👥 שיוך בעלים ושותפים</button></div>`;
-}
 /* ===== בורר הבעלים והשותפים (6.105.0) =====
    רומן: "חלון בחירה עם תמונות שאפשר להוסיף ולהוריד". **אותו חלון בטבלה
    ובכרטיס** לפי הכרעתו — ולכן הוא מודאל עצמאי ולא קטע בתוך הכרטיס.
@@ -17863,7 +17934,7 @@ window.lbOwnerClear = async ()=>{ await window.lbSetOwner(LBOWN_LEAD, null, true
 function lbOwnerSync(id){
   if(document.querySelector('#leadModal:not(.hidden)')) return;
   const box = document.getElementById('lb-ownbox');
-  if(box){ const l = LEADS.find(x=>x.id===id); if(l) box.innerHTML = lbOwnerBox(l, window.canEdit('crm.leads')); }
+  if(box){ const l = LEADS.find(x=>x.id===id); if(l) box.innerHTML = lbOwnerCell(l); }
 }
 window.lbSetOwner = async (leadId, ownerKey, quiet)=>{
   const { error } = await sb.schema('crm').rpc('lead_set_owner', { p_lead: leadId, p_owner: ownerKey || null });

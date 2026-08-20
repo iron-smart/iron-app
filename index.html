@@ -2022,7 +2022,7 @@ td.lb-ov .lb-dt{ color:#c0392b; font-weight:700; border-color:#f0bcbc; backgroun
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.111.0</div>
+      <div class="ver">גרסה 6.112.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2131,11 +2131,12 @@ td.lb-ov .lb-dt{ color:#c0392b; font-weight:700; border-color:#f0bcbc; backgroun
     <div class="nav-wrap" data-tabs="prc" id="nav-prc" hidden>
       <button class="nav-item" data-tab="prc">תמחור ומחירונים</button>
     </div>
-    <div class="nav-wrap" data-tabs="pays,sup">
+    <div class="nav-wrap" data-tabs="pays,sup,sinv">
       <button class="nav-item" data-tab="pays">הנהלת חשבונות <span class="nav-arrow"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span></button>
       <div class="submenu">
         <button data-tab="pays" onclick="gotoPays('open')">תשלומים</button>
         <button data-tab="sup" onclick="gotoTab('sup')">ספקים</button>
+        <button data-tab="sinv" onclick="gotoTab('sinv')">קליטת חשבוניות</button>
       </div>
     </div>
     <div class="nav-wrap" data-tabs="set">
@@ -2150,7 +2151,7 @@ td.lb-ov .lb-dt{ color:#c0392b; font-weight:700; border-color:#f0bcbc; backgroun
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.111.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.112.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2230,6 +2231,19 @@ td.lb-ov .lb-dt{ color:#c0392b; font-weight:700; border-color:#f0bcbc; backgroun
     </div>
 
     <!-- תשלומים -->
+    <section id="tab-sinv" class="hidden">
+      <div id="spi-note"></div>
+      <div class="spi-bar">
+        <label class="spi-up" id="spi-uplab">
+          <input type="file" id="spi-file" accept="application/pdf,image/jpeg,image/png,image/webp" multiple hidden>
+          העלאת חשבוניות
+        </label>
+        <div class="chips" id="spi-chips"></div>
+      </div>
+      <div id="spi-prog"></div>
+      <div id="spi-body"></div>
+    </section>
+
     <section id="tab-sup" class="hidden">
       <div id="si-note"></div>
       <div class="si-bar">
@@ -2854,7 +2868,7 @@ window.TAB_PERM = {
   today:'home.today', tasks:'crm.tasks', leads:'crm.leads', deals:'crm.deals',
   customers:'crm.customers', contacts:'crm.contacts', meets:'crm.meets', orders:'crm.orders',
   skus:'sku.cards', docs:'docs', inv:'inv.stock', po:'inv.po', prc:'prc', pays:'acc.pays',
-  sup:'acc.sup'
+  sup:'acc.sup', sinv:'acc.sinv'
 };
 window.LOGI_PERM = { orders:'logi.orders', calls:'logi.calls', cal:'logi.cal' };
 window.SET_PERM  = { users:'set.users', teams:'set.teams', texts:'set.texts', conn:'set.conn', synclog:'set.synclog', notif:'set.notif', general:'set.general' };
@@ -2865,7 +2879,7 @@ window.navCanTab = t=>{
   const k = TAB_PERM[t];
   return k ? canView(k) : true;
 };
-window.NAV_LAND_ORDER = ['today','tasks','leads','deals','customers','contacts','meets','orders','logi','docs','skus','inv','po','pays','sup','prc','set'];
+window.NAV_LAND_ORDER = ['today','tasks','leads','deals','customers','contacts','meets','orders','logi','docs','skus','inv','po','pays','sup','sinv','prc','set'];
 window.navLanding = ()=> NAV_LAND_ORDER.find(t=>navCanTab(t)) || null;
 window.canView = k => window.pLevel(k) >= 1;
 window.canEdit = k => window.pLevel(k) >= 2;
@@ -3196,7 +3210,7 @@ $('#logoutBtn').onclick = async ()=>{
    עד 6.1.0 הניווט התבצע דרך b.click() על כפתור התפריט, ולכן כל מסך היה חייב
    כפתור ראשי משלו בסרגל. משנכנסו שבעת מסכי ה-CRM תחת קטגוריית אב אחת, אין
    לכל מסך כפתור ראשי — ולכן הניווט עבר לפונקציה אחת שאינה תלויה ב-DOM. */
-const NAV_TABS = ['today','leads','deals','meets','customers','contacts','pays','sup','tasks','orders','logi','skus','inv','po','prc','docs','set'];
+const NAV_TABS = ['today','leads','deals','meets','customers','contacts','pays','sup','sinv','tasks','orders','logi','skus','inv','po','prc','docs','set'];
 let CUR_TAB = 'today';
 /* התצוגה הפנימית הנוכחית של כל מסך שיש לו תתי-קטגוריות — לצורך סימון הפריט הפעיל */
 const NAV_VIEW = {
@@ -3277,6 +3291,7 @@ window.gotoTab = t=>{
   if(t==='po')   renderPo();
   if(t==='prc')  renderPrc();
   if(t==='sup')  siRender();
+  if(t==='sinv') spiRender();
   if(t==='set') renderSettings();
   if(t==='today') dashLoad();
   if(window.innerWidth<800) setSide(false);
@@ -8330,7 +8345,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'suppliers-2026-08-20a';
+const BUILD_ID = 'supinvoices-2026-08-20b';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -17723,6 +17738,363 @@ function numIn(raw){
    הזמנות דרך ordSortBy) מסומנות data-gs="own" ומדולגות — כדי לא לשבור מיון
    שחוצה עמודים. המיון כאן יציב, ערכים ריקים תמיד בסוף, ועמודת המספור
    (td.rownum) ממוספרת מחדש 1..n אחרי כל מיון. */
+
+/* ===== קליטת חשבוניות ספק (6.112.0) =====
+   העלאה → חילוץ → בדיקה → אישור. הקודים מגיעים מהמסד ולא מהמסך.
+   🔴 השליחה לפריוריטי מכובה ב-ord.settings.sinv_push_enabled. */
+const SPI_CSS = `
+#tab-sinv .spi-bar{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:0 0 12px; }
+#tab-sinv .spi-up{ background:var(--navy); color:#fff; padding:9px 18px; border-radius:9px;
+  cursor:pointer; font-size:13.5px; font-weight:600; }
+#tab-sinv .spi-up.off{ background:#cbd5e1; cursor:not-allowed; }
+#tab-sinv .spi-warn{ background:#fff7e6; border:1px solid #f0c36d; border-radius:10px;
+  padding:10px 14px; margin:0 0 12px; font-size:13px; line-height:1.5; }
+#tab-sinv .spi-st{ display:inline-block; padding:1px 9px; border-radius:999px;
+  font-size:11.5px; font-weight:700; white-space:nowrap; }
+#tab-sinv .spi-st.ok{ background:#e7f6ec; color:#15803d; }
+#tab-sinv .spi-st.wait{ background:#eef2f5; color:#475569; }
+#tab-sinv .spi-st.bad{ background:#fdf1f1; color:#b91c1c; }
+#tab-sinv .spi-st.sent{ background:#e6f0ff; color:#1d4ed8; }
+#tab-sinv tr.spi-row{ cursor:pointer; }
+#tab-sinv .spi-two{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);
+  gap:16px; align-items:start; }
+#tab-sinv .spi-prev{ background:#fff; border:1px solid var(--line); border-radius:12px;
+  overflow:hidden; position:sticky; top:12px; }
+#tab-sinv .spi-prev iframe{ width:100%; height:78vh; border:0; display:block; }
+#tab-sinv .spi-prev img{ width:100%; display:block; }
+#tab-sinv .spi-card{ background:#fff; border:1px solid var(--line); border-radius:12px;
+  padding:16px 18px; }
+#tab-sinv .spi-sep{ font-weight:700; font-size:13px; color:var(--navy);
+  border-top:1px solid var(--line); padding-top:12px; margin:16px 0 10px; }
+#tab-sinv .spi-sep:first-child{ border-top:0; padding-top:0; margin-top:0; }
+#tab-sinv .spi-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:10px 14px; }
+#tab-sinv .spi-f label{ display:block; font-size:11.5px; color:#64748b; margin:0 0 3px; }
+#tab-sinv .spi-f input, #tab-sinv .spi-f select{ width:100%; padding:6px 9px;
+  border:1px solid var(--line); border-radius:7px; font:inherit; font-size:13px;
+  box-sizing:border-box; }
+#tab-sinv .spi-f.ro input{ background:#f6f8fa; color:#475569; }
+#tab-sinv .spi-iss{ font-size:12.5px; padding:7px 10px; border-radius:8px; margin:0 0 6px; }
+#tab-sinv .spi-iss.block{ background:#fdf1f1; color:#991b1b; border:1px solid #f3c6c6; }
+#tab-sinv .spi-iss.warn{ background:#fff7e6; color:#92400e; border:1px solid #f0c36d; }
+#tab-sinv .spi-act{ display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+#tab-sinv .spi-act button{ padding:9px 20px; border-radius:9px; border:1px solid var(--line);
+  background:#fff; cursor:pointer; font:inherit; font-size:13.5px; }
+#tab-sinv .spi-act button.pri{ background:var(--navy); color:#fff; border-color:var(--navy);
+  font-weight:600; }
+#tab-sinv .spi-act button[disabled]{ opacity:.45; cursor:not-allowed; }
+#tab-sinv .spi-back{ cursor:pointer; color:#1d4ed8; font-size:13px; margin:0 0 12px;
+  display:inline-block; }
+#tab-sinv .spi-hint{ font-size:12px; color:#64748b; margin-top:6px; line-height:1.5; }
+#tab-sinv pre.spi-pay{ background:#0f172a; color:#e2e8f0; padding:14px; border-radius:10px;
+  font-size:11.5px; overflow:auto; max-height:60vh; direction:ltr; text-align:left; }
+@media (max-width:980px){ #tab-sinv .spi-two{ grid-template-columns:1fr; }
+  #tab-sinv .spi-prev{ position:static; } #tab-sinv .spi-prev iframe{ height:52vh; } }
+`;
+function spiInjectCss(){
+  if(document.getElementById('spi-css')) return;
+  const st=document.createElement('style'); st.id='spi-css'; st.textContent=SPI_CSS;
+  document.head.appendChild(st);
+}
+
+let SPI_ROWS=null, SPI_OPEN=null, SPI_DET=null, SPI_FILTER='פתוחות';
+let SPI_BUSY=false, SPI_ERR='', SPI_PUSH_ON=false, SPI_SUPS=[];
+
+const spiMoney = v => (v==null||v==='') ? '—'
+  : Number(v).toLocaleString('he-IL',{minimumFractionDigits:2,maximumFractionDigits:2});
+const SPI_OPEN_STATES = ['נקלט','חולץ','ממתין לאישור','ממתין לספק','שגיאה בחילוץ','לא ידוע'];
+
+function spiStClass(s){
+  if(s==='אושר') return 'ok';
+  if(s==='נשלח לפריוריטי') return 'sent';
+  if(s==='שגיאה בחילוץ'||s==='לא ידוע') return 'bad';
+  return 'wait';
+}
+
+async function spiLoad(){
+  SPI_ERR='';
+  try{
+    const [r,s,o] = await Promise.all([
+      sb.schema('ord').from('sinv_invoices')
+        .select('id,state,supplier_no,supdes,supplier_name_raw,book_num,ivdate,total,doc_type,supplier_confident,created_at')
+        .order('created_at',{ascending:false}).limit(500),
+      sb.schema('ord').from('sinv_suppliers')
+        .select('supplier_no,name,kind').order('doc_count',{ascending:false}).limit(2000),
+      sb.schema('ord').from('settings').select('key,value').eq('key','sinv_push_enabled')
+    ]);
+    const bad=[r,s,o].find(x=>x&&x.error); if(bad) throw bad.error;
+    SPI_ROWS=r.data||[]; SPI_SUPS=s.data||[];
+    /* ⚠️ trim לפני ההשוואה. ערך של רווחים בלבד אינו '' והיה נחשב 'כן'. */
+    const v=((o.data&&o.data[0]&&o.data[0].value)||'').trim();
+    SPI_PUSH_ON = (v==='כן');
+  }catch(e){ SPI_ERR=(e&&e.message)?e.message:String(e); SPI_ROWS=SPI_ROWS||[]; }
+}
+
+/* ── העלאה ────────────────────────────────────────────────────────────
+   ⚠️ נתיב האחסון נוצר תמיד ע"י המערכת — inv/<uuid>/<uuid>.<ext>. שם
+   הקובץ של המשתמשת חי ב-file_name בלבד, כך ששם עוין אינו יכול לברוח
+   מהתיקייה שלו. אותו כלל כמו uploadMedia. */
+async function spiSha(file){
+  const b=await file.arrayBuffer();
+  const d=await crypto.subtle.digest('SHA-256', b);
+  return [...new Uint8Array(d)].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+window.spiUpload = async function(files){
+  if(!canEdit('acc.sinv')){ toast('אין לך הרשאת עריכה'); return; }
+  if(SPI_BUSY) return;
+  SPI_BUSY=true;
+  const prog=$('#spi-prog'); const done=[]; const bad=[];
+  const EXT={'application/pdf':'pdf','image/jpeg':'jpg','image/png':'png','image/webp':'webp'};
+  for(let i=0;i<files.length;i++){
+    const f=files[i];
+    if(prog) prog.innerHTML='<div class="spi-warn">מעבד '+(i+1)+' מתוך '+files.length+
+      ' — '+esc(f.name)+'…</div>';
+    try{
+      if(!EXT[f.type]){ bad.push(esc(f.name)+' — סוג קובץ לא נתמך'); continue; }
+      if(f.size > 20*1024*1024){ bad.push(esc(f.name)+' — גדול מ-20 מגה'); continue; }
+      const sha=await spiSha(f);
+      const path='inv/'+crypto.randomUUID()+'/'+crypto.randomUUID()+'.'+EXT[f.type];
+      const up=await sb.storage.from('sinv').upload(path,f,{contentType:f.type,upsert:false});
+      if(up.error) throw up.error;
+      const ins=await sb.schema('ord').from('sinv_files')
+        .insert({storage_path:path,file_name:f.name,mime_type:f.type,
+                 size_bytes:f.size,file_sha256:sha,intake:'העלאה'})
+        .select('id').single();
+      /* 🔴 L1: אותם בייטים = אותה חשבונית. ההתנגשות על file_sha256 היא
+         התשובה הנכונה, לא שגיאה — ולכן נאמרת בשפה של המשתמשת. */
+      if(ins.error){
+        bad.push(esc(f.name)+((/duplicate|unique/i.test(ins.error.message))
+          ? ' — הקובץ הזה כבר הועלה' : ' — '+esc(ins.error.message)));
+        continue;
+      }
+      const inv=await sb.functions.invoke('sinv-extract',{body:{file_id:ins.data.id}});
+      if(inv.error) throw inv.error;
+      if(inv.data && inv.data.ok===false) throw new Error(inv.data.error||'החילוץ נכשל');
+      done.push(f.name);
+    }catch(e){ bad.push(esc(f.name)+' — '+esc((e&&e.message)?e.message:String(e))); }
+  }
+  SPI_BUSY=false;
+  if(prog) prog.innerHTML = bad.length
+    ? '<div class="spi-warn"><b>'+done.length+' נקלטו.</b><br>'+bad.join('<br>')+'</div>'
+    : '';
+  await spiLoad(); spiPaint();
+  if(done.length && !bad.length) toast(done.length+' חשבוניות נקלטו');
+};
+
+function spiChips(){
+  const all=SPI_ROWS||[];
+  const n=k=> k==='פתוחות' ? all.filter(r=>SPI_OPEN_STATES.includes(r.state)).length
+           : k==='הכל' ? all.length : all.filter(r=>r.state===k).length;
+  return ['פתוחות','אושר','נשלח לפריוריטי','הכל']
+    .map(k=>'<button class="chip'+(SPI_FILTER===k?' on':'')+
+      '" onclick="spiSetFilter(\''+k+'\')">'+k+' <b>'+n(k)+'</b></button>').join('');
+}
+window.spiSetFilter = k => { SPI_FILTER=k; SPI_OPEN=null; spiPaint(); };
+
+function spiTable(){
+  let rows=SPI_ROWS||[];
+  if(SPI_FILTER==='פתוחות') rows=rows.filter(r=>SPI_OPEN_STATES.includes(r.state));
+  else if(SPI_FILTER!=='הכל') rows=rows.filter(r=>r.state===SPI_FILTER);
+  if(!rows.length) return '<div class="empty">אין חשבוניות להצגה. העלי קובץ כדי להתחיל.</div>';
+  const head='<thead><tr><th>מצב</th><th>ספק</th><th>מספר חשבונית</th><th>תאריך</th>'+
+    '<th>סה"כ</th><th>סוג</th></tr></thead>';
+  const body=rows.map(r=>{
+    const sup = r.supdes || r.supplier_name_raw || '—';
+    return '<tr class="spi-row" onclick="spiOpen(\''+esc(r.id)+'\')">'+
+      '<td><span class="spi-st '+spiStClass(r.state)+'">'+esc(r.state)+'</span></td>'+
+      '<td style="text-align:start">'+esc(sup)+
+        (r.supplier_confident===false?' <span style="color:#b45309">⚠</span>':'')+'</td>'+
+      '<td>'+esc(r.book_num||'—')+'</td>'+
+      '<td>'+esc(r.ivdate||'—')+'</td>'+
+      '<td>'+spiMoney(r.total)+'</td>'+
+      '<td>'+esc(r.doc_type||'—')+'</td></tr>';
+  }).join('');
+  return '<div class="tbl-wrap"><table class="tbl">'+head+'<tbody>'+body+'</tbody></table></div>';
+}
+
+window.spiOpen = async function(id){
+  SPI_OPEN=id; SPI_DET=null; spiPaint();
+  try{
+    const [h,l,i] = await Promise.all([
+      sb.schema('ord').from('sinv_invoices').select('*').eq('id',id).single(),
+      sb.schema('ord').from('sinv_lines').select('*').eq('invoice_id',id).order('line_no'),
+      sb.schema('ord').from('sinv_issues').select('*').eq('invoice_id',id)
+    ]);
+    const bad=[h,l,i].find(x=>x&&x.error); if(bad) throw bad.error;
+    let url=null;
+    if(h.data && h.data.file_id){
+      const f=await sb.schema('ord').from('sinv_files')
+        .select('storage_path,mime_type,file_name').eq('id',h.data.file_id).single();
+      if(!f.error && f.data){
+        const su=await sb.storage.from('sinv').createSignedUrl(f.data.storage_path,3600);
+        url = su.data ? su.data.signedUrl : null;
+        h.data._mime=f.data.mime_type; h.data._fname=f.data.file_name;
+      }
+    }
+    SPI_DET={h:h.data, lines:l.data||[], issues:i.data||[], url};
+  }catch(e){ SPI_DET={err:(e&&e.message)?e.message:String(e)}; }
+  spiPaint();
+};
+window.spiBack = () => { SPI_OPEN=null; SPI_DET=null; spiPaint(); };
+
+function spiField(id,lab,val,ro,type){
+  return '<div class="spi-f'+(ro?' ro':'')+'"><label>'+lab+'</label>'+
+    '<input id="spi-'+id+'" type="'+(type||'text')+'" value="'+esc(val==null?'':val)+'"'+
+    (ro?' readonly':'')+'></div>';
+}
+function spiSupSelect(cur){
+  /* ⚠️ allowEmpty מפורש. בלי אפשרות ריקה ה-select נופל לראשונה,
+     והשמירה כותבת ספק שאיש לא בחר — באג 31 קריאות השירות. */
+  const opts=['<option value="">— בחרי ספק —</option>']
+    .concat((SPI_SUPS||[]).map(s=>'<option value="'+esc(s.supplier_no)+'"'+
+      (s.supplier_no===cur?' selected':'')+'>'+esc(s.supplier_no)+' · '+esc(s.name||'')+'</option>'));
+  return '<div class="spi-f"><label>ספק</label><select id="spi-supplier_no">'+
+    opts.join('')+'</select></div>';
+}
+
+function spiCard(){
+  if(!SPI_DET) return '<div class="empty">טוען…</div>';
+  if(SPI_DET.err) return '<div class="spi-warn">'+esc(SPI_DET.err)+'</div>';
+  const h=SPI_DET.h, ed=canEdit('acc.sinv') &&
+    !['נשלח לפריוריטי','בוטל'].includes(h.state);
+  const blocking=SPI_DET.issues.filter(x=>x.severity==='חוסם');
+
+  const prev = SPI_DET.url
+    ? (String(h._mime||'').indexOf('image/')===0
+        ? '<div class="spi-prev"><img src="'+esc(SPI_DET.url)+'" alt=""></div>'
+        : '<div class="spi-prev"><iframe src="'+esc(SPI_DET.url)+'"></iframe></div>')
+    : '<div class="spi-prev"><div class="empty">אין תצוגה מקדימה</div></div>';
+
+  const iss = SPI_DET.issues.length
+    ? SPI_DET.issues.map(x=>'<div class="spi-iss '+(x.severity==='חוסם'?'block':'warn')+'">'+
+        '<b>'+esc(x.code)+'</b> — '+esc(x.message)+'</div>').join('')
+    : '<div class="spi-iss warn" style="background:#e7f6ec;color:#15803d;border-color:#bfe3cc">אין ממצאים. החשבונית מוכנה לאישור.</div>';
+
+  const lines = SPI_DET.lines.map(l=>
+    '<tr><td>'+l.line_no+'</td>'+
+    '<td><input id="spi-l'+l.line_no+'-pdes" value="'+esc(l.pdes||'')+'"'+(ed?'':' readonly')+'></td>'+
+    '<td><input id="spi-l'+l.line_no+'-partname" value="'+esc(l.partname||'')+'"'+(ed?'':' readonly')+' style="width:90px"></td>'+
+    '<td><input id="spi-l'+l.line_no+'-accname" value="'+esc(l.accname||'')+'"'+(ed?'':' readonly')+' style="width:80px"></td>'+
+    '<td><input id="spi-l'+l.line_no+'-totprice" type="number" step="0.01" value="'+esc(l.totprice==null?'':l.totprice)+'"'+(ed?'':' readonly')+' style="width:100px"></td></tr>'
+  ).join('');
+
+  return '<div class="spi-back" onclick="spiBack()">← חזרה לרשימה</div>'+
+    '<div class="spi-two">'+ prev +
+    '<div class="spi-card">'+
+      '<div class="spi-sep">בדיקות</div>'+ iss +
+      '<div class="spi-sep">ספק</div>'+
+      '<div class="spi-grid">'+ spiSupSelect(h.supplier_no)+
+        spiField('supdes','שם על החשבונית', h.supdes||h.supplier_name_raw, !ed)+
+        spiField('tax','ח.פ. שהודפס', h.supplier_tax_id, true)+
+      '</div>'+
+      '<div class="spi-sep">פרטי החשבונית</div>'+
+      '<div class="spi-grid">'+
+        spiField('book_num','מספר חשבונית', h.book_num, !ed)+
+        spiField('ivdate','תאריך', h.ivdate, !ed, 'date')+
+        spiField('paydate','תאריך פרעון', h.paydate, !ed, 'date')+
+        spiField('subtotal','לפני מע"מ', h.subtotal, !ed, 'number')+
+        spiField('vat_amount','מע"מ', h.vat_amount, !ed, 'number')+
+        spiField('total','סה"כ', h.total, !ed, 'number')+
+        spiField('code','מטבע', h.code, true)+
+        spiField('ordname','הזמנת רכש', h.ordname, !ed)+
+      '</div>'+
+      '<div class="spi-sep">שורות</div>'+
+      '<div class="tbl-wrap"><table class="tbl" data-gs="own"><thead><tr><th>#</th><th>תיאור</th>'+
+        '<th>מק"ט</th><th>חשבון</th><th>סה"כ</th></tr></thead><tbody>'+lines+'</tbody></table></div>'+
+      '<div class="spi-act">'+
+        (ed?'<button onclick="spiSave()">שמירה</button>':'')+
+        (ed?'<button class="pri" onclick="spiApprove()"'+(blocking.length?' disabled':'')+
+            '>אישור</button>':'')+
+        '<button onclick="spiPayload()">מה יישלח לפריוריטי</button>'+
+      '</div>'+
+      (blocking.length
+        ? '<div class="spi-hint">יש '+blocking.length+' ממצאים חוסמים. תקני אותם ושמרי — האישור ייפתח.</div>'
+        : '')+
+      (!SPI_PUSH_ON
+        ? '<div class="spi-hint">🔴 השליחה לפריוריטי מכובה. אחרי אישור, הקלידי את החשבונית בפריוריטי כרגיל. הכפתור "מה יישלח" מציג בדיוק את מה שהמערכת תשלח כשהיא תידלק.</div>'
+        : '')+
+    '</div></div>';
+}
+
+window.spiSave = async function(){
+  if(!SPI_DET||!SPI_DET.h) return;
+  const g=id=>{ const e=$('#spi-'+id); return e? e.value : null; };
+  const patch={}; const set=(k,v)=>{ if(v!==null&&v!==undefined&&v!=='') patch[k]=v; };
+  set('supplier_no',g('supplier_no')); set('supdes',g('supdes'));
+  set('book_num',g('book_num')); set('ivdate',g('ivdate')); set('paydate',g('paydate'));
+  set('subtotal',g('subtotal')); set('vat_amount',g('vat_amount')); set('total',g('total'));
+  set('ordname',g('ordname'));
+  const lines=SPI_DET.lines.map(l=>({line_no:l.line_no,
+    pdes:g('l'+l.line_no+'-pdes'), partname:g('l'+l.line_no+'-partname'),
+    accname:g('l'+l.line_no+'-accname'), totprice:g('l'+l.line_no+'-totprice')}));
+  try{
+    const r=await sb.schema('ord').rpc('sinv_save',
+      {p_id:SPI_DET.h.id, p_patch:patch, p_lines:lines});
+    if(r.error) throw r.error;
+    toast('נשמר');
+    await spiLoad(); await spiOpen(SPI_DET.h.id);
+  }catch(e){ toast('שמירה נכשלה: '+((e&&e.message)?e.message:String(e))); }
+};
+
+window.spiApprove = async function(){
+  if(!SPI_DET||!SPI_DET.h) return;
+  try{
+    const r=await sb.schema('ord').rpc('sinv_approve',{p_id:SPI_DET.h.id});
+    if(r.error) throw r.error;
+    /* 🔴 הכפתור מוסתר כשיש חוסם, אבל השער האמיתי הוא במסד — מסך
+       יכול להסתיר כפתור, רק המסד יכול למנוע פעולה. */
+    if(r.data && r.data.ok===false){ toast(r.data.reason||'לא ניתן לאשר'); }
+    else toast('אושר');
+    await spiLoad(); await spiOpen(SPI_DET.h.id);
+  }catch(e){ toast('אישור נכשל: '+((e&&e.message)?e.message:String(e))); }
+};
+
+window.spiPayload = async function(){
+  if(!SPI_DET||!SPI_DET.h) return;
+  try{
+    const r=await sb.schema('ord').rpc('sinv_payload',{p_id:SPI_DET.h.id});
+    if(r.error) throw r.error;
+    const b=$('#spi-body');
+    b.innerHTML='<div class="spi-back" onclick="spiOpen(\''+esc(SPI_DET.h.id)+'\')">← חזרה לחשבונית</div>'+
+      '<div class="spi-card"><div class="spi-sep">ה-payload שיישלח ל-PINVOICES</div>'+
+      '<pre class="spi-pay">'+esc(JSON.stringify(r.data,null,2))+'</pre>'+
+      '<div class="spi-hint">זו בדיוק אותה פונקציה שהשליחה תשתמש בה — ord.sinv_payload. אין כאן חישוב שני.</div></div>';
+  }catch(e){ toast('לא ניתן להציג: '+((e&&e.message)?e.message:String(e))); }
+};
+
+function spiNote(){
+  const el=$('#spi-note'); if(!el) return;
+  el.innerHTML = SPI_ERR
+    ? '<div class="spi-warn">לא ניתן לטעון: '+esc(SPI_ERR)+'</div>' : '';
+}
+function spiPaint(){
+  const b=$('#spi-body'); if(!b) return;
+  spiNote();
+  const ch=$('#spi-chips'); if(ch) ch.innerHTML = SPI_OPEN ? '' : spiChips();
+  const lab=$('#spi-uplab');
+  if(lab){
+    const on=canEdit('acc.sinv') && !SPI_OPEN;
+    lab.style.display = SPI_OPEN ? 'none' : '';
+    lab.classList.toggle('off', !canEdit('acc.sinv'));
+  }
+  b.innerHTML = SPI_OPEN ? spiCard() : spiTable();
+}
+
+window.spiRender = async function(){
+  spiInjectCss();
+  const b=$('#spi-body'); if(!b) return;
+  if(!SPI_ROWS){ b.innerHTML='<div class="empty">טוען…</div>'; await spiLoad(); }
+  const f=$('#spi-file');
+  if(f && !f._spiWired){
+    f._spiWired=true;
+    f.addEventListener('change', async ()=>{
+      const files=[...f.files]; f.value='';
+      if(files.length) await spiUpload(files);
+    });
+  }
+  spiPaint();
+};
+
 
 /* ===== ספקים — מילון הספקים וכללי הקידוד (6.111.0) =====
    יושב על ord.sinv_suppliers / sinv_accounts / sinv_rules / sinv_history.

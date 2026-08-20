@@ -2092,7 +2092,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.116.0</div>
+      <div class="ver">גרסה 6.117.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2221,7 +2221,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.116.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.117.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -8422,7 +8422,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'leadform-2026-08-20a';
+const BUILD_ID = 'yahavlabel-2026-08-20a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -19189,7 +19189,23 @@ boot();
           function(){ b.textContent = 'הועתק ✓'; setTimeout(function(){ b.textContent='העתקה'; }, 1800); },
           function(){ window.prompt('מספר המשלוח:', u); });
       });
-      d.querySelector('#yh-label').addEventListener('click', async function(){ try{ var _lg = await sb.schema('ord').from('yahav_log').select('request').eq('order_id', o.id).eq('action','send').order('created_at',{ascending:false}).limit(1); if(_lg && _lg.data && _lg.data[0] && _lg.data[0].request){ o._remarks = _lg.data[0].request.shippingRemarks || ''; } }catch(e){} printLabel(o); });
+      d.querySelector('#yh-label').addEventListener('click', async function(){
+        /* 6.117.0 — נשלף גם response, כדי לקחת את המסלול מ-DeliveryNumberString.
+           ⚠️ סינון לפי shipment_no ולא "השורה האחרונה": אחרי ביטול ושידור חוזר
+           יש להזמנה יותר משורת send אחת, ורק אחת מהן היא המשלוח שעל המדבקה. */
+        try{
+          var _lg = await sb.schema('ord').from('yahav_log').select('request,response')
+            .eq('order_id', o.id).eq('action','send').eq('shipment_no', o.yahav_shipment_no)
+            .order('created_at',{ascending:false}).limit(1);
+          var _r = _lg && _lg.data && _lg.data[0];
+          if(_r && _r.request)  o._remarks = _r.request.shippingRemarks || '';
+          if(_r && _r.response){
+            var _s = String(_r.response.DeliveryNumberString || '');
+            o._route = _s.indexOf(';') >= 0 ? _s.split(';')[1] : '';
+          }
+        }catch(e){ /* המדבקה נדפסת גם בלי היומן — פשוט בלי הערות ובלי מסלול */ }
+        printLabel(o);
+      });
       d.querySelector('#yh-cancel').addEventListener('click', function(){ cancelYahav(o, this); });
     }
   }
@@ -19237,24 +19253,138 @@ boot();
     injectYahav(o.id);
   }
 
+  /* ===== מדבקת משלוח — זהה למדבקה של יהב (6.117.0, רומן 20/08/2026) =====
+     מדבקה לכל קרטון · Brother QL / DK-11202 · 100×62 מ"מ לרוחב.
+     🔴 הברקוד אינו נטען מהרשת. עד 6.116.0 הוא הגיע מ-jsDelivr, ובלי
+        אינטרנט (או ב-CDN איטי מ-400ms) המדבקה נדפסה **בלי ברקוד** —
+        try/catch בלע את השגיאה ואיש לא ידע. מקודד Code 39 מוטמע. */
+  var C39 = {' ':'nwwnnnwnn','$':'nwnwnwnnn','%':'nnnwnwnwn','*':'nwnnwnwnn','+':'nwnnnwnwn','-':'nwnnnnwnw','.':'wwnnnnwnn','/':'nwnwnnnwn','0':'nnnwwnwnn','1':'wnnwnnnnw','2':'nnwwnnnnw','3':'wnwwnnnnn','4':'nnnwwnnnw','5':'wnnwwnnnn','6':'nnwwwnnnn','7':'nnnwnnwnw','8':'wnnwnnwnn','9':'nnwwnnwnn','A':'wnnnnwnnw','B':'nnwnnwnnw','C':'wnwnnwnnn','D':'nnnnwwnnw','E':'wnnnwwnnn','F':'nnwnwwnnn','G':'nnnnnwwnw','H':'wnnnnwwnn','I':'nnwnnwwnn','J':'nnnnwwwnn','K':'wnnnnnnww','L':'nnwnnnnww','M':'wnwnnnnwn','N':'nnnnwnnww','O':'wnnnwnnwn','P':'nnwnwnnwn','Q':'nnnnnnwww','R':'wnnnnnwwn','S':'nnwnnnwwn','T':'nnnnwnwwn','U':'wwnnnnnnw','V':'nwwnnnnnw','W':'wwwnnnnnn','X':'nwnnwnnnw','Y':'wwnnwnnnn','Z':'nwwnwnnnn'};
+
+  /* Code 39 → SVG ממודד במ"מ. xmm = רוחב מודול צר, hmm = גובה,
+     quiet = אזור שקט בכל צד (התקן: 10 מודולים לפחות).
+     ⚠️ נקודת החנק היחידה שמייצרת ברקוד. אם נוסף צרכן — לעבור דרכה. */
+  function c39(txt, avail, hmm){
+    var s = '*' + String(txt == null ? '' : txt).toUpperCase() + '*', i, j;
+    for(i = 0; i < s.length; i++){
+      if(!C39[s.charAt(i)]) throw new Error('תו שאינו נתמך ב-Code 39: ' + s.charAt(i));
+    }
+    var mods = 15 * s.length + (s.length - 1);
+    /* +22 = 11 מודולים לאזור שקט בכל צד. התקן דורש 10, ו-20 היה נותן
+       **בדיוק** 10 — כלומר אפס מרווח, ובנקודה שבה שגיאת עיגול אחת
+       מפילה מתחת לתקן. נמדד ב-labeltest על מספר בן 9 ספרות. */
+    var x = Math.min(0.508, avail / (mods + 22));   /* 0.508מ"מ = 6 נקודות ב-300dpi */
+    var quiet = (avail - mods * x) / 2;
+    var out = '', at = quiet;
+    for(i = 0; i < s.length; i++){
+      var p = C39[s.charAt(i)];
+      for(j = 0; j < 9; j++){
+        var w = (p.charAt(j) === 'w' ? 3 : 1) * x;
+        if(j % 2 === 0) out += '<rect x="' + at.toFixed(4) + '" y="0" width="' +
+          w.toFixed(4) + '" height="' + hmm + '"/>';
+        at += w;
+      }
+      if(i < s.length - 1) at += x;
+    }
+    return { x: x, quiet: quiet, w: avail,
+      svg: '<svg xmlns="http://www.w3.org/2000/svg" class="bcsvg" width="' + avail +
+        'mm" height="' + hmm + 'mm" viewBox="0 0 ' + avail + ' ' + hmm +
+        '" shape-rendering="crispEdges" data-x="' + x.toFixed(4) +
+        '" data-quiet="' + quiet.toFixed(4) + '" data-val="' + yesc(txt) + '">' +
+        out + '</svg>' };
+  }
+
   function printLabel(o){
-    var w = window.open('', '_blank', 'width=480,height=640');
+    var w = window.open('', '_blank', 'width=760,height=560');
     if(!w){ alert('יש לאפשר חלונות קופצים להדפסת המדבקה'); return; }
-    var html = '<!DOCTYPE html><html dir="rtl" lang="he"><head><meta charset="utf-8"><title>מדבקה ' + yesc(o.yahav_shipment_no) + '</title>' +
-      '<style>body{font-family:Arial,sans-serif;margin:0;padding:14px}.lbl{border:2px solid #000;border-radius:8px;padding:14px;width:340px}' +
-      '.lbl h2{margin:0 0 6px;font-size:17px}.lbl .row{font-size:14px;margin:3px 0}.lbl svg{width:100%;height:70px;margin-top:8px}' +
-      '@media print{body{padding:0}}</style></head><body>' +
-      '<div class="lbl">' +
-        '<h2>איירון פיטנס ← יהב לוגיסטיקה</h2>' + '<div class="row" style="color:#333">מוצא: ' + yesc(YORIGIN) + '</div>' +
-        '<div class="row"><b>' + yesc(o.customer_name || '') + '</b></div>' +
-        '<div class="row">' + yesc((o.address || '') + (o.city ? ', ' + o.city : '')) + '</div>' +
-        (o.contact_name || o.phone ? '<div class="row">' + yesc((o.contact_name||'') + ' ' + (o.phone||'')) + '</div>' : '') +
-        '<div class="row">הזמנה: ' + yesc(o.order_number) + ' · קרטונים: ' + yesc(o.yahav_packages || 1) + '</div>' + '<div class="row">תאריך הוצאה: ' + yfdt(o.yahav_sent_at) + '</div>' + (o._remarks ? '<div class="row">הערות: ' + yesc(o._remarks) + '</div>' : '') +
-        '<svg id="bc"></svg>' +
-        '<div class="row" style="text-align:center;font-weight:bold">' + yesc(o.yahav_shipment_no) + '</div>' +
-      '</div>' +
-      '<scr'+'ipt src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js" integrity="sha384-23HNuz0DWwn63+KK+m8UDHqd2vgMZHYpwkTeStjefXlw0bFCKcKUwIDbUhMAj9Wp" crossorigin="anonymous" referrerpolicy="no-referrer"></scr'+'ipt>' +
-      '<scr'+'ipt>window.onload=function(){try{JsBarcode("#bc", ' + JSON.stringify(String(o.yahav_shipment_no)) + ', {format:"CODE39",displayValue:false,margin:0});}catch(e){}setTimeout(function(){window.print();},400);};</scr'+'ipt>' +
+
+    var no    = String(o.yahav_shipment_no || '');
+    var tot   = Math.max(1, parseInt(o.yahav_packages, 10) || 1);
+    var fromA = YORIGIN.split(',').join('');                 /* 'נעורים 37 פרדס חנה' */
+    var toA   = [(o.ship_addr1 || o.address || ''), (o.ship_city || o.city || '')]
+                  .filter(Boolean).join(' ');
+    var phone = String(o.phone || '');
+    var rem   = String(o._remarks || '');
+    var route = String(o._route || '');
+    var line  = 'מ:' + fromA + '  ל:' + toA + (rem ? ' :: ' + rem : '') +
+                (phone ? ' ' + phone : '');
+    var dt    = o.yahav_sent_at ? new Date(o.yahav_sent_at) : new Date();
+    function d2(x){ return (x < 10 ? '0' : '') + x; }
+    var dstr  = isNaN(dt) ? '' : d2(dt.getDate()) + '/' + d2(dt.getMonth() + 1) + '/' + dt.getFullYear();
+
+    /* 95מ"מ תוכן (100 פחות 2.5 פדינג בכל צד), פחות 7 לרצועה ו-2 לרווח.
+       גובה 12מ"מ: התקן דורש max(6.35מ"מ, 15%% מאורך הסמל)=10.9מ"מ.
+       נמדד שהתוכן דרש 69.6מ"מ מתוך 62 — הגבהים כוילו, לא נוחשו. */
+    var bc = c39(no, 86, 12);
+
+    var body = '';
+    for(var n = 1; n <= tot; n++){
+      body +=
+      '<div class="lb">' +
+        '<div class="lb-top">' +
+          '<div class="lb-bc">' + bc.svg +
+            '<div class="lb-num">*' + yesc(no) + '*</div></div>' +
+          '<div class="lb-rot"><span>' + yesc(route) + '</span></div>' +
+        '</div>' +
+        '<table class="lb-t"><tbody>' +
+          '<tr><td class="lb-a">מאת: <b>' + 'איירון פיטנס' + '</b></td>' +
+              '<td class="lb-b">' + yesc(o.order_number || '') + '</td></tr>' +
+          '<tr><td class="lb-a">' + yesc(fromA) + '</td>' +
+              '<td class="lb-b">' + n + ' -מ- ' + tot + '</td></tr>' +
+          '<tr><td class="lb-a">עבור: <b>' + yesc(o.customer_name || '') + '</b></td>' +
+              '<td class="lb-b">' + yesc(route) + '</td></tr>' +
+          '<tr><td class="lb-a"><b>' + yesc(toA) + '</b></td>' +
+              '<td class="lb-b">0</td></tr>' +
+          '<tr><td class="lb-a">' + yesc(phone) + '</td>' +
+              '<td class="lb-b">רגיל</td></tr>' +
+          '<tr><td class="lb-rm" colspan="2"><div class="lb-rmx">' + yesc(line) +
+              '</div></td></tr>' +
+        '</tbody></table>' +
+        '<div class="lb-dt">' + yesc(dstr) + '</div>' +
+      '</div>';
+    }
+
+    var html = '<!DOCTYPE html><html dir="rtl" lang="he"><head><meta charset="utf-8">' +
+      '<title>מדבקה ' + yesc(no) + '</title><style>' +
+      '@page{ size:100mm 62mm; margin:0 }' +
+      '*{ box-sizing:border-box }' +
+      'html,body{ margin:0; padding:0; background:#fff; color:#000 }' +
+      'body{ font-family:Arial,"Helvetica Neue",sans-serif }' +
+      /* 🔴 התאריך אינו absolute. הוא היה, ונדרס על שורת ההערות ברגע
+         שהיא גלשה לשתי שורות — נמדד בתצוגה ב-300dpi. absolute מבטיח
+         מיקום, לא היעדר חפיפה. עמודת flex עם margin-top:auto על התאריך
+         מבטיחה את שניהם, ולא משנה כמה ארוכה שורת ההערות. */
+      '.lb{ width:100mm; height:62mm; padding:2.5mm; overflow:hidden;' +
+      ' display:flex; flex-direction:column;' +
+        ' page-break-after:always; break-after:page }' +
+      '.lb:last-child{ page-break-after:auto; break-after:auto }' +
+      '.lb-top{ flex:0 0 17mm; display:flex; align-items:center; gap:2mm }' +
+      '.lb-bc{ flex:1 1 auto; text-align:center }' +
+      '.lb-bc svg{ display:block; margin:0 auto }' +
+      '.lb-rot{ flex:0 0 7mm; height:17mm; display:flex; align-items:center; justify-content:center }' +
+      /* ⚠️ אחרי הסיבוב, max-width של ה-span הוא המימד ה**אנכי**. יהב
+         מציגה כאן אזור חלוקה קצר ("ר"ג מערב"); לנו יש רק את המסלול
+         המלא ("508 ר"ג גבעתיים"), שב-3.2מ"מ גולש מעבר ל-21מ"מ ונחתך
+         לגמרי — נמדד. החיתוך המבוקר משאיר את מה שנכנס; המסלול המלא
+         ממילא מופיע בתא שבטבלה. */
+      '.lb-rot span{ transform:rotate(-90deg); white-space:nowrap; font-size:2.7mm;' +
+      ' font-weight:700; display:block; max-width:16mm; overflow:hidden;' +
+      ' text-overflow:ellipsis }' +
+      '.lb-num{ font-size:3.3mm; letter-spacing:.35mm; margin-top:.5mm;' +
+        ' font-family:"Courier New",monospace }' +
+      'table.lb-t{ width:100%; border-collapse:collapse; table-layout:fixed }' +
+      'table.lb-t td{ border:.3mm solid #000; padding:.55mm 1.4mm; font-size:3.1mm;' +
+        ' line-height:1.25; vertical-align:middle; overflow:hidden }' +
+      'td.lb-a{ width:57% }' +
+      'td.lb-b{ width:43%; text-align:center }' +
+      'td.lb-rm{ font-size:2.6mm; line-height:1.3 }' +
+      'table.lb-t{ flex:0 0 auto }' +
+      /* שורת ההערות נחסמת לשתי שורות, כמו אצל יהב — שורה שלישית הייתה
+         דוחפת את התאריך אל מחוץ למדבקה. */
+      '.lb-rmx{ display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;' +
+      ' overflow:hidden }' +
+      '.lb-dt{ margin-top:auto; text-align:left; font-size:2.8mm; padding-top:.5mm }' +
+      '</style></head><body>' + body +
+      '<scr' + 'ipt>window.onload=function(){ setTimeout(function(){ window.print(); }, 60); };</scr' + 'ipt>' +
       '</body></html>';
     w.document.open(); w.document.write(html); w.document.close();
   }

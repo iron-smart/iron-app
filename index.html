@@ -1959,7 +1959,7 @@ td.lb-ov .lb-dt{ color:#c0392b; font-weight:700; }
    ⚠️ הבריחה נגרמה משדות בגבהים שונים בתוך שורת גריד — label בשורה
    אחת מול label שנשבר לשתיים. align-items:end מיישר את הפקדים
    עצמם לתחתית התא, ולכן כל התיבות בשורה על אותו קו. */
-#leadSheet .form-grid, #addModal .form-grid{ align-items:end; }
+#leadSheet .form-grid{ align-items:end; }
 #leadSheet .form-grid > div, #addModal .form-grid > div{ min-width:0; }
 #leadSheet label, #addModal label{ min-height:17px; }
 /* ---- סטטוס ובעלות קומפקטי (6.114.0) ---- */
@@ -2035,6 +2035,25 @@ tr.lb-on td{ background-color:#eef5fd !important; }
 #addModal .form-sep{ margin-top:10px; padding-bottom:3px; }
 #addModal label{ margin-bottom:2px; }
 #addModal input, #addModal select, #addModal textarea{ padding:6px 9px; }
+/* 6.116.0 — יישור הפקדים: התא נמתח לגובה השורה (stretch) והתוכן
+   נדחס לתחתיתו. זו התבנית של .addr-row, לא המצאה חדשה.
+   🔴 align-items:end (6.114.0) יישר תחתיות **תאים**, ולכן ההערה
+   מתחת ל"סוג לקוח" הרימה את הבורר 101px מעל שכניו. נמדד.
+   ⚠️ הכלל (1,2,1) גובר על .form-grid>div (0,1,1) בכל מיקום בגיליון.
+   ⚠️ :not(.form-sep) חיוני — הכותרות הן flex-direction:row,
+      ו-flex-end ב-RTL היה מעיף אותן לקצה השמאלי. */
+#addModal .form-grid > div:not(.form-sep){ justify-content:flex-end; }
+/* ההערה יוצאת מהתא לשורה משלה — כך היא אינה מגדילה אף תא.
+   ⚠️ לא .note: זו קופסה עם רקע ופדינג. */
+#addModal .a-hint{ font-size:11px; line-height:1.4; color:#64748b; margin-top:-3px; }
+/* תיבת הכפילויות אינה תופסת שורת גריד כשהיא ריקה */
+#a-dup:empty{ display:none; }
+#addModal .modal-actions{ border-top:1px solid var(--line); padding-top:12px; margin-top:16px; }
+#addModal #a-save{ width:auto; padding:11px 36px; font-size:15px; border-radius:11px;
+  background-image:linear-gradient(135deg,var(--green),#4e8168);
+  box-shadow:0 6px 18px rgba(106,159,133,.38); }
+@media(max-width:760px){ #addModal .form-grid .span2{ grid-column:span 1; } }
+@media(max-width:640px){ #addModal #a-save{ width:100%; } }
 .a-ownline{ display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--ink-2);
   padding:7px 9px; border:1px dashed var(--line); border-radius:9px; background-color:#fbfcfe; }
 /* ---- רוחב שלוש עמודות תת-הסטטוס (6.107.0) ----
@@ -2073,7 +2092,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.115.0</div>
+      <div class="ver">גרסה 6.116.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2202,7 +2221,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.115.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.116.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2507,13 +2526,14 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       <div><label>טלפון<span class="req">*</span></label><input id="a-phone" type="tel" dir="ltr" oninput="lbDupCheck()"></div>
       <div><label>אימייל</label><input id="a-email" type="email" dir="ltr" oninput="lbDupCheck()"></div>
       <div class="span4" id="a-dup"></div>
+      <div><label>סוג לקוח<span class="req">*</span></label><select id="a-type"></select></div>
       <div class="span2"><label>שם חברה</label><input id="a-company"></div>
       <div><label>עיר</label><input id="a-city"></div>
-      <div><label>סוג לקוח<span class="req">*</span></label><select id="a-type"></select><div class="note" style="margin-top:3px">יש לשאול לאן מיועד הציוד, כדי להבין את סוג הלקוח.</div></div>
+      <div class="span4 a-hint">יש לשאול לאן מיועד הציוד, כדי להבין את סוג הלקוח.</div>
 
       <div class="form-sep">מאיפה הגיע</div>
-      <div><label>מקור הגעה<span class="req">*</span></label><select id="a-source"></select></div>
-      <div><label>האם לשלוח וואטסאפ?</label><select id="a-wacat"><option value="">—</option><option>כן</option><option>לא</option></select></div>
+      <div class="span2"><label>מקור הגעה<span class="req">*</span></label><select id="a-source"></select></div>
+      <div class="span2"><label>האם לשלוח וואטסאפ?</label><select id="a-wacat"><option value="">—</option><option>כן</option><option>לא</option></select></div>
       <div class="span4"><label>מידע על הליד</label><textarea id="a-notes" rows="2" placeholder="מתחם אימונים ראשון? גודל המקום? איזה סוג אימונים…"></textarea></div>
 
       <div class="span4"><div class="a-ownline" id="a-ownline"></div></div>
@@ -8402,7 +8422,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'leadbulk-2026-08-20a';
+const BUILD_ID = 'leadform-2026-08-20a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====

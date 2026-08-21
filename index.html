@@ -2021,7 +2021,9 @@ td.lb-today .lb-dt{ background-color:transparent; }
 #leadSheet label{ margin-bottom:2px; }
 #leadSheet input, #leadSheet select{ padding:6px 9px; }
 #leadSheet textarea{ padding:6px 9px; }
-#leadSheet .ob-card{ margin-top:12px; }
+#leadSheet .ob-card, #tkSheet .ob-card{ margin-top:12px; }
+/* שבב "מקושר ל־" בתוך הכרטיס — אותה שפה של הטבלה, בלי כפילות כלל */
+#tkSheet .tk-lnk{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 /* ---- עדכון ניתן לעריכה (6.108.0) ---- */
 .lbu-act{ margin-inline-start:auto; display:flex; gap:5px; white-space:nowrap; }
 .lbu-act button{ font-size:11px; padding:1px 7px; border-radius:7px; border:1px solid var(--line);
@@ -2174,7 +2176,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.121.0</div>
+      <div class="ver">גרסה 6.122.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2303,7 +2305,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.121.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.122.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2456,6 +2458,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
     <section id="tab-tasks" class="hidden">
       <div class="chips" id="tk-chips"></div>
       <div class="logi-filters" id="tk-filters"></div>
+      <div id="tk-selbar"></div>
       <div class="toolbar">
         <input id="taskSearch" placeholder="חיפוש לפי משימה, שם מקושר או טלפון…">
         <button class="add" id="addTaskBtn" title="משימה חדשה">+ משימה חדשה</button>
@@ -2585,8 +2588,8 @@ tr.lb-on td{ background-color:#eef5fd !important; }
 <div class="modal hidden" id="taskModal">
   <div class="sheet">
     <h3>משימה חדשה</h3>
-    <div class="field"><label>מה צריך לעשות? *</label><input id="t-name"></div>
-    <div class="field"><label>תאריך יעד *</label><input id="t-due" type="date"></div>
+    <div class="field"><label>מה צריך לעשות?<span class="req">*</span></label><input id="t-name"></div>
+    <div class="field"><label>תאריך יעד<span class="req">*</span></label><input id="t-due" type="date"></div>
     <div class="field"><label>שעה</label><input id="t-time" type="time" value="09:00"></div>
     <div class="actions">
       <button class="btn green" id="t-save">שמירה</button>
@@ -2594,6 +2597,11 @@ tr.lb-on td{ background-color:#eef5fd !important; }
     </div>
     <div class="err" id="t-err"></div>
   </div>
+</div>
+
+<!-- מודל כרטיס המשימה (6.122.0) — עד כאן למסך המשימות לא היה כרטיס כלל -->
+<div class="modal hidden" id="tkModal">
+  <div class="sheet" id="tkSheet"></div>
 </div>
 
 <!-- מודל כרטיס לקוח -->
@@ -8545,7 +8553,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'taskboard-2026-08-21a';
+const BUILD_ID = 'taskcard-2026-08-21a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -13845,6 +13853,98 @@ function tkBucket(t){
   return days<=7 ? 'ovr7' : (days<=30 ? 'ovr30' : 'old');
 }
 const TK_PAINT = { today:'tk-todr', ovr7:'tk-ovr' };
+/* ═══ בחירה מרובה (6.122.0) ═══════════════════════════════════════
+   נדחתה מ-4505 בכוונה — בורד בלי כרטיס היה מספיק שינוי לפריסה אחת.
+   שלוש פעולות: סימון בוצע · הקצאה מחדש · דחיית מועד.
+   🔴 **כשל חלקי הוא הצפוי ולא החריג**, ולכן יש דוח שמפרט בשם. טוסט
+      "בוצע" על 14 מתוך 20 הוא בדיוק החותמת השקרית שהפרויקט נכווה ממנה.
+   ⚠️ סדרתי ולא במקביל, ו-`loadLeads()` **פעם אחת בסוף** — אחרת 20
+      טעינות של 12MB. הדפוס מ-lbBulk.
+   ℹ️ כאן אין RPC ייעודי כמו בלידים: `crm.tasks` היא טבלה רגילה ו-RLS
+      עליה הוא `core.is_approved()` בלבד. השער הוא canEdit בלקוח,
+      ולכן הוא נבדק **לפני** הלולאה ולא בתוכה. */
+let TK_BULK = false, TK_SEL = new Set(), TK_BUSY = false;
+/* ⚠️ הדוח הוא **מצב ולא כתיבה ל-DOM**. גרסה ראשונה כתבה אותו
+   ישירות ל-#tk-selrep, ואז `await loadLeads()` צייר מחדש את הסרגל
+   ומחק אותו — כלומר בהצלחה מלאה המשתמש לא ראה דבר, ודווקא הדוח
+   ששווה משהו ("נכשלו: X, Y") היה שורד רק במקרה. */
+let TK_REP = '';
+window.tkBulkToggle = ()=>{ TK_BULK = !TK_BULK; if(!TK_BULK){ TK_SEL.clear(); TK_REP=''; } renderTasks(); };
+window.tkSelOne = (id, on)=>{ on ? TK_SEL.add(id) : TK_SEL.delete(id); tkSelBar(); tkSelPaint(); };
+window.tkSelAll = (on)=>{
+  const list = tkApplyF(tkViewList());
+  on ? list.forEach(t=>TK_SEL.add(t.id)) : TK_SEL.clear();
+  renderTasks();
+};
+/* צביעה נקודתית בלי ציור מחדש — אחרת כל סימון היה מאבד את הגלילה
+   ואת מצב ה-<details> של הסינון. */
+/* 🔴 הצביעה נקראת מ-TK_SEL ולא מהתיבה. גרסה ראשונה קראה
+   `cb.checked` — כלומר ה-DOM היה מקור האמת והקבוצה רק שיקפה אותו.
+   כל קריאה תוכניתית ל-tkSelOne (בדיקה, פעולה עתידית, שחזור מצב)
+   הייתה מסמנת בקבוצה ולא צובעת, **בלי שגיאה**. זו אותה מחלקה של
+   מראה מול מקור שהפרויקט כבר שילם עליה ב-owner_id. */
+function tkSelPaint(){
+  document.querySelectorAll('#tasks-list tbody tr').forEach(tr=>{
+    const cb = tr.querySelector('.lb-ck input'); if(!cb) return;
+    const on = TK_SEL.has(cb.dataset.id);
+    cb.checked = on;
+    tr.classList.toggle('lb-on', on);
+  });
+}
+function tkSelBar(){
+  const el = document.getElementById('tk-selbar'); if(!el) return;
+  if(!TK_BULK){ el.innerHTML=''; return; }
+  const n = TK_SEL.size;
+  const own = LOWN.filter(o=>o.assignable).map(o=>`<option value="${esc(o.owner_key)}">${esc(o.name)}</option>`).join('');
+  el.innerHTML = `<div class="lb-selbar">
+    <b>${n} מסומנות</b>
+    ${n?`<button type="button" class="chip" onclick="tkBulk('done')">✓ סימון כבוצע</button>
+        <select id="tk-blk-own"><option value="">העברת בעלות אל…</option>${own}</select>
+        <button type="button" class="chip" onclick="tkBulk('owner')">העבר</button>
+        <input type="date" id="tk-blk-due" title="מועד יעד חדש">
+        <button type="button" class="chip" onclick="tkBulk('due')">דחיית מועד</button>`
+       :'<span class="note">סמנו משימות בטבלה כדי לפעול עליהן.</span>'}
+    <button type="button" class="chip lb-selx" onclick="tkBulkToggle()">✕ יציאה ממצב בחירה</button>
+    <div class="lb-selrep" id="tk-selrep">${esc(TK_REP)}</div></div>`;
+}
+window.tkBulk = async (op)=>{
+  if(TK_BUSY) return;
+  const ids = [...TK_SEL]; if(!ids.length) return;
+  if(!window.canEdit('crm.tasks')){ toast('אין לך הרשאת עריכה למשימות'); return; }
+  const val = op==='owner' ? (document.getElementById('tk-blk-own')||{}).value
+            : op==='due'   ? (document.getElementById('tk-blk-due')||{}).value : '';
+  if(op!=='done' && !val){ toast('בחרו ערך'); return; }
+  const nameOf = id => (((TASKS||[]).find(x=>x.id===id)||{}).name)||id;
+  if(op==='done'){
+    const names = ids.slice(0,8).map(nameOf).join(' · ') + (ids.length>8?` ועוד ${ids.length-8}`:'');
+    if(!confirm(`לסמן ${ids.length} משימות כבוצעו?\n\n${names}`)) return;
+  }
+  let patch;
+  if(op==='done') patch = { status:'הושלם', closed_at: new Date().toISOString() };
+  else if(op==='owner') patch = { owner_id: val };
+  else { const d=new Date(val+'T09:00'); if(isNaN(d.getTime())){ toast('תאריך לא תקין'); return; }
+         patch = { due_at: d.toISOString() }; }
+  TK_BUSY = true;
+  const rep = document.getElementById('tk-selrep');
+  const bad = []; let ok = 0;
+  for(let i=0;i<ids.length;i++){
+    const id = ids[i];
+    if(rep) rep.textContent = `מבצע ${i+1} מתוך ${ids.length}…`;
+    const { error } = await sb.schema('crm').from('tasks').update(patch).eq('id', id);
+    if(error) bad.push(nameOf(id)+' — '+error.message); else ok++;
+  }
+  TK_BUSY = false;
+  /* 🔴 הדוח מונה בשם. "בוצע 14 מתוך 20" בלי לומר אילו שש נכשלו הוא
+     בדיוק סוג החותמת שאי אפשר לפעול לפיה. */
+  TK_REP = bad.length
+    ? `בוצעו ${ok} מתוך ${ids.length}. נכשלו: ${bad.slice(0,6).join(' | ')}${bad.length>6?` ועוד ${bad.length-6}`:''}`
+    : `בוצעו ${ok} מתוך ${ids.length}.`;
+  if(rep) rep.textContent = TK_REP;
+  /* נשארים במצב בחירה גם בהצלחה: הדוח הוא התוצר, ויציאה אוטומטית
+     הייתה מוחקת אותו מהמסך ברגע שהוא נכתב. הבחירה מתנקה, המצב לא. */
+  TK_SEL.clear();
+  await loadLeads();
+};
 let TK_VIEW = 'mine', TK_FOLD = null;
 function tkFoldSet(){
   if(TK_FOLD) return TK_FOLD;
@@ -13866,7 +13966,8 @@ function tkChips(){
   el.innerHTML =
     `<button class="chip ${TK_VIEW==='mine'?'active':''}" onclick="tkSetView('mine')">שלי ${mine}</button>`+
     `<button class="chip ${TK_VIEW==='open'?'active':''}" onclick="tkSetView('open')">כל הפתוחות ${o.length}</button>`+
-    `<button class="chip ${TK_VIEW==='done'?'active':''}" onclick="tkSetView('done')">הושלמו ${done}</button>`;
+    `<button class="chip ${TK_VIEW==='done'?'active':''}" onclick="tkSetView('done')">הושלמו ${done}</button>`+
+    (window.canEdit('crm.tasks')?`<button class="chip ${TK_BULK?'active':''}" onclick="tkBulkToggle()">${TK_BULK?'✕ סיום בחירה':'☑︎ בחירה מרובה'}</button>`:'');
 }
 /* ---- הישות המקושרת ---- */
 /* 🔴 נקודת החנק ל"לאן השורה הזאת מובילה". גם התא וגם ה-tr קוראים לה,
@@ -13996,12 +14097,16 @@ function renderTkFilters(){
    🔴 פונקציה ולא const — TK_SORT מוגדרת אחריה, ו-const היה מחשב את
    הכותרת פעם אחת בעליית המודול: חץ המיון לעולם לא היה מתעדכן. */
 function tkHead(){
-  return '<div class="tbl-wrap"><table class="tbl" data-gs="own"><thead><tr>'
+  /* ⚠️ עמודת הסימון נוספת **בראש**, ולכן כל אינדקסי TK_COLS זזים באחד
+     בתוך ה-DOM. tkSortBy עדיין מקבל את אינדקס TK_COLS המקורי — המיפוי
+     נעשה כאן ולא בקוד המיון. הדפוס מ-lbHead. */
+  const ck = TK_BULK ? '<th class="lb-ck"><input type="checkbox" title="סימון הכל" onclick="tkSelAll(this.checked)"></th>' : '';
+  return '<div class="tbl-wrap"><table class="tbl" data-gs="own"><thead><tr>' + ck
     + TK_COLS.map(([lbl,cls],i)=>`<th class="${lbl==='#'?'rownum':cls}${cls==='srt'&&TK_SORT[0]===i?' on':''}"${cls==='srt'?` data-ar="${TK_SORT[1]>0?'▲':'▼'}" onclick="tkSortBy(${i})"`:''}>${lbl}</th>`).join('')
     + '</tr></thead><tbody>';
 }
 function tkRow(t, i){
-  const b = tkBucket(t), dmk = lbDueMark(t.due_at), go = tkGoJs(t);
+  const b = tkBucket(t), dmk = lbDueMark(t.due_at);
   const done = t.status==='הושלם';
   /* 🔴 הקלט אינו יורש את צבע התא (גיליון ה-UA גובר), ולכן td.lb-ov
      מגדיר גם `.lb-dt` בתוכו — שני המסלולים, עריך ולא-עריך, מסומנים.
@@ -14010,7 +14115,11 @@ function tkRow(t, i){
     ? `<input type="datetime-local" class="inline-edit lb-dt" data-task="${esc(t.id)}" value="${esc(lbDtLocal(t.due_at))}" onclick="event.stopPropagation()" onchange="lbTaskDue(this)">`
     : (t.due_at ? esc(new Date(t.due_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}))
                 : '<span class="lb-na">·</span>');
-  return `<tr class="${TK_PAINT[b]||''}"${go?` onclick="goCard(()=>${go})"`:''}>
+  /* 6.122.0 — השורה נפתחת לכרטיס **המשימה**. ב-4505 היא נפתחה לישות
+     המקושרת כפתרון ביניים, כי כרטיס המשימה לא היה קיים. ההגעה לליד
+     נשארה בתא "מקושר ל־" (tkGoJs), עם stopPropagation. */
+  return `<tr class="${TK_SEL.has(t.id)?'lb-on ':''}${TK_PAINT[b]||''}" onclick="openTask('${jsq(t.id)}')">
+      ${TK_BULK?`<td class="lb-ck" onclick="event.stopPropagation()"><input type="checkbox" data-id="${esc(t.id)}" ${TK_SEL.has(t.id)?'checked':''} onclick="tkSelOne('${jsq(t.id)}',this.checked)"></td>`:''}
       <td class="rownum">${i}</td>
       <td style="max-width:320px"><b class="${done?'tk-done':''}">${esc(t.name||'')}</b></td>
       <td>${tkLinkCell(t)}</td>
@@ -14029,7 +14138,7 @@ function tkFlat(list){
 }
 function tkTable(list){
   if(!list.length) return '<div class="empty">אין משימות בסינון הזה</div>';
-  const CS = TK_COLS.length, fold = tkFoldSet(), byB = {};
+  const CS = TK_COLS.length + (TK_BULK?1:0), fold = tkFoldSet(), byB = {};
   for(const t of list){ const k=tkBucket(t); (byB[k] = byB[k] || []).push(t); }
   const live = TK_BUCKETS.filter(b=>(byB[b[0]]||[]).length);
   /* 🔴 קבוצה יחידה אינה מקפלת. אחרי סינון לדלי אחד, קליק על הכותרת היה
@@ -14046,11 +14155,141 @@ function tkTable(list){
   }
   return tkHead()+body+'</tbody></table></div>';
 }
+/* ═══ כרטיס המשימה (6.122.0) ═════════════════════════════════════
+   סדר הסקשנים לפי סקיל card-layout: **מה שהמערכת מביאה למעלה, מה
+   שהאדם ממלא למטה, כותרת מפרידה ביניהם.** כאן "מה שהמערכת מביאה"
+   הוא הפנייה המקושרת — היא נפתרת ב-ctxOf ואינה ניתנת לעריכה מכאן. */
+const TASK_CARD_FIELDS = [
+  ['tk-name','name'], ['tk-due','__due'], ['tk-status','status'],
+  ['tk-cat','category'], ['tk-owner','owner_id']
+];
+let TASK_SNAP = null;
+/* חוזה ה-snapshot: **מה שהוצג מול מה שיש עכשיו**, שתי מחרוזות מאותו
+   אלמנט — ולא "מה בשדה מול מה במסד". המחלקה שהכתה פעמיים ב-15/08/2026
+   בשני טיפוסים שונים (מרווח מעוגל · select שנפל לאפשרות הראשונה). */
+function tkSnapshot(id){
+  const snap={ __id:id };
+  TASK_CARD_FIELDS.forEach(([elId])=>{ const el=document.getElementById(elId); if(el) snap[elId]=String(el.value ?? ''); });
+  TASK_SNAP=snap;
+}
+/* יעד העדכון: הליד כשיש, המשימה עצמה כשאין. נקודה אחת — הכרטיס,
+   ההוספה, הטעינה וציר הפעילות כולם נגזרים ממנה. */
+function tkUpdTarget(t){
+  const x = ctxOf(t.linked_type, t.linked_id);
+  return x.lead ? {type:'lead', id:x.lead.id} : {type:'task', id:t.id};
+}
+window.tkActsLoad = (id, type)=>{
+  const d = document.getElementById('tk-acc'); if(!d || !d.open || d.dataset.loaded) return;
+  d.dataset.loaded = '1';
+  activityHtml(type, id).then(h=>{ const el=document.getElementById('tk-acts');
+    if(el) el.innerHTML = h || '<div class="note">אין פעילות רשומה.</div>'; });
+};
+window.openTask = (id)=>{
+  const t = (TASKS||[]).find(x=>x.id===id); if(!t) return;
+  const x = ctxOf(t.linked_type, t.linked_id);
+  const editable = window.canEdit('crm.tasks');
+  const fmtDT = v=> v?new Date(v).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+  const u = tkUpdTarget(t);
+  const ent = x.lead || x.deal || x.cust || null;
+  const entName = (x.lead && x.lead.full_name) || (x.deal && x.deal.name) || (x.cust && x.cust.name) || '';
+  const entPhone = (x.lead && x.lead.phone) || (x.cust && x.cust.phone) || '';
+  const go = tkGoJs(t);
+  const dmk = lbDueMark(t.due_at);
+  /* אחים — אותה פנייה בדיוק. ⚠️ משימה בלי קישור אין לה אחים, ולכן
+     התנאי בודק גם את linked_id ולא רק את השוויון (null===null אמת). */
+  const sib = t.linked_id ? (TASKS||[]).filter(o=>o.id!==t.id && o.linked_type===t.linked_type && o.linked_id===t.linked_id) : [];
+  const mts = t.linked_id ? (MEETS||[]).filter(m=>m.linked_type===t.linked_type && m.linked_id===t.linked_id && m.status!=='בוטלה') : [];
+  const ownOpts = '<option value="">— ללא בעלים —</option>' +
+    LOWN.filter(o=>o.assignable).map(o=>`<option value="${esc(o.owner_key)}" ${o.owner_key===t.owner_id?'selected':''}>${esc(o.name)}</option>`).join('');
+  $('#tkSheet').innerHTML = `
+    <h3>${esc(t.name||'משימה')} ${mdPill(t.status||'—',TASK_ST_COLORS,LB_TK)}</h3>
+    <div class="note">נוצרה ${fmtDT(t.created_at)}${t.closed_at?' · נסגרה '+fmtDT(t.closed_at):''}</div>
+    <div class="form-grid">
+      <div class="form-sep">פרטי הפנייה המקושרת</div>
+      ${ent?`
+      <div class="span2"><label>${esc(TK_KIND_LBL[t.linked_type]||'מקושר ל־')}</label>
+        <div class="tk-lnk"><span class="tk-kind tk-k-${esc(t.linked_type||'')}">${esc(TK_KIND_LBL[t.linked_type]||'')}</span>
+        ${go?`<a href="#" onclick="event.preventDefault();goCard(()=>${go})">${esc(entName)} ↗</a>`:esc(entName)}</div></div>
+      <div><label>טלפון ${phBtns(entPhone)}</label>${roIn(entPhone,{ltr:1})}</div>
+      ${x.lead?`<div><label>סטטוס הפנייה</label><div class="tk-lnk">${mdPill(x.lead.status||'—',LEAD_ST_COLORS,LB_TK)}</div></div>
+      <div><label>בעלים של הפנייה</label><div class="tk-lnk">${lbOwnerCell(x.lead)}</div></div>
+      ${x.lead.company?`<div><label>שם חברה</label>${roIn(x.lead.company)}</div>`:''}`:''}
+      ${x.deal?`<div><label>שלב העסקה</label><div class="tk-lnk">${mdPill(x.deal.stage||'—',DEAL_ST_COLORS,LB_TK)}</div></div>`:''}
+      ${x.cust?`<div class="span2"><label>לקוח מקושר</label><div class="tk-lnk"><a href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(x.cust.id)}'))">${esc(x.cust.name||'כרטיס הלקוח')} ↗</a></div></div>`:''}
+      `:'<div class="span4"><div class="note">למשימה זו אין פנייה מקושרת.</div></div>'}
+
+      <div class="form-sep">פרטי המשימה</div>
+      <div class="span2"><label>מה צריך לעשות?<span class="req">*</span></label><input id="tk-name" value="${esc(t.name||'')}"></div>
+      <div><label>מועד יעד</label><input type="datetime-local" id="tk-due" value="${esc(lbDtLocal(t.due_at))}"></div>
+      <div><label>סטטוס</label>${selHtml('tk-status',TASK_STATUSES,t.status)}</div>
+      <div><label>סיווג</label>${selHtml('tk-cat',tkCats(),t.category,true)}</div>
+      <div><label>בעלים</label><select id="tk-owner">${ownOpts}</select></div>
+
+      <div class="form-sep">עדכונים</div>
+      <div class="span4">
+        <div class="note" style="margin-bottom:6px">${u.type==='lead'
+          ? 'העדכון נרשם על הפנייה, ולכן הוא מופיע גם בכרטיס הליד וגם בכרטיס הלקוח. עריכה ומחיקה — לכותב בלבד.'
+          : 'למשימה זו אין פנייה מקושרת, ולכן העדכון נרשם על המשימה עצמה.'}</div>
+        ${editable?`<div class="lbu-add"><textarea id="lb-upd" rows="2" placeholder="מה קרה?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${jsq(u.id)}','${jsq(u.type)}')">הוספה</button></div>`:''}
+        <div class="lbu-list" id="lb-updlist"><div class="note">טוען…</div></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      ${editable?`<button class="btn btnw" onclick="saveTask('${jsq(id)}')">💾 שמירה</button>
+      ${t.status!=='הושלם'?`<button type="button" class="chip" onclick="doneTask('${jsq(id)}')">בוצע ✓</button>`:''}`
+      :'<div class="note">אין לך הרשאת עריכה למשימות.</div>'}
+    </div>
+    <div class="err" id="tk-err"></div>
+    <section class="ob-card"><h2 class="sec">משימות ופגישות על אותה פנייה (${sib.length+mts.length})</h2>
+      ${sib.map(o=>`<div class="row" style="cursor:pointer" onclick="goCard(()=>openTask('${jsq(o.id)}'))"><span class="k">משימה · ${o.due_at?new Date(o.due_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'}</span><span class="v">${esc(o.name||'')} ${mdPill(o.status,TASK_ST_COLORS)}</span></div>`).join('')}
+      ${mts.map(m=>`<div class="row"><span class="k">פגישה · ${m.meet_date?new Date(m.meet_date+'T00:00').toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'}):'—'}</span><span class="v"><a href="#" onclick="event.preventDefault();openMeet('${jsq(m.id)}')">${esc(m.subject||'פגישה')}</a> <span class="pill ${meetStClass(m.status)}">${esc(m.status)}</span></span></div>`).join('')}
+      ${(!sib.length&&!mts.length)?'<div class="note">אין משימות או פגישות נוספות על הפנייה הזאת.</div>':''}
+    </section>
+    <details class="lb-acc" id="tk-acc" ontoggle="tkActsLoad('${jsq(u.id)}','${jsq(u.type)}')">
+      <summary>ציר פעילות</summary><div id="tk-acts"><div class="note">לחצו כדי לטעון…</div></div>
+    </details>`;
+  tkSnapshot(id);
+  mountCard('tkModal', ()=>openTask(id));
+  try{ window.markEmpty('tkModal'); }catch(_e){}
+  if(!editable) document.querySelectorAll('#tkSheet input,#tkSheet select,#tkSheet textarea').forEach(el=>el.disabled=true);
+  lbLoadUpdates(u.id, u.type);
+};
+window.saveTask = async (id)=>{
+  const t = (TASKS||[]).find(x=>x.id===id); if(!t) return;
+  const eb = document.getElementById('tk-err');
+  if(!window.canEdit('crm.tasks')){ if(eb) eb.textContent='אין לך הרשאת עריכה למשימות.'; return; }
+  /* ⚠️ snapshot של כרטיס אחר — עוצרים ואומרים, לא מנחשים דיף. */
+  if(!TASK_SNAP || TASK_SNAP.__id !== id){
+    if(eb) eb.textContent='הכרטיס נטען מחדש — סגרו ופתחו אותו שוב לפני השמירה.'; return; }
+  const upd={};
+  TASK_CARD_FIELDS.forEach(([elId,col])=>{
+    const el=document.getElementById(elId); if(!el || el.disabled) return;
+    const was=TASK_SNAP[elId]; if(was===undefined) return;
+    const now=String(el.value ?? ''); if(now===was) return;
+    if(col==='__due'){
+      if(!now){ upd.due_at=null; return; }
+      const d=new Date(now); if(!isNaN(d.getTime())) upd.due_at=d.toISOString();
+      return;
+    }
+    upd[col]= now===''?null:now;
+  });
+  if(('name' in upd) && !String(upd.name||'').trim()){
+    if(eb) eb.textContent='חסרים שדות חובה: מה צריך לעשות.'; return; }
+  if(!Object.keys(upd).length){ closeCards(); return; }
+  /* סגירה מהכרטיס חותמת closed_at, בדיוק כמו doneTask — אחרת משימה
+     שנסגרה מהבורר נראית סגורה ואין לה מועד סגירה. */
+  if(upd.status==='הושלם' && !t.closed_at) upd.closed_at = new Date().toISOString();
+  const { error } = await sb.schema('crm').from('tasks').update(upd).eq('id', id);
+  if(error){ if(eb) eb.textContent='השמירה נכשלה — '+error.message; return; }
+  Object.assign(t, upd);
+  tkSnapshot(id);
+  closeCards(); renderTasks(); renderLeads(); renderToday(); renderStats();
+};
 function renderTasks(){
   /* ⚠️ tkInitDef **לפני** הצ'יפים: הוא עשוי לשנות את TK_VIEW, ובסדר
      ההפוך הצ'יפים היו מציירים תצוגה אחת והטבלה מתחתם אחרת — בציור
      הראשון בלבד, כלומר בדיוק המקרה שקשה לשחזר. */
-  tkInitDef(); tkChips(); renderTkFilters();
+  tkInitDef(); tkChips(); renderTkFilters(); tkSelBar();
   const q=($('#taskSearch').value||'').trim();
   if(q){
     /* חיפוש חוצה-תצוגות ואינו כפוף לסינון — מי שמקליד שם מצפה למצוא
@@ -18413,47 +18652,57 @@ window.lbSetOwner = async (leadId, ownerKey, quiet)=>{
    (activities_actor_is_self) דוחה ב-42501 כל שורה שבה actor_id אינו
    auth.uid(). בלי זה "החותמת" הייתה ניתנת לזיוף בידי כל מי שיש לו
    can_edit('crm'), וחותמת שניתן לזייף אינה חותמת. */
-window.lbAddUpdate = async (leadId)=>{
+/* 🔴 6.122.0 — `type` אופציונלי, ברירת מחדל 'lead'. הכרעת רומן:
+   "עדכון נרשם **תמיד על הליד**". כרטיס המשימה מעביר את מזהה הליד
+   שנפתר ב-ctxOf, ולכן אין כאן מסלול כתיבה שני אלא אותו מסלול עם יעד
+   שנפתר במקום אחר. 'task' נכנס **רק** כשאין ליד כלל (197 משימות,
+   17 פתוחות) — אחרת העדכון היה נכתב לשום מקום.
+   ⚠️ השם והחתימה לא שונו: leadstest חותכת את המקור לפי המחרוזות
+      `window.lbUpdEdit` ו-`async function lbLoadUpdates(`, וקוראת
+      ל-`window.lbAddUpdate('L1')` בפועל. */
+window.lbAddUpdate = async (leadId, type)=>{
   const el = document.getElementById('lb-upd'); if(!el) return;
   const body = (el.value||'').trim();
   if(!body){ toast('אין מה להוסיף'); return; }
+  const _t = type || 'lead';
   const { error } = await sb.schema('crm').from('activities').insert({
-    actor_id: ME.id, linked_type:'lead', linked_id: leadId, kind:'עדכון', body: body });
+    actor_id: ME.id, linked_type:_t, linked_id: leadId, kind:'עדכון', body: body });
   if(error){ toast('שמירת העדכון נכשלה — '+error.message); return; }
   el.value=''; toast('העדכון נשמר ✓');
-  lbLoadUpdates(leadId);
+  lbLoadUpdates(leadId, _t);
 };
 /* 6.108.0 — עריכה ומחיקה של עדכון. השרת אוכף; כאן רק ה-UI.
    ⚠️ שתי ה-policies נוספו ב-19/08/2026 יחד עם
       `grant update, delete on crm.activities to authenticated` — בלי
       ה-grant ה-policies קיימות והלקוח מקבל 42501. */
-window.lbUpdEdit = (actId, leadId)=>{
+window.lbUpdEdit = (actId, leadId, type)=>{
   const row = document.querySelector(`.lbu-row[data-upd="${CSS.escape(actId)}"]`); if(!row) return;
   const body = row.querySelector('.lbu-body'); if(!body || row.querySelector('.lbu-edit')) return;
   const cur = body.textContent || '';
   body.outerHTML = `<span class="lbu-edit"><textarea rows="2">${esc(cur)}</textarea>`
-    + `<button type="button" class="chip" onclick="lbUpdSave('${jsq(actId)}','${jsq(leadId)}')">שמירה</button>`
-    + `<button type="button" class="chip" onclick="lbLoadUpdates('${jsq(leadId)}')">ביטול</button></span>`;
+    + `<button type="button" class="chip" onclick="lbUpdSave('${jsq(actId)}','${jsq(leadId)}','${jsq(type||'lead')}')">שמירה</button>`
+    + `<button type="button" class="chip" onclick="lbLoadUpdates('${jsq(leadId)}','${jsq(type||'lead')}')">ביטול</button></span>`;
 };
-window.lbUpdSave = async (actId, leadId)=>{
+window.lbUpdSave = async (actId, leadId, type)=>{
   const row = document.querySelector(`.lbu-row[data-upd="${CSS.escape(actId)}"]`); if(!row) return;
   const ta = row.querySelector('.lbu-edit textarea'); if(!ta) return;
   const body = (ta.value||'').trim();
   if(!body){ toast('עדכון ריק — למחיקה יש כפתור נפרד'); return; }
   const { error } = await sb.schema('crm').from('activities').update({ body }).eq('id', actId);
   if(error){ toast('העריכה נכשלה — '+error.message); return; }
-  toast('העדכון נערך ✓'); lbLoadUpdates(leadId);
+  toast('העדכון נערך ✓'); lbLoadUpdates(leadId, type);
 };
-window.lbUpdDel = async (actId, leadId)=>{
+window.lbUpdDel = async (actId, leadId, type)=>{
   if(!confirm('למחוק את העדכון? הפעולה אינה הפיכה.')) return;
   const { error } = await sb.schema('crm').from('activities').delete().eq('id', actId);
   if(error){ toast('המחיקה נכשלה — '+error.message); return; }
-  toast('העדכון נמחק ✓'); lbLoadUpdates(leadId);
+  toast('העדכון נמחק ✓'); lbLoadUpdates(leadId, type);
 };
-async function lbLoadUpdates(leadId){
+async function lbLoadUpdates(leadId, type){
   const box = document.getElementById('lb-updlist'); if(!box) return;
+  const _t = type || 'lead';
   const { data, error } = await sb.schema('crm').from('activities')
-    .select('id,at,body,actor_id,kind').eq('linked_type','lead').eq('linked_id',leadId)
+    .select('id,at,body,actor_id,kind').eq('linked_type',_t).eq('linked_id',leadId)
     .eq('kind','עדכון').order('at',{ascending:false}).limit(200);
   if(error){ box.innerHTML='<div class="note">טעינת העדכונים נכשלה.</div>'; return; }
   if(!data || !data.length){ box.innerHTML='<div class="note">אין עדכונים עדיין.</div>'; return; }
@@ -18464,10 +18713,10 @@ async function lbLoadUpdates(leadId){
        ⚠️ זו תצוגה בלבד; האכיפה האמיתית היא ב-policies במסד
        (activities_upd_own / activities_del_own), שמוגבלות ל-kind='עדכון'
        ול-actor_id=auth.uid(). הסתרת הכפתור אינה הגנה. */
-    const mine = a.actor_id && ME && a.actor_id===ME.id && window.canEdit('crm.leads');
+    const mine = a.actor_id && ME && a.actor_id===ME.id && window.canEdit(_t==='lead'?'crm.leads':'crm.tasks');
     const act = mine ? `<span class="lbu-act">`
-        + `<button type="button" onclick="lbUpdEdit('${jsq(a.id)}','${jsq(leadId)}')">עריכה</button>`
-        + `<button type="button" onclick="lbUpdDel('${jsq(a.id)}','${jsq(leadId)}')">מחיקה</button></span>` : '';
+        + `<button type="button" onclick="lbUpdEdit('${jsq(a.id)}','${jsq(leadId)}','${jsq(_t)}')">עריכה</button>`
+        + `<button type="button" onclick="lbUpdDel('${jsq(a.id)}','${jsq(leadId)}','${jsq(_t)}')">מחיקה</button></span>` : '';
     return `<div class="lbu-row" data-upd="${esc(a.id)}"><span class="lbu-who">${esc(who)}</span><span class="lbu-when">${esc(when)}</span><span class="lbu-body">${esc(a.body||'')}</span>${act}</div>`;
   }).join('');
 }

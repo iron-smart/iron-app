@@ -1827,6 +1827,28 @@ td.lb-ov{ color:#c0392b; font-weight:700; }
    אותה מחלקה של 6.103.0, על שטח גדול יותר. */
 td.lb-ov .lb-dt{ background-color:transparent; color:#c0392b; font-weight:700; }
 td.lb-today .lb-dt{ background-color:transparent; }
+/* ---- בורד המשימות (6.121.0) ----
+   🔴 **אותה מלכודת ספציפיות של 6.119.0, ולכן אותו פתרון בדיוק.** רקעי
+      השורות (`tr:nth-child(even)` הזברה, `tr:hover`) הם (0,2,2); כלל
+      בצורת `tr.tk-ovr` הוא (0,1,1) ו**השורות הזוגיות פשוט לא נצבעות**,
+      בלי שגיאה ובלי סימן. העיגון ב-#tasks-list מעלה ל-(1,2,2).
+   ⚠️ **וריאנט ריחוף חובה** — אחרת הכלל החדש גובר על tr:hover והמשוב
+      בריחוף נעלם דווקא בשורות הדחופות.
+   🔴 **רק שני דליים נצבעים, ובכוונה.** 96.5% מהמשימות הפתוחות באיחור
+      (1,122 מתוך 1,163, נמדד 21/08/2026). צביעת כל איחור הייתה הופכת
+      את הרקע לרעש. `td.lb-ov` (טקסט אדום) כן חל על כולם — מדרגה. */
+#tasks-list .tbl tbody tr.tk-ovr{ background-color:#fdecea; }
+#tasks-list .tbl tbody tr.tk-todr{ background-color:#fff4e5; }
+#tasks-list .tbl tbody tr.tk-ovr:hover{ background-color:#fbdcd8; }
+#tasks-list .tbl tbody tr.tk-todr:hover{ background-color:#ffe9cc; }
+/* הישות המקושרת. שבב סוג + שם לחיץ — הדפוס של .lb-cxgo בבורד הלידים. */
+.tk-link{ cursor:pointer; color:var(--navy); font-weight:700; }
+.tk-link:hover{ text-decoration:underline; }
+.tk-kind{ display:inline-block; font-size:10.5px; font-weight:800; padding:1px 7px; border-radius:999px; margin-inline-end:6px; background-color:#eef2f7; color:#475569; border:1px solid #dbe3ec; }
+.tk-k-lead{ background-color:#e8f3ff; color:#1c4e80; border-color:#c7e0f7; }
+.tk-k-deal{ background-color:#eafaf1; color:#14663f; border-color:#c5ecd8; }
+.tk-k-customer{ background-color:#f5eeff; color:#5b3b8c; border-color:#e0d0f5; }
+.tk-done{ text-decoration:line-through; color:#94a3b8; }
 .lb-duew{ display:inline-flex; align-items:center; gap:5px; }
 .lb-bang, .lb-clk{ width:15px; height:15px; flex:none; display:block; }
 /* טלפון לחיץ בטבלאות (6.118.0). צבע ההיפר-קישור מוחלף בצבע הטקסט
@@ -2152,7 +2174,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.120.0</div>
+      <div class="ver">גרסה 6.121.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2281,7 +2303,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.120.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.121.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2430,10 +2452,13 @@ tr.lb-on td{ background-color:#eef5fd !important; }
     </section>
 
     <!-- משימות -->
+    <!-- משימות — בורד מלא (6.121.0): תצוגות + קיבוץ לפי מועד + סינון -->
     <section id="tab-tasks" class="hidden">
+      <div class="chips" id="tk-chips"></div>
+      <div class="logi-filters" id="tk-filters"></div>
       <div class="toolbar">
-        <input id="taskSearch" placeholder="חיפוש משימה…">
-        <button class="add" id="addTaskBtn" title="משימה חדשה">+</button>
+        <input id="taskSearch" placeholder="חיפוש לפי משימה, שם מקושר או טלפון…">
+        <button class="add" id="addTaskBtn" title="משימה חדשה">+ משימה חדשה</button>
       </div>
       <div id="tasks-list"></div>
     </section>
@@ -3937,6 +3962,17 @@ const canIE = (kind, field)=>{
      כולל בורר הסטטוס שנפרס ב-6.93.0 במיוחד עבורם: הוא הוצג להם כתווית קפואה.
      נמדד 18/08/2026. עקרון 6.24.17 — הרשאה, לא תפקיד. */
   if(kind==='lead') return window.canEdit('crm.leads');
+  /* 🔴 6.121.0 — אותה מחלקה, שני מסכים נוספים. הענף שמתחת כיסה עד כאן
+     גם את `task` וגם את `deal`, ולכן בורר הסטטוס בטבלת המשימות ובורר
+     השלב בטבלת העסקאות היו **תוויות קפואות** בפני נח · ניב · מעיין —
+     שלושתם role='rep' עם crm.tasks=2, כלומר בעלי ההרשאה המפורשת.
+     נמדד 21/08/2026 מול המסד. עקרון 6.24.17 — הרשאה, לא תפקיד.
+     ⚠️ ולכיוון ההפוך, מכוון: מיקי (role='manager', crm.tasks=0 ו-
+        crm.deals=0 מפורשים) מאבד עריכה בתא. 0 מפורש הוא החלטה ולא
+        היעדר, וזה כבר מצבו בלידים. הוכרע מול רומן לפני הפריסה. */
+  if(kind==='task') return window.canEdit('crm.tasks');
+  if(kind==='deal') return window.canEdit('crm.deals');
+  if(kind==='cust') return window.canEdit('crm.customers');
   return ['admin','manager'].includes(ME.role);
 };
 /* select צבעוני בתא — צבעי הלוח (pilled) או צבעי מאנדיי (mdc) */
@@ -8509,7 +8545,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'tempworker-2026-08-20a';
+const BUILD_ID = 'taskboard-2026-08-21a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -13745,26 +13781,287 @@ function myOpenTodayTasks(){
   const eod = new Date(); eod.setHours(23,59,59,999);
   return TASKS.filter(t=> t.status!=='הושלם' && t.due_at && new Date(t.due_at) <= eod);
 }
-function taskTable(list){
-  if(!list.length) return '<div class="empty">אין משימות פתוחות 🎉</div>';
-  const rows=list.slice(0,pgLim('tasks')).map((t,i)=>{
-    const overdue = t.status!=='הושלם' && t.due_at && new Date(t.due_at) < new Date();
-    const due = t.due_at ? new Date(t.due_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
-    return `<tr>
-      <td class="rownum">${i+1}</td>
-      <td style="max-width:340px"><b style="${t.status==='הושלם'?'text-decoration:line-through;color:#94a3b8':''}">${esc(t.name)}</b></td>
-      <td>${esc(t.category||'—')}</td>
-      <td data-sort="${esc(t.due_at||'')}" style="${overdue?'color:#c0392b;font-weight:700':''}">${due}${overdue?' · באיחור!':''}</td>
-      <td>${ieSel('task',t.id,'status',TASK_STATUSES,t.status,{mdColors:TASK_ST_COLORS})}</td>
-      <td>${t.status!=='הושלם'?`<button class="chip" onclick="event.stopPropagation();doneTask('${t.id}')">בוצע ✓</button>`:'✓'}</td>
-    </tr>`;}).join('');
-  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="rownum">#</th><th>משימה</th><th>סיווג</th><th>יעד</th><th>סטטוס</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('tasks',list.length,'משימות')}`;
+/* ═══ פתרון השרשרת ליד ↔ עסקה ↔ לקוח (6.121.0) ═══════════════════
+   רומן, 21/08/2026: "פרטים של ליד חדש ממסך לידים וכל העדכונים על הלידים
+   לעולם לא נעלמים — עוברים גם לכרטיס תהליך מכירה, גם לכרטיס לקוח, גם
+   לכרטיס המשימה עצמה."
+
+   🔴 **פתרון בזמן ציור, לא שכפול נתונים.** שכפול היה מייצר בדיוק את
+      המחלקה שהפרויקט הזה כבר שילם עליה פעמיים — FIN מול FINM_BY (אותו
+      pay_code בשני מטמונים, שני מסכים שחלקו על אותה הזמנה), ו-owner_id
+      כמראה חלקית (694 לידים שהוצגו כחסרי בעלים). מקור אחד, פתרון בקריאה.
+
+   ⚠️ **ענף העסקה שקט כרגע ואינו שגוי:** `crm.deals` נטענת בלי `lead_id`
+      (נמדד — 1,144 שורות מחזיקות אותו במסד מאז 20/08, והלקוח פשוט אינו
+      שולף אותו). השדה נוסף ל-select בבנייה 3. עד אז `ctxOf('deal',…)`
+      מוצאת לקוח ולא ליד. מתועד כאן במפורש כדי שלא ייקרא כבאג. */
+function ctxOf(type, id){
+  const out = { lead:null, deal:null, cust:null };
+  if(!type || !id) return out;
+  if(type==='lead')          out.lead = (LEADS||[]).find(x=>x.id===id) || null;
+  else if(type==='deal')     out.deal = (DEALS||[]).find(x=>x.id===id) || null;
+  else if(type==='customer') out.cust = (CUSTS||[]).find(x=>x.id===id) || null;
+  if(out.deal && out.deal.lead_id && !out.lead)
+    out.lead = (LEADS||[]).find(x=>x.id===out.deal.lead_id) || null;
+  if(out.deal && out.deal.customer_id && !out.cust)
+    out.cust = (CUSTS||[]).find(x=>x.id===out.deal.customer_id) || null;
+  /* ליד → לקוח. **ההצלבה אינה גיבוי אלא המסלול העיקרי:** נמדד 21/08/2026
+     ש-113 לידים בלבד מחזיקים customer_id, לעומת 1,235 שמוצלבים ללקוח לפי
+     טלפון. הסתמכות על העמודה לבדה הייתה מכסה 9% מהמקרים. lbCustId היא
+     נקודת החנק שכבר משמשת את בורד הלידים — ולכן אין סיכוי ששני המסכים
+     יחלקו על מיהו הלקוח של הליד. */
+  if(out.lead && !out.cust){
+    const cid = lbCustId(out.lead, lbMatch(out.lead));
+    if(cid) out.cust = (CUSTS||[]).find(x=>x.id===cid) || null;
+  }
+  return out;
+}
+/* ═══ בורד המשימות (6.121.0) ═════════════════════════════════════ */
+const TK_COLS = [
+  ['#','rownum'], ['משימה','srt'], ['מקושר ל־','srt'], ['טלפון',''],
+  ['מועד','srt'], ['בעלים','srt'], ['סטטוס','srt'], ['סיווג','srt'], ['','']
+];
+const TK_KIND_LBL = { lead:'ליד', deal:'תהליך', customer:'לקוח', payment:'תשלום' };
+/* הדליים. הסדר הוא סדר העבודה: מה שהיום, ואז האיחור מהטרי לישן, ואז
+   העתיד. ⚠️ folded — הכרעת רומן "נעשה סדר אחרי זה" מיושמת כקיפול
+   ולא כהסתרה: המשימות שם, הספירה בכותרת, והן פשוט אינן צועקות. */
+const TK_BUCKETS = [
+  ['today','היום',              '#fdab3d', false],
+  ['ovr7', 'באיחור — השבוע',    '#c0392b', false],
+  ['ovr30','באיחור — עד חודש',  '#e2a03f', true ],
+  ['old',  'באיחור — ישן',      '#94a3b8', true ],
+  ['soon', 'עתידי',             '#579bfc', false],
+  ['none', 'ללא מועד',          '#cbd5e1', true ]
+];
+/* 🔴 נשען על lbDueMark ואינו מגדיר "באיחור" מחדש. הדליים הם **חלוקה
+   של טווח האיחור**, לא הגדרה שנייה שלו — אחרת "היום" היה מתפצל לשתי
+   הגדרות בשני מסכים, וזו בדיוק המחלקה של lbCustId/lbMatch. */
+function tkBucket(t){
+  if(!t || !t.due_at) return 'none';
+  const m = lbDueMark(t.due_at);
+  if(m.rowCls==='lb-todr') return 'today';
+  if(m.rowCls!=='lb-ovr')  return 'soon';
+  const days = (Date.now() - new Date(t.due_at).getTime()) / 864e5;
+  return days<=7 ? 'ovr7' : (days<=30 ? 'ovr30' : 'old');
+}
+const TK_PAINT = { today:'tk-todr', ovr7:'tk-ovr' };
+let TK_VIEW = 'mine', TK_FOLD = null;
+function tkFoldSet(){
+  if(TK_FOLD) return TK_FOLD;
+  TK_FOLD = new Set(TK_BUCKETS.filter(b=>b[3]).map(b=>b[0]));
+  return TK_FOLD;
+}
+window.tkFold = k=>{ const f=tkFoldSet(); if(f.has(k)) f.delete(k); else f.add(k); renderTasks(); };
+window.tkSetView = v=>{ TK_VIEW=v; renderTasks(); };
+function tkOpen(){ return (TASKS||[]).filter(t=>t.status!=='הושלם'); }
+function tkViewList(){
+  if(TK_VIEW==='done') return (TASKS||[]).filter(t=>t.status==='הושלם');
+  const o = tkOpen();
+  return TK_VIEW==='mine' ? o.filter(t=>t.owner_id && t.owner_id===lbMe()) : o;
+}
+function tkChips(){
+  const el=document.getElementById('tk-chips'); if(!el) return;
+  const o=tkOpen(), mine=o.filter(t=>t.owner_id && t.owner_id===lbMe()).length;
+  const done=(TASKS||[]).filter(t=>t.status==='הושלם').length;
+  el.innerHTML =
+    `<button class="chip ${TK_VIEW==='mine'?'active':''}" onclick="tkSetView('mine')">שלי ${mine}</button>`+
+    `<button class="chip ${TK_VIEW==='open'?'active':''}" onclick="tkSetView('open')">כל הפתוחות ${o.length}</button>`+
+    `<button class="chip ${TK_VIEW==='done'?'active':''}" onclick="tkSetView('done')">הושלמו ${done}</button>`;
+}
+/* ---- הישות המקושרת ---- */
+/* 🔴 נקודת החנק ל"לאן השורה הזאת מובילה". גם התא וגם ה-tr קוראים לה,
+   ולכן אי אפשר שהם יובילו לשני מקומות שונים. בבנייה 2 היא תוחלף
+   בכרטיס המשימה עצמו — שינוי בשורה אחת. */
+function tkGoJs(t){
+  const x = ctxOf(t.linked_type, t.linked_id);
+  if(x.lead) return `openLead('${jsq(x.lead.id)}')`;
+  if(x.deal) return `openDeal('${jsq(x.deal.id)}')`;
+  if(x.cust) return `openCust('${jsq(x.cust.id)}')`;
+  return '';
+}
+function tkLinkName(t){
+  const x = ctxOf(t.linked_type, t.linked_id);
+  return (x.lead && x.lead.full_name) || (x.deal && x.deal.name) || (x.cust && x.cust.name) || '';
+}
+function tkLinkPhone(t){
+  const x = ctxOf(t.linked_type, t.linked_id);
+  return (x.lead && x.lead.phone) || (x.cust && x.cust.phone) || '';
+}
+function tkLinkCell(t){
+  const x = ctxOf(t.linked_type, t.linked_id), nm = tkLinkName(t);
+  if(!nm) return '<span class="lb-na">·</span>';
+  const k = t.linked_type||'';
+  const chip = `<span class="tk-kind tk-k-${esc(k)}">${esc(TK_KIND_LBL[k]||k)}</span>`;
+  /* goCard שומר את מחסנית הכרטיסים ולכן "→ חזרה" עובד — אותו דפוס
+     כמו lb-cxgo בבורד הלידים. ⚠️ stopPropagation חובה: בלעדיו נפתח
+     גם הכרטיס של השורה. */
+  const go = tkGoJs(t);
+  return go ? `${chip}<span class="tk-link" onclick="event.stopPropagation();goCard(()=>${go})">${esc(nm)} ↗</span>`
+            : `${chip}${esc(nm)}`;
+}
+/* ---- מיון ---- */
+let TK_SORT = [null, 1];
+const TK_KEY = {
+  1:t=>t.name||'', 2:t=>tkLinkName(t), 4:t=>t.due_at||'',
+  5:t=>((LOWN_BY[t.owner_id]||{}).name)||'',
+  6:t=>String(TASK_STATUSES.indexOf(t.status)), 7:t=>t.category||''
+};
+window.tkSortBy = i=>{ TK_SORT = (TK_SORT[0]===i) ? [i,-TK_SORT[1]] : [i,1]; renderTasks(); };
+/* ברירת המחדל בתוך דלי: הקרוב קודם. בתוך "היום" ו"השבוע" זה בדיוק סדר
+   העבודה, ובדליים הישנים זה מעמיד את מה שכמעט נשכח בראש. */
+const tkDue = (a,b)=>(a.due_at||'').localeCompare(b.due_at||'');
+function tkOrder(grp){
+  const f = TK_KEY[TK_SORT[0]];
+  return ordBy(grp, f || null, TK_SORT[1], tkDue);
+}
+/* ---- סינון ומצב שמור ---- */
+const TK_DEF_KEY = 'iron_tasks_default_v1';
+/* ⚠️ status הוא **מערך** ושאר המפתחות סקלרים. כל קורא חייב
+   `(TK_F.status||[])` — ברירת מחדל שנשמרה לפני שהמפתח נולד אין בה
+   אותו כלל, ו-`.length` עליו זורק ומרוקן את הטבלה בלי הודעה. זו
+   המלכודת המדודה של LB_F.status ב-6.104.0, ויש assert בבנייה. */
+let TK_F = { status:[], owner:'', cat:'', kind:'' }, TK_DEF_INIT = false;
+const TK_F0 = ()=>({ status:[], owner:'', cat:'', kind:'' });
+function tkDefLoad(){ try{ const r=JSON.parse(localStorage.getItem(TK_DEF_KEY)||'null'); return (r&&typeof r==='object')?r:null; }catch(_e){ return null; } }
+function tkDefExists(){ return !!tkDefLoad(); }
+window.tkDefSave = ()=>{ try{ localStorage.setItem(TK_DEF_KEY, JSON.stringify({v:TK_VIEW,f:TK_F})); toast('התצוגה נשמרה כברירת מחדל ✓'); renderTkFilters(); }catch(_e){ toast('הדפדפן חוסם שמירת ברירת מחדל'); } };
+window.tkDefClear = ()=>{ try{ localStorage.removeItem(TK_DEF_KEY); }catch(_e){} toast('ברירת המחדל נמחקה'); renderTkFilters(); };
+function tkCats(){ return [...new Set((TASKS||[]).map(t=>t.category).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'he')); }
+/* מוחל פעם אחת. הסדר: **localStorage אישי → הגדרה מרכזית → 'mine'**,
+   בדיוק כמו lbInitDef. ⚠️ ערך שנשמר ואינו קיים עוד יורד — אחרת הוא
+   מסנן החוצה כל שורה בלי שאף תיבה תיראה מסומנת (הלקח מ-logiInit). */
+function tkInitDef(){
+  if(TK_DEF_INIT) return; TK_DEF_INIT = true;
+  const _c = osetStr('tasks_default_view', '');
+  if(['mine','open','done'].includes(_c)) TK_VIEW = _c;
+  const d = tkDefLoad(); if(!d) return;
+  if(d.v && ['mine','open','done'].includes(d.v)) TK_VIEW = d.v;
+  if(d.f && typeof d.f==='object'){
+    TK_F = Object.assign(TK_F0(), d.f);
+    if(!Array.isArray(TK_F.status)) TK_F.status = TK_F.status ? [TK_F.status] : [];
+    TK_F.status = TK_F.status.filter(s=>TASK_STATUSES.includes(s));
+    if(TK_F.owner && TK_F.owner!=='__none__' && !LOWN_BY[TK_F.owner]) TK_F.owner='';
+    if(TK_F.cat && !tkCats().includes(TK_F.cat)) TK_F.cat='';
+    if(!['','lead','deal','customer','__none__'].includes(TK_F.kind)) TK_F.kind='';
+  }
+}
+function tkApplyF(list){
+  const _st = (TK_F.status||[]);
+  return list.filter(t=>{
+    if(_st.length && !_st.includes(t.status)) return false;
+    /* ⚠️ ב"שלי" הרשימה כבר מסוננת למשתמש, ולכן סינון בעלים נוסף שם יכול
+       רק להוציא שורות — מנוטרל, כולל ערך שנשמר בברירת מחדל. */
+    if(TK_VIEW!=='mine' && TK_F.owner){
+      if(TK_F.owner==='__none__' ? !!t.owner_id : t.owner_id!==TK_F.owner) return false;
+    }
+    if(TK_F.cat && (t.category||'')!==TK_F.cat) return false;
+    if(TK_F.kind){
+      const k = t.linked_type||'';
+      if(TK_F.kind==='__none__' ? !!k : k!==TK_F.kind) return false;
+    }
+    return true;
+  });
+}
+window.tkFilter = (k,v)=>{ TK_F[k]=v; renderTasks(); };
+/* 🔴 d.open=true בסוף — renderTasks בונה מחדש את הסרגל וה-<details>
+   נסגר אחרי כל סימון. בלי זה אי אפשר לסמן שני סטטוסים ברצף. */
+window.tkStatusToggle = (st,on)=>{
+  const set=new Set(TK_F.status||[]); on?set.add(st):set.delete(st); TK_F.status=[...set];
+  renderTasks();
+  const d=document.querySelector('#tk-filters .lf-multi'); if(d) d.open=true;
+};
+window.tkFilterClear = ()=>{ TK_F=TK_F0(); renderTasks(); };
+function tkFilterActive(){ return !!((TK_F.status||[]).length||TK_F.owner||TK_F.cat||TK_F.kind); }
+function renderTkFilters(){
+  const box = document.getElementById('tk-filters'); if(!box) return;
+  const opt=(v,lbl,cur)=>`<option value="${esc(v)}" ${String(cur)===String(v)?'selected':''}>${esc(lbl)}</option>`;
+  const sel=(k,ph,pairs)=>`<select class="lf-sel ${TK_F[k]?'lf-on':''}" onchange="tkFilter('${k}',this.value)"><option value="">${ph}</option>${pairs.map(([v,l])=>opt(v,l,TK_F[k])).join('')}</select>`;
+  const has = new Set((TASKS||[]).map(t=>t.owner_id).filter(Boolean));
+  const owners = LOWN.filter(o=>o.assignable || has.has(o.owner_key))
+                     .map(o=>[o.owner_key, o.name + (o.kind==='legacy'?' (לשעבר)':'')]);
+  const stSel=(TK_F.status||[]);
+  const stItems=TASK_STATUSES.map(st=>`<label class="lf-opt"><input type="checkbox" ${stSel.includes(st)?'checked':''} onchange="tkStatusToggle('${jsq(st)}',this.checked)">${mdPill(st,TASK_ST_COLORS,LB_TK)}</label>`).join('');
+  box.innerHTML =
+    `<details class="lf-multi ${stSel.length?'lf-on':''}"><summary>${stSel.length?`סטטוס (${stSel.length})`:'סטטוס — הכל'}</summary><div class="lf-menu">${stItems}</div></details>`+
+    (TK_VIEW==='mine' ? '' : sel('owner','בעלים — הכל',[['__none__','ללא בעלים']].concat(owners)))+
+    sel('cat','סיווג — הכל',tkCats().map(s=>[s,s]))+
+    sel('kind','מקושר ל־ — הכל',[['lead','ליד'],['deal','תהליך מכירה'],['customer','לקוח'],['__none__','ללא קישור']])+
+    (tkFilterActive()?`<button type="button" class="lf-clear" onclick="tkFilterClear()">✕ ניקוי סינון</button>`:'')+
+    `<button type="button" class="lf-save" onclick="tkDefSave()" title="שמירת התצוגה והסינון הנוכחיים כברירת מחדל בדפדפן זה">★ שמור כברירת מחדל</button>`+
+    (tkDefExists()?`<button type="button" class="lf-clear" onclick="tkDefClear()">↺ אפס ברירת מחדל</button>`:'');
+}
+/* 🔴 data-gs="own" — בלעדיו מנוע המיון הגנרי משתלט, gsSort זורק כל שורה
+   עם colspan לתחתית הטבלה, ו-GSMEM משמר את הבחירה לכל הסשן. כלומר לחיצה
+   אחת על כותרת הייתה מפזרת את כל כותרות הקבוצות לתחתית עד רענון דף.
+   🔴 פונקציה ולא const — TK_SORT מוגדרת אחריה, ו-const היה מחשב את
+   הכותרת פעם אחת בעליית המודול: חץ המיון לעולם לא היה מתעדכן. */
+function tkHead(){
+  return '<div class="tbl-wrap"><table class="tbl" data-gs="own"><thead><tr>'
+    + TK_COLS.map(([lbl,cls],i)=>`<th class="${lbl==='#'?'rownum':cls}${cls==='srt'&&TK_SORT[0]===i?' on':''}"${cls==='srt'?` data-ar="${TK_SORT[1]>0?'▲':'▼'}" onclick="tkSortBy(${i})"`:''}>${lbl}</th>`).join('')
+    + '</tr></thead><tbody>';
+}
+function tkRow(t, i){
+  const b = tkBucket(t), dmk = lbDueMark(t.due_at), go = tkGoJs(t);
+  const done = t.status==='הושלם';
+  /* 🔴 הקלט אינו יורש את צבע התא (גיליון ה-UA גובר), ולכן td.lb-ov
+     מגדיר גם `.lb-dt` בתוכו — שני המסלולים, עריך ולא-עריך, מסומנים.
+     זו המחלקה המדודה של 6.103.0. */
+  const dueCell = canIE('task','due_at')
+    ? `<input type="datetime-local" class="inline-edit lb-dt" data-task="${esc(t.id)}" value="${esc(lbDtLocal(t.due_at))}" onclick="event.stopPropagation()" onchange="lbTaskDue(this)">`
+    : (t.due_at ? esc(new Date(t.due_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}))
+                : '<span class="lb-na">·</span>');
+  return `<tr class="${TK_PAINT[b]||''}"${go?` onclick="goCard(()=>${go})"`:''}>
+      <td class="rownum">${i}</td>
+      <td style="max-width:320px"><b class="${done?'tk-done':''}">${esc(t.name||'')}</b></td>
+      <td>${tkLinkCell(t)}</td>
+      <td dir="ltr">${phCell(tkLinkPhone(t))}</td>
+      <td data-sort="${esc(t.due_at||'')}"${dmk.cls?` class="${dmk.cls}"`:''}><span class="lb-duew">${dmk.ico}${dueCell}</span></td>
+      <td>${lbAva(t.owner_id||'')}</td>
+      <td>${ieSel('task',t.id,'status',TASK_STATUSES,t.status,{mdColors:TASK_ST_COLORS,mdK:LB_TK})}</td>
+      <td>${esc(t.category||'')||'<span class="lb-na">·</span>'}</td>
+      <td>${done?'✓':`<button class="chip" onclick="event.stopPropagation();doneTask('${jsq(t.id)}')">בוצע ✓</button>`}</td>
+    </tr>`;
+}
+function tkFlat(list){
+  if(!list.length) return '<div class="empty">לא נמצאו משימות</div>';
+  let body=''; tkOrder(list).slice(0,pgLim('tasks')).forEach((t,i)=>{ body+=tkRow(t,i+1); });
+  return tkHead()+body+'</tbody></table></div>'+pgFoot('tasks',list.length,'משימות');
+}
+function tkTable(list){
+  if(!list.length) return '<div class="empty">אין משימות בסינון הזה</div>';
+  const CS = TK_COLS.length, fold = tkFoldSet(), byB = {};
+  for(const t of list){ const k=tkBucket(t); (byB[k] = byB[k] || []).push(t); }
+  const live = TK_BUCKETS.filter(b=>(byB[b[0]]||[]).length);
+  /* 🔴 קבוצה יחידה אינה מקפלת. אחרי סינון לדלי אחד, קליק על הכותרת היה
+     מרוקן את הטבלה מיד — ונקרא "הסינון לא מצא כלום". */
+  const _only = live.length===1;
+  let body='';
+  for(const b of live){
+    const k=b[0], grp=byB[k], folded = !_only && fold.has(k);
+    body += `<tr class="lb-grp${_only?' lb-grp1':''}" ${_only?'':`onclick="tkFold('${jsq(k)}')"`}><td colspan="${CS}" style="border-inline-start:6px solid ${b[2]}">${_only?'':`<span class="lb-arr">${folded?'◂':'▾'}</span>`}${esc(b[1])} <span class="lb-cnt">${grp.length}</span></td></tr>`;
+    if(folded) continue;
+    const lim = pgLim('tasks:'+k), shown = tkOrder(grp).slice(0,lim);
+    shown.forEach((t,i)=>{ body += tkRow(t,i+1); });
+    if(grp.length>lim) body += `<tr class="lb-grpfoot"><td colspan="${CS}"><div class="count-line2">מציג ${shown.length} מתוך ${grp.length} ${pgBtn(`pgMore('tasks:${k}')`,'הצג עוד')}</div></td></tr>`;
+  }
+  return tkHead()+body+'</tbody></table></div>';
 }
 function renderTasks(){
+  /* ⚠️ tkInitDef **לפני** הצ'יפים: הוא עשוי לשנות את TK_VIEW, ובסדר
+     ההפוך הצ'יפים היו מציירים תצוגה אחת והטבלה מתחתם אחרת — בציור
+     הראשון בלבד, כלומר בדיוק המקרה שקשה לשחזר. */
+  tkInitDef(); tkChips(); renderTkFilters();
   const q=($('#taskSearch').value||'').trim();
-  let list=TASKS.filter(t=>t.status!=='הושלם');
-  if(q) list=list.filter(t=>(t.name||'').includes(q));
-  $('#tasks-list').innerHTML = wideScreen() ? taskTable(list) : capped(list, taskRow, q?'לא נמצאו משימות':'אין משימות פתוחות 🎉');
+  if(q){
+    /* חיפוש חוצה-תצוגות ואינו כפוף לסינון — מי שמקליד שם מצפה למצוא
+       אותו, לא ל"אין תוצאות" בגלל מסנן שנשמר אתמול. הדפוס מ-renderLeads. */
+    const list=(TASKS||[]).filter(t=>(t.name||'').includes(q)||tkLinkName(t).includes(q)||tkLinkPhone(t).includes(q));
+    paintKeep('#tasks-list', wideScreen() ? tkFlat(list) : capped(list, taskRow, 'לא נמצאו משימות'));
+    return;
+  }
+  const list = tkApplyF(tkViewList());
+  paintKeep('#tasks-list', wideScreen() ? tkTable(list)
+    : capped(list, taskRow, TK_VIEW==='mine'?'אין לך משימות פתוחות 🎉':'לא נמצאו משימות'));
 }
 window.doneTask = async (id)=>{
   const { error } = await sb.schema('crm').from('tasks').update({ status:'הושלם', closed_at: new Date().toISOString() }).eq('id', id);
@@ -17237,24 +17534,31 @@ const LB_KEY = {
    לא היה נגיש. יש assert בבנייה שדורש התאמה בין העמודות המסומנות
    'srt' לבין מפתחות LB_KEY, כדי שהפער לא ייווצר שוב בעמודה הבאה. */
 window.lbSortBy = i=>{ LB_SORT = (LB_SORT[0]===i) ? [i,-LB_SORT[1]] : [i,1]; renderLeads(); };
+/* 🔴 6.121.0 — הקומפרטור הוצא ל-ordBy כשנולד הצרכן השני (בורד
+   המשימות). **החילוץ נעשה רק מפני שיש צרכן שני באותה בנייה**, לא
+   "ליתר ביטחון": שתי מימושים לאותה השוואה הם בדיוק המחלקה של
+   FIN מול FINM_BY, ששני מסכים חלקו בה על אותה הזמנה.
+   ⚠️ ההתנהגות זהה בדיוק, כולל **ריקים בסוף בשני הכיוונים** —
+   הכלל שנקבע כאן אחרי שבמיון יורד ליד בלי בעלים קפץ לראש הקבוצה
+   (הדפוס של gsCompare). מיון עולה ויורד לכל עמודה נבדק ב-leadstest,
+   והבדיקות האלה הן הראיה שהחילוץ לא שינה דבר.
+   🔴 הסנטינל שישב כאן פעם (תו יוניקוד גבוה שנכתב כרצף בריחה)
+   הוסר ב-18/08/2026: הוא מיין ריקים לראש במיון יורד, **וגם** נשבר
+   בדרך למסד — שני מופעים ירדו מ-6 תווים לתו אחד, הקובץ יצא קצר
+   ב-10 בייט, וה-md5 הפר-statement עצר את הפריסה. הטיפול בריק הוא
+   מפורש בקומפרטור, ויש assert בבנייה שאוסר רצף בריחה כזה. */
+function ordBy(list, f, dir, fallback){
+  if(!f) return fallback ? list.slice().sort(fallback) : list.slice();
+  const col = new Intl.Collator('he');
+  return list.slice().sort((a,b)=>{
+    const x=String(f(a)), y=String(f(b));
+    if(!x || !y) return x===y ? 0 : (x ? -1 : 1);
+    return dir * col.compare(x,y);
+  });
+}
 function lbOrder(grp, nt){
   const f = LB_KEY[LB_SORT[0]];
-  if(!f) return grp.slice().sort(lbSort(nt));
-  const col = new Intl.Collator('he');
-  /* ריקים תמיד בסוף, **בשני הכיוונים** — מוכרע לפני היפוך הכיוון, אחרת
-     במיון יורד ליד בלי בעלים קופץ לראש הקבוצה (הדפוס של gsCompare).
-     🔴 כאן ישב קודם סנטינל של תו יוניקוד גבוה (U+FFFF), שנכתב כרצף בריחה
-     בקוד המקור. הוא היה שגוי בשתי דרכים: הוא מיין
-     ריקים לראש במיון יורד, **וגם** רצף הבריחה נשבר בדרך למסד: הפריסה
-     המירה אותו לתו הממשי, שני מופעים ירדו מ-6 תווים לתו אחד, הקובץ יצא
-     קצר ב-10 בייט בדיוק, ובדיקת ה-md5 הפר-statement עצרה את הפריסה
-     (18/08/2026 — המלכודת המתועדת בכלל 3 של CLAUDE.md).
-     ⚠️ ולכן יש assert בבנייה שאוסר רצף בריחה כזה במודול הזה — כולל בהערות. */
-  return grp.slice().sort((a,b)=>{
-    const x=String(f(a,nt)), y=String(f(b,nt));
-    if(!x || !y) return x===y ? 0 : (x ? -1 : 1);
-    return LB_SORT[1] * col.compare(x,y);
-  });
+  return ordBy(grp, f ? (l=>f(l,nt)) : null, LB_SORT[1], lbSort(nt));
 }
 /* ═══ בחירה מרובה (6.115.0) ═══════════════════════════════════════
    רומן: "לאפשר סימון של כמות. למשל אני רוצה לסמן 5 לידים ולהחליף
@@ -17382,14 +17686,19 @@ function lbTable(list, grouped){
    החלפת תצוגה או הקלדה בחיפוש מחזירים את הטבלה לקצה הימני — כי כולם
    קוראים ל-renderLeads() שמחליף innerHTML. הדפוס לקוח מ-ieSave (6.24.5),
    שם הוא כבר פותר בדיוק את אותה בעיה עבור עריכה בתא. */
-function lbPaint(html){
-  const host = $('#leads-list');
+/* 6.121.0 — הוצא לנקודה גנרית כשנולד הצרכן השני (בורד המשימות).
+   ⚠️ **החילוץ נעשה רק מפני שיש צרכן שני באותה בנייה** — לא "ליתר
+   ביטחון". lbPaint שורדת כעטיפה בת שורה, ולכן 421 בדיקות הלידים
+   אינן זזות והן הראיה שהחילוץ לא שבר דבר. */
+function paintKeep(sel, html){
+  const host = $(sel); if(!host) return;
   const oldW = host.querySelector('.tbl-wrap');
   const sl = oldW ? oldW.scrollLeft : 0, st = oldW ? oldW.scrollTop : 0;
   host.innerHTML = html;
   const w = host.querySelector('.tbl-wrap');
   if(w && (sl || st)){ w.scrollLeft = sl; w.scrollTop = st; }
 }
+function lbPaint(html){ paintKeep('#leads-list', html); }
 function renderLeads(){
   lbChips(); lbInitDef(); renderLbFilters(); lbSelBar();
   const q = ($('#search').value||'').trim();

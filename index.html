@@ -1844,7 +1844,11 @@ td.lb-today .lb-dt{ background-color:transparent; }
 #deals-list .tbl tbody tr.tk-todr{ background-color:#fff4e5; }
 #deals-list .tbl tbody tr.tk-ovr:hover{ background-color:#fbdcd8; }
 #deals-list .tbl tbody tr.tk-todr:hover{ background-color:#ffe9cc; }
-#dealSheet .ob-card{ margin-top:12px; }
+#dealSheet .ob-card, #custSheet .ob-card{ margin-top:12px; }
+/* שבב ספירת הלידים בטבלה — אותה שפה של tk-kind, בלי כלל חדש. */
+.cu-ln{ font-size:11px; font-weight:800; padding:1px 8px; border-radius:999px;
+        background-color:#e8f3ff; color:#1c4e80; border:1px solid #c7e0f7; cursor:pointer; }
+.cu-ln:hover{ background-color:#d8ebff; }
 #dealSheet .tk-lnk{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 #tasks-list .tbl tbody tr.tk-ovr{ background-color:#fdecea; }
 #tasks-list .tbl tbody tr.tk-todr{ background-color:#fff4e5; }
@@ -2185,7 +2189,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.123.0</div>
+      <div class="ver">גרסה 6.124.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2314,7 +2318,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.123.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.124.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2381,8 +2385,12 @@ tr.lb-on td{ background-color:#eef5fd !important; }
     </section>
 
     <!-- לקוחות -->
+    <!-- לקוחות — תצוגות + סינון (6.124.0). בלי קיבוץ: זה כלי חיפוש
+         ולא תור עבודה, וקיבוץ לפי סטטוס היה קבוצה אחת ענקית. -->
     <section id="tab-customers" class="hidden">
-      <div class="toolbar"><input id="custSearch" placeholder="חיפוש לקוח…"></div>
+      <div class="chips" id="cu-chips"></div>
+      <div class="logi-filters" id="cu-filters"></div>
+      <div class="toolbar"><input id="custSearch" placeholder="חיפוש לפי שם, טלפון, מס' פריוריטי או שם ליד…"></div>
       <div id="customers-list"></div>
     </section>
 
@@ -2907,6 +2915,36 @@ window.lbCxPick = (idsJson)=>{
   mountCard('lbCxModal', 'בחירת לקוח');
 };
 window.lbCxGo = (id)=>{ document.getElementById('lbCxModal').classList.add('hidden'); goCard(()=>openCust(id)); };
+/* ═══ ההצלבה ההפוכה (6.124.0) ════════════════════════════════════
+   `lbCx` עונה "מי הלקוח של הטלפון הזה". כאן השאלה ההפוכה: "אילו לידים
+   נושאים את הטלפון הזה". שתי עובדות שונות — ולכן שני מטמונים ולא אחד —
+   **אבל אותו מנרמל בדיוק** (`lbP9`), וזה מה שמונע מהם לחלוק על מהו
+   "אותו טלפון". חלוקה כזאת היא הסיכון האמיתי, לא שני המטמונים.
+   ⚠️ נמדד: 113 לידים בלבד מחזיקים customer_id לעומת 1,235 מוצלבים —
+      בלוק שנשען על העמודה לבדה מכסה 9% מהמקרים. */
+let LB_CXL = null, LB_CXL_SIG = '';
+function cxLeads(){
+  const sig = String((LEADS||[]).length);
+  if(LB_CXL && LB_CXL_SIG===sig) return LB_CXL;
+  const m = new Map();
+  for(const l of (LEADS||[])){
+    const p9 = lbP9(l.phone); if(!p9) continue;
+    let a = m.get(p9); if(!a){ a=[]; m.set(p9,a); }
+    a.push(l.id);
+  }
+  LB_CXL = m; LB_CXL_SIG = sig; return m;
+}
+/* לידים של לקוח: המפורשים (customer_id) ואז המוצלבים לפי טלפון, בלי כפילות. */
+function custLeads(k){
+  if(!k) return [];
+  const out = [], seen = new Set();
+  for(const l of (LEADS||[])) if(l.customer_id===k.id && !seen.has(l.id)){ seen.add(l.id); out.push(l); }
+  for(const id of (cxLeads().get(lbP9(k.phone))||[])){
+    if(seen.has(id)) continue;
+    const l = (LEADS||[]).find(x=>x.id===id); if(l){ seen.add(id); out.push(l); }
+  }
+  return out;
+}
 function lbMatch(l){
   const e = lbCx().get(lbP9(l.phone)); if(!e) return null;
   /* 6.107.0 — ids נדרש לבורר הכפילות. הוא היה קיים ב-lbCx מ-6.93.0
@@ -8564,7 +8602,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'dealboard-2026-08-21a';
+const BUILD_ID = 'custboard-2026-08-21a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -14345,24 +14383,115 @@ function custRow(c){
     <div class="meta">${esc(c.phone||'')} · ${esc(c.priority_id||'ללא מספר פריוריטי')}</div></div>
     <span class="pill ${st}">${esc(c.status||'—')}</span></div>`;
 }
+/* ═══ בורד הלקוחות (6.124.0) ═════════════════════════════════════
+   ⚠️ **אין קיבוץ, ובכוונה** — ראו את ההסבר בראש סקריפט הבנייה.
+   🔴 **ואין כאן שום מסלול כתיבה ל-core.customers.** הטבלה הזאת נכתבת
+      על ידי `priority-customers-sync`, ורוב עמודותיה הן מראה של
+      פריוריטי: עריכה מהלקוח על שם/טלפון/כתובת/עיר הייתה נראית שהצליחה
+      **ונדרסת בסנכרון הבא**, בדיוק כמו crm.leads.owner_id.
+      ⚠️ ו-`status` חמור אף יותר: הסנכרון אינו כותב אותו כלל **בכוונה**,
+         כי 1,025 לקוחות בסטטוס 'זמני' שאינו קיים בפריוריטי — בורר
+         סטטוס בכרטיס היה הופך אותם ל'פעיל' בשקט, אחד-אחד.
+      ℹ️ חמשת שדות הפלטפורמה (truck_access · elevator · freight_elevator
+         · logistics_notes · region) הם היחידים שהסנכרון לעולם אינו נוגע
+         בהם, ולכן הם היחידים שבטוח יהיה לפתוח לעריכה בעתיד.
+      יש `assert` בבנייה שאוסר כתיבה כלשהי לטבלה. (הועלה בסקירה מקבילה.) */
+const CU_COLS = [
+  ['#','rownum'], ['לקוח','srt'], ["מס' פריוריטי",'srt'], ['טלפון',''],
+  ['עיר / כתובת','srt'], ['לידים','srt'], ['סוג','srt'], ['מחירון','srt'], ['פעיל?','srt']
+];
+let CU_VIEW = 'active', CU_SORT = [null, 1];
+const CU_KEY = {
+  1:k=>k.name||'', 2:k=>k.priority_id||'', 4:k=>k.city||'',
+  5:k=>{ const n=custLeads(k).length; return n?String(n).padStart(6,'0'):''; },
+  6:k=>k.customer_type||'', 7:k=>k.price_group||'', 8:k=>k.status||''
+};
+window.cuSortBy = i=>{ CU_SORT = (CU_SORT[0]===i) ? [i,-CU_SORT[1]] : [i,1]; renderCustomers(); };
+function cuOrder(list){ return ordBy(list, CU_KEY[CU_SORT[0]]||null, CU_SORT[1],
+  (a,b)=>(a.name||'').localeCompare(b.name||'','he')); }
+let CU_F = { status:'', type:'', price:'', city:'', leads:'' };
+const CU_F0 = ()=>({ status:'', type:'', price:'', city:'', leads:'' });
+window.cuSetView = v=>{ CU_VIEW=v; renderCustomers(); };
+window.cuFilter = (k,v)=>{ CU_F[k]=v; renderCustomers(); };
+window.cuFilterClear = ()=>{ CU_F=CU_F0(); renderCustomers(); };
+function cuFilterActive(){ return !!(CU_F.status||CU_F.type||CU_F.price||CU_F.city||CU_F.leads); }
+function cuViewList(){
+  if(CU_VIEW==='leads') return CUSTS.filter(k=>custLeads(k).length);
+  if(CU_VIEW==='active') return CUSTS.filter(k=>k.status==='פעיל');
+  return CUSTS;
+}
+function cuApplyF(list){
+  return list.filter(k=>{
+    if(CU_F.status && (k.status||'')!==CU_F.status) return false;
+    if(CU_F.type   && (k.customer_type||'')!==CU_F.type) return false;
+    if(CU_F.price  && (k.price_group||'')!==CU_F.price) return false;
+    if(CU_F.city   && (k.city||'')!==CU_F.city) return false;
+    if(CU_F.leads==='yes' && !custLeads(k).length) return false;
+    if(CU_F.leads==='no'  &&  custLeads(k).length) return false;
+    return true;
+  });
+}
+function cuChips(){
+  const el=document.getElementById('cu-chips'); if(!el) return;
+  const act=CUSTS.filter(k=>k.status==='פעיל').length;
+  const wl =CUSTS.filter(k=>custLeads(k).length).length;
+  el.innerHTML =
+    `<button class="chip ${CU_VIEW==='active'?'active':''}" onclick="cuSetView('active')">פעילים ${act}</button>`+
+    `<button class="chip ${CU_VIEW==='leads'?'active':''}" onclick="cuSetView('leads')">הגיעו מפנייה ${wl}</button>`+
+    `<button class="chip ${CU_VIEW==='all'?'active':''}" onclick="cuSetView('all')">הכל ${CUSTS.length}</button>`;
+}
+function renderCuFilters(){
+  const box=document.getElementById('cu-filters'); if(!box) return;
+  const opt=(v,lbl,cur)=>`<option value="${esc(v)}" ${String(cur)===String(v)?'selected':''}>${esc(lbl)}</option>`;
+  const sel=(k,ph,pairs)=>`<select class="lf-sel ${CU_F[k]?'lf-on':''}" onchange="cuFilter('${k}',this.value)"><option value="">${ph}</option>${pairs.map(([v,l])=>opt(v,l,CU_F[k])).join('')}</select>`;
+  const uniq=f=>[...new Set(CUSTS.map(f).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),'he'));
+  box.innerHTML =
+    sel('status','סטטוס — הכל',uniq(k=>k.status).map(s=>[s,s]))+
+    sel('type','סוג לקוח — הכל',uniq(k=>k.customer_type).map(s=>[s,s]))+
+    sel('price','מחירון — הכל',uniq(k=>k.price_group).map(s=>[s,s]))+
+    sel('city','עיר — הכל',uniq(k=>k.city).map(s=>[s,s]))+
+    sel('leads','פנייה מקורית — הכל',[['yes','הגיע מפנייה'],['no','ללא פנייה']])+
+    (cuFilterActive()?`<button type="button" class="lf-clear" onclick="cuFilterClear()">✕ ניקוי סינון</button>`:'');
+}
+function cuHead(){
+  return '<div class="tbl-wrap"><table class="tbl" data-gs="own"><thead><tr>'
+    + CU_COLS.map(([lbl,cls],i)=>`<th class="${lbl==='#'?'rownum':cls}${cls==='srt'&&CU_SORT[0]===i?' on':''}"${cls==='srt'?` data-ar="${CU_SORT[1]>0?'▲':'▼'}" onclick="cuSortBy(${i})"`:''}>${lbl}</th>`).join('')
+    + '</tr></thead><tbody>';
+}
 function custTable(list){
   if(!list.length) return '<div class="empty">לא נמצאו לקוחות</div>';
-  const rows=list.slice(0,pgLim('cust')).map((c,i)=>`<tr onclick="openCust('${c.id}')">
+  const rows=cuOrder(list).slice(0,pgLim('cust')).map((c,i)=>{
+    const ld = custLeads(c);
+    /* ⚠️ stopPropagation — אחרת נפתח גם כרטיס הלקוח. השבב מוביל לליד
+       הראשון; כל הרשימה נמצאת בכרטיס עצמו. */
+    const ldCell = ld.length
+      ? `<span class="cu-ln" title="${esc(ld.map(l=>l.full_name||'').filter(Boolean).slice(0,5).join(' · '))}" onclick="event.stopPropagation();goCard(()=>openLead('${jsq(ld[0].id)}'))">${ld.length} ↗</span>`
+      : '<span class="lb-na">·</span>';
+    return `<tr onclick="openCust('${jsq(c.id)}')">
     <td class="rownum">${i+1}</td>
     <td><b>${esc(c.name)}</b></td>
-    <td dir="ltr">${esc(c.priority_id||'—')}</td>
+    <td dir="ltr">${esc(c.priority_id||'')||'<span class="lb-na">·</span>'}</td>
     <td dir="ltr">${phCell(c.phone)}</td>
     <td>${esc(c.city||'')}${c.address?`<div class="note-preview" title="${esc(c.address)}">🏠 ${esc(String(c.address).slice(0,22))}</div>`:''}</td>
-    <td>${esc(c.customer_type||'—')}</td>
-    <td>${esc(c.price_group||'—')}</td>
+    <td data-sort="${ld.length}">${ldCell}</td>
+    <td>${esc(c.customer_type||'')||'<span class="lb-na">·</span>'}</td>
+    <td>${esc(c.price_group||'')||'<span class="lb-na">·</span>'}</td>
     <td><span class="pill ${c.status==='פעיל'?'st-rel':(c.status==='לא פעיל'?'st-no':'st-def')}">${esc(c.status||'—')}</span></td>
-  </tr>`).join('');
-  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="rownum">#</th><th>לקוח</th><th>מס' פריוריטי</th><th>טלפון</th><th>עיר / כתובת</th><th>סוג</th><th>מחירון</th><th>פעיל?</th></tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('cust',list.length,'לקוחות')}`;
+  </tr>`;}).join('');
+  return cuHead()+rows+'</tbody></table></div>'+pgFoot('cust',list.length,'לקוחות');
 }
 function renderCustomers(){
+  cuChips(); renderCuFilters();
   const q=($('#custSearch').value||'').trim();
-  let list=CUSTS; if(q) list=CUSTS.filter(c=>(c.name||'').includes(q)||(c.phone||'').includes(q)||(c.priority_id||'').includes(q));
-  $('#customers-list').innerHTML = wideScreen() ? custTable(list) : capped(list, custRow, 'לא נמצאו לקוחות');
+  if(q){
+    /* חיפוש חוצה-תצוגות — כולל שם הליד שממנו הלקוח הגיע. */
+    const list=CUSTS.filter(c=>(c.name||'').includes(q)||(c.phone||'').includes(q)
+      ||(c.priority_id||'').includes(q)||custLeads(c).some(l=>(l.full_name||'').includes(q)));
+    paintKeep('#customers-list', wideScreen() ? custTable(list) : capped(list, custRow, 'לא נמצאו לקוחות'));
+    return;
+  }
+  const list=cuApplyF(cuViewList());
+  paintKeep('#customers-list', wideScreen() ? custTable(list) : capped(list, custRow, 'לא נמצאו לקוחות'));
 }
 window.openCust = async (id)=>{
   const c = CUSTS.find(x=>x.id===id); if(!c) return;
@@ -14408,7 +14537,70 @@ window.openCust = async (id)=>{
     })()}`;
   mountCard('custModal', ()=>openCust(id));
   runCardHooks('cust', id);
+  cuLeadsBlock(id);
 };
+/* 🔴 דרישת רומן: "אם הליד הפוך ללקוח חשוב שיעבור גם לכרטיס הלקוח".
+   הבלוק נוסף **אחרי** mountCard ובקריאה נפרדת, כדי שלא לגעת ב-innerHTML
+   הענק של openCust — שינוי שם היה מסכן שישה בלוקים קיימים בלי צורך.
+   ⚠️ **קריאה בלבד.** ללקוח יכולים להיות כמה לידים, ו"הוסף עדכון" היה
+      חייב לבחור אחד מהם — החלטה שקטה. הכתיבה נשארת בכרטיס הליד/המשימה/
+      העסקה, שם היעד חד-משמעי, וכל עדכון מוצג כאן עם שם הליד שלו. */
+function cuLeadsBlock(id){
+  const sheet = document.getElementById('custSheet'); if(!sheet) return;
+  const k = (CUSTS||[]).find(x=>x.id===id); if(!k) return;
+  const ld = custLeads(k);
+  const box = document.createElement('section');
+  box.className = 'ob-card'; box.id = 'cu-leads';
+  const tsk = (TASKS||[]).filter(t=>t.status!=='הושלם' &&
+      ((t.linked_type==='customer' && t.linked_id===id) ||
+       (t.linked_type==='lead' && ld.some(l=>l.id===t.linked_id))));
+  box.innerHTML = `<h2 class="sec">לידים ופניות (${ld.length})</h2>`
+    + (ld.length ? ld.map(l=>{
+        /* ⚠️ המפורש והמוצלב נראים שונה: 113 לידים בלבד מחזיקים
+           customer_id, והשאר הוצלבו לפי טלפון — הצגתם כזהים הייתה
+           מציגה השערה כעובדה. */
+        const how = l.customer_id===id ? '' : ' <span class="note">(הוצלב לפי טלפון)</span>';
+        return `<div class="row" style="cursor:pointer" onclick="goCard(()=>openLead('${jsq(l.id)}'))">`
+          + `<span class="k">${esc(l.full_name||'')}${how}</span>`
+          + `<span class="v">${mdPill(l.status||'—',LEAD_ST_COLORS,LB_TK)} ${esc(l.phone||'')}</span></div>`;
+      }).join('') : '<div class="note">הלקוח לא נוצר מפנייה שמוכרת למערכת.</div>')
+    + (tsk.length ? `<h2 class="sec">משימות פתוחות (${tsk.length})</h2>` + tsk.map(t=>
+        `<div class="row" style="cursor:pointer" onclick="goCard(()=>openTask('${jsq(t.id)}'))">`
+        + `<span class="k">${t.due_at?new Date(t.due_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'}</span>`
+        + `<span class="v">${esc(t.name||'')} ${mdPill(t.status,TASK_ST_COLORS)}</span></div>`).join('') : '')
+    + (ld.length ? `<h2 class="sec">עדכונים מהפניות</h2>`
+        + `<div class="note">העדכונים נרשמים על הפנייה. להוספה — מכרטיס הליד, המשימה או תהליך המכירה.</div>`
+        + `<div class="lbu-list" id="cu-updlist"><div class="note">טוען…</div></div>` : '');
+  /* 🔴 **לפני** סקשן האתרים ולא אחריו. `sitestest` אוכפת שסקשן
+     האתרים הוא האחרון בכרטיס, והנימוק כתוב שם: עוטף מאוחר מזריק שורת
+     "מחירון" אחרי ה-.row הראשון. הבלוק הזה הוא היסטוריית CRM ומקומו
+     עם שאר בלוקי ה-CRM; האתרים הם נתוני ייחוס מפריוריטי ונשארים בסוף.
+     ⚠️ ל-4,498 מתוך 4,514 הלקוחות אין אף אתר, ואז אין לפני מה להוסיף
+        והבלוק נופל לסוף — ולכן שני המסלולים, ולא הנחה שהסקשן קיים. */
+  const _sh = [...sheet.querySelectorAll('h2.sec')].find(e=>e.textContent.indexOf('אתרי הלקוח')>=0);
+  if(_sh) sheet.insertBefore(box, _sh); else sheet.appendChild(box);
+  if(ld.length) cuUpdLoad(ld);
+}
+/* שאילתה אחת ל**כל** הלידים של הלקוח. `.in` ולא לולאה: לקוח עם ארבעה
+   לידים היה מייצר ארבע נסיעות רשת בפתיחת כרטיס. */
+async function cuUpdLoad(ld){
+  const box = document.getElementById('cu-updlist'); if(!box) return;
+  const byId = {}; ld.forEach(l=>{ byId[l.id]=l; });
+  const { data, error } = await sb.schema('crm').from('activities')
+    .select('id,at,body,actor_id,linked_id').eq('linked_type','lead')
+    .in('linked_id', ld.map(l=>l.id)).eq('kind','עדכון')
+    .order('at',{ascending:false}).limit(200);
+  if(error){ box.innerHTML='<div class="note">טעינת העדכונים נכשלה.</div>'; return; }
+  if(!data || !data.length){ box.innerHTML='<div class="note">אין עדכונים עדיין.</div>'; return; }
+  box.innerHTML = data.map(a=>{
+    const who = (a.actor_id && LOWN_BY[a.actor_id]) ? LOWN_BY[a.actor_id].name : 'משתמש שאינו ברשימה';
+    const when = new Date(a.at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+    /* מאיזה ליד — כשיש כמה, בלי זה אי אפשר לדעת על מה העדכון. */
+    const src = (ld.length>1 && byId[a.linked_id]) ? `<span class="lbu-who">${esc(byId[a.linked_id].full_name||'')}</span>` : '';
+    return `<div class="lbu-row"><span class="lbu-who">${esc(who)}</span>${src}`
+      + `<span class="lbu-when">${esc(when)}</span><span class="lbu-body">${esc(a.body||'')}</span></div>`;
+  }).join('');
+}
 $('#custSearch').addEventListener('input', renderCustomers);
 $('#taskSearch').addEventListener('input', renderTasks);
 

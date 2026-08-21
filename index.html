@@ -1837,6 +1837,15 @@ td.lb-today .lb-dt{ background-color:transparent; }
    🔴 **רק שני דליים נצבעים, ובכוונה.** 96.5% מהמשימות הפתוחות באיחור
       (1,122 מתוך 1,163, נמדד 21/08/2026). צביעת כל איחור הייתה הופכת
       את הרקע לרעש. `td.lb-ov` (טקסט אדום) כן חל על כולם — מדרגה. */
+/* ---- בורד העסקאות (6.123.0) ----
+   אותה מלכודת ספציפיות, אותו פתרון: הזברה היא (0,2,2) והעיגון
+   ב-#deals-list מעלה ל-(1,2,2). וריאנט ריחוף חובה. */
+#deals-list .tbl tbody tr.tk-ovr{ background-color:#fdecea; }
+#deals-list .tbl tbody tr.tk-todr{ background-color:#fff4e5; }
+#deals-list .tbl tbody tr.tk-ovr:hover{ background-color:#fbdcd8; }
+#deals-list .tbl tbody tr.tk-todr:hover{ background-color:#ffe9cc; }
+#dealSheet .ob-card{ margin-top:12px; }
+#dealSheet .tk-lnk{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 #tasks-list .tbl tbody tr.tk-ovr{ background-color:#fdecea; }
 #tasks-list .tbl tbody tr.tk-todr{ background-color:#fff4e5; }
 #tasks-list .tbl tbody tr.tk-ovr:hover{ background-color:#fbdcd8; }
@@ -2176,7 +2185,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.122.0</div>
+      <div class="ver">גרסה 6.123.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2305,7 +2314,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.122.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.123.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2344,9 +2353,11 @@ tr.lb-on td{ background-color:#eef5fd !important; }
     </section>
 
     <!-- עסקאות -->
+    <!-- תהליכי מכירה — בורד מלא (6.123.0): קיבוץ לפי שלב + סינון -->
     <section id="tab-deals" class="hidden">
       <div class="chips" id="deal-chips"></div>
-      <div class="toolbar"><input id="dealSearch" placeholder="חיפוש עסקה לפי שם או מס' הצעה…"></div>
+      <div class="logi-filters" id="dl-filters"></div>
+      <div class="toolbar"><input id="dealSearch" placeholder="חיפוש לפי שם עסקה, לקוח, פנייה, טלפון או מס' הצעה…"></div>
       <div id="deals-list"></div>
     </section>
 
@@ -8553,7 +8564,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'taskcard-2026-08-21a';
+const BUILD_ID = 'dealboard-2026-08-21a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -13537,7 +13548,7 @@ async function loadLeads(){
     sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at,position,address,notes,utm_campaign,utm_source,utm_medium,utm_term,send_whatsapp_catalog,owner_id,updated_at').order('created_at',{ascending:false}).limit(10000),
     sb.schema('core').from('customers').select('id,name,phone,email,priority_id,status,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes').order('created_at',{ascending:false}).limit(10000),
     sb.schema('crm').from('tasks').select('id,name,status,value_tag,category,due_at,closed_at,linked_type,linked_id,owner_id').order('due_at',{ascending:true}).limit(10000),
-    sb.schema('crm').from('deals').select('id,name,stage,amount,quote_status,irrelevant_reason,priority_quote_id,customer_id,contact_id,send_channel,sign_link,approved_at,closed_at,created_at').order('created_at',{ascending:false}).limit(10000),
+    sb.schema('crm').from('deals').select('id,name,stage,amount,quote_status,irrelevant_reason,priority_quote_id,customer_id,contact_id,lead_id,send_channel,sign_link,approved_at,closed_at,created_at').order('created_at',{ascending:false}).limit(10000),
     sb.schema('crm').from('meetings').select('id,subject,status,meet_date,start_time,end_time,meet_type,location,teams_link,linked_type,linked_id,source,organizer_name,attendees,all_day,web_link').order('meet_date',{ascending:false}).limit(10000),
     sb.schema('core').from('contacts').select('id,full_name,phone,office_phone,email,role,customer_id').order('full_name',{ascending:true}).limit(10000),
     sb.schema('crm').from('payments').select('id,customer_id,deal_id,status,due_date,total_amount,paid_amount,notes').order('due_date',{ascending:false}).limit(10000),
@@ -13844,12 +13855,15 @@ const TK_BUCKETS = [
 /* 🔴 נשען על lbDueMark ואינו מגדיר "באיחור" מחדש. הדליים הם **חלוקה
    של טווח האיחור**, לא הגדרה שנייה שלו — אחרת "היום" היה מתפצל לשתי
    הגדרות בשני מסכים, וזו בדיוק המחלקה של lbCustId/lbMatch. */
-function tkBucket(t){
-  if(!t || !t.due_at) return 'none';
-  const m = lbDueMark(t.due_at);
+/* 🟢 6.123.0 — מקבל **מועד** ולא משימה, מרגע שבורד העסקאות צריך לדרג
+   את "המשימה הקרובה של העסקה" ואין לו אובייקט משימה ביד. אותה
+   הגדרה, שני צרכנים — ולא שתי הגדרות ל"באיחור". */
+function tkBucket(iso){
+  if(!iso) return 'none';
+  const m = lbDueMark(iso);
   if(m.rowCls==='lb-todr') return 'today';
   if(m.rowCls!=='lb-ovr')  return 'soon';
-  const days = (Date.now() - new Date(t.due_at).getTime()) / 864e5;
+  const days = (Date.now() - new Date(iso).getTime()) / 864e5;
   return days<=7 ? 'ovr7' : (days<=30 ? 'ovr30' : 'old');
 }
 const TK_PAINT = { today:'tk-todr', ovr7:'tk-ovr' };
@@ -14106,7 +14120,7 @@ function tkHead(){
     + '</tr></thead><tbody>';
 }
 function tkRow(t, i){
-  const b = tkBucket(t), dmk = lbDueMark(t.due_at);
+  const b = tkBucket(t.due_at), dmk = lbDueMark(t.due_at);
   const done = t.status==='הושלם';
   /* 🔴 הקלט אינו יורש את צבע התא (גיליון ה-UA גובר), ולכן td.lb-ov
      מגדיר גם `.lb-dt` בתוכו — שני המסלולים, עריך ולא-עריך, מסומנים.
@@ -14139,7 +14153,7 @@ function tkFlat(list){
 function tkTable(list){
   if(!list.length) return '<div class="empty">אין משימות בסינון הזה</div>';
   const CS = TK_COLS.length + (TK_BULK?1:0), fold = tkFoldSet(), byB = {};
-  for(const t of list){ const k=tkBucket(t); (byB[k] = byB[k] || []).push(t); }
+  for(const t of list){ const k=tkBucket(t.due_at); (byB[k] = byB[k] || []).push(t); }
   const live = TK_BUCKETS.filter(b=>(byB[b[0]]||[]).length);
   /* 🔴 קבוצה יחידה אינה מקפלת. אחרי סינון לדלי אחד, קליק על הכותרת היה
      מרוקן את הטבלה מיד — ונקרא "הסינון לא מצא כלום". */
@@ -17248,19 +17262,105 @@ const stageClass = s => s==='הושלם' ? 'st-rel' : (s==='לא רלוונטי'
 /* צבעי שלבי עסקה — כמו במאנדיי (הערה 18) */
 const DEAL_ST_COLORS = {'תהליך חדש':'#ffcb00','נשלחה הצעת מחיר ראשונית':'#cab641','נשלחה הצעת מחיר לחתימה':'#579bfc','תואמה פגישת המשך':'#66ccff','אושר ע"י לקוח ממתין לתשלום':'#4eccc6','הושלם':'#037f4c','לא רלוונטי':'#bb3354'};
 
+/* ═══ בורד תהליכי המכירה (6.123.0) ══════════════════════════════
+   הצ'יפים הפכו ל**תצוגות** (פעילות / הכל), והצ'יפ-לכל-שלב ירד — כי
+   הקיבוץ מציג עכשיו את **כל** השלבים בבת אחת, כל אחד עם הספירה
+   והסכום שלו בכותרת, וניתן לקיפול. זו הרחבה ולא הסרה: הכסף שהיה
+   בצ'יפ אחד בכל פעם נמצא עכשיו בכל הכותרות במקביל. */
+const dlSum = list => list.reduce((a,d)=>a+Number(d.amount||0),0);
 function dealChips(){
-  const sum = list => list.reduce((a,d)=>a+Number(d.amount||0),0);
+  const el=document.getElementById('deal-chips'); if(!el) return;
   const act = DEALS.filter(d=>ACTIVE_STAGES.includes(d.stage));
-  let html = `<button class="chip ${DEAL_FILTER==='active'?'active':''}" onclick="setDealFilter('active')">פעילות ${act.length} <small>· ${shekel(sum(act))}</small></button>`;
-  for(const s of STAGES){
-    const list = DEALS.filter(d=>d.stage===s);
-    if(!list.length) continue;
-    html += `<button class="chip ${DEAL_FILTER===s?'active':''}" onclick="setDealFilter('${s.replace(/"/g,'&quot;')}')">${s} ${list.length} <small>· ${shekel(sum(list))}</small></button>`;
-  }
-  html += `<button class="chip ${DEAL_FILTER==='all'?'active':''}" onclick="setDealFilter('all')">הכל ${DEALS.length}</button>`;
-  $('#deal-chips').innerHTML = html;
+  el.innerHTML =
+    `<button class="chip ${DEAL_FILTER==='active'?'active':''}" onclick="setDealFilter('active')">פעילות ${act.length} <small>· ${shekel(dlSum(act))}</small></button>`+
+    `<button class="chip ${DEAL_FILTER==='all'?'active':''}" onclick="setDealFilter('all')">הכל ${DEALS.length} <small>· ${shekel(dlSum(DEALS))}</small></button>`;
 }
 window.setDealFilter = f => { DEAL_FILTER = f; renderDeals(); };
+const DL_COLS = [
+  ['#','rownum'], ['עסקה','srt'], ['לקוח','srt'], ['פנייה מקורית','srt'], ['טלפון',''],
+  ['ת.משימה הבאה','srt'], ['סכום','srt'], ['שלב','srt'], ['תת-סטטוס','']
+];
+/* תת-הסטטוס לפי שלב — בדיוק המבנה של lbSubCol/lbSubOpts בלידים.
+   ⚠️ 57 עסקאות מחזיקות irrelevant_reason שאינו ברשימה, ולכן כל בורר
+      חייב לשמר ערך קיים שאינו מוכר (selHtml עושה זאת דרך Set). */
+function dlSubCol(st){ return st==='לא רלוונטי' ? 'irrelevant_reason'
+  : (['נשלחה הצעת מחיר ראשונית','נשלחה הצעת מחיר לחתימה','תואמה פגישת המשך'].includes(st) ? 'quote_status' : null); }
+function dlSubOpts(st){ return st==='לא רלוונטי' ? DEAL_IRRELEVANT
+  : (dlSubCol(st)==='quote_status' ? QUOTE_STATUSES : null); }
+function dlLead(d){ return (d && d.lead_id) ? ((LEADS||[]).find(x=>x.id===d.lead_id)||null) : null; }
+function dlCust(d){ const x=ctxOf('deal', d.id); return x.cust; }
+function dlLeadName(d){ const l=dlLead(d); return l?(l.full_name||''):''; }
+function dlCustName(d){ const k=dlCust(d); return k?(k.name||''):''; }
+function dlPhone(d){ const l=dlLead(d), k=dlCust(d); return (l&&l.phone)||(k&&k.phone)||''; }
+let DL_SORT = [null, 1];
+const DL_KEY = {
+  1:d=>d.name||'', 2:d=>dlCustName(d), 3:d=>dlLeadName(d),
+  6:d=>(d.amount==null?'':String(Math.round(Number(d.amount)||0)).padStart(12,'0')),
+  7:d=>String(STAGES.indexOf(d.stage))
+};
+window.dlSortBy = i=>{ DL_SORT = (DL_SORT[0]===i) ? [i,-DL_SORT[1]] : [i,1]; renderDeals(); };
+function dlOrder(grp, nt){
+  const i = DL_SORT[0];
+  /* עמודה 5 היא "ת.משימה הבאה" ותלויה במפה — נקשרת כאן ולא ב-DL_KEY,
+     כדי ש-DL_KEY יישאר חוזה של פונקציה בת ארגומנט אחד (ordBy). */
+  const f = (i===5) ? (d=>(nt&&nt[d.id])||'') : DL_KEY[i];
+  return ordBy(grp, f || null, DL_SORT[1],
+    (a,b)=>(nt[b.id]?1:0)-(nt[a.id]?1:0) || (a.created_at||'').localeCompare(b.created_at||'')*-1);
+}
+const DL_DEF_KEY = 'iron_deals_default_v1';
+let DL_F = { stage:[], sub:'', link:'' }, DL_DEF_INIT = false;
+const DL_F0 = ()=>({ stage:[], sub:'', link:'' });
+function dlDefLoad(){ try{ const r=JSON.parse(localStorage.getItem(DL_DEF_KEY)||'null'); return (r&&typeof r==='object')?r:null; }catch(_e){ return null; } }
+function dlDefExists(){ return !!dlDefLoad(); }
+window.dlDefSave = ()=>{ try{ localStorage.setItem(DL_DEF_KEY, JSON.stringify({v:DEAL_FILTER,f:DL_F})); toast('התצוגה נשמרה כברירת מחדל ✓'); renderDlFilters(); }catch(_e){ toast('הדפדפן חוסם שמירת ברירת מחדל'); } };
+window.dlDefClear = ()=>{ try{ localStorage.removeItem(DL_DEF_KEY); }catch(_e){} toast('ברירת המחדל נמחקה'); renderDlFilters(); };
+function dlInitDef(){
+  if(DL_DEF_INIT) return; DL_DEF_INIT = true;
+  const d = dlDefLoad(); if(!d) return;
+  if(d.v && ['active','all'].includes(d.v)) DEAL_FILTER = d.v;
+  if(d.f && typeof d.f==='object'){
+    DL_F = Object.assign(DL_F0(), d.f);
+    if(!Array.isArray(DL_F.stage)) DL_F.stage = DL_F.stage ? [DL_F.stage] : [];
+    /* ⚠️ ערך שאינו קיים עוד יורד — אחרת הוא מסנן החוצה כל שורה בלי
+       שאף תיבה תיראה מסומנת (הלקח מ-logiInit). */
+    DL_F.stage = DL_F.stage.filter(s=>STAGES.includes(s));
+    if(!['','open','none'].includes(DL_F.link)) DL_F.link='';
+  }
+}
+function dlApplyF(list){
+  const _st = (DL_F.stage||[]);
+  return list.filter(d=>{
+    if(_st.length && !_st.includes(d.stage)) return false;
+    if(DL_F.sub && (d.quote_status||d.irrelevant_reason||'')!==DL_F.sub) return false;
+    if(DL_F.link==='open' && !d.lead_id) return false;
+    if(DL_F.link==='none' &&  d.lead_id) return false;
+    return true;
+  });
+}
+window.dlFilter = (k,v)=>{ DL_F[k]=v; renderDeals(); };
+window.dlStageToggle = (st,on)=>{
+  const set=new Set(DL_F.stage||[]); on?set.add(st):set.delete(st); DL_F.stage=[...set];
+  renderDeals();
+  const el=document.querySelector('#dl-filters .lf-multi'); if(el) el.open=true;
+};
+window.dlFilterClear = ()=>{ DL_F=DL_F0(); renderDeals(); };
+function dlFilterActive(){ return !!((DL_F.stage||[]).length||DL_F.sub||DL_F.link); }
+function renderDlFilters(){
+  const box = document.getElementById('dl-filters'); if(!box) return;
+  const opt=(v,lbl,cur)=>`<option value="${esc(v)}" ${String(cur)===String(v)?'selected':''}>${esc(lbl)}</option>`;
+  const sel=(k,ph,pairs)=>`<select class="lf-sel ${DL_F[k]?'lf-on':''}" onchange="dlFilter('${k}',this.value)"><option value="">${ph}</option>${pairs.map(([v,l])=>opt(v,l,DL_F[k])).join('')}</select>`;
+  const stSel=(DL_F.stage||[]);
+  const stItems=STAGES.map(st=>`<label class="lf-opt"><input type="checkbox" ${stSel.includes(st)?'checked':''} onchange="dlStageToggle('${jsq(st)}',this.checked)">${mdPill(st,DEAL_ST_COLORS,LB_TK)}</label>`).join('');
+  const subs=[...new Set(QUOTE_STATUSES.concat(DEAL_IRRELEVANT)
+    .concat(DEALS.map(d=>d.quote_status||d.irrelevant_reason).filter(Boolean)))];
+  box.innerHTML =
+    `<details class="lf-multi ${stSel.length?'lf-on':''}"><summary>${stSel.length?`שלב (${stSel.length})`:'שלב — הכל'}</summary><div class="lf-menu">${stItems}</div></details>`+
+    sel('sub','תת-סטטוס — הכל',subs.map(s=>[s,s]))+
+    sel('link','פנייה מקורית — הכל',[['open','מקושרת לליד'],['none','ללא ליד']])+
+    (dlFilterActive()?`<button type="button" class="lf-clear" onclick="dlFilterClear()">✕ ניקוי סינון</button>`:'')+
+    `<button type="button" class="lf-save" onclick="dlDefSave()">★ שמור כברירת מחדל</button>`+
+    (dlDefExists()?`<button type="button" class="lf-clear" onclick="dlDefClear()">↺ אפס ברירת מחדל</button>`:'');
+}
 function dealRow(d){
   const cust = d.customer_id ? CUSTS.find(c=>c.id===d.customer_id) : null;
   return `<div class="lead" onclick="openDeal('${d.id}')">
@@ -17268,94 +17368,208 @@ function dealRow(d){
     <div class="meta">${esc(cust?cust.name:'ללא לקוח')}${d.priority_quote_id?' · '+esc(d.priority_quote_id):''}${d.amount?' · '+shekel(d.amount):''}${d.quote_status?' · '+esc(d.quote_status):''}${d.irrelevant_reason?' · '+esc(d.irrelevant_reason):''}</div></div>
     ${mdPill(d.stage,DEAL_ST_COLORS)}</div>`;
 }
-function dealTable(list){
-  if(!list.length) return '<div class="empty">אין עסקאות בסינון הזה</div>';
-  const rows=list.slice(0,pgLim('deals')).map((d,i)=>{
-    const cust = d.customer_id ? CUSTS.find(c=>c.id===d.customer_id) : null;
-    return `<tr onclick="openDeal('${d.id}')">
-      <td class="rownum">${i+1}</td>
-      <td style="max-width:280px"><b>${esc(d.name)}</b></td>
-      <td>${cust?esc(cust.name):'—'}</td>
-      <td dir="ltr">${esc(d.priority_quote_id||'—')}</td>
-      <td>${d.amount?shekel(d.amount):'—'}</td>
-      <td>${ieSel('deal',d.id,'stage',STAGES,d.stage,{mdColors:DEAL_ST_COLORS})}</td>
-      <td>${esc(d.quote_status||d.irrelevant_reason||'—')}</td>
-    </tr>`;}).join('');
-  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="rownum">#</th><th>עסקה</th><th>לקוח</th><th>הצעה</th><th>סכום</th><th>שלב</th><th>תת-סטטוס</th></tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('deals',list.length,'עסקאות')}`;
+/* 🔴 data-gs="own" — בלעדיו gsSort זורק את שורות הקבוצה לתחתית. */
+function dlHead(){
+  return '<div class="tbl-wrap"><table class="tbl" data-gs="own"><thead><tr>'
+    + DL_COLS.map(([lbl,cls],i)=>`<th class="${lbl==='#'?'rownum':cls}${cls==='srt'&&DL_SORT[0]===i?' on':''}"${cls==='srt'?` data-ar="${DL_SORT[1]>0?'▲':'▼'}" onclick="dlSortBy(${i})"`:''}>${lbl}</th>`).join('')
+    + '</tr></thead><tbody>';
 }
+function dlRow(d, i, nt){
+  const t = nt[d.id], dmk = lbDueMark(t), l = dlLead(d), k = dlCust(d);
+  const sub = d.quote_status || d.irrelevant_reason || '';
+  const leadCell = l
+    ? `<span class="tk-kind tk-k-lead">ליד</span><span class="tk-link" onclick="event.stopPropagation();goCard(()=>openLead('${jsq(l.id)}'))">${esc(l.full_name||'')} ↗</span>`
+    : '<span class="lb-na">·</span>';
+  const custCell = k
+    ? `<span class="tk-link" onclick="event.stopPropagation();goCard(()=>openCust('${jsq(k.id)}'))">${esc(k.name||'')} ↗</span>`
+    : '<span class="lb-na">·</span>';
+  return `<tr class="${TK_PAINT[tkBucket(t)]||''}" onclick="openDeal('${jsq(d.id)}')">
+      <td class="rownum">${i}</td>
+      <td style="max-width:260px"><b>${esc(d.name||'')}</b>${d.priority_quote_id?`<div class="note-preview" dir="ltr">${esc(d.priority_quote_id)}</div>`:''}</td>
+      <td>${custCell}</td>
+      <td>${leadCell}</td>
+      <td dir="ltr">${phCell(dlPhone(d))}</td>
+      <td data-sort="${esc(t||'')}"${dmk.cls?` class="${dmk.cls}"`:''}><span class="lb-duew">${dmk.ico}${t?esc(new Date(t).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})):'<span class="lb-na">·</span>'}</span></td>
+      <td data-sort="${esc(d.amount==null?'':String(Math.round(Number(d.amount)||0)))}">${d.amount!=null?shekel(d.amount):'<span class="lb-na">·</span>'}</td>
+      <td>${ieSel('deal',d.id,'stage',STAGES,d.stage,{mdColors:DEAL_ST_COLORS,mdK:LB_TK})}</td>
+      <td>${esc(sub)||'<span class="lb-na">·</span>'}</td>
+    </tr>`;
+}
+function dlTable(list, grouped){
+  if(!list.length) return '<div class="empty">אין עסקאות בסינון הזה</div>';
+  const nt = nextTaskBy('deal').due;
+  const CS = DL_COLS.length;
+  let body='';
+  if(!grouped){
+    dlOrder(list,nt).slice(0,pgLim('deals')).forEach((d,i)=>{ body+=dlRow(d,i+1,nt); });
+    return dlHead()+body+'</tbody></table></div>'+pgFoot('deals',list.length,'עסקאות');
+  }
+  const live = STAGES.filter(s=>list.some(d=>d.stage===s));
+  /* עסקאות בשלב שאינו ברשימה (נמדד: שורה אחת — 'הצעה חזרה עם סכום')
+     אינן נעלמות: הן מקובצות תחת כותרת משלהן ולא נופלות בין הכיסאות. */
+  const odd = [...new Set(list.map(d=>d.stage).filter(s=>s && !STAGES.includes(s)))];
+  const _only = (live.length + odd.length)===1;
+  for(const st of live.concat(odd)){
+    const grp = list.filter(d=>d.stage===st); if(!grp.length) continue;
+    const cc = DEAL_ST_COLORS[st] || '#94a3b8';
+    const folded = !_only && DL_FOLD.has(st);
+    body += `<tr class="lb-grp${_only?' lb-grp1':''}" ${_only?'':`onclick="dlFold('${jsq(st)}')"`}><td colspan="${CS}" style="border-inline-start:6px solid ${cc}">${_only?'':`<span class="lb-arr">${folded?'◂':'▾'}</span>`}${esc(st)} <span class="lb-cnt">${grp.length}</span> <span class="lb-cnt">${esc(shekel(dlSum(grp)))}</span></td></tr>`;
+    if(folded) continue;
+    const lim = pgLim('deals:'+st), shown = dlOrder(grp,nt).slice(0,lim);
+    shown.forEach((d,i)=>{ body += dlRow(d,i+1,nt); });
+    if(grp.length>lim) body += `<tr class="lb-grpfoot"><td colspan="${CS}"><div class="count-line2">מציג ${shown.length} מתוך ${grp.length} ${pgBtn(`pgMore('deals:${st}')`,'הצג עוד')}</div></td></tr>`;
+  }
+  return dlHead()+body+'</tbody></table></div>';
+}
+const DL_FOLD = new Set();
+window.dlFold = st=>{ if(DL_FOLD.has(st)) DL_FOLD.delete(st); else DL_FOLD.add(st); renderDeals(); };
 function renderDeals(){
-  dealChips();
+  dlInitDef(); dealChips(); renderDlFilters();
   const q = ($('#dealSearch').value||'').trim();
-  let list = DEAL_FILTER==='all' ? DEALS : (DEAL_FILTER==='active' ? DEALS.filter(d=>ACTIVE_STAGES.includes(d.stage)) : DEALS.filter(d=>d.stage===DEAL_FILTER));
-  if(q) list = list.filter(d=>(d.name||'').includes(q)||(d.priority_quote_id||'').includes(q));
-  $('#deals-list').innerHTML = wideScreen() ? dealTable(list) : capped(list, dealRow, 'אין עסקאות בסינון הזה');
+  if(q){
+    /* חיפוש חוצה-תצוגות ואינו כפוף לסינון — הדפוס מ-renderLeads. */
+    const list = DEALS.filter(d=>(d.name||'').includes(q)||(d.priority_quote_id||'').includes(q)
+      ||dlCustName(d).includes(q)||dlLeadName(d).includes(q)||dlPhone(d).includes(q));
+    paintKeep('#deals-list', wideScreen() ? dlTable(list,false) : capped(list, dealRow, 'לא נמצאו עסקאות'));
+    return;
+  }
+  const base = DEAL_FILTER==='all' ? DEALS : DEALS.filter(d=>ACTIVE_STAGES.includes(d.stage));
+  const list = dlApplyF(base);
+  paintKeep('#deals-list', wideScreen() ? dlTable(list,true) : capped(list, dealRow, 'אין עסקאות בסינון הזה'));
 }
 $('#dealSearch').addEventListener('input', renderDeals);
 const ynTxt = v => v===true?'כן':(v===false?'לא':'—');
+/* ═══ כרטיס תהליך המכירה (6.123.0) ═══════════════════════════════
+   סדר הסקשנים לפי סקיל card-layout. 🔴 **ואין כאן שדות עריכה חופשיים
+   בכוונה, לא בפשרה:** נמדד 21/08/2026 ש-`quote_status` ריק ב-1,909
+   מתוך 1,940 העסקאות ו-`irrelevant_reason` ריק ב-1,491 — כלומר כל
+   `<select>` בלי allowEmpty היה נופל לאפשרות הראשונה וכותב ערך שאיש
+   לא בחר, בדיוק כמו `call_type='תקלה'` ל-31 קריאות שירות (15/08).
+   ⇒ השלב ותת-הסטטוס נקבעים ב**רצועה** (כפתורי toggle, כתיבת עמודה
+     אחת), וכל השאר קריאה בלבד. כך נשמרת התכונה של saveStage הישן —
+     "שולח עמודה אחת ולכן חסין" — במקום להחליף אותה בכרטיס מלא שאין
+     לו מפת שדות, מפת הרשאות ולא חוזה snapshot.
+   ℹ️ העלה סשן מקביל בסקירה; המדידה היא שהכריעה את הצורה. */
 window.openDeal = async (id)=>{
   const d = DEALS.find(x=>x.id===id); if(!d) return;
-  const cust = d.customer_id ? CUSTS.find(c=>c.id===d.customer_id) : null;
+  const x = ctxOf('deal', id);
+  const cust = x.cust, lead = x.lead;
   let contact = null;
-  if(d.contact_id){ const r = await sb.schema('core').from('contacts').select('full_name,phone,email').eq('id',d.contact_id).maybeSingle(); contact = r.data; }
+  if(d.contact_id){ const r = await sb.schema('crm').from('contacts').select('full_name,phone,email').eq('id',d.contact_id).maybeSingle(); contact = r.data; }
   const dt = v => v ? new Date(v).toLocaleDateString('he-IL') : '—';
+  const phone = (lead && lead.phone) || (cust && cust.phone) || '';
+  /* משימות ופגישות של **העסקה ושל הליד** יחד — רומן: המשימה מלווה את
+     איש המכירות "כל הדרך עד לסגירת העסקה", ולכן פיצולן לשני מקומות
+     היה מסתיר בדיוק את מה שהוא ביקש לראות. */
+  const kin = (o)=> (o.linked_type==='deal' && o.linked_id===id) || (lead && o.linked_type==='lead' && o.linked_id===lead.id);
+  const tsk = (TASKS||[]).filter(t=>kin(t) && t.status!=='הושלם').sort((a,b)=>(a.due_at||'').localeCompare(b.due_at||''));
+  const mts = (MEETS||[]).filter(m=>kin(m) && m.status!=='בוטלה').sort((a,b)=>(b.meet_date||'').localeCompare(a.meet_date||''));
+  const u = lead ? {type:'lead', id:lead.id} : null;
   $('#dealSheet').innerHTML = `
-    <h3>${esc(d.name)}</h3>
-    <div class="row"><span class="k">שלב</span><span class="v">${mdPill(d.stage,DEAL_ST_COLORS)}</span></div>
-    <div class="row"><span class="k">סכום (לפני מע"מ)</span><span class="v">${d.amount?shekel(d.amount):'—'}</span></div>
-    <div class="row"><span class="k">מס' הצעה בפריוריטי</span><span class="v">${esc(d.priority_quote_id||'—')}</span></div>
-    ${d.send_channel?`<div class="row"><span class="k">ערוץ שליחה</span><span class="v">${esc(d.send_channel)}</span></div>`:''}
-    <div class="row"><span class="k">תאריך אישור</span><span class="v">${dt(d.approved_at)}</span></div>
-    <div class="row"><span class="k">תאריך סגירה</span><span class="v">${dt(d.closed_at)}</span></div>
-    ${d.sign_link?`<div class="row"><span class="k">לינק חתימה</span><span class="v"><a href="${esc(safeUrl(d.sign_link))}" target="_blank" rel="noopener">פתיחה ↗</a></span></div>`:''}
-    <h2 class="sec">לקוח</h2>
-    ${cust?`
-      <div class="row"><span class="k">שם</span><span class="v" style="color:var(--navy);cursor:pointer" onclick="goCard(()=>openCust('${cust.id}'))">${esc(cust.name)} ↗</span></div>
-      <div class="row"><span class="k">טלפון</span><span class="v">${esc(cust.phone||'—')}</span></div>
-      <div class="row"><span class="k">כתובת</span><span class="v">${esc([cust.address,cust.city].filter(Boolean).join(', ')||'—')}</span></div>
-      <div class="row"><span class="k">גישה למשאית · מעלית · מעלית משא</span><span class="v">${ynTxt(cust.truck_access)} · ${ynTxt(cust.elevator)} · ${ynTxt(cust.freight_elevator)}</span></div>
-      ${cust.logistics_notes?`<div class="note">${esc(cust.logistics_notes)}</div>`:''}
-    `:'<div class="empty" style="padding:10px">לא מקושרת ללקוח</div>'}
-    ${contact?`<h2 class="sec">איש קשר</h2>
-      <div class="row"><span class="k">${esc(contact.full_name)}</span><span class="v">${esc(contact.phone||contact.email||'—')}</span></div>`:''}
-    <h2 class="sec">עדכון שלב וסטטוסים (רשימות המאנדיי)</h2>
-    <div class="field"><label>שלב העסקה</label>
-      <select id="d-stage" onchange="dealSubUI('${d.id}')">${STAGES.map(s=>`<option ${s===d.stage?'selected':''}>${s}</option>`).join('')}</select></div>
-    <div id="d-subbox"></div>
-    <div class="actions">
-      <button class="btn green" onclick="saveStage('${d.id}')">שמירת עדכון</button>
+    <h3>${esc(d.name||'עסקה')} ${mdPill(d.stage||'—',DEAL_ST_COLORS,LB_TK)}</h3>
+    <div class="lb-pipe" id="dl-pipe" data-deal="${esc(id)}"></div>
+    <div class="form-grid">
+      <div class="form-sep">פרטי העסקה</div>
+      <div><label>מס' הצעה בפריוריטי</label>${roIn(d.priority_quote_id||'',{ltr:1})}</div>
+      <div><label>סכום (לפני מע"מ)</label>${roIn(d.amount!=null?shekel(d.amount):'')}</div>
+      <div><label>תאריך אישור</label>${roIn(dt(d.approved_at))}</div>
+      <div><label>תאריך סגירה</label>${roIn(dt(d.closed_at))}</div>
+      ${d.send_channel?`<div><label>ערוץ שליחה</label>${roIn(d.send_channel)}</div>`:''}
+      ${d.sign_link?`<div class="span2"><label>לינק חתימה</label><div class="tk-lnk"><a href="${esc(safeUrl(d.sign_link))}" target="_blank" rel="noopener">פתיחה ↗</a></div></div>`:''}
+
+      <div class="form-sep">פרטי הפנייה והלקוח</div>
+      ${lead?`<div class="span2"><label>פנייה מקורית</label>
+        <div class="tk-lnk"><span class="tk-kind tk-k-lead">ליד</span>
+        <a href="#" onclick="event.preventDefault();goCard(()=>openLead('${jsq(lead.id)}'))">${esc(lead.full_name||'')} ↗</a></div></div>
+      <div><label>סטטוס הפנייה</label><div class="tk-lnk">${mdPill(lead.status||'—',LEAD_ST_COLORS,LB_TK)}</div></div>
+      <div><label>בעלים של הפנייה</label><div class="tk-lnk">${lbOwnerCell(lead)}</div></div>`
+      :'<div class="span2"><div class="note">העסקה אינה מקושרת לפנייה. הקישור נוצר בהמרת ליד, או במילוי היסטורי.</div></div>'}
+      ${phone?`<div><label>טלפון ${phBtns(phone)}</label>${roIn(phone,{ltr:1})}</div>`:''}
+      ${cust?`<div class="span2"><label>לקוח</label><div class="tk-lnk"><a href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(cust.id)}'))">${esc(cust.name||'כרטיס הלקוח')} ↗</a></div></div>
+      <div><label>כתובת</label>${roIn([cust.address,cust.city].filter(Boolean).join(', '))}</div>
+      <div><label>גישה למשאית · מעלית · מעלית משא</label>${roIn(ynTxt(cust.truck_access)+' · '+ynTxt(cust.elevator)+' · '+ynTxt(cust.freight_elevator))}</div>
+      ${cust.logistics_notes?`<div class="span4"><div class="note">🚚 ${esc(cust.logistics_notes)}</div></div>`:''}`
+      :'<div class="span2"><div class="note">אינה מקושרת ללקוח.</div></div>'}
+      ${contact?`<div class="span2"><label>איש קשר</label>${roIn(contact.full_name+' · '+(contact.phone||contact.email||''))}</div>`:''}
+
+      <div class="form-sep">עדכונים</div>
+      <div class="span4">
+        <div class="note" style="margin-bottom:6px">${u
+          ? 'העדכון נרשם על הפנייה, ולכן הוא מופיע גם בכרטיס הליד, גם בכרטיס המשימה וגם בכרטיס הלקוח.'
+          : 'העסקה אינה מקושרת לפנייה, ולכן אין כאן יומן עדכונים. קישור לליד ייצור אותו.'}</div>
+        ${u&&window.canEdit('crm.leads')?`<div class="lbu-add"><textarea id="lb-upd" rows="2" placeholder="מה קרה עם העסקה הזאת?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${jsq(u.id)}','lead')">הוספה</button></div>`:''}
+        ${u?'<div class="lbu-list" id="lb-updlist"><div class="note">טוען…</div></div>':''}
+      </div>
     </div>
     <div class="err" id="d-err"></div>
-    <div id="deal-acts"></div>`;
+    <section class="ob-card"><h2 class="sec">משימות ופגישות (${tsk.length+mts.length})</h2>
+      ${tsk.map(t=>`<div class="row" style="cursor:pointer" onclick="goCard(()=>openTask('${jsq(t.id)}'))"><span class="k">משימה · ${t.due_at?new Date(t.due_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'}</span><span class="v">${esc(t.name||'')} ${mdPill(t.status,TASK_ST_COLORS)}</span></div>`).join('')}
+      ${mts.map(m=>`<div class="row"><span class="k">פגישה · ${m.meet_date?new Date(m.meet_date+'T00:00').toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'}):'—'}</span><span class="v"><a href="#" onclick="event.preventDefault();openMeet('${jsq(m.id)}')">${esc(m.subject||'פגישה')}</a> <span class="pill ${meetStClass(m.status)}">${esc(m.status)}</span></span></div>`).join('')}
+      ${(!tsk.length&&!mts.length)?'<div class="note">אין משימות או פגישות פתוחות.</div>':''}
+    </section>
+    <details class="lb-acc" id="dl-acc" ontoggle="dlActsLoad('${jsq(id)}')">
+      <summary>ציר פעילות</summary><div id="deal-acts"><div class="note">לחצו כדי לטעון…</div></div>
+    </details>`;
+  dlPipeDraw(id);
   mountCard('dealModal', ()=>openDeal(id));
-  dealSubUI(id);
-  activityHtml('deal', id).then(h=>{ const el=$('#deal-acts'); if(el) el.innerHTML=h; });
+  if(u) lbLoadUpdates(u.id, 'lead');
 };
-window.dealSubUI = (id)=>{
-  const d = DEALS.find(x=>x.id===id) || {};
-  const st = $('#d-stage') ? $('#d-stage').value : '';
-  const box = $('#d-subbox'); if(!box) return;
-  let html = '';
-  if(st==='לא רלוונטי'){
-    html = `<div class="field"><label>סיבה ללא רלוונטי</label>
-      <select id="d-irr"><option value=""></option>${DEAL_IRRELEVANT.map(o=>`<option ${o===d.irrelevant_reason?'selected':''}>${o}</option>`).join('')}</select></div>`;
-  } else if(['נשלחה הצעת מחיר ראשונית','נשלחה הצעת מחיר לחתימה','תואמה פגישת המשך'].includes(st)){
-    html = `<div class="field"><label>סטטוס הצעת מחיר</label>
-      <select id="d-qs"><option value=""></option>${QUOTE_STATUSES.map(o=>`<option ${o===d.quote_status?'selected':''}>${o}</option>`).join('')}</select></div>`;
-  }
-  box.innerHTML = html;
+window.dlActsLoad = (id)=>{
+  const el = document.getElementById('dl-acc'); if(!el || !el.open || el.dataset.loaded) return;
+  el.dataset.loaded = '1';
+  activityHtml('deal', id).then(h=>{ const box=document.getElementById('deal-acts');
+    if(box) box.innerHTML = h || '<div class="note">אין פעילות רשומה.</div>'; });
 };
-window.saveStage = async (id)=>{
-  const stage = $('#d-stage').value;
+/* הרצועה — אותה שפה של הלידים בדיוק: מילוי **מצטבר** עד השלב הנוכחי,
+   כולו בצבע השלב הנוכחי (הכרעת רומן 20/08), ו-.on מסמן היכן עומדים.
+   ⚠️ ci<0 (שלב מחוץ לרשימה — נמדדה שורה אחת) נופל ל"נוכחי בלבד"
+      ולא לרצועה ריקה, שנראית שבורה. */
+function dlPipeDraw(id){
+  const box = document.getElementById('dl-pipe'); if(!box) return;
+  const d = DEALS.find(x=>x.id===id); if(!d) return;
+  const ed = window.canEdit('crm.deals');
+  const cur = d.stage||'';
+  const curBg = DEAL_ST_COLORS[cur] || '#94a3b8';
+  const ci = STAGES.indexOf(cur);
+  const segs = STAGES.map((st,i)=>{
+    const on = st===cur;
+    const done = (ci < 0) ? on : (i <= ci);
+    const stl = done ? `background-color:${curBg};border-color:${curBg};color:${onWhite(curBg)}`
+                     : `background-color:#fff;border-color:#e2e8f0;color:#94a3b8`;
+    return `<button type="button" class="lb-pseg${on?' on':''}" style="${stl}"`
+      + `${ed?'':' disabled'} title="${esc(st)}"`
+      + ` onclick="dlPipeSet('${jsq(id)}','${jsq(st)}','')">${esc(st)}</button>`;
+  }).join('');
+  const opts = dlSubOpts(cur) || [];
+  const col  = dlSubCol(cur);
+  const now  = col ? (d[col]||'') : '';
+  /* ⚠️ ערך קיים שאינו ברשימה מוצג בכל זאת — 57 עסקאות מחזיקות
+     irrelevant_reason חופשי, והסתרתו הייתה נראית כאילו אין תת-סטטוס. */
+  const all = now && opts.indexOf(now)<0 ? opts.concat([now]) : opts;
+  const subs = all.length ? `<div class="lb-psub">` + all.map(o=>{
+      const on = o===now;
+      const stl = on ? `background-color:${tint(curBg,LB_TK)};color:${onWhite(curBg)};border-color:${tint(curBg,LB_TK-.20)}` : '';
+      return `<button type="button" style="${stl}"${ed?'':' disabled'}`
+        + ` onclick="dlPipeSet('${jsq(id)}','${jsq(cur)}','${jsq(on?'':o)}')">${esc(o)}</button>`;
+    }).join('') + `</div>` : '';
+  box.innerHTML = `<div class="lb-piperow">${segs}</div>${subs}`;
+}
+/* 🔴 נקודת החנק היחידה לשינוי שלב. כותבת **רק** את העמודות שהשלב
+   מחייב, ומנקה את תת-הסטטוס שאינו שייך לו — אחרת ערך ישן נשאר
+   בעמודה של יעד אחר וצץ מחדש כשחוזרים לשלב הקודם (המחלקה שנמדדה
+   בלידים כ-reject_reason='הצעת מחיר'). */
+window.dlPipeSet = async (id, stage, sub)=>{
+  if(!window.canEdit('crm.deals')){ toast('אין לך הרשאת עריכה לתהליכי מכירה'); return; }
+  const d = DEALS.find(x=>x.id===id); if(!d) return;
   const patch = { stage };
-  if($('#d-qs')) patch.quote_status = $('#d-qs').value || null;
-  if($('#d-irr')) patch.irrelevant_reason = $('#d-irr').value || null;
-  if(['הושלם','לא רלוונטי'].includes(stage)) patch.closed_at = new Date().toISOString();
+  patch.quote_status     = dlSubCol(stage)==='quote_status'     ? (sub||null) : null;
+  patch.irrelevant_reason= dlSubCol(stage)==='irrelevant_reason'? (sub||null) : null;
+  if(['הושלם','לא רלוונטי'].includes(stage)){ if(!d.closed_at) patch.closed_at = new Date().toISOString(); }
   const { error } = await sb.schema('crm').from('deals').update(patch).eq('id', id);
-  if(error){ $('#d-err').textContent='שגיאה בעדכון'; console.error(error); return; }
-  const d = DEALS.find(x=>x.id===id); if(d) Object.assign(d, patch);
-  closeCards(); renderDeals(); renderStats();
+  if(error){ const eb=document.getElementById('d-err'); if(eb) eb.textContent='העדכון נכשל — '+error.message; return; }
+  Object.assign(d, patch);
+  dlPipeDraw(id); renderDeals(); renderStats();
 };
-
 /* ===== פגישות ===== */
 let MEET_FILTER = 'week';
 const meetStClass = s => s==='התקיימה'?'st-rel' : (['בוטלה','לא התקיימה','נדחתה'].includes(s)?'st-no' : 'st-new');
@@ -17627,14 +17841,22 @@ const LB_FOLD = new Set();
 function lbMe(){ return (typeof ME!=='undefined' && ME) ? ME.id : null; }
 /* המשימה הפתוחה והפגישה הקרובה לכל ליד — התחליף לעמודות ה"מראה" של מאנדיי
    (ת. המשימה הבאה / ת. הפגישה הבאה), מחושב מהנתונים שכבר בזיכרון */
-function lbNextMaps(){
-  const nt={}, nm={}, ntid={};
+/* 🟢 6.123.0 — הוצא כשנולד הצרכן השני (בורד העסקאות). **החילוץ נעשה רק
+   מפני שיש צרכן שני באותה בנייה**, לא ליתר ביטחון: שתי הגדרות ל"המשימה
+   הפתוחה הקרובה" היו נפרדות בשקט ברגע שאחת מהן תתוקן.
+   ⚠️ tid היא מפה **נפרדת** ולא שדה בתוך due: כך חוזה due נשאר
+      `entityId → מחרוזת מועד`, ו-lbSort/dlSort ממשיכות לעבוד בלי שינוי. */
+function nextTaskBy(type){
+  const due={}, tid={};
   for(const t of (TASKS||[])){
-    if(t.linked_type!=='lead' || !t.linked_id || t.status==='הושלם' || !t.due_at) continue;
-    /* ntid היא מפה **נפרדת** ולא שדה בתוך nt: כך חוזה nt נשאר
-       `leadId → מחרוזת מועד`, ו-lbSort ממשיכה לעבוד בלי שינוי. */
-    if(!nt[t.linked_id] || t.due_at < nt[t.linked_id]){ nt[t.linked_id]=t.due_at; ntid[t.linked_id]=t.id; }
+    if(t.linked_type!==type || !t.linked_id || t.status==='הושלם' || !t.due_at) continue;
+    if(!due[t.linked_id] || t.due_at < due[t.linked_id]){ due[t.linked_id]=t.due_at; tid[t.linked_id]=t.id; }
   }
+  return {due, tid};
+}
+function lbNextMaps(){
+  const _n = nextTaskBy('lead');
+  const nt=_n.due, nm={}, ntid=_n.tid;
   const td=todayStr();
   for(const m of (MEETS||[])){
     if(m.linked_type!=='lead' || !m.linked_id || !m.meet_date) continue;

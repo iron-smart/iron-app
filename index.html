@@ -2152,7 +2152,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.119.0</div>
+      <div class="ver">גרסה 6.120.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2281,7 +2281,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.119.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.120.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5655,18 +5655,29 @@ async function tdLoadBoard(){
   }
   TD_BOARD = r.data || {};
   TD_SEL = {};
-  (TD_BOARD.lanes||[]).forEach(l=>{ TD_SEL[l.team_id] = (l.people||[]).map(p=>p.profile_id); });
+  /* 6.120.0 — מפתח מתויג אחד לשני סוגי אנשים. ראו ההסבר בראש mk4504. */
+  (TD_BOARD.lanes||[]).forEach(l=>{ TD_SEL[l.team_id] = (l.people||[]).map(tdKeyOf); });
   tdRender();
 }
+/* 'p:<uuid>' = איש צוות (core.profiles) · 'm:<uuid>' = עובד זמני (ord.team_members) */
+const tdKeyOf = p => p && p.member_id ? ('m:' + p.member_id) : ('p:' + (p && p.profile_id));
+const tdIdOf  = k => String(k).slice(2);
+const tdIsTmp = k => String(k).slice(0, 2) === 'm:';
 function tdConflicts(){
   const byP = {};
   (TD_BOARD.lanes||[]).forEach(l=>{
-    (TD_SEL[l.team_id]||[]).forEach(pid=>{ (byP[pid]=byP[pid]||[]).push(l.name); });
+    (TD_SEL[l.team_id]||[]).forEach(k=>{ (byP[k]=byP[k]||[]).push(l.name); });
   });
   const names = {};
-  (TD_BOARD.staff||[]).forEach(s=>{ names[s.profile_id]=s.full_name; });
-  return Object.keys(byP).filter(pid=>byP[pid].length>1)
-    .map(pid=>({ full_name: names[pid]||'—', lanes: byP[pid] }));
+  (TD_BOARD.staff||[]).forEach(s=>{ names['p:'+s.profile_id]=s.full_name; });
+  (TD_BOARD.temps||[]).forEach(t=>{ names['m:'+t.member_id]=t.full_name; });
+  /* גם מי שמשובץ אך אינו ברשימות המוצעות (רשומה היסטורית) — אחרת האזהרה
+     מציגה "—" במקום שם, וזה היה קיים גם קודם. */
+  (TD_BOARD.lanes||[]).forEach(l=>(l.people||[]).forEach(p=>{
+    const k = tdKeyOf(p); if(!names[k]) names[k] = p.full_name;
+  }));
+  return Object.keys(byP).filter(k=>byP[k].length>1)
+    .map(k=>({ full_name: names[k]||'—', lanes: byP[k] }));
 }
 const tdCountTxt = n => n ? (n===1 ? 'אדם אחד' : n+' אנשים') : 'טרם נרשם אף אחד';
 const tdWarnHtml = cf => cf.length
@@ -5676,13 +5687,13 @@ function tdRender(){
   const b = TD_BOARD; if(!b) return;
   const sh = $('#ordSheet'); if(!sh) return;
   if(TD_VIEW !== 'day'){ tdRenderRange(); return; }
-  const ed = !!b.can_edit, staff = b.staff||[], lanes = b.lanes||[];
+  const ed = !!b.can_edit, staff = b.staff||[], lanes = b.lanes||[], tmps = b.temps||[];
   const cf = tdConflicts();
   const total = lanes.reduce((a,l)=>a+((TD_SEL[l.team_id]||[]).length),0);
   sh.innerHTML = `
     <h3>👷 שיבוץ יומי — ${esc(dayNameHe(TD_DATE))}, ${esc(fmtD(TD_DATE))}</h3>
     ${tdSegHtml()}
-    <div class="note" style="margin:4px 0 12px">מי מאנשי הצוות עבד בכל נתיב ביום הזה. הנתיבים עצמם (משאית, סקודו, קבלן) מוגדרים בהגדרות הצוותים. לשיבוץ מוצעים טכנאים ומנהלי לוגיסטיקה בלבד.</div>
+    <div class="note" style="margin:4px 0 12px">מי עבד בכל נתיב ביום הזה. הנתיבים עצמם (משאית, סקודו, קבלן) מוגדרים בהגדרות הצוותים. מבין אנשי החברה מוצעים טכנאים ומנהלי לוגיסטיקה בלבד; בנוסף אפשר לשבץ <b>עובדים זמניים</b> — אנשים שאינם משתמשי המערכת — בנתיבי החברה, ואותם מגדירים בהגדרות → צוותים.</div>
     <div class="td-bar">
       <button class="nav-b" onclick="tdGo(-1)" title="יום קודם">▸</button>
       <input type="date" id="tdDate" value="${esc(TD_DATE)}" onchange="openTeamDay(this.value)">
@@ -5705,8 +5716,8 @@ function tdRender(){
         </div>
         ${l.kind==='contractor'
           ? `<div class="note">העבודה בנתיב הזה מבוצעת על ידי קבלן משנה — אין רישום של אנשי החברה.</div>`
-          : (staff.length
-              ? `<div class="td-people">${staff.map(p=>`<label class="td-chk ${sel.indexOf(p.profile_id)>=0?'on':''}"><input type="checkbox" ${ed?'':'disabled'} ${sel.indexOf(p.profile_id)>=0?'checked':''} onchange="tdToggle('${l.team_id}','${p.profile_id}',this.checked,this)">${esc(p.full_name)}${p.job_title?`<span class="td-jt">${esc(p.job_title)}</span>`:''}</label>`).join('')}</div>`
+          : ((staff.length || tmps.length)
+              ? `<div class="td-people">${staff.map(p=>{const k='p:'+p.profile_id;const on=sel.indexOf(k)>=0;return `<label class="td-chk ${on?'on':''}"><input type="checkbox" ${ed?'':'disabled'} ${on?'checked':''} onchange="tdToggle('${l.team_id}','${k}',this.checked,this)">${esc(p.full_name)}${p.job_title?`<span class="td-jt">${esc(p.job_title)}</span>`:''}</label>`;}).join('')}${tmps.map(t=>{const k='m:'+t.member_id;const on=sel.indexOf(k)>=0;return `<label class="td-chk ${on?'on':''}" title="${esc(t.phone||'')}"><input type="checkbox" ${ed?'':'disabled'} ${on?'checked':''} onchange="tdToggle('${l.team_id}','${k}',this.checked,this)">${esc(t.full_name)}<span class="td-jt" style="background:#f3e8ff;color:#6b21a8">זמני</span></label>`;}).join('')}</div>`
               : `<div class="note">בשיבוץ היומי משתתפים טכנאים ומנהלי לוגיסטיקה בלבד, ואין כרגע משתמש פעיל המשויך לאחת מהקבוצות האלה. שייכו משתמש לקבוצת הרשאות מתאימה במסך המשתמשים.</div>`)}
       </div>`;
     }).join('')}
@@ -5991,12 +6002,21 @@ window.tdSave = async ()=>{
   if(btn){ btn.disabled=true; btn.textContent='שומר…'; }
   let changed = 0, failed = null;
   for(const l of (TD_BOARD.lanes||[])){
+    /* נתיב קבלן נשאר מדולג — הכרעת רומן 20/08/2026: "לא לקבלן, רק סקודו
+       ומשאית". עובד זמני משובץ בנתיבי החברה בלבד. */
     if(l.kind==='contractor') continue;
-    const before = (l.people||[]).map(p=>p.profile_id).slice().sort().join(',');
+    const before = (l.people||[]).map(tdKeyOf).slice().sort().join(',');
     const now    = (TD_SEL[l.team_id]||[]).slice().sort().join(',');
     if(before===now) continue;
+    /* נקודת החנק היחידה שמפצלת מפתח מתויג לשני מערכי UUID.
+       🔴 p_members מועבר **תמיד**, גם ריק. ב-supabase-js מפתח עם undefined
+       נשמט מה-JSON, השרת רואה NULL — שמשמעותו "אל תיגע" — ומחיקה של עובד
+       זמני הייתה נבלעת בשקט ונראית כמו הצלחה. */
+    const keys = TD_SEL[l.team_id] || [];
+    const ppl  = keys.filter(k=>!tdIsTmp(k)).map(tdIdOf);
+    const mem  = keys.filter(tdIsTmp).map(tdIdOf);
     let r;
-    try{ r = await sb.schema('ord').rpc('team_day_set', { p_date: ds, p_team: l.team_id, p_people: (TD_SEL[l.team_id]||[]) }); }
+    try{ r = await sb.schema('ord').rpc('team_day_set', { p_date: ds, p_team: l.team_id, p_people: ppl || [], p_members: mem || [] }); }
     catch(e){ r = { error: e }; }
     if(r && r.error){ failed = r.error; break; }
     changed++;
@@ -8489,7 +8509,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'leadrow-2026-08-20b';
+const BUILD_ID = 'tempworker-2026-08-20a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -12826,7 +12846,11 @@ function renderSettings(){
         <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox" id="ta-${t.id}" ${t.active!==false?'checked':''} ${admin?'':'disabled'}>פעיל</label>
         ${admin?`<button class="chip" onclick="saveTeam('${t.id}')">שמירה</button>`:''}
       </div>`).join('')||'<div class="empty">אין צוותים</div>'}
-    </div>`;
+    </div>
+    <h2 class="sec">עובדים זמניים</h2>
+    <div class="note">אנשים שאינם משתמשי המערכת — למשל קבלן שעובד תחת חשבונית. אפשר לשבץ אותם בשיבוץ היומי בנתיבי החברה (משאית, סקודו), ואין להם חשבון התחברות ואין להם הרשאות.</div>
+    <div class="tbl-wrap" style="padding:12px" id="tmWrap"><div class="empty">טוען…</div></div>
+    ${(setTimeout(tmLoad,0),'')}`;
   } else if(SET_VIEW==='texts'){
     /* טקסטים מקובצים לפי קטגוריה (הערות 5–6, סבב 3) */
     const tbox = s => { const i=OSET.indexOf(s); return `<div class="tbl-wrap" style="padding:12px;margin-bottom:10px">
@@ -13192,6 +13216,63 @@ window.deleteUser = async id=>{
   try{ await sb.schema('core').from('profiles').delete().eq('id', id); }catch(_e){}
   alert('המשתמש נמחק');
   renderUsers();
+};
+/* ===== עובדים זמניים (6.120.0) =====
+   נטען על פי דרישה ולא ב-Promise.all של loadLeads — שאילתה חדשה שם מזיזה
+   כל גלובל שאחריה (פרק 5), ו-loadertest אוכפת את זה. במסך השיבוץ הרשימה
+   ממילא מגיעה בתוך team_day_board, ולכן אין כאן מטמון גלובלי שני לתחזק. */
+let TM_LIST = [];
+window.tmLoad = async ()=>{
+  const w = document.getElementById('tmWrap'); if(!w) return;
+  try{
+    const r = await sb.schema('ord').from('team_members')
+      .select('id,full_name,phone,active,sort_order').order('sort_order',{ascending:true});
+    if(r.error) throw r.error;
+    TM_LIST = r.data || [];
+  }catch(e){
+    console.error('טעינת העובדים הזמניים נכשלה', e);
+    w.innerHTML = '<div class="err" style="display:block">טעינת העובדים הזמניים נכשלה.</div>';
+    return;
+  }
+  tmRender();
+};
+function tmRender(){
+  const w = document.getElementById('tmWrap'); if(!w) return;
+  const ad = canEdit('set.teams');
+  w.innerHTML =
+    TM_LIST.map(m=>`<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+      <input value="${esc(m.full_name||'')}" id="tmn-${m.id}" ${ad?'':'disabled'} placeholder="שם מלא" style="flex:1;min-width:130px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit">
+      <input value="${esc(m.phone||'')}" id="tmp-${m.id}" ${ad?'':'disabled'} placeholder="טלפון" style="width:130px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit">
+      <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox" id="tma-${m.id}" ${m.active!==false?'checked':''} ${ad?'':'disabled'}>פעיל</label>
+      ${ad?`<button class="chip" onclick="tmSave('${m.id}')">שמירה</button>`:''}
+    </div>`).join('')
+    + (TM_LIST.length?'':'<div class="empty">אין עובדים זמניים</div>')
+    + (ad?`<div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:10px">
+      <input id="tmNewName" placeholder="שם מלא" style="flex:1;min-width:130px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit">
+      <input id="tmNewPhone" placeholder="טלפון" style="width:130px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit">
+      <button class="chip" onclick="tmAdd()">הוספה</button></div>`:'')
+    + '<div class="err" id="tm-err"></div>';
+}
+window.tmAdd = async ()=>{
+  const eb = document.getElementById('tm-err'); if(eb) eb.textContent='';
+  const nm = (document.getElementById('tmNewName')||{}).value || '';
+  const ph = (document.getElementById('tmNewPhone')||{}).value || '';
+  if(!nm.trim()){ if(eb){ eb.style.display='block'; eb.textContent='יש להזין שם'; } return; }
+  const { error } = await sb.schema('ord').from('team_members')
+    .insert({ full_name: nm.trim(), phone: ph.trim() || null, active: true });
+  if(error){ if(eb){ eb.style.display='block'; eb.textContent='ההוספה נכשלה: '+error.message; } return; }
+  await tmLoad();
+};
+window.tmSave = async id=>{
+  const eb = document.getElementById('tm-err'); if(eb) eb.textContent='';
+  const nm = ($('#tmn-'+id)||{}).value || '';
+  if(!nm.trim()){ if(eb){ eb.style.display='block'; eb.textContent='יש להזין שם'; } return; }
+  const upd = { full_name: nm.trim(), phone: (($('#tmp-'+id)||{}).value||'').trim() || null,
+                active: !!($('#tma-'+id)||{}).checked };
+  const { error } = await sb.schema('ord').from('team_members').update(upd).eq('id', id);
+  if(error){ if(eb){ eb.style.display='block'; eb.textContent='שמירה נכשלה: '+error.message; } return; }
+  const m = TM_LIST.find(x=>x.id===id); if(m) Object.assign(m, upd);
+  tmRender();
 };
 window.saveTeam = async id=>{
   const upd={ name:$('#tn-'+id).value.trim(), color:$('#tc-'+id).value, active:$('#ta-'+id).checked };

@@ -2189,7 +2189,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.125.0</div>
+      <div class="ver">גרסה 6.126.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2318,7 +2318,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.125.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.126.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -4045,6 +4045,18 @@ const canIE = (kind, field)=>{
   if(kind==='task') return window.canEdit('crm.tasks');
   if(kind==='deal') return window.canEdit('crm.deals');
   if(kind==='cust') return window.canEdit('crm.customers');
+  /* 🔴 6.126.0 — הפעם הרביעית שאותה מחלקה מתוקנת (6.24.17 · 6.97.0
+     ללידים · 6.121.0 למשימות ולעסקאות · כאן לפגישות). הענף שמתחת כיסה
+     עד כאן גם את `meet`, ולכן עריכת פגישה בתא הייתה **תווית קפואה**
+     בפני שלושת אנשי המכירות — בעוד `crm.meets` קיים ובשימוש באותו
+     כרטיס ליד עצמו (הצ'יפ "＋ פגישה").
+     נמדד 22/08/2026: ניב ומעיין שטרנגס מחזיקים crm.meets=2. נח החזיק
+     0 מפורש, **ורומן הכריע להעלות אותו ל-2** ("הוא גם הוא מכירות
+     לפעמים") — שונה במסד לפני הפריסה, לא כאן.
+     ⚠️ הענף הנופל **נשאר** ומכסה `po` (הזמנות רכש) — שם po=0 לכולם,
+        כלומר החלפה לפי הרשאה הייתה נועלת את המסך בפני כולם פרט לרומן.
+        זו הסיבה שהוא לא הוחלף גורפית. */
+  if(kind==='meet') return window.canEdit('crm.meets');
   return ['admin','manager'].includes(ME.role);
 };
 /* select צבעוני בתא — צבעי הלוח (pilled) או צבעי מאנדיי (mdc) */
@@ -8634,7 +8646,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'crmflow-2026-08-22a';
+const BUILD_ID = 'dealstage-2026-08-22a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -17566,13 +17578,25 @@ async function activityHtml(linkedType, id){
 }
 
 /* ===== עסקאות ===== */
-const STAGES = ['תהליך חדש','נשלחה הצעת מחיר ראשונית','נשלחה הצעת מחיר לחתימה','תואמה פגישת המשך','אושר ע"י לקוח ממתין לתשלום','הושלם','לא רלוונטי'];
+/* 🔴 6.126.0 — רשימת השלבים לפי הכרעת רומן (22/08/2026):
+   "חמשת שלבי התהליך + שני הסופיים, ולשנות את שם השלב."
+   שלושה שינויים, וכל אחד נמדד לפני שבוצע:
+   · **'תואמה פגישת המשך' ירד** — 0 עסקאות במסד. שלב שאיש לא השתמש בו
+     הרחיב את הרצועה ובלבל בין "פגישה" (crm.meetings) לשלב מכירה.
+   · **'אושר ע"י לקוח ממתין לתשלום' → 'אושרה ע״י לקוח'** — 10 שורות
+     שונו במסד באותה הכרעה. השם הישן קשר שלב מכירה למצב תשלום, שהוא
+     כבר מידע של ord.orders.
+   · **'הזמנה' חדש** — נקבע אך ורק כשההזמנה קיימת בפריוריטי בסטטוס
+     'מאושרת לקוח'. ראו crm.deals_advance_from_orders.
+   ⚠️ ACTIVE_STAGES נשאר slice(0,5) — עדיין חמישה שלבי תהליך, ושני
+      הסופיים בסוף. הסדר הזה הוא **חוזה**: הרצועה מציירת לפי אינדקס. */
+const STAGES = ['תהליך חדש','נשלחה הצעת מחיר ראשונית','נשלחה הצעת מחיר לחתימה','אושרה ע״י לקוח','הזמנה','הושלם','לא רלוונטי'];
 const ACTIVE_STAGES = STAGES.slice(0,5);
 let DEAL_FILTER = 'active';
 const shekel = n => '₪' + Math.round(Number(n||0)).toLocaleString('he-IL');
 const stageClass = s => s==='הושלם' ? 'st-rel' : (s==='לא רלוונטי' ? 'st-no' : (s==='תהליך חדש' ? 'st-new' : 'st-def'));
 /* צבעי שלבי עסקה — כמו במאנדיי (הערה 18) */
-const DEAL_ST_COLORS = {'תהליך חדש':'#ffcb00','נשלחה הצעת מחיר ראשונית':'#cab641','נשלחה הצעת מחיר לחתימה':'#579bfc','תואמה פגישת המשך':'#66ccff','אושר ע"י לקוח ממתין לתשלום':'#4eccc6','הושלם':'#037f4c','לא רלוונטי':'#bb3354'};
+const DEAL_ST_COLORS = {'תהליך חדש':'#ffcb00','נשלחה הצעת מחיר ראשונית':'#cab641','נשלחה הצעת מחיר לחתימה':'#579bfc','אושרה ע״י לקוח':'#4eccc6','הזמנה':'#00a9a5','הושלם':'#037f4c','לא רלוונטי':'#bb3354'};
 
 /* ═══ בורד תהליכי המכירה (6.123.0) ══════════════════════════════
    הצ'יפים הפכו ל**תצוגות** (פעילות / הכל), והצ'יפ-לכל-שלב ירד — כי
@@ -17580,12 +17604,42 @@ const DEAL_ST_COLORS = {'תהליך חדש':'#ffcb00','נשלחה הצעת מח�
    והסכום שלו בכותרת, וניתן לקיפול. זו הרחבה ולא הסרה: הכסף שהיה
    בצ'יפ אחד בכל פעם נמצא עכשיו בכל הכותרות במקביל. */
 const dlSum = list => list.reduce((a,d)=>a+Number(d.amount||0),0);
+/* ═══ הזמנה מאושרת שממתינה לשיוך (6.126.0) ═══════════════════════
+   רומן, 22/08/2026: "לקדם רק כשיש עסקה פתוחה אחת, ולהציג את השאר
+   להכרעה ידנית."
+   🔴 **למה RPC ולא חישוב מ-ORDS שכבר בזיכרון:** ORDS נטענת מ-
+      ord.orders_v שנעולה ב-RLS לפי logi, ולאנשי המכירות logi=0 —
+      חישוב בלקוח היה מחזיר **אפס בדיוק אצל מי שהשבב נועד לו**, בלי
+      שום שגיאה ובלי סימן. נמדד 22/08/2026.
+   🔴 **ולמה טעינה עצלה ולא ב-Promise.all:** שאילתה שנוספת ללולאת
+      הטעינה מסיטה אינדקסים, וזו המחלקה שהפילה את mk4479/mk4480.
+      כאן אין צורך — השבב נדרש רק כשמסך העסקאות נצפה.
+   ⚠️ null = טרם נטען · [] = נטען וריק. שבב אינו מצויר כשהרשימה ריקה,
+      כדי שלא יוצג "0 ממתינות" כמצב קבוע. */
+let DL_PEND = null;
+async function dlPendLoad(){
+  if(DL_PEND !== null) return;
+  DL_PEND = [];                       /* מונע קריאה כפולה בזמן ההמתנה */
+  try{
+    const { data, error } = await sb.schema('crm').rpc('deals_pending_order_link');
+    if(!error && Array.isArray(data)) DL_PEND = data;
+  }catch(_e){ /* השבב הוא עזר, לא מסך — כשל שלו אינו מפיל את הבורד */ }
+  if(DL_PEND.length) dealChips();
+}
+/* איחוד מזהי העסקאות המועמדות — לקוח אחד יכול להופיע בכמה הזמנות. */
+function dlPendIds(){
+  const s = new Set();
+  (DL_PEND||[]).forEach(r=>(r.deal_ids||[]).forEach(x=>s.add(x)));
+  return s;
+}
 function dealChips(){
   const el=document.getElementById('deal-chips'); if(!el) return;
   const act = DEALS.filter(d=>ACTIVE_STAGES.includes(d.stage));
+  const pend = (DL_PEND||[]).length;
   el.innerHTML =
     `<button class="chip ${DEAL_FILTER==='active'?'active':''}" onclick="setDealFilter('active')">פעילות ${act.length} <small>· ${shekel(dlSum(act))}</small></button>`+
-    `<button class="chip ${DEAL_FILTER==='all'?'active':''}" onclick="setDealFilter('all')">הכל ${DEALS.length} <small>· ${shekel(dlSum(DEALS))}</small></button>`;
+    `<button class="chip ${DEAL_FILTER==='all'?'active':''}" onclick="setDealFilter('all')">הכל ${DEALS.length} <small>· ${shekel(dlSum(DEALS))}</small></button>`+
+    (pend ? `<button class="chip ${DEAL_FILTER==='pending'?'active':''}" onclick="setDealFilter('pending')" title="הזמנה מאושרת בפריוריטי שיש ללקוח שלה יותר מעסקה פתוחה אחת — המערכת אינה מנחשת איזו לקדם">⚠️ ממתינות לשיוך ${pend}</button>` : '');
 }
 window.setDealFilter = f => { DEAL_FILTER = f; renderDeals(); };
 const DL_COLS = [
@@ -17595,8 +17649,11 @@ const DL_COLS = [
 /* תת-הסטטוס לפי שלב — בדיוק המבנה של lbSubCol/lbSubOpts בלידים.
    ⚠️ 57 עסקאות מחזיקות irrelevant_reason שאינו ברשימה, ולכן כל בורר
       חייב לשמר ערך קיים שאינו מוכר (selHtml עושה זאת דרך Set). */
+/* ⚠️ הרשימה כאן חייבת להישאר זהה לזו שב-crm.deal_stage_set: השרת
+   מאפס את שתי עמודות תת-הסטטוס לפי אותו כלל, ופער היה משאיר ערך
+   שהמסך אינו מציג וצץ מחדש אם השלב יוחזר. */
 function dlSubCol(st){ return st==='לא רלוונטי' ? 'irrelevant_reason'
-  : (['נשלחה הצעת מחיר ראשונית','נשלחה הצעת מחיר לחתימה','תואמה פגישת המשך'].includes(st) ? 'quote_status' : null); }
+  : (['נשלחה הצעת מחיר ראשונית','נשלחה הצעת מחיר לחתימה'].includes(st) ? 'quote_status' : null); }
 function dlSubOpts(st){ return st==='לא רלוונטי' ? DEAL_IRRELEVANT
   : (dlSubCol(st)==='quote_status' ? QUOTE_STATUSES : null); }
 function dlLead(d){ return (d && d.lead_id) ? ((LEADS||[]).find(x=>x.id===d.lead_id)||null) : null; }
@@ -17745,7 +17802,10 @@ function renderDeals(){
     paintKeep('#deals-list', wideScreen() ? dlTable(list,false) : capped(list, dealRow, 'לא נמצאו עסקאות'));
     return;
   }
-  const base = DEAL_FILTER==='all' ? DEALS : DEALS.filter(d=>ACTIVE_STAGES.includes(d.stage));
+  dlPendLoad();   /* עצל, לא חוסם — השבב מופיע כשהתשובה חוזרת */
+  const base = DEAL_FILTER==='pending' ? (()=>{ const s=dlPendIds(); return DEALS.filter(d=>s.has(d.id)); })()
+             : DEAL_FILTER==='all'     ? DEALS
+             : DEALS.filter(d=>ACTIVE_STAGES.includes(d.stage));
   const list = dlApplyF(base);
   paintKeep('#deals-list', wideScreen() ? dlTable(list,true) : capped(list, dealRow, 'אין עסקאות בסינון הזה'));
 }
@@ -17870,16 +17930,39 @@ function dlPipeDraw(id){
    מחייב, ומנקה את תת-הסטטוס שאינו שייך לו — אחרת ערך ישן נשאר
    בעמודה של יעד אחר וצץ מחדש כשחוזרים לשלב הקודם (המחלקה שנמדדה
    בלידים כ-reject_reason='הצעת מחיר'). */
+/* 🔴 6.126.0 — שינוי שלב עבר מ-UPDATE ישיר ל-crm.deal_stage_set.
+   רומן, 22/08/2026: "ברגע שסטטוס אושרה ע״י לקוח במערכת אפשר לסגור את
+   כל המשימות ותם תהליך המכירה."
+   ⚠️ **למה RPC ולא עוד שורה כאן:** אותו כלל בדיוק צריך לחול גם כשהשלב
+      נקבע מהשרת (crm.deals_advance_from_orders, כשפריוריטי מדווחת על
+      הזמנה מאושרת). שני מימושים לאותו כלל היו נפרדים בעדכון הראשון —
+      זו המחלקה של FIN מול FINM_BY ושל owner_id כמראה חלקית.
+      עכשיו יש מנסח אחד, והלקוח רק מבקש.
+   ℹ️ המשימות שנסגרות הן של העסקה **וגם** של הליד שממנו היא נולדה:
+      תהליך המכירה נגמר, ולא רק החלק שלו שמקושר לעסקה. */
 window.dlPipeSet = async (id, stage, sub)=>{
   if(!window.canEdit('crm.deals')){ toast('אין לך הרשאת עריכה לתהליכי מכירה'); return; }
   const d = DEALS.find(x=>x.id===id); if(!d) return;
-  const patch = { stage };
-  patch.quote_status     = dlSubCol(stage)==='quote_status'     ? (sub||null) : null;
-  patch.irrelevant_reason= dlSubCol(stage)==='irrelevant_reason'? (sub||null) : null;
-  if(['הושלם','לא רלוונטי'].includes(stage)){ if(!d.closed_at) patch.closed_at = new Date().toISOString(); }
-  const { error } = await sb.schema('crm').from('deals').update(patch).eq('id', id);
-  if(error){ const eb=document.getElementById('d-err'); if(eb) eb.textContent='העדכון נכשל — '+error.message; return; }
-  Object.assign(d, patch);
+  const { data, error } = await sb.schema('crm').rpc('deal_stage_set',
+    { p_deal: id, p_stage: stage, p_sub: sub || null });
+  if(error){ const eb=document.getElementById('d-err');
+    if(eb) eb.textContent='העדכון נכשל — '+error.message; else toast('העדכון נכשל — '+error.message);
+    return; }
+  const r = Array.isArray(data) ? data[0] : data;
+  /* עדכון מקומי בדפוס lbLocalApply — אותם שדות שהשרת כתב, ולא ניחוש. */
+  d.stage = stage;
+  d.quote_status      = dlSubCol(stage)==='quote_status'      ? (sub||null) : null;
+  d.irrelevant_reason = dlSubCol(stage)==='irrelevant_reason' ? (sub||null) : null;
+  if(['הושלם','לא רלוונטי'].includes(stage) && !d.closed_at) d.closed_at = new Date().toISOString();
+  if(['אושרה ע״י לקוח','הזמנה'].includes(stage) && !d.approved_at) d.approved_at = new Date().toISOString();
+  if(r && r.tasks_closed > 0){
+    (TASKS||[]).forEach(t=>{
+      const hit = (t.linked_type==='deal' && t.linked_id===id)
+               || (d.lead_id && t.linked_type==='lead' && t.linked_id===d.lead_id);
+      if(hit && t.status!=='הושלם'){ t.status='הושלם'; t.closed_at=new Date().toISOString(); }
+    });
+    toast('השלב עודכן ✓ · ' + r.note);
+  }
   dlPipeDraw(id); renderDeals(); renderStats();
 };
 /* ===== פגישות ===== */

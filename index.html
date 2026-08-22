@@ -2189,7 +2189,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.124.0</div>
+      <div class="ver">גרסה 6.125.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2318,7 +2318,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.124.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.125.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2663,6 +2663,21 @@ tr.lb-on td{ background-color:#eef5fd !important; }
 </div>
 
 <!-- מודל פגישה חדשה מכרטיס ליד (6.93.0) -->
+<!-- פולואפ (6.125.0, סעיף 6) — איש המכירות בוחר מתי לחזור לליד -->
+<div class="modal hidden" id="lbFupModal">
+  <div class="sheet">
+    <h3>פולואפ</h3>
+    <div class="note" style="margin-bottom:10px">המשימה הפתוחה תיסגר, ותיפתח משימה חדשה במועד שתבחר. הליד יעבור ל«רלוונטי · פולואפ».</div>
+    <div class="field"><label>תאריך<span class="req">*</span></label><input id="fu-date" type="date"></div>
+    <div class="field"><label>שעה</label><input id="fu-time" type="time" value="10:00"></div>
+    <div class="actions">
+      <button class="btn green" id="fu-save">קביעת פולואפ</button>
+      <button class="ghost" id="fu-cancel">ביטול</button>
+    </div>
+    <div class="err" id="fu-err"></div>
+  </div>
+</div>
+
 <div class="modal hidden" id="lbMeetModal">
   <div class="sheet">
     <h3>פגישה חדשה</h3>
@@ -3083,7 +3098,7 @@ window.TAB_PERM = {
   sup:'acc.sup', sinv:'acc.sinv'
 };
 window.LOGI_PERM = { orders:'logi.orders', calls:'logi.calls', cal:'logi.cal' };
-window.SET_PERM  = { users:'set.users', teams:'set.teams', texts:'set.texts', conn:'set.conn', synclog:'set.synclog', notif:'set.notif', general:'set.general' };
+window.SET_PERM  = { users:'set.users', teams:'set.teams', texts:'set.texts', conn:'set.conn', synclog:'set.synclog', notif:'set.notif', crm:'set.crm', general:'set.general' };
 window.LOGI_VIEWS = ['orders','calls','cal'];
 window.navCanTab = t=>{
   if(t==='logi') return LOGI_VIEWS.some(v=>canView(LOGI_PERM[v]));
@@ -4252,6 +4267,23 @@ function osetStr(key, fallback){
   const r = (typeof OSET!=='undefined' && OSET || []).find(x=>x && x.key===key);
   const v = r && r.value; const s = (v===undefined||v===null) ? '' : String(v).trim();
   return s === '' ? fallback : s;
+}
+/* שיקוף crm.task_name בצד הלקוח (6.125.0).
+   🔴 **למה בכלל מירור, אחרי כל מה שנכווינו מ-FIN/FINM_BY:** lead_step
+   היא היחידה מארבע ה-RPC שאינה מחזירה task_name (חתימתה קדמה למודול),
+   ולכן lbLocalApply הרכיב את השם בעצמו — `'להתקשר ל'+שם` — בעוד השרת
+   כותב `יש להתקשר ל{שם} - {סטטוס}`. כלומר **שני מימושים שכבר חלוקים**,
+   והבורד הציג לשנייה שם שאינו במסד.
+   הבחירה כאן היא בין שני מירורים, ולא בין מירור לאין: הוצאת שניהם
+   לאותו מקור (`ord.settings` דרך osetStr) מבטלת את החלוקה במקום להסתיר
+   אותה, ורומן שיערוך את התבנית במסך ה-CRM יראה גם את השורה האופטימית
+   מתעדכנת. שינוי חתימת lead_step היה דורש drop+create על פונקציה
+   שהבורד קורא לה כל היום — חלון שאין לו הצדקה בשביל שם זמני.
+   ⚠️ המירור **מודגש כזמני**: הציור הבא מ-loadLeads מביא את השם מהמסד. */
+function crmTaskName(key, fallback, name, extra){
+  return osetStr(key, fallback)
+    .split('{שם}').join(name||'')
+    .split('{סטטוס}').join(extra||'');
 }
 function kSub(txt, red){ return '<div class="k-sub'+(red?' red':'')+'">'+txt+'</div>'; }
 function renderKpiStrip(){
@@ -8602,7 +8634,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'custboard-2026-08-21a';
+const BUILD_ID = 'crmflow-2026-08-22a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -12624,7 +12656,7 @@ window.setMode = v=>{ SET_VIEW=v; renderSettings(); navMark(); };
 function settingsCats(){
   /* 6.24.0 — התפריט נגזר ממפתחות ההרשאה set.*, לא מתפקיד המשתמש.
      ללא אימוג׳ים — רומן 29/07/2026 */
-  const all = [['users','משתמשים והרשאות'],['teams','צוותי לוגיסטיקה'],['texts','טקסטים ומסמכים'],['conn','חיבורים'],['synclog','יומן סנכרון'],['notif','התראות'],['general','כללי']];
+  const all = [['users','משתמשים והרשאות'],['teams','צוותי לוגיסטיקה'],['texts','טקסטים ומסמכים'],['conn','חיבורים'],['synclog','יומן סנכרון'],['notif','התראות'],['crm','CRM'],['general','כללי']];
   try{ return all.filter(c=> canView(SET_PERM[c[0]])); }catch(_e){ return []; }
 }
 /* תפריט ההגדרות בסרגל נבנה לפי ההרשאה בפועל — פריטי אדמין אינם מוצגים למי שאינו אדמין */
@@ -12968,6 +13000,8 @@ function renderSettings(){
     body = `<h2 class="sec" style="margin-top:0">טקסטים ומסמכים — מקובץ לפי קטגוריה</h2>`+(gHtml||'<div class="empty">אין טקסטים מוגדרים</div>');
   } else if(SET_VIEW==='notif' && canView('set.notif')){
     body = notifSettingsHtml();
+  } else if(SET_VIEW==='crm' && canView('set.crm')){
+    body = crmSettingsHtml();
   } else if(SET_VIEW==='conn'){
     body = integHtml();
   } else if(SET_VIEW==='synclog' && canView('set.synclog')){
@@ -13007,6 +13041,73 @@ const NOTIF_SETTINGS = [
   ['notif_task_overdue_enabled','התראה על משימה באיחור','נשלחת בבוקר שאחרי מועד המשימה, אם לא הושלמה.','yn'],
   ['notif_lead_assigned_enabled','התראה על הקצאת ליד','נשלחת למי שהוקצה לו ליד. לקיחה עצמית אינה מתריעה.','yn'],
 ];
+/* ═══ מסך ההגדרות CRM (6.125.0) ═══════════════════════════════════
+   רומן, 22/08/2026: "את כל ה-flow הזה אני רוצה מסודר בתוך מסך ההגדרות
+   שלנו. תיצור תת מסך שיקרא CRM ושם נרכז את כל הגדרות מערכת ה-CRM."
+   🔴 **מה שכאן משתנה מיד ואינו דורש פריסה** — פונקציות המסד קוראות את
+      אותם מפתחות דרך crm.cfg_int/crm.cfg_txt בכל קריאה.
+   ⚠️ הסיווגים (ליד · פולואפ · פגישה · תהליך מכירה) **אינם** כאן
+      בכוונה: הכרעת רומן הייתה "מרווחי הזמן + שמות המשימות". שינוי שם
+      סיווג היה מנתק אותו מ-3,400 השורות ההיסטוריות.
+   ⚠️ מפתח חסר מוצג כשורה מוסברת ולא נעלם — הדפוס מ-notifSettingsHtml.
+      שם ריק/פגום גורם לשרת ליפול לברירת המחדל שלו, לא לשם ריק. */
+const CRM_SETTINGS = [
+  ['—','מרווחי זמן — מתי תיפתח המשימה הבאה','sep'],
+  ['crm_gap_new_min','ליד חדש','דקות קדימה ממועד פתיחת הליד. באיפיון: שעתיים (120).','num'],
+  ['crm_gap_noanswer1_min','ללא מענה','דקות קדימה. באיפיון: 4 שעות (240).','num'],
+  ['crm_gap_noanswer2_min','ללא מענה2','דקות קדימה. באיפיון: יום (1440).','num'],
+  ['crm_gap_noanswer3_min','ללא מענה3','דקות קדימה. באיפיון: יום (1440).','num'],
+  ['crm_gap_quote_min','אחרי שליחת הצעת מחיר','דקות קדימה מרגע שפריוריטי מדווחת שההצעה נשלחה. באיפיון: 4 שעות (240).','num'],
+  ['—','שמות המשימות','sep'],
+  ['crm_task_name_new','משימת ליד חדש','{שם} מוחלף בשם הליד.','txt'],
+  ['crm_task_name_noanswer','משימת "אין מענה"','{שם} = שם הליד · {סטטוס} = הסטטוס החדש.','txt'],
+  ['crm_task_name_meeting','משימת פגישה','{שם} = שם הליד. המשימה נפתחת על שעת הפגישה.','txt'],
+  ['crm_task_name_followup','משימת פולואפ','{שם} = שם הליד. המועד נבחר ידנית.','txt'],
+  ['crm_task_name_quote','משימה אחרי שליחת הצעה','{שם} = שם הלקוח.','txt'],
+  ['—','סוקר הצעות המחיר בפריוריטי','sep'],
+  ['crm_quote_watch_enabled','הסוקר פעיל','"כן" או "לא". רץ כל 15 דקות, 08:00–20:00, לא בשבת.','yn'],
+  ['crm_quote_sent_statdes','הסטטוס בפריוריטי שמסמן "נשלחה"','⚠️ הערך הזה לא נמדד מול פריוריטי. הסוקר רושם ביומן הסנכרון את כל ערכי STATDES שהוא רואה — אחרי הריצה הראשונה על הצעה אמיתית אפשר לתקן אותו כאן.','txt'],
+];
+function crmSettingsHtml(){
+  const ed = canEdit('set.crm');
+  const rows = CRM_SETTINGS.map(([key,label,hint,kind])=>{
+    if(kind==='sep' || hint==='sep') return `<h2 class="sec">${esc(label)}</h2>`;
+    const i = OSET.findIndex(s=>s&&s.key===key);
+    if(i < 0) return `<div class="tbl-wrap" style="padding:12px;margin-bottom:10px">
+      <b style="font-size:13px">${esc(label)}</b>
+      <div class="note" style="margin-top:6px">ההגדרה <code>${esc(key)}</code> אינה קיימת ב-ord.settings, ולכן השרת משתמש בברירת המחדל שלו.</div></div>`;
+    const val = String(OSET[i].value ?? '');
+    const dis = ed ? '' : 'disabled';
+    const box = 'padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13.5px';
+    const ctl = kind==='yn'
+      ? `<select id="sv-${i}" ${dis} style="width:auto;min-width:110px;${box}">
+           <option ${val==='כן'?'selected':''}>כן</option><option ${val==='לא'?'selected':''}>לא</option></select>`
+      : kind==='num'
+      ? `<input id="sv-${i}" type="number" min="0" max="20160" step="15" value="${esc(val)}" ${dis} style="width:130px;${box}">`
+      : `<input id="sv-${i}" type="text" value="${esc(val)}" ${dis} style="flex:1;min-width:260px;${box}">`;
+    return `<div class="tbl-wrap" style="padding:12px;margin-bottom:10px">
+      <b style="font-size:13px">${esc(label)}</b>
+      <div class="note" style="margin:4px 0 8px">${esc(hint)}</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${ctl}
+        ${ed?`<button class="chip" onclick="saveSetting(${i})">שמירה</button>`:''}</div>
+    </div>`;
+  }).join('');
+  return `<h2 class="sec" style="margin-top:0">CRM — מחזור חיי המשימה</h2>
+    <div class="note" style="margin-bottom:12px">כל שינוי כאן חל <b>מיד ובלי פריסה</b> — פונקציות המסד קוראות את הערכים בכל פעולה.</div>
+    ${rows}
+    <h2 class="sec">מה קורה בכל שלב</h2>
+    <div class="tbl-wrap" style="padding:12px">
+      <div class="note" style="line-height:1.9">
+        <b>ליד חדש</b> — נפתחת משימה. נפתח ידנית: הפותח הוא הבעלים של הליד ושל המשימה. הגיע ממקור אחר: ללא בעלים.<br>
+        <b>ללא מענה / 2 / 3</b> — המשימה הקיימת נסגרת ונפתחת חדשה. סיווג <b>ליד</b>.<br>
+        <b>צור פגישה</b> — המשימה נסגרת, ונפתחת משימה על <b>יום ושעת הפגישה</b>. סיווג <b>פגישה</b>.<br>
+        <b>פולואפ</b> — המשימה נסגרת, ונפתחת משימה במועד שנבחר. סיווג <b>פולואפ</b>.<br>
+        <b>סירוב / לא רלוונטי</b> — המשימה נסגרת. לא נפתחת חדשה.<br>
+        <b>פתח לקוח והצעת מחיר</b> — המשימה נסגרת, נפתחים לקוח זמני והצעה בפריוריטי, ונוצר תהליך מכירה בשלב <b>תהליך חדש</b>.<br>
+        כשההצעה עוברת בפריוריטי ל"נשלחה" — השלב עולה ל<b>נשלחה הצעת מחיר ראשונית</b> ונפתחת משימה. סיווג <b>תהליך מכירה</b>.
+      </div>
+    </div>`;
+}
 function notifSettingsHtml(){
   const rows = NOTIF_SETTINGS.map(([key,label,hint,kind])=>{
     const i = OSET.findIndex(s=>s&&s.key===key);
@@ -13378,7 +13479,15 @@ window.saveSetting = async i=>{
   const s=OSET[i]; const v=$('#sv-'+i).value;
   const { error } = await sb.schema('ord').from('settings').update({value:v}).eq('key', s.key);
   if(error){ alert('שמירה נכשלה: '+error.message); return; }
-  s.value=v; alert('נשמר ✓ — ישתקף במסמכים הבאים שיישלחו');
+  s.value=v;
+  /* ⚠️ הסיומת "ישתקף במסמכים הבאים שיישלחו" נכונה למפתחות של טקסטים
+     ומסמכים (wa_* · protocol_* · report150_* · svc_report_*) — ו**שקר**
+     לכל השאר. היא כבר הופיעה כך במסך ההתראות וב"כללי", ועם מסך ה-CRM
+     היא הייתה אומרת לרומן שמרווח זמן של משימה "ישתקף במסמכים".
+     הודעת אישור שמתארת תופעה שלא תקרה היא אותה מחלקה של רשומת יומן
+     על פעולה שלא בוצעה: היא נראית כמו ראיה. */
+  const _doc = /^(wa_|protocol_|report150_|svc_report_)/.test(s.key || '');
+  alert(_doc ? 'נשמר ✓ — ישתקף במסמכים הבאים שיישלחו' : 'נשמר ✓');
 };
 
 
@@ -14370,7 +14479,18 @@ $('#t-save').onclick = async ()=>{
   /* 6.93.0 — משימה שנפתחה מכרטיס ליד נקשרת אליו (linked_type='lead');
      כך ההתראות של automation_tick והמיון בבורד עובדים */
   const _lnk=(typeof LB_TASK_LINK!=='undefined' && LB_TASK_LINK)?LB_TASK_LINK:null;
-  const { error } = await sb.schema('crm').from('tasks').insert({ name, owner_id: ME.id, due_at: new Date(d+'T'+tm).toISOString(), category:'ליד', linked_type:_lnk?_lnk.type:null, linked_id:_lnk?_lnk.id:null });
+  /* 🔴 6.125.0 — הסיווג נגזר מההקשר ולא מקודד 'ליד'. עד כאן **כל**
+     משימה שנוצרה מהמודל קיבלה 'ליד', כולל משימה מהכפתור הכללי שאין
+     לה קישור בכלל — כלומר העמודה "סיווג" דיווחה על 'ליד' שאינו קיים.
+     ⚠️ בלי קישור → null ולא 'ליד': כך היא נראית כמו 4,000 שורות
+        המאנדיי חסרות הסיווג, במקום להמציא שיוך.
+     ℹ️ הבעלים נשאר יוצר המשימה. זה עקבי עם סעיף 1 באיפיון ("נפתחת
+        ידנית — הבעלים הוא מי שפתח"), ושונה מ-RPC השרשרת שלוקח את
+        בעלי הליד. ההפרש מכוון ומתועד. */
+  const _cat = !_lnk ? null
+             : _lnk.type==='deal'     ? 'תהליך מכירה'
+             : _lnk.type==='customer' ? 'לקוח' : 'ליד';
+  const { error } = await sb.schema('crm').from('tasks').insert({ name, owner_id: ME.id, due_at: new Date(d+'T'+tm).toISOString(), category:_cat, linked_type:_lnk?_lnk.type:null, linked_id:_lnk?_lnk.id:null });
   if(error){ $('#t-err').textContent='שגיאה בשמירה'; console.error(error); return; }
   $('#taskModal').classList.add('hidden'); await loadLeads();
   if(_lnk && _lnk.type==='lead') openLead(_lnk.id);
@@ -18102,6 +18222,24 @@ function lbChips(){
 /* תא תת-סטטוס. שלוש עמודות נפרדות לפי בקשת רומן, אבל **נערכת רק זו
    ששייכת לסטטוס הנוכחי** — כתיבת sub_status לליד שסטטוסו 'סירוב' הייתה
    יוצרת ערך שאינו נראה בכרטיס וצץ מחדש אם הסטטוס יוחזר. */
+/* 🔴 6.125.0 — תא הסטטוס בטבלה עבר מ-ieSel ל-lbPipeSet.
+   עד כאן הוא היה `ieSel('lead',…,'status',…)` → ieSave → UPDATE ישיר
+   על העמודה: **בלי לסגור משימה, בלי לפתוח חדשה, ובלי לאפס את שלוש
+   עמודות תת-הסטטוס.** כלומר איש מכירות שעבד מהטבלה ולא מהכרטיס נטרל
+   בשקט את כל מחזור החיים — כל מה שנבנה היום היה דקורטיבי אצלו.
+   הכרעת רומן 22/08/2026: "לנתב אותו לאותה שרשרת".
+   ⚠️ lbPipeSet היא **בדיוק** אותה נקודת חנק של הרצועה בכרטיס: היא
+      מנתבת ל-lead_step בצעד הבא בשרשרת, ל-lead_set_status אחרת,
+      מזהירה על קפיצה לא סדורה, ומעדכנת מקומית. אין כאן מסלול שני. */
+function lbStatusCell(l){
+  if(!canIE('lead','status')) return mdPill(l.status, LEAD_ST_COLORS, LB_TK);
+  const bg = LEAD_ST_COLORS[l.status] || '#94a3b8';
+  const stl = `background:${tint(bg,LB_TK)};color:${onWhite(bg)};border:1px solid ${tint(bg,LB_TK-.20)}`;
+  return `<select class="inline-edit mdc" style="${stl}" onclick="event.stopPropagation()"`
+    + ` onchange="lbPipeSet('${jsq(l.id)}', this.value, '')">`
+    + LEAD_STATUSES.map(s=>`<option ${s===l.status?'selected':''}>${esc(s)}</option>`).join('')
+    + `</select>`;
+}
 function lbSubCell(l, st, opts, col){
   if(l.status!==st) return `<td class="lb-na" title="נפתח לעריכה כשהליד בסטטוס «${esc(st)}»">·</td>`;
   return `<td>${ieSel('lead',l.id,col,opts,l[col],{allowEmpty:true,mdColors:SUB_COLORS[st],mdK:LB_TK})}</td>`;
@@ -18133,7 +18271,7 @@ function lbRow(l, i, nt, nm, ntid){
       <td dir="ltr">${phCell(l.phone)}</td>
       <td data-sort="${esc(t||'')}"${dmk.cls?` class="${dmk.cls}"`:''}><span class="lb-duew">${dmk.ico}${dueCell}</span></td>
       <td>${ieSel('lead',l.id,'source',LEAD_SOURCES,l.source,{allowEmpty:true,mdColors:LEAD_SRC_COLORS,mdK:LB_TK})}</td>
-      <td>${ieSel('lead',l.id,'status',LEAD_STATUSES,l.status,{mdColors:LEAD_ST_COLORS,mdK:LB_TK})}</td>
+      <td>${lbStatusCell(l)}</td>
       ${lbSubCell(l,'רלוונטי',SUB_RELEVANT,'sub_status')}
       ${lbSubCell(l,'סירוב',SUB_REFUSAL,'reject_reason')}
       ${lbSubCell(l,'לא רלוונטי',SUB_IRRELEVANT,'irrelevant_reason')}
@@ -18277,7 +18415,7 @@ window.lbBulk = async (op)=>{
   }
   if(op==='status'){
     const CH = ['ליד חדש','ללא מענה','ללא מענה2','ללא מענה3'];
-    if(CH.indexOf(val)>=0 && !confirm(`שינוי מרוכז ל־«${val}» **אינו** שולח הודעת "אין מענה" ואינו מסובב משימות.\nלשרשרת המלאה יש את הכפתור 📵 בכרטיס.\n\nלהמשיך על ${ids.length} לידים?`)) return;
+    if(CH.indexOf(val)>=0 && !confirm(`שינוי מרוכז ל־«${val}» **אינו** שולח הודעת "אין מענה" ואינו מסובב משימות.\nלשרשרת המלאה — שנו את השלב ברצועה שבכרטיס הליד.\n\nלהמשיך על ${ids.length} לידים?`)) return;
   }
   LB_BUSY = true;
   const rep = document.getElementById('lb-selrep');
@@ -18460,7 +18598,7 @@ const LEAD_CARD_FIELDS = [
   ['lb-addr','address'], ['lb-ctype','customer_type'], ['lb-source','source'],
   ['lb-wacat','__wacat']
 ];
-let LEAD_SNAP = null, LB_TASK_LINK = null, LB_MEET_LEAD = null;
+let LEAD_SNAP = null, LB_TASK_LINK = null, LB_MEET_LEAD = null, LB_FUP_LEAD = null;
 /* תת-הסטטוס: עמודה אחת לכל סטטוס-אב. בורר יחיד בכרטיס מצייר את הרשימה של
    הסטטוס הנוכחי; ההמרה לעמודה הנכונה קורית בשמירה בלבד. */
 function lbSubCol(st){ return st==='רלוונטי'?'sub_status' : st==='סירוב'?'reject_reason' : st==='לא רלוונטי'?'irrelevant_reason' : null; }
@@ -18702,6 +18840,7 @@ window.openLead = (id)=>{
       ${(!myTasks.length&&!myMeets.length)?'<div class="note">אין משימות או פגישות מקושרות.</div>':''}
       ${window.canEdit('crm.tasks')?`<button type="button" class="chip" onclick="leadTask('${l.id}')">＋ משימה</button>`:''}
       ${window.canEdit('crm.meets')?`<button type="button" class="chip" onclick="leadMeet('${l.id}')">＋ פגישה</button>`:''}
+      ${editable?`<button type="button" class="chip" onclick="leadFup('${l.id}')">↻ פולואפ</button>`:''}
     </section>
     <div id="convResultSlot"></div>
     <div id="convResult"></div>
@@ -19155,7 +19294,9 @@ window.lbNoAnswer = async (id, expect)=>{
      ⚠️ name ו-owner_id אינם בהחזרה: השם יוצג ריק עד הרענון הבא,
      ו-owner_id מוצב מהבעלים הראשי כדי ש"היום שלי" לא יאבד את המשימה. */
   lbLocalApply(id, { status: r && r.new_status, closedTasks: true,
-    newTask: (r && r.task_id) ? { id:r.task_id, name:'להתקשר ל'+((LEADS.find(x=>x.id===id)||{}).full_name||'ליד'),
+    newTask: (r && r.task_id) ? { id:r.task_id,
+      name: crmTaskName('crm_task_name_noanswer', 'יש להתקשר ל{שם} - {סטטוס}',
+                        (LEADS.find(x=>x.id===id)||{}).full_name || 'ליד', r && r.new_status),
       status:'חדש', due_at:r.next_due, category:'ליד', linked_type:'lead', linked_id:id,
       owner_id: lbOwnUuid(lbOwnerOf(LEADS.find(x=>x.id===id)||{})) } : null });
 };
@@ -19191,6 +19332,17 @@ window.leadTask = (id)=>{
   $('#t-due').value=todayStr();
   mountCard('taskModal', ()=>$('#taskModal').classList.remove('hidden'));
 };
+/* סעיף 6 — הפולואפ. ⚠️ ברירת המחדל היא מחר ב-10:00 ולא "עכשיו":
+   פולואפ שנקבע לרגע זה הוא משימה שכבר באיחור ברגע שנוצרה. */
+window.leadFup = (id)=>{
+  const l = LEADS.find(x=>x.id===id); if(!l) return;
+  LB_FUP_LEAD = id;
+  const d = new Date(Date.now() + 864e5);
+  const p = n => String(n).padStart(2,'0');
+  $('#fu-date').value = d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
+  $('#fu-time').value = '10:00'; $('#fu-err').textContent = '';
+  mountCard('lbFupModal', ()=>$('#lbFupModal').classList.remove('hidden'));
+};
 window.leadMeet = (id)=>{
   const l=LEADS.find(x=>x.id===id); if(!l) return;
   LB_MEET_LEAD=id;
@@ -19198,24 +19350,48 @@ window.leadMeet = (id)=>{
   $('#lm-date').value=todayStr();
   mountCard('lbMeetModal', ()=>$('#lbMeetModal').classList.remove('hidden'));
 };
+$('#fu-cancel').onclick = ()=> closeCards();
+$('#fu-save').onclick = async ()=>{
+  const id = LB_FUP_LEAD; if(!id) return;
+  const d = $('#fu-date').value, t = $('#fu-time').value || '10:00';
+  if(!d){ $('#fu-err').textContent = 'חסרים שדות חובה: תאריך.'; return; }
+  const due = new Date(d + 'T' + t);
+  if(isNaN(due.getTime())){ $('#fu-err').textContent = 'תאריך או שעה לא תקינים.'; return; }
+  const { data, error } = await sb.schema('crm').rpc('lead_followup',
+    { p_lead: id, p_due: due.toISOString() });
+  if(error){ $('#fu-err').textContent = 'הפעולה נכשלה — ' + error.message; return; }
+  const r = Array.isArray(data) ? data[0] : data;
+  $('#lbFupModal').classList.add('hidden'); LB_FUP_LEAD = null;
+  toast(r && r.task_name ? 'נקבע פולואפ ✓ · ' + r.task_name : 'נקבע פולואפ ✓');
+  await loadLeads(); openLead(id);
+};
 $('#lm-cancel').onclick = ()=> closeCards();
 $('#lm-save').onclick = async ()=>{
   const id=LB_MEET_LEAD; if(!id) return;
   const subj=$('#lm-subj').value.trim(), d=$('#lm-date').value;
   const miss=[!subj?'נושא':null, !d?'תאריך':null].filter(Boolean);
   if(miss.length){ $('#lm-err').textContent='חסרים שדות חובה: '+miss.join(' · ')+'.'; return; }
-  /* location נשלח מפורשות (גם null): ברירת המחדל במסד היא כתובת המשרד,
-     ופגישת מכירה אצל לקוח עם "קומבה 32 חדרה" שאיש לא בחר היא בדיוק
-     המחלקה של ה-select שנופל לאפשרות הראשונה */
-  const { error } = await sb.schema('crm').from('meetings').insert({
-    subject: subj, meet_date: d,
-    start_time: $('#lm-start').value||null, end_time: $('#lm-end').value||null,
-    meet_type: $('#lm-type').value||null, location: $('#lm-loc').value.trim()||null,
-    status:'מתוכננת', source:'platform', linked_type:'lead', linked_id:id,
-    owner_id: lbMe(), organizer_name: (ME.full_name||ME.email||null), organizer_email: ME.email||null
+  /* 🔴 6.125.0 — סעיף 5 באיפיון. עד כאן זו הייתה הכנסה ישירה
+     ל-crm.meetings ותו לא: **אפס נגיעה במשימות**, והליד לא זז.
+     עכשיו crm.lead_meeting_create עושה את הכול בטרנזקציה אחת —
+     פגישה · סגירת המשימה הפתוחה · משימה חדשה על **שעת הפגישה** ·
+     הליד ל'רלוונטי · תואמה פגישה'.
+     ⚠️ פיצול ל"הכנס פגישה" ואז "קרא RPC" היה מייצר פגישה בלי משימה
+        בכל כשל ביניים, והמשתמש לא היה רואה דבר.
+     ⚠️ location נשלח מפורשות (גם null): ברירת המחדל במסד היא כתובת
+        המשרד, ופגישת מכירה אצל לקוח עם "קומבה 32 חדרה" שאיש לא בחר
+        היא המחלקה של ה-select שנופל לאפשרות הראשונה. */
+  const { data, error } = await sb.schema('crm').rpc('lead_meeting_create', {
+    p_lead: id, p_subject: subj, p_date: d,
+    p_start: $('#lm-start').value||null, p_end: $('#lm-end').value||null,
+    p_type: $('#lm-type').value||null, p_location: $('#lm-loc').value.trim()||null
   });
   if(error){ $('#lm-err').textContent='השמירה נכשלה — '+error.message; return; }
+  const r = Array.isArray(data) ? data[0] : data;
   $('#lbMeetModal').classList.add('hidden'); LB_MEET_LEAD=null;
+  toast(r && r.due_at
+    ? 'נקבעה פגישה ✓ · נפתחה משימה ל' + new Date(r.due_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})
+    : 'נקבעה פגישה ✓');
   await loadLeads(); openLead(id);
 };
 

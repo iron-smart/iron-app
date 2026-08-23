@@ -212,6 +212,9 @@
   .payt-week .payt-n{ color:#d97706 }
   .payt-month .payt-n{ color:#b45309 }
   .payt-nodue .payt-n{ color:#7c3aed }
+  /* פעימה שהוקלדה ידנית — נעולה מפני האיזון האוטומטי. הסימון חייב להיות
+     נראה: מצב נסתר שמשנה חישוב הוא מה שגורם למישהו לחשוב שהמסך שבור. */
+  input.be-lk{ border-color:#d97706 !important; background-color:#fffbeb }
   .pay-closed{ display:inline-block; margin-top:3px; font-size:10.5px; font-weight:800;
                color:#166534; background-color:#dcfce7; border:1px solid #bbf7d0;
                border-radius:999px; padding:1px 8px; white-space:nowrap }
@@ -2236,7 +2239,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.131.0</div>
+      <div class="ver">גרסה 6.132.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2365,7 +2368,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.131.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.132.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -8747,7 +8750,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'paysdesign-2026-08-23a';
+const BUILD_ID = 'beatsbalance-2026-08-23a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -16251,6 +16254,9 @@ window.beSetCount = n => {
   /* שינוי מספר הפעימות מפזר מחדש שווה בשווה, אחרת נשארים עם סכום שאינו
      מסתדר וכפתור שמירה חסום בלי סיבה ברורה. */
   const t2 = beTot();
+  /* לוח חדש מאפס נעילות: נעילה ששרדה מלוח קודם הייתה מונעת מהחדש
+     להסתדר, בלי שהמשתמש יבין למה. */
+  BE_ROWS.forEach(r=>{ r.locked = false; });
   if(t2){ const base = Math.floor(t2 / n);
     BE_ROWS.forEach((r,i)=>{ r.amount = (i === n-1) ? (t2 - base*(n-1)) : base;
       r.pct = Math.round(r.amount / t2 * 10000) / 100; }); }
@@ -16263,7 +16269,7 @@ window.bePreset = code => {
   BE_ROWS = t.beats.map((b,i)=>({ label: b.label || 'לאחר אספקה', pct: Number(b.pct)||0,
     amount: ptot ? Math.round(ptot * (Number(b.pct)||0) / 100) : null,
     anchor: b.anchor === 'install' ? 'delivery' : (b.anchor || 'order'),
-    offset_days: Number(b.offset_days)||0, due_date:'' }));
+    offset_days: Number(b.offset_days)||0, due_date:'', locked:false }));
   beRender();
 };
 /* הסכום של פעימה: מה שהוקלד אם הוקלד, אחרת נגזר מהאחוז. */
@@ -16273,16 +16279,52 @@ function beAmt(r, tot){
   return Math.round((tot || beTot()) * (Number(r.pct)||0) / 100);
 }
 function beAmtSum(){ const t = beTot(); return BE_ROWS.reduce((s,r)=>s + beAmt(r, t), 0); }
+/* איזון אוטומטי — היתרה מתחלקת **שווה בשווה** בין הפעימות שלא ננעלו
+   (הכרעת רומן, 23/08/2026). פעימה ננעלת ברגע שהוקלד בה סכום או אחוז,
+   ומשם היא אינה זזה: בלי זה, בלוח של שתי פעימות עריכת השנייה הייתה
+   דורסת את הראשונה, כלומר האיזון מבטל את הפעולה הקודמת של המשתמש.
+   ⚠️ העיגול נופל על **הפעימה החופשית האחרונה** ולא מתחלק, אחרת הסכום
+   לא היה מסתדר בדיוק לשקל — וזו בדיוק הבדיקה שהשמירה עושה. */
+function beBalance(){
+  const tot = beTot(); if(!tot) return;
+  const free = [];
+  let lockedSum = 0;
+  BE_ROWS.forEach((r,i)=>{ if(r.locked) lockedSum += beAmt(r, tot); else free.push(i); });
+  if(!free.length) return;               /* הכול נעול — ההפרש האדום יראה */
+  const rem = tot - lockedSum;
+  if(rem <= 0){                          /* הנעולות כבר חורגות מסכום ההזמנה */
+    free.forEach(i=>{ BE_ROWS[i].amount = 0; BE_ROWS[i].pct = 0; });
+    return;
+  }
+  const base = Math.floor(rem / free.length);
+  free.forEach((idx, k)=>{
+    const a = (k === free.length - 1) ? (rem - base * (free.length - 1)) : base;
+    BE_ROWS[idx].amount = a;
+    BE_ROWS[idx].pct = Math.round(a / tot * 10000) / 100;
+  });
+}
 window.beSet = (i, k, v) => {
   if(!BE_ROWS[i]) return;
   const tot = beTot();
+  if(k === 'pct' || k === 'amount'){
+    /* ניקוי השדה משחרר את הפעימה וממסר אותה חזרה לאיזון האוטומטי. זו
+       דרך החזרה מהנעילה, והיא הפעולה הטבעית ביותר. */
+    if(String(v).trim() === ''){
+      BE_ROWS[i].locked = false;
+      beBalance(); beRender(); return;
+    }
+  }
   if(k === 'pct'){
-    BE_ROWS[i].pct = v === '' ? 0 : Number(v);
+    BE_ROWS[i].pct = Number(v);
     BE_ROWS[i].amount = tot ? Math.round(tot * BE_ROWS[i].pct / 100) : null;
+    BE_ROWS[i].locked = true;
+    beBalance();
   } else if(k === 'amount'){
-    const a = v === '' ? 0 : Math.round(Number(v));
+    const a = Math.round(Number(v));
     BE_ROWS[i].amount = a;
     BE_ROWS[i].pct = tot ? Math.round(a / tot * 10000) / 100 : 0;
+    BE_ROWS[i].locked = true;
+    beBalance();
   } else if(k === 'offset_days'){
     BE_ROWS[i].offset_days = v === '' ? 0 : Number(v);
   } else {
@@ -16301,11 +16343,14 @@ function beRender(){
     '<th style="width:16%">סכום</th><th style="width:22%">נספר מ־</th><th style="width:12%">ימים</th><th style="width:16%">תאריך</th></tr></thead><tbody>' +
     BE_ROWS.map((r,i)=>'<tr>' +
       '<td><select onchange="beSet(' + i + ',\'label\',this.value)">' + beLabelOpts(r.label) + '</select></td>' +
-      '<td><input class="pct" type="number" min="0" max="100" step="0.01" value="' + esc(String(Math.round((Number(r.pct)||0)*100)/100)) + '" onchange="beSet(' + i + ',\'pct\',this.value)"></td>' +
+      '<td><input class="pct' + (r.locked ? ' be-lk' : '') + '" type="number" min="0" max="100" step="0.01" value="' + esc(String(Math.round((Number(r.pct)||0)*100)/100)) + '" onchange="beSet(' + i + ',\'pct\',this.value)"></td>' +
       /* אחוז וסכום הם שני צדדים של אותו מספר, ולכן שניהם ניתנים להקלדה.
          הסכום הוא הקובע בשמירה כשכל הפעימות נושאות סכום — 33.33% מ-266,019
          אינו מספר שאפשר להקליד כאחוז בלי לאבד שקל. */
-      '<td>' + (tot ? '<input type="number" min="0" step="1" value="' + esc(String(beAmt(r, tot))) +
+      '<td>' + (tot ? '<input type="number" min="0" step="1"' + (r.locked ? ' class="be-lk"' : '') +
+        ' title="' + (r.locked ? 'נקבע ידנית — לא ישתנה אוטומטית. נקה את השדה כדי לשחרר.'
+                               : 'ריק — מתאזן אוטומטית מיתרת ההזמנה') + '"' +
+        ' value="' + esc(String(beAmt(r, tot))) +
         '" onchange="beSet(' + i + ',\'amount\',this.value)">' : '<span class="fin-muted">—</span>') + '</td>' +
       '<td><select onchange="beSet(' + i + ',\'anchor\',this.value)">' + opt(BEAT_ANCHORS, r.anchor) + '</select></td>' +
       '<td>' + (r.anchor === 'fixed' ? '<span class="fin-muted">—</span>' :

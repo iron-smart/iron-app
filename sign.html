@@ -3,6 +3,9 @@
 <title>איירון פיטנס — חתימה דיגיטלית</title>
 <meta property="og:title" content="איירון פיטנס — חתימה דיגיטלית">
 <meta property="og:description" content="מסמך מאובטח לחתימה דיגיטלית מצוות איירון פיטנס. לחצו לפתיחה ולחתימה.">
+<meta property="og:image" content="https://app.ironfitness.co.il/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="IRON FITNESS">
 <meta name="twitter:card" content="summary_large_image">
@@ -149,6 +152,7 @@ function renderProtocol(d){
       :`<div><span class="lbl">מס' הזמנה</span><b>${esc(d.order_number)}</b></div>`}
     <div><span class="lbl">שם לקוח</span><b>${esc(d.customer_name)}</b></div>
     ${addr?`<div><span class="lbl">כתובת</span><b>${esc(addr)}</b></div>`:''}
+    ${d.ship?`<div><span class="lbl">כתובת משלוח</span><b>${esc(d.ship)}</b></div>`:''}
     ${d.city?`<div><span class="lbl">עיר</span><b>${esc(d.city)}</b></div>`:''}
   </div></div>
   <div class="card"><h2>לקוח יקר,</h2>
@@ -162,7 +166,7 @@ function renderProtocol(d){
     <label style="margin-top:14px">חתימה (עם האצבע או העכבר)</label>
     <div class="sig-box"><canvas id="pad1"></canvas><div class="sig-hint" id="hint1">✍️ חתמו כאן</div></div>
     <button type="button" class="btn-clear" id="clear1">🗑 ניקוי חתימה</button>
-    <div class="agree"><input type="checkbox" id="agree"><span id="agree-txt">${esc(d.agree||DEF_AGREE)}${multi?` <b>ההזמנות הפתוחות שלי (${covered.length}): ${covered.map(esc).join(', ')}.</b>`:''}</span></div>
+    <div class="agree"><input type="checkbox" id="agree"><span id="agree-txt">${esc(d.agree||DEF_AGREE)}</span></div>
     <button class="btn-send" id="sendBtn" disabled>שליחת הפרוטוקול החתום ✓</button>
     <div id="err" style="color:#a92f2f;font-weight:700;font-size:.85rem;margin-top:8px"></div>
   </div>
@@ -178,7 +182,7 @@ function renderProtocol(d){
     sendBtn.disabled=true; sendBtn.textContent='שולח...';
     try{
       const r=await fetch(API,{method:'POST',headers:{'content-type':'application/json'},
-        body:JSON.stringify({token,signer_name:document.getElementById('signerName').value.trim(),signature:sig})});
+        body:JSON.stringify({token,signer_name:document.getElementById('signerName').value.trim(),signature:sig,agreed:document.getElementById('agree').checked,agree_text:(document.getElementById('agree-txt')||{}).textContent||''})});
       const dd=await r.json();
       if(!r.ok||!dd.ok) throw new Error(dd.error||'שגיאה');
       show('<div class="v">✅</div><h2 style="margin:10px 0 6px">הפרוטוקול נחתם בהצלחה!</h2><p style="font-size:.9rem;color:#4c5560">תודה רבה. נציג מטעמנו יצור איתך קשר לתיאום מועד ההתקנה.<br><br>צוות איירון פיטנס 💪</p>');

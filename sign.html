@@ -155,6 +155,7 @@ function renderProtocol(d){
     <div><span class="lbl">שם לקוח</span><b>${esc(d.customer_name)}</b></div>
     ${addr?`<div><span class="lbl">כתובת</span><b>${esc(addr)}</b></div>`:''}
     ${d.ship?`<div><span class="lbl">כתובת משלוח${d.ship_from?` (מהזמנה ${esc(d.ship_from)})`:''}</span><b>${esc(d.ship)}</b></div>`:''}
+    ${(d.contact_phone||d.phone)?`<div><span class="lbl">${d.contact_phone?'טלפון איש קשר':'טלפון'}</span><b dir="ltr">${esc(d.contact_phone||d.phone)}</b></div>`:''}
     ${d.city?`<div><span class="lbl">עיר</span><b>${esc(d.city)}</b></div>`:''}
   </div></div>
   <div class="card"><h2>לקוח יקר,</h2>
@@ -167,10 +168,10 @@ function renderProtocol(d){
     <input type="text" id="signerName" value="${esc(d.customer_name)}">
     <label style="margin-top:14px">חתימה (עם האצבע או העכבר)</label>
     <div class="sig-box"><canvas id="pad1"></canvas><div class="sig-hint" id="hint1">✍️ חתמו כאן</div></div>
-    <button type="button" class="btn-clear" id="clear1">🗑 ניקוי חתימה</button>
-    <div class="agree"><input type="checkbox" id="agree"><span id="agree-txt">${esc(d.agree||DEF_AGREE)}</span></div>
+    <button type="button" class="btn-clear" id="clear1">ניקוי חתימה</button>
     <div class="agree"><input type="checkbox" id="auth"><span id="auth-txt">${esc(d.authorized||DEF_AUTH)}</span></div>
-    <button class="btn-send" id="sendBtn" disabled>שליחת הפרוטוקול החתום ✓</button>
+    <div class="agree"><input type="checkbox" id="agree"><span id="agree-txt">${esc(d.agree||DEF_AGREE)}</span></div>
+    <button class="btn-send" id="sendBtn" disabled>שליחת הפרוטוקול החתום</button>
     <div id="err" style="color:#a92f2f;font-weight:700;font-size:.85rem;margin-top:8px"></div>
   </div>
   <div class="foot">צוות איירון פיטנס בע"מ · טלפון 074-7779988</div>
@@ -194,7 +195,7 @@ function renderProtocol(d){
       const dd=await r.json();
       if(!r.ok||!dd.ok) throw new Error(dd.error||'שגיאה');
       show('<div class="v">✅</div><h2 style="margin:10px 0 6px">הפרוטוקול נחתם בהצלחה!</h2><p style="font-size:.9rem;color:#4c5560">תודה רבה. נציג מטעמנו יצור איתך קשר לתיאום מועד ההתקנה.<br><br>צוות איירון פיטנס 💪</p>');
-    }catch(e){ document.getElementById('err').textContent='השליחה נכשלה: '+e.message+' — נסו שוב'; sendBtn.disabled=false; sendBtn.textContent='שליחת הפרוטוקול החתום ✓'; }
+    }catch(e){ document.getElementById('err').textContent='השליחה נכשלה: '+e.message+' — נסו שוב'; sendBtn.disabled=false; sendBtn.textContent='שליחת הפרוטוקול החתום'; }
   };
 }
 

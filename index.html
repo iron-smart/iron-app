@@ -1917,6 +1917,15 @@ td.lb-today .lb-dt{ background-color:transparent; }
 .tk-k-lead{ background-color:#e8f3ff; color:#1c4e80; border-color:#c7e0f7; }
 .tk-k-deal{ background-color:#eafaf1; color:#14663f; border-color:#c5ecd8; }
 .tk-k-customer{ background-color:#f5eeff; color:#5b3b8c; border-color:#e0d0f5; }
+/* 6.135.0 — שני סוגים שלא היה להם שבב: משימה ופגישה. שרשרת העדכונים
+   מציגה תגית מקור לכל שורה, ובלעדיהם השבב היה יוצא אפור וללא זיהוי. */
+.tk-k-task{ background-color:#fff4e5; color:#8a5a00; border-color:#f5dcb3; }
+.tk-k-meeting{ background-color:#e9fbf4; color:#0f6f4c; border-color:#c2ecdb; }
+/* שורת מערכת (שינוי סטטוס · שלב · בעלות) — נקראת, לא נערכת. */
+.lbu-row.lbu-sys .lbu-body{ color:#7c8798; font-style:italic; }
+.lbu-xref{ font-size:11px; color:#94a3b8; background:none; padding:0; margin:0; }
+.lbu-bar{ display:flex; gap:6px; flex-wrap:wrap; margin:0 0 8px; }
+.lbu-src{ margin-inline-end:6px; }
 .tk-done{ text-decoration:line-through; color:#94a3b8; }
 .lb-duew{ display:inline-flex; align-items:center; gap:5px; }
 .lb-bang, .lb-clk{ width:15px; height:15px; flex:none; display:block; }
@@ -2127,15 +2136,9 @@ td.lb-today .lb-dt{ background-color:transparent; }
 .lb-sob > label{ font-size:11.5px; color:var(--ink-3); margin:0 0 0 2px; min-height:0; }
 .lb-sob select{ width:auto; min-width:130px; }
 .lb-sob .lbo-wrap{ margin:0; }
-/* ---- ציר פעילות מקובץ (6.114.0) ---- */
-.lb-acc{ margin-top:12px; border:1px solid var(--line); border-radius:10px;
-  background-color:#fff; overflow:hidden; }
-.lb-acc > summary{ cursor:pointer; padding:9px 12px; font-size:13px; font-weight:800;
-  color:var(--ink-2); background-color:#f7f9fc; list-style:none; }
-.lb-acc > summary::-webkit-details-marker{ display:none; }
-.lb-acc > summary::before{ content:"▸"; margin-inline-end:6px; display:inline-block; }
-.lb-acc[open] > summary::before{ content:"▾"; }
-.lb-acc > div{ padding:4px 12px 10px; }
+/* 6.135.0 — האקורדיון "ציר פעילות" ירד: הוא ורשימת העדכונים אוחדו
+   לרשימה אחת עם מסנן (הכרעת רומן 23/08/2026). ה-CSS יורד איתו — .tabs
+   שנשאר כזבל אחרי ה-side-nav כבר לימד שכלל מת מבלבל את מי שיחפש אותו. */
 .lb-convrow{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:0 0 12px; }
 /* 6.119.0 — רומן: "כפתור פתח לקוח והצעת מחיר בפריוריטי אמרנו
    שמקטינים ועושים קומפקטי". ⚠️ ממוקד #leadModal: .btn ו-.note
@@ -2257,7 +2260,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.134.0</div>
+      <div class="ver">גרסה 6.135.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2386,7 +2389,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.134.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.135.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -8768,7 +8771,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'paywindow-2026-08-23a';
+const BUILD_ID = 'updchain-2026-08-23g';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -14155,6 +14158,65 @@ function ctxOf(type, id){
   }
   return out;
 }
+/* ═══ שרשרת העדכונים (6.135.0) ══════════════════════════════════════
+   רומן, 23/08/2026: "אני רוצה לראות עדכונים בכל הכרטיסים עם תגית מסודרת
+   מהיכן שנכתב". ולכן **שרשרת מקסימלית + תגית**, ולא סינון לפי כיוון:
+   הכול נראה מכל מקום, וההבחנה נעשית בשבב המקור.
+
+   🔴 **הישות עצמה תמיד נכנסת ראשונה, גם כשאין לה שום קישור.** נמדד:
+      51 עסקאות בלי ליד ובלי לקוח, ו-200 משימות בלי קישור כלל. עד 6.134
+      לשתי הקבוצות לא היה יומן עדכונים בכלל — לא כתיבה ולא קריאה.
+
+   ℹ️ הסינון בשאילתה הוא על linked_id בלבד. כל המזהים uuid ואינם מתנגשים
+      בין הטבלאות, ולכן זוג (type,id) מיותר; linked_type עדיין נשלף — הוא
+      מזין את התגית. */
+const UPD_KIND_LBL = { lead:'ליד', deal:'עסקה', customer:'לקוח', task:'משימה', meeting:'פגישה', payment:'תשלום' };
+function chainOf(type, id){
+  const nodes = [], seen = new Set();
+  const add = (t, i, nm, xref)=>{
+    if(!t || !i || seen.has(i)) return;
+    seen.add(i); nodes.push({ type:t, id:i, name:nm||'', xref:!!xref });
+  };
+  /* 🔴 `ctxOf` מכיר lead/deal/customer בלבד — **אין לו ענף task**.
+     קריאה נאיבית `ctxOf('task', id)` מחזירה שלושה null, והשרשרת של משימה
+     מצטמצמת למשימה עצמה: כרטיס המשימה היה מציג את העדכון שלו ותו לא.
+     נתפס ב-cardtest ולא בעין. המשימה נפתרת דרך הקישור שלה. */
+  let x;
+  if(type==='task'){
+    const _t = (TASKS||[]).find(t=>t.id===id);
+    x = _t ? ctxOf(_t.linked_type, _t.linked_id) : { lead:null, deal:null, cust:null };
+  } else x = ctxOf(type, id);
+  let cust = x.cust;
+  if(type==='customer') cust = (CUSTS||[]).find(k=>k.id===id) || cust;
+
+  if(type==='lead')          add('lead', id, (x.lead||{}).full_name);
+  else if(type==='deal')     add('deal', id, (x.deal||{}).name);
+  else if(type==='customer') add('customer', id, (cust||{}).name);
+  else if(type==='task')     add('task', id, ((TASKS||[]).find(t=>t.id===id)||{}).name);
+
+  if(x.lead) add('lead', x.lead.id, x.lead.full_name);
+  if(x.deal) add('deal', x.deal.id, x.deal.name);
+  if(cust)   add('customer', cust.id, cust.name);
+
+  /* 🔴 ליד שהוצלב לפי טלפון מסומן xref. `lbCustId` מחזיר ריק על עמימות
+     **בכוונה**, אבל ל-custLeads/cxLeads אין שער כזה — שני לקוחות
+     שחולקים טלפון יראו שניהם את אותו ליד. הסימון הוא מה שמונע הצגת
+     השערה כעובדה, בדיוק הדפוס של cuLeadsBlock. */
+  if(cust){
+    for(const l of custLeads(cust)) add('lead', l.id, l.full_name, l.customer_id!==cust.id);
+    for(const d of (DEALS||[])) if(d.customer_id===cust.id) add('deal', d.id, d.name);
+  }
+  if(x.lead) for(const d of (DEALS||[])) if(d.lead_id===x.lead.id) add('deal', d.id, d.name);
+
+  /* המשימות והפגישות של כל מה שנאסף. הסט מצולם לפני הלולאה כדי שמשימה
+     שנוספה לא תגרור משימות של משימות. */
+  const ent = new Set(nodes.map(n=>n.id));
+  for(const t of (TASKS||[])) if(t.linked_id && ent.has(t.linked_id)) add('task', t.id, t.name);
+  for(const m of (MEETS||[])) if(m.linked_id && ent.has(m.linked_id)) add('meeting', m.id, m.subject);
+
+  const by = {}; nodes.forEach(n=>{ by[n.id]=n; });
+  return { nodes, ids: nodes.map(n=>n.id), by };
+}
 /* ═══ בורד המשימות (6.121.0) ═════════════════════════════════════ */
 /* 6.130.0 — סדר לפי הכרעת רומן 23/08/2026. "בעלים" עולה מיד אחרי "משימה",
    לעמודת הפעולה יש כותרת ("ביצוע"), ונוספה "תאריך יצירה".
@@ -14615,24 +14677,14 @@ function tkSnapshot(id){
   TASK_CARD_FIELDS.forEach(([elId])=>{ const el=document.getElementById(elId); if(el) snap[elId]=String(el.value ?? ''); });
   TASK_SNAP=snap;
 }
-/* יעד העדכון: הליד כשיש, המשימה עצמה כשאין. נקודה אחת — הכרטיס,
-   ההוספה, הטעינה וציר הפעילות כולם נגזרים ממנה. */
-function tkUpdTarget(t){
-  const x = ctxOf(t.linked_type, t.linked_id);
-  return x.lead ? {type:'lead', id:x.lead.id} : {type:'task', id:t.id};
-}
-window.tkActsLoad = (id, type)=>{
-  const d = document.getElementById('tk-acc'); if(!d || !d.open || d.dataset.loaded) return;
-  d.dataset.loaded = '1';
-  activityHtml(type, id).then(h=>{ const el=document.getElementById('tk-acts');
-    if(el) el.innerHTML = h || '<div class="note">אין פעילות רשומה.</div>'; });
-};
+/* 6.135.0 — tkUpdTarget נמחקה. כל תפקידה היה להפנות את העדכון לליד,
+   ומ-6.135.0 העדכון נרשם על המשימה עצמה והשרשרת מציגה אותו בכל מקום.
+   פונקציה שנשארת בלי קורא היא המחלקה של lbOwnerPromote. */
 window.openTask = (id)=>{
   const t = (TASKS||[]).find(x=>x.id===id); if(!t) return;
   const x = ctxOf(t.linked_type, t.linked_id);
   const editable = window.canEdit('crm.tasks');
   const fmtDT = v=> v?new Date(v).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
-  const u = tkUpdTarget(t);
   const ent = x.lead || x.deal || x.cust || null;
   const entName = (x.lead && x.lead.full_name) || (x.deal && x.deal.name) || (x.cust && x.cust.name) || '';
   const entPhone = (x.lead && x.lead.phone) || (x.cust && x.cust.phone) || '';
@@ -14677,11 +14729,10 @@ window.openTask = (id)=>{
 
       <div class="form-sep">עדכונים</div>
       <div class="span4">
-        <div class="note" style="margin-bottom:6px">${u.type==='lead'
-          ? 'העדכון נרשם על הפנייה, ולכן הוא מופיע גם בכרטיס הליד וגם בכרטיס הלקוח. עריכה ומחיקה — לכותב בלבד.'
-          : 'למשימה זו אין פנייה מקושרת, ולכן העדכון נרשם על המשימה עצמה.'}</div>
-        ${editable?`<div class="lbu-add"><textarea id="lb-upd" rows="2" placeholder="מה קרה?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${jsq(u.id)}','${jsq(u.type)}')">הוספה</button></div>`:''}
-        <div class="lbu-list" id="lb-updlist"><div class="note">טוען…</div></div>
+        <div class="note" style="margin-bottom:6px">העדכון נרשם על המשימה, ומוצג גם בכרטיס הפנייה, העסקה והלקוח עם תגית מקור. עריכה ומחיקה — לכותב בלבד.</div>
+        ${window.canEdit('crm')?`<div class="lbu-add"><textarea id="tk-upd" rows="2" placeholder="מה קרה?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${jsq(id)}','task','tk')">הוספה</button></div>`:''}
+        <div class="lbu-bar" id="tk-updbar"></div>
+        <div class="lbu-list" id="tk-updlist"><div class="note">טוען…</div></div>
       </div>
     </div>
     <div class="modal-actions">
@@ -14695,9 +14746,7 @@ window.openTask = (id)=>{
       ${mts.map(m=>`<div class="row"><span class="k">פגישה · ${m.meet_date?new Date(m.meet_date+'T00:00').toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'}):'—'}</span><span class="v"><a href="#" onclick="event.preventDefault();openMeet('${jsq(m.id)}')">${esc(m.subject||'פגישה')}</a> <span class="pill ${meetStClass(m.status)}">${esc(m.status)}</span></span></div>`).join('')}
       ${(!sib.length&&!mts.length)?'<div class="note">אין משימות או פגישות נוספות על הפנייה הזאת.</div>':''}
     </section>
-    <details class="lb-acc" id="tk-acc" ontoggle="tkActsLoad('${jsq(u.id)}','${jsq(u.type)}')">
-      <summary>ציר פעילות</summary><div id="tk-acts"><div class="note">לחצו כדי לטעון…</div></div>
-    </details>`;
+`;
   /* 🔴 **לפני** ה-snapshot. החוזה הוא "מה שהוצג מול מה שיש עכשיו", ואתחול
      שיבוא אחריו היה נרשם כשינוי של המשתמש כבר בשמירה הראשונה — כלומר
      כתיבת linked_* על כל שמירה, גם כשאיש לא נגע בקישור. */
@@ -14706,7 +14755,7 @@ window.openTask = (id)=>{
   mountCard('tkModal', ()=>openTask(id));
   try{ window.markEmpty('tkModal'); }catch(_e){}
   if(!editable) document.querySelectorAll('#tkSheet input,#tkSheet select,#tkSheet textarea').forEach(el=>el.disabled=true);
-  lbLoadUpdates(u.id, u.type);
+  lbLoadUpdates(id, 'task', 'tk');
 };
 window.saveTask = async (id)=>{
   const t = (TASKS||[]).find(x=>x.id===id); if(!t) return;
@@ -14996,9 +15045,16 @@ function cuLeadsBlock(id){
         `<div class="row" style="cursor:pointer" onclick="goCard(()=>openTask('${jsq(t.id)}'))">`
         + `<span class="k">${t.due_at?new Date(t.due_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'}</span>`
         + `<span class="v">${esc(t.name||'')} ${mdPill(t.status,TASK_ST_COLORS)}</span></div>`).join('') : '')
-    + (ld.length ? `<h2 class="sec">עדכונים מהפניות</h2>`
-        + `<div class="note">העדכונים נרשמים על הפנייה. להוספה — מכרטיס הליד, המשימה או תהליך המכירה.</div>`
-        + `<div class="lbu-list" id="cu-updlist"><div class="note">טוען…</div></div>` : '');
+    /* 🔴 6.135.0 — **בלי תנאי `ld.length`.** לקוח שאין לו ליד מוצלב
+       לא קיבל בלוק עדכונים בכלל, כלומר לא היה לו שום מקום לרשום בו דבר.
+       ומאותה סיבה נוסף כאן כותב: היעד חד-משמעי — הלקוח עצמו — ולכן
+       הנימוק ל"קריאה בלבד" ("היה חייב לבחור אחד מהלידים, החלטה שקטה")
+       כבר אינו קיים. */
+    + `<h2 class="sec">עדכונים</h2>`
+    + `<div class="note">העדכון נרשם על הלקוח, ומוצג גם בכרטיסי הפניות, העסקאות והמשימות שלו עם תגית מקור.</div>`
+    + (window.canEdit('crm') ? `<div class="lbu-add"><textarea id="cu-upd" rows="2" placeholder="מה קרה עם הלקוח הזה?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${jsq(id)}','customer','cu')">הוספה</button></div>` : '')
+    + `<div class="lbu-bar" id="cu-updbar"></div>`
+    + `<div class="lbu-list" id="cu-updlist"><div class="note">טוען…</div></div>`;
   /* 🔴 **לפני** סקשן האתרים ולא אחריו. `sitestest` אוכפת שסקשן
      האתרים הוא האחרון בכרטיס, והנימוק כתוב שם: עוטף מאוחר מזריק שורת
      "מחירון" אחרי ה-.row הראשון. הבלוק הזה הוא היסטוריית CRM ומקומו
@@ -15007,28 +15063,11 @@ function cuLeadsBlock(id){
         והבלוק נופל לסוף — ולכן שני המסלולים, ולא הנחה שהסקשן קיים. */
   const _sh = [...sheet.querySelectorAll('h2.sec')].find(e=>e.textContent.indexOf('אתרי הלקוח')>=0);
   if(_sh) sheet.insertBefore(box, _sh); else sheet.appendChild(box);
-  if(ld.length) cuUpdLoad(ld);
+  lbLoadUpdates(id, 'customer', 'cu');
 }
-/* שאילתה אחת ל**כל** הלידים של הלקוח. `.in` ולא לולאה: לקוח עם ארבעה
-   לידים היה מייצר ארבע נסיעות רשת בפתיחת כרטיס. */
-async function cuUpdLoad(ld){
-  const box = document.getElementById('cu-updlist'); if(!box) return;
-  const byId = {}; ld.forEach(l=>{ byId[l.id]=l; });
-  const { data, error } = await sb.schema('crm').from('activities')
-    .select('id,at,body,actor_id,linked_id').eq('linked_type','lead')
-    .in('linked_id', ld.map(l=>l.id)).eq('kind','עדכון')
-    .order('at',{ascending:false}).limit(200);
-  if(error){ box.innerHTML='<div class="note">טעינת העדכונים נכשלה.</div>'; return; }
-  if(!data || !data.length){ box.innerHTML='<div class="note">אין עדכונים עדיין.</div>'; return; }
-  box.innerHTML = data.map(a=>{
-    const who = (a.actor_id && LOWN_BY[a.actor_id]) ? LOWN_BY[a.actor_id].name : 'משתמש שאינו ברשימה';
-    const when = new Date(a.at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
-    /* מאיזה ליד — כשיש כמה, בלי זה אי אפשר לדעת על מה העדכון. */
-    const src = (ld.length>1 && byId[a.linked_id]) ? `<span class="lbu-who">${esc(byId[a.linked_id].full_name||'')}</span>` : '';
-    return `<div class="lbu-row"><span class="lbu-who">${esc(who)}</span>${src}`
-      + `<span class="lbu-when">${esc(when)}</span><span class="lbu-body">${esc(a.body||'')}</span></div>`;
-  }).join('');
-}
+/* 6.135.0 — cuUpdLoad נמחקה. lbLoadUpdates עם prefix 'cu' עושה את אותו
+   דבר ורחב ממנה: היא סיננה linked_type='lead' בלבד, ולכן עדכון על הלקוח
+   עצמו, על עסקה או על משימה מעולם לא הופיע בכרטיס הלקוח. */
 $('#custSearch').addEventListener('input', renderCustomers);
 $('#taskSearch').addEventListener('input', renderTasks);
 
@@ -18054,13 +18093,10 @@ window.saveOrd = async (id)=>{
   visRefreshOrders();
 };
 
-/* ===== ציר פעילות (לכרטיסי ליד/עסקה) ===== */
-async function activityHtml(linkedType, id){
-  const { data } = await sb.schema('crm').from('activities').select('at,kind,body,actor_id').eq('linked_type',linkedType).eq('linked_id',id).order('at',{ascending:false}).limit(200);
-  if(!data || !data.length) return '';
-  return `<h2 class="sec">ציר פעילות</h2>` + data.map(a=>
-    `<div class="row"><span class="k" style="font-size:12px;white-space:nowrap">${new Date(a.at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}${a.actor_id&&LOWN_BY[a.actor_id]?' · '+esc(LOWN_BY[a.actor_id].name):''}</span><span class="v" style="font-weight:400;font-size:13px">${esc(a.body||a.kind)}</span></div>`).join('');
-}
+/* 6.135.0 — activityHtml נמחקה. "ציר פעילות" ו"עדכונים" אוחדו לרשימה
+   אחת עם מסנן (הכרעת רומן 23/08/2026), ושורות המערכת מוצגות בה כ-.lbu-sys
+   דרך lbLoadUpdates. שלוש הפונקציות שקראו לה — lbActsLoad · tkActsLoad ·
+   dlActsLoad — ירדו איתה. */
 
 /* ===== עסקאות ===== */
 /* 🔴 6.126.0 — רשימת השלבים לפי הכרעת רומן (22/08/2026):
@@ -18351,11 +18387,10 @@ window.openDeal = async (id)=>{
 
       <div class="form-sep">עדכונים</div>
       <div class="span4">
-        <div class="note" style="margin-bottom:6px">${u
-          ? 'העדכון נרשם על הפנייה, ולכן הוא מופיע גם בכרטיס הליד, גם בכרטיס המשימה וגם בכרטיס הלקוח.'
-          : 'העסקה אינה מקושרת לפנייה, ולכן אין כאן יומן עדכונים. קישור לליד ייצור אותו.'}</div>
-        ${u&&window.canEdit('crm.leads')?`<div class="lbu-add"><textarea id="lb-upd" rows="2" placeholder="מה קרה עם העסקה הזאת?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${jsq(u.id)}','lead')">הוספה</button></div>`:''}
-        ${u?'<div class="lbu-list" id="lb-updlist"><div class="note">טוען…</div></div>':''}
+        <div class="note" style="margin-bottom:6px">העדכון נרשם על העסקה, ומוצג גם בכרטיס הפנייה, המשימה והלקוח עם תגית מקור. עריכה ומחיקה — לכותב בלבד.</div>
+        ${window.canEdit('crm')?`<div class="lbu-add"><textarea id="dl-upd" rows="2" placeholder="מה קרה עם העסקה הזאת?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${jsq(id)}','deal','dl')">הוספה</button></div>`:''}
+        <div class="lbu-bar" id="dl-updbar"></div>
+        <div class="lbu-list" id="dl-updlist"><div class="note">טוען…</div></div>
       </div>
     </div>
     <div class="err" id="d-err"></div>
@@ -18364,18 +18399,12 @@ window.openDeal = async (id)=>{
       ${mts.map(m=>`<div class="row"><span class="k">פגישה · ${m.meet_date?new Date(m.meet_date+'T00:00').toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'}):'—'}</span><span class="v"><a href="#" onclick="event.preventDefault();openMeet('${jsq(m.id)}')">${esc(m.subject||'פגישה')}</a> <span class="pill ${meetStClass(m.status)}">${esc(m.status)}</span></span></div>`).join('')}
       ${(!tsk.length&&!mts.length)?'<div class="note">אין משימות או פגישות פתוחות.</div>':''}
     </section>
-    <details class="lb-acc" id="dl-acc" ontoggle="dlActsLoad('${jsq(id)}')">
-      <summary>ציר פעילות</summary><div id="deal-acts"><div class="note">לחצו כדי לטעון…</div></div>
-    </details>`;
+`;
   dlPipeDraw(id);
   mountCard('dealModal', ()=>openDeal(id));
-  if(u) lbLoadUpdates(u.id, 'lead');
-};
-window.dlActsLoad = (id)=>{
-  const el = document.getElementById('dl-acc'); if(!el || !el.open || el.dataset.loaded) return;
-  el.dataset.loaded = '1';
-  activityHtml('deal', id).then(h=>{ const box=document.getElementById('deal-acts');
-    if(box) box.innerHTML = h || '<div class="note">אין פעילות רשומה.</div>'; });
+  /* 6.135.0 — תמיד, ולא רק כשיש ליד. 51 עסקאות במסד אין להן לא ליד ולא
+     לקוח, ועד כאן הן לא קיבלו יומן עדכונים בכלל — לא קריאה ולא כתיבה. */
+  lbLoadUpdates(id, 'deal', 'dl');
 };
 /* הרצועה — אותה שפה של הלידים בדיוק: מילוי **מצטבר** עד השלב הנוכחי,
    כולו בצבע השלב הנוכחי (הכרעת רומן 20/08), ו-.on מסמן היכן עומדים.
@@ -19392,8 +19421,9 @@ window.openLead = (id)=>{
 
       <div class="form-sep">עדכונים</div>
       <div class="span4">
-        <div class="note" style="margin-bottom:6px">כל עדכון נשמר בשם הכותב ובשעת הכתיבה. עריכה ומחיקה — לכותב בלבד.</div>
-        ${editable?`<div class="lbu-add"><textarea id="lb-upd" rows="2" placeholder="מה קרה עם הליד הזה?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${l.id}')">הוספה</button></div>`:''}
+        <div class="note" style="margin-bottom:6px">כל עדכון נשמר בשם הכותב ובשעת הכתיבה, ומוצג בכל כרטיסי השרשרת עם תגית מקור. עריכה ומחיקה — לכותב בלבד.</div>
+        ${window.canEdit('crm')?`<div class="lbu-add"><textarea id="lb-upd" rows="2" placeholder="מה קרה עם הליד הזה?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${jsq(l.id)}','lead','lb')">הוספה</button></div>`:''}
+        <div class="lbu-bar" id="lb-updbar"></div>
         <div class="lbu-list" id="lb-updlist"><div class="note">טוען…</div></div>
       </div>
     </div>
@@ -19412,14 +19442,7 @@ window.openLead = (id)=>{
     </section>
     <div id="convResultSlot"></div>
     <div id="convResult"></div>
-    <!-- 🔴 6.114.0 — רומן: "ציר פעילות הצג בתחתית מקובץ. רק אם ארצה
-         לראות את ההיסטוריה אני אפתח."
-         ⚠️ הטעינה עצלה: activityHtml שולפת 200 שורות מהמסד, ואחרי
-         מיגרציית 1,839 ההערות יש הרבה יותר מה לשלוף. אין סיבה לשלם
-         על זה בכל פתיחת כרטיס. -->
-    <details class="lb-acc" id="lb-acc" ontoggle="lbActsLoad('${jsq(l.id)}')">
-      <summary>ציר פעילות</summary><div id="lead-acts"><div class="note">לחצו כדי לטעון…</div></div>
-    </details>`;
+`;
   /* 6.118.0 — no-op מוגן מאז שבורר הסטטוס ירד מהכרטיס: תת-הסטטוס
      נערך ברצועה (lb-psub). נשארת כי הסרתה מייתמת שלוש פונקציות
      עזר, ואין בכך רווח. ניקוי המשך, לא חוב שקט. */
@@ -19431,13 +19454,7 @@ window.openLead = (id)=>{
   mountCard('leadModal', ()=>openLead(id));
   try{ window.markEmpty('leadModal'); }catch(_e){}
   if(!editable) document.querySelectorAll('#leadSheet input,#leadSheet select,#leadSheet textarea,#leadSheet .lb-pseg,#leadSheet .lb-psub button').forEach(el=>el.disabled=true);
-  lbLoadUpdates(id);
-};
-/* טעינה עצלה של ציר הפעילות — פעם אחת לפתיחה, ורק כשנפתח בפועל. */
-window.lbActsLoad = (id)=>{
-  const d = document.getElementById('lb-acc'); if(!d || !d.open || d.dataset.loaded) return;
-  d.dataset.loaded = '1';
-  activityHtml('lead', id).then(h=>{ const el=document.getElementById('lead-acts'); if(el) el.innerHTML=h; });
+  lbLoadUpdates(id, 'lead', 'lb');
 };
 window.saveLead = async (id)=>{
   const l = LEADS.find(x=>x.id===id); if(!l) return;
@@ -19773,72 +19790,142 @@ window.lbSetOwner = async (leadId, ownerKey, quiet)=>{
    (activities_actor_is_self) דוחה ב-42501 כל שורה שבה actor_id אינו
    auth.uid(). בלי זה "החותמת" הייתה ניתנת לזיוף בידי כל מי שיש לו
    can_edit('crm'), וחותמת שניתן לזייף אינה חותמת. */
-/* 🔴 6.122.0 — `type` אופציונלי, ברירת מחדל 'lead'. הכרעת רומן:
-   "עדכון נרשם **תמיד על הליד**". כרטיס המשימה מעביר את מזהה הליד
-   שנפתר ב-ctxOf, ולכן אין כאן מסלול כתיבה שני אלא אותו מסלול עם יעד
-   שנפתר במקום אחר. 'task' נכנס **רק** כשאין ליד כלל (197 משימות,
-   17 פתוחות) — אחרת העדכון היה נכתב לשום מקום.
-   ⚠️ השם והחתימה לא שונו: leadstest חותכת את המקור לפי המחרוזות
-      `window.lbUpdEdit` ו-`async function lbLoadUpdates(`, וקוראת
-      ל-`window.lbAddUpdate('L1')` בפועל. */
-window.lbAddUpdate = async (leadId, type)=>{
-  const el = document.getElementById('lb-upd'); if(!el) return;
+/* 🔴 6.135.0 — יעד הכתיבה הוא **הישות שבכרטיסה אתה נמצא**, והקריאה
+   היא על כל השרשרת עם תגית מקור (הכרעת רומן, 23/08/2026: "אני רוצה לראות
+   עדכונים בכל הכרטיסים עם תגית מסודרת מהיכן שנכתב"). עד 6.134 כל עדכון
+   הופנה לליד, ומשימה/עסקה/לקוח בלי ליד נשארו בלי יומן בכלל.
+
+   🔴 **וה-prefix אינו קישוט — הוא תיקון אובדן נתונים.** id="lb-upd"
+      ו-id="lb-updlist" היו משותפים לשלושה כרטיסים, ו-closeCards רק מוסיף
+      hidden בלי לנקות innerHTML. לכן getElementById החזיר את **הראשון
+      בסדר ה-DOM** — הגיליון המוסתר של המשימה — ועדכון שנכתב בכרטיס הליד
+      נבלע עם "אין מה להוסיף". נמדד בדפדפן מול pay4517:
+      getElementByIdOwner='tkSheet' · written=0 · leadPane='טוען…' לנצח.
+
+   ⚠️ החתימות לא שונו: leadstest חותכת את המקור לפי `window.lbUpdEdit`
+      ו-`async function lbLoadUpdates(`, וקוראת ל-`window.lbAddUpdate('L1')`.
+      ה-prefix הוא פרמטר נוסף שברירת מחדלו 'lb'. */
+const UPD_CHUNK = 80, UPD_LIMIT = 200;
+let UPD_CTX = null;
+function updCtx(id, type, pfx){
+  if(!UPD_CTX || UPD_CTX.id!==id || UPD_CTX.pfx!==pfx)
+    UPD_CTX = { id:id, type:type, pfx:pfx, sys:false, only:false, chain:chainOf(type, id) };
+  return UPD_CTX;
+}
+window.updSys  = on=>{ if(UPD_CTX){ UPD_CTX.sys  = !!on; lbLoadUpdates(UPD_CTX.id, UPD_CTX.type, UPD_CTX.pfx); } };
+window.updOnly = on=>{ if(UPD_CTX){ UPD_CTX.only = !!on; lbLoadUpdates(UPD_CTX.id, UPD_CTX.type, UPD_CTX.pfx); } };
+/* ⚠️ מנות של 80 מזהים. שרשרת של לקוח מונה עד 45 עסקאות + הלידים
+   המוצלבים + כל המשימות שלהם, ו-supabase-js שולח select כ-GET: in.(...)
+   של מאות uuid הוא כ-11KB ב-query string — הטווח שבו proxy מחזיר 414.
+   הכשל היה מוצג כ"טעינת העדכונים נכשלה", **ורק אצל הלקוחות הגדולים**. */
+async function updFetch(ids, withSys){
+  const out = [];
+  for(let i=0; i<ids.length; i+=UPD_CHUNK){
+    let q = sb.schema('crm').from('activities')
+      .select('id,at,body,actor_id,kind,linked_type,linked_id')
+      .in('linked_id', ids.slice(i, i+UPD_CHUNK));
+    if(!withSys) q = q.eq('kind','עדכון');
+    const r = await q.order('at',{ascending:false}).limit(UPD_LIMIT);
+    if(r.error) return { error:r.error };
+    for(const row of (r.data||[])) out.push(row);
+  }
+  /* המיון והחיתוך על הסט **הממוזג** — אחרת UPD_LIMIT משנה משמעות בשקט
+     מ"פר-מנה" ל"לכל השרשרת". */
+  out.sort((a,b)=> String(b.at).localeCompare(String(a.at)));
+  return { data: out.slice(0, UPD_LIMIT) };
+}
+/* יומן העדכונים — הוספה.
+   ⚠️ actor_id נשלח מהלקוח **אבל אינו נסמך עליו**: policy רסטריקטיבית
+   (activities_actor_is_self) דוחה ב-42501 כל שורה שבה actor_id אינו
+   auth.uid(). חותמת שניתן לזייף אינה חותמת. */
+window.lbAddUpdate = async (id, type, pfx)=>{
+  const p = pfx || (UPD_CTX && UPD_CTX.pfx) || 'lb';
+  const el = document.getElementById(p+'-upd'); if(!el) return;
   const body = (el.value||'').trim();
   if(!body){ toast('אין מה להוסיף'); return; }
   const _t = type || 'lead';
   const { error } = await sb.schema('crm').from('activities').insert({
-    actor_id: ME.id, linked_type:_t, linked_id: leadId, kind:'עדכון', body: body });
+    actor_id: ME.id, linked_type:_t, linked_id: id, kind:'עדכון', body: body });
   if(error){ toast('שמירת העדכון נכשלה — '+error.message); return; }
   el.value=''; toast('העדכון נשמר ✓');
-  lbLoadUpdates(leadId, _t);
+  lbLoadUpdates(id, _t, p);
 };
 /* 6.108.0 — עריכה ומחיקה של עדכון. השרת אוכף; כאן רק ה-UI.
    ⚠️ שתי ה-policies נוספו ב-19/08/2026 יחד עם
       `grant update, delete on crm.activities to authenticated` — בלי
       ה-grant ה-policies קיימות והלקוח מקבל 42501. */
-window.lbUpdEdit = (actId, leadId, type)=>{
+window.lbUpdEdit = (actId, id, type, pfx)=>{
   const row = document.querySelector(`.lbu-row[data-upd="${CSS.escape(actId)}"]`); if(!row) return;
   const body = row.querySelector('.lbu-body'); if(!body || row.querySelector('.lbu-edit')) return;
   const cur = body.textContent || '';
+  const q0=jsq(actId), q1=jsq(id), q2=jsq(type||'lead'), q3=jsq(pfx||'lb');
   body.outerHTML = `<span class="lbu-edit"><textarea rows="2">${esc(cur)}</textarea>`
-    + `<button type="button" class="chip" onclick="lbUpdSave('${jsq(actId)}','${jsq(leadId)}','${jsq(type||'lead')}')">שמירה</button>`
-    + `<button type="button" class="chip" onclick="lbLoadUpdates('${jsq(leadId)}','${jsq(type||'lead')}')">ביטול</button></span>`;
+    + `<button type="button" class="chip" onclick="lbUpdSave('${q0}','${q1}','${q2}','${q3}')">שמירה</button>`
+    + `<button type="button" class="chip" onclick="lbLoadUpdates('${q1}','${q2}','${q3}')">ביטול</button></span>`;
 };
-window.lbUpdSave = async (actId, leadId, type)=>{
+window.lbUpdSave = async (actId, id, type, pfx)=>{
   const row = document.querySelector(`.lbu-row[data-upd="${CSS.escape(actId)}"]`); if(!row) return;
   const ta = row.querySelector('.lbu-edit textarea'); if(!ta) return;
   const body = (ta.value||'').trim();
   if(!body){ toast('עדכון ריק — למחיקה יש כפתור נפרד'); return; }
   const { error } = await sb.schema('crm').from('activities').update({ body }).eq('id', actId);
   if(error){ toast('העריכה נכשלה — '+error.message); return; }
-  toast('העדכון נערך ✓'); lbLoadUpdates(leadId, type);
+  toast('העדכון נערך ✓'); lbLoadUpdates(id, type, pfx);
 };
-window.lbUpdDel = async (actId, leadId, type)=>{
+window.lbUpdDel = async (actId, id, type, pfx)=>{
   if(!confirm('למחוק את העדכון? הפעולה אינה הפיכה.')) return;
   const { error } = await sb.schema('crm').from('activities').delete().eq('id', actId);
   if(error){ toast('המחיקה נכשלה — '+error.message); return; }
-  toast('העדכון נמחק ✓'); lbLoadUpdates(leadId, type);
+  toast('העדכון נמחק ✓'); lbLoadUpdates(id, type, pfx);
 };
-async function lbLoadUpdates(leadId, type){
-  const box = document.getElementById('lb-updlist'); if(!box) return;
+async function lbLoadUpdates(id, type, pfx){
+  const p = pfx || 'lb';
+  const box = document.getElementById(p+'-updlist'); if(!box) return;
   const _t = type || 'lead';
-  const { data, error } = await sb.schema('crm').from('activities')
-    .select('id,at,body,actor_id,kind').eq('linked_type',_t).eq('linked_id',leadId)
-    .eq('kind','עדכון').order('at',{ascending:false}).limit(200);
+  const ctx = updCtx(id, _t, p);
+  const ids = ctx.only ? [id] : ctx.chain.ids;
+  /* ⚠️ "גם שינויי מערכת" כבוי כברירת מחדל, ומ-23/08/2026 זה קריטי ולא
+     קוסמטי: יישור הסטטוסים היומי ממאנדיי מייצר **כ-215 שורות מערכת ביום**
+     (175 'שינוי סטטוס' + 40 'שינוי שלב'). בלי הכיבוי הן היו מציפות את
+     1,840 העדכונים האמיתיים תוך שבוע. */
+  const bar = document.getElementById(p+'-updbar');
+  if(bar) bar.innerHTML =
+      ((ctx.chain.ids.length>1)
+        ? `<button type="button" class="chip ${ctx.only?'active':''}" onclick="updOnly(${!ctx.only})">רק על הכרטיס הזה</button>` : '')
+    + `<button type="button" class="chip ${ctx.sys?'active':''}" onclick="updSys(${!ctx.sys})">גם שינויי מערכת</button>`;
+  const { data, error } = await updFetch(ids, ctx.sys);
   if(error){ box.innerHTML='<div class="note">טעינת העדכונים נכשלה.</div>'; return; }
   if(!data || !data.length){ box.innerHTML='<div class="note">אין עדכונים עדיין.</div>'; return; }
   box.innerHTML = data.map(a=>{
-    const who = (a.actor_id && LOWN_BY[a.actor_id]) ? LOWN_BY[a.actor_id].name : 'משתמש שאינו ברשימה';
+    const sys = a.kind !== 'עדכון';
+    /* 🔴 מי כתב. `actor_id` ריק אינו מקרה קצה נדיר: מ-23/08/2026
+       יישור הסטטוסים ממאנדיי רץ יומית ב-09:00 כ-service_role, ו-auth.uid()
+       שם הוא NULL — ביום הראשון לבדו נוצרו כך **215 שורות**. "משתמש שאינו
+       ברשימה" על שורה שאף אדם לא כתב הוא תיאור שקרי; שורת מערכת נאמרת
+       כמערכת, ושורת ייבוא (1,839 שורות המיגרציה) נאמרת כייבוא. */
+    const who = (a.actor_id && LOWN_BY[a.actor_id]) ? LOWN_BY[a.actor_id].name
+              : a.actor_id ? 'משתמש שאינו ברשימה'
+              : sys ? 'מערכת' : 'ייבוא';
     const when = new Date(a.at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
-    /* 6.108.0 — כפתורי עריכה/מחיקה למי שרשם בלבד (רומן, 19/08/2026).
-       ⚠️ זו תצוגה בלבד; האכיפה האמיתית היא ב-policies במסד
-       (activities_upd_own / activities_del_own), שמוגבלות ל-kind='עדכון'
-       ול-actor_id=auth.uid(). הסתרת הכפתור אינה הגנה. */
-    const mine = a.actor_id && ME && a.actor_id===ME.id && window.canEdit(_t==='lead'?'crm.leads':'crm.tasks');
+    const n = ctx.chain.by[a.linked_id];
+    /* שורה שנכתבה על הכרטיס הנוכחי — בלי תגית. אחרת כל שורה בכרטיס הליד
+       הייתה נושאת "ליד: <אותו ליד>", וזה רעש ולא מידע. */
+    const self = a.linked_id === id;
+    const tag = (!self && n)
+      ? `<span class="tk-kind tk-k-${esc(n.type)} lbu-src">${esc(UPD_KIND_LBL[n.type]||n.type)}${n.name?': '+esc(n.name):''}</span>` : '';
+    const xr = (!self && n && n.xref) ? '<span class="lbu-xref">(הוצלב לפי טלפון)</span>' : '';
+    /* 🔴 שער אחד — canEdit('crm'), מראה מדויקת של ה-policies במסד
+       (activities_p6_ins/upd/del כולן can_edit('crm')). השער הבינארי הישן
+       (crm.leads / crm.tasks) לא היה לו ענף ל-deal ול-customer בכלל.
+       ⚠️ זו תצוגה בלבד; האכיפה ב-policies, והסתרת כפתור אינה הגנה. */
+    const mine = !sys && a.actor_id && ME && a.actor_id===ME.id && window.canEdit('crm');
     const act = mine ? `<span class="lbu-act">`
-        + `<button type="button" onclick="lbUpdEdit('${jsq(a.id)}','${jsq(leadId)}','${jsq(_t)}')">עריכה</button>`
-        + `<button type="button" onclick="lbUpdDel('${jsq(a.id)}','${jsq(leadId)}','${jsq(_t)}')">מחיקה</button></span>` : '';
-    return `<div class="lbu-row" data-upd="${esc(a.id)}"><span class="lbu-who">${esc(who)}</span><span class="lbu-when">${esc(when)}</span><span class="lbu-body">${esc(a.body||'')}</span>${act}</div>`;
+        + `<button type="button" onclick="lbUpdEdit('${jsq(a.id)}','${jsq(id)}','${jsq(_t)}','${jsq(p)}')">עריכה</button>`
+        + `<button type="button" onclick="lbUpdDel('${jsq(a.id)}','${jsq(id)}','${jsq(_t)}','${jsq(p)}')">מחיקה</button></span>` : '';
+    return `<div class="lbu-row${sys?' lbu-sys':''}" data-upd="${esc(a.id)}">`
+      + `<span class="lbu-who">${esc(who)}</span>${tag}${xr}`
+      + `<span class="lbu-when">${esc(when)}</span>`
+      + `<span class="lbu-body">${esc(a.body||a.kind||'')}</span>${act}</div>`;
   }).join('');
 }
 /* ===== שרשרת "אין מענה" (6.101.0) =====

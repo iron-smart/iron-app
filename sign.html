@@ -73,6 +73,8 @@ const DEF_SECTIONS=[
    שינוי נוסח אינו דורש פריסה. הקבוע כאן הוא נפילה אחורה בלבד — הצהרה ריקה
    בתיבת הסימון היא התוצאה הגרועה ביותר. הנוסח זהה ל-AGREE_FALLBACK בשרת. */
 const DEF_AGREE="קראתי את הנחיות ההכנה, הבנתי אותן, ואני מתחייב/ת שכל ההכנות הרלוונטיות עבורי בפרוטוקל זה יבוצעו בהתאם לפני מועד ההתקנה. החתימה חלה על כל ההזמנות הפתוחות שלי על הזמנות הנ״ל וכל ההזמנות הפתוחות שלי.";
+/* נפילה אחורה להצהרת מורשה החתימה. זהה ל-AUTH_FALLBACK בשרת. */
+const DEF_AUTH="אני מורשה/ת לחתום בשם הלקוח ולחייב אותו בהתחייבויות המפורטות במסמך זה.";
 
 function show(html){ document.getElementById('app').innerHTML='<div class="ok-wrap"><div class="ok-card">'+html+'</div></div>'; }
 
@@ -167,22 +169,28 @@ function renderProtocol(d){
     <div class="sig-box"><canvas id="pad1"></canvas><div class="sig-hint" id="hint1">✍️ חתמו כאן</div></div>
     <button type="button" class="btn-clear" id="clear1">🗑 ניקוי חתימה</button>
     <div class="agree"><input type="checkbox" id="agree"><span id="agree-txt">${esc(d.agree||DEF_AGREE)}</span></div>
+    <div class="agree"><input type="checkbox" id="auth"><span id="auth-txt">${esc(d.authorized||DEF_AUTH)}</span></div>
     <button class="btn-send" id="sendBtn" disabled>שליחת הפרוטוקול החתום ✓</button>
     <div id="err" style="color:#a92f2f;font-weight:700;font-size:.85rem;margin-top:8px"></div>
   </div>
   <div class="foot">צוות איירון פיטנס בע"מ · טלפון 074-7779988</div>
 </div>`;
   const pad=makePad('pad1','hint1','clear1',check);
-  const agree=document.getElementById('agree'), sendBtn=document.getElementById('sendBtn');
-  function check(){ sendBtn.disabled=!(pad.hasInk()&&agree.checked); }
-  agree.onchange=check;
+  const agree=document.getElementById('agree'), auth=document.getElementById('auth'), sendBtn=document.getElementById('sendBtn');
+  const nameEl=document.getElementById('signerName');
+  /* שם מלא נאכף גם כאן וגם בשרת. אכיפה בצד הלקוח בלבד אינה אכיפה —
+     POST ישיר עוקף אותה, וזה בדיוק מה שקרה עם סימון ההצהרה. */
+  const nameOk=()=>{ const v=(nameEl.value||'').replace(/\s+/g,' ').trim();
+    return v.length>=4 && v.split(' ').length>=2; };
+  function check(){ sendBtn.disabled=!(pad.hasInk()&&agree.checked&&auth.checked&&nameOk()); }
+  agree.onchange=check; auth.onchange=check; nameEl.addEventListener('input',check);
   sendBtn.onclick=async()=>{
     const sig=pad.dataURL();
     if(!sig){ document.getElementById('err').textContent='נראה שלא נחתמה חתימה — אנא חתמו על הלוח לפני השליחה.'; return; }
     sendBtn.disabled=true; sendBtn.textContent='שולח...';
     try{
       const r=await fetch(API,{method:'POST',headers:{'content-type':'application/json'},
-        body:JSON.stringify({token,signer_name:document.getElementById('signerName').value.trim(),signature:sig,agreed:document.getElementById('agree').checked,agree_text:(document.getElementById('agree-txt')||{}).textContent||''})});
+        body:JSON.stringify({token,signer_name:document.getElementById('signerName').value.trim(),signature:sig,agreed:document.getElementById('agree').checked,authorized:document.getElementById('auth').checked,agree_text:(document.getElementById('agree-txt')||{}).textContent||''})});
       const dd=await r.json();
       if(!r.ok||!dd.ok) throw new Error(dd.error||'שגיאה');
       show('<div class="v">✅</div><h2 style="margin:10px 0 6px">הפרוטוקול נחתם בהצלחה!</h2><p style="font-size:.9rem;color:#4c5560">תודה רבה. נציג מטעמנו יצור איתך קשר לתיאום מועד ההתקנה.<br><br>צוות איירון פיטנס 💪</p>');

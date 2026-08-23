@@ -199,16 +199,17 @@
   #paySheet .pc-legend b{ color:#0f172a }
   /* המקרא יושב במסך ולא בכרטיס: הוא מסביר את כל המסך, ולא שורה אחת בו.
      מקופל כברירת מחדל כדי שלא יגזול מקום ממי שכבר מכיר את המונחים. */
-  .pay-tiles{ display:flex; gap:10px; flex-wrap:wrap; margin:0 0 10px }
-  .payt{ flex:1 1 150px; min-width:142px; display:flex; flex-direction:column; gap:2px;
-         border:1px solid var(--line); border-radius:12px; padding:10px 12px;
-         background-color:#fff; cursor:pointer; text-align:start; font:inherit }
+  .pay-tiles{ display:flex; gap:8px; flex-wrap:wrap; margin:0 0 8px }
+  .payt{ flex:1 1 150px; min-width:138px; display:flex; flex-direction:row; align-items:baseline;
+         flex-wrap:wrap; gap:2px 7px; border:1px solid var(--line); border-radius:10px;
+         padding:7px 11px; background-color:#fff; cursor:pointer; text-align:start; font:inherit }
   .payt:hover{ border-color:#94a3b8 }
   .payt.active{ border-color:#2a78d6; box-shadow:0 0 0 2px #dbeafe }
-  .payt-n{ font-size:22px; font-weight:800; line-height:1.1; color:#0f172a }
-  .payt-l{ font-size:11.5px; color:#64748b; font-weight:700 }
-  .payt-a{ font-size:12.5px; font-weight:800; color:#0f172a }
+  .payt-n{ font-size:17px; font-weight:800; line-height:1.1; color:#0f172a }
+  .payt-l{ font-size:11px; color:#64748b; font-weight:600; order:3; flex-basis:100% }
+  .payt-a{ font-size:12px; font-weight:800; color:#0f172a; order:2 }
   .payt-late .payt-n, .payt-late .payt-a{ color:#c0392b }
+  .payt-week .payt-n{ color:#d97706 }
   .payt-month .payt-n{ color:#b45309 }
   .payt-nodue .payt-n{ color:#7c3aed }
   .pay-closed{ display:inline-block; margin-top:3px; font-size:10.5px; font-weight:800;
@@ -246,6 +247,40 @@
   .pay-legend .pl-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:9px 18px; padding:12px 15px }
   .pay-legend .pl-i{ display:flex; gap:8px; align-items:baseline; font-size:12.5px; line-height:1.7; color:#475569 }
   .pay-legend .pl-i b{ flex:none; color:#0f172a; min-width:104px }
+  /* המקרא במסך התשלומים יושב בתוך הסרגל וצף מעליו, במקום לתפוס שורה
+     שלמה משלו. **בסקופ בלבד** — אותו .pay-legend מעצב גם את המקרא של
+     #tab-logi ("חלון האספקה"), ושכתוב הכלל הגלובלי היה משנה מסך שלא
+     נמדד. אומת שאין overflow על main/#app/הסקשן, ולכן החלון אינו
+     נחתך (הלקח מ-6.129.1). */
+  #tab-pays .pay-legend{ position:relative; margin:0; flex:none; order:9; border:none; background:none }
+  #tab-pays .pay-legend summary{ list-style:none; padding:8px 12px; font-size:12.5px; font-weight:700;
+       color:#475569; border:1px solid var(--line); border-radius:10px;
+       background-color:#f8fafc; white-space:nowrap }
+  #tab-pays .pay-legend summary::-webkit-details-marker{ display:none }
+  #tab-pays .pay-legend[open] summary{ border-color:var(--navy); background-color:#eef4ff; color:var(--navy) }
+  #tab-pays .pay-legend[open] summary{ border-bottom:1px solid var(--navy) }
+  #tab-pays .pay-legend .pl-grid{ position:absolute; z-index:60; top:calc(100% + 6px); inset-inline-end:0;
+       width:min(880px, calc(100vw - 48px)); max-height:min(430px, 60vh); overflow:auto;
+       background-color:#fff; border:1px solid var(--line); border-radius:12px;
+       box-shadow:0 10px 28px rgba(6,24,39,.16) }
+  /* 🔴 הגורם השורשי לתלונה על הסרגל: הכלל הגלובלי `select,.actions input`
+     נותן width:100% ו-font-size:16px — נכון למודאלים, הרסני בסרגל. לא
+     נוגעים בו (מודאלים תלויים בו); עוקפים בסקופ. */
+  #tab-pays .chips{ padding-bottom:4px; margin-bottom:8px }
+  #tab-pays .chip{ padding:5px 11px; font-size:12.5px }
+  #tab-pays .toolbar{ flex-wrap:wrap; margin-bottom:10px }
+  #tab-pays .toolbar input{ flex:1 1 380px; min-width:230px; max-width:none; min-height:40px;
+       padding:9px 13px; font-size:14px; box-sizing:border-box }
+  #tab-pays .toolbar select{ width:auto; flex:0 1 auto; max-width:200px; min-height:40px;
+       padding:8px 10px; font-size:13px; color:#334155; box-sizing:border-box }
+  #tab-pays .toolbar .ghost{ min-height:40px; padding:8px 13px; font-size:13px;
+       white-space:nowrap; box-sizing:border-box }
+  #tab-pays .toolbar .who2{ margin-inline-start:auto; order:10 }
+  /* יעדי מגע בטאבלט: (1,1,1) גובר על .btn,.ghost,.btnw{min-height:46px} */
+  @media(max-width:900px){
+    #tab-pays .toolbar input, #tab-pays .toolbar select, #tab-pays .toolbar .ghost,
+    #tab-pays .pay-legend summary{ min-height:44px }
+  }
   /* תיוג ידני — חייב להיות מובחן מיידית משורה שהגיעה מפריוריטי, אחרת
      אי אפשר לדעת על איזה מספר אפשר לסמוך. */
   #paySheet .led-sum{ display:flex; flex-wrap:wrap; gap:7px; margin:8px 0 10px }
@@ -2201,7 +2236,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.130.0</div>
+      <div class="ver">גרסה 6.131.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2330,7 +2365,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.130.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.131.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2442,8 +2477,9 @@ tr.lb-on td{ background-color:#eef5fd !important; }
     <section id="tab-pays" class="hidden">
       <div class="pay-tiles" id="pay-tiles"></div>
       <div class="chips" id="pay-chips"></div>
-      <details class="pay-legend">
-        <summary>מקרא — מה כל מונח אומר</summary>
+      <div class="toolbar">
+        <details class="pay-legend">
+        <summary title="מה כל מונח אומר">מקרא</summary>
         <div class="pl-grid">
           <div class="pl-i"><b>חויב</b><span>הסכום שיצאו כנגדו חשבוניות מס. אצלנו חשבונית מופקת באספקה, ולכן הזמנה שטרם סופקה תציג חויב 0 גם אם היא מאושרת ומלאה.</span></div>
           <div class="pl-i"><b>נגבה</b><span>סכום הקבלות שהתקבלו בפועל. זהו הכסף שנכנס, ואינו תלוי בשאלה אם הוצאה חשבונית.</span></div>
@@ -2466,18 +2502,16 @@ tr.lb-on td{ background-color:#eef5fd !important; }
           <div class="pl-i"><b>קבלות ללא שיוך</b><span>קבלות של הלקוח שנקלטו בלי מספר הזמנה, ולכן אינן יורדות מאף הזמנה.</span></div>
         </div>
       </details>
-      <div class="toolbar">
         <input id="paySearch" placeholder="חיפוש לפי מספר הזמנה או שם לקוח…">
         <select id="payTermFilter" title="סינון לפי תנאי תשלום"><option value="">כל תנאי התשלום</option></select>
         <select id="paySort" title="מיון הרשימה" onchange="setPaySort(this.value)">
-          <option value="due">מיון: מועד התשלום הקרוב ביותר</option>
-          <option value="bal">מיון: יתרה מהגבוהה לנמוכה</option>
-          <option value="duedesc">מיון: מועד התשלום הרחוק ביותר</option>
-          <option value="date">מיון: תאריך הזמנה מהחדש לישן</option>
+          <option value="due">מיון: מועד קרוב</option>
+          <option value="bal">מיון: יתרה גבוהה</option>
+          <option value="duedesc">מיון: מועד רחוק</option>
+          <option value="date">מיון: ת. הזמנה</option>
         </select>
         <button class="ghost" id="payAddBtn" onclick="payManOpen(null)">+ שורה ידנית</button>
         <button class="ghost" id="payTermsBtn" onclick="ptOpen()">תבניות תנאי תשלום</button>
-        <span class="pv-sep"></span>
         <span class="who2" id="paySync" style="color:#64748b;font-size:12px"></span>
       </div>
       <div class="pay-bulk hidden" id="pay-bulk"></div>
@@ -8713,7 +8747,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'tklink-2026-08-23e';
+const BUILD_ID = 'paysdesign-2026-08-23a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -15206,13 +15240,10 @@ function payChips(){
   const unl = finUnlinked(live);
   const el = $('#pay-chips'); if(!el) return;
   el.innerHTML =
-    '<button class="chip ' + (PAY_FILTER==='late'?'active':'') + '" onclick="setPayFilter(\'late\')" title="פעימה שעברה את מועדה הוודאי ולא כוסתה. פעימה בצפי אינה נספרת כאן.">באיחור ' + late.length + (late.length ? ' <small>· ' + shekel(sumOf(late)) + '</small>' : '') + '</button>' +
-    '<button class="chip ' + (PAY_FILTER==='week'?'active':'') + '" onclick="setPayFilter(\'week\')" title="פעימה פתוחה שמועדה בשבעת הימים הקרובים">השבוע ' + week.length + (week.length ? ' <small>· ' + shekel(sumOf(week)) + '</small>' : '') + '</button>' +
-    '<button class="chip ' + (PAY_FILTER==='month'?'active':'') + '" onclick="setPayFilter(\'month\')" title="פעימה פתוחה שמועדה עד סוף החודש הקלנדרי">החודש ' + month.length + (month.length ? ' <small>· ' + shekel(sumOf(month)) + '</small>' : '') + '</button>' +
-    '<button class="chip ' + (PAY_FILTER==='nodue'?'active':'') + '" onclick="setPayFilter(\'nodue\')" title="יתרה פתוחה בלי מועד גבייה — אין לה לוח פעימות, ולכן היא אינה נספרת בשום חלון זמן ואינה נכנסת לצפי">ללא מועד ' + nodue.length + (nodue.length ? ' <small>· ' + shekel(sumOf(nodue)) + '</small>' : '') + '</button>' +
-    '<button class="chip ' + (PAY_FILTER==='open'?'active':'') + '" onclick="setPayFilter(\'open\')">יתרה פתוחה ' + open.length + ' <small>· ' + shekel(sumRem) + '</small></button>' +
+    /* חמשת הצ'יפים באיחור/השבוע/החודש/ללא מועד/יתרה פתוחה ירדו ב-6.131.0:
+       כל אחד מהם היה בדיוק אריח, כלומר אותו מסנן באותו מסך פעמיים. הצ'יפ
+       לא הוסיף דבר מלבד גובה. מה שנשאר כאן הם מסננים שאין להם אריח. */
     '<button class="chip ' + (PAY_FILTER==='noterm'?'active':'') + '" onclick="setPayFilter(\'noterm\')" title="יתרה פתוחה בלי לוח פעימות — ולכן בלי מועד גבייה ובלי צפי">בלי לוח תשלומים ' + noterm.length + '</button>' +
-    '<span class="chip-sep"></span>' +
     '<button class="chip chip-sec ' + (PAY_FILTER==='uninv'?'active':'') + '" onclick="setPayFilter(\'uninv\')" title="תעודות משלוח סופיות שלא יצאה כנגדן חשבונית — נספרות מ-27/07/2026">סופק ולא חויב ' + uninv.length + ' <small>· ' + shekel(sumUninv) + '</small></button>' +
     (unl.custs ? '<button class="chip chip-sec ' + (PAY_FILTER==='unlink'?'active':'') + '" onclick="setPayFilter(\'unlink\')" title="קבלות שנקלטו מפריוריטי בלי מספר הזמנה — הכסף התקבל אך אינו יורד מאף הזמנה">קבלות ללא שיוך ' + unl.custs + ' <small>· ' + shekel(unl.sum) + '</small></button>' : '') +
     (function(){ const cr = finCreditSum(live); const n = live.filter(finHasCredit).length;
@@ -15242,6 +15273,7 @@ function payTiles(){
   const el = $('#pay-tiles'); if(!el) return;
   const live = FIN.filter(finLive), open = live.filter(finIsOpen);
   const late  = open.filter(f => payIsLate(f));
+  const week  = open.filter(f => payDueIn(f, 7));
   const month = open.filter(f => payDueThisMonth(f));
   const nodue = open.filter(f => !f.next_due);
   const sumOf = l => l.reduce((a,f)=>a+finNum(f.balance), 0);
@@ -15254,6 +15286,7 @@ function payTiles(){
   el.innerHTML =
     tile('open','payt-open','סך יתרה פתוחה',open,'כל ההזמנות החיות שנותר בהן לגבות') +
     tile('late','payt-late','באיחור',late,'פעימה שעברה את מועדה הוודאי ולא כוסתה. פעימה בצפי אינה נספרת.') +
+    tile('week','payt-week','לגבייה השבוע',week,'פעימה פתוחה שמועדה בשבעת הימים הקרובים') +
     tile('month','payt-month','לגבייה החודש',month,'פעימה פתוחה שמועדה עד סוף החודש הקלנדרי') +
     tile('nodue','payt-nodue','ללא מועד גבייה',nodue,'יתרה פתוחה בלי לוח פעימות — אינה נספרת בשום חלון זמן ואינה נכנסת לצפי');
 }

@@ -2281,7 +2281,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.136.0</div>
+      <div class="ver">גרסה 6.137.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2410,7 +2410,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.136.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.137.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -8792,7 +8792,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'cardtabs-2026-08-23h';
+const BUILD_ID = 'paywindowpast-2026-08-23a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -15277,12 +15277,14 @@ function beatWinSum(on, from, to, estOk){
   }, 0);
 }
 const payLateAmt  = f => beatWinSum(f.order_number, null, addDaysIso(todayStr(), -1), false);
-const payWeekAmt  = f => beatWinSum(f.order_number, todayStr(), addDaysIso(todayStr(), 7), true);
-const payMonthAmt = f => beatWinSum(f.order_number, todayStr(), payMonthEnd(), true);
-const payDueIn = (f, days) => { const t = todayStr();
-  return !!f.next_due && f.next_due >= t && f.next_due <= addDaysIso(t, days); };
-const payDueThisMonth = f => { const t = todayStr();
-  return !!f.next_due && f.next_due >= t && f.next_due <= payMonthEnd(); };
+/* 🔴 חלון הגבייה **נפתח אחורה** (רומן, 23/08/2026): "בגביה השבוע יש לכלול
+   גם גביות עבר שטרם בוצעו". כסף שאיחר בחודש הוא בדיוק מה שצריך לגבות
+   השבוע — והוא נעדר מהאריח, כלומר האריח שנועד לתעדוף הסתיר את הדחוף
+   ביותר. נמדד: 9 הזמנות · ₪456,758 → **13 · ₪601,900**.
+   ⚠️ מורכב מ-payLateAmt ולא משכפל את הכלל: כך "באיחור" נשאר תת-קבוצה של
+   "השבוע" מבנית, ולא בזכות שני חישובים שבמקרה מסכימים. */
+const payWeekAmt  = f => payLateAmt(f) + beatWinSum(f.order_number, todayStr(), addDaysIso(todayStr(), 7), true);
+const payMonthAmt = f => payLateAmt(f) + beatWinSum(f.order_number, todayStr(), payMonthEnd(), true);
 const payStClass = s => s==='שולמה' ? 'st-rel' : (s==='שולמה חלקית' ? 'st-def' : 'st-no');
 const remaining = p => Math.max(0, Number(p.total_amount||0) - Number(p.paid_amount||0));
 /* ===== מסך התשלומים (6.47.1) — סביב ההזמנה ולא סביב רשומת תשלום =====
@@ -15385,8 +15387,8 @@ function finRows(){
   let list = FIN.filter(finLive);
   if(PAY_FILTER === 'open')   list = list.filter(finIsOpen);
   if(PAY_FILTER === 'late')   list = list.filter(f => finIsOpen(f) && payIsLate(f));
-  if(PAY_FILTER === 'week')   list = list.filter(f => finIsOpen(f) && payDueIn(f, 7));
-  if(PAY_FILTER === 'month')  list = list.filter(f => finIsOpen(f) && payDueThisMonth(f));
+  if(PAY_FILTER === 'week')   list = list.filter(f => finIsOpen(f) && payWeekAmt(f) > 0);
+  if(PAY_FILTER === 'month')  list = list.filter(f => finIsOpen(f) && payMonthAmt(f) > 0);
   if(PAY_FILTER === 'nodue')  list = list.filter(f => finIsOpen(f) && !f.next_due);
   if(PAY_FILTER === 'uninv')  list = list.filter(f => finNum(f.delivered_uninvoiced) > 0);
   if(PAY_FILTER === 'noterm') list = list.filter(f => finNum(f.n_beats) === 0 && finIsOpen(f));
@@ -15414,10 +15416,6 @@ function payChips(){
   const uninv  = live.filter(f => finNum(f.delivered_uninvoiced) > 0);
   const sumUninv = uninv.reduce((a,f)=>a+finNum(f.delivered_uninvoiced_sum), 0);
   const noterm = open.filter(f => finNum(f.n_beats) === 0);
-  const late   = open.filter(f => payIsLate(f));
-  const week   = open.filter(f => payDueIn(f, 7));
-  const month  = open.filter(f => payDueThisMonth(f));
-  const nodue  = open.filter(f => !f.next_due);
   const unlink = live.filter(f => finNum(f.cust_unlinked_cnt) > 0);
   const unl = finUnlinked(live);
   const el = $('#pay-chips'); if(!el) return;
@@ -15455,8 +15453,8 @@ function payTiles(){
   const el = $('#pay-tiles'); if(!el) return;
   const live = FIN.filter(finLive), open = live.filter(finIsOpen);
   const late  = open.filter(f => payIsLate(f));
-  const week  = open.filter(f => payDueIn(f, 7));
-  const month = open.filter(f => payDueThisMonth(f));
+  const week  = open.filter(f => payWeekAmt(f) > 0);
+  const month = open.filter(f => payMonthAmt(f) > 0);
   const nodue = open.filter(f => !f.next_due);
   /* יתרה פתוחה וללא-מועד נשארים סכום היתרה — שם אין פעימה לדבר עליה,
      והיתרה **היא** הנתון. שלושת אריחי החלון עוברים לסכום הפעימות. */
@@ -15471,8 +15469,8 @@ function payTiles(){
   el.innerHTML =
     tile('open','payt-open','סך יתרה פתוחה',open,'כל ההזמנות החיות שנותר בהן לגבות',sumBal(open)) +
     tile('late','payt-late','באיחור',late,'סכום הפעימות שעברו את מועדן הוודאי ולא כוסו — ולא יתרת ההזמנה כולה. פעימה בצפי אינה נספרת.',sumWin(late,payLateAmt)) +
-    tile('week','payt-week','לגבייה השבוע',week,'סכום הפעימות שמועדן בשבעת הימים הקרובים — ולא יתרת ההזמנה כולה',sumWin(week,payWeekAmt)) +
-    tile('month','payt-month','לגבייה החודש',month,'סכום הפעימות שמועדן עד סוף החודש הקלנדרי — ולא יתרת ההזמנה כולה',sumWin(month,payMonthAmt)) +
+    tile('week','payt-week','לגבייה השבוע',week,'סכום הפעימות שיש לגבות עד סוף השבוע — כולל פעימות שכבר איחרו וטרם נגבו',sumWin(week,payWeekAmt)) +
+    tile('month','payt-month','לגבייה החודש',month,'סכום הפעימות שיש לגבות עד סוף החודש — כולל פעימות שכבר איחרו וטרם נגבו',sumWin(month,payMonthAmt)) +
     tile('nodue','payt-nodue','ללא מועד גבייה',nodue,'יתרה פתוחה בלי לוח פעימות — אינה נספרת בשום חלון זמן ואינה נכנסת לצפי',sumBal(nodue));
 }
 

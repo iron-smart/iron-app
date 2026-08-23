@@ -1926,6 +1926,27 @@ td.lb-today .lb-dt{ background-color:transparent; }
 .lbu-xref{ font-size:11px; color:#94a3b8; background:none; padding:0; margin:0; }
 .lbu-bar{ display:flex; gap:6px; flex-wrap:wrap; margin:0 0 8px; }
 .lbu-src{ margin-inline-end:6px; }
+/* ---- לשוניות בתוך כרטיס (6.136.0) ----
+   רומן: "להעביר את העדכונים ללשונית נפרדת בתוך הכרטיס".
+   ⚠️ הרצועה יושבת **מחוץ** ל-.form-grid: בתוכו היא הייתה הילד הראשון,
+      הכלל form-grid > form-sep:first-child עם margin-top:0 היה מפסיק
+      לחול, וכותרת הסקשן הראשונה הייתה מקבלת מרווח כפול.
+   ℹ️ ואין כאן גרש אחורי בכוונה — השער בבנייה אוסר אותו על כל בלוק CSS,
+      כי ה-CSS של מודול התמחור מוזרק מתוך template literal ושם גרש בודד
+      סוגר את המחרוזת ומפיל 762KB בשגיאת פרסינג אחת. */
+.ctabs{ display:flex; gap:4px; margin:2px 0 12px; border-bottom:1px solid var(--line); }
+.ctab{ background:none; border:none; border-bottom:3px solid transparent; padding:8px 15px;
+  font-size:13.5px; font-weight:700; color:#64748b; cursor:pointer; font-family:inherit;
+  white-space:nowrap; margin-bottom:-1px; }
+.ctab:hover{ color:var(--navy); }
+.ctab.on{ color:var(--navy); border-bottom-color:var(--green); }
+.ctab:focus-visible{ outline:2px solid var(--navy); outline-offset:2px; }
+.ctab .ctab-n{ font-weight:800; opacity:.7; margin-inline-start:5px; font-size:12px; }
+/* ⚠️ יעד מגע. נמדד ב-390px שהכפתור יצא 34px, בעוד ש-.chip מקבל
+   min-height:38px מתחת ל-900px — המוסכמה הקיימת בפרויקט. מיישרים אליה
+   במקום להמציא מספר. */
+@media(max-width:900px){ .ctab{ min-height:38px; } }
+@media(max-width:560px){ .ctab{ padding:8px 11px; font-size:13px; } }
 .tk-done{ text-decoration:line-through; color:#94a3b8; }
 .lb-duew{ display:inline-flex; align-items:center; gap:5px; }
 .lb-bang, .lb-clk{ width:15px; height:15px; flex:none; display:block; }
@@ -2260,7 +2281,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.135.0</div>
+      <div class="ver">גרסה 6.136.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2389,7 +2410,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.135.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.136.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2696,7 +2717,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
 
 <!-- מודל כרטיס המשימה (6.122.0) — עד כאן למסך המשימות לא היה כרטיס כלל -->
 <div class="modal hidden" id="tkModal">
-  <div class="sheet" id="tkSheet"></div>
+  <div class="sheet wide" id="tkSheet"></div>
 </div>
 
 <!-- מודל כרטיס לקוח -->
@@ -2782,7 +2803,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
 
 <!-- מודל כרטיס עסקה -->
 <div class="modal hidden" id="dealModal">
-  <div class="sheet" id="dealSheet"></div>
+  <div class="sheet wide" id="dealSheet"></div>
 </div>
 
 <!-- מודל כרטיס פריט (מק"ט) -->
@@ -8771,7 +8792,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'updchain-2026-08-23g';
+const BUILD_ID = 'cardtabs-2026-08-23h';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -14158,6 +14179,69 @@ function ctxOf(type, id){
   }
   return out;
 }
+/* ═══ לשוניות בתוך כרטיס (6.136.0) ══════════════════════════════════
+   מודל הנגישות מ-buildViewBar במסך התמחור: role="tablist"/"tab",
+   aria-selected, roving tabindex, וחיצים **הפוכים ל-RTL**.
+   🔴 ההחלפה היא toggle('hidden') בלבד — לא ציור מחדש ולא mountCard.
+      mountCard מאפס scrollTop, חוטף מיקוד אחרי 30ms, וציור מחדש היה
+      מוחק שדות מה-DOM — ו-saveLead/saveTask קוראים getElementById, כך
+      ששדה חסר נשמט מה-patch **בשקט**. */
+const CTABS = [['main','פרטים'],['upd','עדכונים'],['rel','קשור']];
+let CTAB_CUR = 'main';
+function ctabsHtml(pfx){
+  return '<div class="ctabs" role="tablist" aria-label="לשוניות הכרטיס" onkeydown="ctabKeys(event,\''+pfx+'\')">'
+    + CTABS.map(function(e){ var k=e[0], lbl=e[1], on=(k==='main');
+        return '<button type="button" class="ctab'+(on?' on':'')+'" role="tab"'
+          + ' id="'+pfx+'-tb-'+k+'" aria-controls="'+pfx+'-pn-'+k+'"'
+          + ' aria-selected="'+(on?'true':'false')+'" tabindex="'+(on?'0':'-1')+'"'
+          + ' onclick="ctabGo(\''+pfx+'\',\''+k+'\')">'+lbl+'</button>'; }).join('')
+    + '</div>';
+}
+window.ctabGo = (pfx, k)=>{
+  CTAB_CUR = k;
+  CTABS.forEach(function(e){
+    const x = e[0];
+    const pn = document.getElementById(pfx+'-pn-'+x);
+    if(pn) pn.classList.toggle('hidden', x!==k);
+    const tb = document.getElementById(pfx+'-tb-'+x);
+    if(tb){ tb.classList.toggle('on', x===k);
+      tb.setAttribute('aria-selected', x===k ? 'true' : 'false');
+      tb.tabIndex = (x===k) ? 0 : -1; }
+  });
+  /* 🔴 טעינה עצלה בכניסה הראשונה ללשונית. זה בדיוק מה שהאקורדיון קנה
+     לפני 6.135.0, וירידתו הייתה מחזירה את העלות לכל פתיחת כרטיס. */
+  if(k==='upd'){
+    const pn = document.getElementById(pfx+'-pn-upd');
+    if(pn && !pn.dataset.loaded && pn.dataset.uid){
+      pn.dataset.loaded = '1';
+      lbLoadUpdates(pn.dataset.uid, pn.dataset.utype, pfx);
+    }
+  }
+};
+/* דריכת לשונית העדכונים: מזהה ויעד נשמרים על הפאנל, והטעינה נדחית.
+   ⚠️ מתאפס בכל פתיחת כרטיס — dataset.loaded יורד, אחרת כרטיס שני של
+      אותו סוג היה מציג את העדכונים של הראשון. */
+window.ctabArm = (pfx, id, type)=>{
+  const pn = document.getElementById(pfx+'-pn-upd'); if(!pn) return;
+  pn.dataset.uid = id; pn.dataset.utype = type;
+  delete pn.dataset.loaded;
+  CTAB_CUR = 'main';
+};
+window.ctabKeys = (ev, pfx)=>{
+  const k = ev.key;
+  if(k!=='ArrowRight' && k!=='ArrowLeft' && k!=='Home' && k!=='End') return;
+  const ks = CTABS.map(function(e){ return e[0]; });
+  const i = ks.indexOf(CTAB_CUR); let j = i;
+  /* המסך RTL: חץ שמאלה מתקדם ברשימה וחץ ימינה חוזר. */
+  if(k==='ArrowLeft')  j = (i+1) % ks.length;
+  if(k==='ArrowRight') j = (i-1+ks.length) % ks.length;
+  if(k==='Home') j = 0;
+  if(k==='End')  j = ks.length-1;
+  if(j===i) return;
+  ev.preventDefault();
+  ctabGo(pfx, ks[j]);
+  const b = document.getElementById(pfx+'-tb-'+ks[j]); if(b) try{ b.focus(); }catch(_e){}
+};
 /* ═══ שרשרת העדכונים (6.135.0) ══════════════════════════════════════
    רומן, 23/08/2026: "אני רוצה לראות עדכונים בכל הכרטיסים עם תגית מסודרת
    מהיכן שנכתב". ולכן **שרשרת מקסימלית + תגית**, ולא סינון לפי כיוון:
@@ -14699,6 +14783,8 @@ window.openTask = (id)=>{
   $('#tkSheet').innerHTML = `
     <h3>${esc(t.name||'משימה')} ${mdPill(t.status||'—',TASK_ST_COLORS,LB_TK)}</h3>
     <div class="note">נוצרה ${fmtDT(t.created_at)}${t.closed_at?' · נסגרה '+fmtDT(t.closed_at):''}</div>
+    ${ctabsHtml('tk')}
+    <div id="tk-pn-main">
     <div class="form-grid">
       <div class="form-sep">פרטי הפנייה המקושרת</div>
       ${editable?`
@@ -14727,13 +14813,13 @@ window.openTask = (id)=>{
       <div><label>סיווג</label>${selHtml('tk-cat',tkCats(),t.category,true)}</div>
       <div><label>בעלים</label><select id="tk-owner">${ownOpts}</select></div>
 
-      <div class="form-sep">עדכונים</div>
-      <div class="span4">
-        <div class="note" style="margin-bottom:6px">העדכון נרשם על המשימה, ומוצג גם בכרטיס הפנייה, העסקה והלקוח עם תגית מקור. עריכה ומחיקה — לכותב בלבד.</div>
-        ${window.canEdit('crm')?`<div class="lbu-add"><textarea id="tk-upd" rows="2" placeholder="מה קרה?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${jsq(id)}','task','tk')">הוספה</button></div>`:''}
-        <div class="lbu-bar" id="tk-updbar"></div>
-        <div class="lbu-list" id="tk-updlist"><div class="note">טוען…</div></div>
-      </div>
+    </div>
+    </div>
+    <div id="tk-pn-upd" class="hidden">
+      <div class="note" style="margin-bottom:6px">העדכון נרשם על המשימה, ומוצג גם בכרטיס הפנייה, העסקה והלקוח עם תגית מקור. עריכה ומחיקה — לכותב בלבד.</div>
+      ${window.canEdit('crm')?`<div class="lbu-add"><textarea id="tk-upd" rows="2" placeholder="מה קרה?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${jsq(id)}','task','tk')">הוספה</button></div>`:''}
+      <div class="lbu-bar" id="tk-updbar"></div>
+      <div class="lbu-list" id="tk-updlist"><div class="note">טוען…</div></div>
     </div>
     <div class="modal-actions">
       ${editable?`<button class="btn btnw" onclick="saveTask('${jsq(id)}')">💾 שמירה</button>
@@ -14741,11 +14827,13 @@ window.openTask = (id)=>{
       :'<div class="note">אין לך הרשאת עריכה למשימות.</div>'}
     </div>
     <div class="err" id="tk-err"></div>
+    <div id="tk-pn-rel" class="hidden">
     <section class="ob-card"><h2 class="sec">משימות ופגישות על אותה פנייה (${sib.length+mts.length})</h2>
       ${sib.map(o=>`<div class="row" style="cursor:pointer" onclick="goCard(()=>openTask('${jsq(o.id)}'))"><span class="k">משימה · ${o.due_at?new Date(o.due_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'}</span><span class="v">${esc(o.name||'')} ${mdPill(o.status,TASK_ST_COLORS)}</span></div>`).join('')}
       ${mts.map(m=>`<div class="row"><span class="k">פגישה · ${m.meet_date?new Date(m.meet_date+'T00:00').toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'}):'—'}</span><span class="v"><a href="#" onclick="event.preventDefault();openMeet('${jsq(m.id)}')">${esc(m.subject||'פגישה')}</a> <span class="pill ${meetStClass(m.status)}">${esc(m.status)}</span></span></div>`).join('')}
       ${(!sib.length&&!mts.length)?'<div class="note">אין משימות או פגישות נוספות על הפנייה הזאת.</div>':''}
     </section>
+    </div>
 `;
   /* 🔴 **לפני** ה-snapshot. החוזה הוא "מה שהוצג מול מה שיש עכשיו", ואתחול
      שיבוא אחריו היה נרשם כשינוי של המשתמש כבר בשמירה הראשונה — כלומר
@@ -14755,7 +14843,7 @@ window.openTask = (id)=>{
   mountCard('tkModal', ()=>openTask(id));
   try{ window.markEmpty('tkModal'); }catch(_e){}
   if(!editable) document.querySelectorAll('#tkSheet input,#tkSheet select,#tkSheet textarea').forEach(el=>el.disabled=true);
-  lbLoadUpdates(id, 'task', 'tk');
+  ctabArm('tk', id, 'task');
 };
 window.saveTask = async (id)=>{
   const t = (TASKS||[]).find(x=>x.id===id); if(!t) return;
@@ -18361,6 +18449,8 @@ window.openDeal = async (id)=>{
   $('#dealSheet').innerHTML = `
     <h3>${esc(d.name||'עסקה')} ${mdPill(d.stage||'—',DEAL_ST_COLORS,LB_TK)}</h3>
     <div class="lb-pipe" id="dl-pipe" data-deal="${esc(id)}"></div>
+    ${ctabsHtml('dl')}
+    <div id="dl-pn-main">
     <div class="form-grid">
       <div class="form-sep">פרטי העסקה</div>
       <div><label>מס' הצעה בפריוריטי</label>${roIn(d.priority_quote_id||'',{ltr:1})}</div>
@@ -18385,26 +18475,28 @@ window.openDeal = async (id)=>{
       :'<div class="span2"><div class="note">אינה מקושרת ללקוח.</div></div>'}
       ${contact?`<div class="span2"><label>איש קשר</label>${roIn(contact.full_name+' · '+(contact.phone||contact.email||''))}</div>`:''}
 
-      <div class="form-sep">עדכונים</div>
-      <div class="span4">
-        <div class="note" style="margin-bottom:6px">העדכון נרשם על העסקה, ומוצג גם בכרטיס הפנייה, המשימה והלקוח עם תגית מקור. עריכה ומחיקה — לכותב בלבד.</div>
-        ${window.canEdit('crm')?`<div class="lbu-add"><textarea id="dl-upd" rows="2" placeholder="מה קרה עם העסקה הזאת?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${jsq(id)}','deal','dl')">הוספה</button></div>`:''}
-        <div class="lbu-bar" id="dl-updbar"></div>
-        <div class="lbu-list" id="dl-updlist"><div class="note">טוען…</div></div>
-      </div>
+    </div>
+    </div>
+    <div id="dl-pn-upd" class="hidden">
+      <div class="note" style="margin-bottom:6px">העדכון נרשם על העסקה, ומוצג גם בכרטיס הפנייה, המשימה והלקוח עם תגית מקור. עריכה ומחיקה — לכותב בלבד.</div>
+      ${window.canEdit('crm')?`<div class="lbu-add"><textarea id="dl-upd" rows="2" placeholder="מה קרה עם העסקה הזאת?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${jsq(id)}','deal','dl')">הוספה</button></div>`:''}
+      <div class="lbu-bar" id="dl-updbar"></div>
+      <div class="lbu-list" id="dl-updlist"><div class="note">טוען…</div></div>
     </div>
     <div class="err" id="d-err"></div>
+    <div id="dl-pn-rel" class="hidden">
     <section class="ob-card"><h2 class="sec">משימות ופגישות (${tsk.length+mts.length})</h2>
       ${tsk.map(t=>`<div class="row" style="cursor:pointer" onclick="goCard(()=>openTask('${jsq(t.id)}'))"><span class="k">משימה · ${t.due_at?new Date(t.due_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'}</span><span class="v">${esc(t.name||'')} ${mdPill(t.status,TASK_ST_COLORS)}</span></div>`).join('')}
       ${mts.map(m=>`<div class="row"><span class="k">פגישה · ${m.meet_date?new Date(m.meet_date+'T00:00').toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'}):'—'}</span><span class="v"><a href="#" onclick="event.preventDefault();openMeet('${jsq(m.id)}')">${esc(m.subject||'פגישה')}</a> <span class="pill ${meetStClass(m.status)}">${esc(m.status)}</span></span></div>`).join('')}
       ${(!tsk.length&&!mts.length)?'<div class="note">אין משימות או פגישות פתוחות.</div>':''}
     </section>
+    </div>
 `;
   dlPipeDraw(id);
   mountCard('dealModal', ()=>openDeal(id));
   /* 6.135.0 — תמיד, ולא רק כשיש ליד. 51 עסקאות במסד אין להן לא ליד ולא
      לקוח, ועד כאן הן לא קיבלו יומן עדכונים בכלל — לא קריאה ולא כתיבה. */
-  lbLoadUpdates(id, 'deal', 'dl');
+  ctabArm('dl', id, 'deal');
 };
 /* הרצועה — אותה שפה של הלידים בדיוק: מילוי **מצטבר** עד השלב הנוכחי,
    כולו בצבע השלב הנוכחי (הכרעת רומן 20/08), ו-.on מסמן היכן עומדים.
@@ -19388,6 +19480,8 @@ window.openLead = (id)=>{
   $('#leadSheet').innerHTML = `
     <h3>${esc(l.full_name)} ${mdPill(l.status||'—',LEAD_ST_COLORS,LB_TK)}</h3>
     <div class="lb-pipe" id="lb-pipe" data-lead="${esc(l.id)}"></div>
+    ${ctabsHtml('lb')}
+    <div id="lb-pn-main">
     <!-- 🔴 6.114.0 — הכפתור עלה לראש הכרטיס וקיבל את שמו האמיתי.
          עד כה הוא נקרא "העבר לרלוונטי", וזה תיאר את תופעת הלוואי הקטנה
          והסתיר את הגדולה: הוא פותח **לקוח והצעת מחיר בפריוריטי**
@@ -19419,19 +19513,22 @@ window.openLead = (id)=>{
       <div><label>עודכן לאחרונה</label>${roIn(fmtDT(l.updated_at),{ltr:1})}</div>
       <div><label>בעלים ושותפים</label><span id="lb-ownbox">${lbOwnerCell(l)}</span></div>
 
-      <div class="form-sep">עדכונים</div>
-      <div class="span4">
-        <div class="note" style="margin-bottom:6px">כל עדכון נשמר בשם הכותב ובשעת הכתיבה, ומוצג בכל כרטיסי השרשרת עם תגית מקור. עריכה ומחיקה — לכותב בלבד.</div>
-        ${window.canEdit('crm')?`<div class="lbu-add"><textarea id="lb-upd" rows="2" placeholder="מה קרה עם הליד הזה?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${jsq(l.id)}','lead','lb')">הוספה</button></div>`:''}
-        <div class="lbu-bar" id="lb-updbar"></div>
-        <div class="lbu-list" id="lb-updlist"><div class="note">טוען…</div></div>
-      </div>
+    </div>
+    <div id="convResultSlot"></div>
+    <div id="convResult"></div>
+    </div>
+    <div id="lb-pn-upd" class="hidden">
+      <div class="note" style="margin-bottom:6px">כל עדכון נשמר בשם הכותב ובשעת הכתיבה, ומוצג בכל כרטיסי השרשרת עם תגית מקור. עריכה ומחיקה — לכותב בלבד.</div>
+      ${window.canEdit('crm')?`<div class="lbu-add"><textarea id="lb-upd" rows="2" placeholder="מה קרה עם הליד הזה?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${jsq(l.id)}','lead','lb')">הוספה</button></div>`:''}
+      <div class="lbu-bar" id="lb-updbar"></div>
+      <div class="lbu-list" id="lb-updlist"><div class="note">טוען…</div></div>
     </div>
     <div class="modal-actions">
       ${editable?`<button class="btn btnw" onclick="saveLead('${l.id}')">💾 שמירה</button>
       <button type="button" class="lb-del" onclick="lbDelete('${l.id}')">🗑️ מחיקת ליד</button>`:'<div class="note">אין לך הרשאת עריכה ללידים.</div>'}
     </div>
     <div class="err" id="lb-err"></div>
+    <div id="lb-pn-rel" class="hidden">
     <section class="ob-card"><h2 class="sec">משימות ופגישות (${myTasks.length+myMeets.length})</h2>
       ${myTasks.map(t=>`<div class="row"><span class="k">משימה · ${t.due_at?new Date(t.due_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'}</span><span class="v">${esc(t.name)} ${mdPill(t.status,TASK_ST_COLORS)}</span></div>`).join('')}
       ${myMeets.map(m=>`<div class="row"><span class="k">פגישה · ${m.meet_date?new Date(m.meet_date+'T00:00').toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'}):'—'}</span><span class="v"><a href="#" onclick="event.preventDefault();openMeet('${m.id}')">${esc(m.subject||'פגישה')}</a> <span class="pill ${meetStClass(m.status)}">${esc(m.status)}</span></span></div>`).join('')}
@@ -19440,8 +19537,7 @@ window.openLead = (id)=>{
       ${window.canEdit('crm.meets')?`<button type="button" class="chip" onclick="leadMeet('${l.id}')">＋ פגישה</button>`:''}
       ${editable?`<button type="button" class="chip" onclick="leadFup('${l.id}')">↻ פולואפ</button>`:''}
     </section>
-    <div id="convResultSlot"></div>
-    <div id="convResult"></div>
+    </div>
 `;
   /* 6.118.0 — no-op מוגן מאז שבורר הסטטוס ירד מהכרטיס: תת-הסטטוס
      נערך ברצועה (lb-psub). נשארת כי הסרתה מייתמת שלוש פונקציות
@@ -19454,7 +19550,7 @@ window.openLead = (id)=>{
   mountCard('leadModal', ()=>openLead(id));
   try{ window.markEmpty('leadModal'); }catch(_e){}
   if(!editable) document.querySelectorAll('#leadSheet input,#leadSheet select,#leadSheet textarea,#leadSheet .lb-pseg,#leadSheet .lb-psub button').forEach(el=>el.disabled=true);
-  lbLoadUpdates(id, 'lead', 'lb');
+  ctabArm('lb', id, 'lead');
 };
 window.saveLead = async (id)=>{
   const l = LEADS.find(x=>x.id===id); if(!l) return;

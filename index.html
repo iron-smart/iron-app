@@ -1905,6 +1905,18 @@ td.lb-today .lb-dt{ background-color:transparent; }
 #leads-list th.srt{ cursor:pointer; user-select:none; }
 #leads-list th.srt:hover{ text-decoration:underline; }
 #leads-list th.srt.on::after{ content:attr(data-ar); margin-inline-start:4px; }
+/* 6.130.0 — אותם שלושה כללים לבורד המשימות. tkHead פולט data-ar מאז
+   6.121.0, אבל ה-::after היה מעוגן ל-#leads-list בלבד — כלומר **חץ כיוון
+   המיון בבורד המשימות מעולם לא הוצג**. אין כאן שינוי התנהגות, יש כלל
+   שלא חל. נמדד ב-getComputedStyle(th,'::after').content ולא בהשוואת DOM. */
+#tasks-list th.srt{ cursor:pointer; user-select:none; }
+#tasks-list th.srt:hover{ text-decoration:underline; }
+#tasks-list th.srt.on::after{ content:attr(data-ar); margin-inline-start:4px; }
+/* שבב הישות המקושרת בבורר (6.130.0) */
+.tkl-box{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; min-height:24px; margin-bottom:4px; }
+.tkl-box b{ font-size:13px; color:#0f172a; }
+.tkl-x{ background:none; border:none; color:#94a3b8; cursor:pointer; font-size:13px; padding:0 4px; line-height:1; }
+.tkl-x:hover{ color:#c0392b; }
 /* ---- שלוש העמודות הפותחות מוקפאות ----
    שלוש עמודות תת-סטטוס שכמעט תמיד ריקות (הן בלעדיות הדדית) מוסיפות ~292px,
    והטבלה רחבה מהמסך גם בדסקטופ. בלי הקפאה, תא בקצה הנגלל מנותק מזהות הליד.
@@ -2189,7 +2201,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.129.1</div>
+      <div class="ver">גרסה 6.130.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2318,7 +2330,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.129.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.130.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2608,6 +2620,12 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="sheet">
     <h3>משימה חדשה</h3>
     <div class="field"><label>מה צריך לעשות?<span class="req">*</span></label><input id="t-name"></div>
+    <div class="field ac-wrap"><label>מקושר ל־</label>
+      <div id="t-lnkchip" class="tkl-box"></div>
+      <input id="t-lnkq" autocomplete="off" placeholder="חיפוש ליד, לקוח או תהליך מכירה…" oninput="tklPick('t',this.value)" onfocus="tklPick('t',this.value)" onblur="setTimeout(()=>{const b=document.getElementById('t-lnkres'); if(b) b.hidden=true;},150)">
+      <div id="t-lnkres" class="ac-menu" hidden></div>
+      <input type="hidden" id="t-lnk" value="">
+    </div>
     <div class="field"><label>תאריך יעד<span class="req">*</span></label><input id="t-due" type="date"></div>
     <div class="field"><label>שעה</label><input id="t-time" type="time" value="09:00"></div>
     <div class="actions">
@@ -3695,7 +3713,14 @@ document.addEventListener('keydown', function(e){
        יורים. עד 6.118.0 זה לא קרה רק מפני שה-popover נפתח מהטבלה
        בלבד, שם אין מודאל פתוח — כלומר ההתנגשות ישבה בקוד ולא נורתה. */
     if(document.getElementById('lb-pop')) return;
-    if(_openModal()){ e.preventDefault(); closeCards(); return; }
+    /* 🔴 6.130.0 — שער אח לבורר הישות המקושרת, אותה התנגשות של 6.119.0
+       בצורה שנייה. תפריט .ac-menu גלוי בתוך מודל פתוח הוא מצב שבו Esc
+       אמור לסגור **את התפריט בלבד**; בלי השער _openModal() אמת,
+       closeCards() יורה, והכרטיס כולו נסגר תוך כדי בחירה. */
+    const _m = _openModal();
+    const _acm = _m && _m.querySelector('.ac-menu:not([hidden])');
+    if(_acm){ e.preventDefault(); _acm.hidden=true; _acm.innerHTML=''; return; }
+    if(_m){ e.preventDefault(); closeCards(); return; }
     if(window.innerWidth < 800 && !document.getElementById('side').classList.contains('closed')){ setSide(false); }
     return;
   }
@@ -8688,7 +8713,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'bnpop-2026-08-23d';
+const BUILD_ID = 'tklink-2026-08-23e';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -13782,7 +13807,7 @@ async function loadLeads(){
   _q = await Promise.all([
     sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at,position,address,notes,utm_campaign,utm_source,utm_medium,utm_term,send_whatsapp_catalog,owner_id,updated_at').order('created_at',{ascending:false}).limit(10000),
     sb.schema('core').from('customers').select('id,name,phone,email,priority_id,status,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes').order('created_at',{ascending:false}).limit(10000),
-    sb.schema('crm').from('tasks').select('id,name,status,value_tag,category,due_at,closed_at,linked_type,linked_id,owner_id').order('due_at',{ascending:true}).limit(10000),
+    sb.schema('crm').from('tasks').select('id,name,status,value_tag,category,due_at,closed_at,created_at,linked_type,linked_id,owner_id').order('due_at',{ascending:true}).limit(10000),
     sb.schema('crm').from('deals').select('id,name,stage,amount,quote_status,irrelevant_reason,priority_quote_id,customer_id,contact_id,lead_id,send_channel,sign_link,approved_at,closed_at,created_at').order('created_at',{ascending:false}).limit(10000),
     sb.schema('crm').from('meetings').select('id,subject,status,meet_date,start_time,end_time,meet_type,location,teams_link,linked_type,linked_id,source,organizer_name,attendees,all_day,web_link').order('meet_date',{ascending:false}).limit(10000),
     sb.schema('core').from('contacts').select('id,full_name,phone,office_phone,email,role,customer_id').order('full_name',{ascending:true}).limit(10000),
@@ -14071,9 +14096,14 @@ function ctxOf(type, id){
   return out;
 }
 /* ═══ בורד המשימות (6.121.0) ═════════════════════════════════════ */
+/* 6.130.0 — סדר לפי הכרעת רומן 23/08/2026. "בעלים" עולה מיד אחרי "משימה",
+   לעמודת הפעולה יש כותרת ("ביצוע"), ונוספה "תאריך יצירה".
+   🔴 TK_KEY ממופתח לפי **אינדקס כאן**. שינוי הסדר בלי מיפוי מחדש שם היה
+      ממיין את "בעלים" לפי שם המשימה — בשקט, בלי שגיאה. יש שער בבנייה
+      שגוזר את ההתאמה משני הליטרלים ונופל על פער. */
 const TK_COLS = [
-  ['#','rownum'], ['משימה','srt'], ['מקושר ל־','srt'], ['טלפון',''],
-  ['מועד','srt'], ['בעלים','srt'], ['סטטוס','srt'], ['סיווג','srt'], ['','']
+  ['#','rownum'], ['משימה','srt'], ['בעלים','srt'], ['מקושר ל־','srt'], ['טלפון',''],
+  ['סיווג','srt'], ['סטטוס','srt'], ['מועד','srt'], ['ביצוע',''], ['תאריך יצירה','srt']
 ];
 const TK_KIND_LBL = { lead:'ליד', deal:'תהליך', customer:'לקוח', payment:'תשלום' };
 /* הדליים. הסדר הוא סדר העבודה: מה שהיום, ואז האיחור מהטרי לישן, ואז
@@ -14249,12 +14279,109 @@ function tkLinkCell(t){
   return go ? `${chip}<span class="tk-link" onclick="event.stopPropagation();goCard(()=>${go})">${esc(nm)} ↗</span>`
             : `${chip}${esc(nm)}`;
 }
+/* ═══ בורר הישות המקושרת (6.130.0) ══════════════════════════════════
+   רומן, 23/08/2026: "בפתיחת משימה חדשה צריך אפשרות לקשר אותה לליד, לקוח
+   תהליך מכירה", ובהכרעה בשיחה — **חיפוש אחד משולב** לשלושת הסוגים, וגם
+   שינוי הקישור מכרטיס משימה קיימת.
+
+   מקור האמת הוא **קלט מוסתר יחיד** בערך '' או '<type>:<uuid>'. שתי סיבות:
+   ① בכרטיס, חוזה ה-snapshot הוא "מה שהוצג מול מה שיש עכשיו", שתי מחרוזות
+      מאותו אלמנט. קלט מוסתר מכניס את הקישור לחוזה **בלי לשנות אותו**,
+      בדיוק כמו __due.
+   ② במודל אין מצב גלובלי חדש לאפס. ⚠️ LB_TASK_LINK הוסר לחלוטין — משתנה
+      שנכתב ואינו נקרא הוא המחלקה של lbOwnerPromote שנשארה בלי קורא. יש
+      assert בבנייה שהשם לא נותר בקובץ.
+
+   התשתית היא .ac-wrap/.ac-menu/.ac-item הקיימת: z-index:70 (מעל .modal=50
+   ומעל .lb-pop=60), שורות עם כותרת ותת-כותרת, ו**אינה מציירת מחדש את שדה
+   הקלט** — בניגוד ל-lbOwnerDraw, שמקובל ל-20 בעלים ופסול ל-10,000 לידים.
+   🔴 onmousedown="event.preventDefault()" על כל פריט הוא נושא-משקל: בלעדיו
+      blur קודם ל-click, טיימר ה-150ms מסתיר את התפריט, והבחירה נעלמת. */
+const TKL_MAX_KIND = 10;
+function tklName(type, id){
+  if(type==='lead'){     const l=(LEADS||[]).find(x=>x.id===id); return l?(l.full_name||''):''; }
+  if(type==='customer'){ const c=(CUSTS||[]).find(x=>x.id===id); return c?(c.name||''):''; }
+  if(type==='deal'){     const d=(DEALS||[]).find(x=>x.id===id); return d?(d.name||''):''; }
+  return '';
+}
+function tklSearch(q){
+  q=(q||'').trim(); if(!q) return [];
+  const ql=q.toLowerCase(), dig=q.replace(/\D/g,'');
+  const hit=s=>String(s||'').toLowerCase().includes(ql);
+  const ph =s=>!!dig && String(s||'').replace(/\D/g,'').includes(dig);
+  /* מפת שמות הלקוחות נבנית פעם אחת להקלדה. חיפוש עסקה לפי שם הלקוח דרך
+     .find על CUSTS היה 1,940×4,514 השוואות **בכל תו שנקלד**. */
+  const cxn = new Map((CUSTS||[]).map(c=>[c.id, c.name||'']));
+  /* 🔴 התקרה היא **פר-סוג** ולא גלובלית. האוכלוסייה המקושרת היא 4,826
+     לידים מול 61 לקוחות (נמדד 23/08/2026), ולכן slice(0,30) על רשימה
+     משורשרת היה מציג לידים בלבד כמעט תמיד — בורר "משולב" שאינו מגיע
+     לשני סוגים. מודדים את האוכלוסייה לפני שקובעים כלל תצוגה. */
+  const leads=(LEADS||[]).filter(l=>hit(l.full_name)||hit(l.company)||hit(l.city)||ph(l.phone))
+    .slice(0,TKL_MAX_KIND).map(l=>({type:'lead', id:l.id, nm:l.full_name||'ללא שם',
+      sub:[l.company,l.phone,l.city].filter(Boolean).join(' · ')}));
+  const custs=(CUSTS||[]).filter(x=>hit(x.name)||hit(x.city)||ph(x.phone)||(dig&&String(x.priority_id||'').includes(dig)))
+    .slice(0,TKL_MAX_KIND).map(x=>({type:'customer', id:x.id, nm:x.name||'ללא שם',
+      sub:[x.phone,x.priority_id,x.city].filter(Boolean).join(' · ')}));
+  const deals=(DEALS||[]).filter(d=>hit(d.name)||hit(cxn.get(d.customer_id))||(dig&&String(d.priority_quote_id||'').includes(dig)))
+    .slice(0,TKL_MAX_KIND).map(d=>({type:'deal', id:d.id, nm:d.name||'עסקה',
+      sub:[d.stage,cxn.get(d.customer_id)].filter(Boolean).join(' · ')}));
+  return leads.concat(custs, deals);
+}
+window.tklPick = (pfx, q)=>{
+  const box=document.getElementById(pfx+'-lnkres'); if(!box) return;
+  if(!String(q||'').trim()){ box.hidden=true; box.innerHTML=''; return; }
+  const res=tklSearch(q).slice(0,30);
+  box.innerHTML = res.length
+    ? res.map(r=>`<button type="button" class="ac-item" onmousedown="event.preventDefault()" onclick="tklChoose('${jsq(pfx)}','${jsq(r.type)}','${jsq(r.id)}')"><b><span class="tk-kind tk-k-${esc(r.type)}">${esc(TK_KIND_LBL[r.type]||'')}</span>${esc(r.nm)}</b><span>${esc(r.sub)}</span></button>`).join('')
+    : '<div class="ac-empty">לא נמצא ליד, לקוח או תהליך מכירה תואם</div>';
+  box.hidden=false;
+};
+window.tklChoose = (pfx, type, id)=>{
+  const h=document.getElementById(pfx+'-lnk'); if(!h) return;
+  h.value = (type && id) ? (type+':'+id) : '';
+  /* הסיווג נגזר מהקישור **רק כשהוא ריק כרגע** — סיווג קיים לעולם אינו
+     נדרס (2,390 משימות מסווגות 'ליד'). ההצבה היא ל-DOM ולכן נראית על
+     המסך לפני השמירה, וחוזה ה-snapshot רושם אותה כשינוי אמיתי של
+     המשתמש — ולא ככתיבה מחושבת בשקט, המחלקה שהכתה פעמיים ב-15/08/2026.
+     ℹ️ במודל "משימה חדשה" אין #t-cat כלל, ולכן זו no-op שם: הסיווג נגזר
+        בשמירה מ-_cat. */
+  const cat=document.getElementById(pfx+'-cat');
+  if(cat && !cat.value && type)
+    cat.value = type==='deal' ? 'תהליך מכירה' : type==='customer' ? 'לקוח' : 'ליד';
+  const qi=document.getElementById(pfx+'-lnkq'); if(qi) qi.value='';
+  const box=document.getElementById(pfx+'-lnkres'); if(box){ box.hidden=true; box.innerHTML=''; }
+  tklPaint(pfx);
+};
+window.tklClear = pfx => tklChoose(pfx, '', '');
+function tklPaint(pfx){
+  const h=document.getElementById(pfx+'-lnk'), box=document.getElementById(pfx+'-lnkchip');
+  if(!h || !box) return;
+  const v=String(h.value||''), i=v.indexOf(':');
+  if(i<=0){ box.innerHTML='<span class="lb-na">לא מקושרת</span>'; return; }
+  const type=v.slice(0,i), id=v.slice(i+1);
+  /* ⚠️ נפילה אחורה לתווית הסוג כששם הישות אינו נפתר. במסד יש שורה אחת
+     עם linked_type='payment' שהבורר אינו מציע — משימה כזאת אסור שתיראה
+     ריקה ובלתי ניתנת לניקוי. */
+  const nm=tklName(type,id) || (TK_KIND_LBL[type]||type);
+  box.innerHTML = `<span class="tk-kind tk-k-${esc(type)}">${esc(TK_KIND_LBL[type]||type)}</span><b>${esc(nm)}</b>`
+    + `<button type="button" class="tkl-x" title="ניתוק הקישור" onclick="tklClear('${jsq(pfx)}')">✕</button>`;
+}
+window.tklInit = (pfx, val)=>{
+  const h=document.getElementById(pfx+'-lnk'); if(h) h.value=val||'';
+  const qi=document.getElementById(pfx+'-lnkq'); if(qi) qi.value='';
+  const box=document.getElementById(pfx+'-lnkres'); if(box){ box.hidden=true; box.innerHTML=''; }
+  tklPaint(pfx);
+};
 /* ---- מיון ---- */
 let TK_SORT = [null, 1];
 const TK_KEY = {
-  1:t=>t.name||'', 2:t=>tkLinkName(t), 4:t=>t.due_at||'',
-  5:t=>((LOWN_BY[t.owner_id]||{}).name)||'',
-  6:t=>String(TASK_STATUSES.indexOf(t.status)), 7:t=>t.category||''
+  1:t=>t.name||'',                                  /* משימה */
+  2:t=>((LOWN_BY[t.owner_id]||{}).name)||'',        /* בעלים */
+  3:t=>tkLinkName(t),                               /* מקושר ל */
+  5:t=>t.category||'',                              /* סיווג */
+  6:t=>String(TASK_STATUSES.indexOf(t.status)),     /* סטטוס */
+  7:t=>t.due_at||'',                                /* מועד */
+  9:t=>t.created_at||''                             /* תאריך יצירה */
 };
 window.tkSortBy = i=>{ TK_SORT = (TK_SORT[0]===i) ? [i,-TK_SORT[1]] : [i,1]; renderTasks(); };
 /* ברירת המחדל בתוך דלי: הקרוב קודם. בתוך "היום" ו"השבוע" זה בדיוק סדר
@@ -14276,7 +14403,13 @@ function tkDefLoad(){ try{ const r=JSON.parse(localStorage.getItem(TK_DEF_KEY)||
 function tkDefExists(){ return !!tkDefLoad(); }
 window.tkDefSave = ()=>{ try{ localStorage.setItem(TK_DEF_KEY, JSON.stringify({v:TK_VIEW,f:TK_F})); toast('התצוגה נשמרה כברירת מחדל ✓'); renderTkFilters(); }catch(_e){ toast('הדפדפן חוסם שמירת ברירת מחדל'); } };
 window.tkDefClear = ()=>{ try{ localStorage.removeItem(TK_DEF_KEY); }catch(_e){} toast('ברירת המחדל נמחקה'); renderTkFilters(); };
-function tkCats(){ return [...new Set((TASKS||[]).map(t=>t.category).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'he')); }
+/* 🔴 6.130.0 — שלושת הסיווגים שהמערכת עצמה מקצה ('ליד' · 'לקוח' ·
+   'תהליך מכירה' — ב-_cat של המשימה החדשה ובבורר הקישור) חייבים להיות
+   ברשימה **תמיד**, ולא רק אם משימה קיימת כבר נושאת אותם. אחרת הצבת
+   cat.value היא no-op שקטה: הערך אינו קיים כאופציה, ה-select נשאר ריק,
+   ואין שגיאה. בפרודקשן שלושתם מאוכלסים (2,390 · 46 · 691) ולכן הפגם
+   היה בלתי נראה — עד למסד ריק או לסיווג שנעלם מכל השורות. */
+function tkCats(){ return [...new Set(['ליד','לקוח','תהליך מכירה'].concat((TASKS||[]).map(t=>t.category).filter(Boolean)))].sort((a,b)=>a.localeCompare(b,'he')); }
 /* מוחל פעם אחת. הסדר: **localStorage אישי → הגדרה מרכזית → 'mine'**,
    בדיוק כמו lbInitDef. ⚠️ ערך שנשמר ואינו קיים עוד יורד — אחרת הוא
    מסנן החוצה כל שורה בלי שאף תיבה תיראה מסומנת (הלקח מ-logiInit). */
@@ -14371,13 +14504,14 @@ function tkRow(t, i){
       ${TK_BULK?`<td class="lb-ck" onclick="event.stopPropagation()"><input type="checkbox" data-id="${esc(t.id)}" ${TK_SEL.has(t.id)?'checked':''} onclick="tkSelOne('${jsq(t.id)}',this.checked)"></td>`:''}
       <td class="rownum">${i}</td>
       <td style="max-width:320px"><b class="${done?'tk-done':''}">${esc(t.name||'')}</b></td>
+      <td>${lbAva(t.owner_id||'')}</td>
       <td>${tkLinkCell(t)}</td>
       <td dir="ltr">${phCell(tkLinkPhone(t))}</td>
-      <td data-sort="${esc(t.due_at||'')}"${dmk.cls?` class="${dmk.cls}"`:''}><span class="lb-duew">${dmk.ico}${dueCell}</span></td>
-      <td>${lbAva(t.owner_id||'')}</td>
-      <td>${ieSel('task',t.id,'status',TASK_STATUSES,t.status,{mdColors:TASK_ST_COLORS,mdK:LB_TK})}</td>
       <td>${esc(t.category||'')||'<span class="lb-na">·</span>'}</td>
+      <td>${ieSel('task',t.id,'status',TASK_STATUSES,t.status,{mdColors:TASK_ST_COLORS,mdK:LB_TK})}</td>
+      <td data-sort="${esc(t.due_at||'')}"${dmk.cls?` class="${dmk.cls}"`:''}><span class="lb-duew">${dmk.ico}${dueCell}</span></td>
       <td>${done?'✓':`<button class="chip" onclick="event.stopPropagation();doneTask('${jsq(t.id)}')">בוצע ✓</button>`}</td>
+      <td data-sort="${esc(t.created_at||'')}">${t.created_at?esc(new Date(t.created_at).toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit'})):'<span class="lb-na">·</span>'}</td>
     </tr>`;
 }
 function tkFlat(list){
@@ -14410,7 +14544,7 @@ function tkTable(list){
    הוא הפנייה המקושרת — היא נפתרת ב-ctxOf ואינה ניתנת לעריכה מכאן. */
 const TASK_CARD_FIELDS = [
   ['tk-name','name'], ['tk-due','__due'], ['tk-status','status'],
-  ['tk-cat','category'], ['tk-owner','owner_id']
+  ['tk-cat','category'], ['tk-owner','owner_id'], ['tk-lnk','__link']
 ];
 let TASK_SNAP = null;
 /* חוזה ה-snapshot: **מה שהוצג מול מה שיש עכשיו**, שתי מחרוזות מאותו
@@ -14455,6 +14589,13 @@ window.openTask = (id)=>{
     <div class="note">נוצרה ${fmtDT(t.created_at)}${t.closed_at?' · נסגרה '+fmtDT(t.closed_at):''}</div>
     <div class="form-grid">
       <div class="form-sep">פרטי הפנייה המקושרת</div>
+      ${editable?`
+      <div class="span2 ac-wrap"><label>מקושר ל־</label>
+        <div id="tk-lnkchip" class="tkl-box"></div>
+        <input id="tk-lnkq" autocomplete="off" placeholder="חיפוש ליד, לקוח או תהליך מכירה…" oninput="tklPick('tk',this.value)" onfocus="tklPick('tk',this.value)" onblur="setTimeout(()=>{const b=document.getElementById('tk-lnkres'); if(b) b.hidden=true;},150)">
+        <div id="tk-lnkres" class="ac-menu" hidden></div>
+        <input type="hidden" id="tk-lnk" value="">
+      </div>`:''}
       ${ent?`
       <div class="span2"><label>${esc(TK_KIND_LBL[t.linked_type]||'מקושר ל־')}</label>
         <div class="tk-lnk"><span class="tk-kind tk-k-${esc(t.linked_type||'')}">${esc(TK_KIND_LBL[t.linked_type]||'')}</span>
@@ -14497,6 +14638,10 @@ window.openTask = (id)=>{
     <details class="lb-acc" id="tk-acc" ontoggle="tkActsLoad('${jsq(u.id)}','${jsq(u.type)}')">
       <summary>ציר פעילות</summary><div id="tk-acts"><div class="note">לחצו כדי לטעון…</div></div>
     </details>`;
+  /* 🔴 **לפני** ה-snapshot. החוזה הוא "מה שהוצג מול מה שיש עכשיו", ואתחול
+     שיבוא אחריו היה נרשם כשינוי של המשתמש כבר בשמירה הראשונה — כלומר
+     כתיבת linked_* על כל שמירה, גם כשאיש לא נגע בקישור. */
+  tklInit('tk', (t.linked_type && t.linked_id) ? t.linked_type+':'+t.linked_id : '');
   tkSnapshot(id);
   mountCard('tkModal', ()=>openTask(id));
   try{ window.markEmpty('tkModal'); }catch(_e){}
@@ -14518,6 +14663,14 @@ window.saveTask = async (id)=>{
     if(col==='__due'){
       if(!now){ upd.due_at=null; return; }
       const d=new Date(now); if(!isNaN(d.getTime())) upd.due_at=d.toISOString();
+      return;
+    }
+    /* 6.130.0 — שתי עמודות מקלט אחד. ניתוק הקישור מאפס את שתיהן יחד;
+       linked_type בלי linked_id הוא מצב שאין לו משמעות. */
+    if(col==='__link'){
+      const ci=now.indexOf(':');
+      upd.linked_type = ci>0 ? now.slice(0,ci) : null;
+      upd.linked_id   = ci>0 ? now.slice(ci+1) : null;
       return;
     }
     upd[col]= now===''?null:now;
@@ -14557,7 +14710,9 @@ window.doneTask = async (id)=>{
   await loadLeads();
 };
 $('#addTaskBtn').onclick = ()=>{ $('#t-name').value=''; $('#t-err').textContent='';
-  LB_TASK_LINK=null; $('#t-name').placeholder='';   /* מהכפתור הכללי — בלי קישור לליד */
+  $('#t-name').placeholder='';    /* מהכפתור הכללי — בלי קישור מוקדם */
+  tklInit('t','');                /* 6.130.0 — הבורר מתאפס בכל פתיחה */
+  $('#t-time').value='09:00';     /* עד 6.129.1 לא אופס ושמר את הערך הקודם */
   $('#t-due').value = todayStr(); /* תיקון ממצא 27 — תאריך מקומי ולא UTC */
   mountCard('taskModal', ()=>$('#taskModal').classList.remove('hidden')); };
 $('#t-cancel').onclick = ()=> closeCards();
@@ -14566,7 +14721,10 @@ $('#t-save').onclick = async ()=>{
   if(!name||!d){ $('#t-err').textContent='שם ותאריך יעד חובה'; return; }
   /* 6.93.0 — משימה שנפתחה מכרטיס ליד נקשרת אליו (linked_type='lead');
      כך ההתראות של automation_tick והמיון בבורד עובדים */
-  const _lnk=(typeof LB_TASK_LINK!=='undefined' && LB_TASK_LINK)?LB_TASK_LINK:null;
+  /* 6.130.0 — הקישור נקרא מהקלט המוסתר של הבורר. שלישיית _cat שמתחת
+     כבר מיפתה את שלושת הסוגים מ-6.125.0, ולכן היא לא נגעה. */
+  const _lv=String((document.getElementById('t-lnk')||{}).value||''), _li=_lv.indexOf(':');
+  const _lnk = _li>0 ? { type:_lv.slice(0,_li), id:_lv.slice(_li+1) } : null;
   /* 🔴 6.125.0 — הסיווג נגזר מההקשר ולא מקודד 'ליד'. עד כאן **כל**
      משימה שנוצרה מהמודל קיבלה 'ליד', כולל משימה מהכפתור הכללי שאין
      לה קישור בכלל — כלומר העמודה "סיווג" דיווחה על 'ליד' שאינו קיים.
@@ -14580,7 +14738,9 @@ $('#t-save').onclick = async ()=>{
              : _lnk.type==='customer' ? 'לקוח' : 'ליד';
   const { error } = await sb.schema('crm').from('tasks').insert({ name, owner_id: ME.id, due_at: new Date(d+'T'+tm).toISOString(), category:_cat, linked_type:_lnk?_lnk.type:null, linked_id:_lnk?_lnk.id:null });
   if(error){ $('#t-err').textContent='שגיאה בשמירה'; console.error(error); return; }
-  $('#taskModal').classList.add('hidden'); await loadLeads();
+  /* closeCards ולא classList.add('hidden') — העקיפה השאירה את
+     CARD_STACK/CARD_CUR/A11Y_RETURN מלוכלכים אחרי כל שמירה. */
+  closeCards(); await loadLeads();
   if(_lnk && _lnk.type==='lead') openLead(_lnk.id);
 };
 
@@ -18763,7 +18923,7 @@ const LEAD_CARD_FIELDS = [
   ['lb-addr','address'], ['lb-ctype','customer_type'], ['lb-source','source'],
   ['lb-wacat','__wacat']
 ];
-let LEAD_SNAP = null, LB_TASK_LINK = null, LB_MEET_LEAD = null, LB_FUP_LEAD = null;
+let LEAD_SNAP = null, LB_MEET_LEAD = null, LB_FUP_LEAD = null;
 /* תת-הסטטוס: עמודה אחת לכל סטטוס-אב. בורר יחיד בכרטיס מצייר את הרשימה של
    הסטטוס הנוכחי; ההמרה לעמודה הנכונה קורית בשמירה בלבד. */
 function lbSubCol(st){ return st==='רלוונטי'?'sub_status' : st==='סירוב'?'reject_reason' : st==='לא רלוונטי'?'irrelevant_reason' : null; }
@@ -19491,11 +19651,15 @@ window.lbDelete = async (id)=>{
 };
 window.leadTask = (id)=>{
   const l=LEADS.find(x=>x.id===id); if(!l) return;
-  LB_TASK_LINK={ type:'lead', id };
   $('#t-name').value=''; $('#t-err').textContent='';
   $('#t-name').placeholder='משימה על '+(l.full_name||'');
+  $('#t-time').value='09:00';
   $('#t-due').value=todayStr();
   mountCard('taskModal', ()=>$('#taskModal').classList.remove('hidden'));
+  /* 6.130.0 — **אחרי** mountCard: הוא מסתיר את כל המודלים ומצייר מחדש את
+     סרגל הכרטיס, ואתחול שיבוא לפניו היה נמחק. הבחירה ניתנת לשינוי או
+     לניתוק מכאן כמו מכל פתיחה אחרת. */
+  tklInit('t','lead:'+id);
 };
 /* סעיף 6 — הפולואפ. ⚠️ ברירת המחדל היא מחר ב-10:00 ולא "עכשיו":
    פולואפ שנקבע לרגע זה הוא משימה שכבר באיחור ברגע שנוצרה. */

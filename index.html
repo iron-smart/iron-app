@@ -2189,7 +2189,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.126.0</div>
+      <div class="ver">גרסה 6.127.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2318,7 +2318,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.126.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.127.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -8627,7 +8627,7 @@ $('#docSearch').addEventListener('input', renderDocs);
 /* 6.22.0 — היצירה עברה לשרת. ord.protocol_create מייצר את האסימון, קובע את
    הקטגוריה, בודק can_edit ורושם את היומן בעצמו. לכן אין כאן יותר לא ייצור
    אסימון בדפדפן, לא כתיבה ישירה לטבלה ולא רישום יומן מצד הלקוח. */
-window.createProtocol = async (orderId)=>{
+window.createProtocol = async (orderId, ctx)=>{
   const o = ORDS.find(x=>x.id===orderId); if(!o) return;
   if(!window.canEdit('docs.protocols')){ alert('אין לך הרשאת עריכה בקטגוריית הפרוטוקולים.'); return; }
   if(!confirm('ליצור קישור חתימה לפרוטוקול הכנה עבור '+(o.customer_name||o.order_number)+'?')) return;
@@ -8635,8 +8635,16 @@ window.createProtocol = async (orderId)=>{
     p_order_id:o.id, p_call_id:null, p_deal_id:null,
     p_category:'protocols', p_doc_type:'פרוטוקול הכנה להתקנה' });
   if(error){ alert('יצירת הפרוטוקול נכשלה: '+error.message); return; }
-  if(data) PROTS.unshift(data);
-  renderDocs(); renderOps(); openOrd(orderId,'sales');
+  if(data){
+    PROTS.unshift(data);
+    /* 6.127.0 — ord.protocol_create מעדכנת את contact_status ל'נוצר קשר
+       ראשוני לפרוטוקול', אבל רק כשההזמנה עדיין ב'טרם נוצר קשר' וכשהקטגוריה
+       היא protocols. את התנאי הזה אין לשכפל כאן: המקור היחיד הוא _contact_status
+       שחוזר מהשרת אך ורק כשהעמודה באמת נכתבה. בלי השורה הזאת ORDS היה ממשיך
+       להציג את הסטטוס הישן עד רענון דף — אותה מחלקה של VIS_GRP. */
+    if(data._contact_status) o.contact_status = data._contact_status;
+  }
+  renderDocs(); renderOps(); openOrd(orderId, ctx||'sales');
 };
 
 /* ===== מזהה הבנייה (6.85.0) =====
@@ -8646,7 +8654,7 @@ window.createProtocol = async (orderId)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'dealstage-2026-08-22a';
+const BUILD_ID = 'protosend-2026-08-23a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -17168,11 +17176,16 @@ window.openOrd = (id, ctx)=>{
         return `<div class="other-row ${same?'same-addr':''}" onclick="goCard(()=>openOrd('${x.id}'${ctx?(",'"+ctx+"'"):''}))"><b>${esc(x.order_number)}</b><span>${fmtD(x.order_date)||'—'}</span><span>${x.items_count??'?'} פריטים</span>${x.address?`<span class="ob-note" title="כתובת משלוח: ${esc(x.address)}">${esc(String(x.address).slice(0,30))}</span>`:''}${same?'<span class="same-tag">אותה כתובת משלוח!</span>':''}</div>`;
       }).join('')}</div>`;
     })()}
-    ${(showSales && window.canView('crm.orders.docs'))?(()=>{ /* 6.22.0 — הבלוק הזה הוא משטח חמישי למסמכים, ולכן הוא מצטלב: גם המפתח
-         crm.orders.docs וגם מפתח הקטגוריה docs.<category> חייבים לאשר. */
+    ${window.canView('crm.orders.docs')?(()=>{ /* 6.22.0 — הבלוק הזה הוא משטח חמישי למסמכים, ולכן הוא מצטלב: גם המפתח
+         crm.orders.docs וגם מפתח הקטגוריה docs.<category> חייבים לאשר.
+         6.127.0 — הוסר התנאי showSales. עד כאן הבלוק נעלם כשההזמנה נפתחה
+         ממסך הלוגיסטיקה, ולכן מי שעובד משם לא ראה אותו כלל — בדיוק מיקי
+         ונח, ששניהם logi.orders=2. שליחת מסמך לחתימה אינה פעולה מסחרית
+         ואין סיבה שפרופיל התצוגה יסתיר אותה; מה שמותר נקבע בהרשאה בלבד,
+         כפי שכתוב בראש openOrd. mediaBlock כבר התנהג כך. */
       const ps=PROTS.filter(p=>p.order_id===o.id && window.canView('docs.'+(p.category||'protocols'))); return `<section class="ob-card"><h2 class="sec">מסמכים וחתימות (${ps.length})</h2>`+
       (ps.map(p=>`<div class="row"><span class="k">${esc(p.doc_type)}${p.sent_at?' · '+new Date(p.sent_at).toLocaleDateString('he-IL'):''}</span><span class="v">${p.status==='נחתם'?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','open')">צפייה</a>`:(window.canEdit('docs.'+(p.category||'protocols'))?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','copy')">קישור</a>`:'<span style="color:#94a3b8">אין הרשאה לקישור</span>')} <span class="pill ${p.status==='נחתם'?'st-rel':'st-def'}">${esc(p.status)}</span></span></div>`).join(''))+
-      ((window.canEdit('crm.orders.docs')&&window.canEdit('docs.protocols'))?`<button class="ghost" style="margin-top:8px" onclick="createProtocol('${o.id}')">יצירת פרוטוקול הכנה לחתימה</button>`:'')+'</section>'; })():''}
+      ((window.canEdit('crm.orders.docs')&&window.canEdit('docs.protocols'))?`<button class="ghost" style="margin-top:8px" onclick="createProtocol('${o.id}','${ctx||''}')">יצירת פרוטוקול הכנה לחתימה</button>`:'')+'</section>'; })():''}
     ${window.mediaBlock('order', o.id)}
     </div>
     <div class="modal-actions ord-actions">

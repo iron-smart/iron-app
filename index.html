@@ -2189,7 +2189,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.127.0</div>
+      <div class="ver">גרסה 6.128.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2318,7 +2318,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.127.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.128.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -8453,6 +8453,30 @@ const DOC_CATS = [
   ['reports','דוחות תקינות'], ['media','תמונות מהשטח']
 ];
 const docCatLabel = c => (DOC_CATS.find(x=>x[0]===c) || ['', c||'—'])[1];
+/* 6.128.0 — מצב המסמך, נקודת חנק אחת לשני המסכים שמציגים אותו.
+   עד כאן שניהם הציגו את p.status הגולמי, שהוא 'נשלח' כבר מרגע היצירה —
+   כלומר תווית שמתארת פעולה שלא בהכרח קרתה. עכשיו המצב נגזר משלושה
+   נתונים מדודים, לפי סדר הכרעה: חתימה ← הפקת קישור ← ברירת מחדל.
+   ⚠️ p.status עצמו נשאר מקור האמת לסינון ('נחתם' מול השאר) ולניקוי
+   האחים בפונקציית sign — כאן זו שכבת תצוגה בלבד.
+   הצרכנים: docRow במסך המסמכים, ושורת המסמך בכרטיס ההזמנה. שניהם
+   חייבים לעבור כאן — אותו שם עם שתי משמעויות בשני מסכים הוא בדיוק
+   הכשל של בורר הסטטוס בטבלת הלידים (6.125.0). */
+const DOC_VIA = { whatsapp:'וואטסאפ', link:'העתקת קישור' };
+function docStatus(p){
+  const d = x => x ? new Date(x).toLocaleDateString('he-IL') : '';
+  if(p.status==='נחתם' || p.signed_at)
+    return { label:'נחתם'+(p.signed_at?' · '+d(p.signed_at):''), cls:'st-rel',
+             title:p.signer_name?('נחתם ע"י '+p.signer_name):'' };
+  if(p.link_sent_at){
+    const n = p.link_sent_count||1;
+    return { label:'נשלח · '+d(p.link_sent_at), cls:'st-new',
+             title:[DOC_VIA[p.link_sent_via]||'', p.link_sent_by||'',
+                    n>1?('נשלח '+n+' פעמים'):''].filter(Boolean).join(' · ') };
+  }
+  return { label:'טרם נשלח', cls:'st-def',
+           title:'המסמך נוצר ועדיין לא הופק עבורו קישור חתימה' };
+}
 /* 6.22.0 — האסימון של המסמך הוא הרשאת חתימה לכל דבר: מי שמחזיק בו יכול
    לחתום במקום הלקוח. לכן הוא כבר אינו נטען יחד עם הרשימה ואינו מגיע ל-DOM,
    ונמשך מהשרת רק ברגע הלחיצה דרך ord.protocol_link — שמאמת can_view
@@ -8462,7 +8486,8 @@ window.openDocLink = async (id, mode)=>{
   /* פותחים את הלשונית מיד עם הלחיצה, לפני ההמתנה לשרת. אחרת חוסם החלונות
      הקופצים של הדפדפן יבלע אותה, כי אישור המשתמש פג במהלך ה-await. */
   const tab = (mode==='open'||mode==='wa') ? window.open('', '_blank') : null;
-  const { data, error } = await sb.schema('ord').rpc('protocol_link', { p_id:id });
+  const { data, error } = await sb.schema('ord').rpc('protocol_link',
+    { p_id:id, p_via: mode==='wa' ? 'whatsapp' : (mode==='copy' ? 'link' : null) });
   if(error || !data || !data.token){
     if(tab){ try{ tab.close(); }catch(_e){} }
     alert('הפקת הקישור נכשלה — ' + ((error&&error.message)||'אין לך הרשאה למסמך הזה'));
@@ -8596,16 +8621,17 @@ function docRow(p){
   const signed=p.status==='נחתם';
   const cat=p.category||'protocols';
   const mayLink=window.canEdit('docs.'+cat);
+  const ds=docStatus(p);
   return `<div class="lead" style="cursor:default">
     <div style="flex:1"><div class="nm">${esc(p.customer_name||'—')} <small style="color:#94a3b8;font-weight:400">· ${esc(p.doc_type)}${p.order_number?' · '+esc(p.order_number):''}</small></div>
-    <div class="meta">${esc(docCatLabel(cat))} · נשלח ${p.sent_at?new Date(p.sent_at).toLocaleDateString('he-IL'):'—'}${signed?' · נחתם '+new Date(p.signed_at).toLocaleDateString('he-IL')+(p.signer_name?' ע"י '+esc(p.signer_name):''):''}</div>
+    <div class="meta">${esc(docCatLabel(cat))} · נוצר ${p.sent_at?new Date(p.sent_at).toLocaleDateString('he-IL'):'—'}${signed?' · נחתם '+new Date(p.signed_at).toLocaleDateString('he-IL')+(p.signer_name?' ע"י '+esc(p.signer_name):''):''}</div>
     <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
       ${signed?`<button class="chip" onclick="openDocLink('${p.id}','open')">📄 צפייה במסמך החתום</button>`
         :(mayLink?`<button class="chip" onclick="openDocLink('${p.id}','copy')">🔗 העתקת קישור</button>
           ${p.phone?`<button class="chip" onclick="openDocLink('${p.id}','wa')">💬 וואטסאפ</button>`:''}`
         :`<span class="meta" style="color:#94a3b8">אין לך הרשאה להפיק קישור חתימה בקטגוריה הזו</span>`)}
     </div></div>
-    <span class="pill ${signed?'st-rel':'st-def'}">${esc(p.status)}</span></div>`;
+    <span class="pill ${ds.cls}" title="${esc(ds.title)}">${esc(ds.label)}</span></div>`;
 }
 function renderDocs(){
   docChips();
@@ -8654,7 +8680,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'protosend-2026-08-23a';
+const BUILD_ID = 'protostat-2026-08-23b';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -13723,7 +13749,7 @@ async function loadLeads(){
     oldPart('service_calls'),   /* סכימת ord בפלטפורמה — מקור האמת */
     sb.schema('ord').from('teams').select('id,name,color,active,sort_order').order('sort_order',{ascending:true}),
     sb.schema('ord').from('inv_items').select(SKU_LIST_COLS).order('partname',{ascending:true}).limit(10000),
-    sb.schema('ord').from('protocols_v').select('id,order_id,call_id,deal_id,order_number,customer_name,phone,doc_type,category,status,sent_at,signed_at,signer_name').order('sent_at',{ascending:false}).limit(10000),
+    sb.schema('ord').from('protocols_v').select('id,order_id,call_id,deal_id,order_number,customer_name,phone,doc_type,category,status,sent_at,signed_at,signer_name,link_sent_at,link_sent_via,link_sent_by,link_sent_count').order('sent_at',{ascending:false}).limit(10000),
     sb.schema('ord').from('settings').select('key,value').order('key',{ascending:true}),
     /* ספריית בעלי הלידים — RPC ולא טבלה, כי RLS על core.profiles מחזיר
        למשתמש רגיל את הפרופיל שלו בלבד (ראו lownApply). שגיאה כאן אינה
@@ -17184,7 +17210,8 @@ window.openOrd = (id, ctx)=>{
          ואין סיבה שפרופיל התצוגה יסתיר אותה; מה שמותר נקבע בהרשאה בלבד,
          כפי שכתוב בראש openOrd. mediaBlock כבר התנהג כך. */
       const ps=PROTS.filter(p=>p.order_id===o.id && window.canView('docs.'+(p.category||'protocols'))); return `<section class="ob-card"><h2 class="sec">מסמכים וחתימות (${ps.length})</h2>`+
-      (ps.map(p=>`<div class="row"><span class="k">${esc(p.doc_type)}${p.sent_at?' · '+new Date(p.sent_at).toLocaleDateString('he-IL'):''}</span><span class="v">${p.status==='נחתם'?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','open')">צפייה</a>`:(window.canEdit('docs.'+(p.category||'protocols'))?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','copy')">קישור</a>`:'<span style="color:#94a3b8">אין הרשאה לקישור</span>')} <span class="pill ${p.status==='נחתם'?'st-rel':'st-def'}">${esc(p.status)}</span></span></div>`).join(''))+
+      (ps.map(p=>{ const ds=docStatus(p), may=window.canEdit('docs.'+(p.category||'protocols'));
+        return `<div class="row"><span class="k">${esc(p.doc_type)}${p.sent_at?' · נוצר '+new Date(p.sent_at).toLocaleDateString('he-IL'):''}</span><span class="v">${(p.status==='נחתם'||p.signed_at)?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','open')">צפייה</a>`:(may?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','copy')">קישור</a>${p.phone?` · <a href="#" onclick="event.preventDefault();openDocLink('${p.id}','wa')">וואטסאפ</a>`:''}`:'<span style="color:#94a3b8">אין הרשאה לקישור</span>')} <span class="pill ${ds.cls}" title="${esc(ds.title)}">${esc(ds.label)}</span></span></div>`; }).join(''))+
       ((window.canEdit('crm.orders.docs')&&window.canEdit('docs.protocols'))?`<button class="ghost" style="margin-top:8px" onclick="createProtocol('${o.id}','${ctx||''}')">יצירת פרוטוקול הכנה לחתימה</button>`:'')+'</section>'; })():''}
     ${window.mediaBlock('order', o.id)}
     </div>

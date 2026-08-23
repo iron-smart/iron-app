@@ -2189,7 +2189,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.128.0</div>
+      <div class="ver">גרסה 6.129.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2318,7 +2318,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.128.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.129.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -8463,8 +8463,16 @@ const docCatLabel = c => (DOC_CATS.find(x=>x[0]===c) || ['', c||'—'])[1];
    חייבים לעבור כאן — אותו שם עם שתי משמעויות בשני מסכים הוא בדיוק
    הכשל של בורר הסטטוס בטבלת הלידים (6.125.0). */
 const DOC_VIA = { whatsapp:'וואטסאפ', link:'העתקת קישור' };
+/* 6.129.0 — "ממתין לחתימה" הוא **לא** "כל מה שאינו חתום". מ-sign גרסה 12
+   אח ממתין שנשאר אחרי חתימה מסומן 'בוטל' ונשמר (במקום להימחק), ולכן
+   הסינון הבינארי הישן היה סופר אותו כממתין. נקודת חנק אחת לשתי נקודות
+   הסינון במסך המסמכים. */
+const docPending = p => p.status!=='נחתם' && p.status!=='בוטל' && !p.signed_at;
 function docStatus(p){
   const d = x => x ? new Date(x).toLocaleDateString('he-IL') : '';
+  if(p.status==='בוטל')
+    return { label:'בוטל', cls:'st-def',
+             title:'נותר ממתין כשמסמך אחר של אותו לקוח נחתם. נשמר לתיעוד.' };
   if(p.status==='נחתם' || p.signed_at)
     return { label:'נחתם'+(p.signed_at?' · '+d(p.signed_at):''), cls:'st-rel',
              title:p.signer_name?('נחתם ע"י '+p.signer_name):'' };
@@ -8600,7 +8608,7 @@ function mediaCard(f){
 function docChips(){
   const vis = docsVisible();
   const base = vis.filter(p=>DOC_CAT==='all'||(p.category||'protocols')===DOC_CAT);
-  const sent=base.filter(p=>p.status!=='נחתם'), signed=base.filter(p=>p.status==='נחתם');
+  const sent=base.filter(docPending), signed=base.filter(p=>p.status==='נחתם');
   const mediaN = (DOCFILES||[]).length;
   $('#doc-chips').innerHTML = `
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
@@ -8645,7 +8653,7 @@ function renderDocs(){
     return;
   }
   let list = docsVisible().filter(p=>DOC_CAT==='all'||(p.category||'protocols')===DOC_CAT);
-  list = DOC_FILTER==='all'?list:(DOC_FILTER==='signed'?list.filter(p=>p.status==='נחתם'):list.filter(p=>p.status!=='נחתם'));
+  list = DOC_FILTER==='all'?list:(DOC_FILTER==='signed'?list.filter(p=>p.status==='נחתם'):list.filter(docPending));
   if(q) list=list.filter(p=>(p.customer_name||'').includes(q)||(p.order_number||'').includes(q));
   $('#docs-list').innerHTML = capped(list, p=>docRow(p), 'אין מסמכים בסינון הזה');
 }
@@ -8680,7 +8688,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'protostat-2026-08-23b';
+const BUILD_ID = 'protoevid-2026-08-23c';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====

@@ -96,7 +96,7 @@ async function init(){
     const d=await r.json();
     if(!r.ok) throw new Error(d.error||'שגיאה');
     if(d.status==='נחתם'){
-      show('<div class="v">✅</div><h2 style="margin:10px 0 6px">המסמך הזה כבר נחתם</h2><p style="font-size:.9rem;color:#4c5560">תודה רבה!</p>');
+      show('<h2 style="margin:10px 0 6px">המסמך הזה כבר נחתם</h2><p style="font-size:.9rem;color:#4c5560">תודה רבה!</p>');
       return;
     }
     if(d.doc_type&&d.doc_type!=='פרוטוקול הכנה להתקנה') renderReport(d); else renderProtocol(d);
@@ -194,7 +194,7 @@ function renderProtocol(d){
         body:JSON.stringify({token,signer_name:document.getElementById('signerName').value.trim(),signature:sig,agreed:document.getElementById('agree').checked,authorized:document.getElementById('auth').checked,agree_text:(document.getElementById('agree-txt')||{}).textContent||''})});
       const dd=await r.json();
       if(!r.ok||!dd.ok) throw new Error(dd.error||'שגיאה');
-      show('<div class="v">✅</div><h2 style="margin:10px 0 6px">הפרוטוקול נחתם בהצלחה!</h2><p style="font-size:.9rem;color:#4c5560">תודה רבה. נציג מטעמנו יצור איתך קשר לתיאום מועד ההתקנה.<br><br>צוות איירון פיטנס 💪</p>');
+      show('<h2 style="margin:10px 0 6px">הפרוטוקול נחתם בהצלחה!</h2><p style="font-size:.9rem;color:#4c5560">נציג מטעמינו יצור קשר לתיאום מועד ההתקנה לאחר שישובץ בלוח השיבוצים שלנו.<br><br>תודה רבה,<br>צוות איירון פיטנס</p>');
     }catch(e){ document.getElementById('err').textContent='השליחה נכשלה: '+e.message+' — נסו שוב'; sendBtn.disabled=false; sendBtn.textContent='שליחת הפרוטוקול החתום'; }
   };
 }

@@ -2189,7 +2189,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.129.0</div>
+      <div class="ver">גרסה 6.129.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2318,7 +2318,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.129.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.129.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -8688,7 +8688,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'protoevid-2026-08-23c';
+const BUILD_ID = 'bnpop-2026-08-23d';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -8959,7 +8959,7 @@ const PV_CSS = `
 #tab-prc .pv-bnwrap{ position:relative; flex:1 1 280px; min-width:230px }
 #tab-prc .pv-bnq{ width:100%; box-sizing:border-box; border:1px solid var(--pv-line); border-radius:8px; padding:6px 9px; font-size:12.5px; font-family:inherit }
 #tab-prc .pv-bnq:focus{ border-color:var(--pv-brand); outline:none; box-shadow:0 0 0 3px rgba(0,45,72,.10) }
-#tab-prc .pv-bnpop{ position:absolute; z-index:40; top:calc(100% + 4px); inset-inline-start:0; inset-inline-end:0; background:#fff; border:1px solid var(--pv-line); border-radius:10px; box-shadow:0 10px 28px rgba(6,24,39,.16); max-height:300px; overflow:auto }
+#tab-prc .pv-bnpop{ position:fixed; z-index:60; background:#fff; border:1px solid var(--pv-line); border-radius:10px; box-shadow:0 10px 28px rgba(6,24,39,.16); max-height:340px; overflow:auto }
 #tab-prc .pv-bnitem{ display:flex; align-items:center; gap:9px; width:100%; text-align:start; background:none; border:none; border-bottom:1px solid #f1f5f9; padding:6px 9px; cursor:pointer; font-family:inherit }
 #tab-prc .pv-bnitem:last-child{ border-bottom:none }
 #tab-prc .pv-bnitem:hover, #tab-prc .pv-bnitem.on{ background:#eaf1f6 }
@@ -10720,7 +10720,40 @@ function bnThumb(p){
   const u = p.img.includes('-350x350')? p.img.replace('-350x350','-100x100') : p.img;
   return '<span class="pv-imgbox" style="'+st+'"><img src="'+esc(u)+'" loading="lazy"></span>';
 }
-PV.bnClose = ()=>{ document.querySelectorAll('#prc-body .pv-bnpop').forEach(x=>{ x.hidden=true; x.innerHTML=''; }); };
+/* 6.129.1 — מיקום ידני, כי הרשימה היא position:fixed ולא absolute.
+   absolute נחתך בידי כל אב עם overflow, וכרטיס המק״ט מספק שניים
+   (.pvc-body auto · .sheet hidden). נמדד: 300px רשימה, 12px נראים.
+   fixed מתעלם משניהם, ובתמורה חייב לקבל את המיקום מכאן. */
+function bnPlace(inp){
+  const pop = bnPop(inp); if(!pop || pop.hidden) return;
+  const r = inp.getBoundingClientRect();
+  const gap = 4, edge = 10;
+  const below = window.innerHeight - r.bottom - gap - edge;
+  const above = r.top - gap - edge;
+  /* פתיחה כלפי מעלה רק כשלמטה באמת צר **וגם** למעלה רחב יותר — אחרת
+     הרשימה תקפוץ מעל השדה בלי סיבה וזה מבלבל יותר ממה שהוא פותר. */
+  const up = below < 150 && above > below;
+  pop.style.maxHeight = Math.min(340, Math.max(120, Math.floor(up? above : below))) + 'px';
+  pop.style.width = Math.round(r.width) + 'px';
+  pop.style.left  = Math.round(r.left)  + 'px';
+  if(up){ pop.style.top = 'auto'; pop.style.bottom = Math.round(window.innerHeight - r.top + gap) + 'px'; }
+  else  { pop.style.bottom = 'auto'; pop.style.top = Math.round(r.bottom + gap) + 'px'; }
+}
+/* fixed אינו נגרר עם גלילת האב — בלי המאזינים האלה הרשימה הייתה נשארת
+   תלויה במקומה כשגוללים את הכרטיס. capture=true חובה: גלילת .pvc-body
+   אינה מבעבעת ל-window. רשומים פעם אחת, ופועלים על הרשימה הפתוחה בלבד
+   (bnClose סוגרת את כולן, ולכן לכל היותר אחת פתוחה). */
+function bnReplace(){
+  const pop = document.querySelector('.pv-bnpop:not([hidden])'); if(!pop) return;
+  const inp = pop.parentElement && pop.parentElement.querySelector('.pv-bnq');
+  if(inp) bnPlace(inp);
+}
+addEventListener('scroll', bnReplace, true);
+addEventListener('resize', bnReplace);
+/* ⚠️ הבורר היה '#prc-body .pv-bnpop', וכרטיס המק״ט אינו בתוך #prc-body —
+   נמדד 0 התאמות, כלומר סגירת ה-blur לא עבדה בכרטיס והרשימה נשארה פתוחה
+   אחרי עזיבת השדה. .pv-bnpop קיים אך ורק בפאנל עץ המוצר. */
+PV.bnClose = ()=>{ document.querySelectorAll('.pv-bnpop').forEach(x=>{ x.hidden=true; x.innerHTML=''; }); };
 /* פוקוס חוזר על שדה שכבר יש בו בחירה לא מאפס אותה — רק מסמן את הטקסט,
    כדי שהקלדה תחליף אותו. בלי זה כל לחיצה חוזרת הייתה מוחקת את הבחירה. */
 PV.bnFocus = inp => {
@@ -10746,7 +10779,7 @@ PV.bnSearch = inp => {
       return ap-bp || String(a.sku).localeCompare(String(b.sku));
     })
     .slice(0, BN_MAX);
-  if(!res.length){ pop.innerHTML = '<div class="pv-bnempty">לא נמצא רכיב מתאים. אפשר לחפש גם לפי שם המוצר.</div>'; pop.hidden=false; return; }
+  if(!res.length){ pop.innerHTML = '<div class="pv-bnempty">לא נמצא רכיב מתאים. אפשר לחפש גם לפי שם המוצר.</div>'; pop.hidden=false; bnPlace(inp); return; }
   pop.innerHTML = res.map(p=>{
     const c = costBefore(p.sku);
     return '<button type="button" class="pv-bnitem" onmousedown="event.preventDefault()" onclick="prcV13.bnPick(this,\''+q1(p.sku)+'\')">'+
@@ -10758,6 +10791,7 @@ PV.bnSearch = inp => {
     '</button>';
   }).join('');
   pop.hidden=false;
+  bnPlace(inp);
 };
 PV.bnPick = (el, sku) => {
   const box = bnBox(el); if(!box) return;

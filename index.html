@@ -2281,7 +2281,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.137.0</div>
+      <div class="ver">גרסה 6.138.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2410,7 +2410,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.137.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.138.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -8792,7 +8792,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'paywindowpast-2026-08-23a';
+const BUILD_ID = 'hpgroup-2026-08-25a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -9494,15 +9494,27 @@ let plRound=1, plCName='', plGroup='';
    הוא נכפה ל'מסחרי' — כך שמסמך שיוצא ללקוח סונן לפי רשימת ההחרגות של
    מחירון אחר לגמרי (7 מחירונים בפרודקשן, 33 החרגות במסחרי מול 11 בעסקי).
    הבחירה מפורשת עכשיו, וההחרגות עוקבות אחריה. */
+/* שם הקבוצה המסחרית — נקודת חנק אחת (6.138.0, רומן 25/08/2026).
+   הקבוצה שונתה מ'מסחרי' ל'ה.פ' כדי לתאום את שם המחירון בפריוריטי. שתי
+   הצורות נבדקות **בכוונה**: הפריסה של הקובץ הזה והעדכון של ord.prc_groups
+   אינם אטומיים, ובכל סדר יש חלון שבו הם חלוקים. בלי הנפילה אחורה, בחלון
+   הזה plGrp() היה מחזיר GROUPS[0] — 'אתר' — כלומר מסמך ללקוח מסונן לפי
+   רשימת ההחרגות של מחירון אחר. זו התקלה של 6.81.1 בדיוק.
+   מותר להסיר את הנפילה ל'מסחרי' רק אחרי שאין במסד קבוצה בשם הזה. */
+function mainGrp(){
+  if(GROUPS.indexOf('ה.פ')>=0)   return 'ה.פ';
+  if(GROUPS.indexOf('מסחרי')>=0) return 'מסחרי';
+  return GROUPS[0];
+}
 function plGrp(){
   if(plGroup && GROUPS.indexOf(plGroup)>=0) return plGroup;
   if(!state.allGroups && GROUPS.indexOf(state.group)>=0) return state.group;
-  return GROUPS.includes('מסחרי')? 'מסחרי' : GROUPS[0];
+  return mainGrp();
 }
 
 const GROUP_COLORS = {
   'אתר':'#2a78d6', 'פרטי-עסקי':'#eb6834', 'עסקי':'#1baf7a', 'מסחרי':'#eda100',
-  'ארגוני':'#e87ba4', 'מוסדי':'#008300', 'סיטונאי':'#4a3aa7'
+  'ה.פ':'#eda100', 'ארגוני':'#e87ba4', 'מוסדי':'#008300', 'סיטונאי':'#4a3aa7'
 };
 /* צבע הקבוצה מגיע מהמסד (ord.prc_groups.colour) ומוזרק לתוך אטריביוט style.
    מסננים לצורת hex בלבד כדי שערך זדוני לא יוכל לפרוץ מהאטריביוט. */
@@ -9676,7 +9688,7 @@ async function prcLoad(force){
     };
     DATA.groups = (gr.data||[]).map(g=>({ key:g.key, margin:Number(g.margin), desc:g.descr||'', colour:g.colour||null }));
     GROUPS = DATA.groups.map(g=>g.key);
-    if(!GROUPS.includes(state.group)) state.group = GROUPS[0] || '';
+    if(!GROUPS.includes(state.group)) state.group = mainGrp() || '';
 
     DATA.matrix = (mx.data||[]).map(r=>{
       const row = { cat:r.cat, sub:r.sub||'' };

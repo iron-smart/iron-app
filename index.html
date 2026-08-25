@@ -2289,7 +2289,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.139.0</div>
+      <div class="ver">גרסה 6.140.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2418,7 +2418,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.139.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.140.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3206,7 +3206,12 @@ window.LOGI_PERM = { orders:'logi.orders', calls:'logi.calls', cal:'logi.cal' };
 window.SET_PERM  = { users:'set.users', teams:'set.teams', texts:'set.texts', conn:'set.conn', synclog:'set.synclog', notif:'set.notif', crm:'set.crm', general:'set.general' };
 window.LOGI_VIEWS = ['orders','calls','cal'];
 window.navCanTab = t=>{
-  if(t==='logi') return LOGI_VIEWS.some(v=>canView(LOGI_PERM[v]));
+  /* 6.140.0 — logi.screen מפריד בין הנתונים לבין המסך.
+     `logi.orders/calls/cal` ממשיכים להזין את ord.orders_v ואת "היום שלי";
+     `logi.screen` שולט אך ורק בהופעת הלשונית. בלי ההפרדה הזאת אי אפשר
+     היה לסגור את המסך בלי לרוקן גם את "היום שלי" — נמדד: logi=0 החזיר
+     0 הזמנות ו-0 קריאות, כי ה-WHERE של ה-view בודק את logi.orders. */
+  if(t==='logi') return canView('logi.screen') && LOGI_VIEWS.some(v=>canView(LOGI_PERM[v]));
   if(t==='set')  return settingsCats().length > 0;
   const k = TAB_PERM[t];
   return k ? canView(k) : true;
@@ -3610,6 +3615,9 @@ window.showNoAccess = ()=>{
 };
 window.gotoTab = t=>{
   if(!NAV_TABS.includes(t)) return;
+  /* 6.140.0 — gotoTab כבר עובר דרך navCanTab, ולכן logi.screen
+     נאכף גם על ניווט ישיר (drill-down מאריח, gotoLogiPreset, קישור שמור)
+     ולא רק על הסרגל. אין כאן שער שני — יש נקודת חנק אחת. */
   if(!navCanTab(t)){ try{ toast('אין לך הרשאה למסך זה'); }catch(_e){ } return; }
   const nb=document.getElementById('noAccessBox'); if(nb) nb.hidden=true;
   CUR_TAB = t;
@@ -8800,7 +8808,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'usersoff-2026-08-25a';
+const BUILD_ID = 'logiscreen-2026-08-25a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====

@@ -717,7 +717,13 @@
   /* 6.26.0 — סימון רשומה שנכנסה ב-24 השעות האחרונות (תצוגה טבלאית בלבד) */
   .tbl tbody tr.row-new, .tbl tbody tr.row-new:nth-child(even){ background:#fff7e6 !important; box-shadow:inset -4px 0 0 #f0b45f; }
   .tbl tbody tr.row-new:hover{ background:#fdf0d6 !important; }
-  .new-chip{ display:inline-block; margin-inline-start:6px; background:#f0b45f; color:#3d2a00; border-radius:99px; padding:1px 8px; font-size:10.5px; font-weight:800; white-space:nowrap; vertical-align:middle; }
+  /* 6.142.0 — הכלל הקיים הוא `.tbl tbody tr.row-new` — טבלאות בלבד.
+   מסכי הלידים והקריאות מציגים גם כרטיסים (.lead), ולכן וריאנט משלהם.
+   ⚠️ (0,2,0) גובר על שני המופעים של .lead (0,1,0) בכל מיקום בגיליון,
+   ווריאנט :hover חובה — בלעדיו המשוב בריחוף נעלם דווקא בשורות החדשות. */
+.lead.row-new{ background:#fff7e6; box-shadow:inset -4px 0 0 #f0b45f; }
+.lead.row-new:hover{ background:#fdf0d6; }
+.new-chip{ display:inline-block; margin-inline-start:6px; background:#f0b45f; color:#3d2a00; border-radius:99px; padding:1px 8px; font-size:10.5px; font-weight:800; white-space:nowrap; vertical-align:middle; }
   .tbl tbody tr:nth-child(even){ background:#f7f9fb; }
   .tbl tbody tr:hover{ background:#eaf1f6; }
   .tbl tbody tr:last-child td{ border-bottom:none; }
@@ -2293,7 +2299,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.141.0</div>
+      <div class="ver">גרסה 6.142.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2422,7 +2428,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.141.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.142.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5837,14 +5843,30 @@ const crewChip = (ds,team)=>{ const ns=tdNames(ds,team); return ns.length?`<span
    מסומנת בטבלה ברקע כתום דהוי + צ'יפ טקסטואלי. הסימון כבה מעצמו כשהחלון עובר.
    מקור הזמן: created_at בפלטפורמה (ולא תאריך הפתיחה בפריוריטי), כדי שרשומות
    שנקלטו בייבוא היסטורי לא ייצבעו. הסף יעבור להגדרות עם תת-הקטגוריה "שירות ותיאומים". */
-window.NEW_MARK_HOURS = 24;
+/* 6.142.0 — "חדש" נמדד ביום עבודה ולא בחלון מתגלגל של 24 שעות.
+   🔴 הפגם שתוקן: שתי רשומות שנקלטו באותו יום קיבלו יחס שונה לפי השעה.
+   נמדד — 1569 נקלטה 25/08 18:00 והייתה מסומנת, 1570 נקלטה 25/08 13:00
+   ולא. עכשיו הגבול הוא **תחילת יום עבודה**, ולכן כל מה שנקלט אתמול
+   נשאר מסומן עד סוף היום.
+   ⚠️ שבת אינה יום עבודה, ולכן בראשון הסימון חוזר עד תחילת שישי. */
+window.NEW_MARK_DEFAULT_DAYS = 1;
+window.newMarkFrom = ()=>{
+  let n = osetNum('new_mark_workdays', window.NEW_MARK_DEFAULT_DAYS);
+  n = Math.max(0, Math.min(30, Math.floor(n)));   /* גבול שפיות לערך מההגדרות */
+  const d = new Date(); d.setHours(0,0,0,0);
+  let back = n, guard = 0;
+  while(back > 0 && guard++ < 60){
+    d.setDate(d.getDate() - 1);
+    if(d.getDay() !== CAL_SATURDAY) back--;
+  }
+  return d.getTime();
+};
 window.isNewRec = (r)=>{
   const t = (r && r.created_at) ? Date.parse(r.created_at) : 0;
   if(!t) return false;
-  const d = Date.now() - t;
-  return d >= -3600000 && d < window.NEW_MARK_HOURS*3600000;
+  return t >= window.newMarkFrom();
 };
-window.newChip = (r)=> window.isNewRec(r) ? '<span class="new-chip">חדש · נכנס היום</span>' : '';
+window.newChip = (r)=> window.isNewRec(r) ? '<span class="new-chip">חדש · נכנס לאחרונה</span>' : '';
 window.markEmpty = (rootId)=>{
   const root=document.getElementById(rootId); if(!root) return;
   const upd = el=>{ if(el.type==='checkbox'||el.type==='hidden') return;
@@ -8813,7 +8835,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'payauto-2026-08-25a';
+const BUILD_ID = 'newmark-2026-08-26a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -13235,10 +13257,20 @@ function renderSettings(){
     const lastSync = $('#lastSync').textContent || '—';
     body = `<h2 class="sec" style="margin-top:0">כללי</h2>
       <div class="tbl-wrap" style="padding:14px">
-        <div class="row"><span class="k">גרסת מערכת</span><span class="v">6.19.5</span></div>
+        <div class="row"><span class="k">גרסת מערכת</span><span class="v">${esc((document.querySelector('.ver')||{}).textContent||'').replace('גרסה ','')||'—'}</span></div>
         <div class="row"><span class="k">${esc(lastSync.includes(':')?'סנכרון פריוריטי':'סנכרון')}</span><span class="v">${esc(lastSync||'—')}</span></div>
         <div class="row"><span class="k">משתמש מחובר</span><span class="v">${esc(ME.email)}</span></div>
         <div class="row"><span class="k">לקוחות · לידים · הזמנות</span><span class="v">${CUSTS.length.toLocaleString()} · ${LEADS.length.toLocaleString()} · ${ORDS.length.toLocaleString()}</span></div>
+      </div>
+      <h2 class="sec">סימון רשומות חדשות</h2>
+      <div class="note">רשומה שנקלטה לאחרונה מסומנת ברשימות בגוון כתום ובשבב "חדש · נכנס לאחרונה" — בהזמנות, בקריאות השירות ובלידים. הסימון נמדד ב<b>ימי עבודה</b>: הערך 1 פירושו שכל מה שנקלט ביום העבודה הקודם נשאר מסומן עד סוף היום, בלי תלות בשעה שבה הסנכרון רץ. שבת אינה נספרת. 0 = רק מה שנקלט היום.</div>
+      <div class="tbl-wrap" style="padding:14px">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <label style="font-size:13px">ימי עבודה אחורה:</label>
+          <input id="nmDays" type="number" min="0" max="30" step="1" value="${esc(String(osetNum('new_mark_workdays', window.NEW_MARK_DEFAULT_DAYS)))}" ${canEdit('set.general')?'':'disabled'} style="width:80px;padding:8px;border:1px solid var(--line);border-radius:8px;font-family:inherit;text-align:center">
+          ${canEdit('set.general')?'<button class="chip" onclick="nmSave()">שמירה</button>':''}
+          <span id="nm-msg" style="font-size:12.5px;color:#64748b"></span>
+        </div>
       </div>
       <div class="note" style="margin-top:12px">קטגוריות נוספות (אוטומציות והתראות) ייפתחו כאן בהמשך. חיבורים לאפליקציות חיצוניות מנוהלים בקטגוריית "חיבורים".</div>`;
   }
@@ -13719,6 +13751,25 @@ window.saveTeam = async id=>{
   if(error){ alert('שמירה נכשלה: '+error.message); return; }
   const t=OTEAMS.find(x=>x.id===id); if(t) Object.assign(t,upd);
   renderCal(); renderOps(); alert('הצוות נשמר ✓');
+};
+/* 6.142.0 — שמירת סף הסימון. משנה התנהגות מיד בציור הבא, בלי פריסה. */
+window.nmSave = async ()=>{
+  const el = document.getElementById('nmDays'), msg = document.getElementById('nm-msg');
+  if(!el) return;
+  const n = Math.max(0, Math.min(30, Math.floor(+el.value)));
+  if(!isFinite(n)){ if(msg){ msg.style.color='#c0392b'; msg.textContent='ערך לא תקין'; } return; }
+  const { error } = await sb.schema('ord').from('settings')
+    .upsert({ key:'new_mark_workdays', value:String(n) }, { onConflict:'key' });
+  if(error){ if(msg){ msg.style.color='#c0392b'; msg.textContent='שמירה נכשלה: '+error.message; } return; }
+  /* OSET הוא מערך של {key,value} — מעדכנים במקום, אחרת הציור הבא
+     יקרא את הערך הישן עד רענון מלא של הדף. */
+  try{
+    const row = (OSET||[]).find(x=>x && x.key==='new_mark_workdays');
+    if(row) row.value = String(n); else OSET.push({key:'new_mark_workdays', value:String(n)});
+  }catch(_e){}
+  if(msg){ msg.style.color='#006300'; msg.textContent='נשמר ✓ הסימון יתעדכן בציור הבא'; }
+  try{ renderLeads(); }catch(_e){}
+  try{ renderLogi(); }catch(_e){}
 };
 window.saveSetting = async i=>{
   const s=OSET[i]; const v=$('#sv-'+i).value;
@@ -17185,7 +17236,7 @@ function ordRow(o, ctx){
 }
 const scStClass = s => ['הושלם','הושלמה','סגורה'].includes(s)?'st-rel':(['בוטלה'].includes(s)?'st-no':(s==='חדש'?'st-new':'st-def'));
 function scRow(s){
-  return `<div class="lead" onclick="openScall('${s.id}')">
+  return `<div class="lead${window.isNewRec(s)?' row-new':''}" onclick="openScall('${s.id}')">
     <div><div class="nm">${esc(s.customer_name||'ללא שם')} <small style="color:#94a3b8;font-weight:400">· קריאה ${esc(s.call_number||'')}</small></div>
     <div class="meta">${fmtD(s.opened_date)}${s.product?' · '+esc(s.product):''}${s.city?' · '+esc(s.city):''}${s.urgency&&s.urgency!=='רגילה'?' · <b style="color:#c0392b">'+esc(s.urgency)+'</b>':''}</div></div>
     <span class="pill ${scStClass(s.status)}">${esc(s.status||'—')}</span></div>`;
@@ -18943,8 +18994,8 @@ function renderStats(){
 }
 function leadRow(l){
   const sub = l.sub_status||l.reject_reason||l.irrelevant_reason;
-  return `<div class="lead" onclick="openLead('${l.id}')">
-    <div><div class="nm">${esc(l.full_name)}</div>
+  return `<div class="lead${window.isNewRec(l)?' row-new':''}" onclick="openLead('${l.id}')">
+    <div><div class="nm">${esc(l.full_name)}${window.newChip(l)}</div>
     <div class="meta">${esc(l.phone||'')} · ${esc(l.source||'—')}${sub?' · '+esc(sub):''}</div></div>
     ${mdPill(l.status||'—',LEAD_ST_COLORS,LB_TK)}</div>`;
 }
@@ -19075,7 +19126,7 @@ function lbRow(l, i, nt, nm, ntid){
              : (_cid
                 ? `<span class="pill lb-cx lb-cust lb-cxgo" title="${esc(m.name||'')} — פתיחת כרטיס הלקוח" onclick="event.stopPropagation();goCard(()=>openCust('${jsq(_cid)}'))">${esc(m.name||'לקוח קיים')} ↗</span>`
                 : `<span class="pill lb-cx lb-cust" title="${esc(m.name||'')}">${esc(m.name||'לקוח קיים')}</span>`));
-  return `<tr class="${LB_SEL.has(l.id)?'lb-on':''}${dmk.rowCls?' '+dmk.rowCls:''}" onclick="openLead('${l.id}')">
+  return `<tr class="${LB_SEL.has(l.id)?'lb-on':''}${dmk.rowCls?' '+dmk.rowCls:''}${window.isNewRec(l)?' row-new':''}" onclick="openLead('${l.id}')">
       ${LB_BULK?`<td class="lb-ck" onclick="event.stopPropagation()"><input type="checkbox" ${LB_SEL.has(l.id)?'checked':''} onclick="lbSelOne('${jsq(l.id)}',this.checked)"></td>`:''}
       <td class="rownum">${i}</td>
       <td><b>${esc(l.full_name)}</b></td>

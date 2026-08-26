@@ -2299,7 +2299,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.143.0</div>
+      <div class="ver">גרסה 6.144.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2428,7 +2428,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.143.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.144.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -8747,7 +8747,10 @@ window.mediaBlock = (kind, parentId)=>{
 };
 function mediaCard(f){
   const isPdf = (f.mime_type||'').indexOf('pdf')>-1 || /\.pdf$/i.test(f.storage_path||'');
-  return `<div class="lead" style="cursor:pointer" onclick="openMediaFile('${f.id}')">
+  /* 6.144.0 — תמונות שטח נושאות uploaded_at, ולכן אותו כלל בדיוק.
+     0 שורות היום; עדיף שהכלל יהיה כאן מראש מאשר יישכח כשהן יגיעו. */
+  const _new = window.isNewRec({ created_at: f.uploaded_at });
+  return `<div class="lead${_new?' row-new':''}" style="cursor:pointer" onclick="openMediaFile('${f.id}')">
     <div style="flex:1"><div class="nm">${isPdf?'📄':'🖼️'} ${esc(f.file_name||'קובץ')}</div>
     <div class="meta">${esc(mediaParentLabel(f))} · ${f.uploaded_at?new Date(f.uploaded_at).toLocaleDateString('he-IL'):'—'}${f.uploaded_by?' · '+esc(f.uploaded_by):''}</div></div>
     <span class="pill st-def">פתיחה</span></div>`;
@@ -8772,13 +8775,24 @@ window.setDocCat=c=>{
   DOC_CAT=c; renderDocs(); navMark();
   if(c==='media' && DOCFILES===null && window.canView('docs.media')) loadDocFiles().then(()=>renderDocs());
 };
+/* 6.144.0 — חותמת ה"חדש" של מסמך. הכרעת רומן: "שניהם — מה שמאוחר
+   מביניהם". ⚠️ `sent_at` נכתב **ביצירה** (השם מטעה, תועד ב-6.128.0)
+   ו-`link_sent_at` היא השליחה בפועל; נמדד שבכל ארבע השורות השנייה
+   מאוחרת מהראשונה. המאוחר מביניהם מסמן גם יצירה וגם שליחה חוזרת. */
+function docStamp(p){
+  const a = p && p.sent_at ? Date.parse(p.sent_at) : 0;
+  const b = p && p.link_sent_at ? Date.parse(p.link_sent_at) : 0;
+  const t = Math.max(a || 0, b || 0);
+  return t ? new Date(t).toISOString() : null;
+}
 function docRow(p){
   const signed=p.status==='נחתם';
+  const _new = window.isNewRec({ created_at: docStamp(p) });
   const cat=p.category||'protocols';
   const mayLink=window.canEdit('docs.'+cat);
   const ds=docStatus(p);
-  return `<div class="lead" style="cursor:default">
-    <div style="flex:1"><div class="nm">${esc(p.customer_name||'—')} <small style="color:#94a3b8;font-weight:400">· ${esc(p.doc_type)}${p.order_number?' · '+esc(p.order_number):''}</small></div>
+  return `<div class="lead${_new?' row-new':''}" style="cursor:default">
+    <div style="flex:1"><div class="nm">${esc(p.customer_name||'—')}${_new?window.newChip({created_at:docStamp(p)}):''} <small style="color:#94a3b8;font-weight:400">· ${esc(p.doc_type)}${p.order_number?' · '+esc(p.order_number):''}</small></div>
     <div class="meta">${esc(docCatLabel(cat))} · נוצר ${p.sent_at?new Date(p.sent_at).toLocaleDateString('he-IL'):'—'}${signed?' · נחתם '+new Date(p.signed_at).toLocaleDateString('he-IL')+(p.signer_name?' ע"י '+esc(p.signer_name):''):''}</div>
     <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
       ${signed?`<button class="chip" onclick="openDocLink('${p.id}','open')">📄 צפייה במסמך החתום</button>`
@@ -8835,7 +8849,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'leadown-2026-08-26a';
+const BUILD_ID = 'weekcal-2026-08-26a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -15387,7 +15401,24 @@ const payLateAmt  = f => beatWinSum(f.order_number, null, addDaysIso(todayStr(),
    ביותר. נמדד: 9 הזמנות · ₪456,758 → **13 · ₪601,900**.
    ⚠️ מורכב מ-payLateAmt ולא משכפל את הכלל: כך "באיחור" נשאר תת-קבוצה של
    "השבוע" מבנית, ולא בזכות שני חישובים שבמקרה מסכימים. */
-const payWeekAmt  = f => payLateAmt(f) + beatWinSum(f.order_number, todayStr(), addDaysIso(todayStr(), 7), true);
+/* 6.144.0 — סוף השבוע הקלנדרי הקרוב (רומן: "רק תשלומים בשבוע קלנדרי
+   קרוב + אלו שעברו").
+   🔴 עד כאן היה `addDaysIso(todayStr(), 7)` — חלון **מתגלגל**, ולכן
+   "לגבייה השבוע" החזיר תשובה אחרת בכל יום: בראשון הוא הגיע לראשון הבא
+   (שבוע שלם קדימה), ובחמישי חתך את השבוע הבא באמצע. נמדד ברביעי 26/08:
+   ₪165,391 מתגלגל מול ₪162,815 קלנדרי. ההפרש ביום נתון קטן — הפגם הוא
+   ש**המספר אינו יציב**, בדיוק כמו חלון ה-24 שעות של 6.142.0.
+   ⚠️ שישי/שבת ⇒ השבוע **הבא**: אחרת החלון מתכווץ ל"היום בלבד" והאריח
+   מתרוקן בדיוק בסוף השבוע. הכרעה שלי, לא של רומן. */
+function payWeekEnd(){
+  const d = new Date(); d.setHours(0,0,0,0);
+  const dow = d.getDay();                      /* 0=ראשון … 6=שבת */
+  let add = CAL_SATURDAY - dow;                /* עד שבת הקרובה */
+  if(dow >= CAL_FRIDAY) add += 7;              /* השבוע כבר נגמר */
+  d.setDate(d.getDate() + add);
+  return isoD(d);
+}
+const payWeekAmt  = f => payLateAmt(f) + beatWinSum(f.order_number, todayStr(), payWeekEnd(), true);
 const payMonthAmt = f => payLateAmt(f) + beatWinSum(f.order_number, todayStr(), payMonthEnd(), true);
 const payStClass = s => s==='שולמה' ? 'st-rel' : (s==='שולמה חלקית' ? 'st-def' : 'st-no');
 const remaining = p => Math.max(0, Number(p.total_amount||0) - Number(p.paid_amount||0));
@@ -15573,7 +15604,7 @@ function payTiles(){
   el.innerHTML =
     tile('open','payt-open','סך יתרה פתוחה',open,'כל ההזמנות החיות שנותר בהן לגבות',sumBal(open)) +
     tile('late','payt-late','באיחור',late,'סכום הפעימות שעברו את מועדן הוודאי ולא כוסו — ולא יתרת ההזמנה כולה. פעימה בצפי אינה נספרת.',sumWin(late,payLateAmt)) +
-    tile('week','payt-week','לגבייה השבוע',week,'סכום הפעימות שיש לגבות עד סוף השבוע — כולל פעימות שכבר איחרו וטרם נגבו',sumWin(week,payWeekAmt)) +
+    tile('week','payt-week','לגבייה השבוע',week,'סכום הפעימות שיש לגבות עד סוף השבוע הקלנדרי — כולל פעימות שכבר איחרו וטרם נגבו',sumWin(week,payWeekAmt)) +
     tile('month','payt-month','לגבייה החודש',month,'סכום הפעימות שיש לגבות עד סוף החודש — כולל פעימות שכבר איחרו וטרם נגבו',sumWin(month,payMonthAmt)) +
     tile('nodue','payt-nodue','ללא מועד גבייה',nodue,'יתרה פתוחה בלי לוח פעימות — אינה נספרת בשום חלון זמן ואינה נכנסת לצפי',sumBal(nodue));
 }

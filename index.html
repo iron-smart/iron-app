@@ -1986,6 +1986,16 @@ td.lb-today .lb-dt{ background-color:transparent; }
 .lb-avx > .lb-ava{ margin-inline-start:-6px; box-shadow:0 0 0 2px #fff; }
 .lb-owc-go{ cursor:pointer; border-radius:999px; padding:2px 4px; }
 .lb-owc-go:hover{ background-color:#eef4ff; }
+/* ---- שם הבעלים בכרטיס (6.145.0) ----
+   רומן: "המיקום שמופיע בעלים ושותפים תוסיף גם את השם בכרטיס".
+   ⚠️ המחלקה חלה **רק** על lbOwnerCellName, שנקראת מהכרטיסים בלבד.
+      טבלת הלידים ממשיכה ב-lbOwnerCell הישנה — היא גלילה אופקית,
+      וההערה ב-.lb-avx מזהירה שהרחבת התא דוחפת את שאר העמודות. */
+.lb-ownm{ font-size:13px; font-weight:700; color:#0f172a; white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis; max-width:180px; }
+.lb-ownx{ background:none; padding:0; margin:0; font-size:11px; color:#94a3b8; font-weight:400; }
+/* רצועת הפעולות בסיכום — עברו מלשונית "קשור" ב-6.145.0 */
+.lb-tmacts{ display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
 /* ---- הצלבת הלקוח ---- */
 .lb-cust{ display:inline-block; max-width:118px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:middle; }
 .pill.lb-cx{ background:#e0f2fe; color:#075985; border:1px solid #bae6fd; }
@@ -2299,7 +2309,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.144.1</div>
+      <div class="ver">גרסה 6.145.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2428,7 +2438,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.144.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.145.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -8854,7 +8864,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'etahour-2026-08-26a';
+const BUILD_ID = 'openhist-2026-08-26a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -14162,6 +14172,25 @@ function lbOwnerCell(l){
   if(!can) return `<div class="lb-owc">${body}</div>`;
   return `<div class="lb-owc lb-owc-go" title="שיוך בעלים ושותפים" onclick="event.stopPropagation();lbOwnerPick('${jsq(l.id)}',event)">${body}</div>`;
 }
+/* 🔴 6.145.0 — גרסת ה**כרטיס**: אווטאר + שם. פונקציה נפרדת ולא הרחבה
+   של lbOwnerCell, ובכוונה: זו משמשת גם את **טבלת הלידים** (עמודה בטבלה
+   שגלילה אופקית), וההערה ב-.lb-avx מזהירה במפורש שהרחבת התא דוחפת את
+   שאר העמודות. שתי הפונקציות, שני שימושים, אפס הפתעות.
+   ⚠️ השם מגיע מ-LOWN_BY[key].name, שעד כה הופיע כ-title בלבד.
+   ⚠️ רק **הראשי** מקבל שם; השותפים נשארים אווטארים (עד 3 ואז +N),
+      אחרת התא מתפוצץ אצל ליד עם ארבעה בעלים. */
+function lbOwnerCellName(l){
+  const all = lbOwnersOf(l), extra = all.slice(1);
+  const can = window.canEdit('crm.leads');
+  const o = LOWN_BY[all[0]||''];
+  const nm = o ? o.name : 'ללא בעלים';
+  const old = (o && o.kind==='legacy') ? ' <span class="note lb-ownx">(לשעבר)</span>' : '';
+  const body = lbAva(all[0]||'')
+    + `<span class="lb-ownm">${esc(nm)}${old}</span>`
+    + (extra.length ? `<span class="lb-avx">${extra.slice(0,3).map(k=>lbAva(k,1)).join('')}${extra.length>3?`<span class="lb-ava lb-ava-s lb-ava-more" title="ועוד ${extra.length-3}">+${extra.length-3}</span>`:''}</span>` : '');
+  if(!can) return `<div class="lb-owc">${body}</div>`;
+  return `<div class="lb-owc lb-owc-go" title="שיוך בעלים ושותפים" onclick="event.stopPropagation();lbOwnerPick('${jsq(l.id)}',event)">${body}</div>`;
+}
 function lbAva(key, small){
   const o = LOWN_BY[key];
   const sm = small ? ' lb-ava-s' : '';
@@ -14309,7 +14338,7 @@ function ctxOf(type, id){
       mountCard מאפס scrollTop, חוטף מיקוד אחרי 30ms, וציור מחדש היה
       מוחק שדות מה-DOM — ו-saveLead/saveTask קוראים getElementById, כך
       ששדה חסר נשמט מה-patch **בשקט**. */
-const CTABS = [['main','פרטים'],['upd','עדכונים'],['rel','קשור']];
+const CTABS = [['main','פרטים'],['upd','עדכונים'],['hist','היסטוריה']];
 let CTAB_CUR = 'main';
 function ctabsHtml(pfx){
   return '<div class="ctabs" role="tablist" aria-label="לשוניות הכרטיס" onkeydown="ctabKeys(event,\''+pfx+'\')">'
@@ -14899,8 +14928,10 @@ window.openTask = (id)=>{
   const dmk = lbDueMark(t.due_at);
   /* אחים — אותה פנייה בדיוק. ⚠️ משימה בלי קישור אין לה אחים, ולכן
      התנאי בודק גם את linked_id ולא רק את השוויון (null===null אמת). */
-  const sib = t.linked_id ? (TASKS||[]).filter(o=>o.id!==t.id && o.linked_type===t.linked_type && o.linked_id===t.linked_id) : [];
-  const mts = t.linked_id ? (MEETS||[]).filter(m=>m.linked_type===t.linked_type && m.linked_id===t.linked_id && m.status!=='בוטלה') : [];
+  const _sibAll = t.linked_id ? (TASKS||[]).filter(o=>o.id!==t.id && o.linked_type===t.linked_type && o.linked_id===t.linked_id) : [];
+  const _mtsAll = t.linked_id ? (MEETS||[]).filter(m=>m.linked_type===t.linked_type && m.linked_id===t.linked_id) : [];
+  const sib=_sibAll.filter(tmOpen),  mts=_mtsAll.filter(m=>!mDone(m));
+  const hsSib=_sibAll.filter(tmDone), hsMts=_mtsAll.filter(mDone);
   const ownOpts = '<option value="">— ללא בעלים —</option>' +
     LOWN.filter(o=>o.assignable).map(o=>`<option value="${esc(o.owner_key)}" ${o.owner_key===t.owner_id?'selected':''}>${esc(o.name)}</option>`).join('');
   $('#tkSheet').innerHTML = `
@@ -14923,7 +14954,7 @@ window.openTask = (id)=>{
         ${go?`<a href="#" onclick="event.preventDefault();goCard(()=>${go})">${esc(entName)} ↗</a>`:esc(entName)}</div></div>
       <div><label>טלפון ${phBtns(entPhone)}</label>${roIn(entPhone,{ltr:1})}</div>
       ${x.lead?`<div><label>סטטוס הפנייה</label><div class="tk-lnk">${mdPill(x.lead.status||'—',LEAD_ST_COLORS,LB_TK)}</div></div>
-      <div><label>בעלים של הפנייה</label><div class="tk-lnk">${lbOwnerCell(x.lead)}</div></div>
+      <div><label>בעלים של הפנייה</label><div class="tk-lnk">${lbOwnerCellName(x.lead)}</div></div>
       ${x.lead.company?`<div><label>שם חברה</label>${roIn(x.lead.company)}</div>`:''}`:''}
       ${x.deal?`<div><label>שלב העסקה</label><div class="tk-lnk">${mdPill(x.deal.stage||'—',DEAL_ST_COLORS,LB_TK)}</div></div>`:''}
       ${x.cust?`<div class="span2"><label>לקוח מקושר</label><div class="tk-lnk"><a href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(x.cust.id)}'))">${esc(x.cust.name||'כרטיס הלקוח')} ↗</a></div></div>`:''}
@@ -14936,6 +14967,8 @@ window.openTask = (id)=>{
       <div><label>סיווג</label>${selHtml('tk-cat',tkCats(),t.category,true)}</div>
       <div><label>בעלים</label><select id="tk-owner">${ownOpts}</select></div>
 
+      <div class="form-sep">משימות ופגישות על אותה פנייה</div>
+      <div class="span4">${lbTmBlock(sib, mts)}</div>
     </div>
     </div>
     <div id="tk-pn-upd" class="hidden">
@@ -14950,11 +14983,9 @@ window.openTask = (id)=>{
       :'<div class="note">אין לך הרשאת עריכה למשימות.</div>'}
     </div>
     <div class="err" id="tk-err"></div>
-    <div id="tk-pn-rel" class="hidden">
-    <section class="ob-card"><h2 class="sec">משימות ופגישות על אותה פנייה (${sib.length+mts.length})</h2>
-      ${sib.map(o=>`<div class="row" style="cursor:pointer" onclick="goCard(()=>openTask('${jsq(o.id)}'))"><span class="k">משימה · ${o.due_at?new Date(o.due_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'}</span><span class="v">${esc(o.name||'')} ${mdPill(o.status,TASK_ST_COLORS)}</span></div>`).join('')}
-      ${mts.map(m=>`<div class="row"><span class="k">פגישה · ${m.meet_date?new Date(m.meet_date+'T00:00').toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'}):'—'}</span><span class="v"><a href="#" onclick="event.preventDefault();openMeet('${jsq(m.id)}')">${esc(m.subject||'פגישה')}</a> <span class="pill ${meetStClass(m.status)}">${esc(m.status)}</span></span></div>`).join('')}
-      ${(!sib.length&&!mts.length)?'<div class="note">אין משימות או פגישות נוספות על הפנייה הזאת.</div>':''}
+    <div id="tk-pn-hist" class="hidden">
+    <section class="ob-card"><h2 class="sec">היסטוריה על אותה פנייה (${hsSib.length+hsMts.length})</h2>
+      ${lbHistBlock(hsSib, hsMts)}
     </section>
     </div>
 `;
@@ -18655,8 +18686,9 @@ window.openDeal = async (id)=>{
      איש המכירות "כל הדרך עד לסגירת העסקה", ולכן פיצולן לשני מקומות
      היה מסתיר בדיוק את מה שהוא ביקש לראות. */
   const kin = (o)=> (o.linked_type==='deal' && o.linked_id===id) || (lead && o.linked_type==='lead' && o.linked_id===lead.id);
-  const tsk = (TASKS||[]).filter(t=>kin(t) && t.status!=='הושלם').sort((a,b)=>(a.due_at||'').localeCompare(b.due_at||''));
-  const mts = (MEETS||[]).filter(m=>kin(m) && m.status!=='בוטלה').sort((a,b)=>(b.meet_date||'').localeCompare(a.meet_date||''));
+  const _tskAll = (TASKS||[]).filter(kin), _mtsAll = (MEETS||[]).filter(kin);
+  const tsk=_tskAll.filter(tmOpen),  mts=_mtsAll.filter(m=>!mDone(m));
+  const hsTsk=_tskAll.filter(tmDone), hsMts=_mtsAll.filter(mDone);
   const u = lead ? {type:'lead', id:lead.id} : null;
   $('#dealSheet').innerHTML = `
     <h3>${esc(d.name||'עסקה')} ${mdPill(d.stage||'—',DEAL_ST_COLORS,LB_TK)}</h3>
@@ -18677,7 +18709,7 @@ window.openDeal = async (id)=>{
         <div class="tk-lnk"><span class="tk-kind tk-k-lead">ליד</span>
         <a href="#" onclick="event.preventDefault();goCard(()=>openLead('${jsq(lead.id)}'))">${esc(lead.full_name||'')} ↗</a></div></div>
       <div><label>סטטוס הפנייה</label><div class="tk-lnk">${mdPill(lead.status||'—',LEAD_ST_COLORS,LB_TK)}</div></div>
-      <div><label>בעלים של הפנייה</label><div class="tk-lnk">${lbOwnerCell(lead)}</div></div>`
+      <div><label>בעלים של הפנייה</label><div class="tk-lnk">${lbOwnerCellName(lead)}</div></div>`
       :'<div class="span2"><div class="note">העסקה אינה מקושרת לפנייה. הקישור נוצר בהמרת ליד, או במילוי היסטורי.</div></div>'}
       ${phone?`<div><label>טלפון ${phBtns(phone)}</label>${roIn(phone,{ltr:1})}</div>`:''}
       ${cust?`<div class="span2"><label>לקוח</label><div class="tk-lnk"><a href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(cust.id)}'))">${esc(cust.name||'כרטיס הלקוח')} ↗</a></div></div>
@@ -18687,6 +18719,8 @@ window.openDeal = async (id)=>{
       :'<div class="span2"><div class="note">אינה מקושרת ללקוח.</div></div>'}
       ${contact?`<div class="span2"><label>איש קשר</label>${roIn(contact.full_name+' · '+(contact.phone||contact.email||''))}</div>`:''}
 
+      <div class="form-sep">משימות ופגישות</div>
+      <div class="span4">${lbTmBlock(tsk, mts)}</div>
     </div>
     </div>
     <div id="dl-pn-upd" class="hidden">
@@ -18696,11 +18730,9 @@ window.openDeal = async (id)=>{
       <div class="lbu-list" id="dl-updlist"><div class="note">טוען…</div></div>
     </div>
     <div class="err" id="d-err"></div>
-    <div id="dl-pn-rel" class="hidden">
-    <section class="ob-card"><h2 class="sec">משימות ופגישות (${tsk.length+mts.length})</h2>
-      ${tsk.map(t=>`<div class="row" style="cursor:pointer" onclick="goCard(()=>openTask('${jsq(t.id)}'))"><span class="k">משימה · ${t.due_at?new Date(t.due_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'}</span><span class="v">${esc(t.name||'')} ${mdPill(t.status,TASK_ST_COLORS)}</span></div>`).join('')}
-      ${mts.map(m=>`<div class="row"><span class="k">פגישה · ${m.meet_date?new Date(m.meet_date+'T00:00').toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'}):'—'}</span><span class="v"><a href="#" onclick="event.preventDefault();openMeet('${jsq(m.id)}')">${esc(m.subject||'פגישה')}</a> <span class="pill ${meetStClass(m.status)}">${esc(m.status)}</span></span></div>`).join('')}
-      ${(!tsk.length&&!mts.length)?'<div class="note">אין משימות או פגישות פתוחות.</div>':''}
+    <div id="dl-pn-hist" class="hidden">
+    <section class="ob-card"><h2 class="sec">היסטוריה (${hsTsk.length+hsMts.length})</h2>
+      ${lbHistBlock(hsTsk, hsMts)}
     </section>
     </div>
 `;
@@ -19693,21 +19725,35 @@ const lbLink=(u,txt)=>{ const s=esc(safeUrl(u)); return s?`<a href="${s}" target
       יורד (האחרונה קודם, כהיסטוריה); כאן "הפגישה הקרובה" היא הקרובה
       בזמן ולא האחרונה שהייתה. שני כיוונים לאותם נתונים — ולכן המיון
       נעשה על עותק (slice) ואינו נוגע ב-myMeets שהפאנל השני משתמש בו. */
-const TM_MAX = 3;
-function lbTmBlock(tasks, meets){
+/* 🔴 6.145.0 — נקודת חנק אחת לחלוקה פתוח/היסטוריה. עד כאן הסינון היה
+   מפוזר בשלוש הגדרות שונות: myTasks סיננה 'הושלם', myMeets סיננה
+   'בוטלה' בלבד, ו-sib בכרטיס המשימה לא סיננה כלום. */
+const tmOpen = t => t.status !== 'הושלם';
+const tmDone = t => t.status === 'הושלם';
+/* פגישה שתאריכה היום או אחריו. mDone מטפל בסטטוס; זה בציר הזמן. */
+function mFut(m){
+  if(!m.meet_date) return true;
+  const t0 = new Date(); t0.setHours(0,0,0,0);
+  return new Date(m.meet_date+'T00:00') >= t0;
+}
+const tmDtT = v => v ? esc(new Date(v).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})) : 'ללא מועד';
+const tmDtM = v => v ? esc(new Date(v+'T00:00').toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit'})) : 'ללא תאריך';
+/* ═══ סיכום הפתוחות (6.143.0, נכתב מחדש ב-6.145.0) ═══════════════════
+   רומן, 26/08/2026: "אני לא רואה בכלל סטטוסים."
+   🔴 הסטטוס **כן** הוצג — mdPill נקראה בלי הפרמטר k, וברירת המחדל .85
+      היא 85% לכיוון הלבן, השבב הפספס ביותר במערכת. כאן ובהיסטוריה
+      שתיהן עוברות ל-LB_TK (.70), המוסכמה של כותרות הכרטיסים.
+   ⚠️ ופגישות עברו מ-meetStClass (פסטל שטוח בלי מסגרת) ל-mdPill עם
+      MSTATUS_COLOR — עד כה היו **שתי שפות ויזואליות באותה רשימה**.
+   ⚠️ בלי תקרה: ההיסטוריה עברה ללשונית, ומה שנשאר הוא הפתוח בלבד. */
+function lbTmBlock(tasks, meets, addBtns){
   tasks = tasks || []; meets = meets || [];
-  if(!tasks.length && !meets.length)
-    return '<div class="note">אין משימות או פגישות מקושרות.</div>';
-  const dtT = v => v ? esc(new Date(v).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})) : 'ללא מועד';
-  const dtM = v => v ? esc(new Date(v+'T00:00').toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit'})) : 'ללא תאריך';
   let h = '';
+  if(!tasks.length && !meets.length)
+    h = '<div class="note">אין משימות או פגישות פתוחות.</div>';
   if(tasks.length){
-    /* 🔴 משימה **ללא מועד** אינה "המשימה הבאה". myTasks ממוין
-       `(a.due_at||'').localeCompare(...)`, ומחרוזת ריקה קודמת לכל תאריך —
-       ולכן משימה בלי מועד קפצה לראש והתייגה כבאה, לפני משימה באיחור
-       של יומיים. נמדד בדפדפן. המיון כאן דוחף חסרי-מועד לסוף, והתווית
-       "המשימה הבאה" ניתנת רק למשימה שיש לה מועד.
-       ⚠️ ועל **עותק**, כמו בפגישות: myTasks משמש גם את לשונית "קשור". */
+    /* משימה ללא מועד אינה "המשימה הבאה" — מחרוזת ריקה קודמת לכל תאריך
+       במיון, ולכן היא קפצה לראש. נמדד בדפדפן ב-6.143.0. */
     const ts = tasks.slice().sort(function(a,b){
       const A = a.due_at || '', B = b.due_at || '';
       if(!A && !B) return 0;
@@ -19715,26 +19761,57 @@ function lbTmBlock(tasks, meets){
       if(!B) return -1;
       return A.localeCompare(B);
     });
-    h += ts.slice(0,TM_MAX).map(function(t,i){
-      /* אותה נקודת חנק של סימון האיחור בטבלה — לא השוואת תאריך שנייה. */
+    h += ts.map(function(t,i){
       const d = lbDueMark(t.due_at);
       return '<div class="row" style="cursor:pointer" onclick="goCard(()=>openTask(\''+jsq(t.id)+'\'))">'
-        + '<span class="k'+(d.cls?' '+d.cls:'')+'">'+((i===0 && t.due_at)?'המשימה הבאה':'משימה')+' · '+d.ico+dtT(t.due_at)+'</span>'
-        + '<span class="v">'+esc(t.name||'')+' '+mdPill(t.status,TASK_ST_COLORS)+'</span></div>';
+        + '<span class="k'+(d.cls?' '+d.cls:'')+'">'+((i===0 && t.due_at)?'המשימה הבאה':'משימה')+' · '+d.ico+tmDtT(t.due_at)+'</span>'
+        + '<span class="v">'+esc(t.name||'')+' '+mdPill(t.status,TASK_ST_COLORS,LB_TK)+'</span></div>';
     }).join('');
-    if(ts.length > TM_MAX)
-      h += '<div class="row"><span class="k">ועוד</span><span class="v">'+(ts.length-TM_MAX)+' משימות פתוחות</span></div>';
   }
   if(meets.length){
-    const ms = meets.slice().sort(function(a,b){ return String(a.meet_date||'').localeCompare(String(b.meet_date||'')); });
-    h += ms.slice(0,TM_MAX).map(function(m,i){
-      return '<div class="row"><span class="k">'+(i===0?'הפגישה הקרובה':'פגישה')+' · '+dtM(m.meet_date)+'</span>'
+    /* 🔴 עתידיות קודם ובסדר עולה, ואז מה שעבר ולא סומן — בסדר יורד.
+       פגישה שתאריכה עבר נשארת כאן כי היא עדיין דורשת טיפול, אבל
+       **התווית "הפגישה הקרובה" ניתנת רק לעתידית**. עד 6.144 פגישה
+       שכבר התקיימה תויגה "הקרובה" — מה שרומן ראה בצילום. */
+    const ms = meets.slice().sort(function(a,b){
+      const fa = mFut(a), fb = mFut(b);
+      if(fa !== fb) return fa ? -1 : 1;
+      const A = a.meet_date || '', B = b.meet_date || '';
+      return fa ? A.localeCompare(B) : B.localeCompare(A);
+    });
+    h += ms.map(function(m,i){
+      return '<div class="row"><span class="k">'+((i===0 && mFut(m))?'הפגישה הקרובה':'פגישה')+' · '+tmDtM(m.meet_date)+'</span>'
         + '<span class="v"><a href="#" onclick="event.preventDefault();openMeet(\''+jsq(m.id)+'\')">'+esc(m.subject||'פגישה')+'</a> '
-        + '<span class="pill '+meetStClass(m.status)+'">'+esc(m.status)+'</span></span></div>';
+        + mdPill(m.status,MSTATUS_COLOR,LB_TK)+'</span></div>';
     }).join('');
-    if(ms.length > TM_MAX)
-      h += '<div class="row"><span class="k">ועוד</span><span class="v">'+(ms.length-TM_MAX)+' פגישות</span></div>';
   }
+  /* 🔴 שלושת הכפתורים עברו לכאן מלשונית "קשור". נמדד ש-leadMeet
+     ו-leadFup היה להם **אתר קריאה יחיד** שם — כלומר בלי ההעברה
+     "＋ פגישה" ו-"↻ פולואפ" היו הופכים בלתי נגישים מכל המערכת. */
+  if(addBtns) h += '<div class="lb-tmacts">'+addBtns+'</div>';
+  return h;
+}
+/* ═══ היסטוריה (6.145.0) ══════════════════════════════════════════════
+   הכרעת רומן: הלשונית נשארת אבל מחזיקה **רק את מה שהסתיים**, ושמה
+   משתנה ל"היסטוריה" — הוא שאל מהי "קשור", וזו עצמה הראיה שהשם לא עבד.
+   מיון יורד: האחרון קודם. בלי סימוני איחור — אין מה לדחוף. */
+function lbHistBlock(tasks, meets){
+  tasks = tasks || []; meets = meets || [];
+  if(!tasks.length && !meets.length)
+    return '<div class="note">עדיין אין היסטוריה — משימות שיושלמו ופגישות שיתקיימו יופיעו כאן.</div>';
+  let h = '';
+  h += tasks.slice().sort(function(a,b){ return String(b.due_at||'').localeCompare(String(a.due_at||'')); })
+    .map(function(t){
+      return '<div class="row" style="cursor:pointer" onclick="goCard(()=>openTask(\''+jsq(t.id)+'\'))">'
+        + '<span class="k">משימה · '+tmDtT(t.due_at)+'</span>'
+        + '<span class="v">'+esc(t.name||'')+' '+mdPill(t.status,TASK_ST_COLORS,LB_TK)+'</span></div>';
+    }).join('');
+  h += meets.slice().sort(function(a,b){ return String(b.meet_date||'').localeCompare(String(a.meet_date||'')); })
+    .map(function(m){
+      return '<div class="row"><span class="k">פגישה · '+tmDtM(m.meet_date)+'</span>'
+        + '<span class="v"><a href="#" onclick="event.preventDefault();openMeet(\''+jsq(m.id)+'\')">'+esc(m.subject||'פגישה')+'</a> '
+        + mdPill(m.status,MSTATUS_COLOR,LB_TK)+'</span></div>';
+    }).join('');
   return h;
 }
 window.openLead = (id)=>{
@@ -19745,8 +19822,12 @@ window.openLead = (id)=>{
   const _lm=lbMatch(l), _lcid=lbCustId(l,_lm);
   const cust=_lcid?((CUSTS||[]).find(x=>x.id===_lcid)||(_lm&&!_lm.amb?{id:_lcid,name:_lm.name}:null)):null;
   const meId=lbMe();
-  const myTasks=(TASKS||[]).filter(t=>t.linked_type==='lead'&&t.linked_id===id&&t.status!=='הושלם').sort((a,b)=>(a.due_at||'').localeCompare(b.due_at||''));
-  const myMeets=(MEETS||[]).filter(m=>m.linked_type==='lead'&&m.linked_id===id&&m.status!=='בוטלה').sort((a,b)=>(b.meet_date||'').localeCompare(a.meet_date||''));
+  /* 🔴 6.145.0 — הסינון פעם אחת, והחלוקה אחריו. המיון ירד מכאן: כל בלוק
+     ממיין בכיוון שלו (פתוח = הקרוב קודם · היסטוריה = האחרון קודם). */
+  const _lbT=(TASKS||[]).filter(t=>t.linked_type==='lead'&&t.linked_id===id);
+  const _lbM=(MEETS||[]).filter(m=>m.linked_type==='lead'&&m.linked_id===id);
+  const myTasks=_lbT.filter(tmOpen),  myMeets=_lbM.filter(m=>!mDone(m));
+  const hsTasks=_lbT.filter(tmDone),  hsMeets=_lbM.filter(mDone);
   $('#leadSheet').innerHTML = `
     <h3>${esc(l.full_name)} ${mdPill(l.status||'—',LEAD_ST_COLORS,LB_TK)}</h3>
     <div class="lb-pipe" id="lb-pipe" data-lead="${esc(l.id)}"></div>
@@ -19777,14 +19858,17 @@ window.openLead = (id)=>{
       <div><label>סוג לקוח</label>${selHtml('lb-ctype',LEAD_TYPES,l.customer_type,true)}</div>
       <div><label>מקור הגעה</label>${selHtml('lb-source',LEAD_SOURCES,l.source,true)}</div>
       <div><label>לשלוח קטלוג בוואטסאפ?</label>${selHtml('lb-wacat',['כן','לא'],l.send_whatsapp_catalog===true?'כן':(l.send_whatsapp_catalog===false?'לא':null),true)}</div>
-      <div><label>בעלים ושותפים</label><span id="lb-ownbox">${lbOwnerCell(l)}</span></div>
+      <div><label>בעלים ושותפים</label><div id="lb-ownbox">${lbOwnerCellName(l)}</div></div>
       ${utm?`<div class="span2"><label>קמפיין (UTM)</label>${roIn(utm)}</div>`:''}
       ${cust?`<div class="span2"><label>לקוח מקושר${l.customer_id?'':' <span class="note" style="font-weight:400">(הוצלב לפי טלפון)</span>'}</label><div class="lb-links"><a href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(cust.id)}'))">${esc(cust.name||'כרטיס הלקוח')} ↗</a></div></div>`:''}
       <div><label>נוצר</label>${roIn(fmtDT(l.created_at),{ltr:1})}</div>
       <div><label>עודכן לאחרונה</label>${roIn(fmtDT(l.updated_at),{ltr:1})}</div>
 
       <div class="form-sep">משימות ופגישות</div>
-      <div class="span4">${lbTmBlock(myTasks, myMeets)}</div>
+      <div class="span4">${lbTmBlock(myTasks, myMeets,
+        `${window.canEdit('crm.tasks')?`<button type="button" class="chip" onclick="leadTask('${jsq(l.id)}')">＋ משימה</button>`:''}`
+      + `${window.canEdit('crm.meets')?`<button type="button" class="chip" onclick="leadMeet('${jsq(l.id)}')">＋ פגישה</button>`:''}`
+      + `${editable?`<button type="button" class="chip" onclick="leadFup('${jsq(l.id)}')">↻ פולואפ</button>`:''}`)}</div>
     </div>
     <div id="convResultSlot"></div>
     <div id="convResult"></div>
@@ -19800,14 +19884,9 @@ window.openLead = (id)=>{
       <button type="button" class="lb-del" onclick="lbDelete('${l.id}')">🗑️ מחיקת ליד</button>`:'<div class="note">אין לך הרשאת עריכה ללידים.</div>'}
     </div>
     <div class="err" id="lb-err"></div>
-    <div id="lb-pn-rel" class="hidden">
-    <section class="ob-card"><h2 class="sec">משימות ופגישות (${myTasks.length+myMeets.length})</h2>
-      ${myTasks.map(t=>`<div class="row"><span class="k">משימה · ${t.due_at?new Date(t.due_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'}</span><span class="v">${esc(t.name)} ${mdPill(t.status,TASK_ST_COLORS)}</span></div>`).join('')}
-      ${myMeets.map(m=>`<div class="row"><span class="k">פגישה · ${m.meet_date?new Date(m.meet_date+'T00:00').toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'}):'—'}</span><span class="v"><a href="#" onclick="event.preventDefault();openMeet('${m.id}')">${esc(m.subject||'פגישה')}</a> <span class="pill ${meetStClass(m.status)}">${esc(m.status)}</span></span></div>`).join('')}
-      ${(!myTasks.length&&!myMeets.length)?'<div class="note">אין משימות או פגישות מקושרות.</div>':''}
-      ${window.canEdit('crm.tasks')?`<button type="button" class="chip" onclick="leadTask('${l.id}')">＋ משימה</button>`:''}
-      ${window.canEdit('crm.meets')?`<button type="button" class="chip" onclick="leadMeet('${l.id}')">＋ פגישה</button>`:''}
-      ${editable?`<button type="button" class="chip" onclick="leadFup('${l.id}')">↻ פולואפ</button>`:''}
+    <div id="lb-pn-hist" class="hidden">
+    <section class="ob-card"><h2 class="sec">היסטוריה (${hsTasks.length+hsMeets.length})</h2>
+      ${lbHistBlock(hsTasks, hsMeets)}
     </section>
     </div>
 `;
@@ -20131,7 +20210,7 @@ function lbOwnerSync(id){
      לא בכרטיס שמאחוריהם, עד סגירה ופתיחה. זו בדיוק המחלקה של VIS_GRP
      (6.83.1): מטמון עם צרכן שנשכח. הריענון בטוח גם כשהכרטיס גלוי. */
   const box = document.getElementById('lb-ownbox');
-  if(box){ const l = LEADS.find(x=>x.id===id); if(l) box.innerHTML = lbOwnerCell(l); }
+  if(box){ const l = LEADS.find(x=>x.id===id); if(l) box.innerHTML = lbOwnerCellName(l); }
 }
 window.lbSetOwner = async (leadId, ownerKey, quiet)=>{
   const { error } = await sb.schema('crm').rpc('lead_set_owner', { p_lead: leadId, p_owner: ownerKey || null });

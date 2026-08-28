@@ -1942,8 +1942,34 @@ td.lb-today .lb-dt{ background-color:transparent; }
 /* שורת מערכת (שינוי סטטוס · שלב · בעלות) — נקראת, לא נערכת. */
 .lbu-row.lbu-sys .lbu-body{ color:#7c8798; font-style:italic; }
 .lbu-xref{ font-size:11px; color:#94a3b8; background:none; padding:0; margin:0; }
-.lbu-bar{ display:flex; gap:6px; flex-wrap:wrap; margin:0 0 8px; }
+/* 🔴 6.148.0 — margin-top. הסרגל ישב **בדיוק** על התחתית של תיבת
+   העדכון (נמדד: barTop=455, taBottom=455), ולכן טבעת המיקוד שלה כיסתה
+   את הצ'יפים — "באג שמכסה את הכפתורים". */
+.lbu-bar{ display:flex; gap:6px; flex-wrap:wrap; margin:12px 0 8px; }
 .lbu-src{ margin-inline-end:6px; }
+/* ---- התראת כפילות בטופס "ליד חדש" (6.148.0) ----
+   רומן: "התראה בפתיחת ליד חדש תעצב יפה". קופסה אחת, כותרת שמסבירה
+   שזו התראה ולא חסימה, ושורות לחיצות שכל אחת אומרת **לפי מה** הותאמה. */
+.lb-dup{ border:1px solid #fde3b8; background:#fffaf0; border-radius:12px;
+  padding:10px 12px; margin-top:8px; }
+.lb-duph{ display:flex; gap:8px; align-items:flex-start; font-size:12.5px;
+  color:#7c5a1a; line-height:1.5; }
+.lb-dupic{ font-size:14px; line-height:1.3; }
+.lb-dupg{ margin-top:8px; }
+.lb-dupt{ font-size:11px; font-weight:800; color:#94a3b8; letter-spacing:.02em;
+  margin:0 0 4px; }
+.lb-dupi{ display:flex; align-items:center; gap:8px; width:100%; text-align:start;
+  background:#fff; border:1px solid #f0e2c8; border-radius:9px; padding:6px 9px;
+  margin-bottom:4px; cursor:pointer; font-family:inherit; font-size:12.5px; }
+.lb-dupi:hover{ background:#fff6e6; border-color:#e6cfa4; }
+.lb-dupi-nm{ font-weight:800; color:#0f172a; }
+.lb-dupi-st{ font-size:11px; color:#64748b; background:#f1f5f9; border-radius:99px;
+  padding:1px 7px; }
+.lb-dupi-why{ font-size:11px; color:#94a3b8; margin-inline-start:auto; }
+.lb-dupi-go{ color:#94a3b8; font-size:12px; }
+.lb-dupm{ font-size:11.5px; color:#94a3b8; padding-inline-start:2px; }
+/* השורה שנכתבה על הכרטיס שאתה בו — תגית עדינה יותר (6.148.0). */
+.lbu-src.lbu-self{ opacity:.62; font-weight:600; }
 /* ---- לשוניות בתוך כרטיס (6.136.0) ----
    רומן: "להעביר את העדכונים ללשונית נפרדת בתוך הכרטיס".
    ⚠️ הרצועה יושבת **מחוץ** ל-.form-grid: בתוכו היא הייתה הילד הראשון,
@@ -2121,7 +2147,13 @@ td.lb-today .lb-dt{ background-color:transparent; }
 .lbo-none .lb-ava{ font-size:16px; }
 /* ---- יומן העדכונים ---- */
 .lbu-add{ display:flex; gap:8px; align-items:flex-start; }
-.lbu-add textarea{ flex:1; }
+/* 🔴 6.148.0 — רומן: "מה זה הפונט הזה". <textarea> יורש **monospace**
+   מהדפדפן, ו-font-family:inherit הגלובלי חל על .form-grid בלבד —
+   ותיבת העדכון יושבת מחוצה לו. נמדד fontFamily='monospace'.
+   ⚠️ resize:vertical ולא both: התיבה יושבת ב-flex row, והרחבה אופקית
+      דוחסת את כפתור "הוספה". */
+.lbu-add textarea{ flex:1; font-family:inherit; font-size:13px; line-height:1.45;
+  resize:vertical; min-height:52px; }
 .lbu-list{ margin-top:10px; }
 .lbu-row{ display:flex; gap:10px; padding:7px 0; border-bottom:1px solid #f1f5f9; align-items:baseline; }
 .lbu-who{ font-weight:800; font-size:12.5px; color:#0f172a; white-space:nowrap; }
@@ -2142,6 +2174,27 @@ td.lb-today .lb-dt{ background-color:transparent; }
 /* שורת "נשמר תחת ציר אחר" (6.147.0) — ייחוס, לא בחירה: בלי רקע צבעוני
    ובלי מסגרת של צ'יפ, כדי שלא תיראה כמו אפשרות שנבחרה. */
 .lb-psub-x{ margin-top:6px; font-size:12px; color:#64748b; }
+/* ---- שורת משימה/פגישה בסיכום הכרטיס (6.148.0) ----
+   רומן: "תעצב יפה יותר ותעשה מימין לשמאל. תעצב ככה שמובן שניתן ללחוץ".
+   ⚠️ סדר הקריאה RTL: נקודה · **שם** · שבב · מועד · חץ. השם ראשון מימין
+      כי הוא התוכן; המועד נדחף שמאלה כי הוא מטא-דאטה. */
+.lb-tmi{ display:flex; align-items:center; gap:9px; width:100%;
+  background:#fff; border:1px solid var(--line); border-radius:10px;
+  padding:8px 11px; margin-bottom:6px; cursor:pointer; text-align:start;
+  font-family:inherit; font-size:13px; transition:background-color .12s, border-color .12s; }
+.lb-tmi:hover{ background:#f6f9ff; border-color:#c7d7f5; }
+.lb-tmi:focus-visible{ outline:2px solid #579bfc; outline-offset:1px; }
+.lb-tmi .lb-tmi-ic{ font-size:9px; color:#94a3b8; line-height:1; }
+.lb-tmi .v{ flex:1; min-width:0; display:flex; align-items:center; gap:7px;
+  font-weight:700; color:#0f172a; }
+/* ⚠️ flex ולא span רגיל: אייקון האיחור (.lb-bang/.lb-clk) מוגדר
+   גלובלית `display:block`, וילד block שובר שורה **גם תחת nowrap** —
+   נמדד: "המשימה הבאה ·" בשורה אחת והתאריך בשורה שנייה. הכלל הגלובלי
+   נכון לטבלה (שם העוטף .lb-duew הוא flex) ואין לגעת בו. */
+.lb-tmi .k{ display:flex; align-items:center; gap:4px; font-size:11.5px;
+  color:#94a3b8; white-space:nowrap; font-weight:600; }
+.lb-tmi .lb-tmi-go{ color:#cbd5e1; font-size:12px; }
+.lb-tmi:hover .lb-tmi-go{ color:#579bfc; }
 /* שתי העמודות שנוספו בסוף (6.147.0). ⚠️ תקרה לקמפיין: הערכים באורך
    50+ תווים והטבלה גלילה אופקית — בלי max-width הוא דוחף את השאר. */
 #leads-list td.lb-cdt{ white-space:nowrap; font-size:12px; color:#475569; }
@@ -2156,6 +2209,11 @@ td.lb-today .lb-dt{ background-color:transparent; }
 .lb-pseg:first-child{ margin-inline-start:0;
   clip-path:polygon(100% 0, calc(100% - 9px) 50%, 100% 100%, 0 100%, 0 0); }
 .lb-pseg:last-child{ clip-path:polygon(100% 0, 100% 100%, 9px 100%, 0 50%, 9px 0); }
+/* 🔴 6.148.0 — רומן: "תשים את הגבולות בסטטוסים בצבע אפור בהיר שיראו
+   את הגבולות בפייפליין". `border` אינו יכול לעשות זאת: הסגמנטים חופפים
+   ב-9px ו-clip-path חותך את המסגרת. drop-shadow עוקב אחרי צורת ה-clip
+   ולכן מצייר את קו החץ עצמו. */
+.lb-pseg{ filter: drop-shadow(1px 0 0 #cbd5e1) drop-shadow(-1px 0 0 #cbd5e1); }
 .lb-pseg.on{ color:#fff; font-weight:900; }
 .lb-pseg:disabled{ cursor:default; }
 .lb-pseg:not(:disabled):hover{ filter:brightness(.95); }
@@ -2318,7 +2376,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.147.0</div>
+      <div class="ver">גרסה 6.148.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2447,7 +2505,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.147.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.148.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3025,6 +3083,7 @@ const LB_COLS = [
    ⚠️ הגנת אורך חובה: ל-207 לקוחות ול-15 לידים יש טלפון פגום ('0', '7'),
    ובלי הסינון הם היו מתאימים זה לזה בהמוניהם. */
 const lbP9 = s => { const d=String(s||'').replace(/\D/g,''); return d.length>=9 ? d.slice(-9) : ''; };
+const lbEm = s => String(s||'').trim().toLowerCase();
 const lbNm = s => String(s||'').trim().replace(/\s+/g,' ').toLowerCase();
 let LB_CX = null, LB_CX_SIG = '';
 /* נקודת הריענון היחידה של המטמון (הכלל מ-6.83.1). החתימה משתנה רק כשנטענו
@@ -4105,10 +4164,10 @@ const IE_TABLES = {
   /* הזמנות וקריאות שירות נשמרות דרך הגשר אל המערכת הישנה — היא מקור האמת */
   ord:   { bridge:'update_order',        schema:'ord', table:'orders',        arr:()=>ORDS,  ent:'הזמנה',        key:o=>o.order_number, rerender:()=>{ renderOrders(); renderLogi(); renderCal(); renderOps(); } },
   scall: { bridge:'update_service_call', schema:'ord', table:'service_calls', arr:()=>SCALLS,ent:'קריאת שירות',  key:s=>s.call_number,  rerender:()=>{ renderOrders(); renderLogi(); renderCal(); } },
-  lead:  { schema:'crm', table:'leads',         arr:()=>LEADS, ent:'ליד',          key:l=>l.full_name,    rerender:()=>{ renderLeads(); renderToday(); renderStats(); } },
-  task:  { schema:'crm', table:'tasks',         arr:()=>TASKS, ent:'משימה',        key:t=>t.name,         rerender:()=>{ renderTasks(); renderToday(); renderStats(); } },
-  deal:  { schema:'crm', table:'deals',         arr:()=>DEALS, ent:'עסקה',         key:d=>d.name,         rerender:()=>{ renderDeals(); renderStats(); } },
-  meet:  { schema:'crm', table:'meetings',      arr:()=>MEETS, ent:'פגישה',        key:m=>m.subject,      rerender:()=>{ renderMeets(); renderToday(); } },
+  lead:  { schema:'crm', table:'leads',         arr:()=>LEADS, ent:'ליד',          key:l=>l.full_name,    rerender:crmRepaint },
+  task:  { schema:'crm', table:'tasks',         arr:()=>TASKS, ent:'משימה',        key:t=>t.name,         rerender:crmRepaint },
+  deal:  { schema:'crm', table:'deals',         arr:()=>DEALS, ent:'עסקה',         key:d=>d.name,         rerender:crmRepaint },
+  meet:  { schema:'crm', table:'meetings',      arr:()=>MEETS, ent:'פגישה',        key:m=>m.subject,      rerender:crmRepaint },
   pay:   { schema:'crm', table:'payments',      arr:()=>PAYS,  ent:'תשלום',        key:p=>String(p.id).slice(0,8), rerender:()=>renderPays() },
   po:    { schema:'ord', table:'purchase_orders', idCol:'ordname', arr:()=>PO, ent:'הזמנת רכש', key:o=>o.ordname, rerender:()=>{ if(typeof poBody==='function' && PO_LOADED) poBody(); } },
 };
@@ -8893,7 +8952,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'subxcol-2026-08-28a';
+const BUILD_ID = 'crmpolish-2026-08-28a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -15064,8 +15123,26 @@ window.saveTask = async (id)=>{
   if(error){ if(eb) eb.textContent='השמירה נכשלה — '+error.message; return; }
   Object.assign(t, upd);
   tkSnapshot(id);
-  closeCards(); renderTasks(); renderLeads(); renderToday(); renderStats();
+  closeCards(); crmRepaint();
 };
+/* 🔴 6.148.0 — נקודת חנק אחת לציור מחדש אחרי שמירה. רומן, 28/08/2026:
+   "השם לא מתעדכן, רק כאשר אני מרענן את הדפדפן ... תחיל את הכלל הזה על
+   עדכוני לייב באופן כללי במערכת."
+   המנגנון: מסכי ה-CRM מציגים נתונים **חוצי-ישות** — בורד המשימות מציג
+   את שם הליד דרך tkLinkName→ctxOf→LEADS, בורד העסקאות מציג את שם הליד,
+   וטבלת הלידים מציגה את שם הלקוח. כל מסלול שמירה ריענן רק את המסך שלו,
+   ולכן שינוי בישות אחת נשאר בלתי נראה במסכים האחרים עד רענון דפדפן.
+   ⚠️ **ציור בלבד, אפס רשת.** loadLeads הוא 26 קריאות ו-~12MB; כאן רק
+      ציור מחדש מהזיכרון, כלומר אותו סדר גודל של מה שכל שמירה עשתה ממילא.
+   ⚠️ כל קריאה מגודרת ב-typeof: המסכים נטענים לפי הרשאה, ומסך שאינו קיים
+      אצל המשתמש הזה אינו אמור להפיל שמירה. */
+function crmRepaint(){
+  ['renderLeads','renderTasks','renderDeals','renderCustomers',
+   'renderMeets','renderToday','renderStats'].forEach(function(fn){
+    try { if(typeof window[fn] === 'function') window[fn](); }
+    catch(e){ console.error('crmRepaint:'+fn, e); }
+  });
+}
 function renderTasks(){
   /* ⚠️ tkInitDef **לפני** הצ'יפים: הוא עשוי לשנות את TK_VIEW, ובסדר
      ההפוך הצ'יפים היו מציירים תצוגה אחת והטבלה מתחתם אחרת — בציור
@@ -15080,7 +15157,10 @@ function renderTasks(){
     return;
   }
   const list = tkApplyF(tkViewList());
-  paintKeep('#tasks-list', wideScreen() ? tkTable(list)
+  /* 🔴 6.148.0 — רומן: "אני לא רוצה את הסיווגים ... תסיר את כולם."
+     טבלה שטוחה. ⚠️ tkBucket עצמו **נשאר**: בורד העסקאות צובע לפיו את
+     שורותיו (TK_PAINT), וסימון האיחור בשורה מגיע מ-lbDueMark ולא מהדלי. */
+  paintKeep('#tasks-list', wideScreen() ? tkFlat(list)
     : capped(list, taskRow, TK_VIEW==='mine'?'אין לך משימות פתוחות 🎉':'לא נמצאו משימות'));
 }
 window.doneTask = async (id)=>{
@@ -19493,21 +19573,60 @@ function lbFillOpts(){
    הייתה מעבירה את איש המכירות לעקוף את הטופס.
    ⚠️ עובדת על lbCx/lbMatch שכבר משמשות את הטבלה — אותה נקודת חנק, ולכן
    אין סיכוי שהטופס והטבלה יחלקו על מה נחשב כפילות. */
+/* 🔴 6.148.0 — רומן: "תוסיף את הבדיקה על סמך גם שם וגם אימייל".
+   בדיקת ה**לידים** כבר עשתה זאת; מה שנשען על טלפון בלבד הוא בדיקת
+   ה**לקוח** (lbMatch → lbCx, מפה לפי תשע ספרות).
+   ⚠️ וכל התאמה אומרת **לפי מה** נמצאה. נמדד: 277 שמות חוזרים בין 4,656
+      לקוחות (הגרוע — 12 לאותו שם) ו-156 אימיילים כפולים; "לקוח קיים"
+      בלי הנימוק הוא השערה שמוצגת כעובדה. */
+function lbDupHits(nm, ph, em){
+  const p9 = lbP9(ph), e = lbEm(em), n = nm.length>=3 ? lbNm(nm) : '';
+  const why = (o)=>{ const r=[];
+    if(p9 && lbP9(o.phone)===p9) r.push('טלפון');
+    if(e  && lbEm(o.email)===e)  r.push('אימייל');
+    if(n  && lbNm(o.full_name||o.name)===n) r.push('שם');
+    return r; };
+  const pick = (arr)=>arr.map(o=>({o, r:why(o)})).filter(x=>x.r.length);
+  return { custs: (p9||e||n) ? pick(CUSTS||[]) : [],
+           leads: (p9||e||n) ? pick(LEADS||[]) : [] };
+}
 window.lbDupCheck = ()=>{
   const box=document.getElementById('a-dup'); if(!box) return;
   const nm=($('#a-name').value||'').trim(), ph=($('#a-phone').value||'').trim(),
-        em=($('#a-email').value||'').trim().toLowerCase();
-  const p9=lbP9(ph);
-  const hits=[];
-  if(p9){ const m=lbMatch({phone:ph}); if(m) hits.push('לקוח קיים: '+(m.amb?m.n+' לקוחות עם טלפון זהה':(m.name||'ללא שם'))); }
-  const dl=(LEADS||[]).filter(l=> (p9 && lbP9(l.phone)===p9) ||
-                                  (em && String(l.email||'').trim().toLowerCase()===em) ||
-                                  (nm.length>=3 && lbNm(l.full_name)===lbNm(nm)));
-  if(dl.length) hits.push('ליד קיים: '+dl.slice(0,3).map(l=>l.full_name+' ('+(l.status||'')+')').join(' · ')+(dl.length>3?` ועוד ${dl.length-3}`:''));
-  box.innerHTML = hits.length
-    ? `<div class="err" style="display:block">⚠️ ${hits.map(esc).join('<br>')}<div class="note" style="margin-top:4px">אפשר להמשיך — זו התראה ולא חסימה.</div></div>`
-    : '';
+        em=($('#a-email').value||'').trim();
+  const h = lbDupHits(nm, ph, em);
+  if(!h.custs.length && !h.leads.length){ box.innerHTML=''; return; }
+  const MAX = 3;
+  /* בלי template literals מקוננים — הדפוס של lbTmBlock. */
+  const line = function(x, fn){
+    /* ⚠️ &quot; ולא גרש בורח: ה-JS הזה נכתב בתוך מחרוזת פייתון בסקריפט
+       הבנייה, ושם `\'` נבלע — הפלט יצא `''` והדף לא נטען כלל. ישות
+       HTML נפתרת בערך התכונה ואינה עוברת דרך שכבת בריחה שנייה. */
+    return '<button type="button" class="lb-dupi" onclick="' + fn + '(&quot;' + jsq(x.o.id) + '&quot;)">'
+      + '<span class="lb-dupi-nm">' + esc(x.o.full_name || x.o.name || 'ללא שם') + '</span>'
+      + (x.o.status ? '<span class="lb-dupi-st">' + esc(x.o.status) + '</span>' : '')
+      + '<span class="lb-dupi-why">לפי ' + esc(x.r.join(' + ')) + '</span>'
+      + '<span class="lb-dupi-go">&#8599;</span></button>';
+  };
+  const grp = function(t, arr, fn){
+    if(!arr.length) return '';
+    return '<div class="lb-dupg"><div class="lb-dupt">' + esc(t) + ' (' + arr.length + ')</div>'
+      + arr.slice(0,MAX).map(function(x){ return line(x, fn); }).join('')
+      + (arr.length>MAX ? '<div class="lb-dupm">ועוד ' + (arr.length-MAX) + '</div>' : '')
+      + '</div>';
+  };
+  box.innerHTML = '<div class="lb-dup">'
+    + '<div class="lb-duph"><span class="lb-dupic">&#9888;</span>'
+    + '<span>נמצאה התאמה קיימת — <b>אפשר להמשיך</b>, זו התראה ולא חסימה.</span></div>'
+    + grp('לקוח קיים', h.custs, 'dupGoCust')
+    + grp('ליד קיים',  h.leads, 'dupGoLead')
+    + '</div>';
 };
+/* ⚠️ שתי עטיפות ולא goCard ישירות ב-onclick: הכפתור יושב בתוך מודאל
+   "ליד חדש", וסגירתו לפני המעבר היא הפעולה הנכונה — אחרת שני כרטיסים
+   פתוחים זה על זה. */
+window.dupGoCust = id=>{ closeCards(); openCust(id); };
+window.dupGoLead = id=>{ closeCards(); openLead(id); };
 $('#addBtn').onclick = ()=>{
   ['a-name','a-phone','a-email','a-company','a-city','a-notes'].forEach(k=>{ const e=document.getElementById(k); if(e) e.value=''; });
   lbFillOpts();
@@ -19828,9 +19947,11 @@ function lbTmBlock(tasks, meets, addBtns){
     });
     h += ts.map(function(t,i){
       const d = lbDueMark(t.due_at);
-      return '<div class="row" style="cursor:pointer" onclick="goCard(()=>openTask(\''+jsq(t.id)+'\'))">'
+      return '<button type="button" class="lb-tmi" onclick="goCard(()=>openTask(\''+jsq(t.id)+'\'))">'
+        + '<span class="lb-tmi-ic">&#9679;</span>'
+        + '<span class="v">'+esc(t.name||'')+' '+mdPill(t.status,TASK_ST_COLORS,LB_TK)+'</span>'
         + '<span class="k'+(d.cls?' '+d.cls:'')+'">'+((i===0 && t.due_at)?'המשימה הבאה':'משימה')+' · '+d.ico+tmDtT(t.due_at)+'</span>'
-        + '<span class="v">'+esc(t.name||'')+' '+mdPill(t.status,TASK_ST_COLORS,LB_TK)+'</span></div>';
+        + '<span class="lb-tmi-go">&#8599;</span></button>';
     }).join('');
   }
   if(meets.length){
@@ -19851,9 +19972,11 @@ function lbTmBlock(tasks, meets, addBtns){
       return fa ? A.localeCompare(B) : B.localeCompare(A);
     });
     h += ms.map(function(m,i){
-      return '<div class="row"><span class="k">'+((i===0 && mFut(m) && m.meet_date)?'הפגישה הקרובה':'פגישה')+' · '+tmDtM(m.meet_date)+'</span>'
-        + '<span class="v"><a href="#" onclick="event.preventDefault();openMeet(\''+jsq(m.id)+'\')">'+esc(m.subject||'פגישה')+'</a> '
-        + mdPill(m.status,MSTATUS_COLOR,LB_TK)+'</span></div>';
+      return '<button type="button" class="lb-tmi" onclick="openMeet(\''+jsq(m.id)+'\')">'
+        + '<span class="lb-tmi-ic">&#128197;</span>'
+        + '<span class="v">'+esc(m.subject||'פגישה')+' '+mdPill(m.status,MSTATUS_COLOR,LB_TK)+'</span>'
+        + '<span class="k">'+((i===0 && mFut(m) && m.meet_date)?'הפגישה הקרובה':'פגישה')+' · '+tmDtM(m.meet_date)+'</span>'
+        + '<span class="lb-tmi-go">&#8599;</span></button>';
     }).join('');
   }
   /* 🔴 שלושת הכפתורים עברו לכאן מלשונית "קשור". נמדד ש-leadMeet
@@ -19873,15 +19996,19 @@ function lbHistBlock(tasks, meets){
   let h = '';
   h += tasks.slice().sort(function(a,b){ return String(b.due_at||'').localeCompare(String(a.due_at||'')); })
     .map(function(t){
-      return '<div class="row" style="cursor:pointer" onclick="goCard(()=>openTask(\''+jsq(t.id)+'\'))">'
+      return '<button type="button" class="lb-tmi" onclick="goCard(()=>openTask(\''+jsq(t.id)+'\'))">'
+        + '<span class="lb-tmi-ic">&#9679;</span>'
+        + '<span class="v">'+esc(t.name||'')+' '+mdPill(t.status,TASK_ST_COLORS,LB_TK)+'</span>'
         + '<span class="k">משימה · '+tmDtT(t.due_at)+'</span>'
-        + '<span class="v">'+esc(t.name||'')+' '+mdPill(t.status,TASK_ST_COLORS,LB_TK)+'</span></div>';
+        + '<span class="lb-tmi-go">&#8599;</span></button>';
     }).join('');
   h += meets.slice().sort(function(a,b){ return String(b.meet_date||'').localeCompare(String(a.meet_date||'')); })
     .map(function(m){
-      return '<div class="row"><span class="k">פגישה · '+tmDtM(m.meet_date)+'</span>'
-        + '<span class="v"><a href="#" onclick="event.preventDefault();openMeet(\''+jsq(m.id)+'\')">'+esc(m.subject||'פגישה')+'</a> '
-        + mdPill(m.status,MSTATUS_COLOR,LB_TK)+'</span></div>';
+      return '<button type="button" class="lb-tmi" onclick="openMeet(\''+jsq(m.id)+'\')">'
+        + '<span class="lb-tmi-ic">&#128197;</span>'
+        + '<span class="v">'+esc(m.subject||'פגישה')+' '+mdPill(m.status,MSTATUS_COLOR,LB_TK)+'</span>'
+        + '<span class="k">פגישה · '+tmDtM(m.meet_date)+'</span>'
+        + '<span class="lb-tmi-go">&#8599;</span></button>';
     }).join('');
   return h;
 }
@@ -19914,7 +20041,7 @@ window.openLead = (id)=>{
             eq('lead_id') לפני היצירה ומחזירה את ההצעה הקיימת). -->
     ${editable?`<div class="lb-convrow">
       <button class="btn green" style="width:auto" onclick="convertLead('${l.id}')">פתח לקוח והצעת מחיר בפריוריטי</button>
-      <span class="note">הפעולה תפתח לקוח זמני והצעה בפריוריטי, תקשר אותם לליד, ותסמן אותו «רלוונטי · הצעת מחיר».</span>
+      <span class="note">הפעולה תפתח לקוח זמני והצעה בפריוריטי ובמערכת.</span>
     </div>`:''}
     <div class="form-grid">
       <div class="form-sep">פרטי הפנייה</div>
@@ -20014,7 +20141,7 @@ window.saveLead = async (id)=>{
   /* רענון ה-snapshot אחרי שמירה מוצלחת — שמירה שנייה בלי פתיחה מחדש לא
      שולחת שוב את מה שכבר נשמר */
   lbSnapshot(id);
-  closeCards(); renderLeads(); renderToday(); renderStats();
+  closeCards(); crmRepaint();
 };
 window.lbClaim = async (id)=>{
   if(!window.canEdit('crm.leads')){ toast('אין לך הרשאת עריכה ללידים'); return; }
@@ -20408,8 +20535,8 @@ async function lbLoadUpdates(id, type, pfx){
   const bar = document.getElementById(p+'-updbar');
   if(bar) bar.innerHTML =
       ((ctx.chain.ids.length>1)
-        ? `<button type="button" class="chip ${ctx.only?'active':''}" onclick="updOnly(${!ctx.only})">רק על הכרטיס הזה</button>` : '')
-    + `<button type="button" class="chip ${ctx.sys?'active':''}" onclick="updSys(${!ctx.sys})">גם שינויי מערכת</button>`;
+        ? `<button type="button" class="chip ${ctx.only?'active':''}" title="כבוי: מוצגים העדכונים של כל השרשרת — הפנייה, העסקאות, המשימות והלקוח המקושרים. דלוק: רק מה שנכתב על הכרטיס הזה עצמו." onclick="updOnly(${!ctx.only})">רק על הכרטיס הזה</button>` : '')
+    + `<button type="button" class="chip ${ctx.sys?'active':''}" title="מוסיף שורות שנכתבו אוטומטית — שינוי סטטוס, שינוי שלב, וסנכרון ממאנדיי. כבוי כברירת מחדל: היישור היומי מייצר כ-215 שורות ביום והן מציפות את העדכונים שאנשים כתבו." onclick="updSys(${!ctx.sys})">גם שינויי מערכת</button>`;
   const { data, error } = await updFetch(ids, ctx.sys);
   if(error){ box.innerHTML='<div class="note">טעינת העדכונים נכשלה.</div>'; return; }
   if(!data || !data.length){ box.innerHTML='<div class="note">אין עדכונים עדיין.</div>'; return; }
@@ -20425,12 +20552,16 @@ async function lbLoadUpdates(id, type, pfx){
               : sys ? 'מערכת' : 'ייבוא';
     const when = new Date(a.at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
     const n = ctx.chain.by[a.linked_id];
-    /* שורה שנכתבה על הכרטיס הנוכחי — בלי תגית. אחרת כל שורה בכרטיס הליד
-       הייתה נושאת "ליד: <אותו ליד>", וזה רעש ולא מידע. */
+    /* 🔴 6.148.0 — תגית **תמיד**, גם על שורה שנכתבה על הכרטיס הנוכחי.
+       רומן: "אני רוצה תמיד תגית מאיפה המשימה נכתבה לא משנה מאיזה מסך
+       אני מסתכל." עד כאן `!self` הסתיר אותה כדי לחסוך רעש — אבל שורה
+       בלי תגית יכלה להיות "נכתב כאן" **או** "אין הקשר", ואי אפשר היה
+       להבחין. ⚠️ השורה שנכתבה כאן מסומנת `lbu-self` וגוונה עדין יותר,
+       כדי שהמידע יישאר חד-משמעי בלי לצעוק. */
     const self = a.linked_id === id;
-    const tag = (!self && n)
-      ? `<span class="tk-kind tk-k-${esc(n.type)} lbu-src">${esc(UPD_KIND_LBL[n.type]||n.type)}${n.name?': '+esc(n.name):''}</span>` : '';
-    const xr = (!self && n && n.xref) ? '<span class="lbu-xref">(הוצלב לפי טלפון)</span>' : '';
+    const tag = n
+      ? `<span class="tk-kind tk-k-${esc(n.type)} lbu-src${self?' lbu-self':''}">${esc(UPD_KIND_LBL[n.type]||n.type)}${n.name?': '+esc(n.name):''}</span>` : '';
+    const xr = (n && n.xref) ? '<span class="lbu-xref">(הוצלב לפי טלפון)</span>' : '';
     /* 🔴 שער אחד — canEdit('crm'), מראה מדויקת של ה-policies במסד
        (activities_p6_ins/upd/del כולן can_edit('crm')). השער הבינארי הישן
        (crm.leads / crm.tasks) לא היה לו ענף ל-deal ול-customer בכלל.

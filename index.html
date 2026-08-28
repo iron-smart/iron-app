@@ -2058,6 +2058,23 @@ td.lb-today .lb-dt{ background-color:transparent; }
 #tasks-list th.srt{ cursor:pointer; user-select:none; }
 #tasks-list th.srt:hover{ text-decoration:underline; }
 #tasks-list th.srt.on::after{ content:attr(data-ar); margin-inline-start:4px; }
+/* 🟢 6.157.0 — חץ כיוון המיון. `dlHead`/`cuHead`/`mtHead` פולטים
+   `data-ar`, אבל הכלל היה מעוגן ללידים ולמשימות בלבד — כלומר
+   **החץ מעולם לא הוצג בעסקאות ובלקוחות**. אין כאן שינוי התנהגות,
+   יש כלל CSS שלא חל; זו בדיוק התקלה שתוקנה לבורד המשימות ב-6.130.0.
+   ⚠️ ונמדד ב-getComputedStyle(th,'::after').content ולא בבדיקת DOM —
+      אף בדיקת DOM אינה יכולה לראות פסאודו-אלמנט. */
+#deals-list th.srt, #meets-list th.srt, #customers-list th.srt{ cursor:pointer; user-select:none; }
+#deals-list th.srt:hover, #meets-list th.srt:hover, #customers-list th.srt:hover{ text-decoration:underline; }
+#deals-list th.srt.on::after, #meets-list th.srt.on::after, #customers-list th.srt.on::after{
+  content:attr(data-ar); margin-inline-start:4px; }
+/* 🔴 הדגשת פגישות השבוע. הזברה והריחוף הם (0,2,2), ולכן `tr.mt-week`
+   לבדו (0,1,1) **לא היה צובע את השורות הזוגיות כלל** — בלי שגיאה
+   ובלי סימן. העיגון ב-#meets-list מעלה ל-(1,2,2).
+   ⚠️ ווריאנט :hover נפרד **חובה** — בלעדיו משוב הריחוף נעלם דווקא
+      בשורות שההדגשה נועדה להן. הלקח מ-6.119.0. */
+#meets-list .tbl tbody tr.mt-week{ background-color:#fff7e6; box-shadow:inset 3px 0 0 #f0b45f; }
+#meets-list .tbl tbody tr.mt-week:hover{ background-color:#fdeecd; }
 /* שבב הישות המקושרת בבורר (6.130.0) */
 .tkl-box{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; min-height:24px; margin-bottom:4px; }
 .tkl-box b{ font-size:13px; color:#0f172a; }
@@ -2272,7 +2289,10 @@ td.lb-today .lb-dt{ background-color:transparent; }
 #tasks-list td.tk-lnkc{ text-align:right; }
 /* 🟢 רמז גלילה אופקית — קיים ב-#leads-list וחסר כאן לגמרי, כלומר הטבלה
    גולשת (נמדד: 1,102 מול 1,089 ב-1400px) בלי שום סימן שיש לאן לגלול. */
-#tasks-list .tbl-wrap{ background-image:
+/* ⚠️ ל-#meets-list לא היה שום רמז שיש לאן לגלול — אותה מחלקה בדיוק
+   שתוקנה לבורד המשימות. `background-attachment:local` הוא הרמז היחיד
+   שנמדד כעובד בכרום/מק (חמש דרכים לכפות פס גלילה גלוי החזירו 0px). */
+#meets-list .tbl-wrap, #tasks-list .tbl-wrap{ background-image:
     linear-gradient(to left, #fff 30%, rgba(255,255,255,0)),
     linear-gradient(to right, #fff 30%, rgba(255,255,255,0)),
     linear-gradient(to left, rgba(15,23,42,.10), rgba(0,0,0,0)),
@@ -2464,7 +2484,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.156.0</div>
+      <div class="ver">גרסה 6.157.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2593,7 +2613,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.156.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.157.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9095,7 +9115,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'deals-2026-08-28a';
+const BUILD_ID = 'meets-2026-08-28a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -19273,24 +19293,27 @@ const meetStClass = s => s==='התקיימה'?'st-rel' : (['בוטלה','לא ה
 const todayStr = () => { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
 function meetFilterList(){
   const t = todayStr();
-  const in7 = new Date(Date.now()+7*864e5); const w = in7.getFullYear()+'-'+String(in7.getMonth()+1).padStart(2,'0')+'-'+String(in7.getDate()).padStart(2,'0');
   if(MEET_FILTER==='today') return MEETS.filter(m=>m.meet_date===t);
-  if(MEET_FILTER==='week') return MEETS.filter(m=>m.meet_date>=t && m.meet_date<=w).sort((a,b)=>(a.meet_date||'').localeCompare(b.meet_date||''));
+  if(MEET_FILTER==='week') return MEETS.filter(mtWeekIn).sort((a,b)=>(a.meet_date||'').localeCompare(b.meet_date||''));
   if(MEET_FILTER==='future') return MEETS.filter(m=>m.meet_date>=t).sort((a,b)=>(a.meet_date||'').localeCompare(b.meet_date||''));
   return MEETS;
 }
 function meetChips(){
   const t = todayStr();
-  const cnt = { today: MEETS.filter(m=>m.meet_date===t).length, future: MEETS.filter(m=>m.meet_date>=t).length };
+  /* ⚠️ המונה נגזר מ-mtWeekIn ולא מביטוי משלו — שני מימושים של אותו
+     כלל נפרדים בשקט ביום שאחד מהם ישתנה. */
+  const cnt = { today: MEETS.filter(m=>m.meet_date===t).length,
+                week: MEETS.filter(mtWeekIn).length,
+                future: MEETS.filter(m=>m.meet_date>=t).length };
   $('#meet-chips').innerHTML = `
     <button class="chip ${MEET_MODE==='cal'?'active':''}" onclick="setMeetMode('cal')">יומן</button>
     <button class="chip ${MEET_MODE==='list'?'active':''}" onclick="setMeetMode('list')">רשימה</button>` + (MEET_MODE==='cal' ? '' : `
     <button class="chip ${MEET_FILTER==='today'?'active':''}" onclick="setMeetFilter('today')">היום ${cnt.today}</button>
-    <button class="chip ${MEET_FILTER==='week'?'active':''}" onclick="setMeetFilter('week')">השבוע</button>
+    <button class="chip ${MEET_FILTER==='week'?'active':''}" onclick="setMeetFilter('week')">השבוע ${cnt.week}</button>
     <button class="chip ${MEET_FILTER==='future'?'active':''}" onclick="setMeetFilter('future')">עתידיות ${cnt.future}</button>
     <button class="chip ${MEET_FILTER==='all'?'active':''}" onclick="setMeetFilter('all')">הכל ${MEETS.length}</button>`);
 }
-window.setMeetFilter = f => { MEET_FILTER = f; renderMeets(); };
+window.setMeetFilter = f => { MEET_FILTER = f; meetDefSave(); renderMeets(); };
 function linkedName(m){
   if(!m.linked_id) return null;
   if(m.linked_type==='lead'){ const x=LEADS.find(l=>l.id===m.linked_id); return x?{label:'ליד',name:x.full_name}:null; }
@@ -19307,26 +19330,89 @@ function meetRow(m){
     <span class="pill ${meetStClass(m.status)}">${esc(m.status)}</span></div>`;
 }
 const MEET_STATUSES=['חדשה','מתוכננת','תואמה','נדחתה','התקיימה','לא התקיימה','בוטלה'];
+/* 🔴 6.157.0 — רג'יסטרי עמודות + מפת-שם למיון, בדפוס LB_COLS/TK_COLS/
+   DL_COLS. **מפת-שם ולא מפת-אינדקס**: הוספה או מחיקה של עמודה אינה
+   יכולה לשבור את המיון בשקט (מחלקת children[length-7] מ-6.148.0). */
+const MEET_COLS = [
+  ['#','rownum'], ['נושא','srt'], ['תאריך','srt'], ['שעות','srt'],
+  ['סוג','srt'], ['מקושרת אל','srt'], ['סטטוס','srt']
+];
+const MTCIX = lbl => MEET_COLS.findIndex(x=>x[0]===lbl);
+const MEET_KEYN = {
+  'נושא':       m=>m.subject||'',
+  'תאריך':      m=>m.meet_date||'',
+  'שעות':       m=>String(m.start_time||'').slice(0,5),
+  'סוג':        m=>m.meet_type||'',
+  'מקושרת אל':  m=>{ const l=linkedName(m); return l ? l.label+': '+l.name : ''; },
+  /* 🔴 indexOf מחזיר ‎-1 לסטטוס שאינו ברשימה, וב-ordBy עולה זה דוחף
+     אותו **לראש**. מיפוי מפורש ל-99, ו-padStart כדי שההשוואה תישאר
+     נכונה גם עם תווית שמינית ('10' < '2' כמחרוזות). */
+  'סטטוס':      m=>{ const i=MEET_STATUSES.indexOf(m.status); return String(i<0?99:i).padStart(2,'0'); }
+};
+const MEET_KEY = new Proxy({}, { get:(_,i)=>{
+  const col = MEET_COLS[Number(i)]; return col ? MEET_KEYN[col[0]] : undefined; } });
+let MEET_SORT = [null, 1];
+window.mtSortBy = i=>{ MEET_SORT = (MEET_SORT[0]===i) ? [i,-MEET_SORT[1]] : [i,1]; renderMeets(); };
+function mtOrder(list){
+  const f = MEET_KEY[MEET_SORT[0]];
+  /* ברירת המחדל נשארת כפי שהייתה — מוקדם קודם, וחסרי תאריך בסוף. */
+  return ordBy(list, f || null, MEET_SORT[1],
+    (a,b)=>(a.meet_date||'9999').localeCompare(b.meet_date||'9999')
+        || String(a.start_time||'').localeCompare(String(b.start_time||'')));
+}
+function mtHead(){
+  return '<div class="tbl-wrap"><table class="tbl" data-gs="own"><thead><tr>'
+    + MEET_COLS.map(([lbl,cls],i)=>`<th class="${lbl==='#'?'rownum':cls}${cls==='srt'&&MEET_SORT[0]===i?' on':''}"${cls==='srt'?` data-ar="${MEET_SORT[1]>0?'▲':'▼'}" onclick="mtSortBy(${i})"`:''}>${lbl}</th>`).join('')
+    + '</tr></thead><tbody>';
+}
 function meetTable(list){
   if(!list.length) return '<div class="empty">אין פגישות בסינון הזה</div>';
-  const rows=list.slice(0,pgLim('meets')).map((m,i)=>{
+  const rows=mtOrder(list).slice(0,pgLim('meets')).map((m,i)=>{
     const ln=linkedName(m);
-    return `<tr onclick="openMeet('${m.id}')">
+    /* ⚠️ הצביעה נגזרת מ-mtWeekIn — אותה נקודת חנק של הצ'יפ והמונה. */
+    return `<tr class="${mtWeekIn(m)?'mt-week':''}" onclick="openMeet('${m.id}')">
       <td class="rownum">${i+1}</td>
       <td style="max-width:280px"><b>${esc(m.subject)}</b></td>
-      <td>${m.meet_date?fmtD(m.meet_date):'—'}${m.meet_date?`<div class="note-preview">${dayNameHe(m.meet_date)}</div>`:''}</td>
+      <td data-sort="${esc(m.meet_date||'')}">${m.meet_date?fmtD(m.meet_date):'—'}${m.meet_date?`<div class="note-preview">${dayNameHe(m.meet_date)}</div>`:''}</td>
       <td>${esc(m.start_time||'—')}${m.end_time?' – '+esc(m.end_time):''}</td>
       <td>${esc(m.meet_type||'—')}</td>
       <td>${ln?ln.label+': '+esc(ln.name):'—'}</td>
-      <td>${ieSel('meet',m.id,'status',MEET_STATUSES,m.status)}</td>
+      <td>${ieSel('meet',m.id,'status',MEET_STATUSES,m.status,{mdColors:MSTATUS_COLOR,mdK:LB_TK})}</td>
     </tr>`;}).join('');
-  return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="rownum">#</th><th>נושא</th><th>תאריך</th><th>שעות</th><th>סוג</th><th>מקושרת אל</th><th>סטטוס</th></tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('meets',list.length,'פגישות')}`;
+  return mtHead()+rows+`</tbody></table></div>${pgFoot('meets',list.length,'פגישות')}`;
 }
 /* ===== 6.8.2 — יומן פגישות ב-CRM (רומן 01/08/2026) =====
    הנראות זהה ללוח השנה של הלוגיסטיקה: אותה שורת בקרה, אותה רשת שעות 08:00–17:00,
    אותם כרטיסים ואותו מקרא. המקור crm.meetings — פגישות מאנדיי ופגישות מיומן
    Outlook המשותף של אנשי המכירות, באותה תצוגה. */
-let MEET_MODE='cal', MCAL_VIEW='month', MCAL_D=new Date(), MCAL_Q='';
+/* 🔴 6.157.0 — רומן: "רשימה זו תצוגת ברירת מחדל". */
+let MEET_MODE='list', MCAL_VIEW='month', MCAL_D=new Date(), MCAL_Q='';
+const MEET_DEF_KEY = 'iron_meets_default_v1';
+const MEET_MODES = ['cal','list'], MEET_FILTERS = ['today','week','future','all'];
+let MEET_DEF_INIT = false;
+/* ⚠️ נרמול חובה: ערך שנשמר ואינו קיים עוד היה משאיר את המסך במצב
+   שאינו מצויר כלל — הלקח מ-logiInit. ומכאן גם שהמצב נשמר אוטומטית
+   ולא בכפתור: מי שבחר יומן פעם אחת אינו אמור לבחור בו כל בוקר. */
+function meetDefLoad(){ try{ const r=JSON.parse(localStorage.getItem(MEET_DEF_KEY)||'null'); return (r&&typeof r==='object')?r:null; }catch(_e){ return null; } }
+function meetDefSave(){ try{ localStorage.setItem(MEET_DEF_KEY, JSON.stringify({v:MEET_MODE,f:MEET_FILTER})); }catch(_e){} }
+function meetInitDef(){
+  if(MEET_DEF_INIT) return; MEET_DEF_INIT = true;
+  const d = meetDefLoad(); if(!d) return;
+  if(MEET_MODES.includes(d.v)) MEET_MODE = d.v;
+  if(MEET_FILTERS.includes(d.f)) MEET_FILTER = d.f;
+}
+/* 🔴 נקודת חנק אחת ל"השבוע" — שלושה צרכנים: המסנן, המונה, וצביעת
+   השורה. עד 6.157.0 ההגדרה הייתה מוקלדת בתוך meetFilterList בלבד,
+   ולכן צביעה שהייתה נכתבת בנפרד יכלה להיפרד ממנה בשקט ביום שהחלון
+   ישתנה — בדיוק מה שקרה במסך התשלומים ב-6.134.0.
+   ⚠️ החלון **מתגלגל** ולא קלנדרי, בניגוד ל-6.144.0: היום שישי,
+      והשבוע הקלנדרי מכיל 13 פגישות שמתוכן 12 כבר התקיימו. */
+const MT_WEEK_DAYS = 7;
+function mtWeekIn(m){
+  if(!m || !m.meet_date) return false;
+  const t = todayStr();
+  return m.meet_date >= t && m.meet_date <= addDaysIso(t, MT_WEEK_DAYS);
+}
 const MSTATUS_COLOR={'חדשה':'#2563eb','מתוכננת':'#0d9488','תואמה':'#16a34a','נדחתה':'#ca8a04','התקיימה':'#64748b','לא התקיימה':'#dc2626','בוטלה':'#dc2626'};
 const MCAL_LEGEND=['חדשה','מתוכננת','תואמה','נדחתה','התקיימה','לא התקיימה'];
 const mColor=m=>MSTATUS_COLOR[m.status]||'#94a3b8';
@@ -19391,7 +19477,7 @@ function mTgDay(ds, evs, compact, adH){
         return `<div class="tg-ev" style="top:${t}px;height:${Math.max(34,b-t-3)}px;inset-inline-start:calc(${p.ci*100/L.n}% + 1px);width:calc(${100/L.n}% - 4px)">${mCard(p.m,compact)}</div>`;}).join('')}
     </div>`;
 }
-window.setMeetMode = v => { MEET_MODE = v; renderMeets(); };
+window.setMeetMode = v => { MEET_MODE = v; meetDefSave(); renderMeets(); };
 window.mcalMode    = v => { MCAL_VIEW = v; renderMeets(); };
 window.mcalToday   = () => { MCAL_D = new Date(); renderMeets(); };
 window.mcalGoDay   = ds => { MCAL_D = new Date(ds+'T12:00:00'); MCAL_VIEW='day'; renderMeets(); };
@@ -19476,6 +19562,9 @@ function meetCal(){
     <div class="cal-legend">${legend}</div>`;
 }
 function renderMeets(){
+  /* ⚠️ **לפני** meetChips: הצ'יפים מציירים את המצב, ואם ברירת המחדל
+     תוחל אחריהם המסך יצייר מצב אחד ויסמן אחר. */
+  meetInitDef();
   meetChips();
   const cw=$('#meet-cal-wrap'), lw=$('#meets-list');
   if(MEET_MODE==='cal'){
@@ -19486,7 +19575,9 @@ function renderMeets(){
   if(cw){ cw.style.display='none'; cw.innerHTML=''; }
   if(lw) lw.style.display='';
   const list=meetFilterList();
-  $('#meets-list').innerHTML = wideScreen() ? meetTable(list) : capped(list, meetRow, 'אין פגישות בסינון הזה');
+  /* ⚠️ paintKeep ולא innerHTML=: כל שינוי סינון או מיון היה מחזיר את
+     הגלילה האופקית לראש — הלקח מ-6.116.0 בטבלת הלידים. */
+  paintKeep('#meets-list', wideScreen() ? meetTable(list) : capped(list, meetRow, 'אין פגישות בסינון הזה'));
 }
 window.openMeet = (id)=>{
   const m = MEETS.find(x=>x.id===id); if(!m) return;

@@ -2464,7 +2464,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.155.0</div>
+      <div class="ver">גרסה 6.156.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2593,7 +2593,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.155.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.156.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9095,7 +9095,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'leadq-2026-08-28a';
+const BUILD_ID = 'deals-2026-08-28a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -18916,10 +18916,19 @@ function dealChips(){
     (pend ? `<button class="chip ${DEAL_FILTER==='pending'?'active':''}" onclick="setDealFilter('pending')" title="הזמנה מאושרת בפריוריטי שיש ללקוח שלה יותר מעסקה פתוחה אחת — המערכת אינה מנחשת איזו לקדם">⚠️ ממתינות לשיוך ${pend}</button>` : '');
 }
 window.setDealFilter = f => { DEAL_FILTER = f; renderDeals(); };
+/* 🔴 6.156.0 — "פנייה מקורית" ירדה (רומן), "נוצר" נוספה **בסוף**,
+   והסכום קיבל את שמו המלא. ⚠️ בסוף ולא באמצע — בדיוק כמו 6.147.0
+   בטבלת הלידים: תוספת באמצע מזיזה כל אינדקס שאחריה. */
 const DL_COLS = [
-  ['#','rownum'], ['עסקה','srt'], ['לקוח','srt'], ['פנייה מקורית','srt'], ['טלפון',''],
-  ['ת.משימה הבאה','srt'], ['סכום','srt'], ['שלב','srt'], ['תת-סטטוס','']
+  ['#','rownum'], ['עסקה','srt'], ['לקוח','srt'], ['טלפון',''],
+  ['ת.משימה הבאה','srt'], ['סכום (לפני מע"מ)','srt'], ['שלב','srt'],
+  ['תת-סטטוס',''], ['נוצר','srt']
 ];
+/* 🔴 האינדקס נגזר מהשם ולא מקובע. עד 6.156.0 DL_KEY היה ממופתח
+   במספרים ו-dlOrder החזיק `(i===5)` קשיח — כלומר **מחיקת עמודה
+   הייתה ממיינת לפי העמודה השגויה, בשקט**. זו מחלקת children[length-7]
+   שהפילה 16 טענות ב-6.148.0. */
+const DCIX = lbl => DL_COLS.findIndex(x=>x[0]===lbl);
 /* תת-הסטטוס לפי שלב — בדיוק המבנה של lbSubCol/lbSubOpts בלידים.
    ⚠️ 57 עסקאות מחזיקות irrelevant_reason שאינו ברשימה, ולכן כל בורר
       חייב לשמר ערך קיים שאינו מוכר (selHtml עושה זאת דרך Set). */
@@ -18936,17 +18945,23 @@ function dlLeadName(d){ const l=dlLead(d); return l?(l.full_name||''):''; }
 function dlCustName(d){ const k=dlCust(d); return k?(k.name||''):''; }
 function dlPhone(d){ const l=dlLead(d), k=dlCust(d); return (l&&l.phone)||(k&&k.phone)||''; }
 let DL_SORT = [null, 1];
-const DL_KEY = {
-  1:d=>d.name||'', 2:d=>dlCustName(d), 3:d=>dlLeadName(d),
-  6:d=>(d.amount==null?'':String(Math.round(Number(d.amount)||0)).padStart(12,'0')),
-  7:d=>String(STAGES.indexOf(d.stage))
+/* מפת-שם, ולא מפת-אינדקס. הוספה או מחיקה של עמודה אינה נוגעת בה. */
+const DL_KEYN = {
+  'עסקה':            d=>d.name||'',
+  'לקוח':            d=>dlCustName(d),
+  'סכום (לפני מע"מ)': d=>(d.amount==null?'':String(Math.round(Number(d.amount)||0)).padStart(12,'0')),
+  'שלב':             d=>String(STAGES.indexOf(d.stage)),
+  'נוצר':            d=>d.created_at||''
 };
+const DL_KEY = new Proxy({}, { get:(_,i)=>{
+  const col = DL_COLS[Number(i)]; return col ? DL_KEYN[col[0]] : undefined; } });
 window.dlSortBy = i=>{ DL_SORT = (DL_SORT[0]===i) ? [i,-DL_SORT[1]] : [i,1]; renderDeals(); };
 function dlOrder(grp, nt){
   const i = DL_SORT[0];
   /* עמודה 5 היא "ת.משימה הבאה" ותלויה במפה — נקשרת כאן ולא ב-DL_KEY,
      כדי ש-DL_KEY יישאר חוזה של פונקציה בת ארגומנט אחד (ordBy). */
-  const f = (i===5) ? (d=>(nt&&nt[d.id])||'') : DL_KEY[i];
+  /* ⚠️ נגזר מהשם ולא מהמספר — העמודה זזה כשמוחקים "פנייה מקורית". */
+  const f = (i===DCIX('ת.משימה הבאה')) ? (d=>(nt&&nt[d.id])||'') : DL_KEY[i];
   return ordBy(grp, f || null, DL_SORT[1],
     (a,b)=>(nt[b.id]?1:0)-(nt[a.id]?1:0) || (a.created_at||'').localeCompare(b.created_at||'')*-1);
 }
@@ -19020,9 +19035,8 @@ function dlHead(){
 function dlRow(d, i, nt){
   const t = nt[d.id], dmk = lbDueMark(t), l = dlLead(d), k = dlCust(d);
   const sub = d.quote_status || d.irrelevant_reason || '';
-  const leadCell = l
-    ? `<span class="tk-kind tk-k-lead">ליד</span><span class="tk-link" onclick="event.stopPropagation();goCard(()=>openLead('${jsq(l.id)}'))">${esc(l.full_name||'')} ↗</span>`
-    : '<span class="lb-na">·</span>';
+  /* ⚠️ dlLead/dlLeadName **נשארות**: הן צרכני החיפוש ב-renderDeals
+     ובכרטיס. מה שירד הוא התא, לא הנתון. */
   const custCell = k
     ? `<span class="tk-link" onclick="event.stopPropagation();goCard(()=>openCust('${jsq(k.id)}'))">${esc(k.name||'')} ↗</span>`
     : '<span class="lb-na">·</span>';
@@ -19030,12 +19044,13 @@ function dlRow(d, i, nt){
       <td class="rownum">${i}</td>
       <td style="max-width:260px"><b>${esc(d.name||'')}</b>${d.priority_quote_id?`<div class="note-preview" dir="ltr">${esc(d.priority_quote_id)}</div>`:''}</td>
       <td>${custCell}</td>
-      <td>${leadCell}</td>
       <td dir="ltr">${phCell(dlPhone(d))}</td>
       <td data-sort="${esc(t||'')}"${dmk.cls?` class="${dmk.cls}"`:''}><span class="lb-duew">${dmk.ico}${t?esc(new Date(t).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})):'<span class="lb-na">·</span>'}</span></td>
       <td data-sort="${esc(d.amount==null?'':String(Math.round(Number(d.amount)||0)))}">${d.amount!=null?shekel(d.amount):'<span class="lb-na">·</span>'}</td>
-      <td>${ieSel('deal',d.id,'stage',STAGES,d.stage,{mdColors:DEAL_ST_COLORS,mdK:LB_TK})}</td>
+      <td>${ieSel('deal',d.id,'stage',STAGES,d.stage,{mdColors:DEAL_ST_COLORS,mdK:LB_TK,
+            on:`dlPipeSet('${jsq(d.id)}',this.value,'')`})}</td>
       <td>${esc(sub)||'<span class="lb-na">·</span>'}</td>
+      <td data-sort="${esc(d.created_at||'')}">${d.created_at?esc(fmtDT(d.created_at)):'<span class="lb-na">·</span>'}</td>
     </tr>`;
 }
 function dlTable(list, grouped){
@@ -19102,6 +19117,7 @@ window.openDeal = async (id)=>{
   const cust = x.cust, lead = x.lead;
   let contact = null;
   if(d.contact_id){ const r = await sb.schema('crm').from('contacts').select('full_name,phone,email').eq('id',d.contact_id).maybeSingle(); contact = r.data; }
+  /* ⚠️ שליפה עצלה ולא כניסה ב-Promise.all — האינדקסים אינם זזים. */
   const dt = v => v ? new Date(v).toLocaleDateString('he-IL') : '—';
   const phone = (lead && lead.phone) || (cust && cust.phone) || '';
   /* משימות ופגישות של **העסקה ושל הליד** יחד — רומן: המשימה מלווה את
@@ -19121,7 +19137,10 @@ window.openDeal = async (id)=>{
       <div class="form-sep">פרטי העסקה</div>
       <div><label>מס' הצעה בפריוריטי</label>${roIn(d.priority_quote_id||'',{ltr:1})}</div>
       <div><label>סכום (לפני מע"מ)</label>${roIn(d.amount!=null?shekel(d.amount):'')}</div>
-      <div><label>תאריך אישור</label>${roIn(dt(d.approved_at))}</div>
+      <!-- ⚠️ "מחושב" בתווית ובכוונה: amount מגיע ממאנדיי (הכותרת שם
+           היא "מחיר עסקה לפני מע"מ"), וכולל-המע"מ אינו נתון מקור. -->
+      <div><label>סכום (כולל מע"מ) · מחושב</label>${roIn(d.amount!=null?shekel(Number(d.amount)*VAT_RATE):'')}</div>
+      <div><label>תאריך אישור ההצעה</label>${roIn(dt(d.approved_at))}</div>
       <div><label>תאריך סגירה</label>${roIn(dt(d.closed_at))}</div>
       ${d.send_channel?`<div><label>ערוץ שליחה</label>${roIn(d.send_channel)}</div>`:''}
       ${d.sign_link?`<div class="span2"><label>לינק חתימה</label><div class="tk-lnk"><a href="${esc(safeUrl(d.sign_link))}" target="_blank" rel="noopener">פתיחה ↗</a></div></div>`:''}
@@ -19139,7 +19158,18 @@ window.openDeal = async (id)=>{
       <div><label>גישה למשאית · מעלית · מעלית משא</label>${roIn(ynTxt(cust.truck_access)+' · '+ynTxt(cust.elevator)+' · '+ynTxt(cust.freight_elevator))}</div>
       ${cust.logistics_notes?`<div class="span4"><div class="note">🚚 ${esc(cust.logistics_notes)}</div></div>`:''}`
       :'<div class="span2"><div class="note">אינה מקושרת ללקוח.</div></div>'}
-      ${contact?`<div class="span2"><label>איש קשר</label>${roIn(contact.full_name+' · '+(contact.phone||contact.email||''))}</div>`:''}
+      <!-- 🔴 6.156.0 — פרטי הלקוח (רומן). כולם roIn: הכרטיס הוא
+           קריאה-בלבד מאז 6.126.0, ויש assert ב-dealtest שאוסר
+           selHtml ו-<input> חופשי. ⚠️ contact_id מאוכלס ב-76% מהעסקאות
+           הפעילות — 24% יציגו "—", וזה נכון ורצוי. -->
+      ${contact?`<div><label>איש קשר ראשי</label>${roIn(contact.full_name||'')}</div>
+      <div><label>טלפון איש קשר ${phBtns(contact.phone||'')}</label>${roIn(contact.phone||'',{ltr:1})}</div>`
+      :'<div class="span2"><div class="note">אין איש קשר ראשי מקושר לעסקה.</div></div>'}
+      ${cust?`<div><label>שם חברה</label>${roIn(cust.name||'')}</div>
+      <div><label>סוג לקוח</label>${roIn(cust.customer_type||'')}</div>`:''}
+      <div><label>דוא"ל</label>${roIn((contact&&contact.email)||(cust&&cust.email)||'',{ltr:1})}</div>
+      <div><label>ת.משימה הבאה</label>${roIn((()=>{ const _n=nextTaskBy('deal').due[id];
+        return _n ? new Date(_n).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : ''; })())}</div>
 
       <div class="form-sep">משימות ופגישות</div>
       <div class="span4">${lbTmBlock(tsk, mts)}</div>

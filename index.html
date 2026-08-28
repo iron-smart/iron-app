@@ -2484,7 +2484,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.157.0</div>
+      <div class="ver">גרסה 6.158.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2613,7 +2613,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.157.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.158.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9115,7 +9115,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'meets-2026-08-28a';
+const BUILD_ID = 'dealcard-2026-08-29a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -19162,8 +19162,18 @@ window.openDeal = async (id)=>{
       <div><label>סכום (כולל מע"מ) · מחושב</label>${roIn(d.amount!=null?shekel(Number(d.amount)*VAT_RATE):'')}</div>
       <div><label>תאריך אישור ההצעה</label>${roIn(dt(d.approved_at))}</div>
       <div><label>תאריך סגירה</label>${roIn(dt(d.closed_at))}</div>
-      ${d.send_channel?`<div><label>ערוץ שליחה</label>${roIn(d.send_channel)}</div>`:''}
-      ${d.sign_link?`<div class="span2"><label>לינק חתימה</label><div class="tk-lnk"><a href="${esc(safeUrl(d.sign_link))}" target="_blank" rel="noopener">פתיחה ↗</a></div></div>`:''}
+      <!-- 🔴 6.158.0 — רומן: "משבצת של לאן לשלוח את ההצעה בכוכבית
+           שחייב לבחור". הטוגל כותב מיד ב-RPC; ה"חובה" נאכף בשרת
+           במעבר לשלב 'נשלחה הצעת מחיר לחתימה', כי לכרטיס קריאה-בלבד
+           אין רגע שמירה. -->
+      <div class="span2"><label>לאן לשלוח את ההצעה<span class="req">*</span></label>
+        <div id="dl-chanbox"></div></div>
+      <!-- ⚠️ מוצגת **תמיד** (רומן: "שתהיה משבצת"), והתווית אומרת
+           PowerDoc: נמדד ש-216 מתוך 216 הקישורים הם powerdoc.co ואף
+           אחד אינו של מודול החתימה שלנו. -->
+      <div class="span2"><label>לינק לחתימה (PowerDoc)</label>
+        ${d.sign_link?`<div class="tk-lnk"><a href="${esc(safeUrl(d.sign_link))}" target="_blank" rel="noopener">פתיחה ↗</a></div>`
+                     :`<div class="note">טרם נשלח לחתימה.</div>`}</div>
 
       <div class="form-sep">פרטי הפנייה והלקוח</div>
       ${lead?`<div class="span2"><label>פנייה מקורית</label>
@@ -19192,7 +19202,9 @@ window.openDeal = async (id)=>{
         return _n ? new Date(_n).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : ''; })())}</div>
 
       <div class="form-sep">משימות ופגישות</div>
-      <div class="span4">${lbTmBlock(tsk, mts)}</div>
+      <!-- 🔴 6.158.0 — שני הכפתורים שרומן ביקש ("כמו במסך ליד בדיוק").
+           נקודת חנק אחת, בדיוק כמו lbTmActs בכרטיס הליד. -->
+      <div class="span4" id="dl-tmblock">${lbTmBlock(tsk, mts, dlTmActs(id))}</div>
     </div>
     </div>
     <div id="dl-pn-upd" class="hidden">
@@ -19208,7 +19220,7 @@ window.openDeal = async (id)=>{
     </section>
     </div>
 `;
-  dlPipeDraw(id);
+  dlPipeDraw(id); dlChanDraw(id);
   mountCard('dealModal', ()=>openDeal(id));
   /* 6.135.0 — תמיד, ולא רק כשיש ליד. 51 עסקאות במסד אין להן לא ליד ולא
      לקוח, ועד כאן הן לא קיבלו יומן עדכונים בכלל — לא קריאה ולא כתיבה. */
@@ -19248,6 +19260,47 @@ function dlPipeDraw(id){
     }).join('') + `</div>` : '';
   box.innerHTML = `<div class="lb-piperow">${segs}</div>${subs}`;
 }
+/* שני כפתורי הפעולה בכרטיס העסקה. ⚠️ אין כאן "↻ פולואפ" — הוא מזיז
+   את הפייפליין של הליד, ואין לו מקבילה בעסקה. */
+function dlTmActs(id){
+  return `${window.canEdit('crm.tasks')?`<button type="button" class="chip" onclick="dealTask('${jsq(id)}')">＋ משימה</button>`:''}`
+       + `${window.canEdit('crm.meets')?`<button type="button" class="chip" onclick="dealMeet('${jsq(id)}')">＋ פגישה</button>`:''}`;
+}
+/* ═══ לאן לשלוח את ההצעה (6.158.0, רומן) ═══════════════════════════
+   🔴 שלוש התוויות והפלטה **הועתקו ממאנדיי** (status_mkkpsz2p) ולא נבחרו
+      כאן. הכתיב 'ווטסאפ' הוא שלהם; 'וואטסאפ' היה ערך שני לאותו דבר,
+      כי monday-import ממשיך לזרוע את השדה ביצירת עסקה. */
+const DEAL_CHANNELS = ['מייל','ווטסאפ','גם וגם'];
+const DEAL_CH_COLORS = { 'מייל':'#fdab3d', 'ווטסאפ':'#00c875', 'גם וגם':'#5559df' };
+function dlChanDraw(id){
+  const box = document.getElementById('dl-chanbox'); if(!box) return;
+  const d = (DEALS||[]).find(x=>x.id===id); if(!d) return;
+  const ed = window.canEdit('crm.deals');
+  const now = d.send_channel || '';
+  /* ⚠️ ערך קיים שאינו ברשימה מוצג בכל זאת — אותו כלל של תת-הסטטוס
+     ברצועה. הסתרתו הייתה נראית כאילו לא נבחר דבר. */
+  const all = now && DEAL_CHANNELS.indexOf(now)<0 ? DEAL_CHANNELS.concat([now]) : DEAL_CHANNELS;
+  box.innerHTML = `<div class="lb-psub">` + all.map(o=>{
+      const on = o===now, bg = DEAL_CH_COLORS[o] || '#94a3b8';
+      const stl = on ? `background-color:${tint(bg,LB_TK)};color:${onWhite(bg)};border-color:${tint(bg,LB_TK-.20)}` : '';
+      return `<button type="button" style="${stl}"${ed?'':' disabled'}`
+        + ` onclick="dlSetChan('${jsq(id)}','${jsq(on?'':o)}')">${esc(o)}</button>`;
+    }).join('') + `</div>`
+    + (now ? '' : `<div class="lb-psub-x">חובה לפני מעבר ל«נשלחה הצעת מחיר לחתימה».</div>`);
+}
+/* ⚠️ RPC ולא UPDATE ישיר, אף שהעמודה אינה מראה: שער הרשאה אחד,
+   ולידציה אחת, ושורת יומן — ואי אפשר לכתוב ערך שאינו ברשימה. */
+window.dlSetChan = async (id, ch)=>{
+  if(!window.canEdit('crm.deals')){ toast('אין הרשאת עריכה'); return; }
+  const { data, error } = await sb.schema('crm').rpc('deal_set_channel',
+    { p_deal: id, p_channel: ch || null });
+  if(error){ toast('השמירה נכשלה — '+error.message); return; }
+  const r = Array.isArray(data) ? data[0] : data;
+  const d = (DEALS||[]).find(x=>x.id===id);
+  if(d) d.send_channel = (r && r.channel) || null;
+  dlChanDraw(id); renderDeals();
+  toast(ch ? 'ערוץ השליחה נשמר ✓' : 'ערוץ השליחה נוקה ✓');
+};
 /* 🔴 נקודת החנק היחידה לשינוי שלב. כותבת **רק** את העמודות שהשלב
    מחייב, ומנקה את תת-הסטטוס שאינו שייך לו — אחרת ערך ישן נשאר
    בעמודה של יעד אחר וצץ מחדש כשחוזרים לשלב הקודם (המחלקה שנמדדה
@@ -20172,7 +20225,10 @@ const LEAD_CARD_FIELDS = [
 /* 🔴 תשעת שדות התשאול נספחים כאן ולא נכתבים ידנית — אחרת שאלה
    שתתווסף ל-LEAD_Q תיראה במסך ו**לא תישמר**, וזה כשל שקט. */
 ].concat(LEAD_Q.map(f=>['lb-'+f[0].replace(/_/g,'-'), f[0]]));
-let LEAD_SNAP = null, LB_MEET_LEAD = null, LB_FUP_LEAD = null;
+/* 🔴 6.158.0 — יעד הפגישה הוא {t,id} ולא מזהה ליד. ＋פגישה נפתח
+   עכשיו גם מכרטיס העסקה, ושתי הישויות עוברות ב-RPC שונה. סקלר עם
+   ניחוש סוג ("אם נמצא ב-DEALS") היה נשבר ביום שמזהים יתנגשו. */
+let LEAD_SNAP = null, LB_MEET_T = null, LB_FUP_LEAD = null;
 /* ברירת המחדל של הפולואפ (רומן, 28/08/2026: "למחר בשעה 09:00").
    ⚠️ קבוע אחד ולא שלושה ליטרלים — ה-value ב-HTML הוא הרביעי, והוא
       חייב להישאר מסונכרן איתו ידנית; יש שער בבנייה שסופר. */
@@ -21373,12 +21429,34 @@ window.leadFup = (id)=>{
   $('#lbFupModal').classList.remove('hidden');
   setTimeout(()=>{ try{ $('#fu-date').focus(); }catch(_e){} }, 30);
 };
+/* נקודת חנק אחת לפתיחת המודאל — שני עוטפים דקים מעליה. */
+function meetOpenFor(t, id, title){
+  LB_MEET_T = { t: t, id: id };
+  $('#lm-subj').value = 'פגישה — ' + (title || ''); $('#lm-err').textContent='';
+  $('#lm-date').value = todayStr();
+  mountCard('lbMeetModal', ()=>$('#lbMeetModal').classList.remove('hidden'));
+}
 window.leadMeet = (id)=>{
   const l=LEADS.find(x=>x.id===id); if(!l) return;
-  LB_MEET_LEAD=id;
-  $('#lm-subj').value='פגישה — '+(l.full_name||''); $('#lm-err').textContent='';
-  $('#lm-date').value=todayStr();
-  mountCard('lbMeetModal', ()=>$('#lbMeetModal').classList.remove('hidden'));
+  meetOpenFor('lead', id, l.full_name);
+};
+/* ＋פגישה מכרטיס העסקה. ⚠️ crm.deal_meeting_create ולא הגרסה של הליד:
+   זו סוגרת את כל משימות הליד ודוחפת אותו ל'תואמה פגישה' — שתי פעולות
+   שגויות על עסקה. */
+window.dealMeet = (id)=>{
+  const d=(DEALS||[]).find(x=>x.id===id); if(!d) return;
+  meetOpenFor('deal', id, d.name);
+};
+/* ＋משימה מכרטיס העסקה — מראה מדויקת של leadTask, כולל tklInit **אחרי**
+   mountCard (הוא מסתיר את כל המודלים ומצייר מחדש). */
+window.dealTask = (id)=>{
+  const d=(DEALS||[]).find(x=>x.id===id); if(!d) return;
+  $('#t-name').value=''; $('#t-err').textContent='';
+  $('#t-name').placeholder='משימה על '+(d.name||'');
+  $('#t-time').value='09:00';
+  $('#t-due').value=todayStr();
+  mountCard('taskModal', ()=>$('#taskModal').classList.remove('hidden'));
+  tklInit('t','deal:'+id);
 };
 /* ⚠️ ביטול סוגר **את החלונית בלבד**. `closeCards()` היה סוגר גם את
    כרטיס הליד שמאחור — באג (ב) של 6.119.0 בצורה שנייה. */
@@ -21415,7 +21493,7 @@ $('#fu-save').onclick = async ()=>{
 };
 $('#lm-cancel').onclick = ()=> closeCards();
 $('#lm-save').onclick = async ()=>{
-  const id=LB_MEET_LEAD; if(!id) return;
+  const tg=LB_MEET_T; if(!tg || !tg.id) return; const id=tg.id;
   const subj=$('#lm-subj').value.trim(), d=$('#lm-date').value;
   const miss=[!subj?'נושא':null, !d?'תאריך':null].filter(Boolean);
   if(miss.length){ $('#lm-err').textContent='חסרים שדות חובה: '+miss.join(' · ')+'.'; return; }
@@ -21429,18 +21507,24 @@ $('#lm-save').onclick = async ()=>{
      ⚠️ location נשלח מפורשות (גם null): ברירת המחדל במסד היא כתובת
         המשרד, ופגישת מכירה אצל לקוח עם "קומבה 32 חדרה" שאיש לא בחר
         היא המחלקה של ה-select שנופל לאפשרות הראשונה. */
-  const { data, error } = await sb.schema('crm').rpc('lead_meeting_create', {
-    p_lead: id, p_subject: subj, p_date: d,
+  /* ⚠️ שם הפרמטר שונה בין השתיים (p_lead מול p_deal) — ולכן המיזוג
+     נעשה בבניית האובייקט ולא בשם ה-RPC בלבד. */
+  const _fn = tg.t==='deal' ? 'deal_meeting_create' : 'lead_meeting_create';
+  const { data, error } = await sb.schema('crm').rpc(_fn, {
+    [tg.t==='deal' ? 'p_deal' : 'p_lead']: id, p_subject: subj, p_date: d,
     p_start: $('#lm-start').value||null, p_end: $('#lm-end').value||null,
     p_type: $('#lm-type').value||null, p_location: $('#lm-loc').value.trim()||null
   });
   if(error){ $('#lm-err').textContent='השמירה נכשלה — '+error.message; return; }
   const r = Array.isArray(data) ? data[0] : data;
-  $('#lbMeetModal').classList.add('hidden'); LB_MEET_LEAD=null;
+  $('#lbMeetModal').classList.add('hidden'); LB_MEET_T=null;
   toast(r && r.due_at
     ? 'נקבעה פגישה ✓ · נפתחה משימה ל' + new Date(r.due_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})
     : 'נקבעה פגישה ✓');
-  await loadLeads(); openLead(id);
+  await loadLeads();
+  /* ⚠️ הכרטיס שנפתח מחדש נגזר מהסוג. openLead קשיח היה פותח כרטיס ליד
+     על מזהה עסקה — וזה נראה כמו "לא קרה כלום". */
+  if(tg.t==='deal') openDeal(id); else openLead(id);
 };
 
 window.convertLead = async (id)=>{

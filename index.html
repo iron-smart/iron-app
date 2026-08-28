@@ -2154,11 +2154,38 @@ td.lb-today .lb-dt{ background-color:transparent; }
       דוחסת את כפתור "הוספה". */
 .lbu-add textarea{ flex:1; font-family:inherit; font-size:13px; line-height:1.45;
   resize:vertical; min-height:52px; }
-.lbu-list{ margin-top:10px; }
-.lbu-row{ display:flex; gap:10px; padding:7px 0; border-bottom:1px solid #f1f5f9; align-items:baseline; }
-.lbu-who{ font-weight:800; font-size:12.5px; color:#0f172a; white-space:nowrap; }
-.lbu-when{ font-size:11.5px; color:#94a3b8; white-space:nowrap; }
-.lbu-body{ font-size:13px; color:#334155; white-space:pre-wrap; overflow-wrap:anywhere; flex:1; }
+.lbu-list{ margin-top:10px; border-top:1px solid #e6edf6; }
+/* 🔴 6.150.0 — רומן: "שהתוויות ותאריך העדכון תמיד יהיה בעמודה מסודרת
+   ותמיד כל העדכונים יהיה מסודרים ברור וקו אחיד."
+   flex מיישר **בתוך** שורה ולא **בין** שורות: רוחב התגית משתנה משורה
+   לשורה, ולכן התאריך נחת בכל פעם במקום אחר. grid עם עמודות קבועות הוא
+   הכלי היחיד שמיישר בין שורות.
+   ⚠️ grid-column מפורש לכל מחלקה — התגית, ה-xref והכפתורים מותנים,
+      ובמיקום אוטומטי שורה חסרת תגית הייתה מסיטה את כל השאר שמאלה. */
+.lbu-row{ display:grid; grid-template-columns:116px 176px 92px minmax(0,1fr) auto;
+  gap:4px 12px; align-items:start; padding:9px 2px; line-height:1.5;
+  border-bottom:1px solid #e6edf6; }
+.lbu-row:last-child{ border-bottom:0; }
+.lbu-who{ grid-column:1; font-weight:800; font-size:12.5px; color:#0f172a;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.lbu-tagc{ grid-column:2; display:flex; align-items:center; gap:5px;
+  flex-wrap:wrap; min-width:0; }
+.lbu-tagc .lbu-src{ margin-inline-end:0; }
+.lbu-when{ grid-column:3; font-size:11.5px; color:#94a3b8; white-space:nowrap; }
+.lbu-body{ grid-column:4; font-size:13px; color:#334155; white-space:pre-wrap;
+  overflow-wrap:anywhere; }
+/* ⚠️ אותה עמודה של .lbu-body: lbUpdEdit מחליף את הגוף ב-outerHTML. */
+.lbu-edit{ grid-column:4; }
+.lbu-act{ grid-column:5; }
+/* מתחת ל-760 חמש עמודות אינן נכנסות למודאל — המטא נערמת והגוף מלא. */
+@media(max-width:760px){
+  .lbu-row{ grid-template-columns:minmax(0,1fr) auto; gap:2px 8px; }
+  .lbu-who{ grid-column:1; grid-row:1; }
+  .lbu-tagc{ grid-column:1; grid-row:2; }
+  .lbu-when{ grid-column:1; grid-row:3; }
+  .lbu-body,.lbu-edit{ grid-column:1 / -1; grid-row:4; }
+  .lbu-act{ grid-column:2; grid-row:1; }
+}
 .lb-del{ width:auto; font-size:13px; font-weight:700; padding:9px 16px; border:1px solid #f0bcbc; background-color:#fbe0e0; color:#a92f2f; border-radius:10px; cursor:pointer; font-family:inherit; }
 .lb-del:hover{ background-color:#f7cfcf; }
 .lb-links{ padding:8px 2px; font-size:13px; }
@@ -2251,11 +2278,11 @@ td.lb-today .lb-dt{ background-color:transparent; }
 /* שבב "מקושר ל־" בתוך הכרטיס — אותה שפה של הטבלה, בלי כפילות כלל */
 #tkSheet .tk-lnk{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 /* ---- עדכון ניתן לעריכה (6.108.0) ---- */
-.lbu-act{ margin-inline-start:auto; display:flex; gap:5px; white-space:nowrap; }
+.lbu-act{ display:flex; gap:5px; white-space:nowrap; }
 .lbu-act button{ font-size:11px; padding:1px 7px; border-radius:7px; border:1px solid var(--line);
   background-color:#fff; color:#64748b; cursor:pointer; font-family:inherit; }
 .lbu-act button:hover{ background-color:#f4f7fb; }
-.lbu-edit{ display:flex; gap:6px; align-items:flex-start; flex:1; }
+.lbu-edit{ display:flex; gap:6px; align-items:flex-start; }
 .lbu-edit textarea{ flex:1; font-size:13px; }
 /* ---- כרטיס הליד: יישור ודחיסה (6.114.0) ----
    רומן: "ליישר את כל השדות. שים לב שם מלא ברח למטה" + "יותר דחוס".
@@ -2396,7 +2423,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.149.0</div>
+      <div class="ver">גרסה 6.150.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2525,7 +2552,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.149.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.150.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -8979,7 +9006,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'tkboard-2026-08-28a';
+const BUILD_ID = 'updcols-2026-08-28a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -19739,7 +19766,9 @@ $('#a-save').onclick = async ()=>{
 const LEAD_CARD_FIELDS = [
   ['lb-name','full_name'], ['lb-phone','phone'], ['lb-email','email'],
   ['lb-company','company'], ['lb-position','position'], ['lb-city','city'],
-  ['lb-addr','address'], ['lb-ctype','customer_type'], ['lb-source','source'],
+  /* 6.150.0 — 'lb-addr' ירד: השדה הוסר מהכרטיס (רומן). הנתון נשאר
+     במסד; מה שירד הוא התצוגה והעריכה. */
+  ['lb-ctype','customer_type'], ['lb-source','source'],
   ['lb-wacat','__wacat']
 ];
 let LEAD_SNAP = null, LB_MEET_LEAD = null, LB_FUP_LEAD = null;
@@ -19895,7 +19924,9 @@ function lbLocalApply(id, o){
       t.status='הושלם'; t.closed_at=nowIso; t.updated_at=nowIso; } });
   }
   if(o.newTask && o.newTask.id && !(TASKS||[]).some(t=>t.id===o.newTask.id)) TASKS.push(o.newTask);
-  renderLeads(); renderTasks(); renderToday(); renderStats();
+  /* 6.150.0 — דרך crmRepaint: שינוי שלב נוגע גם בבורד העסקאות ובכרטיס
+     הלקוח, וארבע הקריאות המפורשות דילגו עליהם. */
+  crmRepaint();
   openLead(id);
 }
 window.lbPipeSet = async (id, st, sub)=>{
@@ -20104,15 +20135,14 @@ window.openLead = (id)=>{
       <div><label>שם חברה</label><input id="lb-company" value="${esc(l.company||'')}"></div>
       <div><label>תפקיד</label><input id="lb-position" value="${esc(l.position||'')}"></div>
       <div><label>עיר</label><input id="lb-city" value="${esc(l.city||'')}"></div>
-      <div class="span2"><label>כתובת</label><input id="lb-addr" value="${esc(l.address||'')}"></div>
       <div><label>סוג לקוח</label>${selHtml('lb-ctype',LEAD_TYPES,l.customer_type,true)}</div>
       <div><label>מקור הגעה</label>${selHtml('lb-source',LEAD_SOURCES,l.source,true)}</div>
       <div><label>לשלוח קטלוג בוואטסאפ?</label>${selHtml('lb-wacat',['כן','לא'],l.send_whatsapp_catalog===true?'כן':(l.send_whatsapp_catalog===false?'לא':null),true)}</div>
       <div><label>בעלים ושותפים</label><div id="lb-ownbox">${lbOwnerCellName(l)}</div></div>
-      ${utm?`<div class="span2"><label>קמפיין (UTM)</label>${roIn(utm)}</div>`:''}
-      ${cust?`<div class="span2"><label>לקוח מקושר${l.customer_id?'':' <span class="note" style="font-weight:400">(הוצלב לפי טלפון)</span>'}</label><div class="lb-links"><a href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(cust.id)}'))">${esc(cust.name||'כרטיס הלקוח')} ↗</a></div></div>`:''}
       <div><label>נוצר</label>${roIn(fmtDT(l.created_at),{ltr:1})}</div>
       <div><label>עודכן לאחרונה</label>${roIn(fmtDT(l.updated_at),{ltr:1})}</div>
+      ${utm?`<div class="span2"><label>קמפיין (UTM)</label>${roIn(utm)}</div>`:''}
+      ${cust?`<div class="span2"><label>לקוח מקושר${l.customer_id?'':' <span class="note" style="font-weight:400">(הוצלב לפי טלפון)</span>'}</label><div class="lb-links"><a href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(cust.id)}'))">${esc(cust.name||'כרטיס הלקוח')} ↗</a></div></div>`:''}
 
       <div class="form-sep">משימות ופגישות</div>
       <div class="span4">${lbTmBlock(myTasks, myMeets,
@@ -20124,7 +20154,6 @@ window.openLead = (id)=>{
     <div id="convResult"></div>
     </div>
     <div id="lb-pn-upd" class="hidden">
-      <div class="note" style="margin-bottom:6px">כל עדכון נשמר בשם הכותב ובשעת הכתיבה, ומוצג בכל כרטיסי השרשרת עם תגית מקור. עריכה ומחיקה — לכותב בלבד.</div>
       ${window.canEdit('crm')?`<div class="lbu-add"><textarea id="lb-upd" rows="2" placeholder="מה קרה עם הליד הזה?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${jsq(l.id)}','lead','lb')">הוספה</button></div>`:''}
       <div class="lbu-bar" id="lb-updbar"></div>
       <div class="lbu-list" id="lb-updlist"><div class="note">טוען…</div></div>
@@ -20674,7 +20703,8 @@ async function lbLoadUpdates(id, type, pfx){
         + `<button type="button" onclick="lbUpdEdit('${jsq(a.id)}','${jsq(id)}','${jsq(_t)}','${jsq(p)}')">עריכה</button>`
         + `<button type="button" onclick="lbUpdDel('${jsq(a.id)}','${jsq(id)}','${jsq(_t)}','${jsq(p)}')">מחיקה</button></span>` : '';
     return `<div class="lbu-row${sys?' lbu-sys':''}" data-upd="${esc(a.id)}">`
-      + `<span class="lbu-who">${esc(who)}</span>${tag}${xr}`
+      + `<span class="lbu-who">${esc(who)}</span>`
+      + `<span class="lbu-tagc">${tag}${xr}</span>`
       + `<span class="lbu-when">${esc(when)}</span>`
       + `<span class="lbu-body">${esc(a.body||a.kind||'')}</span>${act}</div>`;
   }).join('');

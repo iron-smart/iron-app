@@ -2139,6 +2139,15 @@ td.lb-today .lb-dt{ background-color:transparent; }
    ⚠️ הרצועה יושבת מחוץ ל-.form-grid — ראו ח.3 בדוקסטרינג. */
 .lb-pipe{ margin:0 0 12px; }
 .lb-piperow{ display:flex; align-items:stretch; gap:0; flex-wrap:wrap; }
+/* שורת "נשמר תחת ציר אחר" (6.147.0) — ייחוס, לא בחירה: בלי רקע צבעוני
+   ובלי מסגרת של צ'יפ, כדי שלא תיראה כמו אפשרות שנבחרה. */
+.lb-psub-x{ margin-top:6px; font-size:12px; color:#64748b; }
+/* שתי העמודות שנוספו בסוף (6.147.0). ⚠️ תקרה לקמפיין: הערכים באורך
+   50+ תווים והטבלה גלילה אופקית — בלי max-width הוא דוחף את השאר. */
+#leads-list td.lb-cdt{ white-space:nowrap; font-size:12px; color:#475569; }
+#leads-list td.lb-utm{ max-width:210px; overflow:hidden; text-overflow:ellipsis;
+  white-space:nowrap; font-size:12px; color:#475569; }
+.lb-psub-x b{ color:#0f172a; font-weight:700; }
 .lb-pseg{ flex:1 1 0; min-width:88px; display:flex; align-items:center; justify-content:center;
   text-align:center; padding:7px 14px; border:1px solid var(--line); background-color:#f1f5f9;
   color:#64748b; font-size:12px; font-weight:700; line-height:1.2; font-family:inherit;
@@ -2309,7 +2318,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.146.0</div>
+      <div class="ver">גרסה 6.147.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2438,7 +2447,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.146.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.147.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2999,7 +3008,11 @@ const LEAD_SRC_COLORS  = {'קשרים אישיים':'#00c875','Paycall - שיח�
 const LB_COLS = [
   ['#','rownum'], ['שם מלא','srt'], ['לקוח','srt'], ['שם חברה','srt'], ['בעלים ליד','srt'],
   ['טלפון',''], ['ת.משימה הבאה','srt'], ['מקור הגעה','srt'],
-  ['סטטוס','srt'], ['סטטוס רלוונטי',''], ['סטטוס לסירוב',''], ['סטטוס לא רלוונטי',''], ['סוג לקוח','srt']
+  ['סטטוס','srt'], ['סטטוס רלוונטי',''], ['סטטוס לסירוב',''], ['סטטוס לא רלוונטי',''], ['סוג לקוח','srt'],
+  /* 6.147.0 — נוספו **בסוף** (בקשת רומן, ובסדר הזה). ⚠️ בסוף ולא באמצע:
+     הבוררים הדביקים ב-CSS ממוספרים (nth-child(-n+4) לעמודות הקפואות,
+     n+11..13 לתת-הסטטוס), ועמודה שנדחפת באמצע מזיזה אותם בשקט. */
+  ['נוצר','srt'], ['קמפיין (UTM)','srt']
 ];
 /* ---- הצלבת הליד מול לקוח קיים ----
    רומן: "יש לידים שמשאירים פניה אבל הם כבר לקוחות במערכת והאיש מכירות
@@ -3118,6 +3131,14 @@ function inkOn(bg){
   return _contrast(c,[255,255,255]) >= _contrast(c,[16,34,47]) ? '#fff' : '#10222f';
 }
 /* אותו צבע, מוכהה עד שהוא קריא על רקע לבן (יחס 4.5:1) */
+/* 🔴 6.147.0 — צבע טקסט על רקע **מלא**, להבדיל מ-onWhite שנועדה לרקע
+   לבן/פסטל. בוחרת לבן או כמעט-שחור לפי מי מהם מנוגד יותר לרקע.
+   ⚠️ אל תחליף בה את onWhite באתרים שמזווגים עם tint() — שם הרקע פסטל
+      והתשובה הנכונה היא דווקא גוון כהה של אותו צבע. */
+function onSolid(bg){
+  const c = _rgbOf(bg); if(!c) return '#ffffff';
+  return _contrast(c,[255,255,255]) >= _contrast(c,[15,23,42]) ? '#ffffff' : '#0f172a';
+}
 function onWhite(bg){
   let c=_rgbOf(bg); if(!c) return '#475569';
   let g=0;
@@ -8872,7 +8893,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'custcard-2026-08-27a';
+const BUILD_ID = 'subxcol-2026-08-28a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -14928,7 +14949,6 @@ window.openTask = (id)=>{
   const t = (TASKS||[]).find(x=>x.id===id); if(!t) return;
   const x = ctxOf(t.linked_type, t.linked_id);
   const editable = window.canEdit('crm.tasks');
-  const fmtDT = v=> v?new Date(v).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
   const ent = x.lead || x.deal || x.cust || null;
   const entName = (x.lead && x.lead.full_name) || (x.deal && x.deal.name) || (x.cust && x.cust.name) || '';
   const entPhone = (x.lead && x.lead.phone) || (x.cust && x.cust.phone) || '';
@@ -17153,6 +17173,10 @@ function phoneKey(s){ return phoneNorm(s) || phoneTail(s); }
 window.phoneNorm = phoneNorm; window.phoneTail = phoneTail; window.phoneKey = phoneKey;
 const ordStClass = s => s==='הושלם' ? 'st-rel' : (['בוטל','מבוטלת'].includes(s) ? 'st-no' : (s==='הזמנה חדשה' ? 'st-new' : 'st-def'));
 const fmtD = d => d ? new Date(d+'T00:00').toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '';
+/* 🔴 6.147.0 — הוצא מגוף שני הכרטיסים, שהחזיקו אותו כ-const מקומי בגוף
+   זהה בייט-בייט. הצרכן השלישי (עמודת "נוצר" בטבלת הלידים) הוא שהצדיק
+   את החילוץ — שני מימושים לאותו עיצוב הם המחלקה של FIN מול FINM_BY. */
+const fmtDT = v => v ? new Date(v).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
 function custOrders(c){
   if(!c) return [];
   const pid = String(c.priority_id||'').trim(), ph = phoneKey(c.phone);
@@ -18766,7 +18790,7 @@ function dlPipeDraw(id){
   const segs = STAGES.map((st,i)=>{
     const on = st===cur;
     const done = (ci < 0) ? on : (i <= ci);
-    const stl = done ? `background-color:${curBg};border-color:${curBg};color:${onWhite(curBg)}`
+    const stl = done ? `background-color:${curBg};border-color:${curBg};color:${onSolid(curBg)}`
                      : `background-color:#fff;border-color:#e2e8f0;color:#94a3b8`;
     return `<button type="button" class="lb-pseg${on?' on':''}" style="${stl}"`
       + `${ed?'':' disabled'} title="${esc(st)}"`
@@ -19219,6 +19243,8 @@ function lbRow(l, i, nt, nm, ntid){
       ${lbSubCell(l,'סירוב',SUB_REFUSAL,'reject_reason')}
       ${lbSubCell(l,'לא רלוונטי',SUB_IRRELEVANT,'irrelevant_reason')}
       <td>${ieSel('lead',l.id,'customer_type',LEAD_TYPES,l.customer_type,{allowEmpty:true,mdColors:LEAD_TYPE_COLORS,mdK:LB_TK})}</td>
+      <td dir="ltr" data-sort="${esc(l.created_at||'')}" class="lb-cdt">${esc(fmtDT(l.created_at))}</td>
+      <td class="lb-utm" title="${esc(l.utm_campaign||'')}">${esc(l.utm_campaign||'')||'<span class="lb-na">·</span>'}</td>
     </tr>`;
 }
 /* data-gs="own" — 🔴 בלעדיו מנוע המיון הגנרי משתלט: gsSort זורק כל שורה עם
@@ -19259,7 +19285,10 @@ const LB_KEY = {
   3:l=>l.company||'',   4:l=>((LOWN_BY[lbOwnerOf(l)]||{}).name)||'',
   6:(l,nt)=>(nt&&nt[l.id])||'',
   7:l=>l.source||'',    8:l=>String(LEAD_STATUSES.indexOf(l.status)),
-  12:l=>l.customer_type||''
+  12:l=>l.customer_type||'',
+  /* ⚠️ `created_at` ממוין על המחרוזת הגולמית של ISO ולא על התצוגה:
+     '05.07.25' ו-'18.08.26' אינם משתווים נכון כמחרוזות. */
+  13:l=>l.created_at||'', 14:l=>l.utm_campaign||''
 };
 /* 🔴 6.113.0 — מפתח 6 ("תאריך משימה הבאה") היה חסר, בעוד LB_COLS מסמן
    את העמודה כ-'srt'. lbOrder נפל בשקט ל-lbSort, החץ בכותרת התהפך
@@ -19544,7 +19573,10 @@ const LEAD_CARD_FIELDS = [
 let LEAD_SNAP = null, LB_MEET_LEAD = null, LB_FUP_LEAD = null;
 /* תת-הסטטוס: עמודה אחת לכל סטטוס-אב. בורר יחיד בכרטיס מצייר את הרשימה של
    הסטטוס הנוכחי; ההמרה לעמודה הנכונה קורית בשמירה בלבד. */
-function lbSubCol(st){ return st==='רלוונטי'?'sub_status' : st==='סירוב'?'reject_reason' : st==='לא רלוונטי'?'irrelevant_reason' : null; }
+/* שלושת צירי תת-הסטטוס כרשימה שאפשר לעבור עליה. lbSubCol מחזירה את
+   העמודה של ציר בודד; זו נדרשת כדי לשאול "האם ציר **אחר** מחזיק ערך". */
+const LB_SUB_AXES = [['רלוונטי','sub_status'],['סירוב','reject_reason'],['לא רלוונטי','irrelevant_reason']];
+function lbSubCol(st){ const a = LB_SUB_AXES.find(x=>x[0]===st); return a ? a[1] : null; }
 function lbSubOpts(st){ return st==='רלוונטי'?SUB_RELEVANT : st==='סירוב'?SUB_REFUSAL : st==='לא רלוונטי'?SUB_IRRELEVANT : null; }
 /* אותה נוסחת פסטל של ieSel, לבורר שנבנה ידנית בכרטיס */
 function lbSubStyle(st, val){
@@ -19615,7 +19647,7 @@ function lbPipeDraw(id){
   const segs = LEAD_STATUSES.map((st,i)=>{
     const on = st===cur;
     const done = (ci < 0) ? on : (i <= ci);
-    const stl = done ? `background-color:${curBg};border-color:${curBg};color:${onWhite(curBg)}`
+    const stl = done ? `background-color:${curBg};border-color:${curBg};color:${onSolid(curBg)}`
                      : `background-color:#fff;border-color:#e2e8f0;color:#94a3b8`;
     return `<button type="button" class="lb-pseg${on?' on':''}" style="${stl}"`
       + `${ed?'':' disabled'} title="${esc(st)}"`
@@ -19634,7 +19666,30 @@ function lbPipeDraw(id){
       return `<button type="button" style="${stl}"${ed?'':' disabled'}`
         + ` onclick="lbPipeSet('${jsq(id)}','${jsq(cur)}','${jsq(on?'':o)}')">${esc(o)}</button>`;
     }).join('') + `</div>` : '';
-  box.innerHTML = `<div class="lb-piperow">${segs}</div>${subs}`;
+  /* 🔴 6.147.0 — רומן, 28/08/2026: "הליד לא רלוונטי הוא לא מציג את
+     השמור בכל הפייפליין." הערך **כן** שמור — בעמודה של ציר אחר.
+     נמדד על הליד שבצילום: status='לא רלוונטי', irrelevant_reason ריק,
+     ו-reject_reason='אין מענה מספר פעמים'. ההיקף: **434 לידים מתוך
+     3,162**, מהם 383 מתוך 1,091 ב'לא רלוונטי'. 14 עודכנו ביומיים
+     האחרונים ⇒ מצב חי, לא שריד.
+     ⚠️ **תצוגה בלבד ולא תיקון נתונים:** המקור הוא מאנדיי, שמחזיקה שלוש
+        עמודות תת-סטטוס נפרדות, ו-monday-align-status ממפה אותן אחת-לאחת.
+        כתיבה מתקנת אצלנו הייתה נדרסת ביישור של 09:00 למחרת — מחלקת
+        "כתיבה לעמודת מראה" של crm.leads.owner_id.
+     ⚠️ **ואינו מדליק ציר שני**: הצ'יפים נשארים של הסטטוס הנוכחי בלבד,
+        וזה נאמר כשורת ייחוס — הדפוס של "(הוצלב לפי טלפון)". כך הכרעת
+        19/08 ("להשאיר את הערכים החורגים סמויים") לא מתהפכת: הערך אינו
+        הופך לבחירה, הוא רק מפסיק להיות בלתי נראה.
+     🔴 והטבלה **כבר** מציגה אותו — יש בה שלוש עמודות נפרדות. כלומר עד
+        כאן שני המסכים היו חלוקים על אותו ליד. */
+  const xtra = (()=>{
+    if(now) return '';
+    const other = LB_SUB_AXES.find(a => a[0]!==cur && l[a[1]]);
+    if(!other) return '';
+    return `<div class="lb-psub-x">נשמר תחת «${esc(lbSubLabel(other[0]))}»: `
+         + `<b>${esc(l[other[1]])}</b></div>`;
+  })();
+  box.innerHTML = `<div class="lb-piperow">${segs}</div>${subs}${xtra}`;
 }
 /* 🔴 נקודת החנק היחידה לשינוי שלב מהרצועה.
    ⚠️ **אינה נוגעת ב-#lb-status ולא ב-#lb-sub.** הצבת .value בקוד אינה
@@ -19833,7 +19888,6 @@ function lbHistBlock(tasks, meets){
 window.openLead = (id)=>{
   const l = LEADS.find(x=>x.id===id); if(!l) return;
   const editable = window.canEdit('crm.leads');
-  const fmtDT = v=> v?new Date(v).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
   const utm=[l.utm_campaign,l.utm_source,l.utm_medium,l.utm_term].filter(Boolean).join(' · ');
   const _lm=lbMatch(l), _lcid=lbCustId(l,_lm);
   const cust=_lcid?((CUSTS||[]).find(x=>x.id===_lcid)||(_lm&&!_lm.amb?{id:_lcid,name:_lm.name}:null)):null;

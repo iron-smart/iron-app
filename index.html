@@ -2335,6 +2335,12 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   box-shadow:0 12px 34px rgba(6,24,39,.22); padding:11px 12px; }
 .lb-pop h4{ margin:0 0 8px; font-size:13.5px; }
 .lb-popbd{ position:fixed; inset:0; z-index:59; background-color:transparent; }
+/* 🔴 6.153.0 — מודאל שנפתח **מעל** כרטיס פתוח. 50 הוא .modal ו-60
+   הוא ה-popover של הבעלים; 70 נמצא מעל שניהם. מחלקה נפרדת ולא
+   z-index על המזהה: שלושה מנגנונים גלובליים מזהים אותה בשמה. */
+.modal-over{ z-index:70; }
+.fu-hint{ display:inline-block; margin-inline-start:6px; padding:1px 7px; border-radius:9px;
+          background:#eef4ff; color:var(--navy); font-size:11.5px; font-weight:700; }
 /* ---- תצוגת נמחקו (6.115.0) ---- */
 .lb-delrow{ display:flex; align-items:center; gap:10px; padding:8px 10px;
   border:1px solid var(--line); border-radius:9px; margin-bottom:6px; background-color:#fff; }
@@ -2429,7 +2435,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.152.0</div>
+      <div class="ver">גרסה 6.153.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2558,7 +2564,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.152.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.153.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2910,12 +2916,13 @@ tr.lb-on td{ background-color:#eef5fd !important; }
 
 <!-- מודל פגישה חדשה מכרטיס ליד (6.93.0) -->
 <!-- פולואפ (6.125.0, סעיף 6) — איש המכירות בוחר מתי לחזור לליד -->
-<div class="modal hidden" id="lbFupModal">
+<div class="modal modal-over hidden" id="lbFupModal">
   <div class="sheet">
     <h3>פולואפ</h3>
-    <div class="note" style="margin-bottom:10px">המשימה הפתוחה תיסגר, ותיפתח משימה חדשה במועד שתבחר. הליד יעבור ל«רלוונטי · פולואפ».</div>
+    <div class="note" style="margin-bottom:10px">המשימה הפתוחה תיסגר, ותיפתח משימה חדשה במועד שתבחר. הליד יעבור ל«רלוונטי · פולואפ».<span class="fu-hint">אפשר לשנות את המועד למתי שנוח לך</span></div>
     <div class="field"><label>תאריך<span class="req">*</span></label><input id="fu-date" type="date"></div>
-    <div class="field"><label>שעה</label><input id="fu-time" type="time" value="10:00"></div>
+    <div class="field"><label>שעה</label><input id="fu-time" type="time" value="09:00"></div>
+    <div class="field"><label>מה קרה בשיחה?</label><textarea id="fu-upd" rows="3" placeholder="העדכון ייכנס ליומן העדכונים של הליד"></textarea></div>
     <div class="actions">
       <button class="btn green" id="fu-save">קביעת פולואפ</button>
       <button class="ghost" id="fu-cancel">ביטול</button>
@@ -2924,6 +2931,20 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   </div>
 </div>
 
+<!-- 🔴 6.153.0 — מודאל העדכון החובה (רומן: "חייב לעדכן את הכרטיס").
+     נפתח **מעל** הכרטיס ולא במקומו, ולכן .modal-over ולא mountCard. -->
+<div class="modal modal-over hidden" id="lbUpdReqModal">
+  <div class="sheet">
+    <h3>מה קרה עם הליד?</h3>
+    <div class="note" id="lur-note" style="margin-bottom:10px"></div>
+    <div class="field"><textarea id="lur-body" rows="4" placeholder="לדוגמה: דיברתי איתו, הוא מחפש מתחם בהרצליה, נחזור אליו בשבוע הבא"></textarea></div>
+    <div class="actions">
+      <button class="btn green" id="lur-save">שמירת העדכון</button>
+      <button class="ghost" id="lur-skip">דילוג</button>
+    </div>
+    <div class="err" id="lur-err"></div>
+  </div>
+</div>
 <div class="modal hidden" id="lbMeetModal">
   <div class="sheet">
     <h3>פגישה חדשה</h3>
@@ -3957,7 +3978,13 @@ function runCardHooks(k){
 const A11Y_FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
 let A11Y_RETURN = null;
 function _openModal(){ return Array.prototype.slice.call(document.querySelectorAll('.modal')).filter(m=>!m.classList.contains('hidden'))[0] || null; }
-document.addEventListener('click', e=>{ if(e.target.classList && e.target.classList.contains('modal')) closeCards(); });
+/* 🔴 6.153.0 — לחיצה על הרקע של מודאל-על סוגרת **אותו בלבד**. בלי
+   השער הזה closeCards() היה מוחק גם את הכרטיס שמאחור. */
+document.addEventListener('click', e=>{
+  if(!(e.target.classList && e.target.classList.contains('modal'))) return;
+  if(e.target.classList.contains('modal-over')){ e.target.classList.add('hidden'); return; }
+  closeCards();
+});
 /* 🔴 6.152.0 — סגירת בוררי הסינון הרב-בחירתיים בלחיצה בחוץ (רומן).
    חמישה סרגלים בונים <details class="lf-multi"> ומציבים d.open=true
    אחרי כל סימון, **ואין בקובץ שום מנגנון שסוגר אותם** — הבורר נשאר
@@ -3981,6 +4008,12 @@ document.addEventListener('keydown', function(e){
        יורים. עד 6.118.0 זה לא קרה רק מפני שה-popover נפתח מהטבלה
        בלבד, שם אין מודאל פתוח — כלומר ההתנגשות ישבה בקוד ולא נורתה. */
     if(document.getElementById('lb-pop')) return;
+    /* 🔴 6.153.0 — מודאל-על נסגר ראשון. _openModal מחזיר את **הראשון
+       בסדר ה-DOM**, וזה #leadModal — כלומר בלי השער הזה Esc היה סוגר
+       את הכרטיס ומשאיר את המודאל העליון תלוי באוויר. אותה התנגשות של
+       6.119.0 ו-6.130.0, בפעם השלישית. */
+    const _ov = document.querySelector('.modal.modal-over:not(.hidden)');
+    if(_ov){ e.preventDefault(); _ov.classList.add('hidden'); return; }
     /* 🔴 6.130.0 — שער אח לבורר הישות המקושרת, אותה התנגשות של 6.119.0
        בצורה שנייה. תפריט .ac-menu גלוי בתוך מודל פתוח הוא מצב שבו Esc
        אמור לסגור **את התפריט בלבד**; בלי השער _openModal() אמת,
@@ -4373,7 +4406,13 @@ function ieSel(kind,id,field,options,val,opts){
     const _kb=(opts.mdK==null? .85 : opts.mdK), _kd=(opts.mdK==null? .68 : Math.max(0,opts.mdK-.20));
     style=`background:${tint(_bg,_kb)};color:${onWhite(_bg)};border:1px solid ${tint(_bg,_kd)}`; } /* 6.24.4 — שבב פסטל אחיד · 6.107.0 — mdK אופציונלי */
   else if(STATUS_PILL[val]) cls+=` pilled ${STATUS_PILL[val]}`;
-  return `<select class="${cls}" style="${style}" data-ie="${esc(kind+'|'+id+'|'+field)}" onclick="event.stopPropagation()" onchange="ieSave(this)">${list.map(([v,l])=>`<option value="${esc(v)}" ${String(val||'')===v?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
+  /* 🔴 6.153.0 — opts.on מחליף את ieSave. הצורך: תת-הסטטוס בטבלה חייב
+     לעבור ב-lbPipeSet ולא ב-UPDATE ישיר, ושכפול הליטרל הזה ל-lbSubCell
+     היה מייצר עותק שני של הצבעים שייפרד ביום שמישהו ישנה אותם.
+     ⚠️ וכש-on קיים, data-ie **אינו נפלט**: תכונה שאיש אינו קורא היא
+        הזמנה לטעות אצל מי שיראה אותה כראיה ש-ieSave מטפל. */
+  const _ie = opts.on ? '' : ` data-ie="${esc(kind+'|'+id+'|'+field)}"`;
+  return `<select class="${cls}" style="${style}"${_ie} onclick="event.stopPropagation()" onchange="${opts.on || 'ieSave(this)'}">${list.map(([v,l])=>`<option value="${esc(v)}" ${String(val||'')===v?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
 }
 function ieDate(kind,id,field,val){
   if(!canIE(kind,field)) return val?`<b>${fmtD(val)}</b>`:'<span class="note-preview">—</span>';
@@ -9027,7 +9066,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'crmfix-2026-08-28a';
+const BUILD_ID = 'leadflow-2026-08-28a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -19514,9 +19553,17 @@ function lbStatusCell(l){
     + LEAD_STATUSES.map(s=>`<option ${s===l.status?'selected':''}>${esc(s)}</option>`).join('')
     + `</select>`;
 }
+/* 🔴 6.153.0 — תת-הסטטוס בטבלה עבר ל-lbPipeSet, בדיוק כמו שהסטטוס
+   עבר ב-6.125.0. עד כאן הוא היה ieSel→ieSave→UPDATE ישיר: **בלי סגירת
+   משימות, בלי איפוס שתי עמודות תת-הסטטוס האחרות, ובלי שורת יומן.**
+   כלומר סימון "פולואפ" מהטבלה לא יצר משימה, וסימון "סירוב" לא סגר
+   כלום — וכל מחזור החיים היה דקורטיבי אצל מי שעובד מהטבלה.
+   ⚠️ הסטטוס נשלח מפורשות (`l.status`) ולא נקרא בתוך lbPipeSet, כי
+      lbPipeSet משווה מול המצב הנוכחי ומדלג כשאין שינוי. */
 function lbSubCell(l, st, opts, col){
   if(l.status!==st) return `<td class="lb-na" title="נפתח לעריכה כשהליד בסטטוס «${esc(st)}»">·</td>`;
-  return `<td>${ieSel('lead',l.id,col,opts,l[col],{allowEmpty:true,mdColors:SUB_COLORS[st],mdK:LB_TK})}</td>`;
+  const _on = `lbPipeSet('${jsq(l.id)}','${jsq(l.status||'')}',this.value)`;
+  return `<td>${ieSel('lead',l.id,col,opts,l[col],{allowEmpty:true,mdColors:SUB_COLORS[st],mdK:LB_TK,on:_on})}</td>`;
 }
 function lbRow(l, i, nt, nm, ntid){
   const t=nt[l.id], tid=ntid&&ntid[l.id], m=lbMatch(l);
@@ -19919,6 +19966,10 @@ const LEAD_CARD_FIELDS = [
   ['lb-wacat','__wacat']
 ];
 let LEAD_SNAP = null, LB_MEET_LEAD = null, LB_FUP_LEAD = null;
+/* ברירת המחדל של הפולואפ (רומן, 28/08/2026: "למחר בשעה 09:00").
+   ⚠️ קבוע אחד ולא שלושה ליטרלים — ה-value ב-HTML הוא הרביעי, והוא
+      חייב להישאר מסונכרן איתו ידנית; יש שער בבנייה שסופר. */
+const FU_DEFAULT_TIME = '09:00';
 /* תת-הסטטוס: עמודה אחת לכל סטטוס-אב. בורר יחיד בכרטיס מצייר את הרשימה של
    הסטטוס הנוכחי; ההמרה לעמודה הנכונה קורית בשמירה בלבד. */
 /* שלושת צירי תת-הסטטוס כרשימה שאפשר לעבור עליה. lbSubCol מחזירה את
@@ -20092,7 +20143,13 @@ window.lbPipeSet = async (id, st, sub)=>{
      בקצב 3ש/יום/יום, ושער בעלים פעיל. update רגיל היה עוקף את כולם. */
   const CH = ['ליד חדש','ללא מענה','ללא מענה2','ללא מענה3'];
   const nextOf = x => x==='ללא מענה3' ? 'סירוב' : (CH.indexOf(x)>=0 ? CH[CH.indexOf(x)+1] : null);
-  if(!sub && nextOf(cur)===st){ await lbNoAnswer(id, cur); return; }
+  if(!sub && nextOf(cur)===st){ await lbNoAnswer(id, cur); lbUpdRequire(id, st, ''); return; }
+  /* 🔴 רומן: "אין צורך שהוא ילחץ פולואפ ואז ייצור ידנית משימה." היעד
+     `רלוונטי·פולואפ` פותח את חלונית המועד במקום לקרוא ל-lead_set_status,
+     ו-crm.lead_followup עושה את הכול בטרנזקציה אחת — כולל הצבת הסטטוס.
+     ⚠️ ולכן **אין כאן קריאה ל-lead_set_status לפניה**: שתיהן היו כותבות
+        את אותו סטטוס, והראשונה הייתה סוגרת את המשימות פעמיים. */
+  if(st==='רלוונטי' && sub==='פולואפ'){ leadFup(id); return; }
   if(CH.indexOf(cur)>=0 && (CH.indexOf(st)>=0 || st==='סירוב') && nextOf(cur)!==st){
     if(!confirm('זו קפיצה לא סדורה בשרשרת "אין מענה".\nלא תישלח הודעה ללקוח, והמשימה הפתוחה לא תסתובב.\nלהמשיך?')) return;
   }
@@ -20114,6 +20171,54 @@ window.lbPipeSet = async (id, st, sub)=>{
   }
   toast('השלב עודכן ✓');
   lbLocalApply(id, { status: st, sub: sub || null, closedTasks: (r.tasks_closed||0) > 0 });
+  lbUpdRequire(id, st, sub || '');
+};
+/* ═══ מודאל העדכון החובה (6.153.0, רומן) ═══════════════════════════
+   חמישה מעברים בלבד. `רלוונטי·הצעת מחיר` — התת-סטטוס הגדול ביותר,
+   614 לידים — **אינו** ברשימה, וזו בחירה מפורשת של רומן ולא השמטה.
+   ⚠️ ו-`רלוונטי·פולואפ` אינו כאן כי תיבת העדכון שלו יושבת בתוך חלונית
+      הפולואפ עצמה — אחרת המשתמש היה מקבל שני מודאלים על פעולה אחת. */
+function lbUpdNeeded(st, sub){
+  if(st==='סירוב' || st==='לא רלוונטי') return true;
+  return st==='רלוונטי' && (sub==='הפניה לאתר' || sub==='תואמה פגישה');
+}
+let LB_UPD_REQ = null;
+window.lbUpdRequire = (id, st, sub)=>{
+  if(!lbUpdNeeded(st, sub||'')) return;
+  LB_UPD_REQ = id;
+  const l = (LEADS||[]).find(x=>x.id===id);
+  $('#lur-note').textContent = 'הליד «' + ((l && l.full_name) || '—') + '» עבר ל«'
+    + st + (sub ? ' · ' + sub : '') + '». מה קרה?';
+  $('#lur-body').value = ''; $('#lur-err').textContent = '';
+  $('#lbUpdReqModal').classList.remove('hidden');
+  setTimeout(()=>{ try{ $('#lur-body').focus(); }catch(_e){} }, 30);
+};
+/* נקודת חנק אחת לשני הכפתורים — אחרת רענון הלשונית ייכתב פעמיים
+   וייפרד ביום שאחד מהם ישתנה. */
+async function lurWrite(kind, body){
+  const id = LB_UPD_REQ; if(!id) return false;
+  const { error } = await sb.schema('crm').from('activities').insert({
+    actor_id: ME.id, linked_type:'lead', linked_id: id, kind: kind, body: body });
+  if(error){ $('#lur-err').textContent = 'השמירה נכשלה — ' + error.message; return false; }
+  $('#lbUpdReqModal').classList.add('hidden'); LB_UPD_REQ = null;
+  /* אם לשונית העדכונים כבר נטענה בכרטיס הפתוח — לרענן אותה, אחרת
+     המשתמש כתב עדכון ואינו רואה אותו. */
+  const pn = document.getElementById('lb-pn-upd');
+  if(pn && pn.dataset.loaded && typeof window.updRetry === 'function') window.updRetry('lb');
+  return true;
+}
+$('#lur-save').onclick = async ()=>{
+  const b = ($('#lur-body').value || '').trim();
+  if(!b){ $('#lur-err').textContent = 'אין מה לשמור — כתוב עדכון או לחץ דילוג.'; return; }
+  if(await lurWrite('עדכון', b)) toast('העדכון נשמר ✓');
+};
+/* 🔴 הדילוג **נרשם**. בלי זה "העדכון נדרש" הוא הבטחה בלי מדידה, ואי
+   אפשר לדעת אם היא מתקיימת. kind נפרד כדי שלא יתערבב בעדכונים
+   אמיתיים ברשימה. */
+$('#lur-skip').onclick = async ()=>{
+  const l = (LEADS||[]).find(x=>x.id===LB_UPD_REQ);
+  await lurWrite('דילוג עדכון', 'דילג על כתיבת עדכון במעבר ל«'
+    + ((l && l.status) || '—') + '»');
 };
 function lbSnapshot(id){
   const snap={ __id:id };
@@ -21003,8 +21108,12 @@ window.leadFup = (id)=>{
   const d = new Date(Date.now() + 864e5);
   const p = n => String(n).padStart(2,'0');
   $('#fu-date').value = d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
-  $('#fu-time').value = '10:00'; $('#fu-err').textContent = '';
-  mountCard('lbFupModal', ()=>$('#lbFupModal').classList.remove('hidden'));
+  $('#fu-time').value = FU_DEFAULT_TIME; $('#fu-err').textContent = '';
+  $('#fu-upd').value = '';
+  /* 🔴 classList ולא mountCard: mountCard מסתיר את **כל** המודלים,
+     ולכן פתיחה מהרצועה בתוך כרטיס פתוח הייתה מעלימה את הכרטיס. */
+  $('#lbFupModal').classList.remove('hidden');
+  setTimeout(()=>{ try{ $('#fu-date').focus(); }catch(_e){} }, 30);
 };
 window.leadMeet = (id)=>{
   const l=LEADS.find(x=>x.id===id); if(!l) return;
@@ -21013,10 +21122,14 @@ window.leadMeet = (id)=>{
   $('#lm-date').value=todayStr();
   mountCard('lbMeetModal', ()=>$('#lbMeetModal').classList.remove('hidden'));
 };
-$('#fu-cancel').onclick = ()=> closeCards();
+/* ⚠️ ביטול סוגר **את החלונית בלבד**. `closeCards()` היה סוגר גם את
+   כרטיס הליד שמאחור — באג (ב) של 6.119.0 בצורה שנייה. */
+$('#fu-cancel').onclick = ()=>{ $('#lbFupModal').classList.add('hidden'); LB_FUP_LEAD = null; };
 $('#fu-save').onclick = async ()=>{
   const id = LB_FUP_LEAD; if(!id) return;
-  const d = $('#fu-date').value, t = $('#fu-time').value || '10:00';
+  /* ⚠️ הנפילה אחורה היא **המקום השלישי** של ברירת המחדל, ומי שמעדכן
+     רק את ה-value ואת leadFup משאיר כאן 10:00 בשקט. */
+  const d = $('#fu-date').value, t = $('#fu-time').value || FU_DEFAULT_TIME;
   if(!d){ $('#fu-err').textContent = 'חסרים שדות חובה: תאריך.'; return; }
   const due = new Date(d + 'T' + t);
   if(isNaN(due.getTime())){ $('#fu-err').textContent = 'תאריך או שעה לא תקינים.'; return; }
@@ -21024,9 +21137,23 @@ $('#fu-save').onclick = async ()=>{
     { p_lead: id, p_due: due.toISOString() });
   if(error){ $('#fu-err').textContent = 'הפעולה נכשלה — ' + error.message; return; }
   const r = Array.isArray(data) ? data[0] : data;
+  /* 🔴 העדכון נשמר **אחרי** שהפולואפ הצליח: שורת יומן על פעולה שלא
+     קרתה היא בדיוק "רשומה שנראית כמו ראיה". וכתיבתה נבדקת ל-error —
+     בטופס ליד חדש היא נעשית בלי בדיקה, וטקסט נעלם בשקט. */
+  const _u = ($('#fu-upd').value || '').trim();
+  if(_u){
+    const { error: ue } = await sb.schema('crm').from('activities').insert({
+      actor_id: ME.id, linked_type:'lead', linked_id: id, kind:'עדכון', body: _u });
+    if(ue) toast('הפולואפ נקבע, אבל שמירת העדכון נכשלה — ' + ue.message);
+  }
   $('#lbFupModal').classList.add('hidden'); LB_FUP_LEAD = null;
   toast(r && r.task_name ? 'נקבע פולואפ ✓ · ' + r.task_name : 'נקבע פולואפ ✓');
-  await loadLeads(); openLead(id);
+  /* ⚠️ lbLocalApply ולא loadLeads: 26 שאילתות ו-~12MB על פעולה שנוגעת
+     בליד אחד. הוא גם מצייר מחדש את הכרטיס, ולכן העדכון החדש נטען. */
+  lbLocalApply(id, { status:'רלוונטי', sub:'פולואפ', closedTasks:true,
+    newTask: (r && r.task_id) ? { id:r.task_id, name:r.task_name, status:'חדש',
+      due_at:(r.due_at||due.toISOString()), linked_type:'lead', linked_id:id,
+      category:'פולואפ' } : null });
 };
 $('#lm-cancel').onclick = ()=> closeCards();
 $('#lm-save').onclick = async ()=>{

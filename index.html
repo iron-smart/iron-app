@@ -2429,7 +2429,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.151.0</div>
+      <div class="ver">גרסה 6.152.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2558,7 +2558,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.151.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.152.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3958,6 +3958,18 @@ const A11Y_FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),sel
 let A11Y_RETURN = null;
 function _openModal(){ return Array.prototype.slice.call(document.querySelectorAll('.modal')).filter(m=>!m.classList.contains('hidden'))[0] || null; }
 document.addEventListener('click', e=>{ if(e.target.classList && e.target.classList.contains('modal')) closeCards(); });
+/* 🔴 6.152.0 — סגירת בוררי הסינון הרב-בחירתיים בלחיצה בחוץ (רומן).
+   חמישה סרגלים בונים <details class="lf-multi"> ומציבים d.open=true
+   אחרי כל סימון, **ואין בקובץ שום מנגנון שסוגר אותם** — הבורר נשאר
+   פתוח עד לחיצה חוזרת על ה-summary, וגם זו שבירה כי ה-DOM הוחלף.
+   ⚠️ ההכלה היא **פר-אלמנט** (d.contains) ולא בורר גלובלי: הצורה
+      `!ev.target.closest('.lf-multi')` אינה תלויה ב-d, ולכן קליק
+      בתוך בורר אחד היה משאיר את כולם פתוחים — ולמסך הלוגיסטיקה יש
+      שניים (#logi-filters ו-#logi-filters-calls). */
+document.addEventListener('click', ev=>{
+  const open = document.querySelectorAll('details.lf-multi[open]');
+  for(let i=0;i<open.length;i++){ if(!open[i].contains(ev.target)) open[i].open = false; }
+});
 /* ===== ניווט מקלדת (תיקון ממצא 14) ===== */
 document.addEventListener('keydown', function(e){
   /* Esc — סגירת כרטיס פתוח, אחרת סגירת התפריט הצף במובייל */
@@ -3977,6 +3989,9 @@ document.addEventListener('keydown', function(e){
     const _acm = _m && _m.querySelector('.ac-menu:not([hidden])');
     if(_acm){ e.preventDefault(); _acm.hidden=true; _acm.innerHTML=''; return; }
     if(_m){ e.preventDefault(); closeCards(); return; }
+    /* 6.152.0 — בורר סינון פתוח נסגר לפני שנוגעים בתפריט הצד. */
+    const _lf = document.querySelector('details.lf-multi[open]');
+    if(_lf){ e.preventDefault(); _lf.open = false; return; }
     if(window.innerWidth < 800 && !document.getElementById('side').classList.contains('closed')){ setSide(false); }
     return;
   }
@@ -9012,7 +9027,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'crmauto-2026-08-28a';
+const BUILD_ID = 'crmfix-2026-08-28a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -14642,13 +14657,7 @@ window.ctabGo = (pfx, k)=>{
   });
   /* 🔴 טעינה עצלה בכניסה הראשונה ללשונית. זה בדיוק מה שהאקורדיון קנה
      לפני 6.135.0, וירידתו הייתה מחזירה את העלות לכל פתיחת כרטיס. */
-  if(k==='upd'){
-    const pn = document.getElementById(pfx+'-pn-upd');
-    if(pn && !pn.dataset.loaded && pn.dataset.uid){
-      pn.dataset.loaded = '1';
-      lbLoadUpdates(pn.dataset.uid, pn.dataset.utype, pfx);
-    }
-  }
+  if(k==='upd') updArm(pfx);
 };
 /* דריכת לשונית העדכונים: מזהה ויעד נשמרים על הפאנל, והטעינה נדחית.
    ⚠️ מתאפס בכל פתיחת כרטיס — dataset.loaded יורד, אחרת כרטיס שני של
@@ -20726,27 +20735,93 @@ function updCtx(id, type, pfx){
     UPD_CTX = { id:id, type:type, pfx:pfx, sys:false, only:false, chain:chainOf(type, id) };
   return UPD_CTX;
 }
-window.updSys  = on=>{ if(UPD_CTX){ UPD_CTX.sys  = !!on; lbLoadUpdates(UPD_CTX.id, UPD_CTX.type, UPD_CTX.pfx); } };
-window.updOnly = on=>{ if(UPD_CTX){ UPD_CTX.only = !!on; lbLoadUpdates(UPD_CTX.id, UPD_CTX.type, UPD_CTX.pfx); } };
+/* 🔴 6.152.0 — נקודת חנק אחת לכל טעינת עדכונים.
+   שלושה קוראים (כניסה ללשונית · updSys · updOnly), וכולם עוברים כאן.
+   ⚠️ **`.catch()` ולא try/catch**: lbLoadUpdates אסינכרונית ונקראת בלי
+      await, ולכן try/catch סינכרוני באתר הקריאה אינו תופס את הדחייה.
+   ⚠️ וה-`delete dataset.loaded` הוא כל ההבדל בין "נכשל" ל"תקוע":
+      בלעדיו לחיצה חוזרת על הלשונית לא עושה **כלום**, והיציאה היחידה
+      היא סגירה ופתיחה של הכרטיס. */
+function updErrHtml(p, msg){
+  return `<div class="note">טעינת העדכונים נכשלה — ${esc(msg)} <button type="button" class="chip" onclick="updRetry('${jsq(p)}')">נסה שוב</button></div>`;
+}
+window.updRun = (id, type, pfx)=>{
+  const p = pfx || 'lb';
+  return lbLoadUpdates(id, type, p).catch(e=>{
+    const pn = document.getElementById(p+'-pn-upd'); if(pn) delete pn.dataset.loaded;
+    const box = document.getElementById(p+'-updlist');
+    if(box) box.innerHTML = updErrHtml(p, (e && e.message) || 'שגיאה לא צפויה');
+  });
+};
+/* דריכה + טעינה. ⚠️ `uid` חסר אינו דילוג שקט: הוא נראה בדיוק כמו
+   תקיעה — "טוען…" לנצח **בלי אפילו בקשת רשת**. */
+function updArm(pfx){
+  const p = pfx || 'lb';
+  const pn = document.getElementById(p+'-pn-upd'); if(!pn) return;
+  const box = document.getElementById(p+'-updlist');
+  if(!pn.dataset.uid){
+    if(box) box.innerHTML = updErrHtml(p, 'הכרטיס לא נדרך — נסה לסגור ולפתוח אותו');
+    return;
+  }
+  if(pn.dataset.loaded) return;
+  pn.dataset.loaded = '1';
+  updRun(pn.dataset.uid, pn.dataset.utype, p);
+}
+window.updRetry = p=>{
+  const pn = document.getElementById((p||'lb')+'-pn-upd'); if(pn) delete pn.dataset.loaded;
+  const box = document.getElementById((p||'lb')+'-updlist');
+  if(box) box.innerHTML = '<div class="note">טוען…</div>';
+  updArm(p);
+};
+window.updSys  = on=>{ if(UPD_CTX){ UPD_CTX.sys  = !!on; updRun(UPD_CTX.id, UPD_CTX.type, UPD_CTX.pfx); } };
+window.updOnly = on=>{ if(UPD_CTX){ UPD_CTX.only = !!on; updRun(UPD_CTX.id, UPD_CTX.type, UPD_CTX.pfx); } };
 /* ⚠️ מנות של 80 מזהים. שרשרת של לקוח מונה עד 45 עסקאות + הלידים
    המוצלבים + כל המשימות שלהם, ו-supabase-js שולח select כ-GET: in.(...)
    של מאות uuid הוא כ-11KB ב-query string — הטווח שבו proxy מחזיר 414.
    הכשל היה מוצג כ"טעינת העדכונים נכשלה", **ורק אצל הלקוחות הגדולים**. */
+const UPD_TIMEOUT_MS = 12000;
+/* 🔴 6.152.0 — שלושה שינויים, וכולם נגזרים ממדידה ולא מהשערה:
+   (א) **מקבילי במקום סדרתי.** הרווח קטן (שתי מנות במקרה הגרוע), אבל
+       הצורה נכונה ואינה מצטברת כשהשרשרת תגדל.
+   (ב) **תקרת זמן.** נמדד שהשאילתה עצמה היא 1.9ms — כלומר בקשה שלא
+       חוזרת אינה איטית אלא תקועה, ובלי AbortController היא "טוען…"
+       לנצח. הדפוס והשער `call.abortSignal` מועתקים מ-gsCtrl הקיים.
+   (ג) **מנה שנכשלה אינה מוחקת את מה שכבר נאסף.** הקוד הישן עשה
+       `if(r.error) return` בתוך הלולאה, כלומר כשל במנה השנייה מחק את
+       200 השורות של הראשונה. */
 async function updFetch(ids, withSys){
-  const out = [];
-  for(let i=0; i<ids.length; i+=UPD_CHUNK){
-    let q = sb.schema('crm').from('activities')
-      .select('id,at,body,actor_id,kind,linked_type,linked_id')
-      .in('linked_id', ids.slice(i, i+UPD_CHUNK));
-    if(!withSys) q = q.eq('kind','עדכון');
-    const r = await q.order('at',{ascending:false}).limit(UPD_LIMIT);
-    if(r.error) return { error:r.error };
-    for(const row of (r.data||[])) out.push(row);
+  const parts = [];
+  for(let i=0; i<ids.length; i+=UPD_CHUNK) parts.push(ids.slice(i, i+UPD_CHUNK));
+  const ac  = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  const tmr = ac ? setTimeout(()=>{ ac.abort(); }, UPD_TIMEOUT_MS) : null;
+  let rs;
+  try{
+    rs = await Promise.all(parts.map(part=>{
+      let q = sb.schema('crm').from('activities')
+        .select('id,at,body,actor_id,kind,linked_type,linked_id')
+        .in('linked_id', part);
+      if(!withSys) q = q.eq('kind','עדכון');
+      q = q.order('at',{ascending:false}).limit(UPD_LIMIT);
+      if(ac && q.abortSignal) q = q.abortSignal(ac.signal);
+      /* ⚠️ ביטול **דוחה** ולא מחזיר {error} — בלי ההמרה כאן Promise.all
+         היה נדחה והשגיאה נבלעת ב-unhandled rejection. */
+      return Promise.resolve(q).then(r=>r, e=>({ error:e }));
+    }));
+  } finally { if(tmr) clearTimeout(tmr); }
+  const out = []; let err = null;
+  for(const r of rs){
+    if(r && r.error){ err = r.error; continue; }
+    for(const row of ((r && r.data) || [])) out.push(row);
   }
   /* המיון והחיתוך על הסט **הממוזג** — אחרת UPD_LIMIT משנה משמעות בשקט
      מ"פר-מנה" ל"לכל השרשרת". */
   out.sort((a,b)=> String(b.at).localeCompare(String(a.at)));
-  return { data: out.slice(0, UPD_LIMIT) };
+  const timedOut = !!(err && (err.name === 'AbortError' || /abort/i.test(String(err.message||''))));
+  /* שגיאה מוחזרת רק כשאין **כלום** להציג; אחרת partial, והמשתמש רואה
+     את מה שיש ויודע שחסר. */
+  return { data: out.slice(0, UPD_LIMIT),
+           error: (out.length ? null : (err || null)),
+           partial: !!(err && out.length), timedOut: timedOut };
 }
 /* יומן העדכונים — הוספה.
    ⚠️ actor_id נשלח מהלקוח **אבל אינו נסמך עליו**: policy רסטריקטיבית
@@ -20762,7 +20837,7 @@ window.lbAddUpdate = async (id, type, pfx)=>{
     actor_id: ME.id, linked_type:_t, linked_id: id, kind:'עדכון', body: body });
   if(error){ toast('שמירת העדכון נכשלה — '+error.message); return; }
   el.value=''; toast('העדכון נשמר ✓');
-  lbLoadUpdates(id, _t, p);
+  updRun(id, _t, p);
 };
 /* 6.108.0 — עריכה ומחיקה של עדכון. השרת אוכף; כאן רק ה-UI.
    ⚠️ שתי ה-policies נוספו ב-19/08/2026 יחד עם
@@ -20775,7 +20850,7 @@ window.lbUpdEdit = (actId, id, type, pfx)=>{
   const q0=jsq(actId), q1=jsq(id), q2=jsq(type||'lead'), q3=jsq(pfx||'lb');
   body.outerHTML = `<span class="lbu-edit"><textarea rows="2">${esc(cur)}</textarea>`
     + `<button type="button" class="chip" onclick="lbUpdSave('${q0}','${q1}','${q2}','${q3}')">שמירה</button>`
-    + `<button type="button" class="chip" onclick="lbLoadUpdates('${q1}','${q2}','${q3}')">ביטול</button></span>`;
+    + `<button type="button" class="chip" onclick="updRun('${q1}','${q2}','${q3}')">ביטול</button></span>`;
 };
 window.lbUpdSave = async (actId, id, type, pfx)=>{
   const row = document.querySelector(`.lbu-row[data-upd="${CSS.escape(actId)}"]`); if(!row) return;
@@ -20784,13 +20859,13 @@ window.lbUpdSave = async (actId, id, type, pfx)=>{
   if(!body){ toast('עדכון ריק — למחיקה יש כפתור נפרד'); return; }
   const { error } = await sb.schema('crm').from('activities').update({ body }).eq('id', actId);
   if(error){ toast('העריכה נכשלה — '+error.message); return; }
-  toast('העדכון נערך ✓'); lbLoadUpdates(id, type, pfx);
+  toast('העדכון נערך ✓'); updRun(id, type, pfx);
 };
 window.lbUpdDel = async (actId, id, type, pfx)=>{
   if(!confirm('למחוק את העדכון? הפעולה אינה הפיכה.')) return;
   const { error } = await sb.schema('crm').from('activities').delete().eq('id', actId);
   if(error){ toast('המחיקה נכשלה — '+error.message); return; }
-  toast('העדכון נמחק ✓'); lbLoadUpdates(id, type, pfx);
+  toast('העדכון נמחק ✓'); updRun(id, type, pfx);
 };
 async function lbLoadUpdates(id, type, pfx){
   const p = pfx || 'lb';
@@ -20807,9 +20882,19 @@ async function lbLoadUpdates(id, type, pfx){
       ((ctx.chain.ids.length>1)
         ? `<button type="button" class="chip ${ctx.only?'active':''}" title="כבוי: מוצגים העדכונים של כל השרשרת — הפנייה, העסקאות, המשימות והלקוח המקושרים. דלוק: רק מה שנכתב על הכרטיס הזה עצמו." onclick="updOnly(${!ctx.only})">רק על הכרטיס הזה</button>` : '')
     + `<button type="button" class="chip ${ctx.sys?'active':''}" title="מוסיף שורות שנכתבו אוטומטית — שינוי סטטוס, שינוי שלב, וסנכרון ממאנדיי. כבוי כברירת מחדל: היישור היומי מייצר כ-215 שורות ביום והן מציפות את העדכונים שאנשים כתבו." onclick="updSys(${!ctx.sys})">גם שינויי מערכת</button>`;
-  const { data, error } = await updFetch(ids, ctx.sys);
-  if(error){ box.innerHTML='<div class="note">טעינת העדכונים נכשלה.</div>'; return; }
+  const res = await updFetch(ids, ctx.sys);
+  const { data, error } = res;
+  if(error){
+    /* ⚠️ הודעה שמבחינה בין "נכשל" ל"ארך יותר מדי" — שתי סיבות שונות
+       לחלוטין, ובלי ההבחנה אי אפשר לדעת אם לנסות שוב או לדווח. */
+    box.innerHTML = updErrHtml(p, res.timedOut
+      ? ('הטעינה ארכה יותר מ-' + Math.round(UPD_TIMEOUT_MS/1000) + ' שניות')
+      : ((error && error.message) || 'סיבה לא ידועה'));
+    return;
+  }
   if(!data || !data.length){ box.innerHTML='<div class="note">אין עדכונים עדיין.</div>'; return; }
+  /* חותמת זמן במצב הסופי: אם התקיעה תחזור, נדע אם הבקשה בכלל חזרה. */
+  const _stamp = new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   box.innerHTML = data.map(a=>{
     const sys = a.kind !== 'עדכון';
     /* 🔴 מי כתב. `actor_id` ריק אינו מקרה קצה נדיר: מ-23/08/2026

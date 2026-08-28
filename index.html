@@ -2168,28 +2168,39 @@ td.lb-today .lb-dt{ background-color:transparent; }
    הכלי היחיד שמיישר בין שורות.
    ⚠️ grid-column מפורש לכל מחלקה — התגית, ה-xref והכפתורים מותנים,
       ובמיקום אוטומטי שורה חסרת תגית הייתה מסיטה את כל השאר שמאלה. */
-.lbu-row{ display:grid; grid-template-columns:116px 176px 92px minmax(0,1fr) auto;
-  gap:4px 12px; align-items:start; padding:9px 2px; line-height:1.5;
+/* 🔴 6.154.0 — המטא נערמת בעמודה אחת (רומן: "מתחת למשתמש שעדכן יהיה
+   התאריך ושעה ומתחת לזה התגית … ויהיה יותר מקום להערות עצמן").
+   🟢 **התבנית כבר קיימת** — זה בדיוק מה שה-media query מתחת עושה מאז
+      6.150.0, ואין להמציא מבנה חדש.
+   🟢 ומה שמאפשר את זה הוא מחיקת שם הישות מהתגית: ב-6.150.0 נדרשה
+      עמודה של 176px כי היא נשאה "משימה: יש להתקשר ל…". */
+.lbu-row{ display:grid; grid-template-columns:150px minmax(0,1fr) auto;
+  gap:2px 12px; align-items:start; padding:9px 2px; line-height:1.5;
   border-bottom:1px solid #e6edf6; }
 .lbu-row:last-child{ border-bottom:0; }
-.lbu-who{ grid-column:1; font-weight:800; font-size:12.5px; color:#0f172a;
+.lbu-who{ grid-column:1; grid-row:1; font-weight:800; font-size:12.5px; color:#0f172a;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.lbu-tagc{ grid-column:2; display:flex; align-items:center; gap:5px;
+.lbu-when{ grid-column:1; grid-row:2; font-size:11.5px; color:#94a3b8; white-space:nowrap; }
+.lbu-tagc{ grid-column:1; grid-row:3; display:flex; align-items:center; gap:5px;
   flex-wrap:wrap; min-width:0; }
 .lbu-tagc .lbu-src{ margin-inline-end:0; }
-.lbu-when{ grid-column:3; font-size:11.5px; color:#94a3b8; white-space:nowrap; }
-.lbu-body{ grid-column:4; font-size:13px; color:#334155; white-space:pre-wrap;
-  overflow-wrap:anywhere; }
-/* ⚠️ אותה עמודה של .lbu-body: lbUpdEdit מחליף את הגוף ב-outerHTML. */
-.lbu-edit{ grid-column:4; }
-.lbu-act{ grid-column:5; }
+/* ⚠️ הגוף פורש על שלוש שורות המטא — אחרת הוא נצמד לראש ומשאיר חור. */
+.lbu-body{ grid-column:2; grid-row:1 / span 3; font-size:13px; color:#334155;
+  white-space:pre-wrap; overflow-wrap:anywhere; }
+/* ⚠️ אותה עמודה **ואותן שורות** של .lbu-body: lbUpdEdit מחליף את הגוף
+   ב-outerHTML, ובלי זה עורך העדכון קופץ עמודה. */
+.lbu-edit{ grid-column:2; grid-row:1 / span 3; }
+.lbu-act{ grid-column:3; grid-row:1; }
+/* התגית לחיצה — מצביע ומשוב ריחוף, אחרת אי אפשר לדעת שהיא קישור. */
+.lbu-src.lbu-go{ cursor:pointer; }
+.lbu-src.lbu-go:hover{ filter:brightness(.94); text-decoration:underline; }
 /* מתחת ל-760 חמש עמודות אינן נכנסות למודאל — המטא נערמת והגוף מלא. */
 @media(max-width:760px){
   .lbu-row{ grid-template-columns:minmax(0,1fr) auto; gap:2px 8px; }
   .lbu-who{ grid-column:1; grid-row:1; }
   .lbu-tagc{ grid-column:1; grid-row:2; }
   .lbu-when{ grid-column:1; grid-row:3; }
-  .lbu-body,.lbu-edit{ grid-column:1 / -1; grid-row:4; }
+  .lbu-body,.lbu-edit{ grid-column:1 / -1; grid-row:4 / auto; }
   .lbu-act{ grid-column:2; grid-row:1; }
 }
 .lb-del{ width:auto; font-size:13px; font-weight:700; padding:9px 16px; border:1px solid #f0bcbc; background-color:#fbe0e0; color:#a92f2f; border-radius:10px; cursor:pointer; font-family:inherit; }
@@ -2211,6 +2222,12 @@ td.lb-today .lb-dt{ background-color:transparent; }
    רומן: "תעצב יפה יותר ותעשה מימין לשמאל. תעצב ככה שמובן שניתן ללחוץ".
    ⚠️ סדר הקריאה RTL: נקודה · **שם** · שבב · מועד · חץ. השם ראשון מימין
       כי הוא התוכן; המועד נדחף שמאלה כי הוא מטא-דאטה. */
+/* 🔴 6.154.0 — עוטף לשורת המשימה. הקלט חייב לצאת **מחוץ** לכפתור:
+   <input> בתוך <button> אינו HTML תקין, והכפתור נשאר <button> כי זו
+   בקשה מפורשת של רומן מ-6.148.0 ("שמובן שניתן ללחוץ"). */
+.lb-tmw{ display:flex; align-items:center; gap:6px; margin-bottom:6px; }
+.lb-tmw > .lb-tmi{ margin-bottom:0; }
+.lb-tmw > .lb-dt{ flex:0 0 auto; }
 .lb-tmi{ display:flex; align-items:center; gap:9px; width:100%;
   background:#fff; border:1px solid var(--line); border-radius:10px;
   padding:8px 11px; margin-bottom:6px; cursor:pointer; text-align:start;
@@ -2435,7 +2452,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.153.0</div>
+      <div class="ver">גרסה 6.154.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2564,7 +2581,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.153.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.154.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9066,7 +9083,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'leadflow-2026-08-28a';
+const BUILD_ID = 'leadui-2026-08-28a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -14596,7 +14613,12 @@ window.lbTaskDue = async (el)=>{
   const { error } = await sb.schema('crm').from('tasks').update({ due_at: iso }).eq('id', id);
   if(error){ toast('שגיאה בשמירה: '+error.message); renderLeads(); return; }
   const t = (TASKS||[]).find(x=>x.id===id); if(t) t.due_at = iso;
-  toast('נשמר ✓'); renderLeads(); renderTasks(); renderToday();
+  toast('נשמר ✓');
+  /* 🔴 6.154.0 — הבלוק בכרטיס נצבע מחדש **במקומו**. עד כאן צוירה
+     הטבלה שמאחור בלבד, ולכן תווית "המשימה הבאה" נשארה על הפריט הישן
+     כשהמיון השתנה — והמשתמש עורך בדיוק מהכרטיס. */
+  if(t && t.linked_type==='lead') lbTmRedraw(t.linked_id);
+  renderLeads(); renderTasks(); renderToday();
 };
 function capped(list, rowFn, emptyMsg){
   if(!list.length) return `<div class="empty">${emptyMsg}</div>`;
@@ -14735,6 +14757,14 @@ window.ctabKeys = (ev, pfx)=>{
       בין הטבלאות, ולכן זוג (type,id) מיותר; linked_type עדיין נשלף — הוא
       מזין את התגית. */
 const UPD_KIND_LBL = { lead:'ליד', deal:'עסקה', customer:'לקוח', task:'משימה', meeting:'פגישה', payment:'תשלום' };
+/* 🔴 6.154.0 — בורר סוגים ולא openLead קשיח. ל-meeting ול-payment
+   **אין פותח כרטיס**, ולכן הם נשארים תגית לא-לחיצה במקום קישור מת. */
+const UPD_GO = { lead:'openLead', deal:'openDeal', customer:'openCust', task:'openTask' };
+window.lbuGo = (type, id)=>{
+  const fn = UPD_GO[type]; if(!fn || !id) return;
+  const f = window[fn]; if(typeof f !== 'function') return;
+  goCard(()=>f(id));
+};
 function chainOf(type, id){
   const nodes = [], seen = new Set();
   const add = (t, i, nm, xref)=>{
@@ -20266,6 +20296,25 @@ const tmDtM = v => v ? esc(new Date(v+'T00:00').toLocaleDateString('he-IL',{day:
    ⚠️ ופגישות עברו מ-meetStClass (פסטל שטוח בלי מסגרת) ל-mdPill עם
       MSTATUS_COLOR — עד כה היו **שתי שפות ויזואליות באותה רשימה**.
    ⚠️ בלי תקרה: ההיסטוריה עברה ללשונית, ומה שנשאר הוא הפתוח בלבד. */
+/* 🔴 6.154.0 — שלושת כפתורי הפעולה בנקודת חנק אחת. שני צרכנים:
+   openLead והציור מחדש אחרי עריכת מועד. בלי זה הציור מחדש היה מאבד
+   אותם, או משכפל את הביטוי שבונה אותם — ואז הם ייפרדו. */
+function lbTmActs(id){
+  return `${window.canEdit('crm.tasks')?`<button type="button" class="chip" onclick="leadTask('${jsq(id)}')">＋ משימה</button>`:''}`
+       + `${window.canEdit('crm.meets')?`<button type="button" class="chip" onclick="leadMeet('${jsq(id)}')">＋ פגישה</button>`:''}`
+       + `${window.canEdit('crm.leads')?`<button type="button" class="chip" onclick="leadFup('${jsq(id)}')">↻ פולואפ</button>`:''}`;
+}
+/* ציור מחדש **במקומו** של בלוק המשימות והפגישות בכרטיס הליד.
+   ⚠️ ולא openLead: mountCard מאפס scrollTop=0, והמשתמש נמצא בתחתית
+      הכרטיס בדיוק כשהוא עורך מועד. */
+window.lbTmRedraw = (leadId)=>{
+  const box = document.getElementById('lb-tmblock');
+  if(!box || !leadId || box.dataset.lead !== leadId) return false;
+  const _t = (TASKS||[]).filter(t=>t.linked_type==='lead' && t.linked_id===leadId);
+  const _m = (MEETS||[]).filter(m=>m.linked_type==='lead' && m.linked_id===leadId);
+  box.innerHTML = lbTmBlock(_t.filter(tmOpen), _m.filter(m=>!mDone(m)), lbTmActs(leadId));
+  return true;
+};
 function lbTmBlock(tasks, meets, addBtns){
   tasks = tasks || []; meets = meets || [];
   let h = '';
@@ -20281,13 +20330,24 @@ function lbTmBlock(tasks, meets, addBtns){
       if(!B) return -1;
       return A.localeCompare(B);
     });
+    /* 🔴 6.154.0 — רומן: "אם אני לוחץ על השעה של המשימה הבאה יהיה
+       אפשר לערוך גם מפה". הקלט **מחוץ** לכפתור (HTML תקין), עם
+       stopPropagation אחרת כל קליק עליו פותח את כרטיס המשימה. */
+    const _canT = window.canEdit('crm.tasks');
     h += ts.map(function(t,i){
       const d = lbDueMark(t.due_at);
-      return '<button type="button" class="lb-tmi" onclick="goCard(()=>openTask(\''+jsq(t.id)+'\'))">'
+      const dt = _canT
+        ? '<input type="datetime-local" class="inline-edit lb-dt lb-tmdt" title="עריכת מועד המשימה"'
+          + ' data-task="'+jsq(t.id)+'" value="'+esc(lbDtLocal(t.due_at))+'"'
+          + ' onclick="event.stopPropagation()" onchange="lbTaskDue(this)">'
+        : '<span class="k'+(d.cls?' '+d.cls:'')+'">'+d.ico+tmDtT(t.due_at)+'</span>';
+      return '<div class="lb-tmw">'
+        + '<button type="button" class="lb-tmi" onclick="goCard(()=>openTask(\''+jsq(t.id)+'\'))">'
         + '<span class="lb-tmi-ic">&#9679;</span>'
         + '<span class="v">'+esc(t.name||'')+' '+mdPill(t.status,TASK_ST_COLORS,LB_TK)+'</span>'
-        + '<span class="k'+(d.cls?' '+d.cls:'')+'">'+((i===0 && t.due_at)?'המשימה הבאה':'משימה')+' · '+d.ico+tmDtT(t.due_at)+'</span>'
-        + '<span class="lb-tmi-go">&#8599;</span></button>';
+        + '<span class="k'+(d.cls?' '+d.cls:'')+'">'+((i===0 && t.due_at)?'המשימה הבאה':'משימה')+(_canT?'':' · ')+'</span>'
+        + '<span class="lb-tmi-go">&#8599;</span></button>'
+        + dt + '</div>';
     }).join('');
   }
   if(meets.length){
@@ -20397,10 +20457,7 @@ window.openLead = (id)=>{
       ${cust?`<div class="span2"><label>לקוח מקושר${l.customer_id?'':' <span class="note" style="font-weight:400">(הוצלב לפי טלפון)</span>'}</label><div class="lb-links"><a href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(cust.id)}'))">${esc(cust.name||'כרטיס הלקוח')} ↗</a></div></div>`:''}
 
       <div class="form-sep">משימות ופגישות</div>
-      <div class="span4">${lbTmBlock(myTasks, myMeets,
-        `${window.canEdit('crm.tasks')?`<button type="button" class="chip" onclick="leadTask('${jsq(l.id)}')">＋ משימה</button>`:''}`
-      + `${window.canEdit('crm.meets')?`<button type="button" class="chip" onclick="leadMeet('${jsq(l.id)}')">＋ פגישה</button>`:''}`
-      + `${editable?`<button type="button" class="chip" onclick="leadFup('${jsq(l.id)}')">↻ פולואפ</button>`:''}`)}</div>
+      <div class="span4" id="lb-tmblock" data-lead="${esc(l.id)}">${lbTmBlock(myTasks, myMeets, lbTmActs(l.id))}</div>
     </div>
     <div id="convResultSlot"></div>
     <div id="convResult"></div>
@@ -20495,8 +20552,12 @@ window.lbClaim = async (id)=>{
 const LB_DEF_KEY = 'iron_leads_default_v1';
 /* ⚠️ status הוא **מערך**, ושאר המפתחות סקלרים. כל קורא חייב `(LB_F.status||[])`
    — גם ברירת המחדל השמורה מ-6.97.0 אינה מכילה אותו כלל. */
-let LB_F = { status:[], owner:'', source:'', ctype:'', match:'' }, LB_DEF_INIT = false;
-const LB_F0 = ()=>({ status:[], owner:'', source:'', ctype:'', match:'' });
+let LB_F = { status:[], owner:'', source:'', ctype:'', match:'', camp:'' }, LB_DEF_INIT = false;
+const LB_F0 = ()=>({ status:[], owner:'', source:'', ctype:'', match:'', camp:'' });
+/* רשימת הקמפיינים נגזרת מהנתונים החיים ולא מקבוע — נמדדו 21 ערכים
+   מובחנים, וביניהם שני ערכי זבל ({{campaign.name}} ומזהה מספרי)
+   שמוצגים כמות שהם: הסתרתם הייתה יוצרת "לידים שנעלמו". */
+const lbCamps = ()=>[...new Set((LEADS||[]).map(l=>(l.utm_campaign||'').trim()).filter(Boolean))].sort();
 function lbDefLoad(){ try{ const r=JSON.parse(localStorage.getItem(LB_DEF_KEY)||'null'); return (r&&typeof r==='object')?r:null; }catch(_e){ return null; } }
 function lbDefExists(){ return !!lbDefLoad(); }
 window.lbDefSave = ()=>{ try{ localStorage.setItem(LB_DEF_KEY, JSON.stringify({v:LB_VIEW,f:LB_F})); toast('התצוגה נשמרה כברירת מחדל ✓'); renderLbFilters(); }catch(_e){ toast('הדפדפן חוסם שמירת ברירת מחדל'); } };
@@ -20530,6 +20591,9 @@ function lbInitDef(){
     if(LB_F.source && !LEAD_SOURCES.includes(LB_F.source)) LB_F.source='';
     if(LB_F.ctype && !LEAD_TYPES.includes(LB_F.ctype)) LB_F.ctype='';
     if(!['','cust','new'].includes(LB_F.match)) LB_F.match='';
+    /* 🔴 קמפיין שנשמר ואינו קיים עוד **מסנן החוצה את הכול** בלי שום
+       סימן — הלקח מ-logiInit. `__none__` הוא ערך חוקי ולא קמפיין. */
+    if(LB_F.camp && LB_F.camp!=='__none__' && !lbCamps().includes(LB_F.camp)) LB_F.camp='';
   }
 }
 function lbApplyF(list){
@@ -20548,6 +20612,9 @@ function lbApplyF(list){
     if(LB_F.owner && (LB_F.owner==='__none__' ? _ow.length>0 : !_ow.includes(LB_F.owner))) return false;
     if(LB_F.source && l.source!==LB_F.source) return false;
     if(LB_F.ctype  && l.customer_type!==LB_F.ctype) return false;
+    /* ⚠️ 1,473 מתוך 3,164 הלידים בלי קמפיין — **הרוב**. בלי הערך
+       הזה אי אפשר לסנן אליהם כלל. */
+    if(LB_F.camp==='__none__' ? (l.utm_campaign||'').trim() : (LB_F.camp && (l.utm_campaign||'').trim()!==LB_F.camp)) return false;
     if(LB_F.match==='cust' && !lbMatch(l)) return false;
     if(LB_F.match==='new'  &&  lbMatch(l)) return false;
     return true;
@@ -20563,7 +20630,7 @@ window.lbStatusToggle = (st,on)=>{
   const d=document.querySelector('#lb-filters .lf-multi'); if(d) d.open=true;
 };
 window.lbFilterClear = ()=>{ LB_F=LB_F0(); renderLeads(); };
-function lbFilterActive(){ return !!((LB_F.status||[]).length||LB_F.owner||LB_F.source||LB_F.ctype||LB_F.match); }
+function lbFilterActive(){ return !!((LB_F.status||[]).length||LB_F.owner||LB_F.source||LB_F.ctype||LB_F.match||LB_F.camp); }
 /* 🔴 6.115.0 — רומן: "מסך 'שלי בתהליך' תמיד יהיו הלידים של המשתמש
    ולכן סינון בעלים שם אינו נחוץ". הבורר מוסתר, והסינון עצמו אינו
    מוחל — אחרת ערך שנשמר בברירת המחדל היה מסנן החוצה בלי שייראה. */
@@ -20586,6 +20653,9 @@ function renderLbFilters(){
     sel('source','מקור הגעה — הכל',LEAD_SOURCES.map(s=>[s,s]))+
     sel('ctype','סוג לקוח — הכל',LEAD_TYPES.map(s=>[s,s]))+
     sel('match','לקוח קיים — הכל',[['cust','לקוח קיים במערכת'],['new','ליד חדש למערכת']])+
+    /* ⚠️ select ולא רב-בחירה: 21 קמפיינים ושמות עד ~70 תווים — רשימת
+       תיבות סימון כמו הסטטוס הייתה תופסת מסך שלם. */
+    sel('camp','קמפיין — הכל',[['__none__','ללא קמפיין']].concat(lbCamps().map(s=>[s,s])))+
     (lbFilterActive()?`<button type="button" class="lf-clear" onclick="lbFilterClear()">✕ ניקוי סינון</button>`:'')+
     `<button type="button" class="lf-save" onclick="lbDefSave()" title="שמירת התצוגה והסינון הנוכחיים כברירת מחדל בדפדפן זה">★ שמור כברירת מחדל</button>`+
     (lbDefExists()?`<button type="button" class="lf-clear" onclick="lbDefClear()">↺ אפס ברירת מחדל</button>`:'');
@@ -21019,8 +21089,18 @@ async function lbLoadUpdates(id, type, pfx){
        להבחין. ⚠️ השורה שנכתבה כאן מסומנת `lbu-self` וגוונה עדין יותר,
        כדי שהמידע יישאר חד-משמעי בלי לצעוק. */
     const self = a.linked_id === id;
+    /* 🔴 6.154.0 — רומן: "בתגית אין צורך לרשום את שם המשימה או שם
+       הליד … לחיצה על התגית תקשר למיקום שבו נכתב".
+       ⚠️ והשם עובר ל-title ולא נמחק: בכרטיס לקוח יש כמה לידים
+          מוצלבים, ושלוש תגיות "ליד" זהות שפותחות כרטיסים שונים אינן
+          ניתנות להבחנה בלי הריחוף. */
+    const _go = UPD_GO[n && n.type];
+    const _ttl = (n && n.name) ? esc(UPD_KIND_LBL[n.type]||n.type) + ': ' + esc(n.name) : '';
     const tag = n
-      ? `<span class="tk-kind tk-k-${esc(n.type)} lbu-src${self?' lbu-self':''}">${esc(UPD_KIND_LBL[n.type]||n.type)}${n.name?': '+esc(n.name):''}</span>` : '';
+      ? `<span class="tk-kind tk-k-${esc(n.type)} lbu-src${self?' lbu-self':''}${_go?' lbu-go':''}"`
+        + (_ttl?` title="${_ttl}${_go?' — לחיצה תפתח את הכרטיס':''}"`:'')
+        + (_go?` onclick="lbuGo('${jsq(n.type)}','${jsq(n.id)}')"`:'')
+        + `>${esc(UPD_KIND_LBL[n.type]||n.type)}</span>` : '';
     const xr = (n && n.xref) ? '<span class="lbu-xref">(הוצלב לפי טלפון)</span>' : '';
     /* 🔴 שער אחד — canEdit('crm'), מראה מדויקת של ה-policies במסד
        (activities_p6_ins/upd/del כולן can_edit('crm')). השער הבינארי הישן

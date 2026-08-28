@@ -301,6 +301,12 @@
   #tab-pays .pay-fresh{ font-size:11.5px; color:#64748b; font-weight:600;
        white-space:nowrap; align-self:center; order:11 }
   #tab-pays .pay-fresh.busy{ color:#2a78d6 }
+  /* אותה תווית למסכי ה-CRM והלוגיסטיקה (6.151.0). ⚠️ מחלקה נפרדת ולא
+     .pay-fresh: זו מגודרת ל-#tab-pays, ושימוש חוזר היה מחייב לפרק את
+     הגידור ולהחיל אותה על מסכים שלא נמדדו. */
+  .crm-fresh{ font-size:11.5px; color:#64748b; font-weight:600;
+       white-space:nowrap; align-self:center; margin-inline-start:auto }
+  .crm-fresh.busy{ color:#2a78d6 }
   /* יעדי מגע בטאבלט: (1,1,1) גובר על .btn,.ghost,.btnw{min-height:46px} */
   @media(max-width:900px){
     #tab-pays .toolbar input, #tab-pays .toolbar select, #tab-pays .toolbar .ghost,
@@ -2423,7 +2429,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.150.0</div>
+      <div class="ver">גרסה 6.151.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2552,7 +2558,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.150.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.151.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9006,7 +9012,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'updcols-2026-08-28a';
+const BUILD_ID = 'crmauto-2026-08-28a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -14153,17 +14159,34 @@ function loadErrBanner(names){
 /* חייב להיות באותו אורך ובאותו סדר כמו מערך השאילתות ב-loadLeads —
    אחרת פס השגיאה מציג "undefined" במקום שם השאילתה שנכשלה. */
 const LOAD_NAMES = ['לידים','לקוחות','משימות','עסקאות','פגישות','אנשי קשר','תשלומים','הזמנות','קריאות שירות','צוותים','מק"טים','מסמכים','הגדרות','ספריית בעלים','בעלי לידים','מצב סנכרון','מעקב תשלומים','תנאי תשלום','נותר לספק','תנאי תשלום בהזמנה','החזרות לאיסוף','קיזוזים','הצעות קיזוז','לוח פעימות'];
+/* ═══ CRM_Q — בוני השאילתות המשותפים (6.151.0) ═════════════════════
+   🟢 הגדרה אחת ששני צרכנים קוראים: loadLeads והרענון האוטומטי. בלי זה
+   הרענון היה מושך עמודות אחרות מהטעינה הראשונית, וההבדל היה מתגלה רק
+   כשעמודה נעלמת מהמסך אחרי שתי דקות.
+   ⚠️ הטקסט הועתק **מתוך ה-Promise.all עצמו בזמן הבנייה** ולא הוקלד
+      מחדש — כך אין סיכוי שהם ייפרדו בהעתקה. */
+const CRM_Q = {
+  leads: () => sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at,position,address,notes,utm_campaign,utm_source,utm_medium,utm_term,send_whatsapp_catalog,owner_id,updated_at').order('created_at',{ascending:false}).limit(10000),
+  custs: () => sb.schema('core').from('customers').select('id,name,phone,email,priority_id,status,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes').order('created_at',{ascending:false}).limit(10000),
+  tasks: () => sb.schema('crm').from('tasks').select('id,name,status,value_tag,category,due_at,closed_at,created_at,linked_type,linked_id,owner_id').order('due_at',{ascending:true}).limit(10000),
+  deals: () => sb.schema('crm').from('deals').select('id,name,stage,amount,quote_status,irrelevant_reason,priority_quote_id,customer_id,contact_id,lead_id,send_channel,sign_link,approved_at,closed_at,created_at').order('created_at',{ascending:false}).limit(10000),
+  meets: () => sb.schema('crm').from('meetings').select('id,subject,status,meet_date,start_time,end_time,meet_type,location,teams_link,linked_type,linked_id,source,organizer_name,attendees,all_day,web_link').order('meet_date',{ascending:false}).limit(10000),
+  lown: () => /* שורות הבעלות הראשיות. **לא מיותר מול leads.owner_id**: המראה מחזיקה
+         profile_id בלבד, ולעובד לשעבר אין חשבון — 694 לידים היו מוצגים
+         כחסרי בעלים. RLS: can_view('crm.leads'). */
+      sb.schema('crm').from('lead_owners').select('lead_id,profile_id,legacy_owner,is_primary').limit(10000)
+};
 async function loadLeads(){
   let _q;
   try{ if(!$('#lastSync').textContent) $('#lastSync').textContent = 'טוען נתונים…'; }catch(_){}
   oldBoot(true);   /* טעינה טרייה של נתוני ההזמנות בכל רענון */
   try{
   _q = await Promise.all([
-    sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at,position,address,notes,utm_campaign,utm_source,utm_medium,utm_term,send_whatsapp_catalog,owner_id,updated_at').order('created_at',{ascending:false}).limit(10000),
-    sb.schema('core').from('customers').select('id,name,phone,email,priority_id,status,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes').order('created_at',{ascending:false}).limit(10000),
-    sb.schema('crm').from('tasks').select('id,name,status,value_tag,category,due_at,closed_at,created_at,linked_type,linked_id,owner_id').order('due_at',{ascending:true}).limit(10000),
-    sb.schema('crm').from('deals').select('id,name,stage,amount,quote_status,irrelevant_reason,priority_quote_id,customer_id,contact_id,lead_id,send_channel,sign_link,approved_at,closed_at,created_at').order('created_at',{ascending:false}).limit(10000),
-    sb.schema('crm').from('meetings').select('id,subject,status,meet_date,start_time,end_time,meet_type,location,teams_link,linked_type,linked_id,source,organizer_name,attendees,all_day,web_link').order('meet_date',{ascending:false}).limit(10000),
+    CRM_Q.leads(),
+    CRM_Q.custs(),
+    CRM_Q.tasks(),
+    CRM_Q.deals(),
+    CRM_Q.meets(),
     sb.schema('core').from('contacts').select('id,full_name,phone,office_phone,email,role,customer_id').order('full_name',{ascending:true}).limit(10000),
     sb.schema('crm').from('payments').select('id,customer_id,deal_id,status,due_date,total_amount,paid_amount,notes').order('due_date',{ascending:false}).limit(10000),
     oldPart('orders'),          /* סכימת ord בפלטפורמה — מקור האמת */
@@ -14176,10 +14199,7 @@ async function loadLeads(){
        למשתמש רגיל את הפרופיל שלו בלבד (ראו lownApply). שגיאה כאן אינה
        מפילה את הטעינה: הבורד ייפול חזרה לראשי תיבות ריקים. */
     sb.schema('crm').rpc('lead_owner_dir'),
-    /* שורות הבעלות הראשיות. **לא מיותר מול leads.owner_id**: המראה מחזיקה
-       profile_id בלבד, ולעובד לשעבר אין חשבון — 694 לידים היו מוצגים
-       כחסרי בעלים. RLS: can_view('crm.leads'). */
-    sb.schema('crm').from('lead_owners').select('lead_id,profile_id,legacy_owner,is_primary').limit(10000),
+    CRM_Q.lown(),
     /* תמצית מצב הסנכרון — זמינה לכל אנשי הצוות. היומן המלא נשאר
        לאדמיניסטרטור בלבד (הגדרות ← יומן סנכרון). */
     sb.schema('ord').rpc('sync_status'),
@@ -14229,8 +14249,126 @@ async function loadLeads(){
   $('#lastSync').textContent = (priRow && priRow.last_ok_at) ? 'סנכרון אחרון: ' + new Date(priRow.last_ok_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
   renderAllViews();
 }
+/* ═══ רענון אוטומטי למסכי ה-CRM והלוגיסטיקה (6.151.0) ══════════════
+   רומן: "כן כמו בתשלומים. בכל המסכים של CRM גם במסך הזמנות של
+   הלוגיסטיקה." הדפוס לקוח מ-payAutoTick של 6.141.0, שכבר רץ בייצור.
+   ⚠️ **רק הטאב הגלוי מתרענן** — אחרת שישה מסכים היו מושכים במקביל.
+   ⚠️ ותיקתוק כל 20ש עם משיכה כל שתי דקות: כניסה למסך מרעננת מיד, בלי
+      לפנות לשרת שלוש פעמים בדקה. */
+const CRM_AUTO_EVERY = 120000, CRM_AUTO_TICK = 20000;
+let CRM_AUTO_T = null, CRM_AUTO_BUSY = false;
+const CRM_AUTO_AT = {}, CRM_AUTO_WAS = {};
+
+/* 🔴 השערים שמונעים מהרענון למשוך את השטיח. בלעדיהם הוא היה מצייר
+   מחדש כרטיס פתוח, מוחק בחירה מרוכזת, או דורס תא שנערך באמצע הקלדה.
+   ⚠️ שדה בסרגל **אינו** חוסם — אחרת מיקוד ששכח בחיפוש היה מקפיא את
+      הרענון לנצח. תא עריכה בטבלה כן חוסם, וזו כל ההבחנה. */
+function crmAutoHeld(){
+  if(document.querySelector('.modal:not(.hidden)')) return true;
+  try{ if(typeof LB_SEL !== 'undefined' && LB_SEL && LB_SEL.size) return true; }catch(_e){}
+  try{ if(typeof TK_SEL !== 'undefined' && TK_SEL && TK_SEL.size) return true; }catch(_e){}
+  const a = document.activeElement;
+  /* 🔴 offsetParent!==null — **נראוּת, לא רק סוג**. בלעדיה שדה ההתחברות
+     (#email) שמקבל מיקוד אוטומטי ויושב במכל מוסתר היה חוסם את הרענון
+     **לצמיתות**, בלי שאיש יראה למה. נתפס בבדיקה ולא בעין: הטענה
+     "מצב נקי אינו חוסם" היא שנפלה. אותו דפוס סינון של 6.136.0. */
+  if(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName||'')
+       && a.offsetParent !== null && !a.closest('.toolbar')) return true;
+  return false;
+}
+
+const CRM_AUTO_REG = [
+  { k:'leads', tab:'tab-leads', host:'lb-chips',
+    get:()=>Promise.all([CRM_Q.leads(), CRM_Q.lown(), CRM_Q.tasks()]),
+    put:(r)=>{ LEADS=r[0].data||[]; lownOfApply((r[1]||{}).data); TASKS=r[2].data||[]; },
+    draw:()=>renderLeads() },
+  { k:'tasks', tab:'tab-tasks', host:'tk-chips',
+    get:()=>Promise.all([CRM_Q.tasks(), CRM_Q.leads()]),
+    put:(r)=>{ TASKS=r[0].data||[]; LEADS=r[1].data||[]; },
+    draw:()=>renderTasks() },
+  { k:'deals', tab:'tab-deals', host:'deal-chips',
+    get:()=>Promise.all([CRM_Q.deals(), CRM_Q.leads()]),
+    put:(r)=>{ DEALS=r[0].data||[]; LEADS=r[1].data||[]; },
+    draw:()=>renderDeals() },
+  { k:'custs', tab:'tab-customers', host:'cu-chips',
+    get:()=>Promise.all([CRM_Q.custs(), CRM_Q.leads()]),
+    put:(r)=>{ CUSTS=r[0].data||[]; LEADS=r[1].data||[]; },
+    draw:()=>renderCustomers() },
+  { k:'meets', tab:'tab-meets', host:'meet-chips',
+    get:()=>Promise.all([CRM_Q.meets(), CRM_Q.leads()]),
+    put:(r)=>{ MEETS=r[0].data||[]; LEADS=r[1].data||[]; },
+    draw:()=>renderMeets() },
+  /* ⚠️ הלוגיסטיקה עוברת בגשר ולא ב-supabase: oldBoot(true) מרענן את
+     המטמון המשותף, ואז שני החלקים נקראים ממנו. */
+  { k:'logi', tab:'tab-logi', host:'cal-tools',
+    get:()=>oldBoot(true).then(()=>Promise.all([oldPart('orders'), oldPart('service_calls')])),
+    put:(r)=>{ ORDS=r[0].data||[]; SCALLS=r[1].data||[]; },
+    draw:()=>{ renderLogi(); try{ if($('#cal-wrap')) renderCal(); }catch(_e){} } }
+];
+
+/* התווית נוצרת עצלה ומוזרקת לסרגל המסך. ⚠️ הציור מחליף innerHTML של
+   אותו מכל, ולכן היא נמחקת ונוצרת מחדש — ומכאן הבדיקה `host.contains`. */
+function crmAutoStamp(e, state){
+  const host = document.getElementById(e.host); if(!host) return;
+  let el = document.getElementById('crmFresh-' + e.k);
+  if(!el || !host.contains(el)){
+    if(el && el.parentNode) el.parentNode.removeChild(el);
+    el = document.createElement('span');
+    el.id = 'crmFresh-' + e.k; el.className = 'crm-fresh';
+    el.title = 'המסך נטען מחדש לבד כל שתי דקות כשהוא פתוח. הרענון נדחה כשכרטיס פתוח, כשיש בחירה מרוכזת או כשעורכים תא — כדי לא למשוך את השטיח באמצע פעולה.';
+    host.appendChild(el);
+  }
+  el.classList.toggle('busy', state === 'busy');
+  if(state === 'busy'){ el.textContent = 'מרענן…'; return; }
+  if(state === 'held'){ el.textContent = 'רענון מושהה — יש פעולה פתוחה'; return; }
+  el.textContent = CRM_AUTO_AT[e.k]
+    ? 'עודכן ' + new Date(CRM_AUTO_AT[e.k]).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})
+    : '';
+}
+
+async function crmAutoRefresh(e){
+  if(CRM_AUTO_BUSY) return;
+  CRM_AUTO_BUSY = true; crmAutoStamp(e, 'busy');
+  try{
+    const r = await e.get();
+    /* כשל בשליפה משאיר את הנתונים הקודמים — מסך שמראה חלק מהאמת גרוע
+       ממסך שמראה אמת ישנה ואומר מתי. */
+    if(!Array.isArray(r) || r.some(x => !x || x.error)){ crmAutoStamp(e); return; }
+    /* 🔴 השער נבדק **שוב אחרי ה-await**: המשתמש עשוי לפתוח כרטיס בזמן
+       שהשאילתה באוויר, וציור מחדש אז הוא בדיוק הנזק. */
+    if(crmAutoHeld()){ crmAutoStamp(e, 'held'); return; }
+    e.put(r); e.draw();
+    CRM_AUTO_AT[e.k] = Date.now(); crmAutoStamp(e);
+  }catch(_e){ crmAutoStamp(e); }
+  finally{ CRM_AUTO_BUSY = false; }
+}
+
+function crmAutoTick(){
+  if(document.visibilityState !== 'visible'){
+    CRM_AUTO_REG.forEach(x => { CRM_AUTO_WAS[x.k] = false; }); return;
+  }
+  const e = CRM_AUTO_REG.find(x => {
+    const t = document.getElementById(x.tab);
+    return t && !t.classList.contains('hidden');
+  });
+  CRM_AUTO_REG.forEach(x => { if(!e || x.k !== e.k) CRM_AUTO_WAS[x.k] = false; });
+  if(!e) return;
+  const entered = !CRM_AUTO_WAS[e.k];
+  CRM_AUTO_WAS[e.k] = true;
+  if(crmAutoHeld()){ crmAutoStamp(e, 'held'); return; }
+  if(entered || Date.now() - (CRM_AUTO_AT[e.k] || 0) >= CRM_AUTO_EVERY) crmAutoRefresh(e);
+}
+
+function crmAutoArm(){
+  if(CRM_AUTO_T) return;
+  CRM_AUTO_T = setInterval(crmAutoTick, CRM_AUTO_TICK);
+  document.addEventListener('visibilitychange', crmAutoTick);
+  const t = Date.now();
+  CRM_AUTO_REG.forEach(x => { if(!CRM_AUTO_AT[x.k]) CRM_AUTO_AT[x.k] = t; });
+}
 /* ציור כל המסכים מחדש — משמש גם במעבר בין תצוגת טבלה לכרטיסים (תיקון ממצא 24) */
 function renderAllViews(){
+  crmAutoArm();
   renderStats(); renderToday(); renderLeads(); renderCustomers(); renderTasks(); renderDeals(); renderMeets(); renderConts(); renderPays(); renderOrdersTools(); renderOrders(); renderSkuTools(); renderSkus(); renderLogi(); renderDocs(); renderInvIfLoaded(); renderPrcIfLoaded(); renderDash();
 }
 /* עימוד — כפתור "הצג עוד" בכל מסכי הרשימות (הערת רומן 28/07) */

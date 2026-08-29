@@ -2484,7 +2484,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.161.0</div>
+      <div class="ver">גרסה 6.162.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2613,7 +2613,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.161.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.162.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2935,6 +2935,19 @@ tr.lb-on td{ background-color:#eef5fd !important; }
 </div>
 
 <!-- מודל ליד חדש -->
+<!-- תשאול הליד מתוך הכרטיס (6.161.0). נפתח דרך goCard, ולכן mountCard
+     דוחף את כרטיס הליד למחסנית ומציג "→ חזרה" — אותו מנגנון של ＋משימה. -->
+<div class="modal hidden" id="lqModal">
+  <div class="sheet">
+    <h3>תשאול הליד</h3>
+    <div id="lq-wrap"></div>
+    <div class="modal-actions">
+      <button class="btn green" id="lq-save" onclick="lqSave()">שמירה כעדכון</button>
+    </div>
+    <div class="err" id="lq-err"></div>
+  </div>
+</div>
+
 <div class="modal hidden" id="addModal">
   <div class="sheet">
     <h3>ליד חדש</h3>
@@ -2956,6 +2969,10 @@ tr.lb-on td{ background-color:#eef5fd !important; }
 
       <div class="span4"><div class="a-ownline" id="a-ownline"></div></div>
     </div>
+    <!-- 6.162.0 — התשאול בטופס הפתיחה (רומן). ⚠️ מחוץ ל-form-grid
+         כי lbQHtml פולט form-grid משלו; גריד בתוך גריד היה שובר
+         את פריסת ארבע העמודות. -->
+    <div id="a-qwrap"></div>
     <div class="modal-actions">
       <button class="btn green" id="a-save">שמירה</button>
     </div>
@@ -9154,7 +9171,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'meetact-2026-08-29a';
+const BUILD_ID = 'leadq-2026-08-29a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -14310,7 +14327,7 @@ const LOAD_NAMES = ['לידים','לקוחות','משימות','עסקאות','�
    ⚠️ הטקסט הועתק **מתוך ה-Promise.all עצמו בזמן הבנייה** ולא הוקלד
       מחדש — כך אין סיכוי שהם ייפרדו בהעתקה. */
 const CRM_Q = {
-  leads: () => sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at,position,address,notes,utm_campaign,utm_source,utm_medium,utm_term,send_whatsapp_catalog,owner_id,updated_at,q_purpose,q_place_status,q_area_sqm,q_ceiling_m,q_concept,q_open_eta,q_knows_products,q_equipment,q_notes').order('created_at',{ascending:false}).limit(10000),
+  leads: () => sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at,position,address,notes,utm_campaign,utm_source,utm_medium,utm_term,send_whatsapp_catalog,owner_id,updated_at').order('created_at',{ascending:false}).limit(10000),
   custs: () => sb.schema('core').from('customers').select('id,name,phone,email,priority_id,status,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes').order('created_at',{ascending:false}).limit(10000),
   tasks: () => sb.schema('crm').from('tasks').select('id,name,status,value_tag,category,due_at,closed_at,created_at,linked_type,linked_id,owner_id').order('due_at',{ascending:true}).limit(10000),
   deals: () => sb.schema('crm').from('deals').select('id,name,stage,amount,quote_status,irrelevant_reason,priority_quote_id,customer_id,contact_id,lead_id,send_channel,sign_link,approved_at,closed_at,created_at').order('created_at',{ascending:false}).limit(10000),
@@ -20326,6 +20343,9 @@ $('#addBtn').onclick = ()=>{
     + esc((LOWN_BY[lbMe()]||{}).name || (ME&&ME.full_name) || 'אתה')
     + '</b> — וגם המשימה שתיפתח לו אוטומטית.</span>';
   $('#a-err').textContent=''; const d=document.getElementById('a-dup'); if(d) d.innerHTML='';
+  /* 🔴 ציור מחדש ולא ניקוי ערכים: הבוררים נשענים על osetStr, ומשתמש
+     שעדכן את רשימות ההגדרות היה ממשיך לראות את הישנות עד רענון דף. */
+  const _qw = document.getElementById('a-qwrap'); if(_qw) _qw.innerHTML = lbQHtml('a');
   mountCard('addModal', ()=>$('#addModal').classList.remove('hidden')); };
 $('#a-save').onclick = async ()=>{
   const g = id => (document.getElementById(id) ? document.getElementById(id).value : '').trim();
@@ -20359,6 +20379,11 @@ $('#a-save').onclick = async ()=>{
     const _n = g('a-notes');
     if(_n){ await sb.schema('crm').from('activities').insert({
       actor_id: ME.id, linked_type:'lead', linked_id:data.id, kind:'עדכון', body:_n }); }
+    /* 🔴 6.162.0 — התשאול כעדכון **נפרד** ולא ממוזג ל-a-notes:
+       "מידע על הליד" הוא טקסט חופשי שהנציג כתב, והתשאול הוא רשומה
+       מובנית עם details. מיזוגם היה מוחק את ההבחנה, ואת a-notes אי
+       אפשר לפרסר חזרה. */
+    await lbQPost(data.id, 'a');
     /* משימה מיידית — עד כה היא נפתחה רק בתיקתוק הבא של ה-cron
        (כל 15 דק', 08:00–20:00, לא שבת). ליד שנפתח ב-20:05 קיבל משימה
        למחרת בבוקר. רומן: "שתיפתח מיד". */
@@ -20368,6 +20393,26 @@ $('#a-save').onclick = async ()=>{
   $('#addModal').classList.add('hidden'); await loadLeads();
 };
 
+/* ═══ תשאול מתוך הכרטיס (6.161.0) ══════════════════════════════════
+   ⚠️ אין כאן מנגנון חדש: goCard מסמן CARD_NAV, mountCard דוחף את
+      הכרטיס הנוכחי ל-CARD_STACK ומצייר "→ חזרה", ו-cardBack מחזיר.
+      זה בדיוק מה ש-leadTask עושה כשהוא פותח taskModal מכרטיס הליד. */
+let LQ_LEAD = null;
+window.lqOpen = (id)=>{
+  LQ_LEAD = id;
+  const w = document.getElementById('lq-wrap'); if(w) w.innerHTML = lbQHtml('lq');
+  const e = document.getElementById('lq-err'); if(e) e.textContent = '';
+  mountCard('lqModal', ()=>$('#lqModal').classList.remove('hidden'));
+};
+window.lqSave = async ()=>{
+  const id = LQ_LEAD; if(!id) return;
+  if(!lbQCollect('lq')){ document.getElementById('lq-err').textContent='לא מולאה אף שאלה.'; return; }
+  if(!await lbQPost(id, 'lq')) return;
+  toast('התשאול נשמר כעדכון ✓');
+  /* חזרה לכרטיס הליד — הפותח רץ מחדש, ולכן רשימת העדכונים נטענת
+     מחדש בכניסה הבאה ללשונית ואין צורך בריענון ידני. */
+  cardBack();
+};
 /* ===== כרטיס הליד המלא (6.93.0) =====
    הסדר לפי שפת הכרטיסים (card-layout): מה שנקלט אוטומטית למעלה (ro),
    מה שממלאים למטה, כותרת form-sep מפרידה. השמירה בחוזה ה-snapshot של
@@ -20395,15 +20440,47 @@ const LEAD_Q = [
 /* ⚠️ "איך הגעת אלינו" **אינו** ברשימה: הוא כבר קיים כ-source
    וכ-utm_campaign, ושדה שני היה כפילות שסותרת את עצמה. */
 const lbQOpts = k => (osetStr(k,'')||'').split(',').map(s=>s.trim()).filter(Boolean);
-function lbQHtml(l){
-  const done = LEAD_Q.filter(f=>String(l[f[0]] ?? '').trim() !== '').length;
+/* ═══ מהתשאול לעדכון (6.161.0) ═══════════════════════════════════════
+   נקודת חנק אחת שבונה את גוף העדכון, ושני צרכנים בלבד: הטופס והמודאל.
+   מחזירה null כשאף שדה לא מולא — טופס בלי תשובות אינו מייצר עדכון ריק. */
+function lbQCollect(pfx){
+  const lines = [], q = {};
+  LEAD_Q.forEach(([col,lbl])=>{
+    const el = document.getElementById(pfx+'-q-'+col.slice(2).replace(/_/g,'-'));
+    const v = el ? String(el.value||'').trim() : '';
+    if(!v) return;
+    lines.push(lbl.replace(/\?$/,'') + ': ' + v);
+    q[col] = v;
+  });
+  return lines.length ? { body: lines.join('\n'), details: { q: q } } : null;
+}
+/* 🔴 kind חייב להיות 'עדכון' בדיוק. updFetch מסננת q.eq('kind','עדכון')
+   כשהמתג "גם שינויי מערכת" כבוי — וזו ברירת המחדל. kind אחר היה מייצר
+   עדכון ש**מוסתר כברירת מחדל**, כלומר "נשמר" ולא נראה.
+   ⚠️ ובודקים error: ההוספה של a-notes כותבת בלי בדיקה, וכשל שם נבלע. */
+async function lbQPost(leadId, pfx){
+  const r = lbQCollect(pfx);
+  if(!r) return true;
+  const { error } = await sb.schema('crm').from('activities').insert({
+    actor_id: ME.id, linked_type:'lead', linked_id: leadId,
+    kind:'עדכון', body: r.body, details: r.details });
+  if(error){ toast('שמירת התשאול נכשלה — '+error.message); return false; }
+  return true;
+}
+/* 🔴 6.162.0 — פרמטרית לפי קידומת, בדיוק כמו pfx ביומן העדכונים
+   (lbAddUpdate עם lb/tk/cu/dl). שני מארחים: טופס ליד חדש ('a')
+   והמודאל מהכרטיס ('lq').
+   🔴 **המונה "הושלמו X מתוך 9" ירד.** הוא נספר מ-l[col] — שורת המסד —
+      ולכן לא זז כשמילאת שדה, רק אחרי שמירה ופתיחה מחדש. מרגע שהתשובות
+      אינן נשמרות על הליד אין לו מה לספור, והוא היה מציג "0 מתוך 9"
+      לנצח. מחוון שמראה תמיד את אותו דבר גרוע מהיעדר מחוון. */
+function lbQHtml(pfx){
   return `<div class="lbq">`
-    + `<div class="lbq-h">תשאול הליד<span class="lbq-n${done===LEAD_Q.length?' ok':''}">`
-    + `הושלמו ${done} מתוך ${LEAD_Q.length}</span></div>`
+    + `<div class="lbq-h">תשאול הליד</div>`
     + `<div class="form-grid lbq-g">`
     + LEAD_Q.map(([col,lbl,kind,ok,hint])=>{
-        const v = l[col] == null ? '' : String(l[col]);
-        const id = 'lb-'+col.replace(/_/g,'-');
+        const v = '';
+        const id = pfx+'-q-'+col.slice(2).replace(/_/g,'-');
         /* 🔴 allowEmpty מפורש: בלעדיו ה-select נופל לאפשרות הראשונה
            וכותב ערך שאיש לא בחר בכל פתיחה+שמירה. */
         const ctl = kind==='sel' ? selHtml(id, lbQOpts(ok), v, true)
@@ -20422,9 +20499,11 @@ const LEAD_CARD_FIELDS = [
      במסד; מה שירד הוא התצוגה והעריכה. */
   ['lb-ctype','customer_type'], ['lb-source','source'],
   ['lb-wacat','__wacat']
-/* 🔴 תשעת שדות התשאול נספחים כאן ולא נכתבים ידנית — אחרת שאלה
-   שתתווסף ל-LEAD_Q תיראה במסך ו**לא תישמר**, וזה כשל שקט. */
-].concat(LEAD_Q.map(f=>['lb-'+f[0].replace(/_/g,'-'), f[0]]));
+/* 🔴 6.162.0 — תשעת שדות התשאול ירדו מכאן. הם אינם עוד בכרטיס, ומפה
+   שמצביעה על אלמנטים שאינם קיימים היא פסולת שקטה: הלולאה מגודרת
+   ב-if(!el) ולכן לא הייתה נשברת, אבל היא משקרת למי שיקרא אותה.
+   הלקח מ-'lb-addr' ב-6.150.0. */
+];
 /* 🔴 6.158.0 — יעד הפגישה הוא {t,id} ולא מזהה ליד. ＋פגישה נפתח
    עכשיו גם מכרטיס העסקה, ושתי הישויות עוברות ב-RPC שונה. סקלר עם
    ניחוש סוג ("אם נמצא ב-DEALS") היה נשבר ביום שמזהים יתנגשו. */
@@ -20735,7 +20814,10 @@ const tmDtM = v => v ? esc(new Date(v+'T00:00').toLocaleDateString('he-IL',{day:
 function lbTmActs(id){
   return `${window.canEdit('crm.tasks')?`<button type="button" class="chip" onclick="leadTask('${jsq(id)}')">＋ משימה</button>`:''}`
        + `${window.canEdit('crm.meets')?`<button type="button" class="chip" onclick="leadMeet('${jsq(id)}')">＋ פגישה</button>`:''}`
-       + `${window.canEdit('crm.leads')?`<button type="button" class="chip" onclick="leadFup('${jsq(id)}')">↻ פולואפ</button>`:''}`;
+       + `${window.canEdit('crm.leads')?`<button type="button" class="chip" onclick="leadFup('${jsq(id)}')">↻ פולואפ</button>`:''}`
+       /* 🔴 6.162.0 — מגודר ב-canEdit('crm') ולא ב-crm.leads: הפעולה
+          כותבת activity ולא שדה על הליד, וזה בדיוק השער של כתיבת עדכון. */
+       + `${window.canEdit('crm')?`<button type="button" class="chip" onclick="goCard(()=>lqOpen('${jsq(id)}'))">📋 תשאול</button>`:''}`;
 }
 /* ציור מחדש **במקומו** של בלוק המשימות והפגישות בכרטיס הליד.
    ⚠️ ולא openLead: mountCard מאפס scrollTop=0, והמשתמש נמצא בתחתית
@@ -20896,7 +20978,6 @@ window.openLead = (id)=>{
     <div id="convResult"></div>
     </div>
     <div id="lb-pn-upd" class="hidden">
-      ${lbQHtml(l)}
       ${window.canEdit('crm')?`<div class="lbu-add"><textarea id="lb-upd" rows="2" placeholder="מה קרה עם הליד הזה?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${jsq(l.id)}','lead','lb')">הוספה</button></div>`:''}
       <div class="lbu-bar" id="lb-updbar"></div>
       <div class="lbu-list" id="lb-updlist"><div class="note">טוען…</div></div>

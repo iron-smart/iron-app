@@ -2481,7 +2481,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.166.0</div>
+      <div class="ver">גרסה 6.167.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2610,7 +2610,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.166.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.167.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9156,6 +9156,86 @@ $('#docSearch').addEventListener('input', renderDocs);
 /* 6.22.0 — היצירה עברה לשרת. ord.protocol_create מייצר את האסימון, קובע את
    הקטגוריה, בודק can_edit ורושם את היומן בעצמו. לכן אין כאן יותר לא ייצור
    אסימון בדפדפן, לא כתיבה ישירה לטבלה ולא רישום יומן מצד הלקוח. */
+/* ═══ חתימה על הצעת מחיר במודול שלנו (6.167.0, רומן) ══════════════════
+   הכפתור שסוגר את D9. שכבת השרת נפרסה 29/08/2026 ולא היה לה ממשק:
+   `deal-quote-doc` הופיעה **0 פעמים** בקובץ, כלומר אי אפשר היה ליצור
+   מסמך חתימה להצעה בשום מסלול.
+   🟢 אין שינוי בשאילתה — `deal_id` כבר ב-select של PROTS וב-protocols_v,
+   ולכן המפרק של loadLeads לא זז (המחלקה של 6.98). */
+const DL_QCAT = 'quotes';
+window.dlQuoteRows = (id) => (PROTS||[])
+  .filter(p => p.deal_id === id && (p.category||'') === DL_QCAT)
+  .sort((a,b) => String(b.sent_at||'').localeCompare(String(a.sent_at||'')));
+
+window.dlSignBox = (d)=>{
+  if(!d) return '';
+  const rows   = window.dlQuoteRows(d.id);
+  const signed = rows.find(p => p.status==='נחתם' || p.signed_at);
+  const live   = rows.find(docPending);
+  const row    = signed || live;
+  if(row){
+    /* docStatus היא נקודת החנק של תוויות המסמכים — לא לשכפל כאן כלל
+       משלנו, אחרת שני מסכים יתארו את אותה שורה אחרת. */
+    const ds  = docStatus(row);
+    const may = window.canEdit('docs.' + DL_QCAT);
+    return `<div class="tk-lnk"><span class="st ${ds.cls}" title="${esc(ds.title||'')}">${esc(ds.label)}</span>`
+      + (row.signer_name ? ` <span class="lb-na">· ${esc(row.signer_name)}</span>` : '')
+      + (signed
+          ? ` <button type="button" class="chip" onclick="openDocLink('${jsq(row.id)}','open')">📄 צפייה במסמך החתום</button>`
+          : (may
+              ? ` <button type="button" class="chip" onclick="openDocLink('${jsq(row.id)}','copy')">🔗 העתקת קישור</button>`
+                + (row.phone ? ` <button type="button" class="chip" onclick="openDocLink('${jsq(row.id)}','wa')">💬 וואטסאפ</button>` : '')
+              : ` <span class="lb-na">אין לך הרשאה להפיק קישור בקטגוריה הזו</span>`))
+      + `</div>`;
+  }
+  /* 🔴 פעולה שאי אפשר לבצע — לא מציגים. עסקה בלי מספר הצעה בפריוריטי
+     הייתה מקבלת 409 מהשרת, וכפתור שנלחץ ולא קורה כלום הוא בדיוק מה
+     שמדווח כ"תקוע". מציגים את הסיבה. */
+  if(!d.priority_quote_id)
+    return `<div class="note">לעסקה אין מספר הצעה בפריוריטי — אין ממה להפיק מסמך.</div>`;
+  if(!window.canEdit('docs.' + DL_QCAT))
+    return `<div class="note">אין לך הרשאת עריכה בקטגוריית ההצעות.</div>`;
+  return `<div class="tk-lnk"><button type="button" class="chip" onclick="dlQuoteDoc('${jsq(d.id)}')">✍️ צור מסמך לחתימה</button>`
+       + ` <span class="lb-na">הצעה ${esc(d.priority_quote_id)}</span></div>`;
+};
+
+window.dlQuoteDoc = async (dealId)=>{
+  const d = (DEALS||[]).find(x=>x.id===dealId); if(!d) return;
+  if(!window.canEdit('docs.' + DL_QCAT)){ alert('אין לך הרשאת עריכה בקטגוריית ההצעות.'); return; }
+  if(!d.priority_quote_id){ alert('לעסקה אין מספר הצעה בפריוריטי — אין ממה להפיק מסמך.'); return; }
+  /* ⚠️ האישור אומר במפורש שהמסמך מצטט תמונה ואינו מתעדכן. זו התכונה
+     שהופכת אותו לראיה (הלקח של sign גרסה 12), והמשתמש צריך לדעת שהיא
+     נלקחת עכשיו. */
+  if(!confirm('ליצור מסמך חתימה עבור הצעה ' + d.priority_quote_id + '?\n\n'
+    + 'המסמך יצטט את ההצעה כפי שהיא בפריוריטי ברגע זה, ולא ישתנה גם אם ההצעה תעודכן אחר כך.')) return;
+  const box = document.getElementById('dl-signbox');
+  if(box) box.innerHTML = '<div class="note">מפיק את המסמך מפריוריטי…</div>';
+  let data = null, error = null;
+  try{ ({ data, error } = await sb.functions.invoke('deal-quote-doc', { body:{ deal_id: dealId } })); }
+  catch(e){ error = e; }
+  if(error || !data || data.ok !== true){
+    /* 🔴 supabase-js מחזיר על 4xx/5xx הודעה גנרית באנגלית, וכל ההודעות
+       העבריות המפורטות של הפונקציה יושבות בגוף התשובה. בלי הקריאה
+       מ-error.context המשתמש רואה "non-2xx status code" ולא יודע
+       שההצעה פשוט ריקה בפריוריטי. */
+    let msg = (data && data.error) || '';
+    if(!msg && error && error.context && typeof error.context.json === 'function'){
+      try{ const j = await error.context.json(); msg = (j && j.error) || ''; }catch(_e){}
+    }
+    if(!msg) msg = (error && error.message) || 'השגיאה אינה ידועה';
+    if(box) box.innerHTML = window.dlSignBox(d);
+    alert('יצירת המסמך נכשלה — ' + msg);
+    return;
+  }
+  if(data.protocol) PROTS.unshift(data.protocol);
+  /* ציור המשבצת בלבד. openDeal הוא async ומצייר כרטיס שלם, ואין צורך:
+     **שורת המסמך עצמה היא המשוב**, ולכן אין הודעה זמנית שצריך לשמר
+     במצב (המחלקה של TK_REP ו-CONV_RESULT). */
+  if(box) box.innerHTML = window.dlSignBox(d);
+  try{ if(typeof renderDocs === 'function') renderDocs(); }catch(_e){}
+  toast('נוצר מסמך לחתימה · ' + (data.items||0) + ' שורות ✓');
+};
+
 window.createProtocol = async (orderId, ctx)=>{
   const o = ORDS.find(x=>x.id===orderId); if(!o) return;
   if(!window.canEdit('docs.protocols')){ alert('אין לך הרשאת עריכה בקטגוריית הפרוטוקולים.'); return; }
@@ -9183,7 +9263,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'pricust-2026-08-29a';
+const BUILD_ID = 'dealsign-2026-08-29a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -19291,6 +19371,11 @@ window.openDeal = async (id)=>{
       <div class="span2"><label>לינק לחתימה (PowerDoc)</label>
         ${d.sign_link?`<div class="tk-lnk"><a href="${esc(safeUrl(d.sign_link))}" target="_blank" rel="noopener">פתיחה ↗</a></div>`
                      :`<div class="note">טרם נשלח לחתימה.</div>`}</div>
+      <!-- 🔴 6.167.0 — משבצת החתימה **שלנו**, נפרדת מ-PowerDoc בכוונה.
+           216 מתוך 216 הקישורים למעלה הם powerdoc.co; תא אחד לשניהם
+           היה מציג שני מקורות שונים כאילו הם אותו דבר. -->
+      <div class="span2"><label>חתימה על ההצעה — מודול איירון</label>
+        <div id="dl-signbox">${dlSignBox(d)}</div></div>
 
       <div class="form-sep">פרטי הפנייה והלקוח</div>
       ${lead?`<div class="span2"><label>פנייה מקורית</label>

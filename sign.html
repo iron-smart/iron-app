@@ -72,9 +72,9 @@ const DEF_SECTIONS=[
 /* נוסח ההצהרה מגיע מ-ord.settings.protocol_agree דרך פונקציית sign, ולכן
    שינוי נוסח אינו דורש פריסה. הקבוע כאן הוא נפילה אחורה בלבד — הצהרה ריקה
    בתיבת הסימון היא התוצאה הגרועה ביותר. הנוסח זהה ל-AGREE_FALLBACK בשרת. */
-const DEF_AGREE="קראתי את הנחיות ההכנה, הבנתי אותן, ואני מתחייב/ת שכל ההכנות הרלוונטיות עבורי בפרוטוקל זה יבוצעו בהתאם לפני מועד ההתקנה. החתימה חלה על כל ההזמנות הפתוחות שלי על הזמנות הנ״ל וכל ההזמנות הפתוחות שלי.";
+const DEF_AGREE="קראתי את הנחיות ההכנה, הבנתי אותן, ואני מתחייב/ת שכל ההכנות הרלוונטיות עבורי בפרוטוקל זה יבוצעו לפני מועד ההתקנה. החתימה חלה על כל ההזמנות הנ״ל והזמנות פתוחות נוספות בכתובת זו במידה וישנן.";
 /* נפילה אחורה להצהרת מורשה החתימה. זהה ל-AUTH_FALLBACK בשרת. */
-const DEF_AUTH="אני מורשה/ת לחתום בשם הלקוח ולחייב אותו בהתחייבויות המפורטות במסמך זה.";
+const DEF_AUTH="אני מצהיר שאני מורשה/ת לחתום בשם הלקוח.";
 
 function show(html){ document.getElementById('app').innerHTML='<div class="ok-wrap"><div class="ok-card">'+html+'</div></div>'; }
 
@@ -110,7 +110,11 @@ async function init(){
         +'@media print{.card.wm{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
       document.head.appendChild(st);
     }
-    if(d.doc_type&&d.doc_type!=='פרוטוקול הכנה להתקנה') renderReport(d); else renderProtocol(d);
+    /* 🔴 ההצעה קודם. הניתוב הקיים הוא לפי doc_type בלבד, ולכן
+       'אישור הצעת מחיר' היה נופל ל-renderReport ומבקש מהלקוח למלא טופס
+       טכנאי ושתי חתימות. אותה הסתעפות-לפי-קטגוריה שנוספה בשרת. */
+    if(d.kind==='quote') renderProtocol(d);
+    else if(d.doc_type&&d.doc_type!=='פרוטוקול הכנה להתקנה') renderReport(d); else renderProtocol(d);
   }catch(e){
     show('אירעה שגיאה: '+esc(e.message)+'<br><br>אנא פנו לצוות איירון פיטנס: 074-7779988');
   }
@@ -155,10 +159,19 @@ function renderProtocol(d){
   const addr=d.address||d.customer_address||'';
   const covered=Array.isArray(d.covered)?d.covered:[];
   const multi=covered.length>1;
+  /* 🟢 וריאנט ההצעה משתמש **באותו** מנגנון חתימה: לוח החתימה, אכיפת
+     השם, שתי ההצהרות, ה-POST והשגיאות זהים. רק גוף המסמך מתחלף.
+     שכפול הפונקציה היה יוצר עותק שני של אכיפת השם שייפרד. */
+  const isQ = d.kind==='quote';
+  const title = isQ ? 'אישור הצעת מחיר' : 'פרוטוקול הכנה להתקנה';
+  const sub   = isQ ? 'נא לעבור על פירוט ההצעה ולחתום בתחתית העמוד'
+                    : 'נא לקרוא בעיון ולחתום בתחתית העמוד';
+  const btnTxt = isQ ? 'אישור וחתימה על ההצעה' : 'שליחת הפרוטוקול החתום';
   document.getElementById('app').innerHTML=`
 <div class="band">${d.logo?`<img src="${d.logo}" alt="IRON FITNESS">`:`<h1>IRON FITNESS</h1>`}
-  <h1>פרוטוקול הכנה להתקנה</h1><div class="sub">נא לקרוא בעיון ולחתום בתחתית העמוד</div></div>
+  <h1>${esc(title)}</h1><div class="sub">${esc(sub)}</div></div>
 <div class="wrap">
+  ${isQ ? (d.quote_html||'') : `
   <div class="card"><div class="facts">
     ${multi
       ?`<div style="grid-column:1/-1"><span class="lbl">ההזמנות הכלולות בפרוטוקול (${covered.length})</span><b>${covered.map(esc).join(' · ')}</b></div>`
@@ -172,7 +185,7 @@ function renderProtocol(d){
   <div class="card wm"><h2>לקוח יקר,</h2>
   <p style="font-size:.92rem;font-weight:600">${esc(d.intro||'')}</p>
   ${(d.sections&&d.sections.length?d.sections:DEF_SECTIONS).map(([t,items])=>`<h3>${esc(t)}</h3><ul>${items.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`).join('')}</div>
-  <div class="warn">${esc(d.warning||'')}</div>
+  <div class="warn">${esc(d.warning||'')}</div>`}
   <div class="card">
     <h2>אישור וחתימה</h2>
     <label>שם מלא של החותם</label>
@@ -182,7 +195,7 @@ function renderProtocol(d){
     <button type="button" class="btn-clear" id="clear1">ניקוי חתימה</button>
     <div class="agree"><input type="checkbox" id="auth"><span id="auth-txt">${esc(d.authorized||DEF_AUTH)}</span></div>
     <div class="agree"><input type="checkbox" id="agree"><span id="agree-txt">${esc(d.agree||DEF_AGREE)}</span></div>
-    <button class="btn-send" id="sendBtn" disabled>שליחת הפרוטוקול החתום</button>
+    <button class="btn-send" id="sendBtn" disabled>${esc(btnTxt)}</button>
     <div id="err" style="color:#a92f2f;font-weight:700;font-size:.85rem;margin-top:8px"></div>
   </div>
   <div class="foot">צוות איירון פיטנס בע"מ · טלפון 074-7779988</div>
@@ -205,8 +218,10 @@ function renderProtocol(d){
         body:JSON.stringify({token,signer_name:document.getElementById('signerName').value.trim(),signature:sig,agreed:document.getElementById('agree').checked,authorized:document.getElementById('auth').checked,agree_text:(document.getElementById('agree-txt')||{}).textContent||''})});
       const dd=await r.json();
       if(!r.ok||!dd.ok) throw new Error(dd.error||'שגיאה');
-      show('<h2 style="margin:10px 0 6px">הפרוטוקול נחתם בהצלחה!</h2><p style="font-size:.9rem;color:#4c5560">נציג מטעמינו יצור קשר לתיאום מועד ההתקנה לאחר שישובץ בלוח השיבוצים שלנו.<br><br>תודה רבה,<br>צוות איירון פיטנס</p>');
-    }catch(e){ document.getElementById('err').textContent='השליחה נכשלה: '+e.message+' — נסו שוב'; sendBtn.disabled=false; sendBtn.textContent='שליחת הפרוטוקול החתום'; }
+      show(isQ
+        ? '<h2 style="margin:10px 0 6px">ההצעה אושרה ונחתמה!</h2><p style="font-size:.9rem;color:#4c5560">קיבלנו את אישורכם. נציג מטעמינו יצור קשר להמשך התהליך.<br><br>תודה רבה,<br>צוות איירון פיטנס</p>'
+        : '<h2 style="margin:10px 0 6px">הפרוטוקול נחתם בהצלחה!</h2><p style="font-size:.9rem;color:#4c5560">נציג מטעמינו יצור קשר לתיאום מועד ההתקנה לאחר שישובץ בלוח השיבוצים שלנו.<br><br>תודה רבה,<br>צוות איירון פיטנס</p>');
+    }catch(e){ document.getElementById('err').textContent='השליחה נכשלה: '+e.message+' — נסו שוב'; sendBtn.disabled=false; sendBtn.textContent=btnTxt; }
   };
 }
 

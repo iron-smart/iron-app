@@ -2173,9 +2173,6 @@ td.lb-today .lb-dt{ background-color:transparent; }
   padding:10px 12px; margin-bottom:12px; }
 .lbq-h{ display:flex; align-items:center; gap:8px; font-weight:800; font-size:13px;
   color:var(--navy); margin-bottom:8px; }
-.lbq-n{ font-size:11.5px; font-weight:700; color:#7c8798; background:#eef4ff;
-  border-radius:9px; padding:1px 8px; }
-.lbq-n.ok{ color:#0b7a4b; background:#e6f7ef; }
 .lbq-hint{ display:block; font-size:10.5px; font-weight:500; color:#94a3b8; }
 .lbq-g{ margin:0; }
 /* ⚠️ אותו resize:vertical של תיבת העדכון — הרחבה אופקית בתוך גריד
@@ -2484,7 +2481,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.163.0</div>
+      <div class="ver">גרסה 6.164.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2613,7 +2610,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.163.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.164.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2960,12 +2957,10 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       <div><label>סוג לקוח<span class="req">*</span></label><select id="a-type"></select></div>
       <div class="span2"><label>שם חברה</label><input id="a-company"></div>
       <div><label>עיר</label><input id="a-city"></div>
-      <div class="span4 a-hint">יש לשאול לאן מיועד הציוד, כדי להבין את סוג הלקוח.</div>
 
       <div class="form-sep">מאיפה הגיע</div>
       <div class="span2"><label>מקור הגעה<span class="req">*</span></label><select id="a-source"></select></div>
       <div class="span2"><label>האם לשלוח וואטסאפ?</label><select id="a-wacat"><option value="">—</option><option>כן</option><option>לא</option></select></div>
-      <div class="span4"><label>מידע על הליד</label><textarea id="a-notes" rows="2" placeholder="מתחם אימונים ראשון? גודל המקום? איזה סוג אימונים…"></textarea></div>
 
       <div class="span4"><div class="a-ownline" id="a-ownline"></div></div>
     </div>
@@ -9171,7 +9166,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'dealown-2026-08-29a';
+const BUILD_ID = 'leadq2-2026-08-29a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -20380,7 +20375,7 @@ window.lbDupCheck = ()=>{
 window.dupGoCust = id=>{ closeCards(); openCust(id); };
 window.dupGoLead = id=>{ closeCards(); openLead(id); };
 $('#addBtn').onclick = ()=>{
-  ['a-name','a-phone','a-email','a-company','a-city','a-notes'].forEach(k=>{ const e=document.getElementById(k); if(e) e.value=''; });
+  ['a-name','a-phone','a-email','a-company','a-city'].forEach(k=>{ const e=document.getElementById(k); if(e) e.value=''; });
   lbFillOpts();
   ['a-wacat'].forEach(k=>{ const e=document.getElementById(k); if(e) e.value=''; });
   const _ow=document.getElementById('a-ownline');
@@ -20416,18 +20411,13 @@ $('#a-save').onclick = async ()=>{
   if(data && data.id){
     const { error:oe } = await sb.schema('crm').rpc('lead_set_owner',{ p_lead:data.id, p_owner:ME.id });
     if(oe) toast('הליד נוצר, אך שיוך הבעלות נכשל — '+oe.message);
-    /* 🔴 6.114.0 — רומן: "מידע על הליד שממלאים בטופס יגיע ישירות
-       לעדכונים בכרטיס". crm.leads.notes מפסיק להיות נקודת קלט.
-       ⚠️ actor_id=ME.id: זו כתיבה של אדם, ולכן היא **כן** ניתנת
-       לעריכה ולמחיקה על ידו — בשונה מ-1,839 שורות המיגרציה
-       שנכתבו עם actor_id=NULL ונעולות בכוונה. */
-    const _n = g('a-notes');
-    if(_n){ await sb.schema('crm').from('activities').insert({
-      actor_id: ME.id, linked_type:'lead', linked_id:data.id, kind:'עדכון', body:_n }); }
-    /* 🔴 6.162.0 — התשאול כעדכון **נפרד** ולא ממוזג ל-a-notes:
-       "מידע על הליד" הוא טקסט חופשי שהנציג כתב, והתשאול הוא רשומה
-       מובנית עם details. מיזוגם היה מוחק את ההבחנה, ואת a-notes אי
-       אפשר לפרסר חזרה. */
+    /* 🔴 6.164.0 — a-notes ירד, ו-q_notes בתוך התשאול ירש את השם
+       "מידע על הליד" (רומן: "זה בעצם אותו דבר, אין צורך בכפילות").
+       ⇒ הטופס כותב מעכשיו **עדכון אחד ולא שניים**.
+       🟢 ובדרך נסגר פגם: הכתיבה של a-notes נעשתה **בלי if(error)**
+          וכשל שם נבלע בשקט; lbQPost בודקת ומציגה טוסט.
+       ℹ️ 6.114.0 נשמר במלואו — הטקסט החופשי עדיין מגיע לעדכונים
+          ועדיין ניתן לעריכה ומחיקה, כי actor_id הוא ME.id. */
     await lbQPost(data.id, 'a');
     /* משימה מיידית — עד כה היא נפתחה רק בתיקתוק הבא של ה-cron
        (כל 15 דק', 08:00–20:00, לא שבת). ליד שנפתח ב-20:05 קיבל משימה
@@ -20465,22 +20455,36 @@ window.lqSave = async ()=>{
    מאותו אלמנט — ולא "מה בשדה מול מה במסד". */
 /* ═══ תשאול הליד (6.155.0, רומן) ═══════════════════════════════════
    רג'יסטרי אחד: התווית, העמודה, הצורה, ומאיזה מפתח הגדרות מגיעות
-   האפשרויות. שלושה צרכנים קוראים אותו — הציור, המונה, ו-
-   LEAD_CARD_FIELDS — ולכן שאלה נוספת היא **שורה אחת**.
+   האפשרויות. **שני** צרכנים קוראים אותו — lbQHtml (הציור) ו-lbQCollect
+   (בניית העדכון) — ולכן שאלה נוספת היא **שורה אחת**.
+   ⚠️ 6.164.0 — הרשימה תוקנה: המונה הוסר ב-6.162.0 ו-LEAD_CARD_FIELDS
+      הפסיק לקרוא אותה באותה בנייה, אבל ההערה נשארה מדברת על שלושה.
    ⚠️ ואף עמודה כאן אינה אחת משבע העמודות ש-monday-align-status
       מיישרת (status · sub_status · reject_reason · irrelevant_reason ·
       customer_type · source · send_whatsapp_catalog). זה תנאי: כתיבה
       לאחת מהן הייתה נדרסת למחרת ב-09:00. */
 const LEAD_Q = [
-  ['q_purpose',        'לאן מיועד הציוד?', 'txt', '', 'בהתאם לזה נגזר סוג הלקוח'],
-  ['q_place_status',   'סטטוס המקום',      'sel', 'crm_q_place_status', ''],
-  ['q_area_sqm',       'מ"ר (בערך)',        'num', '', ''],
-  ['q_ceiling_m',      'גובה תקרה (מ׳)',    'num', '', ''],
-  ['q_concept',        'הקונספט',           'sel', 'crm_q_concept', ''],
-  ['q_open_eta',       'צפי פתיחה',         'txt', '', 'בבית פרטי — מתי הכניסה'],
-  ['q_knows_products', 'מכיר את המוצרים?',  'sel', 'crm_q_knows', ''],
-  ['q_equipment',      'ציוד קיים / רשימה', 'txt', '', 'אם זה לא המקום הראשון'],
-  ['q_notes',          'הערות נוספות',      'txa', '', '']
+  /* 🔴 6.164.0 — ארבע שאלות פתוחות הפכו לרשימות סגורות (רומן). הרשימות
+     עצמן ב-ord.settings ולא כאן, ולכן רומן משנה אותן בלי פריסה.
+     ⚠️ בורר בלי מפתח הגדרות = רשימה ריקה שקטה; יש שער שאוכף שלכל 'sel'
+        יש מפתח. */
+  ['q_purpose',        'לאן מיועד הציוד?',      'sel', 'crm_q_purpose', 'בהתאם לזה נגזר סוג הלקוח'],
+  ['q_place_status',   'סטטוס המקום',            'sel', 'crm_q_place_status', ''],
+  ['q_area_sqm',       'מ"ר (בערך)',              'num', '', ''],
+  ['q_ceiling_m',      'גובה תקרה (מ׳)',          'num', '', ''],
+  /* "לעסקים בלבד" בתווית ולא כשדה מותנה — הכרעת רומן. הנציג מדלג עליו
+     בבית פרטי, והטופס אינו קופץ בזמן הקלדה. */
+  ['q_concept',        'הקונספט (לעסקים בלבד)',  'sel', 'crm_q_concept', ''],
+  /* רומן: "במילים אחרות גם זמן אספקה אותו רוצה הלקוח שהכל יעמוד" —
+     הרמז הקודם ("בבית פרטי — מתי הכניסה") צמצם את השאלה למקרה אחד. */
+  ['q_open_eta',       'צפי פתיחה',              'txt', '', 'מתי הלקוח רוצה שהכול יעמוד — זמן האספקה'],
+  /* רומן: "זה בעצם שאלה ללקוח אם הוא מכיר את חברת איירון פיטנס".
+     "מכיר את המוצרים?" היה עמום ונשמע כמו שאלה על קטלוג. */
+  ['q_knows_products', 'מכיר את איירון פיטנס?',  'sel', 'crm_q_knows', ''],
+  ['q_equipment',      'ציוד קיים?',             'sel', 'crm_q_equipment', 'אם כן — לבקש רשימה ולרשום ב"מידע על הליד"'],
+  /* 🔴 השדה הזה **הוא** "מידע על הליד" של הטופס. עד 6.164.0 היו שניים
+     על אותו מסך — a-notes ו-q_notes — וזו הכפילות שרומן ביקש לאחד. */
+  ['q_notes',          'מידע על הליד',           'txa', '', '']
 ];
 /* ⚠️ "איך הגעת אלינו" **אינו** ברשימה: הוא כבר קיים כ-source
    וכ-utm_campaign, ושדה שני היה כפילות שסותרת את עצמה. */

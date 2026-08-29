@@ -2490,7 +2490,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.168.0</div>
+      <div class="ver">גרסה 6.169.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2619,7 +2619,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.168.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.169.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3018,6 +3018,29 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       <button class="ghost" id="lur-skip">דילוג</button>
     </div>
     <div class="err" id="lur-err"></div>
+  </div>
+</div>
+<!-- 6.169.0 — איפוס סיסמה. החליף prompt() של הדפדפן, שאותו כרום בולע
+     אחרי שהמשתמש מסמן "מנע מדף זה ליצור חלונות דו-שיח נוספים" — ואז
+     resetUserPass יצאה ב-return שקט בלי רשת ובלי הודעה. -->
+<div class="modal hidden" id="pwModal">
+  <div class="sheet">
+    <h3>איפוס סיסמה</h3>
+    <div class="note" id="pw-who"></div>
+    <div class="field"><label>סיסמה חדשה *</label>
+      <div style="display:flex;gap:6px;align-items:center">
+        <input id="pw-a" type="password" autocomplete="new-password" style="flex:1">
+        <button type="button" class="ghost" id="pw-eye" style="width:auto;padding:6px 10px">הצג</button>
+      </div>
+    </div>
+    <div class="field"><label>אימות הסיסמה *</label>
+      <input id="pw-b" type="password" autocomplete="new-password"></div>
+    <div class="note">לפחות 10 תווים, ובהם אות וספרה. המשתמש יידרש להחליף אותה בכניסה הבאה.</div>
+    <div class="actions">
+      <button class="chip" id="pw-save">איפוס הסיסמה</button>
+      <button class="ghost" id="pw-cancel">ביטול</button>
+    </div>
+    <div class="err" id="pw-err"></div>
   </div>
 </div>
 <div class="modal hidden" id="lbMeetModal">
@@ -9279,7 +9302,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'cardsave-2026-08-29a';
+const BUILD_ID = 'pwreset-2026-08-29a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -14096,12 +14119,22 @@ async function adminUsersFn(body){
 /* 6.24.0 — יצירת משתמש עוברת דרך admin-create-user: ההזמנה נרשמת במסד בשם
    הקורא (ולכן can_edit('set.users') נאכף שם), הסיסמה הראשונית נקבעת על ידי
    המנהל ומועברת ידנית, והמערכת מסמנת must_change_password לכניסה הראשונה. */
+/* 6.169.0 — כלל הסיסמה במקום אחד. עד כאן יצירת משתמש דרשה 10 תווים
+   +אות+ספרה, ואיפוס דרש 8 בלבד — כלומר **האיפוס היה חלש מהיצירה**,
+   ושני הכללים יכלו להיפרד ביום שמישהו ישנה אחד מהם.
+   מחזירה מחרוזת שגיאה, או '' כשתקין. */
+function pwWeak(p){
+  p = String(p || '');
+  if(p.length < 10 || !/[A-Za-z]/.test(p) || !/[0-9]/.test(p))
+    return 'הסיסמה חייבת להכיל לפחות 10 תווים, אות וספרה';
+  return '';
+}
 window.createUser = async ()=>{
   const err=$('#nu-err'); err.textContent='';
   const full_name=$('#nu-name').value.trim(), email=$('#nu-email').value.trim().toLowerCase(), password=$('#nu-pass').value;
   const role=$('#nu-role').value, group=($('#nu-group')&&$('#nu-group').value)||'';
   if(!/@ironfitness\.co\.il$/.test(email)){ err.textContent='כתובת הדואר האלקטרוני חייבת להיות בדומיין ironfitness.co.il'; return; }
-  if(password.length<10 || !/[A-Za-z]/.test(password) || !/[0-9]/.test(password)){ err.textContent='הסיסמה הראשונית חייבת להכיל לפחות 10 תווים, אות וספרה'; return; }
+  const _pw = pwWeak(password); if(_pw){ err.textContent = _pw; return; }
   const btn=$('#nu-btn'); if(btn){ btn.disabled=true; btn.textContent='יוצר…'; }
   try{
     const { data:{ session } } = await sb.auth.getSession();
@@ -14119,13 +14152,50 @@ window.createUser = async ()=>{
   }catch(e){ console.error('createUser', e); err.textContent='שגיאת רשת ביצירת המשתמש'; }
   finally{ if(btn){ btn.disabled=false; btn.textContent='יצירה'; } }
 };
-window.resetUserPass = async id=>{
+/* 6.169.0 — 🔴 כאן ישבה התקלה שרומן דיווח עליה. הקוד הקודם היה:
+       const password = prompt('סיסמה חדשה עבור …');
+       if(!password) return;
+   `prompt()` מחזירה null גם על ביטול וגם כשהדפדפן חוסם חלונות דו-שיח
+   ("מנע מדף זה ליצור חלונות נוספים"), ואז הפונקציה יצאה **בשקט מוחלט**
+   — בלי רשת, בלי שגיאה, בלי הודעה. נמדד: אפס קריאות ל-orders-admin-users
+   ב-24 שעות, ואיפוס אחד בלבד באודיט ב-14 יום.
+   🟢 מודאל של המערכת אינו ניתן לבליעה, ולכן המסלול השקט חדל להתקיים. */
+let PW_USER = null;
+window.resetUserPass = id=>{
   const u=(SET_USERS||[]).find(x=>x.id===id);
-  const password=prompt('סיסמה חדשה עבור '+((u&&u.email)||'המשתמש')+' (8 תווים לפחות):');
-  if(!password) return;
-  if(password.length<8){ alert('סיסמה קצרה מדי'); return; }
-  const j = await adminUsersFn({ action:'reset-password', user_id:id, password });
-  alert(j.error?('שגיאה: '+j.error):'הסיסמה אופסה ✓');
+  PW_USER = id;
+  const who = document.getElementById('pw-who');
+  if(who) who.textContent = 'עבור: ' + ((u && (u.full_name || u.email)) || 'המשתמש')
+        + ((u && u.full_name && u.email) ? ' · ' + u.email : '');
+  /* ⚠️ ניקוי ב**פתיחה** ולא בסגירה: יש כמה מסלולי סגירה (רקע · Escape ·
+     ביטול), וכך אין סיסמה שנשארת ב-DOM בין שימושים, בכולם. */
+  ['pw-a','pw-b'].forEach(k=>{ const e=document.getElementById(k); if(e){ e.value=''; e.type='password'; } });
+  const eye=document.getElementById('pw-eye'); if(eye) eye.textContent='הצג';
+  const er=document.getElementById('pw-err'); if(er) er.textContent='';
+  mountCard('pwModal', ()=>document.getElementById('pwModal').classList.remove('hidden'));
+  setTimeout(()=>{ try{ document.getElementById('pw-a').focus(); }catch(_e){} }, 40);
+};
+window.pwDo = async ()=>{
+  const er = document.getElementById('pw-err'); if(er) er.textContent='';
+  const a = (document.getElementById('pw-a')||{}).value || '';
+  const b = (document.getElementById('pw-b')||{}).value || '';
+  if(!PW_USER){ if(er) er.textContent='לא נבחר משתמש — סגרו ונסו שוב'; return; }
+  const w = pwWeak(a); if(w){ if(er) er.textContent = w; return; }
+  /* ⚠️ אימות הקלדה: הסיסמה נמסרת בעל פה, ושגיאת הקלדה נועלת את העובד
+     בלי שאיש ידע מדוע. ב-prompt לא הייתה שום בדיקה כזאת. */
+  if(a !== b){ if(er) er.textContent='שתי הסיסמאות אינן זהות'; return; }
+  const btn = document.getElementById('pw-save');
+  if(btn){ btn.disabled = true; btn.textContent = 'מאפס…'; }
+  try{
+    const j = await adminUsersFn({ action:'reset-password', user_id:PW_USER, password:a });
+    if(j && j.error){ if(er) er.textContent = 'שגיאה: ' + j.error; return; }
+    closeCards(); PW_USER = null;
+    toast('הסיסמה אופסה ✓ המשתמש יידרש להחליף אותה בכניסה הבאה');
+  }catch(e){
+    if(er) er.textContent = 'האיפוס נכשל: ' + (e && e.message ? e.message : e);
+  }finally{
+    if(btn){ btn.disabled = false; btn.textContent = 'איפוס הסיסמה'; }
+  }
 };
 window.deleteUser = async id=>{
   const u=(SET_USERS||[]).find(x=>x.id===id);
@@ -22111,6 +22181,15 @@ $('#fu-save').onclick = async ()=>{
       category:'פולואפ' } : null });
 };
 $('#meetAddBtn').onclick = ()=> meetNew();
+$('#pw-cancel').onclick = ()=> { PW_USER = null; closeCards(); };
+$('#pw-save').onclick   = ()=> window.pwDo();
+$('#pw-eye').onclick    = ()=>{
+  const p=$('#pw-a'), b=$('#pw-eye'), show = p.type==='password';
+  p.type = show ? 'text' : 'password';
+  b.textContent = show ? 'הסתר' : 'הצג';
+};
+/* Enter בשדה האימות שולח — הדפוס של מסך ההתחברות */
+$('#pw-b').addEventListener('keydown', e=>{ if(e.key==='Enter') window.pwDo(); });
 $('#lm-cancel').onclick = ()=> closeCards();
 $('#lm-save').onclick = async ()=>{
   const tg=LB_MEET_T; if(!tg) return; const id=tg.id || '';

@@ -2484,7 +2484,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.159.0</div>
+      <div class="ver">גרסה 6.160.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2613,7 +2613,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.159.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.160.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2663,6 +2663,11 @@ tr.lb-on td{ background-color:#eef5fd !important; }
     <!-- פגישות -->
     <section id="tab-meets" class="hidden">
       <div class="chips" id="meet-chips"></div>
+      <!-- ⚠️ מסך הפגישות היה **המסך היחיד ב-CRM בלי חיפוש**. -->
+      <div class="toolbar" id="meet-tools">
+        <input id="meet-q" placeholder="חיפוש לפי נושא, מיקום או ישות מקושרת…" oninput="renderMeets()">
+        <button class="add" id="meetAddBtn" title="פגישה חדשה">+ פגישה חדשה</button>
+      </div>
       <div id="meet-cal-wrap"></div>
       <div id="meets-list"></div>
     </section>
@@ -3001,9 +3006,25 @@ tr.lb-on td{ background-color:#eef5fd !important; }
     <div class="field"><label>תאריך *</label><input id="lm-date" type="date"></div>
     <div class="field"><label>שעת התחלה</label><input id="lm-start" type="time" value="10:00"></div>
     <div class="field"><label>שעת סיום</label><input id="lm-end" type="time" value="11:00"></div>
-    <div class="field"><label>סוג פגישה</label>
-      <select id="lm-type"><option>פרונטלי</option><option>מקוונת</option><option>טלפונית</option><option>פגישת מכירה</option></select></div>
-    <div class="field"><label>מיקום</label><input id="lm-loc" placeholder="כתובת מלאה, או ריק"></div>
+    <!-- 🔴 6.160.0 — הבורר נבנה מ-MEET_TYPES ולא מרשימה מוקלדת.
+         עד כאן הוא הציע 'פרונטלי' (כתיב שגוי) ו'פגישת מכירה' (מה
+         ש-outlook כותב, לא סוג), **בלי allowEmpty** — ולכן כל פגישה
+         שנוצרה כאן נכתבה 'פרונטלי' גם כשאיש לא בחר. -->
+    <div class="field"><label>מקושרת ל־</label>
+      <div id="lm-lnkchip" class="tkl-box"></div>
+      <input id="lm-lnkq" autocomplete="off" placeholder="חיפוש ליד, לקוח או תהליך מכירה…" oninput="tklPick('lm',this.value)" onfocus="tklPick('lm',this.value)" onblur="setTimeout(()=>{const b=document.getElementById('lm-lnkres'); if(b) b.hidden=true;},150)">
+      <div id="lm-lnkres" class="ac-menu" hidden></div>
+      <input type="hidden" id="lm-lnk" value="">
+    </div>
+    <div class="field"><label>סוג פגישה<span class="req">*</span></label>
+      <select id="lm-type" onchange="lmTypeChanged()"></select></div>
+    <!-- ⚠️ שדה אחד שמשתנה לפי הסוג, באותה חלוקה של mtDetail — שלושה
+         שדות היו משאירים שניים ריקים בכל פגישה. -->
+    <div class="field" id="lm-detwrap"><label id="lm-detlbl">מיקום</label>
+      <input id="lm-loc" placeholder="כתובת מלאה">
+      <input id="lm-url" class="hidden" placeholder="קישור לפגישה המקוונת" dir="ltr">
+      <input id="lm-phone" class="hidden" placeholder="טלפון ליצירת קשר" dir="ltr">
+    </div>
     <div class="actions">
       <button class="btn green" id="lm-save">שמירה</button>
       <button class="ghost" id="lm-cancel">ביטול</button>
@@ -9115,7 +9136,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'meetown-2026-08-29a';
+const BUILD_ID = 'meetnew-2026-08-29a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -13601,6 +13622,8 @@ const CRM_SETTINGS = [
   ['crm_task_name_meeting','משימת פגישה','{שם} = שם הליד. המשימה נפתחת על שעת הפגישה.','txt'],
   ['crm_task_name_followup','משימת פולואפ','{שם} = שם הליד. המועד נבחר ידנית.','txt'],
   ['crm_task_name_quote','משימה אחרי שליחת הצעה','{שם} = שם הלקוח.','txt'],
+  ['—','פגישות','sep'],
+  ['crm_meet_location','מיקום ברירת מחדל לפגישה','חל על פגישה **פרונטלית** בלבד, וכשלא הוקלד מיקום. עד 6.160.0 הערך היה מקודד בסכימה (בלי פסיק) ולא ניתן לשינוי בלי פריסה.','txt'],
   ['—','סוקר הצעות המחיר בפריוריטי','sep'],
   ['crm_quote_watch_enabled','הסוקר פעיל','"כן" או "לא". רץ כל 15 דקות, 08:00–20:00, לא בשבת.','yn'],
   ['crm_quote_sent_statdes','הסטטוס בפריוריטי שמסמן "נשלחה"','⚠️ הערך הזה לא נמדד מול פריוריטי. הסוקר רושם ביומן הסנכרון את כל ערכי STATDES שהוא רואה — אחרי הריצה הראשונה על הצעה אמיתית אפשר לתקן אותו כאן.','txt'],
@@ -14273,7 +14296,7 @@ const CRM_Q = {
   custs: () => sb.schema('core').from('customers').select('id,name,phone,email,priority_id,status,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes').order('created_at',{ascending:false}).limit(10000),
   tasks: () => sb.schema('crm').from('tasks').select('id,name,status,value_tag,category,due_at,closed_at,created_at,linked_type,linked_id,owner_id').order('due_at',{ascending:true}).limit(10000),
   deals: () => sb.schema('crm').from('deals').select('id,name,stage,amount,quote_status,irrelevant_reason,priority_quote_id,customer_id,contact_id,lead_id,send_channel,sign_link,approved_at,closed_at,created_at').order('created_at',{ascending:false}).limit(10000),
-  meets: () => sb.schema('crm').from('meetings').select('id,subject,status,meet_date,start_time,end_time,meet_type,location,teams_link,linked_type,linked_id,source,organizer_name,attendees,all_day,web_link,owner_id').order('meet_date',{ascending:false}).limit(10000),
+  meets: () => sb.schema('crm').from('meetings').select('id,subject,status,meet_date,start_time,end_time,meet_type,location,teams_link,linked_type,linked_id,source,organizer_name,attendees,all_day,web_link,owner_id,contact_phone').order('meet_date',{ascending:false}).limit(10000),
   lown: () => /* שורות הבעלות הראשיות. **לא מיותר מול leads.owner_id**: המראה מחזיקה
          profile_id בלבד, ולעובד לשעבר אין חשבון — 694 לידים היו מוצגים
          כחסרי בעלים. RLS: can_view('crm.leads'). */
@@ -19416,6 +19439,18 @@ function mtPhone(m){
   if(m.linked_type==='customer'){ const k=(CUSTS||[]).find(x=>x.id===m.linked_id); if(k && k.phone) return k.phone; }
   return MT_PHONE_RE.test(loc) ? loc : '';
 }
+/* השדה המותנה במודאל — אותה חלוקה של mtDetail, נקודת חנק אחת
+   שקובעת איזה שדה נראה ומה התווית שלו. */
+const MT_FIELD = { 'מקוונת':['lm-url','קישור לפגישה'],
+                   'טלפונית':['lm-phone','טלפון'],
+                   'פרונטלית':['lm-loc','מיקום'] };
+window.lmTypeChanged = ()=>{
+  const t = ($('#lm-type').value || 'פרונטלית');
+  const [id, lbl] = MT_FIELD[t] || MT_FIELD['פרונטלית'];
+  Object.values(MT_FIELD).forEach(([x])=>{ const e=document.getElementById(x); if(e) e.classList.add('hidden'); });
+  const e = document.getElementById(id); if(e) e.classList.remove('hidden');
+  const l = document.getElementById('lm-detlbl'); if(l) l.textContent = lbl;
+};
 /* 🔴 עמודה **אחת** ולא שלוש: שלוש היו מוסיפות ~360px לטבלה שכבר
    גלילה אופקית, ושתיים מהן ריקות בכל שורה. */
 function mtDetail(m){
@@ -19588,6 +19623,12 @@ function mTgDay(ds, evs, compact, adH){
     </div>`;
 }
 window.setMeetMode = v => { MEET_MODE = v; meetDefSave(); renderMeets(); };
+/* הסרגל מוסתר במצב יומן — החיפוש מסנן את הרשימה, ושם אין רשימה. */
+function meetTools(){
+  const t = $('#meet-tools'); if(!t) return;
+  t.classList.toggle('hidden', MEET_MODE==='cal');
+  const b = $('#meetAddBtn'); if(b) b.classList.toggle('hidden', !window.canEdit('crm.meets'));
+}
 window.mcalMode    = v => { MCAL_VIEW = v; renderMeets(); };
 window.mcalToday   = () => { MCAL_D = new Date(); renderMeets(); };
 window.mcalGoDay   = ds => { MCAL_D = new Date(ds+'T12:00:00'); MCAL_VIEW='day'; renderMeets(); };
@@ -19676,6 +19717,7 @@ function renderMeets(){
      תוחל אחריהם המסך יצייר מצב אחד ויסמן אחר. */
   meetInitDef();
   meetChips();
+  meetTools();
   const cw=$('#meet-cal-wrap'), lw=$('#meets-list');
   if(MEET_MODE==='cal'){
     if(lw){ lw.style.display='none'; lw.innerHTML=''; }
@@ -19684,7 +19726,14 @@ function renderMeets(){
   }
   if(cw){ cw.style.display='none'; cw.innerHTML=''; }
   if(lw) lw.style.display='';
-  const list=meetFilterList();
+  let list=meetFilterList();
+  /* חיפוש חוצה-שדות, על אותם שדות שהטבלה מציגה. */
+  const _q = (($('#meet-q') && $('#meet-q').value) || '').trim().toLowerCase();
+  if(_q) list = list.filter(m=>{
+    const ln = linkedName(m);
+    return [m.subject, m.location, m.contact_phone, mtType(m), ln && ln.name]
+      .some(x => String(x||'').toLowerCase().indexOf(_q) >= 0);
+  });
   /* ⚠️ paintKeep ולא innerHTML=: כל שינוי סינון או מיון היה מחזיר את
      הגלילה האופקית לראש — הלקח מ-6.116.0 בטבלת הלידים. */
   paintKeep('#meets-list', wideScreen() ? meetTable(list) : capped(list, meetRow, 'אין פגישות בסינון הזה'));
@@ -21491,10 +21540,25 @@ window.leadFup = (id)=>{
 /* נקודת חנק אחת לפתיחת המודאל — שני עוטפים דקים מעליה. */
 function meetOpenFor(t, id, title){
   LB_MEET_T = { t: t, id: id };
-  $('#lm-subj').value = 'פגישה — ' + (title || ''); $('#lm-err').textContent='';
+  $('#lm-subj').value = title ? ('פגישה — ' + title) : ''; $('#lm-err').textContent='';
   $('#lm-date').value = todayStr();
+  /* הבורר נבנה בכל פתיחה מ-MEET_TYPES — רשימה אחת, בלי ליטרל שני. */
+  $('#lm-type').innerHTML = MEET_TYPES.map(x=>`<option>${esc(x)}</option>`).join('');
+  $('#lm-type').value = 'פרונטלית';
+  ['lm-loc','lm-url','lm-phone'].forEach(x=>{ const e=document.getElementById(x); if(e) e.value=''; });
+  /* ⚠️ הבורר מוצג **רק** ביצירה מהמסך: מכרטיס ליד או עסקה הקישור
+     כבר ידוע, ובורר פתוח שם מזמין לשייך את הפגישה לישות אחרת. */
+  const lw = $('#lm-lnkq') && $('#lm-lnkq').parentElement;
+  if(lw) lw.classList.toggle('hidden', !!id);
+  tklInit('lm', id ? (t + ':' + id) : '');
+  lmTypeChanged();
   mountCard('lbMeetModal', ()=>$('#lbMeetModal').classList.remove('hidden'));
 }
+/* ＋פגישה חדשה מהמסך — בלי ישות מקושרת מראש. */
+window.meetNew = ()=>{
+  if(!window.canEdit('crm.meets')){ toast('אין הרשאת עריכה לפגישות'); return; }
+  meetOpenFor('', '', '');
+};
 window.leadMeet = (id)=>{
   const l=LEADS.find(x=>x.id===id); if(!l) return;
   meetOpenFor('lead', id, l.full_name);
@@ -21550,9 +21614,10 @@ $('#fu-save').onclick = async ()=>{
       due_at:(r.due_at||due.toISOString()), linked_type:'lead', linked_id:id,
       category:'פולואפ' } : null });
 };
+$('#meetAddBtn').onclick = ()=> meetNew();
 $('#lm-cancel').onclick = ()=> closeCards();
 $('#lm-save').onclick = async ()=>{
-  const tg=LB_MEET_T; if(!tg || !tg.id) return; const id=tg.id;
+  const tg=LB_MEET_T; if(!tg) return; const id=tg.id || '';
   const subj=$('#lm-subj').value.trim(), d=$('#lm-date').value;
   const miss=[!subj?'נושא':null, !d?'תאריך':null].filter(Boolean);
   if(miss.length){ $('#lm-err').textContent='חסרים שדות חובה: '+miss.join(' · ')+'.'; return; }
@@ -21566,13 +21631,23 @@ $('#lm-save').onclick = async ()=>{
      ⚠️ location נשלח מפורשות (גם null): ברירת המחדל במסד היא כתובת
         המשרד, ופגישת מכירה אצל לקוח עם "קומבה 32 חדרה" שאיש לא בחר
         היא המחלקה של ה-select שנופל לאפשרות הראשונה. */
-  /* ⚠️ שם הפרמטר שונה בין השתיים (p_lead מול p_deal) — ולכן המיזוג
-     נעשה בבניית האובייקט ולא בשם ה-RPC בלבד. */
-  const _fn = tg.t==='deal' ? 'deal_meeting_create' : 'lead_meeting_create';
-  const { data, error } = await sb.schema('crm').rpc(_fn, {
-    [tg.t==='deal' ? 'p_deal' : 'p_lead']: id, p_subject: subj, p_date: d,
+  /* 🔴 6.160.0 — נקודת כניסה אחת: crm.meeting_create. היא מאצילה
+     ל-lead_meeting_create / deal_meeting_create כשיש קישור, ולכן כללי
+     הפייפליין נשארים בהגדרה אחת. */
+  const _lnk = (($('#lm-lnk') && $('#lm-lnk').value) || '').split(':');
+  const _lt = id ? tg.t : (_lnk[0] || '');
+  const _li = id || (_lnk[1] || null);
+  const { data, error } = await sb.schema('crm').rpc('meeting_create', {
+    p_link_type: _lt || null, p_link_id: _li || null,
+    p_subject: subj, p_date: d,
     p_start: $('#lm-start').value||null, p_end: $('#lm-end').value||null,
-    p_type: $('#lm-type').value||null, p_location: $('#lm-loc').value.trim()||null
+    p_type: $('#lm-type').value||null,
+    /* ⚠️ שלושת השדות נשלחים **תמיד**, גם ריקים: מפתח עם undefined
+       נשמט מה-JSON ב-supabase-js והשרת רואה NULL — כלומר ניקוי שדה
+       היה נבלע בשקט. הלקח מ-ord.team_day_set. */
+    p_location: ($('#lm-loc').value||'').trim() || null,
+    p_phone:    ($('#lm-phone').value||'').trim() || null,
+    p_link_url: ($('#lm-url').value||'').trim() || null
   });
   if(error){ $('#lm-err').textContent='השמירה נכשלה — '+error.message; return; }
   const r = Array.isArray(data) ? data[0] : data;
@@ -21582,8 +21657,9 @@ $('#lm-save').onclick = async ()=>{
     : 'נקבעה פגישה ✓');
   await loadLeads();
   /* ⚠️ הכרטיס שנפתח מחדש נגזר מהסוג. openLead קשיח היה פותח כרטיס ליד
-     על מזהה עסקה — וזה נראה כמו "לא קרה כלום". */
-  if(tg.t==='deal') openDeal(id); else openLead(id);
+     על מזהה עסקה — וזה נראה כמו "לא קרה כלום".
+     🔴 ומהמסך אין כרטיס מקור לחזור אליו — שם רק מציירים את הרשימה. */
+  if(!id) renderMeets(); else if(tg.t==='deal') openDeal(id); else openLead(id);
 };
 
 window.convertLead = async (id)=>{

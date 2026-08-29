@@ -2484,7 +2484,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.158.0</div>
+      <div class="ver">גרסה 6.159.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2613,7 +2613,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.158.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.159.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9115,7 +9115,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'dealcard-2026-08-29a';
+const BUILD_ID = 'meetown-2026-08-29a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -14273,7 +14273,7 @@ const CRM_Q = {
   custs: () => sb.schema('core').from('customers').select('id,name,phone,email,priority_id,status,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes').order('created_at',{ascending:false}).limit(10000),
   tasks: () => sb.schema('crm').from('tasks').select('id,name,status,value_tag,category,due_at,closed_at,created_at,linked_type,linked_id,owner_id').order('due_at',{ascending:true}).limit(10000),
   deals: () => sb.schema('crm').from('deals').select('id,name,stage,amount,quote_status,irrelevant_reason,priority_quote_id,customer_id,contact_id,lead_id,send_channel,sign_link,approved_at,closed_at,created_at').order('created_at',{ascending:false}).limit(10000),
-  meets: () => sb.schema('crm').from('meetings').select('id,subject,status,meet_date,start_time,end_time,meet_type,location,teams_link,linked_type,linked_id,source,organizer_name,attendees,all_day,web_link').order('meet_date',{ascending:false}).limit(10000),
+  meets: () => sb.schema('crm').from('meetings').select('id,subject,status,meet_date,start_time,end_time,meet_type,location,teams_link,linked_type,linked_id,source,organizer_name,attendees,all_day,web_link,owner_id').order('meet_date',{ascending:false}).limit(10000),
   lown: () => /* שורות הבעלות הראשיות. **לא מיותר מול leads.owner_id**: המראה מחזיקה
          profile_id בלבד, ולעובד לשעבר אין חשבון — 694 לידים היו מוצגים
          כחסרי בעלים. RLS: can_view('crm.leads'). */
@@ -19379,24 +19379,77 @@ function meetRow(m){
   const ln = linkedName(m);
   return `<div class="lead" onclick="openMeet('${m.id}')">
     <div><div class="nm">${esc(m.subject)}</div>
-    <div class="meta">${d}${m.start_time?' · '+esc(m.start_time):''}${m.meet_type?' · '+esc(m.meet_type):''}${ln?' · '+ln.label+': '+esc(ln.name):''}</div></div>
+    <div class="meta">${d}${m.start_time?' · '+esc(m.start_time):''}${mtType(m)?' · '+esc(mtType(m)):''}${ln?' · '+ln.label+': '+esc(ln.name):''}</div></div>
     <span class="pill ${meetStClass(m.status)}">${esc(m.status)}</span></div>`;
 }
 const MEET_STATUSES=['חדשה','מתוכננת','תואמה','נדחתה','התקיימה','לא התקיימה','בוטלה'];
+/* ═══ סוג הפגישה (6.159.0, רומן) ══════════════════════════════════
+   🔴 שלושת הסוגים אינם קיימים בנתונים — הם **נגזרים**. נמדד: 335
+   שורות `פרונטלי` (מאנדיי), 97 `פגישת מכירה` (אאוטלוק, כתוב קשיח שם
+   כל 15 דקות), 18 `מקוונת`, 8 `טלפונית`, 10 NULL.
+   ⚠️ הנרמול **בלקוח בזמן ציור ולא במסד**: כל UPDATE ל-97 שורות
+      האאוטלוק היה נמחק בריצת הסנכרון הבאה. */
+const MEET_TYPES = ['פרונטלית','טלפונית','מקוונת'];
+const MEET_TYPE_ALIAS = { 'פרונטלי':'פרונטלית' };
+const MT_PHONE_RE = /^[0-9+\-() ]{7,}$/;
+const MT_ONLINE_RE = /(teams|zoom|meet\.google|webex|whereby)/i;
+function mtType(m){
+  if(!m) return '';
+  const t = MEET_TYPE_ALIAS[m.meet_type] || m.meet_type || '';
+  if(MEET_TYPES.indexOf(t) >= 0) return t;
+  /* הגזירה, לפי הסדר שנמדד. ⚠️ הענף השני תופס
+     "פגישות של Microsoft Teams" — טקסט בלי URL שהיה מסווג פרונטלית. */
+  const loc = String(m.location || '');
+  if((m.teams_link || '').trim() || /https?:\/\//i.test(loc)) return 'מקוונת';
+  if(MT_ONLINE_RE.test(loc)) return 'מקוונת';
+  if(MT_PHONE_RE.test(loc.trim())) return 'טלפונית';
+  if(!loc.trim() && !m.meet_type) return '';
+  return 'פרונטלית';
+}
+/* הטלפון נגזר מהישות המקושרת, ואם אין — מ-location שהוא מספר.
+   ⚠️ crm.meetings אין בה עמודת טלפון; היא תיווצר ב-E3 יחד עם הטופס
+      שימלא אותה. עמודה בלי כותב היא פסולת שקטה. */
+function mtPhone(m){
+  if(!m) return '';
+  const loc = String(m.location||'').trim();
+  if(m.linked_type==='lead'){ const l=(LEADS||[]).find(x=>x.id===m.linked_id); if(l && l.phone) return l.phone; }
+  if(m.linked_type==='customer'){ const k=(CUSTS||[]).find(x=>x.id===m.linked_id); if(k && k.phone) return k.phone; }
+  return MT_PHONE_RE.test(loc) ? loc : '';
+}
+/* 🔴 עמודה **אחת** ולא שלוש: שלוש היו מוסיפות ~360px לטבלה שכבר
+   גלילה אופקית, ושתיים מהן ריקות בכל שורה. */
+function mtDetail(m){
+  const t = mtType(m);
+  if(t==='מקוונת'){
+    const u = (m.teams_link||'').trim() || (String(m.location||'').match(/https?:\/\/\S+/)||[''])[0];
+    return u ? `<a href="${esc(safeUrl(u))}" target="_blank" rel="noopener" onclick="event.stopPropagation()">הצטרפות ↗</a>`
+             : '<span class="lb-na">·</span>';
+  }
+  if(t==='טלפונית'){
+    const p = mtPhone(m);
+    return p ? `<span dir="ltr">${esc(p)}</span>` : '<span class="lb-na">·</span>';
+  }
+  return esc(m.location||'') || '<span class="lb-na">·</span>';
+}
 /* 🔴 6.157.0 — רג'יסטרי עמודות + מפת-שם למיון, בדפוס LB_COLS/TK_COLS/
    DL_COLS. **מפת-שם ולא מפת-אינדקס**: הוספה או מחיקה של עמודה אינה
    יכולה לשבור את המיון בשקט (מחלקת children[length-7] מ-6.148.0). */
 const MEET_COLS = [
   ['#','rownum'], ['נושא','srt'], ['תאריך','srt'], ['שעות','srt'],
-  ['סוג','srt'], ['מקושרת אל','srt'], ['סטטוס','srt']
+  ['סוג','srt'], ['פרטי הפגישה',''], ['מקושרת אל','srt'],
+  ['בעלים','srt'], ['סטטוס','srt']
 ];
 const MTCIX = lbl => MEET_COLS.findIndex(x=>x[0]===lbl);
 const MEET_KEYN = {
   'נושא':       m=>m.subject||'',
   'תאריך':      m=>m.meet_date||'',
   'שעות':       m=>String(m.start_time||'').slice(0,5),
-  'סוג':        m=>m.meet_type||'',
   'מקושרת אל':  m=>{ const l=linkedName(m); return l ? l.label+': '+l.name : ''; },
+  /* ⚠️ הסוג ממוין לפי **הערך המנורמל** ולא לפי meet_type הגולמי —
+     אחרת 'פרונטלי' ו'פגישת מכירה' יושבים במקומות שונים ברשימה שכולה
+     מוצגת כ'פרונטלית'. */
+  'סוג':        m=>mtType(m),
+  'בעלים':      m=>{ const o = LOWN_BY[m.owner_id||'']; return o ? o.name : ''; },
   /* 🔴 indexOf מחזיר ‎-1 לסטטוס שאינו ברשימה, וב-ordBy עולה זה דוחף
      אותו **לראש**. מיפוי מפורש ל-99, ו-padStart כדי שההשוואה תישאר
      נכונה גם עם תווית שמינית ('10' < '2' כמחרוזות). */
@@ -19428,8 +19481,12 @@ function meetTable(list){
       <td style="max-width:280px"><b>${esc(m.subject)}</b></td>
       <td data-sort="${esc(m.meet_date||'')}">${m.meet_date?fmtD(m.meet_date):'—'}${m.meet_date?`<div class="note-preview">${dayNameHe(m.meet_date)}</div>`:''}</td>
       <td>${esc(m.start_time||'—')}${m.end_time?' – '+esc(m.end_time):''}</td>
-      <td>${esc(m.meet_type||'—')}</td>
+      <td>${esc(mtType(m))||'<span class="lb-na">·</span>'}</td>
+      <td style="max-width:220px">${mtDetail(m)}</td>
       <td>${ln?ln.label+': '+esc(ln.name):'—'}</td>
+      <!-- ⚠️ אווטאר בלבד בטבלה, בדיוק כמו lbOwnerCell בלידים: הטבלה
+           גלילה אופקית ושם מלא דוחף את שאר העמודות. -->
+      <td>${lbAva(m.owner_id||'')}</td>
       <td>${ieSel('meet',m.id,'status',MEET_STATUSES,m.status,{mdColors:MSTATUS_COLOR,mdK:LB_TK})}</td>
     </tr>`;}).join('');
   return mtHead()+rows+`</tbody></table></div>${pgFoot('meets',list.length,'פגישות')}`;
@@ -19640,10 +19697,12 @@ window.openMeet = (id)=>{
     <div class="row"><span class="k">סטטוס</span><span class="v"><span class="pill ${meetStClass(m.status)}">${esc(m.status)}</span></span></div>
     <div class="row"><span class="k">תאריך</span><span class="v">${m.meet_date?new Date(m.meet_date+'T00:00').toLocaleDateString('he-IL',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'}):'—'}</span></div>
     <div class="row"><span class="k">שעות</span><span class="v">${esc(m.start_time||'—')}${m.end_time?' – '+esc(m.end_time):''}</span></div>
-    <div class="row"><span class="k">סוג</span><span class="v">${esc(m.meet_type||'—')}</span></div>
-    <div class="row"><span class="k">מיקום</span><span class="v">${esc(m.location||'—')}</span></div>
+    <div class="row"><span class="k">סוג</span><span class="v">${esc(mtType(m))||'—'}</span></div>
+    <!-- ⚠️ אותה נקודת חנק של הטבלה: mtDetail. שתי הצגות של אותו כלל
+         היו נפרדות בשקט ביום שהכלל ישתנה. -->
+    <div class="row"><span class="k">${mtType(m)==='מקוונת'?'קישור':(mtType(m)==='טלפונית'?'טלפון':'מיקום')}</span><span class="v">${mtDetail(m)}</span></div>
+    <div class="row"><span class="k">בעלים</span><span class="v">${(LOWN_BY[m.owner_id||'']||{}).name || '<span class="lb-na">ללא בעלים</span>'}</span></div>
     ${ln?`<div class="row"><span class="k">מקושרת אל</span><span class="v">${ln.label}: ${esc(ln.name)}</span></div>`:''}
-    ${m.teams_link?`<div class="row"><span class="k">פגישה מקוונת</span><span class="v"><a href="${esc(safeUrl(m.teams_link))}" target="_blank" rel="noopener">הצטרפות ↗</a></span></div>`:''}
     <div class="note">שיגור זימונים, תזכורות וביטול — בשלב האוטומציות הבא.</div>`;
   mountCard('meetModal', ()=>openMeet(id));
 };

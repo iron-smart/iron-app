@@ -2389,6 +2389,17 @@ tr.lb-on td{ background-color:#eef5fd !important; }
    (לחיצת רקע · Escape) צריכים להחריג אותו, ובדיקה לפי id הייתה
    מקור אמת שני שנפרד ביום שיתווסף חלון המתנה שני. */
 .modal-busy{ z-index:80; }
+/* 🔴 6.170.0 — גובה קבוע לכרטיס עם לשוניות (רומן: "מעבר בלשוניות ...
+   כל פעם מגדיל או מקטין את המסך. אני רוצה גודל קבוע").
+   הסיבה: ctabGo מחליף .hidden על הפאנלים, ו-.sheet מוגדר **max-height**
+   ולא height ⇒ הוא מתכווץ לגובה התוכן, והמודאל (align-items:center)
+   ממרכז מחדש.
+   ⚠️ הבורר **חייב** להיות `.modal .sheet.tabbed` ולא `.sheet.tabbed`:
+      הראשון (0,3,0), השני (0,2,0) — תיקו מול `.modal .sheet` הקיים,
+      ואז המאוחר בגיליון מנצח. זו מלכודת הספציפיות של פרק 5.
+   ⚠️ חל על כרטיסים עם לשוניות בלבד. גובה קבוע לכל מודאל היה מותח
+      דיאלוגים קטנים (פולואפ, משימה חדשה) לגובה מלא. */
+.modal .sheet.tabbed{ height:min(78vh, 640px); max-height:min(78vh, 640px); }
 .modal-busy .sheet{ max-width:330px; text-align:center; padding:26px 20px; }
 .busy-spin{ width:34px; height:34px; margin:0 auto 12px; border:3px solid #e5e7eb;
             border-top-color:var(--navy); border-radius:50%; animation:busyspin .8s linear infinite; }
@@ -2490,7 +2501,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.169.0</div>
+      <div class="ver">גרסה 6.170.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2619,7 +2630,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.169.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.170.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -4092,6 +4103,11 @@ function mountCard(mid, reopen){
   const modal=document.getElementById(mid); if(!modal) return;
   const sheet=modal.querySelector('.sheet');
   sheet.classList.remove('tdwide');   /* 6.24.19 — רוחב מורחב שייך רק לתצוגות השיבוץ */
+  /* 🔴 6.170.0 — גובה קבוע לכרטיס עם לשוניות. נקבע **כאן** ולא לפי
+     מיפוי מזהה-מודאל→סוג: מיפוי היה מקור אמת שני שנפרד ביום שיתווסף
+     כרטיס. כל הפותחים מציבים innerHTML לפני mountCard, ולכן .ctabs
+     כבר קיים בשלב הזה. */
+  sheet.classList.toggle('tabbed', !!sheet.querySelector('.ctabs'));
   const oldBar=sheet.querySelector('.card-bar'); if(oldBar) oldBar.remove();
   const bar=document.createElement('div'); bar.className='card-bar';
   bar.innerHTML=(CARD_STACK.length?`<button class="card-back" onclick="cardBack()">→ חזרה</button>`:'<span></span>')+`<button class="card-x" title="סגירה" aria-label="סגירת הכרטיס" onclick="closeCards()">✕</button>`;
@@ -9302,7 +9318,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'pwreset-2026-08-29a';
+const BUILD_ID = 'cardtidy-2026-08-29a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -15988,11 +16004,17 @@ window.openCust = async (id)=>{
       <div><label>לקוח פעיל?</label>${roIn(c.status==='פעיל'?'כן':(c.status==='לא פעיל'?'לא':(c.status||'')))}</div>
       <div><label>טלפון</label>${roIn(c.phone||'',{ltr:1})}</div>
       <div><label>דוא"ל</label>${roIn(c.email||'',{ltr:1})}</div>
-      <div class="span2"><label>כתובת</label>${roIn([c.address,c.city].filter(Boolean).join(', '))}</div>
+      <!-- 🔴 6.170.0 — "גישה למשאית · מעלית · מעלית משא" ירד (רומן:
+           "גם מכרטיס הלקוח"). ⚠️ **נמדד ומוצהר:** זה היה אתר התצוגה
+           השני והאחרון של truck_access/elevator/freight_elevator, ולכן
+           מכאן הם קיימים במסד ואינם מוצגים בשום מסך. logistics_notes
+           נשאר — הוא צרכן נפרד.
+           ⚠️ ו-cu-pl-slot עבר ל-span4 ולא נשאר span2: בלי זה נשארו 10
+           יחידות בגריד של 4 עמודות, כלומר שני תאים ריקים. -->
       <div><label>אזור</label>${roIn(c.region||'')}</div>
       <div><label>סוג לקוח</label>${roIn(c.customer_type||'')}</div>
-      <div class="span2" id="cu-pl-slot"></div>
-      <div class="span2"><label>גישה למשאית · מעלית · מעלית משא</label>${roIn(ynTxt(c.truck_access)+' · '+ynTxt(c.elevator)+' · '+ynTxt(c.freight_elevator))}</div>
+      <div class="span2"><label>כתובת</label>${roIn([c.address,c.city].filter(Boolean).join(', '))}</div>
+      <div class="span4" id="cu-pl-slot"></div>
       ${c.logistics_notes?`<div class="span4"><div class="note">🚚 ${esc(c.logistics_notes)}</div></div>`:''}
 
       <div class="form-sep">משימות ופגישות</div>
@@ -19424,7 +19446,6 @@ function renderDeals(){
   paintKeep('#deals-list', wideScreen() ? dlTable(list,true) : capped(list, dealRow, 'אין עסקאות בסינון הזה'));
 }
 $('#dealSearch').addEventListener('input', renderDeals);
-const ynTxt = v => v===true?'כן':(v===false?'לא':'—');
 /* ═══ כרטיס תהליך המכירה (6.123.0) ═══════════════════════════════
    סדר הסקשנים לפי סקיל card-layout. 🔴 **ואין כאן שדות עריכה חופשיים
    בכוונה, לא בפשרה:** נמדד 21/08/2026 ש-`quote_status` ריק ב-1,909
@@ -19459,8 +19480,30 @@ window.openDeal = async (id)=>{
     ${ctabsHtml('dl')}
     <div id="dl-pn-main">
     <div class="form-grid">
+      <div class="form-sep">פרטי הפנייה והלקוח</div>
+      ${lead?`<div class="span2"><label>פנייה מקורית</label>
+        <div class="tk-lnk"><span class="tk-kind tk-k-lead">ליד</span>
+        <a href="#" onclick="event.preventDefault();goCard(()=>openLead('${jsq(lead.id)}'))">${esc(lead.full_name||'')} ↗</a></div></div>
+      <div><label>סטטוס הפנייה</label><div class="tk-lnk">${mdPill(lead.status||'—',LEAD_ST_COLORS,LB_TK)}</div></div>
+      <div><label>בעלים של הפנייה</label><div class="tk-lnk">${lbOwnerCellName(lead)}</div></div>`
+      :'<div class="span2"><div class="note">העסקה אינה מקושרת לפנייה. הקישור נוצר בהמרת ליד, או במילוי היסטורי.</div></div>'}
+      ${cust?`<div class="span2"><label>לקוח</label><div class="tk-lnk"><a href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(cust.id)}'))">${esc(cust.name||'כרטיס הלקוח')} ↗</a></div></div>
+      <div class="span2"><label>שם חברה</label>${roIn(cust.name||'')}</div>`
+      :'<div class="span2"><div class="note">אינה מקושרת ללקוח.</div></div>'}
+      ${phone?`<div><label>טלפון ${phBtns(phone)}</label>${roIn(phone,{ltr:1})}</div>`:''}
+      ${cust?`<div><label>סוג לקוח</label>${roIn(cust.customer_type||'')}</div>
+      <div class="span2"><label>כתובת</label>${roIn([cust.address,cust.city].filter(Boolean).join(', '))}</div>`:''}
+      <!-- 🔴 6.156.0 — פרטי הלקוח (רומן). כולם roIn: הכרטיס הוא
+           קריאה-בלבד מאז 6.126.0, ויש assert ב-dealtest שאוסר
+           selHtml ו-input חופשי. 6.170.0 — "גישה למשאית" ו"ת.משימה
+           הבאה" ירדו לבקשת רומן, והשדות סודרו לארבע שורות מלאות. -->
+      ${contact?`<div><label>איש קשר ראשי</label>${roIn(contact.full_name||'')}</div>
+      <div><label>טלפון איש קשר ${phBtns(contact.phone||'')}</label>${roIn(contact.phone||'',{ltr:1})}</div>`
+      :'<div class="span2"><div class="note">אין איש קשר ראשי מקושר לעסקה.</div></div>'}
+      <div class="span2"><label>דוא"ל</label>${roIn((contact&&contact.email)||(cust&&cust.email)||'',{ltr:1})}</div>
+      ${cust&&cust.logistics_notes?`<div class="span4"><div class="note">🚚 ${esc(cust.logistics_notes)}</div></div>`:''}
+
       <div class="form-sep">פרטי העסקה</div>
-      <div><label>מס' הצעה בפריוריטי</label>${roIn(d.priority_quote_id||'',{ltr:1})}</div>
       <div><label>סכום (לפני מע"מ)</label>${roIn(d.amount!=null?shekel(d.amount):'')}</div>
       <!-- 🔴 6.168.0 — הערך מפריוריטי (TOTPRICE) כשיש, וחישוב רק
            כנפילה אחורה. ⚠️ התווית "מחושב" נשארת **רק בנפילה**: 1,698
@@ -19470,19 +19513,7 @@ window.openDeal = async (id)=>{
       <div><label>סכום (כולל מע"מ)${d.amount_incl_vat!=null?'':' · מחושב'}</label>${roIn(d.amount_incl_vat!=null?shekel(d.amount_incl_vat):(d.amount!=null?shekel(Number(d.amount)*VAT_RATE):''))}</div>
       <div><label>תאריך אישור ההצעה</label>${roIn(dt(d.approved_at))}</div>
       <div><label>תאריך סגירה</label>${roIn(dt(d.closed_at))}</div>
-      <!-- 🔴 6.163.0 — בעלים ושותפים, בדיוק כמו בכרטיס הליד: שם מלא
-           כאן, אווטאר בלבד בטבלה. id ייחודי לכרטיס העסקה. -->
-      <div class="span2"><label>בעלים ושותפים</label>
-        <div id="dl-ownbox">${dlOwnerCellName(d)}</div></div>
-      <!-- 🔴 6.158.0 — רומן: "משבצת של לאן לשלוח את ההצעה בכוכבית
-           שחייב לבחור". הטוגל כותב מיד ב-RPC; ה"חובה" נאכף בשרת
-           במעבר לשלב 'נשלחה הצעת מחיר לחתימה', כי לכרטיס קריאה-בלבד
-           אין רגע שמירה. -->
-      <div class="span2"><label>לאן לשלוח את ההצעה<span class="req">*</span></label>
-        <div id="dl-chanbox"></div></div>
-      <!-- ⚠️ מוצגת **תמיד** (רומן: "שתהיה משבצת"), והתווית אומרת
-           PowerDoc: נמדד ש-216 מתוך 216 הקישורים הם powerdoc.co ואף
-           אחד אינו של מודול החתימה שלנו. -->
+      <div class="span2"><label>מס' הצעה בפריוריטי</label>${roIn(d.priority_quote_id||'',{ltr:1})}</div>
       <!-- 🔴 6.168.0 — מסמך ההצעה שנמשך מפריוריטי (crm-quote-watch).
            הבקט docs **פרטי**, ולכן אין כאן href אלא כפתור שמייצר
            signed URL. ההרשאה נגזרת מקידומת הנתיב: docs_select באחסון
@@ -19493,7 +19524,17 @@ window.openDeal = async (id)=>{
         ${d.quote_doc_path
           ? `<div class="tk-lnk"><button class="chip" onclick="dlOpenDoc('${jsq(d.quote_doc_path)}')">${esc(String(d.quote_doc_path).split('/').pop())} ↗</button></div>`
           : roIn('טרם נמשך')}</div>
-      <div class="span2"><label>לינק לחתימה (PowerDoc)</label>
+      <!-- 🔴 6.163.0 — בעלים ושותפים, בדיוק כמו בכרטיס הליד: שם מלא
+           כאן, אווטאר בלבד בטבלה. id ייחודי לכרטיס העסקה. -->
+      <div class="span2"><label>בעלים ושותפים</label>
+        <div id="dl-ownbox">${dlOwnerCellName(d)}</div></div>
+      <!-- 🔴 6.158.0 — רומן: "משבצת של לאן לשלוח את ההצעה בכוכבית
+           שחייב לבחור". הטוגל כותב מיד ב-RPC; ה"חובה" נאכף בשרת
+           במעבר לשלב 'נשלחה הצעת מחיר לחתימה', כי לכרטיס קריאה-בלבד
+           אין רגע שמירה. -->
+      <div class="span2"><label>לאן לשלוח את ההצעה<span class="req">*</span></label>
+        <div id="dl-chanbox"></div></div>
+      <div class="span2"><label>לינק לחתימה</label>
         ${d.sign_link?`<div class="tk-lnk"><a href="${esc(safeUrl(d.sign_link))}" target="_blank" rel="noopener">פתיחה ↗</a></div>`
                      :`<div class="note">טרם נשלח לחתימה.</div>`}</div>
       <!-- 🔴 6.167.0 — משבצת החתימה **שלנו**, נפרדת מ-PowerDoc בכוונה.
@@ -19501,32 +19542,6 @@ window.openDeal = async (id)=>{
            היה מציג שני מקורות שונים כאילו הם אותו דבר. -->
       <div class="span2"><label>חתימה על ההצעה — מודול איירון</label>
         <div id="dl-signbox">${dlSignBox(d)}</div></div>
-
-      <div class="form-sep">פרטי הפנייה והלקוח</div>
-      ${lead?`<div class="span2"><label>פנייה מקורית</label>
-        <div class="tk-lnk"><span class="tk-kind tk-k-lead">ליד</span>
-        <a href="#" onclick="event.preventDefault();goCard(()=>openLead('${jsq(lead.id)}'))">${esc(lead.full_name||'')} ↗</a></div></div>
-      <div><label>סטטוס הפנייה</label><div class="tk-lnk">${mdPill(lead.status||'—',LEAD_ST_COLORS,LB_TK)}</div></div>
-      <div><label>בעלים של הפנייה</label><div class="tk-lnk">${lbOwnerCellName(lead)}</div></div>`
-      :'<div class="span2"><div class="note">העסקה אינה מקושרת לפנייה. הקישור נוצר בהמרת ליד, או במילוי היסטורי.</div></div>'}
-      ${phone?`<div><label>טלפון ${phBtns(phone)}</label>${roIn(phone,{ltr:1})}</div>`:''}
-      ${cust?`<div class="span2"><label>לקוח</label><div class="tk-lnk"><a href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(cust.id)}'))">${esc(cust.name||'כרטיס הלקוח')} ↗</a></div></div>
-      <div><label>כתובת</label>${roIn([cust.address,cust.city].filter(Boolean).join(', '))}</div>
-      <div><label>גישה למשאית · מעלית · מעלית משא</label>${roIn(ynTxt(cust.truck_access)+' · '+ynTxt(cust.elevator)+' · '+ynTxt(cust.freight_elevator))}</div>
-      ${cust.logistics_notes?`<div class="span4"><div class="note">🚚 ${esc(cust.logistics_notes)}</div></div>`:''}`
-      :'<div class="span2"><div class="note">אינה מקושרת ללקוח.</div></div>'}
-      <!-- 🔴 6.156.0 — פרטי הלקוח (רומן). כולם roIn: הכרטיס הוא
-           קריאה-בלבד מאז 6.126.0, ויש assert ב-dealtest שאוסר
-           selHtml ו-<input> חופשי. ⚠️ contact_id מאוכלס ב-76% מהעסקאות
-           הפעילות — 24% יציגו "—", וזה נכון ורצוי. -->
-      ${contact?`<div><label>איש קשר ראשי</label>${roIn(contact.full_name||'')}</div>
-      <div><label>טלפון איש קשר ${phBtns(contact.phone||'')}</label>${roIn(contact.phone||'',{ltr:1})}</div>`
-      :'<div class="span2"><div class="note">אין איש קשר ראשי מקושר לעסקה.</div></div>'}
-      ${cust?`<div><label>שם חברה</label>${roIn(cust.name||'')}</div>
-      <div><label>סוג לקוח</label>${roIn(cust.customer_type||'')}</div>`:''}
-      <div><label>דוא"ל</label>${roIn((contact&&contact.email)||(cust&&cust.email)||'',{ltr:1})}</div>
-      <div><label>ת.משימה הבאה</label>${roIn((()=>{ const _n=nextTaskBy('deal').due[id];
-        return _n ? new Date(_n).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : ''; })())}</div>
 
       <div class="form-sep">משימות ופגישות</div>
       <!-- 🔴 6.158.0 — שני הכפתורים שרומן ביקש ("כמו במסך ליד בדיוק").

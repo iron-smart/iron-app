@@ -2481,7 +2481,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.164.0</div>
+      <div class="ver">גרסה 6.165.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2610,7 +2610,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.164.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.165.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3086,6 +3086,23 @@ tr.lb-on td{ background-color:#eef5fd !important; }
 <!-- 🔴 6.161.0 — שינוי מועד. `.modal-over` (z-index 70) כדי שהוא ייפתח
      **מעל** כרטיס הפגישה ולא במקומו: mountCard מסתיר את כל המודלים,
      והלקח מ-6.153.0 הוא שפתיחה רגילה כאן מעלימה את הכרטיס שממנו באנו. -->
+<!-- 🔴 6.165.0 — אישור שיגור הזימון. הוא **אינו** שואל "לשלוח?" אלא
+     מציג את מה ש-crm.meeting_send(dry) החזיר: הסוג שנגזר בשרת, התבנית
+     שתיבחר לפיו, הנמען והמשתנים. בחירת התבנית נעשית בשרת, והמסך גוזר
+     בעצמו — תבנית שגויה ללקוח אינה נראית כשגיאה, ולכן מה שמוצג כאן
+     הוא תשובת השרת ולא חישוב מקומי. -->
+<div class="modal modal-over hidden" id="mtSendModal">
+  <div class="sheet">
+    <h3>שיגור זימון לפגישה</h3>
+    <div class="note" style="margin-bottom:10px">ההודעה תיכנס לתור השליחה ותצא בדקה הקרובה.</div>
+    <div id="mt-sn-body"></div>
+    <div class="actions">
+      <button class="btn green" id="mt-sn-go">שיגור</button>
+      <button class="ghost" id="mt-sn-cancel">ביטול</button>
+    </div>
+    <div class="err" id="mt-sn-err"></div>
+  </div>
+</div>
 <div class="modal modal-over hidden" id="mtReschedModal">
   <div class="sheet">
     <h3>שינוי מועד הפגישה</h3>
@@ -9166,7 +9183,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'leadq2-2026-08-29a';
+const BUILD_ID = 'meetsend-2026-08-29a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -19510,8 +19527,20 @@ function mtType(m){
 function mtPhone(m){
   if(!m) return '';
   const loc = String(m.location||'').trim();
+  /* 🔴 6.165.0 — contact_phone ראשון. crm.meeting_create כותב אותו מאז
+     6.160.0 ואיש לא קרא אותו, ולכן פגישה שנוצרה כאן עם טלפון מפורש
+     הציגה `·`. הסדר זהה ל-crm.meeting_send בשרת, ובכוונה: התצוגה
+     המקדימה חייבת להראות את המספר שבאמת יישלח. */
+  const cp = String(m.contact_phone||'').trim();
+  if(cp) return cp;
   if(m.linked_type==='lead'){ const l=(LEADS||[]).find(x=>x.id===m.linked_id); if(l && l.phone) return l.phone; }
   if(m.linked_type==='customer'){ const k=(CUSTS||[]).find(x=>x.id===m.linked_id); if(k && k.phone) return k.phone; }
+  /* ⚠️ 100 פגישות מקושרות לעסקה — בלי הענף הזה כולן הציגו ריק. */
+  if(m.linked_type==='deal'){
+    const d=(DEALS||[]).find(x=>x.id===m.linked_id);
+    const k=d && (CUSTS||[]).find(x=>x.id===d.customer_id);
+    if(k && k.phone) return k.phone;
+  }
   return MT_PHONE_RE.test(loc) ? loc : '';
 }
 /* השדה המותנה במודאל — אותה חלוקה של mtDetail, נקודת חנק אחת
@@ -19825,7 +19854,8 @@ function mtActs(m){
   const ol = m.source==='outlook';
   return `<div class="lbu-bar" style="margin-top:12px">`
     + (done ? `<span class="note">הפגישה בוטלה.</span>`
-            : `<button type="button" class="chip" onclick="mtReschedOpen('${jsq(m.id)}')">✎ שינוי מועד</button>`
+            : `<button type="button" class="chip" onclick="mtSendOpen('${jsq(m.id)}')">📤 שיגור זימון</button>`
+            + `<button type="button" class="chip" onclick="mtReschedOpen('${jsq(m.id)}')">✎ שינוי מועד</button>`
             + `<button type="button" class="chip" onclick="mtCancel('${jsq(m.id)}')">✕ ביטול הפגישה</button>`)
     + (ol && m.web_link ? `<a class="chip" href="${esc(safeUrl(m.web_link))}" target="_blank" rel="noopener">↗ פתיחה באאוטלוק</a>` : '')
     + `</div>`
@@ -19848,6 +19878,62 @@ window.mtCancel = async (id)=>{
   openMeet(id);
 };
 let MT_RS_ID = null;
+/* ═══ שיגור זימון הפגישה (6.165.0, רומן) ══════════════════════════════
+   🔴 שני שלבים, ובכוונה. crm.meeting_send(id, true) הוא **תצוגה מקדימה
+   שאינה כותבת**: היא מריצה את כל השערים בשרת ומחזירה את הסוג שנגזר,
+   את הנמען ואת המשתנים. רק אחרי אישור מפורש רצה הקריאה שכותבת.
+   ⚠️ הסיבה אינה נימוס — הבחירה בין שלוש תבניות ה-Heyy נעשית בשרת לפי
+   crm.meet_type_norm, בעוד המסך מציג את mtType(). השתיים אומתו זהות על
+   468/468 השורות, אבל **תבנית שגויה שנשלחת ללקוח אינה נראית כשגיאה**,
+   ולכן מה שמוצג כאן הוא תשובת השרת ולא חישוב מקומי. */
+let MT_SN_ID = null;
+const MT_SN_TPL = { 'פרונטלית':'פגישה פרונטלית', 'טלפונית':'פגישה טלפונית', 'מקוונת':'פגישה מקוונת' };
+window.mtSendOpen = async (id)=>{
+  const m = (MEETS||[]).find(x=>x.id===id); if(!m) return;
+  MT_SN_ID = id;
+  $('#mt-sn-err').textContent = '';
+  $('#mt-sn-body').innerHTML = '<div class="note">בודק…</div>';
+  $('#mtSendModal').classList.remove('hidden');
+  const { data, error } = await sb.schema('crm').rpc('meeting_send', { p_meet:id, p_dry:true });
+  const r = Array.isArray(data) ? data[0] : data;
+  if(error || !r){
+    $('#mt-sn-body').innerHTML = '';
+    $('#mt-sn-err').textContent = 'הבדיקה נכשלה — ' + ((error && error.message) || 'אין תשובה מהשרת');
+    $('#mt-sn-go').disabled = true; return;
+  }
+  if(r.ok !== true){
+    /* ⚠️ נכשל בקול ובשפה של המשתמש. דילוג שקט כאן פירושו כפתור שנלחץ
+       ולא קורה כלום — בדיוק מה שהמשתמש מדווח עליו כ"תקוע". */
+    $('#mt-sn-body').innerHTML = '';
+    $('#mt-sn-err').textContent = r.note || 'לא ניתן לשגר';
+    $('#mt-sn-go').disabled = true; return;
+  }
+  $('#mt-sn-go').disabled = false;
+  const rows = [
+    ['סוג הפגישה', esc(r.mtype||'')],
+    ['תבנית ההודעה', esc(MT_SN_TPL[r.mtype] || r.mtype || '')],
+    ['נמען', '<span dir="ltr">' + esc(r.phone||'') + '</span>'],
+    ['נושא', esc(r.subj||'')],
+    ['מועד', esc((r.mdate||'') + ' ' + (r.mtime||''))]
+  ];
+  if(r.mtype === 'מקוונת') rows.push(['קישור', '<span dir="ltr" style="word-break:break-all">' + esc(r.mlink||'') + '</span>']);
+  $('#mt-sn-body').innerHTML = rows.map(x=>'<div class="row"><span class="k">'+x[0]+'</span><span class="v">'+x[1]+'</span></div>').join('');
+};
+window.mtSendGo = async ()=>{
+  const id = MT_SN_ID; if(!id) return;
+  const btn = $('#mt-sn-go'); btn.disabled = true;
+  const { data, error } = await sb.schema('crm').rpc('meeting_send', { p_meet:id, p_dry:false });
+  const r = Array.isArray(data) ? data[0] : data;
+  if(error || !r || r.ok !== true){
+    /* ⚠️ הכפתור נפתח מחדש רק כשהכשל חולף. "כבר שוגר למועד הזה" אינו
+       כשל שכדאי לנסות שוב — הוא התשובה הנכונה. */
+    $('#mt-sn-err').textContent = (error && error.message) || (r && r.note) || 'השיגור נכשל';
+    if(!(r && /כבר שוגר/.test(r.note||''))) btn.disabled = false;
+    return;
+  }
+  $('#mtSendModal').classList.add('hidden');
+  toast('הזימון נכנס לתור השליחה ✓');
+};
 window.mtReschedOpen = (id)=>{
   const m = (MEETS||[]).find(x=>x.id===id); if(!m) return;
   MT_RS_ID = id;
@@ -19864,6 +19950,10 @@ window.mtReschedOpen = (id)=>{
   setTimeout(()=>{ try{ $('#mt-rs-date').focus(); }catch(_e){} }, 30);
 };
 $('#mt-rs-cancel').onclick = ()=>{ $('#mtReschedModal').classList.add('hidden'); MT_RS_ID=null; };
+/* ⚠️ ביטול סוגר את המודאל בלבד ולא closeCards() — אחרת הוא היה סוגר
+   גם את כרטיס הפגישה שמאחור. הלקח מ-6.119.0. */
+$('#mt-sn-cancel').onclick = ()=> $('#mtSendModal').classList.add('hidden');
+$('#mt-sn-go').onclick = ()=> window.mtSendGo();
 $('#mt-rs-save').onclick = async ()=>{
   const id = MT_RS_ID; if(!id) return;
   const d = $('#mt-rs-date').value;

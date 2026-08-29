@@ -2484,7 +2484,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.162.0</div>
+      <div class="ver">גרסה 6.163.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2613,7 +2613,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.162.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.163.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9171,7 +9171,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'leadq-2026-08-29a';
+const BUILD_ID = 'dealown-2026-08-29a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -14319,7 +14319,7 @@ function loadErrBanner(names){
 }
 /* חייב להיות באותו אורך ובאותו סדר כמו מערך השאילתות ב-loadLeads —
    אחרת פס השגיאה מציג "undefined" במקום שם השאילתה שנכשלה. */
-const LOAD_NAMES = ['לידים','לקוחות','משימות','עסקאות','פגישות','אנשי קשר','תשלומים','הזמנות','קריאות שירות','צוותים','מק"טים','מסמכים','הגדרות','ספריית בעלים','בעלי לידים','מצב סנכרון','מעקב תשלומים','תנאי תשלום','נותר לספק','תנאי תשלום בהזמנה','החזרות לאיסוף','קיזוזים','הצעות קיזוז','לוח פעימות'];
+const LOAD_NAMES = ['לידים','לקוחות','משימות','עסקאות','פגישות','אנשי קשר','תשלומים','הזמנות','קריאות שירות','צוותים','מק"טים','מסמכים','הגדרות','ספריית בעלים','בעלי לידים','מצב סנכרון','מעקב תשלומים','תנאי תשלום','נותר לספק','תנאי תשלום בהזמנה','החזרות לאיסוף','קיזוזים','הצעות קיזוז','לוח פעימות','בעלי עסקאות'];
 /* ═══ CRM_Q — בוני השאילתות המשותפים (6.151.0) ═════════════════════
    🟢 הגדרה אחת ששני צרכנים קוראים: loadLeads והרענון האוטומטי. בלי זה
    הרענון היה מושך עמודות אחרות מהטעינה הראשונית, וההבדל היה מתגלה רק
@@ -14375,16 +14375,21 @@ async function loadLeads(){
     /* לוח הפעימות המלא — 27 שורות בסך הכול. נדרש כדי שאריחי הגבייה יסכמו
        את **הפעימה שבחלון** ולא את יתרת ההזמנה כולה. נוסף **בסוף** המערך
        בלבד, לפי הכלל שנולד מהסטת המפרק ב-6.98. */
-    sb.schema('ord').from('order_beats_v').select('order_number,seq,amount,covered,is_paid,due_show,due_is_est,due_src').limit(10000)
+    sb.schema('ord').from('order_beats_v').select('order_number,seq,amount,covered,is_paid,due_show,due_is_est,due_src').limit(10000),
+    /* בעלות על עסקאות (6.163.0). **בסוף המערך בלבד**, לפי אותו כלל
+       שנולד מהסטת המפרק ב-6.98 — תוספת באמצע מזיזה בשקט כל גלובל
+       שאחריה. ⚠️ ריק למי שאין לו crm.deals (RLS), וזה תקין. */
+    sb.schema('crm').from('deal_owners').select('deal_id,profile_id,is_primary').limit(10000)
   ]);
   }catch(e){ console.error('טעינת הנתונים נכשלה לגמרי', e); loadErrBanner(['החיבור לשרת']); try{ $('#lastSync').textContent=''; renderAllViews(); }catch(_){} return; }
-  const [l,c,t,d,m,k,p,o,sc,tm,sk,pr,st,lod,lown,sl,fin,pt,oi,fm,rp,po,ps,bts] = _q;
+  const [l,c,t,d,m,k,p,o,sc,tm,sk,pr,st,lod,lown,sl,fin,pt,oi,fm,rp,po,ps,bts,down] = _q;
   /* תיקון ממצא 11 — שאילתה שנכשלה כבר לא מתחזה ל"אין נתונים" */
   const _bad = _q.map((r,i)=>(r&&r.error)?{n:LOAD_NAMES[i],e:r.error}:null).filter(Boolean);
   if(_bad.length){ _bad.forEach(b=>console.error('טעינת נתונים נכשלה —', b.n, b.e)); loadErrBanner(_bad.map(b=>b.n)); }
   else loadErrBanner(null);
   try{ lownApply((lod||{}).data); }catch(_e){ console.error('lead_owner_dir',_e); }
   try{ lownOfApply((lown||{}).data); }catch(_e){ console.error('lead_owners',_e); }
+  try{ reIndexDealOwners((down||{}).data); }catch(_e){ console.error('deal_owners',_e); }
   LEADS = l.data||[]; CUSTS = c.data||[]; TASKS = t.data||[]; DEALS = d.data||[]; MEETS = m.data||[]; CONTS = k.data||[]; PAYS = p.data||[];
   ORDS = o.data||[]; SCALLS = sc.data||[]; OTEAMS = tm.data||[]; SKUS = sk.data||[]; PROTS = pr.data||[]; OSET = st.data||[];
   /* 6.81.0 — אתרי הלקוח נטענים **מחוץ** למערך _q במכוון: הוא מפורק לפי
@@ -14584,6 +14589,40 @@ function lownOfApply(rows){
   }
 }
 const lbOwnersOf = l => (l && LOWN_OF[l.id]) || (l && l.owner_id ? [l.owner_id] : []);
+/* ═══ בעלות על עסקאות (6.163.0, רומן) ══════════════════════════════
+   🔴 מפה נפרדת ולא הרחבה של LOWN_OF: מזהי ליד ומזהי עסקה הם שניהם
+   uuid, ומפה משותפת הייתה מערבבת אותם ביום שמזהה יתנגש. */
+const DOWN_OF = {};
+function reIndexDealOwners(rows){
+  for(const k in DOWN_OF) delete DOWN_OF[k];
+  for(const r of (rows||[])){
+    if(!r.profile_id) continue;
+    const a = DOWN_OF[r.deal_id] || (DOWN_OF[r.deal_id] = []);
+    if(a.includes(r.profile_id)) continue;
+    if(r.is_primary === false) a.push(r.profile_id); else a.unshift(r.profile_id);
+  }
+}
+const dlOwnersOf  = d => (d && DOWN_OF[d.id]) || (d && d.owner_id ? [d.owner_id] : []);
+const dlOwnerOf   = d => dlOwnersOf(d)[0] || '';
+const dlPartnersOf= d => dlOwnersOf(d).slice(1);
+/* אווטאר בלבד בטבלה — אותה הכרעה של lbOwnerCell: הטבלה גלילה אופקית
+   ושם מלא דוחף את שאר העמודות (הערת .lb-avx). */
+function dlOwnerCell(d){
+  const all = dlOwnersOf(d), extra = all.slice(1);
+  const body = lbAva(all[0]||'')
+    + (extra.length ? `<span class="lb-avx">${extra.slice(0,3).map(k=>lbAva(k,1)).join('')}${extra.length>3?`<span class="lb-ava lb-ava-s lb-ava-more" title="ועוד ${extra.length-3}">+${extra.length-3}</span>`:''}</span>` : '');
+  if(!window.canEdit('crm.deals')) return `<div class="lb-owc">${body}</div>`;
+  return `<div class="lb-owc lb-owc-go" title="שיוך בעלים ושותפים" onclick="event.stopPropagation();lbOwnerPick('${jsq(d.id)}',event,'deal')">${body}</div>`;
+}
+function dlOwnerCellName(d){
+  const all = dlOwnersOf(d), extra = all.slice(1);
+  const o = LOWN_BY[all[0]||''];
+  const body = lbAva(all[0]||'')
+    + `<span class="lb-ownm">${esc(o ? o.name : 'ללא בעלים')}</span>`
+    + (extra.length ? `<span class="lb-avx">${extra.slice(0,3).map(k=>lbAva(k,1)).join('')}</span>` : '');
+  if(!window.canEdit('crm.deals')) return `<div class="lb-owc">${body}</div>`;
+  return `<div class="lb-owc lb-owc-go" title="שיוך בעלים ושותפים" onclick="event.stopPropagation();lbOwnerPick('${jsq(d.id)}',event,'deal')">${body}</div>`;
+}
 const lbOwnerOf  = l => lbOwnersOf(l)[0] || '';
 const lbPartnersOf = l => lbOwnersOf(l).slice(1);
 /* ⚠️ avatar_url הוא **data-URL** של 11–27KB (pfShrink כותב canvas.toDataURL),
@@ -19000,7 +19039,7 @@ window.setDealFilter = f => { DEAL_FILTER = f; renderDeals(); };
 const DL_COLS = [
   ['#','rownum'], ['עסקה','srt'], ['לקוח','srt'], ['טלפון',''],
   ['ת.משימה הבאה','srt'], ['סכום (לפני מע"מ)','srt'], ['שלב','srt'],
-  ['תת-סטטוס',''], ['נוצר','srt']
+  ['תת-סטטוס',''], ['בעלים','srt'], ['נוצר','srt']
 ];
 /* 🔴 האינדקס נגזר מהשם ולא מקובע. עד 6.156.0 DL_KEY היה ממופתח
    במספרים ו-dlOrder החזיק `(i===5)` קשיח — כלומר **מחיקת עמודה
@@ -19029,7 +19068,8 @@ const DL_KEYN = {
   'לקוח':            d=>dlCustName(d),
   'סכום (לפני מע"מ)': d=>(d.amount==null?'':String(Math.round(Number(d.amount)||0)).padStart(12,'0')),
   'שלב':             d=>String(STAGES.indexOf(d.stage)),
-  'נוצר':            d=>d.created_at||''
+  'נוצר':            d=>d.created_at||'',
+  'בעלים':           d=>{ const o = LOWN_BY[dlOwnerOf(d)]; return o ? o.name : ''; }
 };
 const DL_KEY = new Proxy({}, { get:(_,i)=>{
   const col = DL_COLS[Number(i)]; return col ? DL_KEYN[col[0]] : undefined; } });
@@ -19128,6 +19168,7 @@ function dlRow(d, i, nt){
       <td>${ieSel('deal',d.id,'stage',STAGES,d.stage,{mdColors:DEAL_ST_COLORS,mdK:LB_TK,
             on:`dlPipeSet('${jsq(d.id)}',this.value,'')`})}</td>
       <td>${esc(sub)||'<span class="lb-na">·</span>'}</td>
+      <td>${dlOwnerCell(d)}</td>
       <td data-sort="${esc(d.created_at||'')}">${d.created_at?esc(fmtDT(d.created_at)):'<span class="lb-na">·</span>'}</td>
     </tr>`;
 }
@@ -19220,6 +19261,10 @@ window.openDeal = async (id)=>{
       <div><label>סכום (כולל מע"מ) · מחושב</label>${roIn(d.amount!=null?shekel(Number(d.amount)*VAT_RATE):'')}</div>
       <div><label>תאריך אישור ההצעה</label>${roIn(dt(d.approved_at))}</div>
       <div><label>תאריך סגירה</label>${roIn(dt(d.closed_at))}</div>
+      <!-- 🔴 6.163.0 — בעלים ושותפים, בדיוק כמו בכרטיס הליד: שם מלא
+           כאן, אווטאר בלבד בטבלה. id ייחודי לכרטיס העסקה. -->
+      <div class="span2"><label>בעלים ושותפים</label>
+        <div id="dl-ownbox">${dlOwnerCellName(d)}</div></div>
       <!-- 🔴 6.158.0 — רומן: "משבצת של לאן לשלוח את ההצעה בכוכבית
            שחייב לבחור". הטוגל כותב מיד ב-RPC; ה"חובה" נאכף בשרת
            במעבר לשלב 'נשלחה הצעת מחיר לחתימה', כי לכרטיס קריאה-בלבד
@@ -21187,8 +21232,28 @@ function renderLbFilters(){
    הפרדה זו אינה קוסמטית: הסרת הראשי דרך remove_partner היא no-op מכוון
    בשרת, כדי שקליק על ✕ לא ישאיר ליד יתום. */
 let LBOWN_LEAD = null;
-window.lbOwnerPick = (leadId, ev)=>{
+/* 🔴 6.163.0 — רג'יסטרי הסוגים לבורר הבעלים. ההכללה נעשית **כאן ולא
+   בגוף הבורר**: חמישה שדות במקום אחד, וכל מסלול קיים שאינו מעביר סוג
+   נופל ל-'lead' ומתנהג בדיוק כמו קודם. זו התכונה שהופכת את ההכללה
+   לבטוחה — היא אינה יכולה לשנות את מסלול הלידים.
+   ⚠️ ובשונה מ-6.149.0 (בורר ייעודי למשימות) — שם המודל היה שונה
+      (בעלים יחיד), וכאן הוא זהה בייט-בייט. שכפול 180 שורות היה יוצר
+      עותק שני שייפרד ביום שאחד מהם ישתנה. */
+const OWN_KIND = {
+  lead: { rows: ()=>LEADS, map: ()=>LOWN_OF, perm: 'crm.leads',
+          set: 'lead_set_owner', add: 'lead_add_partner', del: 'lead_remove_partner',
+          arg: 'p_lead', paint: ()=>renderLeads() },
+  deal: { rows: ()=>DEALS, map: ()=>DOWN_OF, perm: 'crm.deals',
+          set: 'deal_set_owner', add: 'deal_add_partner', del: 'deal_remove_partner',
+          arg: 'p_deal', paint: ()=>renderDeals() }
+};
+let LBOWN_K = 'lead';
+const ownK = () => OWN_KIND[LBOWN_K] || OWN_KIND.lead;
+const ownEnt = () => (ownK().rows()||[]).find(x=>x.id===LBOWN_LEAD);
+window.lbOwnerPick = (leadId, ev, kind)=>{
   LBOWN_LEAD = leadId;
+  /* ⚠️ ברירת המחדל 'lead' — כל קורא קיים אינו מעביר סוג. */
+  LBOWN_K = OWN_KIND[kind] ? kind : 'lead';
   /* 🔴 6.119.0 — רומן, 20/08/2026: "במסך הליד בעלים ושותפויות פותח
      חלון צף לא חלון חדש. בדיוק כמו בתצוגה הטבלאית."
      היפוך מכוון של 6.115.0, שם נכתב "מהכרטיס — המודל המרכזי נשאר, כי
@@ -21282,10 +21347,12 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') lbPopClose(); });
 let LBOWN_Q = '';
 window.lbOwnerQ = (v)=>{ LBOWN_Q = String(v||''); lbOwnerDraw(true); };
 function lbOwnerDraw(keepQ){
-  const l = LEADS.find(x=>x.id===LBOWN_LEAD); if(!l) return;
+  const _k = ownK();
+  const l = ownEnt(); if(!l) return;
   if(!keepQ) LBOWN_Q = '';
-  const can = window.canEdit('crm.leads');
-  const prim = lbOwnerOf(l), parts = lbPartnersOf(l);
+  const can = window.canEdit(_k.perm);
+  const _all = (_k.map()[l.id]) || (l.owner_id ? [l.owner_id] : []);
+  const prim = _all[0] || '', parts = _all.slice(1);
   const nameOf = k => (LOWN_BY[k]||{}).name || '—';
   const jtOf   = k => (LOWN_BY[k]||{}).job_title || '';
   /* הצ'יפ של הראשי מסומן, ושל שותף לא — אותה שורה, שני מצבים. */
@@ -21334,21 +21401,23 @@ const lbOwnUuid = k => (k && String(k).indexOf('legacy:')!==0) ? k : null;
 window.lbOwnerAdd = async (key)=>{
   const id = LBOWN_LEAD, uid = lbOwnUuid(key);
   if(!uid){ toast('עובד לשעבר אינו יכול להיות שותף'); return; }
-  const { error } = await sb.schema('crm').rpc('lead_add_partner', { p_lead:id, p_owner:uid });
+  const _k = ownK();
+  const { error } = await sb.schema('crm').rpc(_k.add, { [_k.arg]:id, p_owner:uid });
   if(error){ toast('הוספת השותף נכשלה — '+error.message); return; }
-  const a = LOWN_OF[id] || (LOWN_OF[id] = []); if(!a.includes(key)) a.push(key);
-  toast('נוסף שותף ✓'); lbOwnerDraw(); renderLeads(); lbOwnerSync(id);
+  const _m = _k.map(); const a = _m[id] || (_m[id] = []); if(!a.includes(key)) a.push(key);
+  toast('נוסף שותף ✓'); lbOwnerDraw(); _k.paint(); lbOwnerSync(id);
 };
 window.lbOwnerRemove = async (key)=>{
   const id = LBOWN_LEAD, uid = lbOwnUuid(key);
-  const { data, error } = await sb.schema('crm').rpc('lead_remove_partner', { p_lead:id, p_owner:uid });
+  const _k = ownK();
+  const { data, error } = await sb.schema('crm').rpc(_k.del, { [_k.arg]:id, p_owner:uid });
   if(error){ toast('הסרת השותף נכשלה — '+error.message); return; }
   const r = Array.isArray(data) ? data[0] : data;
   /* השרת מחזיר false גם כשהיעד הוא הראשי (no-op מכוון). לא מציגים "הוסר"
      על פעולה שלא קרתה — זו בדיוק המחלקה של רשומת יומן שקרית, בצד ה-UI. */
   if(!(r && r.removed !== false)){ toast('לא הוסר — הבעלים הראשי מוחלף דרך "קבע כראשי"'); return; }
-  LOWN_OF[id] = (LOWN_OF[id]||[]).filter(x=>x!==key);
-  toast('השותף הוסר ✓'); lbOwnerDraw(); renderLeads(); lbOwnerSync(id);
+  _k.map()[id] = (_k.map()[id]||[]).filter(x=>x!==key);
+  toast('השותף הוסר ✓'); lbOwnerDraw(); _k.paint(); lbOwnerSync(id);
 };
 /* קביעת ראשי = lead_set_owner. הראשי הקודם **יורד לגמרי** ולא הופך לשותף:
    זו ההתנהגות של הפונקציה בשרת (delete ואז insert), ואל תתקן אותה כאן
@@ -21375,11 +21444,19 @@ function lbOwnerSync(id){
      ו-#lb-ownbox לא היה מתעדכן: החלפת בעלים נראית בטבלה ובחלון אבל
      לא בכרטיס שמאחוריהם, עד סגירה ופתיחה. זו בדיוק המחלקה של VIS_GRP
      (6.83.1): מטמון עם צרכן שנשכח. הריענון בטוח גם כשהכרטיס גלוי. */
+  /* ⚠️ שני מכלים, אחד לכל סוג — id יחיד לכל אחד, כדי ש-
+     getElementById לא יחזיר את הראשון בסדר ה-DOM (המחלקה של 6.135.0). */
   const box = document.getElementById('lb-ownbox');
-  if(box){ const l = LEADS.find(x=>x.id===id); if(l) box.innerHTML = lbOwnerCellName(l); }
+  if(box){ const l = (LEADS||[]).find(x=>x.id===id); if(l) box.innerHTML = lbOwnerCellName(l); }
+  const dbox = document.getElementById('dl-ownbox');
+  if(dbox){ const d = (DEALS||[]).find(x=>x.id===id); if(d) dbox.innerHTML = dlOwnerCellName(d); }
 }
 window.lbSetOwner = async (leadId, ownerKey, quiet)=>{
-  const { error } = await sb.schema('crm').rpc('lead_set_owner', { p_lead: leadId, p_owner: ownerKey || null });
+  /* 🔴 6.163.0 — גם המסלול הזה עובר ברג'יסטרי. הוא מזין את
+     "קבע כראשי" · "הפוך לראשי" · "ניקוי בעלות", ובלעדיו שלושתם היו
+     כותבים ל-crm.leads עם מזהה עסקה. */
+  const _k = ownK();
+  const { error } = await sb.schema('crm').rpc(_k.set, { [_k.arg]: leadId, p_owner: ownerKey || null });
   if(error){ toast('העברת הבעלות נכשלה — '+error.message); return; }
   /* המראה owner_id מתעדכנת בטריגר בשרת; בזיכרון מעדכנים אותה ידנית כדי
      שהטבלה והכרטיס לא יציגו את המצב הישן עד רענון דף (הכלל מ-6.83.1). */
@@ -21389,14 +21466,19 @@ window.lbSetOwner = async (leadId, ownerKey, quiet)=>{
   /* 🔴 lead_set_owner בשרת **מוחקת** את הראשי הקודם ואינה מורידה אותו
      לשותף. המערך בזיכרון חייב לשקף בדיוק את זה, אחרת המסך יראה שותף
      שאינו קיים במסד עד רענון דף. */
-  const parts = (LOWN_OF[leadId]||[]).slice(1);
-  LOWN_OF[leadId] = ownerKey ? [ownerKey].concat(parts.filter(x=>x!==ownerKey)) : parts;
-  const l = LEADS.find(x=>x.id===leadId); if(l) l.owner_id = (ownerKey && ownerKey.indexOf('legacy:')!==0) ? ownerKey : null;
+  const _m = _k.map();
+  const parts = (_m[leadId]||[]).slice(1);
+  _m[leadId] = ownerKey ? [ownerKey].concat(parts.filter(x=>x!==ownerKey)) : parts;
+  /* המראה המקומית — owner_id — מתעדכנת לישות הנכונה. */
+  const l = (_k.rows()||[]).find(x=>x.id===leadId);
+  if(l) l.owner_id = (ownerKey && ownerKey.indexOf('legacy:')!==0) ? ownerKey : null;
   toast('הבעלות עודכנה ✓');
   /* ⚠️ בלי `quiet` הקריאה מהטבלה ומהבורר הייתה פותחת את כרטיס הליד
      בפני המשתמש בלי שביקש. */
-  if(!quiet) openLead(leadId);
-  renderLeads();
+  /* ⚠️ פתיחה מחדש רק במסלול הליד: לעסקה openDeal הוא async ומצייר
+     כרטיס שלם, והבורר ממילא מרענן דרך lbOwnerSync. */
+  if(!quiet && LBOWN_K === 'lead') openLead(leadId);
+  _k.paint();
 };
 /* יומן העדכונים — הוספה בלבד.
    ⚠️ actor_id נשלח מהלקוח **אבל אינו נסמך עליו**: policy רסטריקטיבית

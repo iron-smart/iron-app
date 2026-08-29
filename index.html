@@ -2484,7 +2484,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.160.0</div>
+      <div class="ver">גרסה 6.161.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2613,7 +2613,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.160.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.161.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3069,6 +3069,24 @@ tr.lb-on td{ background-color:#eef5fd !important; }
 <!-- מודל כרטיס פגישה -->
 <div class="modal hidden" id="meetModal">
   <div class="sheet" id="meetSheet"></div>
+</div>
+
+<!-- 🔴 6.161.0 — שינוי מועד. `.modal-over` (z-index 70) כדי שהוא ייפתח
+     **מעל** כרטיס הפגישה ולא במקומו: mountCard מסתיר את כל המודלים,
+     והלקח מ-6.153.0 הוא שפתיחה רגילה כאן מעלימה את הכרטיס שממנו באנו. -->
+<div class="modal modal-over hidden" id="mtReschedModal">
+  <div class="sheet">
+    <h3>שינוי מועד הפגישה</h3>
+    <div class="note" id="mt-rs-note"></div>
+    <div class="field"><label>תאריך<span class="req">*</span></label><input id="mt-rs-date" type="date"></div>
+    <div class="field"><label>שעת התחלה</label><input id="mt-rs-start" type="time"></div>
+    <div class="field"><label>שעת סיום</label><input id="mt-rs-end" type="time"></div>
+    <div class="actions">
+      <button class="btn green" id="mt-rs-save">שמירה</button>
+      <button class="ghost" id="mt-rs-cancel">ביטול</button>
+    </div>
+    <div class="err" id="mt-rs-err"></div>
+  </div>
 </div>
 
 <!-- מודל כרטיס הזמנה / קריאת שירות (מערכת התיאומים) -->
@@ -9136,7 +9154,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'meetnew-2026-08-29a';
+const BUILD_ID = 'meetact-2026-08-29a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -19738,6 +19756,80 @@ function renderMeets(){
      הגלילה האופקית לראש — הלקח מ-6.116.0 בטבלת הלידים. */
   paintKeep('#meets-list', wideScreen() ? meetTable(list) : capped(list, meetRow, 'אין פגישות בסינון הזה'));
 }
+/* ═══ פעולות על הפגישה (6.161.0, רומן) ════════════════════════════
+   ⚠️ הכפתורים **בכרטיס בלבד ולא בטבלה**: ביטול משורה בטבלה של 468
+   פגישות הוא לחיצה שגויה אחת מפגישה שבוטלה ללא כוונה. */
+function mtActs(m){
+  if(!window.canEdit('crm.meets')) return '';
+  const done = m.status==='בוטלה';
+  /* 🔴 8 מתוך 8 הפגישות העתידיות הן שורות אאוטלוק, ולרישום ב-Azure יש
+     Calendars.Read בלבד — כלומר שינוי מועד אצלנו **יוחזר בסנכרון הבא**.
+     ההצהרה הזאת חשובה יותר מהפעולה, ולכן היא ליד הכפתור ולא אחריו. */
+  const ol = m.source==='outlook';
+  return `<div class="lbu-bar" style="margin-top:12px">`
+    + (done ? `<span class="note">הפגישה בוטלה.</span>`
+            : `<button type="button" class="chip" onclick="mtReschedOpen('${jsq(m.id)}')">✎ שינוי מועד</button>`
+            + `<button type="button" class="chip" onclick="mtCancel('${jsq(m.id)}')">✕ ביטול הפגישה</button>`)
+    + (ol && m.web_link ? `<a class="chip" href="${esc(safeUrl(m.web_link))}" target="_blank" rel="noopener">↗ פתיחה באאוטלוק</a>` : '')
+    + `</div>`
+    + (ol && !done ? `<div class="note" style="margin-top:6px">⚠️ הפגישה מגיעה מיומן אאוטלוק. שינוי מועד כאן מתעדכן במערכת ובמשימה, <b>אך לא ביומן עצמו</b> — יש לעדכן גם שם.</div>` : '');
+}
+window.mtCancel = async (id)=>{
+  const m = (MEETS||[]).find(x=>x.id===id); if(!m) return;
+  if(!confirm('לבטל את הפגישה «' + (m.subject||'') + '»?')) return;
+  const why = (prompt('סיבת הביטול (לא חובה):','') || '').trim();
+  const { data, error } = await sb.schema('crm').rpc('meeting_cancel',
+    { p_meet: id, p_reason: why || null });
+  if(error){ toast('הביטול נכשל — '+error.message); return; }
+  const r = Array.isArray(data) ? data[0] : data;
+  /* ⚠️ עדכון מקומי ולא loadLeads: 26 שאילתות ו-~12MB על פעולה שנוגעת
+     בשורה אחת. הלקח מ-6.153.0. */
+  m.status = 'בוטלה';
+  toast((r && r.tasks_closed > 0) ? 'הפגישה בוטלה ✓ · נסגרו ' + r.tasks_closed + ' משימות'
+                                  : 'הפגישה בוטלה ✓');
+  renderMeets(); if(typeof renderTasks==='function') renderTasks();
+  openMeet(id);
+};
+let MT_RS_ID = null;
+window.mtReschedOpen = (id)=>{
+  const m = (MEETS||[]).find(x=>x.id===id); if(!m) return;
+  MT_RS_ID = id;
+  $('#mt-rs-date').value  = m.meet_date || todayStr();
+  $('#mt-rs-start').value = (m.start_time||'').slice(0,5);
+  $('#mt-rs-end').value   = (m.end_time||'').slice(0,5);
+  $('#mt-rs-err').textContent = '';
+  $('#mt-rs-note').textContent = m.source==='outlook'
+    ? 'הפגישה מיומן אאוטלוק — השינוי יחול במערכת ובמשימה, ולא ביומן.'
+    : 'המשימה המקושרת תוזז יחד עם הפגישה.';
+  /* 🔴 classList ולא mountCard: mountCard מסתיר את **כל** המודלים,
+     ולכן פתיחה רגילה כאן הייתה מעלימה את כרטיס הפגישה. */
+  $('#mtReschedModal').classList.remove('hidden');
+  setTimeout(()=>{ try{ $('#mt-rs-date').focus(); }catch(_e){} }, 30);
+};
+$('#mt-rs-cancel').onclick = ()=>{ $('#mtReschedModal').classList.add('hidden'); MT_RS_ID=null; };
+$('#mt-rs-save').onclick = async ()=>{
+  const id = MT_RS_ID; if(!id) return;
+  const d = $('#mt-rs-date').value;
+  if(!d){ $('#mt-rs-err').textContent = 'חסר תאריך.'; return; }
+  const { data, error } = await sb.schema('crm').rpc('meeting_reschedule', {
+    p_meet: id, p_date: d,
+    p_start: $('#mt-rs-start').value || null,
+    p_end:   $('#mt-rs-end').value   || null });
+  if(error){ $('#mt-rs-err').textContent = 'השמירה נכשלה — '+error.message; return; }
+  const r = Array.isArray(data) ? data[0] : data;
+  const m = (MEETS||[]).find(x=>x.id===id);
+  if(m){ m.meet_date = d;
+         m.start_time = $('#mt-rs-start').value || null;
+         m.end_time   = $('#mt-rs-end').value   || null; }
+  $('#mtReschedModal').classList.add('hidden'); MT_RS_ID = null;
+  /* ⚠️ ההודעה אומרת מה **באמת** קרה: כמה משימות הוזזו, והאם היומן
+     נשאר מאחור. "נשמר ✓" סתמי היה מסתיר בדיוק את החלק שאינו מתקיים. */
+  toast('המועד עודכן ✓'
+    + ((r && r.tasks_moved > 0) ? ' · הוזזה ' + r.tasks_moved + ' משימה' : '')
+    + ((r && r.is_outlook) ? ' · יש לעדכן גם ביומן אאוטלוק' : ''));
+  renderMeets(); if(typeof renderTasks==='function') renderTasks();
+  openMeet(id);
+};
 window.openMeet = (id)=>{
   const m = MEETS.find(x=>x.id===id); if(!m) return;
   const ln = linkedName(m);
@@ -19752,7 +19844,7 @@ window.openMeet = (id)=>{
     <div class="row"><span class="k">${mtType(m)==='מקוונת'?'קישור':(mtType(m)==='טלפונית'?'טלפון':'מיקום')}</span><span class="v">${mtDetail(m)}</span></div>
     <div class="row"><span class="k">בעלים</span><span class="v">${(LOWN_BY[m.owner_id||'']||{}).name || '<span class="lb-na">ללא בעלים</span>'}</span></div>
     ${ln?`<div class="row"><span class="k">מקושרת אל</span><span class="v">${ln.label}: ${esc(ln.name)}</span></div>`:''}
-    <div class="note">שיגור זימונים, תזכורות וביטול — בשלב האוטומציות הבא.</div>`;
+    ${mtActs(m)}`;
   mountCard('meetModal', ()=>openMeet(id));
 };
 

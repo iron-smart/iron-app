@@ -1515,7 +1515,7 @@
   .set-nav button.active{ background:#f2f8f5; color:var(--navy); font-weight:800; border-inline-start:4px solid var(--green); }
   .set-body{ flex:1; min-width:0; }
   @media(max-width:760px){ .set-layout{ flex-direction:column; } .set-nav{ width:100%; position:static; display:flex; overflow-x:auto; } .set-nav button{ border-bottom:none; border-inline-end:1px solid #eef1f4; white-space:nowrap; } }
-  .usr-row{ display:grid; grid-template-columns:1.25fr .9fr 1fr 1.05fr auto auto; gap:8px; align-items:center; padding:8px 0; border-bottom:1px solid #eef1f4; font-size:13.5px; }
+  .usr-row{ display:grid; grid-template-columns:1.25fr .9fr 1fr .85fr 1.05fr auto auto; gap:8px; align-items:center; padding:8px 0; border-bottom:1px solid #eef1f4; font-size:13.5px; }
 /* 6.139.0 — משתמש שאינו פעיל. הסקופ (1,2,0) גובר על שלושת המופעים של
    .usr-row (0,1,0) בכל מיקום בגיליון — ולכן אינו תלוי ב"המאוחר מנצח".
    אותה שפה חזותית של .lb-ava-old (grayscale+opacity) שכבר מסמנת
@@ -2481,7 +2481,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.165.0</div>
+      <div class="ver">גרסה 6.166.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2610,7 +2610,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.165.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.166.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9183,7 +9183,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'meetsend-2026-08-29a';
+const BUILD_ID = 'pricust-2026-08-29a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -13755,7 +13755,7 @@ window.setToggleOff = ()=>{
 async function renderUsers(){
   const box=$('#usersBox'); if(!box) return;
   const { data, error } = await sb.schema('core').from('profiles')
-    .select('id,full_name,email,role,dashboard,job_title,active,perm_group_id')
+    .select('id,full_name,email,role,dashboard,job_title,active,perm_group_id,priority_login')
     .order('full_name',{ascending:true});
   if(error){ box.innerHTML='<div class="empty">שגיאה בטעינת המשתמשים: '+esc(error.message)+'</div>'; return; }
   SET_USERS=data||[];
@@ -13769,6 +13769,7 @@ async function renderUsers(){
       <span><b>${esc(u.full_name||'—')}</b>${u.active===false?'<small class="usr-offtag">לא פעיל</small>':''}<br><small style="color:#94a3b8" dir="ltr">${esc(u.email)}</small></span>
       <select id="ur-${u.id}" ${uEdit?'':'disabled'}>${ROLE_OPTS.map(([v,l])=>`<option value="${v}" ${v===u.role?'selected':''}>${l}</option>`).join('')}</select>
       <select id="uj-${u.id}" ${uEdit?'':'disabled'}><option value="">—</option>${JOB_TITLES.map(j=>`<option ${j===u.job_title?'selected':''}>${j}</option>`).join('')}</select>
+      <input id="up-${u.id}" ${uEdit?'':'disabled'} value="${esc(u.priority_login||'')}" placeholder="משתמש בפריוריטי" title="שם המשתמש בפריוריטי. נכתב לשדה «לטיפול» בכרטיס הלקוח שנפתח בהמרת ליד. ריק = הכרטיס ייווצר תחת CRM.">
       <span class="pm-gcell"><select id="ug-${u.id}" ${uEdit?'':'disabled'} onchange="pmApplyGroup('${u.id}')">${gOpts(u)}</select>${pmDiffBadge(u.id)}</span>
       <label style="display:flex;align-items:center;gap:4px;font-size:12px"><input type="checkbox" id="ua-${u.id}" ${uEdit?'':'disabled'} ${u.active!==false?'checked':''}>פעיל</label>
       <span style="display:flex;gap:5px;flex-wrap:wrap" ${uEdit?'':'hidden'}>
@@ -13982,7 +13983,8 @@ window.saveUser = async id=>{
   if(id===ME.id && ($('#ur-'+id).value!==ME.role || !$('#ua-'+id).checked)){
     if(!confirm('שינוי ההרשאה של עצמך או כיבוי המשתמש שלך עלול לנעול אותך מחוץ למערכת. להמשיך?')) return;
   }
-  const upd={ role:$('#ur-'+id).value, job_title:$('#uj-'+id).value||null, active:$('#ua-'+id).checked };
+  const upd={ role:$('#ur-'+id).value, job_title:$('#uj-'+id).value||null, active:$('#ua-'+id).checked,
+              priority_login:($('#up-'+id).value||'').trim()||null };
   const { error } = await sb.schema('core').from('profiles').update(upd).eq('id', id);
   if(error){ alert('שמירה נכשלה: '+error.message); return; }
   alert('המשתמש עודכן ✓');
@@ -21064,6 +21066,9 @@ function lbHistBlock(tasks, meets){
 }
 window.openLead = (id)=>{
   const l = LEADS.find(x=>x.id===id); if(!l) return;
+  /* ⚠️ תוצאת המרה שייכת לליד שבו היא נעשתה. בלי האיפוס היא הייתה
+     מוצגת בכרטיס הבא שנפתח — מלכודת dataset.loaded של 6.136.0. */
+  if(CONV_RESULT && CONV_RESULT.id!==id) CONV_RESULT = null;
   const editable = window.canEdit('crm.leads');
   const utm=[l.utm_campaign,l.utm_source,l.utm_medium,l.utm_term].filter(Boolean).join(' · ');
   const _lm=lbMatch(l), _lcid=lbCustId(l,_lm);
@@ -21113,7 +21118,7 @@ window.openLead = (id)=>{
       <div class="form-sep">משימות ופגישות</div>
       <div class="span4" id="lb-tmblock" data-lead="${esc(l.id)}">${lbTmBlock(myTasks, myMeets, lbTmActs(l.id))}</div>
     </div>
-    <div id="convResultSlot"></div>
+    <div id="convResultSlot">${CONV_RESULT && CONV_RESULT.id===l.id ? CONV_RESULT.html : ''}</div>
     <div id="convResult"></div>
     </div>
     <div id="lb-pn-upd" class="hidden">
@@ -22011,14 +22016,24 @@ $('#lm-save').onclick = async ()=>{
   if(!id) renderMeets(); else if(tg.t==='deal') openDeal(id); else openLead(id);
 };
 
+let CONV_RESULT = null;   /* {id, html} — תוצאת ההמרה האחרונה, שורדת ציור מחדש */
 window.convertLead = async (id)=>{
   const res = $('#convResult'); res.innerHTML='<div class="note">מבצע… פותח לקוח והצעה בפריוריטי…</div>';
   const { data, error } = await sb.functions.invoke('crm-convert-lead', { body:{ lead_id:id } });
   if(error || (data && data.ok===false)){
     res.innerHTML = `<div class="note" style="color:#c0392b">שגיאה: ${esc((data&&data.error)||error?.message||'לא ידוע')}</div>`; return;
   }
-  res.innerHTML = `<div class="ok-box">✅ הומר בהצלחה!<br>לקוח בפריוריטי: <b>${esc(data.custname||'—')}</b><br>הצעת מחיר: <b>${esc(data.cprofnum||'—')}</b></div>`;
+  /* 🔴 6.166.0 — התוצאה נשמרת ב**מצב** ולא רק ב-DOM. openLead שאחריו
+     בונה את הכרטיס מחדש (וזה כל העניין: הרצועה, השבב ותת-הסטטוס
+     מתעדכנים), ולכן כל מה שנכתב ל-#convResult היה נמחק. */
+  const warn = [data.owner_login_error, data.owner_error].filter(Boolean).join(' · ');
+  CONV_RESULT = { id, html: `<div class="ok-box">✅ הומר בהצלחה!<br>לקוח בפריוריטי: <b>${esc(data.custname||'—')}</b><br>הצעת מחיר: <b>${esc(data.cprofnum||'—')}</b>`
+    + (data.price_list ? `<br>מחירון: <b>${esc(data.price_list)}</b>` : '')
+    + (warn ? `<br><span style="color:#b45309">⚠️ ${esc(warn)}</span>` : '')
+    + `</div>` };
+  res.innerHTML = '';
   await loadLeads();
+  openLead(id);
 };
 
 function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }

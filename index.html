@@ -1998,6 +1998,14 @@ td.lb-today .lb-dt{ background-color:transparent; }
 @media(max-width:900px){ .ctab{ min-height:38px; } }
 @media(max-width:560px){ .ctab{ padding:8px 11px; font-size:13px; } }
 .tk-done{ text-decoration:line-through; color:#94a3b8; }
+/* 🔴 6.172.0 — הקו-חוצה על שדה המועד (רומן: "רק מועד").
+   **השורה השנייה היא העיקר:** text-decoration אינו עובר לפקדי טופס,
+   ושדה המועד הוא <input class="lb-dt"> — בדיוק התא שסומן בצילום. בלי
+   הכלל הזה הקו לא היה מגיע אליו כלל. זו המחלקה המדודה של 6.103.0,
+   ולה תקדים בקובץ: td.lb-ov מגדיר גם td.lb-ov .lb-dt.
+   ⚠️ מעוגן ב-#tasks-list: .tk-done שמעליו הוא (0,1,0) וגלובלי. */
+#tasks-list td.tk-dndt,
+#tasks-list td.tk-dndt .lb-dt{ text-decoration:line-through; color:#94a3b8; }
 .lb-duew{ display:inline-flex; align-items:center; gap:5px; }
 .lb-bang, .lb-clk{ width:15px; height:15px; flex:none; display:block; }
 /* טלפון לחיץ בטבלאות (6.118.0). צבע ההיפר-קישור מוחלף בצבע הטקסט
@@ -2505,7 +2513,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.171.0</div>
+      <div class="ver">גרסה 6.172.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2634,7 +2642,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.171.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.172.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9322,7 +9330,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'dealdense-2026-08-30a';
+const BUILD_ID = 'taskline-2026-08-30a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -14956,15 +14964,18 @@ function capped(list, rowFn, emptyMsg){
 }
 
 function taskRow(t){
-  const overdue = t.status!=='הושלם' && t.due_at && new Date(t.due_at) < new Date();
+  /* 6.172.0 — `done` הוצא לקבוע אחד ומזין את השם ואת המועד. עד כה
+     הליטרל 'הושלם' הופיע כאן פעמיים, פעם בהגדרת overdue ופעם בסגנון. */
+  const done = t.status==='הושלם';
+  const overdue = !done && t.due_at && new Date(t.due_at) < new Date();
   const due = t.due_at ? new Date(t.due_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
   /* סטטוס משימה — הרשימה מהמאנדיי (הערה 17) */
   const stSel = `<select onclick="event.stopPropagation()" onchange="setTaskStatus('${t.id}',this.value)"
     style="width:auto;padding:5px 8px;font-size:12.5px;border-radius:99px;border:1.5px solid ${TASK_ST_COLORS[t.status]||'#e2e8f0'};color:${TASK_ST_COLORS[t.status]&&t.status!=='חדש'?onWhite(TASK_ST_COLORS[t.status]):'#475569'};font-weight:700">
     ${TASK_STATUSES.map(s=>`<option ${s===t.status?'selected':''}>${s}</option>`).join('')}</select>`;
   return `<div class="lead">
-    <div><div class="nm" style="${t.status==='הושלם'?'text-decoration:line-through;color:#94a3b8':''}">${esc(t.name)}</div>
-    <div class="meta" style="${overdue?'color:#c0392b;font-weight:600':''}">יעד: ${due}${overdue?' · באיחור!':''}${t.category?' · '+esc(t.category):''}</div></div>
+    <div><div class="nm" style="${done?'text-decoration:line-through;color:#94a3b8':''}">${esc(t.name)}</div>
+    <div class="meta" style="${overdue?'color:#c0392b;font-weight:600':''}">יעד: <span style="${done?'text-decoration:line-through':''}">${due}</span>${overdue?' · באיחור!':''}${t.category?' · '+esc(t.category):''}</div></div>
     <div style="display:flex;gap:6px;align-items:center">${stSel}
     ${t.status!=='הושלם'?`<button class="ghost" style="padding:8px 12px;width:auto" onclick="doneTask('${t.id}')">בוצע ✓</button>`:''}</div>
   </div>`;
@@ -15539,8 +15550,15 @@ function tkHead(){
     + '</tr></thead><tbody>';
 }
 function tkRow(t, i){
-  const b = tkBucket(t.due_at), dmk = lbDueMark(t.due_at);
   const done = t.status==='הושלם';
+  /* 🔴 6.172.0 — הסטטוס נכנס לחישוב, ומשינוי אחד נופלים **שלושת**
+     הביטויים יחד: TK_PAINT['none'] אינו קיים ⇒ אין רקע ורוד · dmk.cls
+     ריק ⇒ אין td.lb-ov · dmk.ico ריק ⇒ אין סימן קריאה.
+     ⚠️ זהו יישור ל-taskRow, שכבר מגדיר overdue עם t.status!=='הושלם' —
+        עד כאן היו שתי הגדרות ל"באיחור" באותו מסך. נמדד ש-7,415 משימות
+        שהושלמו מועדן בעבר, כלומר הסימן נורה על 99% מהן. */
+  const b = done ? 'none' : tkBucket(t.due_at);
+  const dmk = done ? { cls:'', rowCls:'', ico:'' } : lbDueMark(t.due_at);
   /* 🔴 הקלט אינו יורש את צבע התא (גיליון ה-UA גובר), ולכן td.lb-ov
      מגדיר גם `.lb-dt` בתוכו — שני המסלולים, עריך ולא-עריך, מסומנים.
      זו המחלקה המדודה של 6.103.0. */
@@ -15560,7 +15578,7 @@ function tkRow(t, i){
       <td dir="ltr">${phCell(tkLinkPhone(t))}</td>
       <td>${t.category?mdPill(t.category,TASK_CAT_COLORS,LB_TK):'<span class="lb-na">·</span>'}</td>
       <td>${ieSel('task',t.id,'status',TASK_STATUSES,t.status,{mdColors:TASK_ST_COLORS,mdK:LB_TK})}</td>
-      <td data-sort="${esc(t.due_at||'')}"${dmk.cls?` class="${dmk.cls}"`:''}><span class="lb-duew">${dmk.ico}${dueCell}</span></td>
+      <td data-sort="${esc(t.due_at||'')}"${done?' class="tk-dndt"':(dmk.cls?` class="${dmk.cls}"`:'')}><span class="lb-duew">${dmk.ico}${dueCell}</span></td>
       <td data-sort="${esc(t.created_at||'')}">${t.created_at?esc(new Date(t.created_at).toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit'})):'<span class="lb-na">·</span>'}</td>
     </tr>`;
 }

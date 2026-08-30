@@ -1369,6 +1369,12 @@
   max-height:min(380px, 60vh); overflow:auto; background-color:#fff;
   border:1px solid var(--line); border-radius:12px; padding:12px 14px;
   box-shadow:0 12px 32px rgba(6,24,39,.18); }
+/* 6.174.0 — כשמוצג ה-PDF עצמו החלון גדל, ורק אז. */
+#dl-qpop.qp-doc{ width:min(760px, calc(100vw - 24px));
+  max-height:min(78vh, 700px); padding:10px 12px; overflow:hidden; }
+#dl-qpop .qp-frame{ width:100%; height:min(66vh, 600px); border:1px solid var(--line);
+  border-radius:8px; background-color:#fff; display:block; }
+#dl-qpop .qp-hint{ color:#64748b; font-size:var(--fs-xs); margin-top:6px; }
 #dl-qpop .qp-ttl{ font-weight:800; color:var(--navy); font-size:var(--fs-md); }
 #dl-qpop .qp-sub{ color:#64748b; font-size:var(--fs-xs); margin-bottom:8px; }
 #dl-qpop table{ width:100%; border-collapse:collapse; font-size:12px; table-layout:fixed; }
@@ -2566,7 +2572,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.173.0</div>
+      <div class="ver">גרסה 6.174.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2695,7 +2701,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.173.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.174.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9321,6 +9327,7 @@ window.dlSignBox = (d)=>{
 
 /* ═══ תצוגה מקדימה של ההצעה (6.173.0) ═══════════════════════════════ */
 const DLQ_CACHE = {};        /* deal_id -> {st:'ok'|'err', snap|msg} */
+const DLQ_URL = {};          /* storage_path -> {url, exp}  (signed, 300ש') */
 let DLQ_T = null, DLQ_ID = null;
 window.dlqEl = ()=>{
   let e = document.getElementById('dl-qpop');
@@ -9362,8 +9369,41 @@ window.dlqBody = (s)=>{
    + '<span>מע"מ <b>'+shekel(s.vat||0)+'</b></span>'
    + '<span>סה"כ <b>'+shekel(s.total||0)+'</b></span></div>';
 };
+/* signed URL ממוטמן פר-נתיב. מחזיר '' בכשל, והקורא נופל ל-snapshot. */
+window.dlqSigned = async (path)=>{
+  const now = Date.now(), hit = DLQ_URL[path];
+  if(hit && hit.exp > now) return hit.url;
+  try{
+    const { data, error } = await sb.storage.from('docs').createSignedUrl(path, 300);
+    if(error || !(data && data.signedUrl)) return '';
+    /* פג 30ש' לפני התוקף האמיתי — כתובת שפגה בדיוק בזמן הריחוף
+       הייתה מסגרת ריקה בלי שום סימן. */
+    DLQ_URL[path] = { url:data.signedUrl, exp: now + 270000 };
+    return data.signedUrl;
+  }catch(_e){ return ''; }
+};
+window.dlqDocHtml = (d, url)=>
+  '<div class="qp-ttl">הצעה '+esc(d.priority_quote_id||'')+'</div>'
+ + '<div class="qp-sub">'+esc((d.customer_name)||'')+'</div>'
+ + '<iframe class="qp-frame" src="'+esc(url)+'" title="תצוגה מקדימה של ההצעה"></iframe>'
+ + '<div class="qp-hint">זו תצוגה מקדימה. ללחיצה על «PDF ↗» ייפתח המסמך המלא.</div>';
 window.dlqShow = async (dealId, anchor)=>{
   DLQ_ID = dealId;
+  /* 🔴 יש קובץ ⇒ מציגים אותו, ולא סיכום שלו. "כל ההצעה" של רומן הוא
+     המסמך בפורמט «עם תמונה ומפרט», ולא ארבע עמודות. */
+  /* 🔴 `DEALS` ולא `window.DEALS`: הוא let בסקופ הלקסיקלי ו**אינו תכונה
+     של window** — מחלקת ME/OSET מ-6.162.0. dlQuoteDoc כותב אותו כך
+     בדיוק, ומי שיכתוב window.DEALS יקבל [] ויפול אחורה בשקט. */
+  const dl = ((typeof DEALS!=='undefined'&&DEALS)||[]).find(x=>x.id===dealId);
+  if(dl && dl.quote_doc_path){
+    dlqRender(anchor, '<div class="qp-ttl">טוען את המסמך…</div>');
+    const u = await dlqSigned(dl.quote_doc_path);
+    if(DLQ_ID !== dealId) return;
+    if(u){ const e = dlqEl(); e.classList.add('qp-doc');
+           dlqRender(anchor, dlqDocHtml(dl, u)); return; }
+    /* כשל בחתימת ה-URL אינו סוף הדרך — נופלים ל-snapshot למטה. */
+  }
+  dlqEl().classList.remove('qp-doc');
   const hit = DLQ_CACHE[dealId];
   if(hit){ dlqRender(anchor, hit.st==='ok' ? dlqBody(hit.snap)
                           : '<div class="qp-ttl">לא ניתן להציג</div><div class="qp-sub">'+esc(hit.msg)+'</div>'); return; }
@@ -9399,9 +9439,29 @@ window.dlqArm = ()=>{
   el.addEventListener('mouseenter', ()=>{ if(DLQ_T) clearTimeout(DLQ_T);
     DLQ_T = setTimeout(()=>dlqShow(id, el), 250); });
   el.addEventListener('mouseleave', dlqHide);
+  dlqWire();
+};
+/* מאזינים גלובליים — **פעם אחת בלבד**. עד 6.173.0 מאזין ה-scroll נוסף
+   בכל פתיחת כרטיס, כלומר הצטבר בלי גבול. */
+let DLQ_WIRED = false;
+window.dlqWire = ()=>{
+  if(DLQ_WIRED) return; DLQ_WIRED = true;
   /* capture — גלילת .pvc-body אינה מבעבעת ל-window. הלקח של bnReplace. */
   window.addEventListener('scroll', dlqHide, true);
+  /* האצלה לטבלה: תא אחד לכל שורה, מאזין אחד לכולן. */
+  document.addEventListener('mouseover', (ev)=>{
+    const t = ev.target && ev.target.closest && ev.target.closest('[data-qpk]');
+    if(!t) return;
+    if(!window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
+    if(DLQ_T) clearTimeout(DLQ_T);
+    DLQ_T = setTimeout(()=>dlqShow(t.dataset.qpk, t), 250);
+  }, true);
+  document.addEventListener('mouseout', (ev)=>{
+    const t = ev.target && ev.target.closest && ev.target.closest('[data-qpk]');
+    if(t) dlqHide();
+  }, true);
 };
+try{ dlqWire(); }catch(_e){}
 window.dlQuoteDoc = async (dealId)=>{
   const d = (DEALS||[]).find(x=>x.id===dealId); if(!d) return;
   if(!window.canEdit('docs.' + DL_QCAT)){ alert('אין לך הרשאת עריכה בקטגוריית ההצעות.'); return; }
@@ -9466,7 +9526,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'dealsort-2026-08-30a';
+const BUILD_ID = 'quotepeek-2026-08-30a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -19556,7 +19616,7 @@ function dlRow(d, i, nt){
             on:`dlPipeSet('${jsq(d.id)}',this.value,'')`})}</td>
       <td>${esc(sub)||'<span class="lb-na">·</span>'}</td>
       <td>${d.quote_doc_path
-            ? `<span class="tk-link" onclick="event.stopPropagation();dlOpenDoc('${jsq(d.quote_doc_path)}')">PDF &#8599;</span>`
+            ? `<span class="tk-link" data-qpk="${esc(d.id)}" onclick="event.stopPropagation();dlOpenDoc('${jsq(d.quote_doc_path)}')">PDF &#8599;</span>`
             : '<span class="lb-na">·</span>'}</td>
       <td>${d.sign_link
             ? `<a href="${esc(safeUrl(d.sign_link))}" target="_blank" rel="noopener" onclick="event.stopPropagation()">פתיחה &#8599;</a>`
@@ -19677,7 +19737,7 @@ window.openDeal = async (id)=>{
       <div><label>סכום (כולל מע"מ)${d.amount_incl_vat!=null?'':' · מחושב'}</label>${roIn(d.amount_incl_vat!=null?shekel(d.amount_incl_vat):(d.amount!=null?shekel(Number(d.amount)*VAT_RATE):''))}</div>
       <div><label>בעלים ושותפים</label>
         <div id="dl-ownbox">${dlOwnerCellName(d)}</div></div>
-      <div class="span2" id="dl-qdoc"${d.quote_doc_path?` data-deal="${esc(id)}"`:''}><label>מסמך ההצעה</label>
+      <div class="span2" id="dl-qdoc"${(d.quote_doc_path||d.priority_quote_id)?` data-deal="${esc(id)}"`:''}><label>מסמך ההצעה</label>
         ${d.quote_doc_path
           ? `<div class="tk-lnk"><button class="chip" onclick="dlOpenDoc('${jsq(d.quote_doc_path)}')">${esc(String(d.quote_doc_path).split('/').pop())} &#8599;</button></div>`
           : roIn('טרם נמשך')}</div>

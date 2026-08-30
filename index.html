@@ -1332,6 +1332,58 @@
      במקום שתיים ורבע (רומן, 14/08/2026). ספציפיות 0,2,1 — חייבת לגבור
      על .form-grid > div שהוא 0,1,1. */
   .form-grid > .cell-2up{ flex-direction:row; align-items:flex-start; gap:var(--sp-3); }
+/* 6.173.0 — שני שדות שווי-רוחב. c2-narrow הוא 76px, ו-roIn בגריד הוא
+   padding:5px 9px ⇒ 58px תוכן — בעוד תאריך he-IL ("30.8.2026") דורש
+   ~75px ב-13.5px, כלומר **נקטם באליפסיס בכל שורה**. ה-76px נמדד בשעתו
+   עבור "ארגוני"/"סטונאי", לא עבור תאריך. חצי תא נותן ~87px תוכן.
+   (מדידת Fable, 30/08/2026.) */
+.form-grid > .cell-2up > .c2-half{ flex:1 1 0; min-width:0; }
+/* ═══ 6.173.0 — משבצות זוג ההמרה ═══════════════════════════════════
+   רומן: "ליד ולקוח תעצבת משבצת יפה לחיצה."
+   כל המשבצת היא ה-a, לא רק השם — יעד לחיצה מלא. שבב tk-kind נשאר:
+   הוא המבדיל הצבעוני בין שני שמות שזהים ב-91% מהמקרים, ונקרא מהר
+   יותר מהתווית. עוגן dealSheet = (1,1,0), ולכן אינו דולף.
+   ⚠️ אפס גוונים חדשים: f8fafc מ-note, dbe3ec מ-tk-kind. */
+#dealSheet .dl-tile{ display:flex; align-items:center; gap:7px; min-height:28px;
+  padding:3px 9px; background-color:#f8fafc; border:1px solid #dbe3ec;
+  border-radius:var(--r-md); text-decoration:none; color:var(--navy);
+  font-weight:700; font-size:var(--fs-md); min-width:0; cursor:pointer;
+  transition:background-color .12s, border-color .12s, box-shadow .12s; }
+#dealSheet .dl-tile .dlt-nm{ flex:1 1 auto; min-width:0; overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap; }
+#dealSheet .dl-tile .dlt-ar{ flex:none; color:#94a3b8; font-size:12px;
+  transition:transform .12s, color .12s; }
+#dealSheet .dl-tile:hover{ background-color:#eef4fb; border-color:#8fb3d9;
+  box-shadow:0 1px 4px rgba(6,24,39,.08); }
+/* translateX שלילי הוא שמאלה — כיוון החץ ב-RTL. */
+#dealSheet .dl-tile:hover .dlt-ar{ color:var(--navy); transform:translateX(-2px); }
+#dealSheet .dl-tile:focus-visible{ outline:2px solid var(--navy); outline-offset:1px; }
+/* ═══ 6.173.0 — תצוגה מקדימה של ההצעה ═══════════════════════════════
+   רומן: "מסמך ההצעה עצמה תעשה אפשרות hover שאפשר לראות את כל ההצעה
+   בלי באמת להכנס אליה."
+   🔴 position:fixed ו-singleton ב-body: .sheet הוא overflow:hidden
+   ו-.pvc-body הוא overflow:auto, ולכן absolute בתוך הכרטיס **ייחתך**.
+   זו התקלה המדודה של 6.129.1, ואותו פתרון. z-index מעל modal (50)
+   ומעל modal-over (70). */
+#dl-qpop{ position:fixed; z-index:80; width:min(420px, calc(100vw - 24px));
+  max-height:min(380px, 60vh); overflow:auto; background-color:#fff;
+  border:1px solid var(--line); border-radius:12px; padding:12px 14px;
+  box-shadow:0 12px 32px rgba(6,24,39,.18); }
+#dl-qpop .qp-ttl{ font-weight:800; color:var(--navy); font-size:var(--fs-md); }
+#dl-qpop .qp-sub{ color:#64748b; font-size:var(--fs-xs); margin-bottom:8px; }
+#dl-qpop table{ width:100%; border-collapse:collapse; font-size:12px; table-layout:fixed; }
+#dl-qpop th{ text-align:right; color:#64748b; font-weight:700;
+  border-bottom:1px solid var(--line); padding:3px 4px; }
+#dl-qpop td{ padding:3px 4px; border-bottom:1px solid #f1f5f9;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#dl-qpop .qp-sku{ width:72px; color:#64748b; }
+#dl-qpop .qp-qty{ width:42px; text-align:center; }
+#dl-qpop .qp-tot{ width:76px; }
+#dl-qpop .qp-sums{ display:flex; gap:14px; justify-content:flex-start;
+  margin-top:8px; font-size:12.5px; color:#475569; }
+#dl-qpop .qp-sums b{ color:var(--navy); }
+#dl-qpop .qp-more{ color:#64748b; font-size:11.5px; margin-top:6px; }
+
   .form-grid > .cell-2up > div{ display:flex; flex-direction:column; min-width:0; }
   /* 76px ולא 58: התווית "כמות פריטים" דורשת 61px, ובפחות מכך היא
      נשברת לשתי שורות והתיבה יורדת 14px מתחת לשכנתה (רומן, 14/08/2026). */
@@ -1767,6 +1819,7 @@
 @media(max-width:900px){
   .tabs button{ min-height:46px; }
   .chip{ min-height:38px; display:inline-flex; align-items:center; }
+  #dealSheet .dl-tile{ min-height:38px; }
   .toolbar .add{ min-width:54px; min-height:46px; }
   .toolbar input{ min-height:46px; }
   .tools-bar .search input,.tools-bar select,.tools-bar input[type=date],.tools-bar .tb-clear{ min-height:42px; }
@@ -2513,7 +2566,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.172.0</div>
+      <div class="ver">גרסה 6.173.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2642,7 +2695,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.172.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.173.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9266,6 +9319,89 @@ window.dlSignBox = (d)=>{
        + ` <span class="lb-na">הצעה ${esc(d.priority_quote_id)}</span></div>`;
 };
 
+/* ═══ תצוגה מקדימה של ההצעה (6.173.0) ═══════════════════════════════ */
+const DLQ_CACHE = {};        /* deal_id -> {st:'ok'|'err', snap|msg} */
+let DLQ_T = null, DLQ_ID = null;
+window.dlqEl = ()=>{
+  let e = document.getElementById('dl-qpop');
+  /* singleton ב-body: .sheet הוא overflow:hidden וייחתוך absolute.
+     זו התקלה המדודה של 6.129.1, ואותו פתרון בדיוק. */
+  if(!e){ e = document.createElement('div'); e.id='dl-qpop'; e.setAttribute('aria-hidden','true');
+          e.style.display='none'; document.body.appendChild(e); }
+  return e;
+};
+window.dlqHide = ()=>{ if(DLQ_T){ clearTimeout(DLQ_T); DLQ_T=null; } DLQ_ID=null;
+  const e=document.getElementById('dl-qpop'); if(e) e.style.display='none'; };
+window.dlqPlace = (anchor)=>{
+  const e = dlqEl(), r = anchor.getBoundingClientRect();
+  e.style.display='block'; e.style.left='0px'; e.style.top='0px';
+  const w = e.offsetWidth, h = e.offsetHeight;
+  let top = r.bottom + 6;
+  if(top + h > window.innerHeight - 8 && r.top - h - 6 > 8) top = r.top - h - 6;
+  top = Math.max(8, Math.min(top, window.innerHeight - h - 8));
+  /* RTL: הקצה הימני של הפופאובר מיושר לימין התא, ואז clamp לחלון. */
+  let left = r.right - w;
+  left = Math.max(12, Math.min(left, window.innerWidth - w - 12));
+  e.style.left = left+'px'; e.style.top = top+'px';
+};
+window.dlqRender = (anchor, html)=>{ const e=dlqEl(); e.innerHTML=html; dlqPlace(anchor); };
+window.dlqBody = (s)=>{
+  const it = Array.isArray(s.items)?s.items:[];
+  /* תקרה מדודה ולא "רספונסיבי": 24 שורות ממלאות את 380px, והשאר
+     נספרות בשורה אחת. קיטום שקט היה מציג הצעה חלקית כאילו היא מלאה. */
+  const CAP = 24, sh = it.slice(0, CAP);
+  return '<div class="qp-ttl">הצעה '+esc(s.qnum||'')+'</div>'
+   + '<div class="qp-sub">'+esc(s.cust||'')+(s.pdate?' · '+esc(String(s.pdate).slice(0,10)):'')+'</div>'
+   + '<table><thead><tr><th class="qp-sku">מק"ט</th><th>תיאור</th>'
+   + '<th class="qp-qty">כמות</th><th class="qp-tot">סה"כ</th></tr></thead><tbody>'
+   + sh.map(r=>'<tr><td class="qp-sku" dir="ltr">'+esc(r.sku||'')+'</td><td title="'+esc(r.des||'')+'">'+esc(r.des||'')
+       +'</td><td class="qp-qty">'+esc(String(r.qty||0))+'</td><td class="qp-tot">'+shekel(r.total||0)+'</td></tr>').join('')
+   + '</tbody></table>'
+   + (it.length>CAP?'<div class="qp-more">ועוד '+(it.length-CAP)+' שורות — במסמך המלא.</div>':'')
+   + '<div class="qp-sums"><span>לפני מע"מ <b>'+shekel(s.sub||0)+'</b></span>'
+   + '<span>מע"מ <b>'+shekel(s.vat||0)+'</b></span>'
+   + '<span>סה"כ <b>'+shekel(s.total||0)+'</b></span></div>';
+};
+window.dlqShow = async (dealId, anchor)=>{
+  DLQ_ID = dealId;
+  const hit = DLQ_CACHE[dealId];
+  if(hit){ dlqRender(anchor, hit.st==='ok' ? dlqBody(hit.snap)
+                          : '<div class="qp-ttl">לא ניתן להציג</div><div class="qp-sub">'+esc(hit.msg)+'</div>'); return; }
+  dlqRender(anchor, '<div class="qp-ttl">טוען את ההצעה…</div><div class="qp-sub">מפריוריטי, פעם אחת לעסקה</div>');
+  let data=null, error=null;
+  try{ ({data,error} = await sb.functions.invoke('deal-quote-doc',{body:{deal_id:dealId, preview:true}})); }
+  catch(e){ error = e; }
+  /* 🔴 supabase-js מחזיר הודעה גנרית באנגלית על 4xx; ההודעה העברית
+     יושבת בגוף. אותה קריאה בדיוק כמו ב-dlQuoteDoc (6.167.0). */
+  if(error || !data || data.ok!==true){
+    let msg = (data && data.error) || '';
+    if(!msg && error && error.context && typeof error.context.json === 'function'){
+      try{ const j = await error.context.json(); msg = (j && j.error) || ''; }catch(_e){}
+    }
+    if(!msg) msg = (error && error.message) || 'השגיאה אינה ידועה';
+    DLQ_CACHE[dealId] = {st:'err', msg:String(msg).slice(0,160)};
+  } else {
+    DLQ_CACHE[dealId] = {st:'ok', snap:data.snapshot||{}};
+  }
+  /* המשתמש עשוי היה לעזוב בזמן שהבקשה באוויר — לא לצייר על ריחוף שנגמר. */
+  if(DLQ_ID !== dealId) return;
+  const now = DLQ_CACHE[dealId];
+  dlqRender(anchor, now.st==='ok' ? dlqBody(now.snap)
+                  : '<div class="qp-ttl">לא ניתן להציג</div><div class="qp-sub">'+esc(now.msg)+'</div>');
+};
+window.dlqArm = ()=>{
+  const el = document.getElementById('dl-qdoc');
+  /* ⚠️ נרשם רק כשיש מסמך **וגם** כשיש ריחוף אמיתי. במגע אין hover,
+     ושם ההקשה ממשיכה לפתוח את המסמך — עדיף מפופאובר על מסך צר. */
+  if(!el || !el.dataset.deal) return;
+  if(!window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
+  const id = el.dataset.deal;
+  el.addEventListener('mouseenter', ()=>{ if(DLQ_T) clearTimeout(DLQ_T);
+    DLQ_T = setTimeout(()=>dlqShow(id, el), 250); });
+  el.addEventListener('mouseleave', dlqHide);
+  /* capture — גלילת .pvc-body אינה מבעבעת ל-window. הלקח של bnReplace. */
+  window.addEventListener('scroll', dlqHide, true);
+};
 window.dlQuoteDoc = async (dealId)=>{
   const d = (DEALS||[]).find(x=>x.id===dealId); if(!d) return;
   if(!window.canEdit('docs.' + DL_QCAT)){ alert('אין לך הרשאת עריכה בקטגוריית ההצעות.'); return; }
@@ -9330,7 +9466,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'taskline-2026-08-30a';
+const BUILD_ID = 'dealsort-2026-08-30a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -19287,9 +19423,9 @@ window.setDealFilter = f => { DEAL_FILTER = f; renderDeals(); };
    והסכום קיבל את שמו המלא. ⚠️ בסוף ולא באמצע — בדיוק כמו 6.147.0
    בטבלת הלידים: תוספת באמצע מזיזה כל אינדקס שאחריה. */
 const DL_COLS = [
-  ['#','rownum'], ['עסקה','srt'], ['לקוח','srt'], ['טלפון',''],
-  ['ת.משימה הבאה','srt'], ['סכום (לפני מע"מ)','srt'], ['שלב','srt'],
-  ['תת-סטטוס',''], ['בעלים','srt'], ['נוצר','srt']
+  ['#','rownum'], ["מס' הצעה בפריוריטי",'srt'], ['לקוח','srt'], ['בעלים','srt'],
+  ['טלפון',''], ['ת.משימה הבאה','srt'], ['סכום (לפני מע"מ)','srt'], ['שלב','srt'],
+  ['תת-סטטוס',''], ['מסמך ההצעה',''], ['לינק לחתימה',''], ['נוצר','srt']
 ];
 /* 🔴 האינדקס נגזר מהשם ולא מקובע. עד 6.156.0 DL_KEY היה ממופתח
    במספרים ו-dlOrder החזיק `(i===5)` קשיח — כלומר **מחיקת עמודה
@@ -19314,7 +19450,7 @@ function dlPhone(d){ const l=dlLead(d), k=dlCust(d); return (l&&l.phone)||(k&&k.
 let DL_SORT = [null, 1];
 /* מפת-שם, ולא מפת-אינדקס. הוספה או מחיקה של עמודה אינה נוגעת בה. */
 const DL_KEYN = {
-  'עסקה':            d=>d.name||'',
+  "מס' הצעה בפריוריטי": d=>d.priority_quote_id||'',
   'לקוח':            d=>dlCustName(d),
   'סכום (לפני מע"מ)': d=>(d.amount==null?'':String(Math.round(Number(d.amount)||0)).padStart(12,'0')),
   'שלב':             d=>String(STAGES.indexOf(d.stage)),
@@ -19410,15 +19546,21 @@ function dlRow(d, i, nt){
     : '<span class="lb-na">·</span>';
   return `<tr class="${TK_PAINT[tkBucket(t)]||''}" onclick="openDeal('${jsq(d.id)}')">
       <td class="rownum">${i}</td>
-      <td style="max-width:260px"><b>${esc(d.name||'')}</b>${d.priority_quote_id?`<div class="note-preview" dir="ltr">${esc(d.priority_quote_id)}</div>`:''}</td>
+      <td dir="ltr" data-sort="${esc(d.priority_quote_id||'')}">${d.priority_quote_id?`<b>${esc(d.priority_quote_id)}</b>`:'<span class="lb-na">·</span>'}</td>
       <td>${custCell}</td>
+      <td>${dlOwnerCell(d)}</td>
       <td dir="ltr">${phCell(dlPhone(d))}</td>
       <td data-sort="${esc(t||'')}"${dmk.cls?` class="${dmk.cls}"`:''}><span class="lb-duew">${dmk.ico}${t?esc(new Date(t).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})):'<span class="lb-na">·</span>'}</span></td>
       <td data-sort="${esc(d.amount==null?'':String(Math.round(Number(d.amount)||0)))}">${d.amount!=null?shekel(d.amount):'<span class="lb-na">·</span>'}</td>
       <td>${ieSel('deal',d.id,'stage',STAGES,d.stage,{mdColors:DEAL_ST_COLORS,mdK:LB_TK,
             on:`dlPipeSet('${jsq(d.id)}',this.value,'')`})}</td>
       <td>${esc(sub)||'<span class="lb-na">·</span>'}</td>
-      <td>${dlOwnerCell(d)}</td>
+      <td>${d.quote_doc_path
+            ? `<span class="tk-link" onclick="event.stopPropagation();dlOpenDoc('${jsq(d.quote_doc_path)}')">PDF &#8599;</span>`
+            : '<span class="lb-na">·</span>'}</td>
+      <td>${d.sign_link
+            ? `<a href="${esc(safeUrl(d.sign_link))}" target="_blank" rel="noopener" onclick="event.stopPropagation()">פתיחה &#8599;</a>`
+            : '<span class="lb-na">·</span>'}</td>
       <td data-sort="${esc(d.created_at||'')}">${d.created_at?esc(fmtDT(d.created_at)):'<span class="lb-na">·</span>'}</td>
     </tr>`;
 }
@@ -19484,10 +19626,20 @@ window.openDeal = async (id)=>{
   const x = ctxOf('deal', id);
   const cust = x.cust, lead = x.lead;
   let contact = null;
-  if(d.contact_id){ const r = await sb.schema('crm').from('contacts').select('full_name,phone,email').eq('id',d.contact_id).maybeSingle(); contact = r.data; }
+  /* 🔴 6.173.0 — core ולא crm. הטבלה יושבת ב-core.contacts, ושני אתרי
+     הקריאה האחרים בקובץ כבר פנו לשם; זה היה השלישי והיחיד ששגה.
+     התוצאה: הכרטיס הציג "אין איש קשר ראשי מקושר לעסקה" ל-1,590 מתוך
+     1,968 העסקאות (81%) — כלומר תמיד. השליפה החזירה שגיאה, r.data
+     נשאר undefined, ואין catch שיצעק. **כשל שקט שנראה כמו נתון חסר.** */
+  if(d.contact_id){ const r = await sb.schema('core').from('contacts').select('full_name,phone,email').eq('id',d.contact_id).maybeSingle(); contact = r.data; }
   /* ⚠️ שליפה עצלה ולא כניסה ב-Promise.all — האינדקסים אינם זזים. */
   const dt = v => v ? new Date(v).toLocaleDateString('he-IL') : '—';
   const phone = (lead && lead.phone) || (cust && cust.phone) || '';
+  /* 🔴 6.173.0 — טלפון אחד בכרטיס (רומן מנה אחד), ואיש הקשר קודם.
+     נמדד: 117 עסקאות שבהן טלפון איש הקשר שונה משל הליד/לקוח, ועוד 10
+     שבהן הוא היחיד הקיים. איש הקשר הוא מי שמדברים איתו על העסקה, וזה
+     מיישר את הטלפון לשדה הדוא"ל — שמעדיף אותו מאז ומעולם. */
+  const dphone = (contact && contact.phone) || phone;
   /* משימות ופגישות של **העסקה ושל הליד** יחד — רומן: המשימה מלווה את
      איש המכירות "כל הדרך עד לסגירת העסקה", ולכן פיצולן לשני מקומות
      היה מסתיר בדיוק את מה שהוא ביקש לראות. */
@@ -19503,82 +19655,47 @@ window.openDeal = async (id)=>{
     <div id="dl-pn-main">
     <div class="form-grid">
       <div class="form-sep">פרטי הפנייה והלקוח</div>
-      <!-- 🔴 6.171.0 — שורת הזהות. "פנייה מקורית" ו"לקוח" היו **שתי
-           שורות span2 נערמות**, ואחרי המרה שתיהן מציגות את אותו שם —
-           כלומר נקראו ככפילות מקרית (רומן: "מה קורה שם"). זו לצד זו
-           הן נקראות כמה שהן: זוג המרה, הליד הזה הפך ללקוח הזה.
-           ⚠️ לא מוזגו לתא אחד ולא הוסתר אחד כששמות זהים — הם פותחים
-              כרטיסים שונים, ו-9% מהלידים נושאים company ושמותיהם שונים. -->
-      ${lead?`<div class="span2"><label>פנייה מקורית</label>
-        <div class="tk-lnk"><span class="tk-kind tk-k-lead">ליד</span>
-        <a href="#" onclick="event.preventDefault();goCard(()=>openLead('${jsq(lead.id)}'))">${esc(lead.full_name||'')} ↗</a></div></div>`
-      :'<div class="span2"><div class="note">העסקה אינה מקושרת לפנייה. הקישור נוצר בהמרת ליד, או במילוי היסטורי.</div></div>'}
-      ${cust?`<div class="span2"><label>לקוח</label><div class="tk-lnk"><a href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(cust.id)}'))">${esc(cust.name||'כרטיס הלקוח')} ↗</a></div></div>`
-      :'<div class="span2"><div class="note">אינה מקושרת ללקוח.</div></div>'}
-      ${lead?`<div><label>סטטוס הפנייה</label><div class="tk-lnk">${mdPill(lead.status||'—',LEAD_ST_COLORS,LB_TK)}</div></div>
-      <div><label>בעלים של הפנייה</label><div class="tk-lnk">${lbOwnerCellName(lead)}</div></div>`:''}
-      ${cust?`<div><label>שם חברה</label>${roIn(cust.name||'')}</div>`:''}
-      <!-- ⚠️ .cell-2up — הפריטיב הקיים בשפת הכרטיסים לשני שדות קצרים
-           בתא אחד. "סוג לקוח" הוא c2-narrow (76px; "ארגוני"/"סטונאי"
-           נכנסים) והטלפון c2-wide (10 ספרות דורשות ~110px).
-           ⚠️ שני הטלפונים **לא** אוחדו כך — מספר טלפון אינו נכנס
-              ל-76px, וזה היה קיטום ולא צפיפות. -->
-      <div class="cell-2up">
-        <div class="c2-wide"><label>טלפון ${phone?phBtns(phone):''}</label>${roIn(phone||'',{ltr:1})}</div>
-        <div class="c2-narrow"><label>סוג לקוח</label>${roIn((cust&&cust.customer_type)||'')}</div>
-      </div>
-      <!-- 🔴 6.156.0 — פרטי הלקוח (רומן). כולם roIn: הכרטיס הוא
-           קריאה-בלבד מאז 6.126.0, ויש assert ב-dealtest שאוסר
-           selHtml ו-input חופשי. 6.171.0 — שם חברה · כתובת · דוא"ל
-           קוצרו לעמודה אחת לבקשת רומן, והסקשן ארוז בשלוש שורות מלאות. -->
-      ${contact?`<div><label>איש קשר ראשי</label>${roIn(contact.full_name||'')}</div>
-      <div><label>טלפון איש קשר ${phBtns(contact.phone||'')}</label>${roIn(contact.phone||'',{ltr:1})}</div>`
-      :'<div class="span2"><div class="note">אין איש קשר ראשי מקושר לעסקה.</div></div>'}
-      <!-- ⚠️ תווית אחת והתנאי **בערך בלבד**: טרנרי ששוכפל את התווית
-           מייצר שני <label> לאותו שדה, ושער סדר-השדות נופל עליו. -->
+      ${lead?`<div><label>פנייה מקורית</label>
+        <a class="dl-tile" href="#" onclick="event.preventDefault();goCard(()=>openLead('${jsq(lead.id)}'))"
+           title="${esc(lead.full_name||'')}"><span class="tk-kind tk-k-lead">ליד</span><span class="dlt-nm">${esc(lead.full_name||'')}</span><span class="dlt-ar">&#8599;</span></a></div>`
+      :'<div><label>פנייה מקורית</label><div class="note" title="הקישור נוצר בהמרת ליד, או במילוי היסטורי.">ללא פנייה מקושרת</div></div>'}
+      ${cust?`<div><label>לקוח</label>
+        <a class="dl-tile" href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(cust.id)}'))"
+           title="${esc(cust.name||'')}"><span class="tk-kind tk-k-customer">לקוח</span><span class="dlt-nm">${esc(cust.name||'כרטיס הלקוח')}</span><span class="dlt-ar">&#8599;</span></a></div>`
+      :'<div><label>לקוח</label><div class="note">אינה מקושרת ללקוח.</div></div>'}
+      <div><label>שם חברה</label>${roIn((cust&&cust.name)||'')}</div>
+      <div><label>איש קשר</label>${roIn((contact&&contact.full_name)||'')}</div>
+      <div><label>טלפון ${dphone?phBtns(dphone):''}</label>${roIn(dphone||'',{ltr:1})}</div>
+      <div><label>סוג לקוח</label>${roIn((cust&&cust.customer_type)||'')}</div>
       <div><label>כתובת</label>${roIn(cust?[cust.address,cust.city].filter(Boolean).join(', '):'')}</div>
       <div><label>דוא"ל</label>${roIn((contact&&contact.email)||(cust&&cust.email)||'',{ltr:1})}</div>
-      ${cust&&cust.logistics_notes?`<div class="span4"><div class="note">🚚 ${esc(cust.logistics_notes)}</div></div>`:''}
+      ${cust&&cust.logistics_notes?`<div class="span4"><div class="note">&#128666; ${esc(cust.logistics_notes)}</div></div>`:''}
 
       <div class="form-sep">פרטי העסקה</div>
-      <div><label>סכום (לפני מע"מ)</label>${roIn(d.amount!=null?shekel(d.amount):'')}</div>
-      <!-- 🔴 6.168.0 — הערך מפריוריטי (TOTPRICE) כשיש, וחישוב רק
-           כנפילה אחורה. ⚠️ התווית "מחושב" נשארת **רק בנפילה**: 1,698
-           עסקאות מחזיקות amount בלי כולל-מע"מ, ושם הכפל ב-VAT_RATE
-           עדיין הדבר היחיד שאפשר. תווית שאומרת "מחושב" על ערך שנמשך
-           הייתה שקר קטן שמצטבר. -->
-      <div><label>סכום (כולל מע"מ)${d.amount_incl_vat!=null?'':' · מחושב'}</label>${roIn(d.amount_incl_vat!=null?shekel(d.amount_incl_vat):(d.amount!=null?shekel(Number(d.amount)*VAT_RATE):''))}</div>
-      <div><label>תאריך אישור ההצעה</label>${roIn(dt(d.approved_at))}</div>
-      <div><label>תאריך סגירה</label>${roIn(dt(d.closed_at))}</div>
       <div><label>מס' הצעה בפריוריטי</label>${roIn(d.priority_quote_id||'',{ltr:1})}</div>
-      <!-- 🔴 6.168.0 — מסמך ההצעה שנמשך מפריוריטי (crm-quote-watch).
-           הבקט docs **פרטי**, ולכן אין כאן href אלא כפתור שמייצר
-           signed URL. ההרשאה נגזרת מקידומת הנתיב: docs_select באחסון
-           היא can_view('docs.' + split_part(name,'/',1)), כלומר קידומת
-           quotes/ היא בדיוק docs.quotes. נמדד בסימולציית סשן שרומן · ניב ·
-           מעיין אטיאס רואים את הקובץ ומיקי לא. -->
-      <div><label>מסמך ההצעה</label>
-        ${d.quote_doc_path
-          ? `<div class="tk-lnk"><button class="chip" onclick="dlOpenDoc('${jsq(d.quote_doc_path)}')">${esc(String(d.quote_doc_path).split('/').pop())} ↗</button></div>`
-          : roIn('טרם נמשך')}</div>
-      <!-- 🔴 6.163.0 — בעלים ושותפים, בדיוק כמו בכרטיס הליד: שם מלא
-           כאן, אווטאר בלבד בטבלה. id ייחודי לכרטיס העסקה. -->
+      <div><label>סכום (לפני מע"מ)</label>${roIn(d.amount!=null?shekel(d.amount):'')}</div>
+      <div><label>סכום (כולל מע"מ)${d.amount_incl_vat!=null?'':' · מחושב'}</label>${roIn(d.amount_incl_vat!=null?shekel(d.amount_incl_vat):(d.amount!=null?shekel(Number(d.amount)*VAT_RATE):''))}</div>
       <div><label>בעלים ושותפים</label>
         <div id="dl-ownbox">${dlOwnerCellName(d)}</div></div>
-      <div><label>לינק לחתימה</label>
-        ${d.sign_link?`<div class="tk-lnk"><a href="${esc(safeUrl(d.sign_link))}" target="_blank" rel="noopener">פתיחה ↗</a></div>`
-                     :`<div class="note">טרם נשלח לחתימה.</div>`}</div>
-      <!-- 🔴 6.158.0 — רומן: "משבצת של לאן לשלוח את ההצעה בכוכבית
-           שחייב לבחור". הטוגל כותב מיד ב-RPC; ה"חובה" נאכף בשרת
-           במעבר לשלב 'נשלחה הצעת מחיר לחתימה', כי לכרטיס קריאה-בלבד
-           אין רגע שמירה. -->
+      <div class="span2" id="dl-qdoc"${d.quote_doc_path?` data-deal="${esc(id)}"`:''}><label>מסמך ההצעה</label>
+        ${d.quote_doc_path
+          ? `<div class="tk-lnk"><button class="chip" onclick="dlOpenDoc('${jsq(d.quote_doc_path)}')">${esc(String(d.quote_doc_path).split('/').pop())} &#8599;</button></div>`
+          : roIn('טרם נמשך')}</div>
       <div class="span2"><label>לאן לשלוח את ההצעה<span class="req">*</span></label>
         <div id="dl-chanbox"></div></div>
-      <!-- 🔴 6.167.0 — משבצת החתימה **שלנו**, נפרדת מ-PowerDoc בכוונה.
-           216 מתוך 216 הקישורים למעלה הם powerdoc.co; תא אחד לשניהם
-           היה מציג שני מקורות שונים כאילו הם אותו דבר. -->
       <div class="span2"><label>חתימה על ההצעה — מודול איירון</label>
         <div id="dl-signbox">${dlSignBox(d)}</div></div>
+      <div><label>לינק לחתימה</label>
+        ${d.sign_link?`<div class="tk-lnk"><a href="${esc(safeUrl(d.sign_link))}" target="_blank" rel="noopener">פתיחה &#8599;</a></div>`
+                     :`<div class="note">טרם נשלח לחתימה.</div>`}</div>
+      <div class="cell-2up">
+        <!-- ⚠️ התוויות **מלאות**, אחרי מדידה. Fable הציע לקצר ל"אישור
+             ההצעה"/"סגירה" בהערכה שהמלאה דורשת ~115px; המדידה בדפדפן
+             החזירה **101px בתא של 104px** — כלומר היא נכנסת בשורה אחת.
+             רומן לא ביקש לקצר, ולכן אין סיבה. הערכה מול מדידה. -->
+        <div class="c2-half"><label>תאריך אישור ההצעה</label>${roIn(dt(d.approved_at))}</div>
+        <div class="c2-half"><label>תאריך סגירה</label>${roIn(dt(d.closed_at))}</div>
+      </div>
 
       <div class="form-sep">משימות ופגישות</div>
       <!-- 🔴 6.158.0 — שני הכפתורים שרומן ביקש ("כמו במסך ליד בדיוק").
@@ -19600,6 +19717,7 @@ window.openDeal = async (id)=>{
     </div>
 `;
   dlPipeDraw(id); dlChanDraw(id);
+  try{ dlqArm(); }catch(_e){}
   mountCard('dealModal', ()=>openDeal(id));
   /* 6.135.0 — תמיד, ולא רק כשיש ליד. 51 עסקאות במסד אין להן לא ליד ולא
      לקוח, ועד כאן הן לא קיבלו יומן עדכונים בכלל — לא קריאה ולא כתיבה. */

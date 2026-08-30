@@ -2400,6 +2400,10 @@ tr.lb-on td{ background-color:#eef5fd !important; }
    ⚠️ חל על כרטיסים עם לשוניות בלבד. גובה קבוע לכל מודאל היה מותח
       דיאלוגים קטנים (פולואפ, משימה חדשה) לגובה מלא. */
 .modal .sheet.tabbed{ height:min(78vh, 640px); max-height:min(78vh, 640px); }
+/* 🔴 6.171.0 — שם חברה · כתובת · דוא"ל ירדו לעמודה אחת (~220px), ו-
+   <input readonly> **קוטם בלי שום סימן** כברירת מחדל. הערך המלא נשאר
+   נגיש ב-title, ש-roIn פולט מאז ומעולם. סקופ לכרטיס העסקה בלבד. */
+#dealSheet .form-grid input.ro{ text-overflow:ellipsis; }
 .modal-busy .sheet{ max-width:330px; text-align:center; padding:26px 20px; }
 .busy-spin{ width:34px; height:34px; margin:0 auto 12px; border:3px solid #e5e7eb;
             border-top-color:var(--navy); border-radius:50%; animation:busyspin .8s linear infinite; }
@@ -2501,7 +2505,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.170.0</div>
+      <div class="ver">גרסה 6.171.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2630,7 +2634,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.170.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.171.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9318,7 +9322,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'cardtidy-2026-08-29a';
+const BUILD_ID = 'dealdense-2026-08-30a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -19481,26 +19485,41 @@ window.openDeal = async (id)=>{
     <div id="dl-pn-main">
     <div class="form-grid">
       <div class="form-sep">פרטי הפנייה והלקוח</div>
+      <!-- 🔴 6.171.0 — שורת הזהות. "פנייה מקורית" ו"לקוח" היו **שתי
+           שורות span2 נערמות**, ואחרי המרה שתיהן מציגות את אותו שם —
+           כלומר נקראו ככפילות מקרית (רומן: "מה קורה שם"). זו לצד זו
+           הן נקראות כמה שהן: זוג המרה, הליד הזה הפך ללקוח הזה.
+           ⚠️ לא מוזגו לתא אחד ולא הוסתר אחד כששמות זהים — הם פותחים
+              כרטיסים שונים, ו-9% מהלידים נושאים company ושמותיהם שונים. -->
       ${lead?`<div class="span2"><label>פנייה מקורית</label>
         <div class="tk-lnk"><span class="tk-kind tk-k-lead">ליד</span>
-        <a href="#" onclick="event.preventDefault();goCard(()=>openLead('${jsq(lead.id)}'))">${esc(lead.full_name||'')} ↗</a></div></div>
-      <div><label>סטטוס הפנייה</label><div class="tk-lnk">${mdPill(lead.status||'—',LEAD_ST_COLORS,LB_TK)}</div></div>
-      <div><label>בעלים של הפנייה</label><div class="tk-lnk">${lbOwnerCellName(lead)}</div></div>`
+        <a href="#" onclick="event.preventDefault();goCard(()=>openLead('${jsq(lead.id)}'))">${esc(lead.full_name||'')} ↗</a></div></div>`
       :'<div class="span2"><div class="note">העסקה אינה מקושרת לפנייה. הקישור נוצר בהמרת ליד, או במילוי היסטורי.</div></div>'}
-      ${cust?`<div class="span2"><label>לקוח</label><div class="tk-lnk"><a href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(cust.id)}'))">${esc(cust.name||'כרטיס הלקוח')} ↗</a></div></div>
-      <div class="span2"><label>שם חברה</label>${roIn(cust.name||'')}</div>`
+      ${cust?`<div class="span2"><label>לקוח</label><div class="tk-lnk"><a href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(cust.id)}'))">${esc(cust.name||'כרטיס הלקוח')} ↗</a></div></div>`
       :'<div class="span2"><div class="note">אינה מקושרת ללקוח.</div></div>'}
-      ${phone?`<div><label>טלפון ${phBtns(phone)}</label>${roIn(phone,{ltr:1})}</div>`:''}
-      ${cust?`<div><label>סוג לקוח</label>${roIn(cust.customer_type||'')}</div>
-      <div class="span2"><label>כתובת</label>${roIn([cust.address,cust.city].filter(Boolean).join(', '))}</div>`:''}
+      ${lead?`<div><label>סטטוס הפנייה</label><div class="tk-lnk">${mdPill(lead.status||'—',LEAD_ST_COLORS,LB_TK)}</div></div>
+      <div><label>בעלים של הפנייה</label><div class="tk-lnk">${lbOwnerCellName(lead)}</div></div>`:''}
+      ${cust?`<div><label>שם חברה</label>${roIn(cust.name||'')}</div>`:''}
+      <!-- ⚠️ .cell-2up — הפריטיב הקיים בשפת הכרטיסים לשני שדות קצרים
+           בתא אחד. "סוג לקוח" הוא c2-narrow (76px; "ארגוני"/"סטונאי"
+           נכנסים) והטלפון c2-wide (10 ספרות דורשות ~110px).
+           ⚠️ שני הטלפונים **לא** אוחדו כך — מספר טלפון אינו נכנס
+              ל-76px, וזה היה קיטום ולא צפיפות. -->
+      <div class="cell-2up">
+        <div class="c2-wide"><label>טלפון ${phone?phBtns(phone):''}</label>${roIn(phone||'',{ltr:1})}</div>
+        <div class="c2-narrow"><label>סוג לקוח</label>${roIn((cust&&cust.customer_type)||'')}</div>
+      </div>
       <!-- 🔴 6.156.0 — פרטי הלקוח (רומן). כולם roIn: הכרטיס הוא
            קריאה-בלבד מאז 6.126.0, ויש assert ב-dealtest שאוסר
-           selHtml ו-input חופשי. 6.170.0 — "גישה למשאית" ו"ת.משימה
-           הבאה" ירדו לבקשת רומן, והשדות סודרו לארבע שורות מלאות. -->
+           selHtml ו-input חופשי. 6.171.0 — שם חברה · כתובת · דוא"ל
+           קוצרו לעמודה אחת לבקשת רומן, והסקשן ארוז בשלוש שורות מלאות. -->
       ${contact?`<div><label>איש קשר ראשי</label>${roIn(contact.full_name||'')}</div>
       <div><label>טלפון איש קשר ${phBtns(contact.phone||'')}</label>${roIn(contact.phone||'',{ltr:1})}</div>`
       :'<div class="span2"><div class="note">אין איש קשר ראשי מקושר לעסקה.</div></div>'}
-      <div class="span2"><label>דוא"ל</label>${roIn((contact&&contact.email)||(cust&&cust.email)||'',{ltr:1})}</div>
+      <!-- ⚠️ תווית אחת והתנאי **בערך בלבד**: טרנרי ששוכפל את התווית
+           מייצר שני <label> לאותו שדה, ושער סדר-השדות נופל עליו. -->
+      <div><label>כתובת</label>${roIn(cust?[cust.address,cust.city].filter(Boolean).join(', '):'')}</div>
+      <div><label>דוא"ל</label>${roIn((contact&&contact.email)||(cust&&cust.email)||'',{ltr:1})}</div>
       ${cust&&cust.logistics_notes?`<div class="span4"><div class="note">🚚 ${esc(cust.logistics_notes)}</div></div>`:''}
 
       <div class="form-sep">פרטי העסקה</div>
@@ -19513,30 +19532,30 @@ window.openDeal = async (id)=>{
       <div><label>סכום (כולל מע"מ)${d.amount_incl_vat!=null?'':' · מחושב'}</label>${roIn(d.amount_incl_vat!=null?shekel(d.amount_incl_vat):(d.amount!=null?shekel(Number(d.amount)*VAT_RATE):''))}</div>
       <div><label>תאריך אישור ההצעה</label>${roIn(dt(d.approved_at))}</div>
       <div><label>תאריך סגירה</label>${roIn(dt(d.closed_at))}</div>
-      <div class="span2"><label>מס' הצעה בפריוריטי</label>${roIn(d.priority_quote_id||'',{ltr:1})}</div>
+      <div><label>מס' הצעה בפריוריטי</label>${roIn(d.priority_quote_id||'',{ltr:1})}</div>
       <!-- 🔴 6.168.0 — מסמך ההצעה שנמשך מפריוריטי (crm-quote-watch).
            הבקט docs **פרטי**, ולכן אין כאן href אלא כפתור שמייצר
            signed URL. ההרשאה נגזרת מקידומת הנתיב: docs_select באחסון
            היא can_view('docs.' + split_part(name,'/',1)), כלומר קידומת
            quotes/ היא בדיוק docs.quotes. נמדד בסימולציית סשן שרומן · ניב ·
            מעיין אטיאס רואים את הקובץ ומיקי לא. -->
-      <div class="span2"><label>מסמך ההצעה</label>
+      <div><label>מסמך ההצעה</label>
         ${d.quote_doc_path
           ? `<div class="tk-lnk"><button class="chip" onclick="dlOpenDoc('${jsq(d.quote_doc_path)}')">${esc(String(d.quote_doc_path).split('/').pop())} ↗</button></div>`
           : roIn('טרם נמשך')}</div>
       <!-- 🔴 6.163.0 — בעלים ושותפים, בדיוק כמו בכרטיס הליד: שם מלא
            כאן, אווטאר בלבד בטבלה. id ייחודי לכרטיס העסקה. -->
-      <div class="span2"><label>בעלים ושותפים</label>
+      <div><label>בעלים ושותפים</label>
         <div id="dl-ownbox">${dlOwnerCellName(d)}</div></div>
+      <div><label>לינק לחתימה</label>
+        ${d.sign_link?`<div class="tk-lnk"><a href="${esc(safeUrl(d.sign_link))}" target="_blank" rel="noopener">פתיחה ↗</a></div>`
+                     :`<div class="note">טרם נשלח לחתימה.</div>`}</div>
       <!-- 🔴 6.158.0 — רומן: "משבצת של לאן לשלוח את ההצעה בכוכבית
            שחייב לבחור". הטוגל כותב מיד ב-RPC; ה"חובה" נאכף בשרת
            במעבר לשלב 'נשלחה הצעת מחיר לחתימה', כי לכרטיס קריאה-בלבד
            אין רגע שמירה. -->
       <div class="span2"><label>לאן לשלוח את ההצעה<span class="req">*</span></label>
         <div id="dl-chanbox"></div></div>
-      <div class="span2"><label>לינק לחתימה</label>
-        ${d.sign_link?`<div class="tk-lnk"><a href="${esc(safeUrl(d.sign_link))}" target="_blank" rel="noopener">פתיחה ↗</a></div>`
-                     :`<div class="note">טרם נשלח לחתימה.</div>`}</div>
       <!-- 🔴 6.167.0 — משבצת החתימה **שלנו**, נפרדת מ-PowerDoc בכוונה.
            216 מתוך 216 הקישורים למעלה הם powerdoc.co; תא אחד לשניהם
            היה מציג שני מקורות שונים כאילו הם אותו דבר. -->

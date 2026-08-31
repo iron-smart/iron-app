@@ -2617,7 +2617,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.176.0</div>
+      <div class="ver">גרסה 6.177.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2746,7 +2746,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.176.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.177.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2798,7 +2798,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       <div class="chips" id="meet-chips"></div>
       <!-- ⚠️ מסך הפגישות היה **המסך היחיד ב-CRM בלי חיפוש**. -->
       <div class="toolbar" id="meet-tools">
-        <input id="meet-q" placeholder="חיפוש לפי נושא, מיקום או ישות מקושרת…" oninput="renderMeets()">
+        <input id="meet-q" placeholder="חיפוש לפי נושא, מיקום או ישות מקושרת…" oninput="srchAttr(this, renderMeets)">
         <button class="add" id="meetAddBtn" title="פגישה חדשה">+ פגישה חדשה</button>
       </div>
       <div id="meet-cal-wrap"></div>
@@ -7301,7 +7301,7 @@ function renderSkuTools(){
       ${skuLastSyncHtml()}
       ${skuMgr()?'<button class="tb-btn go" id="skuSyncBtn" title="הסנכרון האוטומטי רץ כל יום ב-07:00 (א׳–ו׳). כאן אפשר להריץ אותו ידנית.">סנכרון מק״טים</button>':''}
     </div>`;
-  $('#skuSearch').addEventListener('input', e=>{ SKU_F.q=e.target.value; SKU_VIEW_ID=''; renderSkus(); });
+  debounceSearch($('#skuSearch'), ()=>{ SKU_F.q=$('#skuSearch').value; SKU_VIEW_ID=''; renderSkus(); });
   $('#skuAct').onchange = e=>{ SKU_F.act=e.target.value; SKU_VIEW_ID=''; renderSkus(); renderSkuViews(); };
   $('#skuStock').onchange = e=>{ SKU_F.stock=e.target.value; SKU_VIEW_ID=''; renderSkus(); renderSkuViews(); };
   $('#skuAdvBtn').onclick = ()=>{ SKU_ADV=!SKU_ADV; renderSkuAdv(); };
@@ -7442,7 +7442,7 @@ function renderSkuAdv(){
       <div class="note">התצוגה שסומנה כברירת מחדל נטענת אוטומטית לכל המשתמשים בכניסה למסך. תצוגה שמורה כוללת גם את ההחרגות והטווחים שכאן.</div>
     </div>`
     :'<div class="note" style="margin-top:10px">תצוגות שמורות מוגדרות על ידי מנהל המערכת.</div>'}`;
-  const bindT=(id,k)=>{ const el=$(id); if(el) el.addEventListener('input', e=>skuSetF(k,e.target.value)); };
+  const bindT=(id,k)=>{ const el=$(id); if(el) debounceSearch(el, ()=>skuSetF(k, el.value)); };
   const bindS=(id,k)=>{ const el=$(id); if(el) el.onchange = e=>skuSetF(k,e.target.value); };
   bindT('#skuQx','qx'); bindT('#skuPmin','pmin'); bindT('#skuPmax','pmax'); bindT('#skuQmin','qmin'); bindT('#skuQmax','qmax');
   bindS('#skuSup','sup'); bindS('#skuImg','img'); bindS('#skuMv','mv');
@@ -9412,7 +9412,7 @@ function renderDocs(){
   if(q) list=list.filter(p=>(p.customer_name||'').includes(q)||(p.order_number||'').includes(q));
   $('#docs-list').innerHTML = capped(list, p=>docRow(p), 'אין מסמכים בסינון הזה');
 }
-$('#docSearch').addEventListener('input', renderDocs);
+debounceSearch($('#docSearch'), renderDocs);
 /* 6.22.0 — היצירה עברה לשרת. ord.protocol_create מייצר את האסימון, קובע את
    הקטגוריה, בודק can_edit ורושם את היומן בעצמו. לכן אין כאן יותר לא ייצור
    אסימון בדפדפן, לא כתיבה ישירה לטבלה ולא רישום יומן מצד הלקוח. */
@@ -9667,7 +9667,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'holidays-2026-08-30a';
+const BUILD_ID = 'srchfix-2026-08-31a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -13944,8 +13944,18 @@ window.shipDraw = ()=>{
   const b = document.getElementById('shipBox'); if(!b) return;
   b.innerHTML = shipInner();
   const q = document.getElementById('shp-q');
-  if(q){ q.oninput = ()=>{ SHIP_Q = q.value; shipDraw();
-           const n = document.getElementById('shp-q'); if(n){ n.focus(); n.setSelectionRange(n.value.length, n.value.length); } }; }
+  /* 🔴 6.177.0 — תיקון לקוד שכתבתי ב-6.175.0: shipDraw מצייר מחדש את
+     **התיבה עצמה**, ולכן צריך להחזיר מיקוד — ואני דחפתי את הסמן לסוף
+     בכל תו, כך שעריכה באמצע מחרוזת נשברה. עכשיו הסמן נשמר במקומו,
+     והציור מושהה כמו בשאר התיבות. */
+  if(q) debounceSearch(q, ()=>{
+    const el = document.getElementById('shp-q');
+    const pos = el ? el.selectionStart : null;
+    SHIP_Q = el ? el.value : '';
+    shipDraw();
+    const n = document.getElementById('shp-q');
+    if(n){ n.focus(); if(pos != null) n.setSelectionRange(pos, pos); }
+  });
   const cat = document.getElementById('shp-cat'); if(cat) cat.onchange = ()=>{ SHIP_CAT = cat.value; shipDraw(); };
   const st  = document.getElementById('shp-st');  if(st)  st.onchange  = ()=>{ SHIP_ST  = st.value;  shipDraw(); };
   b.querySelectorAll('.shp-tri').forEach(el=>{ el.onchange = ()=>shipSet(el.dataset.p, el.dataset.f, el.value === '' ? null : el.value === '1'); });
@@ -15241,6 +15251,59 @@ const CRM_AUTO_AT = {}, CRM_AUTO_WAS = {};
    מחדש כרטיס פתוח, מוחק בחירה מרוכזת, או דורס תא שנערך באמצע הקלדה.
    ⚠️ שדה בסרגל **אינו** חוסם — אחרת מיקוד ששכח בחיפוש היה מקפיא את
       הרענון לנצח. תא עריכה בטבלה כן חוסם, וזו כל ההבחנה. */
+/* ═══ השהיית חיפוש (6.177.0) ══════════════════════════════════════════
+   רומן: "החיפוש פה כל הזמן נתקע … כל הקשה זה נתקע."
+
+   🔴 **נמדד** על מסך העסקאות בקנה מידה אמיתי (1,978 עסקאות · 3,164
+      לידים · 4,665 לקוחות): **161ms להקשה** — 105ms סינון, ~55ms ציור.
+      מילה בת שש אותיות = כשנייה של קיפאון. וזה היה **בכל 15 תיבות
+      החיפוש שמציירות טבלה**, לא רק בעסקאות.
+
+   ⚠️ **והמדידה הראשונה שלי הייתה פסולה, וזה שווה לזכור:** מדדתי את
+      הסינון ב-0ms כי בפיקסטורה כל העסקאות נקראו "עסקה N" — התנאי
+      הראשון תפס, ו-`||` קיצר דרך כך שהחיפוש בשדות המקושרים מעולם לא
+      רץ. **מודדים עם שאילתה שאינה תופסת, אחרת מודדים את המסלול הקל.**
+
+   🟢 הדפוס נלקח מ-PV.qInput/qFlush שרץ בייצור מאז מודול התמחור, כולל
+      שומר הערך האחרון — בלעדיו Enter (שמפעיל גם keydown וגם onsearch)
+      בנה שתי טבלאות.
+
+   ⚠️ ההשהיה על **אירוע ההקלדה בלבד**. renderX נשארות ניתנות לקריאה
+      ישירה, ולכן 12 הקוראים האחרים של renderDeals אינם מושפעים.
+   ⚠️ **ואינה מוחלת על השלמה אוטומטית** (tklPick · neCustSearch ·
+      scContSearch · lbOwnerQ) — שם התגובה חייבת להיות מיידית, והרשימה
+      קטנה ממילא. השהיה שם הייתה מרעה. */
+const SRCH_MS = 200;
+let SRCH_TYPED_AT = 0;
+function srchTyped(){ return Date.now() - SRCH_TYPED_AT < 10000; }
+
+function debounceSearch(el, fn){
+  /* ⚠️ שער נגד חיווט כפול: shipDraw מצייר מחדש ומחווט שוב, ו-
+     addEventListener מצטבר (בשונה מ-oninput= שדורס). האלמנט נמחק
+     ונוצר מחדש שם, אבל השער עדיף על הסתמכות על זה. */
+  if(!el || el.__dbw) return;
+  el.__dbw = 1;
+  let t = null, last = null;
+  const run = ()=>{ t = null; last = el.value; fn(); };
+  el.addEventListener('input', ()=>{
+    SRCH_TYPED_AT = Date.now();
+    if(t) clearTimeout(t);
+    t = setTimeout(run, SRCH_MS);
+  });
+  /* Enter ו-✕ של type=search מדלגים על ההשהיה — אבל לא מציירים פעמיים. */
+  const flush = ()=>{ if(t){ clearTimeout(t); t = null; } if(el.value !== last) run(); };
+  el.addEventListener('search', flush);
+  el.addEventListener('keydown', ev=>{ if(ev.key === 'Enter') flush(); });
+}
+
+/* לתיבות שמחווטות בתכונת oninput= ב-HTML ולא ב-JS. */
+window.srchAttr = (el, fn)=>{
+  if(!el) return;
+  SRCH_TYPED_AT = Date.now();
+  if(el.__st) clearTimeout(el.__st);
+  el.__st = setTimeout(()=>{ el.__st = null; fn(); }, SRCH_MS);
+};
+
 function crmAutoHeld(){
   if(document.querySelector('.modal:not(.hidden)')) return true;
   try{ if(typeof LB_SEL !== 'undefined' && LB_SEL && LB_SEL.size) return true; }catch(_e){}
@@ -15252,6 +15315,12 @@ function crmAutoHeld(){
      "מצב נקי אינו חוסם" היא שנפלה. אותו דפוס סינון של 6.136.0. */
   if(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName||'')
        && a.offsetParent !== null && !a.closest('.toolbar')) return true;
+  /* 🔴 6.177.0 — שדה בסרגל אינו חוסם (כדי שמיקוד שנשכח לא יקפיא את
+     הרענון לנצח), **אבל הקלדה פעילה בו כן**. תיבות החיפוש יושבות
+     בסרגל, ולכן הרענון היה יכול למשוך ~2MB ולצייר את הטבלה מחדש
+     תחת האצבעות של המשתמש. החלון קצר (10ש), ולכן מיקוד שנשכח משחרר
+     את עצמו — הכלל המקורי של 6.151.0 נשמר במלואו. */
+  if(srchTyped()) return true;
   return false;
 }
 
@@ -16699,8 +16768,8 @@ window.openCust = async (id)=>{
   runCardHooks('cust', id);
 };
 
-$('#custSearch').addEventListener('input', renderCustomers);
-$('#taskSearch').addEventListener('input', renderTasks);
+debounceSearch($('#custSearch'), renderCustomers);
+debounceSearch($('#taskSearch'), renderTasks);
 
 /* ===== אתרי לקוח (6.81.0) ===== */
 /* מראה של core.customer_sites, שהיא עצמה מראה של CUSTDESTS בפריוריטי.
@@ -16753,7 +16822,7 @@ function renderConts(){
   if(q) list=CONTS.filter(k=>(k.full_name||'').includes(q)||(k.phone||'').includes(q)||(k.email||'').includes(q));
   $('#contacts-list').innerHTML = wideScreen() ? contTable(list) : capped(list, contRow, 'לא נמצאו אנשי קשר');
 }
-$('#contSearch').addEventListener('input', renderConts);
+debounceSearch($('#contSearch'), renderConts);
 
 /* ===== מעקב תשלומים ===== */
 let PAY_FILTER = 'open';
@@ -18495,7 +18564,7 @@ function renderPays(){
   $('#pays-list').innerHTML = wideScreen() ? payTable(list) : capped(list, payRow, 'אין הזמנות בסינון הזה');
   payBulkBar();
 }
-$('#paySearch').addEventListener('input', renderPays);
+debounceSearch($('#paySearch'), renderPays);
 $('#payTermFilter').addEventListener('change', e => setPayTerm(e.target.value));
 (function(){ const el = $('#pays-list');
   if(el) el.addEventListener('focusout', function(){ setTimeout(function(){ if(PAY_PENDING && !payTyping()) renderPays(); }, 0); }); })();
@@ -18568,7 +18637,7 @@ function renderOrdersTools(){
     <select id="fSort">${ORDER_SORTS.map(([v,l])=>`<option value="${v}" ${(!OF.col&&OF.sort===v)?'selected':''}>${l}</option>`).join('')}</select></span>
     <button type="button" class="tb-clear" id="fClear" title="מאפס את כל הסינונים והמיון">✕ ניקוי סינון</button>
   </div>`;
-  $('#fQ').addEventListener('input', ()=>{ OF.q=$('#fQ').value; renderOrders(); });
+  debounceSearch($('#fQ'), ()=>{ OF.q=$('#fQ').value; renderOrders(); });
   [['fTeam','team'],['fRegion','region'],['fStatus','status'],['fContact','contact'],['fOdFrom','odFrom'],['fOdTo','odTo'],['fDateFrom','dateFrom'],['fDateTo','dateTo']].forEach(([id,k])=>{
     $('#'+id).addEventListener('change', ()=>{ OF[k]=$('#'+id).value; renderOrders(); });
   });
@@ -19633,9 +19702,9 @@ async function loadOrderItems(orderNumber){
     <div class="count-line">${list.length} שורות · סה"כ ${totalQty.toLocaleString('he-IL')} יח'${openBal>0?` · <b style="color:#b45309">${openLines} שורות שטרם סופקו, ${openBal.toLocaleString('he-IL')} יח'</b>`:''}</div>`;
   }catch(err){ console.error(err); box.innerHTML='<div class="items-empty">לא ניתן לטעון את פירוט ההזמנה</div>'; }
 }
-$('#logiSearchOrders').addEventListener('input', ()=>renderLogi());
-$('#logiSearchCalls').addEventListener('input', ()=>renderLogi());
-$('#calSearch').addEventListener('input', e=>{ CAL_Q=(e.target.value||'').trim(); renderCal(); });
+debounceSearch($('#logiSearchOrders'), ()=>renderLogi());
+debounceSearch($('#logiSearchCalls'), ()=>renderLogi());
+debounceSearch($('#calSearch'), ()=>{ CAL_Q=($('#calSearch').value||'').trim(); renderCal(); });
 
 const uniqVals = (arr, field, current) => {
   const s = new Set(arr.map(x=>x[field]).filter(Boolean));
@@ -20063,21 +20132,32 @@ window.dlFold = st=>{ if(DL_FOLD.has(st)) DL_FOLD.delete(st); else DL_FOLD.add(s
 function renderDeals(){
   dlInitDef(); dealChips(); renderDlFilters();
   const q = ($('#dealSearch').value||'').trim();
-  if(q){
-    /* חיפוש חוצה-תצוגות ואינו כפוף לסינון — הדפוס מ-renderLeads. */
-    const list = DEALS.filter(d=>(d.name||'').includes(q)||(d.priority_quote_id||'').includes(q)
-      ||dlCustName(d).includes(q)||dlLeadName(d).includes(q)||dlPhone(d).includes(q));
-    paintKeep('#deals-list', wideScreen() ? dlTable(list,false) : capped(list, dealRow, 'לא נמצאו עסקאות'));
-    return;
-  }
   dlPendLoad();   /* עצל, לא חוסם — השבב מופיע כשהתשובה חוזרת */
   const base = DEAL_FILTER==='pending' ? (()=>{ const s=dlPendIds(); return DEALS.filter(d=>s.has(d.id)); })()
              : DEAL_FILTER==='all'     ? DEALS
              : DEALS.filter(d=>ACTIVE_STAGES.includes(d.stage));
+  if(q){
+    /* 🔴 6.177.0 — החיפוש **מכבד את הסינון הפעיל** (הכרעת רומן). עד כה
+       הוא סרק את כל 1,978 העסקאות ודילג על הסינון, כלומר הענף היקר
+       ביותר רץ תמיד על הסט המלא. בתצוגת ברירת המחדל: 195 במקום 1,978.
+       ⚠️ ולכן עסקה שהושלמה או אינה רלוונטית לא תימצא עד שינוי הסינון. */
+    const list = base.filter(d=>{
+      if((d.name||'').includes(q) || (d.priority_quote_id||'').includes(q)) return true;
+      /* 🔴 ליד ולקוח **פעם אחת לעסקה**. dlPhone קרא שוב ל-dlLead ול-
+         dlCust, וכל dlCust הוא ctxOf עם ארבעה find לינאריים — כלומר
+         כל שורה שילמה פעמיים על אותו חישוב. נמדד: 105ms מתוך 161. */
+      const l = dlLead(d), k = dlCust(d);
+      return ((k&&k.name)||'').includes(q)
+          || ((l&&l.full_name)||'').includes(q)
+          || (((l&&l.phone)||(k&&k.phone)||'')).includes(q);
+    });
+    paintKeep('#deals-list', wideScreen() ? dlTable(list,false) : capped(list, dealRow, 'לא נמצאו עסקאות'));
+    return;
+  }
   const list = dlApplyF(base);
   paintKeep('#deals-list', wideScreen() ? dlTable(list,true) : capped(list, dealRow, 'אין עסקאות בסינון הזה'));
 }
-$('#dealSearch').addEventListener('input', renderDeals);
+debounceSearch($('#dealSearch'), renderDeals);
 /* ═══ כרטיס תהליך המכירה (6.123.0) ═══════════════════════════════
    סדר הסקשנים לפי סקיל card-layout. 🔴 **ואין כאן שדות עריכה חופשיים
    בכוונה, לא בפשרה:** נמדד 21/08/2026 ש-`quote_status` ריק ב-1,909
@@ -20131,7 +20211,7 @@ window.openDeal = async (id)=>{
         <a class="dl-tile" href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(cust.id)}'))"
            title="${esc(cust.name||'')}"><span class="tk-kind tk-k-customer">לקוח</span><span class="dlt-nm">${esc(cust.name||'כרטיס הלקוח')}</span><span class="dlt-ar">&#8599;</span></a></div>`
       :'<div><label>לקוח</label><div class="note">אינה מקושרת ללקוח.</div></div>'}
-      <div><label>שם חברה</label>${roIn((cust&&cust.name)||'')}</div>
+      <div><label>שם חברה</label>${roIn((lead&&lead.company)||'')}</div>
       <div><label>איש קשר</label>${roIn((contact&&contact.full_name)||'')}</div>
       <div><label>טלפון ${dphone?phBtns(dphone):''}</label>${roIn(dphone||'',{ltr:1})}</div>
       <div><label>סוג לקוח</label>${roIn((cust&&cust.customer_type)||'')}</div>
@@ -21244,7 +21324,7 @@ function renderLeads(){
   const list = lbApplyF(lbViewList());
   lbPaint(wideScreen() ? lbTable(list,true) : capped(list, leadRow, LB_VIEW==='mine'?'אין לך לידים בתהליך 🎉':'לא נמצאו לידים'));
 }
-$('#search').addEventListener('input', renderLeads);
+debounceSearch($('#search'), renderLeads);
 
 // ליד חדש
 /* הרשימות מיוצרות מהקבועים ולא משוכפלות ב-HTML. עד 6.100.0 הטופס הציע
@@ -23547,7 +23627,7 @@ window.siRender = async function(){
   const q=$('#si-q');
   if(q && !q._siWired){
     q._siWired=true;
-    q.addEventListener('input', ()=>{ SI_OPEN=null; siPaint(); });
+    debounceSearch(q, ()=>{ SI_OPEN=null; siPaint(); });
   }
   siPaint();
 };
@@ -23909,7 +23989,8 @@ boot();
     ov.addEventListener('click', function(e){ if(e.target === ov) ov.remove(); });
     ov.querySelector('#plb-x').addEventListener('click', function(){ ov.remove(); });
     ov.querySelector('#plb-sel').addEventListener('change', function(){ loadItems(this.value); });
-    ov.querySelector('#plb-q').addEventListener('input', function(){ PLB.q = this.value.trim(); renderItems(); });
+    const _plbq = ov.querySelector('#plb-q');
+    debounceSearch(_plbq, ()=>{ PLB.q = _plbq.value.trim(); renderItems(); });
     ov.querySelector('#plb-syncbtn').addEventListener('click', runSync);
     await loadLists(plname);
   };

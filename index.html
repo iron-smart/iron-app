@@ -1257,7 +1257,28 @@
   }
 
   /* ===== כרטיסי הזמנה/קריאה מלאים — עיצוב הלוח הישן (הערות 20–22) ===== */
-  .modal .sheet.wide{ max-width:960px; }
+  .modal .sheet.wide{ max-width:1100px; }
+  /* 6.181.0 — רומן, 31/08/2026: "אני רוצה קצת יותר רחב מזה" (960 ⇒ 1100).
+     חל על שמונת הכרטיסים הראשיים בלבד; 18 המודאלים הקטנים נשארים 600px
+     בהכרעתו — הם מחזיקים 2–3 שדות, ורוחב כזה היה מפזר אותם על ים לבן.
+
+     🔴 **שתי שכבות, ולא כלל אחד** — `.modal` הוא inset:0 בלי padding
+        ו-`.sheet` הוא width:100%, ולכן במסך צר מה-max-width הכרטיס
+        **נצמד לקצוות**:
+          · 1100px לבדו     ⇒ במסך 1024 צמוד לקצוות (היום מרווח 32)
+          · min(...100vw)   ⇒ במובייל הגיליון התחתון (border-radius
+                              18px 18px 0 0, align-items:flex-end)
+                              מקבל מרווח 24 ופינותיו צפות באוויר
+        השורה שמעל שומרת על המובייל מלא-רוחב; זו שמתחת נותנת מרווח
+        מ-700px ומעלה. מדוד: 390→390 · 900→852 · 1024→976 · 1920→1100.
+
+     🔴 **הסדר הוא נכונות ולא סגנון:** שני הכללים (0,3,0) — תיקו,
+        והמאוחר מנצח. ה-@media חייב לשבת **כאן ואחרי**, ולא בבלוק
+        `@media(min-width:700px)` הקיים שיושב מוקדם יותר בגיליון
+        (שם הוא היה מפסיד ל-top-level, בשקט).
+
+     ⚠️ .tdwide נשאר 1240 — תצוגת טווח השיבוץ מובחנת ב-140px. */
+  @media(min-width:700px){ .modal .sheet.wide{ max-width:min(1100px, calc(100vw - 48px)); } }
   /* 6.118.0 — רומן: "תעשה יותר קטן וקומפקטי (כפתור סגירה תקטין,
      כותרת וכו')" · "תקטין כפתור. אני אוהב יותר קומפקטי."
      ⚠️ ממוקד #leadModal בהכרעתו — הבוררים האלה משותפים לכרטיס
@@ -2617,7 +2638,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.180.0</div>
+      <div class="ver">גרסה 6.181.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2746,7 +2767,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.180.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.181.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9773,7 +9794,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'livecard-2026-08-31a';
+const BUILD_ID = 'cardwide-2026-08-31b';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====

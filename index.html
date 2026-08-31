@@ -2617,7 +2617,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.177.0</div>
+      <div class="ver">גרסה 6.178.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2746,7 +2746,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.177.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.178.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9427,6 +9427,109 @@ window.dlQuoteRows = (id) => (PROTS||[])
   .filter(p => p.deal_id === id && (p.category||'') === DL_QCAT)
   .sort((a,b) => String(b.sent_at||'').localeCompare(String(a.sent_at||'')));
 
+/* ═══ משיכה ידנית מפריוריטי (6.178.0, רומן) ══════════════════════════
+   "אני רוצה כפתור משוך מפריוריטי בכרטיס תהליך המכירה, שאיש מכירות
+    לא ימתין 15 דק. בגלל שהוובהוק לא עובד לנו."
+
+   🔴 אפס לוגיקה כאן. מה נחשב "נשלחה", איזה מחיר נכון, ומתי נמשך מסמך
+      — הכל ב-deal-quote-refresh בשרת, שגם הסוקר (crm-quote-watch v4)
+      קורא לה. שני מימושים לאותו כלל נפרדים בשקט.
+   ⚠️ crm.deal_quote_sent היא service_role בלבד, ולכן הדפדפן אינו יכול
+      לקדם שלב בעצמו בשום מסלול. */
+const DLQR = {};   /* deal_id -> {busy, txt, cls} */
+
+window.dlQCell = (d) =>
+  "<label>מס' הצעה בפריוריטי</label>" + roIn(d.priority_quote_id || '', {ltr:1}) + dlPullBox(d);
+
+window.dlAmtCell = (d) =>
+  '<label>סכום (לפני מע"מ)</label>' + roIn(d.amount != null ? shekel(d.amount) : '');
+
+window.dlAmtVCell = (d) =>
+  '<label>סכום (כולל מע"מ)' + (d.amount_incl_vat != null ? '' : ' · מחושב') + '</label>'
+  + roIn(d.amount_incl_vat != null ? shekel(d.amount_incl_vat)
+        : (d.amount != null ? shekel(Number(d.amount) * VAT_RATE) : ''));
+
+window.dlQDocBox = (d) => d.quote_doc_path
+  ? '<div class="tk-lnk"><button class="chip" onclick="dlOpenDoc(\'' + jsq(d.quote_doc_path) + '\')">'
+    + esc(String(d.quote_doc_path).split('/').pop()) + ' &#8599;</button></div>'
+  : roIn('טרם נמשך');
+
+window.dlPullBox = (d) => {
+  if (!d || !d.priority_quote_id) return '';
+  /* 🔴 הכרעת רומן 31/08/2026: "ללא מאנדיי, רק מערכת שלנו". השרת מחזיר
+     על עסקה כזו 409 (נמדד חי), ולכן כפתור כאן היה נלחץ ולא קורה כלום
+     — מציגים את הסיבה במקום. */
+  if (d.monday_id) return '<div class="note">עסקה ממאנדיי — מתעדכנת ביישור היומי.</div>';
+  if (!window.canEdit('crm.deals')) return '';
+  const r = DLQR[d.id] || {};
+  return '<div class="tk-lnk"><button type="button" class="chip" id="dl-pullbtn"'
+       + (r.busy ? ' disabled' : '')
+       + ' onclick="dlPull(\'' + jsq(d.id) + '\')">'
+       + (r.busy ? 'מושך מפריוריטי…' : '&#8635; משוך מפריוריטי') + '</button></div>'
+       + (r.txt ? '<div class="note" style="color:' + (r.cls === 'bad' ? '#c0392b' : '#1e7d47')
+                + '">' + esc(r.txt) + '</div>' : '');
+};
+
+/* נקודת ציור אחת לכל מה שמשיכה יכולה לשנות. ⚠️ ולא openDeal(id): הוא
+   async, בונה את הכרטיס מחדש, ו-mountCard מאפס scrollTop=0 — הלקח של
+   lbTmRedraw (6.154.0). */
+window.dlPullPaint = (id) => {
+  const d = (DEALS || []).find(x => x.id === id); if (!d) return;
+  const set = (k, html) => { const el = document.getElementById(k); if (el) el.innerHTML = html; };
+  set('dl-qcell',   dlQCell(d));
+  set('dl-amt',     dlAmtCell(d));
+  set('dl-amtv',    dlAmtVCell(d));
+  set('dl-qdoc',    '<label>מסמך ההצעה</label>' + dlQDocBox(d));
+  set('dl-signbox', dlSignBox(d));
+  try { if (typeof dlPipeDraw === 'function') dlPipeDraw(id); } catch (_e) {}
+  try { renderDeals(); renderStats(); } catch (_e) {}
+};
+
+window.dlPull = async (dealId) => {
+  /* ⚠️ DEALS ולא window.DEALS — הוא let בסקופ הלקסיקלי ואינו תכונה של
+     window. הלקח של 6.174.0, שם find רץ על מערך ריק בשקט. */
+  const d = (DEALS || []).find(x => x.id === dealId); if (!d) return;
+  DLQR[dealId] = { busy: true, txt: '', cls: '' };
+  dlPullPaint(dealId);
+  let data = null, error = null;
+  try { ({ data, error } = await sb.functions.invoke('deal-quote-refresh', { body: { deal_id: dealId } })); }
+  catch (e) { error = e; }
+  if (error) {
+    /* 🔴 invoke מחזיר על כל 4xx/5xx הודעה גנרית ("non-2xx"), וההודעה
+       המפורטת בעברית יושבת **בגוף התשובה**. הלקח של 6.167.0. */
+    let msg = '';
+    try { const b = await error.context.json(); if (b && b.error) msg = String(b.error); } catch (_e) {}
+    DLQR[dealId] = { busy: false, cls: 'bad',
+                     txt: msg || ('המשיכה נכשלה — ' + (error.message || 'שגיאה לא ידועה')) };
+    dlPullPaint(dealId); return;
+  }
+  if (!data) {
+    DLQR[dealId] = { busy: false, cls: 'bad', txt: 'המשיכה לא החזירה תשובה' };
+    dlPullPaint(dealId); return;
+  }
+  /* מירור מקומי — בדיוק השדות שהשרת החזיר ולא ניחוש. הדפוס של
+     lbLocalApply. ⚠️ ובלי loadLeads: הוא 25 שאילתות ו-~12MB, ומשיכה של
+     עסקה אחת אינה מצדיקה טעינה מלאה. */
+  d.stage = data.stage; d.amount = data.amount;
+  d.amount_incl_vat = data.amount_incl_vat; d.quote_doc_path = data.quote_doc_path;
+  /* ⚠️ מטמון התצוגה המקדימה ממופתח לפי מזהה עסקה, ולכן משיכה שהחליפה
+     מסמך הייתה ממשיכה להציג את הישן בריחוף. */
+  try { delete DLQ_CACHE[dealId]; } catch (_e) {}
+  const p = [];
+  if (data.priced)      p.push('המחיר עודכן');
+  if (data.pdf_pulled)  p.push('המסמך נמשך');
+  if (data.advanced)    p.push('השלב קודם ל' + (data.stage || ''));
+  if (data.pdf_error)   p.push('המסמך לא נמשך: ' + data.pdf_error);
+  /* 🔴 וכשההצעה אינה בסטטוס "נשלחה" — אומרים למה השלב לא זז. בלי זה
+     "אין שינוי" נראה בדיוק כמו תקלה. */
+  if (data.statdes && data.sent_word && data.statdes !== data.sent_word && !data.advanced)
+    p.push('השלב לא זז — ההצעה אינה בסטטוס ' + data.sent_word);
+  if (!p.length) p.push('אין שינוי — הנתונים כבר מעודכנים');
+  DLQR[dealId] = { busy: false, cls: (data.ok ? 'ok' : 'bad'),
+                   txt: 'סטטוס בפריוריטי: ' + (data.statdes || 'ללא') + ' · ' + p.join(' · ') };
+  dlPullPaint(dealId);
+};
+
 window.dlSignBox = (d)=>{
   if(!d) return '';
   const rows   = window.dlQuoteRows(d.id);
@@ -9667,7 +9770,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'srchfix-2026-08-31a';
+const BUILD_ID = 'dlpull-2026-08-31a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -15152,7 +15255,7 @@ const CRM_Q = {
   leads: () => sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at,position,address,notes,utm_campaign,utm_source,utm_medium,utm_term,send_whatsapp_catalog,owner_id,updated_at').order('created_at',{ascending:false}).limit(10000),
   custs: () => sb.schema('core').from('customers').select('id,name,phone,email,priority_id,status,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes').order('created_at',{ascending:false}).limit(10000),
   tasks: () => sb.schema('crm').from('tasks').select('id,name,status,value_tag,category,due_at,closed_at,created_at,linked_type,linked_id,owner_id').order('due_at',{ascending:true}).limit(10000),
-  deals: () => sb.schema('crm').from('deals').select('id,name,stage,amount,amount_incl_vat,quote_doc_path,quote_status,irrelevant_reason,priority_quote_id,customer_id,contact_id,lead_id,send_channel,sign_link,approved_at,closed_at,created_at').order('created_at',{ascending:false}).limit(10000),
+  deals: () => sb.schema('crm').from('deals').select('id,name,stage,amount,amount_incl_vat,quote_doc_path,quote_status,irrelevant_reason,priority_quote_id,customer_id,contact_id,lead_id,send_channel,sign_link,approved_at,closed_at,created_at,monday_id').order('created_at',{ascending:false}).limit(10000),
   meets: () => sb.schema('crm').from('meetings').select('id,subject,status,meet_date,start_time,end_time,meet_type,location,teams_link,linked_type,linked_id,source,organizer_name,attendees,all_day,web_link,owner_id,contact_phone').order('meet_date',{ascending:false}).limit(10000),
   lown: () => /* שורות הבעלות הראשיות. **לא מיותר מול leads.owner_id**: המראה מחזיקה
          profile_id בלבד, ולעובד לשעבר אין חשבון — 694 לידים היו מוצגים
@@ -20220,15 +20323,13 @@ window.openDeal = async (id)=>{
       ${cust&&cust.logistics_notes?`<div class="span4"><div class="note">&#128666; ${esc(cust.logistics_notes)}</div></div>`:''}
 
       <div class="form-sep">פרטי העסקה</div>
-      <div><label>מס' הצעה בפריוריטי</label>${roIn(d.priority_quote_id||'',{ltr:1})}</div>
-      <div><label>סכום (לפני מע"מ)</label>${roIn(d.amount!=null?shekel(d.amount):'')}</div>
-      <div><label>סכום (כולל מע"מ)${d.amount_incl_vat!=null?'':' · מחושב'}</label>${roIn(d.amount_incl_vat!=null?shekel(d.amount_incl_vat):(d.amount!=null?shekel(Number(d.amount)*VAT_RATE):''))}</div>
+      <div id="dl-qcell">${dlQCell(d)}</div>
+      <div id="dl-amt">${dlAmtCell(d)}</div>
+      <div id="dl-amtv">${dlAmtVCell(d)}</div>
       <div><label>בעלים ושותפים</label>
         <div id="dl-ownbox">${dlOwnerCellName(d)}</div></div>
       <div class="span2" id="dl-qdoc"${(d.quote_doc_path||d.priority_quote_id)?` data-deal="${esc(id)}"`:''}><label>מסמך ההצעה</label>
-        ${d.quote_doc_path
-          ? `<div class="tk-lnk"><button class="chip" onclick="dlOpenDoc('${jsq(d.quote_doc_path)}')">${esc(String(d.quote_doc_path).split('/').pop())} &#8599;</button></div>`
-          : roIn('טרם נמשך')}</div>
+        ${dlQDocBox(d)}</div>
       <div class="span2"><label>לאן לשלוח את ההצעה<span class="req">*</span></label>
         <div id="dl-chanbox"></div></div>
       <div class="span2"><label>חתימה על ההצעה — מודול איירון</label>

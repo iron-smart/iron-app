@@ -1144,6 +1144,30 @@
   .dhead{ font-size:12.5px; font-weight:700; color:#64748b; display:flex; justify-content:space-between; margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid #eef1f4; cursor:pointer; }
   .dhead .dnum{ font-size:14px; color:var(--dark); }
   .fri-tag{ background:#fde8c8; color:#8a5a00; border-radius:4px; padding:0 5px; font-size:10.5px; font-weight:800; margin-inline-start:4px; }
+  /* 6.176.0 — חגי ישראל. התג מחקה את .fri-tag שמעליו.
+     🔴 background-**image** ולא background: ל-.tg-col.nowork יש כבר
+     repeating-linear-gradient, ו-shorthand מחליף ואינו מוסיף. זו התקלה
+     המדודה של 6.90.1, שבה קריאת שירות ביום מלא איבדה את הוורוד שלה. */
+  .hol-tag{ border-radius:4px; padding:0 5px; font-size:10.5px; font-weight:800; margin-inline-start:4px; white-space:nowrap; }
+  .hol-tag.hol-chag{ background:#dbeafe; color:#1e3a8a; }
+  .hol-tag.hol-erev{ background:#fef3c7; color:#92400e; }
+  .hol-tag.hol-moed{ background:#e0f2fe; color:#075985; }
+  #cal-wrap .tg-col.hol-chag, #meet-cal-wrap .tg-col.hol-chag{ background-image:linear-gradient(rgba(59,130,246,.09),rgba(59,130,246,.09)); }
+  #cal-wrap .tg-col.hol-erev, #meet-cal-wrap .tg-col.hol-erev{ background-image:linear-gradient(rgba(245,158,11,.08),rgba(245,158,11,.08)); }
+  #cal-wrap .tg-col.hol-moed, #meet-cal-wrap .tg-col.hol-moed{ background-image:linear-gradient(rgba(14,165,233,.06),rgba(14,165,233,.06)); }
+  #cal-wrap .month-cell.hol-chag, #meet-cal-wrap .month-cell.hol-chag{ background-image:linear-gradient(rgba(59,130,246,.09),rgba(59,130,246,.09)); }
+  #cal-wrap .month-cell.hol-erev, #meet-cal-wrap .month-cell.hol-erev{ background-image:linear-gradient(rgba(245,158,11,.08),rgba(245,158,11,.08)); }
+  #cal-wrap .month-cell.hol-moed, #meet-cal-wrap .month-cell.hol-moed{ background-image:linear-gradient(rgba(14,165,233,.06),rgba(14,165,233,.06)); }
+  /* 🔴 והשער "background-image ולא background" הוא **הכרחי ולא מספיק**:
+     `background-image` גם הוא **מחליף** background-image. `.tg-col.nowork`
+     מגדיר את הפסים ב-shorthand (כלומר ב-background-image), ולכן הגוון שלי
+     מחק אותם — שישי שהוא גם ערב חג איבד את הפסים שלו. נתפס בבדיקה, לא
+     בעין. הצורה הנכונה היא **להרכיב את השכבות**, הגוון מעל הפסים. */
+  #cal-wrap .tg-col.nowork.hol-chag, #meet-cal-wrap .tg-col.nowork.hol-chag{ background-image:linear-gradient(rgba(59,130,246,.09),rgba(59,130,246,.09)),repeating-linear-gradient(45deg,#f7f7f5,#f7f7f5 8px,#f1f1ee 8px,#f1f1ee 16px); }
+  #cal-wrap .tg-col.nowork.hol-erev, #meet-cal-wrap .tg-col.nowork.hol-erev{ background-image:linear-gradient(rgba(245,158,11,.08),rgba(245,158,11,.08)),repeating-linear-gradient(45deg,#f7f7f5,#f7f7f5 8px,#f1f1ee 8px,#f1f1ee 16px); }
+  #cal-wrap .tg-col.nowork.hol-moed, #meet-cal-wrap .tg-col.nowork.hol-moed{ background-image:linear-gradient(rgba(14,165,233,.06),rgba(14,165,233,.06)),repeating-linear-gradient(45deg,#f7f7f5,#f7f7f5 8px,#f1f1ee 8px,#f1f1ee 16px); }
+  .mhol{ font-size:10.5px; font-weight:800; margin:-2px 0 4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .mhol.hol-chag{ color:#1e3a8a; } .mhol.hol-erev{ color:#92400e; } .mhol.hol-moed{ color:#075985; }
   .ev{ border-radius:8px; padding:7px 9px; font-size:12.5px; margin-bottom:7px; cursor:pointer; border-inline-start:4px solid #94a3b8; background:#f6f8fa; line-height:1.45; }
   .ev:hover{ filter:brightness(.96); }
   .ev .t{ font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:13px; }
@@ -2593,7 +2617,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.175.0</div>
+      <div class="ver">גרסה 6.176.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2722,7 +2746,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.175.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.176.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2927,7 +2951,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
             <div class="pl-i"><b>10 ימי עסקים</b><span>משלוחים: משלוח בלבד, מוביל אחר.</span></div>
             <div class="pl-i"><b>ללא צפי</b><span>איסוף עצמי — לפי מק"ט האיסוף או לפי אופן המשלוח. הלקוח אוסף בעצמו.</span></div>
             <div class="pl-i"><b>ממתין לפריטים</b><span>שורות ההזמנה טרם הגיעו מפריוריטי ולכן אי אפשר לסווג. נפתר מעצמו בסנכרון הבא.</span></div>
-            <div class="pl-i"><b>ימי עסקים</b><span>שישי ושבת אינם נספרים. <b>חגים אינם מנוכים</b> — אין לוח חגים במערכת.</span></div>
+            <div class="pl-i"><b>ימי עסקים</b><span>שישי ושבת אינם נספרים. חגי ישראל <b>מוצגים בלוח</b> אך <b>אינם מנוכים</b> מימי העסקים.</span></div>
             <div class="pl-i"><b>מילוי ידני</b><span>מספר שהוקלד בכרטיס גובר על הכלל, ונשמר לאותה הזמנה בלבד. השבב מסומן "ידני".</span></div>
             <div class="pl-i"><b>שינוי הכלל</b><span>שינוי עתידי של החוקים חל <b>רק על הזמנות שנוצרו אחריו</b>. הזמנה קיימת שומרת את הכלל שהיה בתוקף בתאריך ההזמנה שלה.</span></div>
             <div class="pl-i"><b>הזמנה שהושלמה</b><span>אינה מציגה חלון אספקה כלל — הוא חסר משמעות אחרי האספקה.</span></div>
@@ -5783,6 +5807,89 @@ const evColor  = e => e.kind==='eta' ? ETA_COLOR : (e.kind==='fup' ? FUP_COLOR :
 /* לוח שנה בעיצוב המערכת הקודמת (הזמנות ותיאומים), בקנה מידה נוכחי — הנחיית רומן 27/07.
    שבוע עבודה ראשון–חמישי; שישי מוצג רק אם שובצה בו עבודה שאושרה; אירועים רב-יומיים לפי days_count. */
 const CAL_FRIDAY=5, CAL_SATURDAY=6;
+/* 6.176.0 — חגי ישראל בלוח (רומן, 30/08/2026). **תצוגה בלבד.**
+   🟢 מחושב בדפדפן דרך Intl עם לוח עברי — בלי רשת, בלי טבלה ובלי
+   קובץ נתונים שמתיישן. אומת מול תאריכים ידועים: א׳/י׳ תשרי · ט״ו ניסן
+   · כ״ה כסלו, שנה מעוברת (Adar II), ויום העצמאות 2026–2030 — 5/5.
+   ⚠️ **אינו נוגע באף חישוב.** ההכרעה מ-14/08/2026 ("עזוב ללא חגים")
+   נשארת: חגים אינם מנוכים מ-addWorkDays ומהדדליינים. יש שער בבנייה
+   שאוסר קריאה ל-heDay משבע פונקציות החישוב.
+   ⚠️ וישראל, לא גלות: יום טוב אחד. */
+const HE_FMT = new Intl.DateTimeFormat('en-u-ca-hebrew',
+  { day:'numeric', month:'long', year:'numeric', timeZone:'Asia/Jerusalem' });
+function heParts(dt){
+  const o = {};
+  for(const p of HE_FMT.formatToParts(dt)) if(p.type !== 'literal') o[p.type] = p.value;
+  return { d:+o.day, m:o.month };
+}
+/* כלל התאריך העברי. ⚠️ פורים אינו ברשימה (הכרעת רומן — היקף "חגים
+   + ערבי חג + חול המועד"), ולכן אין צורך להבחין באדר. */
+function heRule(h){
+  const d = h.d, m = h.m;
+  if(m==='Elul'   && d===29) return ['ערב ראש השנה','erev'];
+  if(m==='Tishri' && (d===1||d===2)) return ['ראש השנה','chag'];
+  if(m==='Tishri' && d===9)  return ['ערב יום כיפור','erev'];
+  if(m==='Tishri' && d===10) return ['יום כיפור','chag'];
+  if(m==='Tishri' && d===14) return ['ערב סוכות','erev'];
+  if(m==='Tishri' && d===15) return ['סוכות','chag'];
+  if(m==='Tishri' && d>=16 && d<=20) return ['חול המועד סוכות','moed'];
+  if(m==='Tishri' && d===21) return ['הושענא רבה','moed'];
+  if(m==='Tishri' && d===22) return ['שמחת תורה','chag'];
+  if(m==='Nisan'  && d===14) return ['ערב פסח','erev'];
+  if(m==='Nisan'  && d===15) return ['פסח','chag'];
+  if(m==='Nisan'  && d>=16 && d<=20) return ['חול המועד פסח','moed'];
+  if(m==='Nisan'  && d===21) return ['שביעי של פסח','chag'];
+  if(m==='Sivan'  && d===5)  return ['ערב שבועות','erev'];
+  if(m==='Sivan'  && d===6)  return ['שבועות','chag'];
+  return null;
+}
+/* 🔴 יום העצמאות הוא היחיד שאינו תאריך עברי קבוע — ה׳ באייר מוזז בחוק
+   כדי לא ליפול על שבת: שישי/שבת ⇒ מוקדם לחמישי · שני ⇒ נדחה לשלישי.
+   בלי זה הוא נופל על שבת בחלק מהשנים, כלומר תווית על היום הלא נכון.
+   אומת מול חמש שנים ידועות: 22/04/26 · 12/05/27 · 02/05/28 ·
+   19/04/29 · 08/05/30 — 5/5. */
+function heAtzmaut(gy, put){
+  for(let t=Date.UTC(gy,2,1,12); t<Date.UTC(gy,6,1,12); t+=864e5){
+    const dt = new Date(t), h = heParts(dt);
+    if(h.m==='Iyar' && h.d===5){
+      const dow = dt.getUTCDay();
+      let sh = 0;
+      if(dow===5) sh = -1; else if(dow===6) sh = -2; else if(dow===1) sh = 1;
+      const day = new Date(t + sh*864e5);
+      put(day, ['יום העצמאות','chag']);
+      put(new Date(day.getTime() - 864e5), ['ערב יום העצמאות','erev']);
+      return;
+    }
+  }
+}
+/* מטמון פר-שנה גרגוריאנית. 365 יום = 0.8ms בכרום, ולכן אין צורך ביותר. */
+const HE_CACHE = new Map();
+function heYear(gy){
+  let m = HE_CACHE.get(gy);
+  if(m) return m;
+  m = new Map();
+  const put = (dt, r) => { if(dt.getUTCFullYear()===gy) m.set(dt.toISOString().slice(0,10), {name:r[0], kind:r[1]}); };
+  for(let t=Date.UTC(gy,0,1,12); t<Date.UTC(gy+1,0,1,12); t+=864e5){
+    const dt = new Date(t), r = heRule(heParts(dt));
+    if(r) put(dt, r);
+  }
+  heAtzmaut(gy, put);
+  HE_CACHE.set(gy, m);
+  return m;
+}
+/* נקודת החנק היחידה. iso → {name,kind} או null. */
+function heDay(ds){
+  if(!ds) return null;
+  const gy = +String(ds).slice(0,4);
+  if(!(gy >= 1900 && gy <= 2200)) return null;
+  return heYear(gy).get(ds) || null;
+}
+/* תג לכותרת היום, בדפוס .fri-tag הקיים. */
+function heTag(ds){
+  const h = heDay(ds);
+  return h ? ` <span class="hol-tag hol-${h.kind}" title="${esc(h.name)}">${esc(h.name)}</span>` : '';
+}
+const heCls = ds => { const h = heDay(ds); return h ? ' hol-' + h.kind : ''; };
 const dowOf = ds => new Date(ds+'T12:00:00').getDay();
 const addDaysIso = (ds,n)=>{ const d=new Date(ds+'T12:00:00'); d.setDate(d.getDate()+n); return isoD(d); };
 const dayNameHe = ds => new Date(ds+'T12:00:00').toLocaleDateString('he-IL',{weekday:'long'});
@@ -5826,8 +5933,10 @@ function supplyStd(){
   return 25;
 }
 /* הוספת ימי עבודה לתאריך. שישי ושבת אינם נספרים.
-   ⚠️ חגים אינם מטופלים — הכרעת רומן ("עזוב ללא חגים", 14/08/2026). אין
-   לוח חגים במערכת, וניחוש כאן פירושו תאריך אספקה שגוי שנמסר ללקוח. */
+   ⚠️ חגים אינם מנוכים — הכרעת רומן ("עזוב ללא חגים", 14/08/2026),
+   וניחוש כאן פירושו תאריך אספקה שגוי שנמסר ללקוח. מ-6.176.0 יש לוח
+   חגים (heDay), אבל הוא **תצוגה בלבד** ואינו נקרא מכאן — יש שער בבנייה
+   שאוסר זאת. שינוי ההכרעה דורש אישור מפורש של רומן. */
 function addWorkDays(iso, n){
   if(!iso || !(n >= 1)) return null;
   let d = iso, left = n, guard = 0;
@@ -6857,7 +6966,8 @@ function renderCal(){
         const evs=eventsOnCal(d); const shown=evs.slice(0,3);
         const nEta=evs.filter(e=>e.kind==='eta').length, nReal=evs.length-nEta;
         const nowork=dowOf(d)===CAL_FRIDAY&&!evs.length;
-        return `<div class="month-cell ${inMonth?'':'out'} ${d===t?'today':''} ${nowork?'nowork':''}" onclick="calGoDay('${d}')">
+        return `<div class="month-cell ${inMonth?'':'out'} ${d===t?'today':''} ${nowork?'nowork':''}${heCls(d)}" onclick="calGoDay('${d}')">
+          ${heDay(d)?`<div class="mhol hol-${heDay(d).kind}" title="${esc(heDay(d).name)}">${esc(heDay(d).name)}</div>`:''}
           <div class="mnum"><span>${parseInt(d.slice(8),10)}</span>${nReal?`<span class="mcount">${nReal}</span>`:''}${nEta?`<span class="mcount eta" title="צפי אספקה — אינו תיאום">${nEta} צפי</span>`:''}</div>
           ${shown.map(e=>{ const o=e.o, col=evColor(e), done=evDone(e), ok=evOk(e), st=evStatus(e);
             if(e.kind==='eta'){
@@ -6882,7 +6992,10 @@ function renderCal(){
     const ws=weekStartIso(cd);
     const days=[0,1,2,3,4].map(i=>addDaysIso(ws,i));
     const fri=addDaysIso(ws,5);
-    if(eventsOnCal(fri).length) days.push(fri);
+    /* 6.176.0 — 🔴 עד כאן שישי נכנס **רק** אם שובצה בו עבודה, ולכן
+       ערב ראש השנה, ערב סוכות והושענא רבה היו בלתי נראים בשבועי —
+       בדיוק הימים שאסור לשבץ בהם. נמדד: 18% מימי החג נופלים בשישי. */
+    if(eventsOnCal(fri).length || heDay(fri)) days.push(fri);
     scope=days;
     title=`שבוע ${fmtD(days[0])} — ${fmtD(days[days.length-1])}`;
     /* 6.2.5 — רשת שעות: עמודת שעות אחת ואחריה עמודה לכל יום. רצועת "ללא שעה"
@@ -6897,8 +7010,8 @@ function renderCal(){
     const adH=adMax? adMax*CAL_CHIP+6 : 0;
     body=`<div class="cal-scroll"><div class="tg-wrap" style="grid-template-columns:56px repeat(${days.length},minmax(150px,1fr))">
       ${tgGutter(adH)}
-      ${days.map(d=>`<div class="tg-col ${dowOf(d)===CAL_FRIDAY?'nowork':''}">
-          <div class="tg-head ${d===t?'today':''}" onclick="calGoDay('${d}')"><span>${dayNameHe(d)}${dowOf(d)===CAL_FRIDAY?' <span class="fri-tag">שישי</span>':''}</span><span class="dnum">${fmtD(d)}</span></div>
+      ${days.map(d=>`<div class="tg-col ${dowOf(d)===CAL_FRIDAY?'nowork':''}${heCls(d)}">
+          <div class="tg-head ${d===t?'today':''}" onclick="calGoDay('${d}')"><span>${dayNameHe(d)}${dowOf(d)===CAL_FRIDAY?' <span class="fri-tag">שישי</span>':''}${heTag(d)}</span><span class="dnum">${fmtD(d)}</span></div>
           ${tgDay(d, wkEv[d], true, adH, adCap)}
         </div>`).join('')}
     </div></div>`;
@@ -6907,14 +7020,14 @@ function renderCal(){
        למסך שנראה ריק. */
     const evs=eventsOnCal(cd);
     scope=[cd];
-    title=`${dayNameHe(cd)}, ${fmtD(cd)}`;
+    title=`${dayNameHe(cd)}, ${fmtD(cd)}${heDay(cd)?' · '+heDay(cd).name:''}`;
     /* 6.2.5 — התצוגה היומית היא אותה רשת שעות, בעמודה אחת ובכרטיסים מלאים. */
     const adDay=evs.filter(e=>!evSpan(e)).length;
     const adH=adDay? adDay*CAL_CHIP+6 : 0;
     body=`<div class="cal-scroll"><div class="tg-wrap" style="grid-template-columns:56px minmax(260px,1fr)">
       ${tgGutter(adH)}
-      <div class="tg-col ${dowOf(cd)===CAL_FRIDAY?'nowork':''}">
-        <div class="tg-head ${cd===t?'today':''}"><span>${dayNameHe(cd)}</span><span class="dnum">${fmtD(cd)}</span></div>
+      <div class="tg-col ${dowOf(cd)===CAL_FRIDAY?'nowork':''}${heCls(cd)}">
+        <div class="tg-head ${cd===t?'today':''}"><span>${dayNameHe(cd)}${heTag(cd)}</span><span class="dnum">${fmtD(cd)}</span></div>
         ${evs.length? tgDay(cd, evs, false, adH) : `<div class="empty">${CAL_Q?'אין אירועים תואמים לחיפוש ביום זה':'אין אירועים מתואמים ליום זה'}</div>`}
       </div>
     </div></div>`;
@@ -9554,7 +9667,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'shipcalc-2026-08-30a';
+const BUILD_ID = 'holidays-2026-08-30a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -20497,7 +20610,8 @@ function meetCal(){
         const inMonth=new Date(d+'T12:00:00').getMonth()===mNum;
         const evs=meetsOn(d); const shown=evs.slice(0,3);
         const nowork=dowOf(d)===CAL_FRIDAY&&!evs.length;
-        return `<div class="month-cell ${inMonth?'':'out'} ${d===t?'today':''} ${nowork?'nowork':''}" onclick="mcalGoDay('${d}')">
+        return `<div class="month-cell ${inMonth?'':'out'} ${d===t?'today':''} ${nowork?'nowork':''}${heCls(d)}" onclick="mcalGoDay('${d}')">
+          ${heDay(d)?`<div class="mhol hol-${heDay(d).kind}" title="${esc(heDay(d).name)}">${esc(heDay(d).name)}</div>`:''}
           <div class="mnum"><span>${parseInt(d.slice(8),10)}</span>${evs.length?`<span class="mcount">${evs.length}</span>`:''}</div>
           ${shown.map(m=>{ const col=mColor(m);
             return `<div class="mini-ev" style="border-inline-start-color:${col};${mDone(m)?'opacity:.5':''}" title="${esc(m.subject||'')} · ${esc(mSlot(m)||'ללא שעה')} · ${esc(m.status||'')}${m.organizer_name?' · '+esc(m.organizer_name):''}">
@@ -20517,19 +20631,19 @@ function meetCal(){
     const adH=adMax? adMax*CAL_CHIP+6 : 0;
     body=`<div class="cal-scroll"><div class="tg-wrap" style="grid-template-columns:56px repeat(${days.length},minmax(150px,1fr))">
       ${tgGutter(adH)}
-      ${days.map(d=>`<div class="tg-col ${dowOf(d)===CAL_FRIDAY?'nowork':''}">
-          <div class="tg-head ${d===t?'today':''}" onclick="mcalGoDay('${d}')"><span>${dayNameHe(d)}${dowOf(d)===CAL_FRIDAY?' <span class="fri-tag">שישי</span>':''}</span><span class="dnum">${fmtD(d)}</span></div>
+      ${days.map(d=>`<div class="tg-col ${dowOf(d)===CAL_FRIDAY?'nowork':''}${heCls(d)}">
+          <div class="tg-head ${d===t?'today':''}" onclick="mcalGoDay('${d}')"><span>${dayNameHe(d)}${dowOf(d)===CAL_FRIDAY?' <span class="fri-tag">שישי</span>':''}${heTag(d)}</span><span class="dnum">${fmtD(d)}</span></div>
           ${mTgDay(d, meetsOn(d), true, adH)}
         </div>`).join('')}
     </div></div>`;
   } else {
     const evs=meetsOn(cd);
-    title=`${dayNameHe(cd)}, ${fmtD(cd)}`;
+    title=`${dayNameHe(cd)}, ${fmtD(cd)}${heDay(cd)?' · '+heDay(cd).name:''}`;
     const adH=mAdCount(cd)? mAdCount(cd)*CAL_CHIP+6 : 0;
     body=`<div class="cal-scroll"><div class="tg-wrap" style="grid-template-columns:56px minmax(260px,1fr)">
       ${tgGutter(adH)}
-      <div class="tg-col ${dowOf(cd)===CAL_FRIDAY?'nowork':''}">
-        <div class="tg-head ${cd===t?'today':''}"><span>${dayNameHe(cd)}</span><span class="dnum">${fmtD(cd)}</span></div>
+      <div class="tg-col ${dowOf(cd)===CAL_FRIDAY?'nowork':''}${heCls(cd)}">
+        <div class="tg-head ${cd===t?'today':''}"><span>${dayNameHe(cd)}${heTag(cd)}</span><span class="dnum">${fmtD(cd)}</span></div>
         ${evs.length? mTgDay(cd, evs, false, adH) : '<div class="empty">אין פגישות ליום זה</div>'}
       </div>
     </div></div>`;

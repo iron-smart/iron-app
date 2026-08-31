@@ -64,6 +64,20 @@ textarea{width:100%;border:1px solid #c0c5c9;border-radius:9px;padding:10px 12px
 // הנתונים והתכנים מגיעים מפונקציית הענן sign (ניתנים לעריכה בהגדרות המערכת).
 const API='https://hjibpfavkjqocjvffsbq.supabase.co/functions/v1/sign';
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+/* גרסה 20 (31/08/2026) — התצוגה, לא הפורמט. רומן: "השליחה לחתימה זה
+   לא נראה טוב, חשבתי אולי למשוך את ה-HTML מפריוריטי במקום PDF."
+   מה שמכוער אינו ה-PDF אלא **רצועת הכלים של הדפדפן** — הדפסה, הורדה,
+   סיבוב וסרגל תמונות ממוזערות סביב מסמך שאמור להיראות כמו מסמך.
+   toolbar/navpanes/view הם PDF Open Parameters, כלומר שינוי בכתובת בלבד.
+   ולמה לא HTML מפריוריטי אף שמשקלו קטן: (א) הדף נושא CSP ו-PDF הוא
+   אינרטי, בעוד HTML של צד שלישי בדף שמוזרק אליו תוכן הוא סינק XSS;
+   (ב) המסמך החתום הוא ראיה ו-doc_sha256 נשמר עליו — HTML שמפנה ל-CSS
+   ולתמונות של פריוריטי מפסיק להיות סגור בפני עצמו.
+   השינוי כאן ולא בפונקציה בכוונה: הוא נוגע **לדף החתימה החי בלבד**,
+   ואינו נצרב ב-signed_html. במסמך הארכיוני דווקא רוצים את הרצועה,
+   כי שם המסלול הוא הדפסה והורדה.
+   הקישור "לפתיחה בחלון נפרד" אינו נוגע — הרגקס תופס src של iframe בלבד. */
+const qpdfFit=h=>String(h||'').replace(/(<iframe class="qpdf" src="[^"#]*)"/,'$1#toolbar=0&amp;navpanes=0&amp;view=FitH"');
 const q=new URLSearchParams(location.search);
 const token=q.get('t'), view=q.get('view');
 
@@ -177,7 +191,7 @@ function renderProtocol(d){
 <div class="band">${d.logo?`<img src="${d.logo}" alt="IRON FITNESS">`:`<h1>IRON FITNESS</h1>`}
   <h1>${esc(title)}</h1><div class="sub">${esc(sub)}</div></div>
 <div class="wrap">
-  ${isQ ? (d.quote_html||'')+(d.warning?`<div class="warn">${esc(d.warning)}</div>`:'') : `
+  ${isQ ? qpdfFit(d.quote_html||'')+(d.warning?`<div class="warn">${esc(d.warning)}</div>`:'') : `
   <div class="card"><div class="facts">
     ${multi
       ?`<div style="grid-column:1/-1"><span class="lbl">ההזמנות הכלולות בפרוטוקול (${covered.length})</span><b>${covered.map(esc).join(' · ')}</b></div>`

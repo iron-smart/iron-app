@@ -2617,7 +2617,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.178.0</div>
+      <div class="ver">גרסה 6.180.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2746,7 +2746,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.178.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.180.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -4204,6 +4204,9 @@ let CARD_STACK=[], CARD_CUR=null, CARD_NAV=false, CARD_BACK=false;
 window.goCard = fn => { CARD_NAV=true; fn(); };            // ניווט כרטיס←כרטיס (עם חזרה)
 window.cardBack = () => { const p=CARD_STACK.pop(); if(!p) return closeCards(); CARD_BACK=true; p(); };
 window.closeCards = () => {
+  /* 🔴 6.180.0 — עצירת המנוי והתיקתוק. בלי זה נשארים מנוי פתוח לכל
+     עסקה שנפתחה אי-פעם ותיקתוק שרץ על מזהה שאיש לא רואה. */
+  try{ if(typeof dlLiveStop === 'function') dlLiveStop(); }catch(_e){}
   CARD_STACK=[]; CARD_CUR=null;
   document.querySelectorAll('.modal').forEach(m=>{ m.classList.add('hidden'); m.removeAttribute('aria-modal'); });
   /* תיקון ממצא 14 — החזרת המיקוד לאלמנט שממנו נפתח הכרטיס */
@@ -9770,7 +9773,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'dlpull-2026-08-31a';
+const BUILD_ID = 'livecard-2026-08-31a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -20272,6 +20275,78 @@ debounceSearch($('#dealSearch'), renderDeals);
      "שולח עמודה אחת ולכן חסין" — במקום להחליף אותה בכרטיס מלא שאין
      לו מפת שדות, מפת הרשאות ולא חוזה snapshot.
    ℹ️ העלה סשן מקביל בסקירה; המדידה היא שהכריעה את הצורה. */
+/* ═══ כרטיס עסקה חי (6.180.0) ════════════════════════════════════════
+   רומן: "אני לא רוצה שאיש המכירות ירענן כל פעם אני רוצה שישתנה בלייב."
+
+   הרקע: הצעה נחתמה, החתימה קידמה את השלב ב-19:39:36, **והכרטיס הפתוח
+   כתב בחזרה את השלב הישן ב-19:39:51** — הוא צויר לפני החתימה.
+
+   🔴 **שתי שכבות, ובכוונה — Realtime למהירות, סקירה לשלמות.**
+      מנוי שנופל בשקט הוא בדיוק המחלקה שהפרויקט הזה נכווה ממנה שוב
+      ושוב: המסך נראה תקין ומפסיק להתעדכן בלי שאיש יידע. הסקירה
+      האיטית הופכת כשל שקט לעיכוב של 20 שניות. זה גם בדיוק מה
+      שהמלצתי לרומן על הוובהוק מפריוריטי — דחיפה למהירות, משיכה
+      לשלמות — ולכן אותו עיקרון גם כאן.
+   ⚠️ **מנוי לשורה אחת** (id=eq.) ולא לטבלה: היישור היומי כותב ~2,000
+      שורות ב-09:00, ומנוי גורף היה מציף את הכרטיס.
+   ⚠️ **ולא מציירים את הכרטיס מחדש** — openDeal מאפס scrollTop, חוטף
+      מיקוד ומאפס את הלשונית. מעדכנים **במקום**: הרצועה והשורה בטבלה.
+   ⚠️ ורק כרטיס העסקה: הכרעת רומן. הטבלאות כבר מתרעננות כל שתי דקות. */
+let DLIVE_CH = null, DLIVE_T = null, DLIVE_ID = null;
+const DLIVE_COLS = 'id,stage,quote_status,irrelevant_reason,amount,amount_incl_vat,approved_at,closed_at,send_channel,sign_link';
+
+window.dlLiveStop = ()=>{
+  if(DLIVE_T){ clearInterval(DLIVE_T); DLIVE_T = null; }
+  if(DLIVE_CH){ try{ sb.removeChannel(DLIVE_CH); }catch(_e){} DLIVE_CH = null; }
+  DLIVE_ID = null;
+};
+
+/* מחיל שורה טרייה על הכרטיס הפתוח. מחזיר את רשימת השדות שזזו, או null.
+   🔴 ההשוואה מול המצב המקומי היא גם מה שמונע הודעה כפולה כשהמנוי
+      והסקירה מביאים את אותו שינוי: השני מוצא שאין הפרש ויוצא. */
+window.dlLiveApply = (row)=>{
+  if(!row || !DLIVE_ID || row.id !== DLIVE_ID) return null;
+  const d = (DEALS||[]).find(x=>x.id===row.id); if(!d) return null;
+  const before = d.stage, changed = [];
+  DLIVE_COLS.split(',').forEach(k=>{
+    if(k === 'id') return;
+    if(row[k] === undefined) return;
+    if(String(row[k] ?? '') !== String(d[k] ?? '')){ d[k] = row[k]; changed.push(k); }
+  });
+  if(!changed.length) return null;
+  try{ dlPipeDraw(row.id); }catch(_e){}
+  try{ renderDeals(); }catch(_e){}
+  toast(changed.indexOf('stage') >= 0
+        ? 'העסקה עודכנה: «' + (before||'—') + '» ← «' + (d.stage||'—') + '»'
+        : 'העסקה עודכנה');
+  return changed;
+};
+
+window.dlLivePoll = async ()=>{
+  if(!DLIVE_ID) return null;
+  const { data, error } = await sb.schema('crm').from('deals')
+    .select(DLIVE_COLS).eq('id', DLIVE_ID).maybeSingle();
+  /* ⚠️ כשל חולף אינו מרעיש ואינו מנקה — המנוי עדיין חי, והתיקתוק הבא
+     ינסה שוב. הודעת שגיאה כאן הייתה רועשת בלי שהמשתמש יכול לעשות דבר. */
+  if(error || !data) return null;
+  return dlLiveApply(data);
+};
+
+window.dlLiveStart = (id)=>{
+  dlLiveStop();
+  DLIVE_ID = id;
+  DLIVE_T = setInterval(dlLivePoll, 20000);
+  /* ⚠️ עטוף: אם Realtime אינו זמין (מנוי חסום, רשת), הסקירה לבדה
+     מספיקה — והכרטיס עדיין מתעדכן, רק לאט יותר. */
+  try{
+    DLIVE_CH = sb.channel('deal-' + id)
+      .on('postgres_changes',
+          { event:'UPDATE', schema:'crm', table:'deals', filter:'id=eq.' + id },
+          p => { try{ dlLiveApply(p.new); }catch(_e){} })
+      .subscribe();
+  }catch(_e){ DLIVE_CH = null; }
+};
+
 window.openDeal = async (id)=>{
   const d = DEALS.find(x=>x.id===id); if(!d) return;
   const x = ctxOf('deal', id);
@@ -20366,6 +20441,9 @@ window.openDeal = async (id)=>{
     </div>
 `;
   dlPipeDraw(id); dlChanDraw(id);
+  /* 🔴 אחרי הציור ולא לפניו: dlLiveApply קורא ל-dlPipeDraw, וקריאה
+     על כרטיס שטרם צויר הייתה נופלת בשקט ל-catch. */
+  try{ dlLiveStart(id); }catch(_e){}
   try{ dlqArm(); }catch(_e){}
   mountCard('dealModal', ()=>openDeal(id));
   /* 6.135.0 — תמיד, ולא רק כשיש ליד. 51 עסקאות במסד אין להן לא ליד ולא
@@ -20464,9 +20542,22 @@ window.dlSetChan = async (id, ch)=>{
 window.dlPipeSet = async (id, stage, sub)=>{
   if(!window.canEdit('crm.deals')){ toast('אין לך הרשאת עריכה לתהליכי מכירה'); return; }
   const d = DEALS.find(x=>x.id===id); if(!d) return;
+  /* 🔴 6.180.0 — נעילת מקביליות אופטימית. p_expect הוא **השלב שהמסך
+     מצייר עכשיו**, והשרת דוחה אם הוא כבר אינו נכון. זה מה שמונע את
+     מה שקרה ב-31/08: החתימה קידמה, והכרטיס הפתוח כתב בחזרה את הישן. */
+  const expect = d.stage || null;
   const { data, error } = await sb.schema('crm').rpc('deal_stage_set',
-    { p_deal: id, p_stage: stage, p_sub: sub || null });
-  if(error){ const eb=document.getElementById('d-err');
+    { p_deal: id, p_stage: stage, p_sub: sub || null, p_expect: expect });
+  if(error){
+    /* 🔴 40001 = העסקה זזה בשרת מאז שהכרטיס צויר. **לא מציגים "נכשל"
+       סתם** — מרעננים ומראים את המצב האמיתי, אחרת המשתמש ינסה שוב
+       ויסיק שהמערכת שבורה. */
+    if(String(error.code||'') === '40001' || (error.message||'').indexOf('כבר עודכנה') >= 0){
+      await dlLivePoll();
+      toast('העסקה עודכנה בינתיים — הכרטיס רוענן. בדוק ונסה שוב.');
+      return;
+    }
+    const eb=document.getElementById('d-err');
     if(eb) eb.textContent='העדכון נכשל — '+error.message; else toast('העדכון נכשל — '+error.message);
     return; }
   const r = Array.isArray(data) ? data[0] : data;

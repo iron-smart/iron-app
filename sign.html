@@ -77,7 +77,19 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&
    ואינו נצרב ב-signed_html. במסמך הארכיוני דווקא רוצים את הרצועה,
    כי שם המסלול הוא הדפסה והורדה.
    הקישור "לפתיחה בחלון נפרד" אינו נוגע — הרגקס תופס src של iframe בלבד. */
-const qpdfFit=h=>String(h||'').replace(/(<iframe class="qpdf" src="[^"#]*)"/,'$1#toolbar=0&amp;navpanes=0&amp;view=FitH"');
+const qpdfFit=(h,ph)=>{
+  let s=String(h||'').replace(/(<iframe class="qpdf" src="[^"#]*)"/,'$1#toolbar=0&amp;navpanes=0&amp;view=FitH"');
+  /* רומן: "אין טלפון לקוח?". הטלפון נצרב בתמונה ב-ord.protocol_create
+     (מ-01/09/2026), אבל quoteBody בשרת עדיין אינו מרנדר אותו בגוש
+     העובדות. מוסיפים כאן ליד "שם לקוח".
+     ⚠️ ורק אם אינו כבר שם — ביום שהשרת ירנדר אותו בעצמו, התא לא
+        ישוכפל והשורה הזאת תהפוך לחסרת השפעה מעצמה. */
+  const p=String(ph||'').trim();
+  if(p && s.indexOf('>טלפון<')<0)
+    s=s.replace(/(<span class="lbl">שם לקוח<\/span><b>[^<]*<\/b><\/div>)/,
+                '$1<div><span class="lbl">טלפון</span><b dir="ltr">'+esc(p)+'</b></div>');
+  return s;
+};
 const q=new URLSearchParams(location.search);
 const token=q.get('t'), view=q.get('view');
 
@@ -127,7 +139,19 @@ async function init(){
       st.textContent='.card.wm,.ok-card{background-image:url("data:image/png;base64,'+d.wm+'");'
         +'background-repeat:no-repeat;background-position:center center}'
         +'.card.wm{background-size:80% auto}.ok-card{background-size:auto 80%}'
-        +'@media print{.card.wm{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
+        +'@media print{.card.wm{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+/* גרסה 20 (01/09/2026) — רומן: "לא מציג בתצוגה טלפונית". ה-iframe אינו
+   מרנדר PDF בטלפון כלל — לא ב-iOS ולא באנדרואיד — ולכן שם הוא תיבה
+   ריקה ולא תצוגה מקדימה. מסתירים אותו ומציגים את הקישור ככפתור מלא.
+   הצבע נלקח מ-.btn-send הקיים (#002d48) ולא נבחר מחדש.
+   .qpdf-hint הוא "אם המסמך אינו מוצג —", שאינו נכון כשהמסמך לעולם
+   אינו מוצג; תווית הקישור עומדת לבדה. הפיצול נעשה ב-quoteBody בשרת. */
+@media (max-width:760px){
+.qpdf{display:none}
+.qpdf-hint{display:none}
+.qpdf-nt{font-size:1.02rem;color:#0b1620;margin-top:0}
+.qpdf-nt a{display:block;text-align:center;background:#002d48;color:#fff;border-radius:11px;padding:14px;font-weight:800;text-decoration:none}
+}';
       document.head.appendChild(st);
     }
     /* 🔴 ההצעה קודם. הניתוב הקיים הוא לפי doc_type בלבד, ולכן
@@ -191,7 +215,7 @@ function renderProtocol(d){
 <div class="band">${d.logo?`<img src="${d.logo}" alt="IRON FITNESS">`:`<h1>IRON FITNESS</h1>`}
   <h1>${esc(title)}</h1><div class="sub">${esc(sub)}</div></div>
 <div class="wrap">
-  ${isQ ? qpdfFit(d.quote_html||'')+(d.warning?`<div class="warn">${esc(d.warning)}</div>`:'') : `
+  ${isQ ? qpdfFit(d.quote_html||'', d.quote&&d.quote.phone)+(d.warning?`<div class="warn">${esc(d.warning)}</div>`:'') : `
   <div class="card"><div class="facts">
     ${multi
       ?`<div style="grid-column:1/-1"><span class="lbl">ההזמנות הכלולות בפרוטוקול (${covered.length})</span><b>${covered.map(esc).join(' · ')}</b></div>`

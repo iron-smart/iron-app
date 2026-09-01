@@ -1392,20 +1392,20 @@
    הוא המבדיל הצבעוני בין שני שמות שזהים ב-91% מהמקרים, ונקרא מהר
    יותר מהתווית. עוגן dealSheet = (1,1,0), ולכן אינו דולף.
    ⚠️ אפס גוונים חדשים: f8fafc מ-note, dbe3ec מ-tk-kind. */
-#dealSheet .dl-tile{ display:flex; align-items:center; gap:7px; min-height:28px;
+#dealSheet .dl-tile, #tkSheet .dl-tile{ display:flex; align-items:center; gap:7px; min-height:28px;
   padding:3px 9px; background-color:#f8fafc; border:1px solid #dbe3ec;
   border-radius:var(--r-md); text-decoration:none; color:var(--navy);
   font-weight:700; font-size:var(--fs-md); min-width:0; cursor:pointer;
   transition:background-color .12s, border-color .12s, box-shadow .12s; }
-#dealSheet .dl-tile .dlt-nm{ flex:1 1 auto; min-width:0; overflow:hidden;
+#dealSheet .dl-tile .dlt-nm, #tkSheet .dl-tile .dlt-nm{ flex:1 1 auto; min-width:0; overflow:hidden;
   text-overflow:ellipsis; white-space:nowrap; }
-#dealSheet .dl-tile .dlt-ar{ flex:none; color:#94a3b8; font-size:12px;
+#dealSheet .dl-tile .dlt-ar, #tkSheet .dl-tile .dlt-ar{ flex:none; color:#94a3b8; font-size:12px;
   transition:transform .12s, color .12s; }
-#dealSheet .dl-tile:hover{ background-color:#eef4fb; border-color:#8fb3d9;
+#dealSheet .dl-tile:hover, #tkSheet .dl-tile:hover{ background-color:#eef4fb; border-color:#8fb3d9;
   box-shadow:0 1px 4px rgba(6,24,39,.08); }
 /* translateX שלילי הוא שמאלה — כיוון החץ ב-RTL. */
-#dealSheet .dl-tile:hover .dlt-ar{ color:var(--navy); transform:translateX(-2px); }
-#dealSheet .dl-tile:focus-visible{ outline:2px solid var(--navy); outline-offset:1px; }
+#dealSheet .dl-tile:hover .dlt-ar, #tkSheet .dl-tile:hover .dlt-ar{ color:var(--navy); transform:translateX(-2px); }
+#dealSheet .dl-tile:focus-visible, #tkSheet .dl-tile:focus-visible{ outline:2px solid var(--navy); outline-offset:1px; }
 /* ═══ 6.173.0 — תצוגה מקדימה של ההצעה ═══════════════════════════════
    רומן: "מסמך ההצעה עצמה תעשה אפשרות hover שאפשר לראות את כל ההצעה
    בלי באמת להכנס אליה."
@@ -2009,6 +2009,19 @@
 #leads-list .tbl tbody tr.lb-todr:hover{ background-color:#ffe9cc; }
 /* הטקסט האדום נשאר על התא — הוא שמסמן איזו עמודה גרמה לצביעה. */
 td.lb-ov{ color:#c0392b; font-weight:700; }
+/* 🔴 6.185.0 — שתי פרצות שנמדדו: (א) ל-.lb-today לא היה שום כלל בגיליון,
+   ולכן "היום" נראה רק דרך רקע השורה. (ב) lbTmBlock פולט span.k.lb-ov,
+   וכל כללי הטקסט האדום מעוגנים ב-td. — כלומר בבלוק "המשימה הבאה"
+   האיחור נראה רק דרך האייקון. */
+td.lb-today{ color:#b45309; font-weight:700; }
+.lb-tmi .k.lb-ov, .lb-tmw .k.lb-ov{ color:#c0392b !important; font-weight:700; }
+.lb-tmi .k.lb-today, .lb-tmw .k.lb-today{ color:#b45309 !important; font-weight:700; }
+/* ⚠️ הלובי והמובייל מציגים כרטיסי .lead ולא שורות טבלה — בלעדיהם
+   "בכל מסכי ה-CRM" לא היה כולל את "היום שלי". */
+.lead.lb-ovr{ background:#fdecea; box-shadow:inset -4px 0 0 #c0392b; }
+.lead.lb-ovr:hover{ background:#fbdcd8; }
+.lead.lb-todr{ background:#fff4e5; box-shadow:inset -4px 0 0 #f0b45f; }
+.lead.lb-todr:hover{ background:#ffe9cc; }
 /* 🔴 האיפוס של רקע הקלט חיוני **יותר** מקודם: .lb-dt מוגדר
    background:#fff, ובלעדיו הקלט הוא מלבן לבן שצף על רקע **השורה**.
    אותה מחלקה של 6.103.0, על שטח גדול יותר. */
@@ -2444,11 +2457,11 @@ td.lb-today .lb-dt{ background-color:transparent; }
   border:1px solid var(--line); background-color:#fff; color:#475569; cursor:pointer; font-family:inherit; }
 .lb-psub button:disabled{ cursor:default; }
 /* ---- דחיסת כרטיס הליד (6.108.0, רומן: "יותר דחוס וקומפקטי") ---- */
-#leadSheet .form-grid{ gap:9px 12px; }
-#leadSheet .form-sep{ margin-top:10px; padding-bottom:3px; }
-#leadSheet label{ margin-bottom:2px; }
-#leadSheet input, #leadSheet select{ padding:6px 9px; }
-#leadSheet textarea{ padding:6px 9px; }
+#leadSheet .form-grid, #tkSheet .form-grid{ gap:9px 12px; }
+#leadSheet .form-sep, #tkSheet .form-sep{ margin-top:10px; padding-bottom:3px; }
+#leadSheet label, #tkSheet label{ margin-bottom:2px; }
+#leadSheet input, #leadSheet select, #tkSheet input, #tkSheet select{ padding:6px 9px; }
+#leadSheet textarea, #tkSheet textarea{ padding:6px 9px; }
 #leadSheet .ob-card, #tkSheet .ob-card{ margin-top:12px; }
 /* שבב "מקושר ל־" בתוך הכרטיס — אותה שפה של הטבלה, בלי כפילות כלל */
 #tkSheet .tk-lnk{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
@@ -2464,9 +2477,9 @@ td.lb-today .lb-dt{ background-color:transparent; }
    ⚠️ הבריחה נגרמה משדות בגבהים שונים בתוך שורת גריד — label בשורה
    אחת מול label שנשבר לשתיים. align-items:end מיישר את הפקדים
    עצמם לתחתית התא, ולכן כל התיבות בשורה על אותו קו. */
-#leadSheet .form-grid{ align-items:end; }
-#leadSheet .form-grid > div, #addModal .form-grid > div{ min-width:0; }
-#leadSheet label, #addModal label{ min-height:17px; }
+#leadSheet .form-grid, #tkSheet .form-grid{ align-items:end; }
+#leadSheet .form-grid > div, #addModal .form-grid > div, #tkSheet .form-grid > div{ min-width:0; }
+#leadSheet label, #addModal label, #tkSheet label{ min-height:17px; }
 /* ---- סטטוס ובעלות קומפקטי (6.114.0) ---- */
 .lb-sob{ display:flex; flex-wrap:wrap; align-items:center; gap:10px;
   padding:8px 10px; border:1px solid var(--line); border-radius:10px;
@@ -2649,7 +2662,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.184.0</div>
+      <div class="ver">גרסה 6.185.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2778,7 +2791,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.184.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.185.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9831,7 +9844,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'convfast-2026-09-01a';
+const BUILD_ID = 'crmmark-2026-09-01a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -15305,7 +15318,7 @@ function loadErrBanner(names){
 }
 /* חייב להיות באותו אורך ובאותו סדר כמו מערך השאילתות ב-loadLeads —
    אחרת פס השגיאה מציג "undefined" במקום שם השאילתה שנכשלה. */
-const LOAD_NAMES = ['לידים','לקוחות','משימות','עסקאות','פגישות','אנשי קשר','תשלומים','הזמנות','קריאות שירות','צוותים','מק"טים','מסמכים','הגדרות','ספריית בעלים','בעלי לידים','מצב סנכרון','מעקב תשלומים','תנאי תשלום','נותר לספק','תנאי תשלום בהזמנה','החזרות לאיסוף','קיזוזים','הצעות קיזוז','לוח פעימות','בעלי עסקאות'];
+const LOAD_NAMES = ['לידים','לקוחות','משימות','עסקאות','פגישות','אנשי קשר','תשלומים','הזמנות','קריאות שירות','צוותים','מק"טים','מסמכים','הגדרות','ספריית בעלים','בעלי לידים','מצב סנכרון','מעקב תשלומים','תנאי תשלום','נותר לספק','תנאי תשלום בהזמנה','החזרות לאיסוף','קיזוזים','הצעות קיזוז','לוח פעימות','בעלי עסקאות','בעלי משימות','בעלי פגישות'];
 /* ═══ CRM_Q — בוני השאילתות המשותפים (6.151.0) ═════════════════════
    🟢 הגדרה אחת ששני צרכנים קוראים: loadLeads והרענון האוטומטי. בלי זה
    הרענון היה מושך עמודות אחרות מהטעינה הראשונית, וההבדל היה מתגלה רק
@@ -15365,10 +15378,13 @@ async function loadLeads(){
     /* בעלות על עסקאות (6.163.0). **בסוף המערך בלבד**, לפי אותו כלל
        שנולד מהסטת המפרק ב-6.98 — תוספת באמצע מזיזה בשקט כל גלובל
        שאחריה. ⚠️ ריק למי שאין לו crm.deals (RLS), וזה תקין. */
-    sb.schema('crm').from('deal_owners').select('deal_id,profile_id,is_primary').limit(10000)
+    sb.schema('crm').from('deal_owners').select('deal_id,profile_id,is_primary').limit(10000),
+    /* בעלות על משימות ופגישות (6.185.0). **בסוף המערך**, אותו כלל. */
+    sb.schema('crm').from('task_owners').select('task_id,profile_id,is_primary').limit(20000),
+    sb.schema('crm').from('meeting_owners').select('meeting_id,profile_id,is_primary').limit(10000)
   ]);
   }catch(e){ console.error('טעינת הנתונים נכשלה לגמרי', e); loadErrBanner(['החיבור לשרת']); try{ $('#lastSync').textContent=''; renderAllViews(); }catch(_){} return; }
-  const [l,c,t,d,m,k,p,o,sc,tm,sk,pr,st,lod,lown,sl,fin,pt,oi,fm,rp,po,ps,bts,down] = _q;
+  const [l,c,t,d,m,k,p,o,sc,tm,sk,pr,st,lod,lown,sl,fin,pt,oi,fm,rp,po,ps,bts,down,town,mown] = _q;
   /* תיקון ממצא 11 — שאילתה שנכשלה כבר לא מתחזה ל"אין נתונים" */
   const _bad = _q.map((r,i)=>(r&&r.error)?{n:LOAD_NAMES[i],e:r.error}:null).filter(Boolean);
   if(_bad.length){ _bad.forEach(b=>console.error('טעינת נתונים נכשלה —', b.n, b.e)); loadErrBanner(_bad.map(b=>b.n)); }
@@ -15376,6 +15392,8 @@ async function loadLeads(){
   try{ lownApply((lod||{}).data); }catch(_e){ console.error('lead_owner_dir',_e); }
   try{ lownOfApply((lown||{}).data); }catch(_e){ console.error('lead_owners',_e); }
   try{ reIndexDealOwners((down||{}).data); }catch(_e){ console.error('deal_owners',_e); }
+  try{ reIndexTaskOwners((town||{}).data); }catch(_e){ console.error('task_owners',_e); }
+  try{ reIndexMeetOwners((mown||{}).data); }catch(_e){ console.error('meeting_owners',_e); }
   LEADS = l.data||[]; CUSTS = c.data||[]; TASKS = t.data||[]; DEALS = d.data||[]; MEETS = m.data||[]; CONTS = k.data||[]; PAYS = p.data||[];
   ORDS = o.data||[]; SCALLS = sc.data||[]; OTEAMS = tm.data||[]; SKUS = sk.data||[]; PROTS = pr.data||[]; OSET = st.data||[];
   /* 6.81.0 — אתרי הלקוח נטענים **מחוץ** למערך _q במכוון: הוא מפורק לפי
@@ -15650,6 +15668,52 @@ function reIndexDealOwners(rows){
 const dlOwnersOf  = d => (d && DOWN_OF[d.id]) || (d && d.owner_id ? [d.owner_id] : []);
 const dlOwnerOf   = d => dlOwnersOf(d)[0] || '';
 const dlPartnersOf= d => dlOwnersOf(d).slice(1);
+
+/* ═══ 6.185.0 — בעלים ושותפים למשימה ולפגישה ═══════════════════════
+   רומן, 01/09/2026: "בעלים תעשה אותה אפשרות כמו במסך לידים עם בעלים
+   ראשי ושותפים. זה נכון גם לתהליכי מכירה וגם לפגישות."
+   🟢 **הנתון כבר היה במסד:** 223 שורות שותפים ב-crm.task_owners, ואף
+      מסך לא הציג אותן — sOwnerCell קרא ent.owner_id בלבד. בדיוק
+      המחלקה של 113 שורות הלידים שהיו נסתרות עד 6.105.0.
+   ⚠️ **הנפילה אחורה ל-owner_id היא נושא-משקל ולא נימוס:** נמדד
+      01/09/2026 ש-73 משימות מחזיקות owner_id בלי שורה בטבלה (שבע
+      פונקציות יוצרות משימות ב-INSERT ישיר). הן מולאו ונוסף טריגר,
+      אבל הדפוס נשאר — הוא זהה ל-lbOwnersOf ול-dlOwnersOf. */
+const TOWN_OF = {}, MOWN_OF = {};
+function ownReindex(map, rows, key){
+  for(const k in map) delete map[k];
+  for(const r of (rows||[])){
+    if(!r.profile_id) continue;
+    const a = map[r[key]] || (map[r[key]] = []);
+    if(a.includes(r.profile_id)) continue;
+    if(r.is_primary === false) a.push(r.profile_id); else a.unshift(r.profile_id);
+  }
+}
+const reIndexTaskOwners = rows => ownReindex(TOWN_OF, rows, 'task_id');
+const reIndexMeetOwners = rows => ownReindex(MOWN_OF, rows, 'meeting_id');
+const ownOwnersOf = (kind, e)=>{
+  const k = OWN_KIND[kind]; if(!k || !e) return [];
+  return (k.map()[e.id]) || (e.owner_id ? [e.owner_id] : []);
+};
+/* אווטאר + שם, לכרטיס. בטבלה **אסור** — היא גלילה אופקית ושם מלא
+   דוחף את שאר העמודות (ההערה של .lb-avx). */
+function ownCellName(kind, e){
+  const all = ownOwnersOf(kind, e), extra = all.slice(1);
+  const o = LOWN_BY[all[0]||''];
+  const old = (o && o.kind==='legacy') ? ' <span class="note lb-ownx">(לשעבר)</span>' : '';
+  const body = lbAva(all[0]||'')
+    + `<span class="lb-ownm">${esc(o ? o.name : 'ללא בעלים')}${old}</span>`
+    + (extra.length ? `<span class="lb-avx">${extra.slice(0,3).map(k=>lbAva(k,1)).join('')}${extra.length>3?`<span class="lb-ava lb-ava-s lb-ava-more" title="ועוד ${extra.length-3}">+${extra.length-3}</span>`:''}</span>` : '');
+  if(!window.canEdit(OWN_KIND[kind].perm)) return `<div class="lb-owc">${body}</div>`;
+  return `<div class="lb-owc lb-owc-go" title="שיוך בעלים ושותפים" onclick="event.stopPropagation();lbOwnerPick('${jsq(e.id)}',event,'${jsq(kind)}')">${body}</div>`;
+}
+function ownCell(kind, e){
+  const all = ownOwnersOf(kind, e), extra = all.slice(1);
+  const body = lbAva(all[0]||'')
+    + (extra.length ? `<span class="lb-avx">${extra.slice(0,3).map(k=>lbAva(k,1)).join('')}${extra.length>3?`<span class="lb-ava lb-ava-s lb-ava-more" title="ועוד ${extra.length-3}">+${extra.length-3}</span>`:''}</span>` : '');
+  if(!window.canEdit(OWN_KIND[kind].perm)) return `<div class="lb-owc">${body}</div>`;
+  return `<div class="lb-owc lb-owc-go" title="שיוך בעלים ושותפים" onclick="event.stopPropagation();lbOwnerPick('${jsq(e.id)}',event,'${jsq(kind)}')">${body}</div>`;
+}
 /* אווטאר בלבד בטבלה — אותה הכרעה של lbOwnerCell: הטבלה גלילה אופקית
    ושם מלא דוחף את שאר העמודות (הערת .lb-avx). */
 function dlOwnerCell(d){
@@ -15755,7 +15819,12 @@ function lbClock(f){
 }
 /* נקודת החנק היחידה שקובעת את מצב התא. כל צרכן חדש חייב לעבור כאן
    ולא לחשב "עבר זמנו" בעצמו — אחרת "היום" יתפצל לשתי הגדרות. */
-function lbDueMark(iso){
+function lbDueMark(iso, done){
+  /* 🔴 6.185.0 — שער ה-done נכנס לנקודת החנק. עד כאן הוא היה מיושם
+     **רק ב-tkRow** (6.172.0), ולכן openTask ו-lbTmBlock סימנו איחור
+     גם על משימה שהושלמה. פרמטר אופציונלי: כל קורא קיים שאינו מעביר
+     אותו מתנהג בדיוק כמו קודם. */
+  if(done) return {cls:'', rowCls:'', ico:''};
   /* 6.119.0 — `rowCls` נוסף לצד `cls`: הצביעה עברה לשורה כולה, אבל
      הטקסט האדום נשאר על התא. שני שדות ולא אחד, כדי ששתי הרמות
      יישארו בנקודת החנק הזאת ולא יתפצלו לשני חישובים. */
@@ -15804,15 +15873,20 @@ function taskRow(t){
   /* 6.172.0 — `done` הוצא לקבוע אחד ומזין את השם ואת המועד. עד כה
      הליטרל 'הושלם' הופיע כאן פעמיים, פעם בהגדרת overdue ופעם בסגנון. */
   const done = t.status==='הושלם';
-  const overdue = !done && t.due_at && new Date(t.due_at) < new Date();
+  /* 🔴 6.185.0 — עובר ל-lbDueMark, נקודת החנק. עד כאן זו הייתה
+     **ההגדרה השנייה של "באיחור" בקובץ** — inline, בלי אייקון ובלי רקע —
+     ומשרתת את "היום שלי" ואת המובייל. רומן ביקש את שלושת הסימנים
+     "בכל מסכי ה-CRM", ולולא זה הלובי היה נשאר בלעדיהם. */
+  const dmk = done ? {cls:'',rowCls:'',ico:''} : lbDueMark(t.due_at);
+  const overdue = dmk.rowCls==='lb-ovr';
   const due = t.due_at ? new Date(t.due_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
   /* סטטוס משימה — הרשימה מהמאנדיי (הערה 17) */
   const stSel = `<select onclick="event.stopPropagation()" onchange="setTaskStatus('${t.id}',this.value)"
     style="width:auto;padding:5px 8px;font-size:12.5px;border-radius:99px;border:1.5px solid ${TASK_ST_COLORS[t.status]||'#e2e8f0'};color:${TASK_ST_COLORS[t.status]&&t.status!=='חדש'?onWhite(TASK_ST_COLORS[t.status]):'#475569'};font-weight:700">
     ${TASK_STATUSES.map(s=>`<option ${s===t.status?'selected':''}>${s}</option>`).join('')}</select>`;
-  return `<div class="lead">
+  return `<div class="lead${dmk.rowCls?' '+dmk.rowCls:''}${window.isNewRec(t)?' row-new':''}">
     <div><div class="nm" style="${done?'text-decoration:line-through;color:#94a3b8':''}">${esc(t.name)}</div>
-    <div class="meta" style="${overdue?'color:#c0392b;font-weight:600':''}">יעד: <span style="${done?'text-decoration:line-through':''}">${due}</span>${overdue?' · באיחור!':''}${t.category?' · '+esc(t.category):''}</div></div>
+    <div class="meta" style="${overdue?'color:#c0392b;font-weight:600':''}"><span class="lb-duew">${dmk.ico}</span>יעד: <span style="${done?'text-decoration:line-through':''}">${due}</span>${overdue?' · באיחור!':''}${t.category?' · '+esc(t.category):''}</div></div>
     <div style="display:flex;gap:6px;align-items:center">${stSel}
     ${t.status!=='הושלם'?`<button class="ghost" style="padding:8px 12px;width:auto" onclick="doneTask('${t.id}')">בוצע ✓</button>`:''}</div>
   </div>`;
@@ -15998,7 +16072,7 @@ const TK_COLS = [
   ['#','rownum'], ['משימה','srt'], ['בעלים','srt'], ['מקושר ל־','srt'], ['טלפון',''],
   /* 6.149.0 — עמודת "ביצוע" ירדה (בקשת רומן). ⚠️ הכפתור עצמו **נשאר**
      בכרטיס המשימה ובמסך "היום שלי" — הכרעתו הייתה "רק בטבלה". */
-  ['סיווג','srt'], ['סטטוס','srt'], ['מועד','srt'], ['תאריך יצירה','srt']
+  ['סטטוס','srt'], ['סיווג','srt'], ['מועד','srt'], ['תאריך יצירה','srt']
 ];
 const TK_KIND_LBL = { lead:'ליד', deal:'תהליך', customer:'לקוח', payment:'תשלום' };
 /* הדליים. הסדר הוא סדר העבודה: מה שהיום, ואז האיחור מהטרי לישן, ואז
@@ -16026,7 +16100,11 @@ function tkBucket(iso){
   const days = (Date.now() - new Date(iso).getTime()) / 864e5;
   return days<=7 ? 'ovr7' : (days<=30 ? 'ovr30' : 'old');
 }
-const TK_PAINT = { today:'tk-todr', ovr7:'tk-ovr' };
+/* 🔴 6.185.0 — **כל** דלי האיחור נצבעים (הכרעת רומן 01/09/2026,
+   אחרי שהוצגה לו המדידה 229/255). ההערה שמעל TK_BUCKETS מנמקת
+   צמצום ב-96.5% מתוך 1,163 פתוחות — מספר מ-21/08 שכבר אינו קיים.
+   ⚠️ 'soon' ו-'none' נשארים בחוץ: הם אינם איחור. */
+const TK_PAINT = { today:'tk-todr', ovr7:'tk-ovr', ovr30:'tk-ovr', old:'tk-ovr' };
 /* ═══ בחירה מרובה (6.122.0) ═══════════════════════════════════════
    נדחתה מ-4505 בכוונה — בורד בלי כרטיס היה מספיק שינוי לפריסה אחת.
    שלוש פעולות: סימון בוצע · הקצאה מחדש · דחיית מועד.
@@ -16283,8 +16361,8 @@ const TK_KEY = {
   1:t=>t.name||'',                                  /* משימה */
   2:t=>((LOWN_BY[t.owner_id]||{}).name)||'',        /* בעלים */
   3:t=>tkLinkName(t),                               /* מקושר ל */
-  5:t=>t.category||'',                              /* סיווג */
-  6:t=>String(TASK_STATUSES.indexOf(t.status)),     /* סטטוס */
+  5:t=>String(TASK_STATUSES.indexOf(t.status)),     /* סטטוס */
+  6:t=>t.category||'',                              /* סיווג */
   7:t=>t.due_at||'',                                /* מועד */
   8:t=>t.created_at||''                             /* תאריך יצירה */
 };
@@ -16412,15 +16490,15 @@ function tkRow(t, i){
   /* 6.122.0 — השורה נפתחת לכרטיס **המשימה**. ב-4505 היא נפתחה לישות
      המקושרת כפתרון ביניים, כי כרטיס המשימה לא היה קיים. ההגעה לליד
      נשארה בתא "מקושר ל־" (tkGoJs), עם stopPropagation. */
-  return `<tr class="${TK_SEL.has(t.id)?'lb-on ':''}${TK_PAINT[b]||''}" onclick="openTask('${jsq(t.id)}')">
+  return `<tr class="${TK_SEL.has(t.id)?'lb-on ':''}${TK_PAINT[b]||''}${window.isNewRec(t)?' row-new':''}" onclick="openTask('${jsq(t.id)}')">
       ${TK_BULK?`<td class="lb-ck" onclick="event.stopPropagation()"><input type="checkbox" data-id="${esc(t.id)}" ${TK_SEL.has(t.id)?'checked':''} onclick="tkSelOne('${jsq(t.id)}',this.checked)"></td>`:''}
       <td class="rownum">${i}</td>
       <td class="tk-nm" title="${esc(t.name||'')}"><b class="${done?'tk-done':''}">${esc(t.name||'')}</b></td>
-      <td class="tk-own">${tkOwnerCell(t)}</td>
+      <td class="tk-own">${ownCell('task',t)}</td>
       <td class="tk-lnkc">${tkLinkCell(t)}</td>
       <td dir="ltr">${phCell(tkLinkPhone(t))}</td>
-      <td>${t.category?mdPill(t.category,TASK_CAT_COLORS,LB_TK):'<span class="lb-na">·</span>'}</td>
       <td>${ieSel('task',t.id,'status',TASK_STATUSES,t.status,{mdColors:TASK_ST_COLORS,mdK:LB_TK})}</td>
+      <td>${t.category?mdPill(t.category,TASK_CAT_COLORS,LB_TK):'<span class="lb-na">·</span>'}</td>
       <td data-sort="${esc(t.due_at||'')}"${done?' class="tk-dndt"':(dmk.cls?` class="${dmk.cls}"`:'')}><span class="lb-duew">${dmk.ico}${dueCell}</span></td>
       <td data-sort="${esc(t.created_at||'')}">${t.created_at?esc(new Date(t.created_at).toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit'})):'<span class="lb-na">·</span>'}</td>
     </tr>`;
@@ -16465,7 +16543,10 @@ const TASK_CARD_FIELDS = [
   /* 🔴 6.149.0 — `owner_id` ירד מהמפה. הוא **מראה** של crm.task_owners,
      וכתיבה ישירה אליו נדרסת ביישור היומי ממאנדיי. הבורר בכרטיס עובר
      עכשיו דרך crm.task_set_owner, כמו בטבלה. */
-  ['tk-cat','category'], ['tk-owner','__owner'], ['tk-lnk','__link']
+  /* 🔴 6.185.0 — 'tk-owner' ירד: הבעלות הפכה לראשי+שותפים ועוברת
+     ב-lbOwnerPick בלחיצה, כמו בליד ובעסקה. שדה בחוזה ה-snapshot
+     שמצביע על אלמנט שאינו קיים היה נשמט בשקט מכל patch. */
+  ['tk-cat','category'], ['tk-lnk','__link']
 ];
 let TASK_SNAP = null;
 /* חוזה ה-snapshot: **מה שהוצג מול מה שיש עכשיו**, שתי מחרוזות מאותו
@@ -16487,15 +16568,13 @@ window.openTask = (id)=>{
   const entName = (x.lead && x.lead.full_name) || (x.deal && x.deal.name) || (x.cust && x.cust.name) || '';
   const entPhone = (x.lead && x.lead.phone) || (x.cust && x.cust.phone) || '';
   const go = tkGoJs(t);
-  const dmk = lbDueMark(t.due_at);
+  const dmk = lbDueMark(t.due_at, t.status==='הושלם');
   /* אחים — אותה פנייה בדיוק. ⚠️ משימה בלי קישור אין לה אחים, ולכן
      התנאי בודק גם את linked_id ולא רק את השוויון (null===null אמת). */
   const _sibAll = t.linked_id ? (TASKS||[]).filter(o=>o.id!==t.id && o.linked_type===t.linked_type && o.linked_id===t.linked_id) : [];
   const _mtsAll = t.linked_id ? (MEETS||[]).filter(m=>m.linked_type===t.linked_type && m.linked_id===t.linked_id) : [];
   const sib=_sibAll.filter(tmOpen),  mts=_mtsAll.filter(m=>!mDone(m));
   const hsSib=_sibAll.filter(tmDone), hsMts=_mtsAll.filter(mDone);
-  const ownOpts = '<option value="">— ללא בעלים —</option>' +
-    LOWN.filter(o=>o.assignable).map(o=>`<option value="${esc(o.owner_key)}" ${o.owner_key===t.owner_id?'selected':''}>${esc(o.name)}</option>`).join('');
   $('#tkSheet').innerHTML = `
     <h3>${esc(t.name||'משימה')} ${mdPill(t.status||'—',TASK_ST_COLORS,LB_TK)}</h3>
     <div class="note">נוצרה ${fmtDT(t.created_at)}${t.closed_at?' · נסגרה '+fmtDT(t.closed_at):''}</div>
@@ -16527,7 +16606,7 @@ window.openTask = (id)=>{
       <div><label>מועד יעד</label><input type="datetime-local" id="tk-due" value="${esc(lbDtLocal(t.due_at))}"></div>
       <div><label>סטטוס</label>${selHtml('tk-status',TASK_STATUSES,t.status)}</div>
       <div><label>סיווג</label>${selHtml('tk-cat',tkCats(),t.category,true)}</div>
-      <div><label>בעלים</label><select id="tk-owner">${ownOpts}</select></div>
+      <div><label>בעלים ושותפים</label><div id="tk-ownbox">${ownCellName('task',t)}</div></div>
 
       <div class="form-sep">משימות ופגישות על אותה פנייה</div>
       <div class="span4">${lbTmBlock(sib, mts)}</div>
@@ -16581,7 +16660,6 @@ window.saveTask = async (id)=>{
     /* 6.130.0 — שתי עמודות מקלט אחד. ניתוק הקישור מאפס את שתיהן יחד;
        linked_type בלי linked_id הוא מצב שאין לו משמעות. */
     /* 🔴 בעלים דרך RPC, לא בעמודה. נאסף כאן ונשלח אחרי ה-UPDATE. */
-    if(col==='__owner'){ upd.__owner = (now===''? null : now); return; }
     if(col==='__link'){
       const ci=now.indexOf(':');
       upd.linked_type = ci>0 ? now.slice(0,ci) : null;
@@ -16596,16 +16674,9 @@ window.saveTask = async (id)=>{
   /* סגירה מהכרטיס חותמת closed_at, בדיוק כמו doneTask — אחרת משימה
      שנסגרה מהבורר נראית סגורה ואין לה מועד סגירה. */
   if(upd.status==='הושלם' && !t.closed_at) upd.closed_at = new Date().toISOString();
-  const _own = ('__owner' in upd) ? upd.__owner : undefined;
-  delete upd.__owner;
   if(Object.keys(upd).length){
     const { error } = await sb.schema('crm').from('tasks').update(upd).eq('id', id);
     if(error){ if(eb) eb.textContent='השמירה נכשלה — '+error.message; return; }
-  }
-  if(_own !== undefined){
-    const { error: e2 } = await sb.schema('crm').rpc('task_set_owner', { p_task:id, p_owner:_own });
-    if(e2){ if(eb) eb.textContent='שינוי הבעלים נכשל — '+e2.message; return; }
-    t.owner_id = _own;
   }
   Object.assign(t, upd);
   t.updated_at = new Date().toISOString();   /* קירוב לתצוגה — השרת חותם בטריגר */
@@ -20849,15 +20920,6 @@ window.mtPhoneFill = ()=>{
 };
 window.TKL_HOOK = window.TKL_HOOK || {};
 window.TKL_HOOK.lm = (type, id)=>{ mtSubjFill(type, id); mtPhoneFill(); };
-/* בכרטיס: אווטאר **ושם** ולחיץ. בטבלה sOwnerCell (אווטאר בלבד) —
-   שם מלא שם דוחף את שאר העמודות בטבלה שגלילה אופקית. */
-window.mtOwnerBox = (m)=>{
-  const body = window.sOwnerName(m);
-  if(!window.canEdit('crm.meets')) return body;
-  return '<span class="lb-owc lb-owc-go" title="שינוי בעלים"'
-       + ' onclick="event.stopPropagation();sOwnerPick(&quot;meet&quot;,&quot;' + jsq(m.id) + '&quot;,event)">'
-       + body + '</span>';
-};
 /* 🔴 6.157.0 — רג'יסטרי עמודות + מפת-שם למיון, בדפוס LB_COLS/TK_COLS/
    DL_COLS. **מפת-שם ולא מפת-אינדקס**: הוספה או מחיקה של עמודה אינה
    יכולה לשבור את המיון בשקט (מחלקת children[length-7] מ-6.148.0). */
@@ -20916,7 +20978,7 @@ function meetTable(list){
            🔴 6.182.0 — ומאזין. רומן: "לתקן שיהיה אפשרות לחבר בעלים
            מתצוגה טבלאית ומכרטיס פגישה". התא היה lbAva יבש, בדיוק
            כמו שבורד המשימות היה עד 6.149.0. -->
-      <td>${sOwnerCell('meet',m)}</td>
+      <td>${ownCell('meet',m)}</td>
       <td>${ieSel('meet',m.id,'status',MEET_STATUSES,m.status,{mdColors:MSTATUS_COLOR,mdK:LB_TK})}</td>
     </tr>`;}).join('');
   return mtHead()+rows+`</tbody></table></div>${pgFoot('meets',list.length,'פגישות')}`;
@@ -21281,7 +21343,7 @@ window.openMeet = (id)=>{
     <!-- ⚠️ אותה נקודת חנק של הטבלה: mtDetail. שתי הצגות של אותו כלל
          היו נפרדות בשקט ביום שהכלל ישתנה. -->
     <div class="row"><span class="k">${mtType(m)==='מקוונת'?'קישור':(mtType(m)==='טלפונית'?'טלפון':'מיקום')}</span><span class="v">${mtDetail(m)}</span></div>
-    <div class="row"><span class="k">בעלים</span><span class="v" id="mt-ownbox">${mtOwnerBox(m)}</span></div>
+    <div class="row"><span class="k">בעלים ושותפים</span><span class="v" id="mt-ownbox">${ownCellName('meet',m)}</span></div>
     <!-- 🔴 6.182.0 — מוצג **תמיד**, גם כשאין קישור. עד כאן הוא נעלם,
          ולכן פגישה לא-מקושרת נראתה כמו פגישה תקינה — וזה בדיוק המצב
          ש-meeting_send נכשלת בו ב-13 מתוך 13 הפגישות העתידיות. -->
@@ -22284,7 +22346,7 @@ function lbTmBlock(tasks, meets, addBtns){
        stopPropagation אחרת כל קליק עליו פותח את כרטיס המשימה. */
     const _canT = window.canEdit('crm.tasks');
     h += ts.map(function(t,i){
-      const d = lbDueMark(t.due_at);
+      const d = lbDueMark(t.due_at, t.status==='הושלם');
       const dt = _canT
         ? '<input type="datetime-local" class="inline-edit lb-dt lb-tmdt" title="עריכת מועד המשימה"'
           + ' data-task="'+jsq(t.id)+'" value="'+esc(lbDtLocal(t.due_at))+'"'
@@ -22636,10 +22698,20 @@ let LBOWN_LEAD = null;
 const OWN_KIND = {
   lead: { rows: ()=>LEADS, map: ()=>LOWN_OF, perm: 'crm.leads',
           set: 'lead_set_owner', add: 'lead_add_partner', del: 'lead_remove_partner',
-          arg: 'p_lead', paint: ()=>renderLeads() },
+          arg: 'p_lead', paint: ()=>renderLeads(),
+          hd: 'שיוך הליד', nm: l=>l.full_name||'', box: 'lb-ownbox', cell: l=>lbOwnerCellName(l) },
   deal: { rows: ()=>DEALS, map: ()=>DOWN_OF, perm: 'crm.deals',
           set: 'deal_set_owner', add: 'deal_add_partner', del: 'deal_remove_partner',
-          arg: 'p_deal', paint: ()=>renderDeals() }
+          arg: 'p_deal', paint: ()=>renderDeals(),
+          hd: 'שיוך העסקה', nm: d=>d.name||'', box: 'dl-ownbox', cell: d=>dlOwnerCellName(d) },
+  task: { rows: ()=>TASKS, map: ()=>TOWN_OF, perm: 'crm.tasks',
+          set: 'task_set_owner', add: 'task_add_partner', del: 'task_remove_partner',
+          arg: 'p_task', paint: ()=>renderTasks(),
+          hd: 'שיוך המשימה', nm: t=>t.name||'', box: 'tk-ownbox', cell: t=>ownCellName('task',t) },
+  meet: { rows: ()=>MEETS, map: ()=>MOWN_OF, perm: 'crm.meets',
+          set: 'meeting_set_owner', add: 'meeting_add_partner', del: 'meeting_remove_partner',
+          arg: 'p_meet', paint: ()=>renderMeets(),
+          hd: 'שיוך הפגישה', nm: m=>m.subject||'', box: 'mt-ownbox', cell: m=>ownCellName('meet',m) }
 };
 let LBOWN_K = 'lead';
 const ownK = () => OWN_KIND[LBOWN_K] || OWN_KIND.lead;
@@ -22684,83 +22756,6 @@ window.lbOwnerClose = ()=>{
    רומן: "לא מצליח ללחוץ על שינוי בעלים בתצוגה הטבלאית". נמדד שהתא היה
    `lbAva(t.owner_id)` — אווטאר בלבד, בלי שום מאזין. כלומר לא באג אלא
    תכונה שלא מומשה, והלידים התנהגו אחרת ולכן זה נחווה כתקלה. */
-/* 🟢 6.182.0 — רג'יסטרי בעלים-יחיד, במראה של OWN_KIND (6.163.0).
-   חמישה שדות: מהיכן קוראים את הישות · מפתח ההרשאה · שם ה-RPC · שם
-   הפרמטר הראשון · כותרת החלון. */
-const SOWN_KIND = {
-  task: { rows:()=>TASKS, perm:'crm.tasks', rpc:'task_set_owner',    arg:'p_task', hd:'בעלים של המשימה' },
-  meet: { rows:()=>MEETS, perm:'crm.meets', rpc:'meeting_set_owner', arg:'p_meet', hd:'בעלים של הפגישה' }
-};
-let SOWN_K = 'task', SOWN_ID = null;
-const sownK = ()=> SOWN_KIND[SOWN_K] || SOWN_KIND.task;
-
-window.sOwnerCell = (kind, ent)=>{
-  const k = SOWN_KIND[kind] || SOWN_KIND.task;
-  const body = lbAva((ent && ent.owner_id) || '');
-  if(!window.canEdit(k.perm)) return '<div class="lb-owc">' + body + '</div>';
-  return '<div class="lb-owc lb-owc-go" title="שינוי בעלים"'
-    + ' onclick="event.stopPropagation();sOwnerPick(&quot;' + jsq(kind) + '&quot;,&quot;' + jsq(ent.id) + '&quot;,event)">'
-    + body + '</div>';
-};
-/* אווטאר + שם, לכרטיס. בטבלה **אסור** — היא גלילה אופקית ושם מלא דוחף
-   את שאר העמודות (ההערה הקיימת בתא הבעלים). */
-window.sOwnerName = (ent)=>{
-  const o = LOWN_BY[(ent && ent.owner_id) || ''];
-  if(!o) return '<span class="lb-na">ללא בעלים</span>';
-  /* אותה תגית בדיוק של lbOwnerCellName — שני ניסוחים לאותו מצב הם שתי
-     שפות ויזואליות שייפרדו ביום שמישהו ישנה אחת מהן. */
-  const old = (o.kind === 'legacy') ? ' <span class="note lb-ownx">(לשעבר)</span>' : '';
-  return lbAva(ent.owner_id) + '<span class="lb-ownm">' + esc(o.name) + old + '</span>';
-};
-window.sOwnerPick = (kind, id, ev)=>{
-  SOWN_K = SOWN_KIND[kind] ? kind : 'task';
-  SOWN_ID = id;
-  lbPopClose();
-  const bd = document.createElement('div'); bd.className='lb-popbd'; bd.id='lb-popbd';
-  bd.onclick = lbPopClose;
-  const pop = document.createElement('div'); pop.className='lb-pop'; pop.id='lb-pop';
-  document.body.appendChild(bd); document.body.appendChild(pop);
-  sOwnerDraw();
-  const r = (ev && (ev.currentTarget||ev.target)) ? (ev.currentTarget||ev.target).getBoundingClientRect() : {bottom:80,left:80};
-  const w = pop.offsetWidth || 330, h = pop.offsetHeight || 300;
-  pop.style.top  = Math.max(8, Math.min(window.innerHeight - h - 8, r.bottom + 6)) + 'px';
-  pop.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, r.left)) + 'px';
-};
-function sOwnerDraw(){
-  const pop = document.getElementById('lb-pop'); if(!pop) return;
-  const ent = (sownK().rows()||[]).find(x=>x.id===SOWN_ID); if(!ent) return;
-  const cur = ent.owner_id || '';
-  const rows = LOWN.filter(o=>o.assignable).map(o=>
-      '<div class="lbop-row'+(o.owner_key===cur?' on':'')+'"'
-    + ' onclick="sOwnerSet(&quot;'+jsq(o.owner_key)+'&quot;)">'
-    + lbAva(o.owner_key)
-    + '<span class="lbop-who"><span class="lbop-nm">'+esc(o.name)+'</span>'
-    + (o.job_title?'<span class="lbop-jt">'+esc(o.job_title)+'</span>':'')
-    + '</span>'+(o.owner_key===cur?'<span class="lbop-tag">נוכחי</span>':'')+'</div>').join('');
-  pop.innerHTML = '<div class="lbop-hd">'+esc(sownK().hd)+'</div>'
-    + '<div class="lbop-list">'+(rows||'<div class="note">אין אנשי מכירות להקצאה.</div>')+'</div>';
-}
-window.sOwnerSet = async (key)=>{
-  const k = sownK(), id = SOWN_ID;
-  const uid = (key && String(key).indexOf('legacy:')!==0) ? key : null;
-  if(!uid){ toast('עובד לשעבר אינו יכול לקבל בעלות'); return; }
-  /* 🔴 RPC ולא update ישיר — אבל **לא מאותה סיבה בשני הסוגים**, וזה
-     מתועד כאן כדי שאיש לא "יאחד" אותן. במשימה owner_id היא מראה של
-     crm.task_owners; בפגישה היא עמודה עצמאית (נמדד 01/09/2026: אין
-     meeting_owners, הטריגר היחיד הוא סטטוס, ו-outlook אינו כותב
-     אליה), וה-RPC שם הוא בשביל שער ההרשאה ושורת היומן. */
-  const args = { p_owner: uid }; args[k.arg] = id;
-  const { error } = await sb.schema('crm').rpc(k.rpc, args);
-  if(error){ toast('שינוי הבעלים נכשל — '+error.message); return; }
-  const ent = (k.rows()||[]).find(x=>x.id===id); if(ent) ent.owner_id = uid;
-  const box = document.getElementById('mt-ownbox');
-  if(box && SOWN_K==='meet' && ent) box.innerHTML = window.mtOwnerBox(ent);
-  lbPopClose(); toast('הבעלים עודכן ✓'); crmRepaint();
-};
-/* עטיפות — בורד המשימות קורא לשמות האלה. */
-function tkOwnerCell(t){ return window.sOwnerCell('task', t); }
-window.tkOwnerPick = (taskId, ev)=> window.sOwnerPick('task', taskId, ev);
-window.tkOwnerSet  = (key)=> window.sOwnerSet(key);
 window.lbPopClose = ()=>{
   ['lb-pop','lb-popbd'].forEach(id=>{ const e=document.getElementById(id); if(e) e.remove(); });
 };
@@ -22808,7 +22803,7 @@ function lbOwnerDraw(keepQ){
      והבא שיוסיף פעולה ישכח אחד מהם. */
   const _tgt = document.getElementById('lb-pop') || document.getElementById('lbOwnSheet');
   _tgt.innerHTML = `
-    <h3>שיוך הליד — ${esc(l.full_name||'')}</h3>
+    <h3>${esc(_k.hd)} — ${esc(_k.nm(l))}</h3>
     <div class="lbop-box">
       ${prim ? chip(prim,1) : `<span class="lbop-chip"><span>ללא בעלים</span></span>`}
       ${parts.map(k=>chip(k,0)).join('')}
@@ -22854,7 +22849,7 @@ window.lbOwnerMakePrimary = async (key)=>{
 };
 window.lbOwnerPromote = async (key)=>{
   const id = LBOWN_LEAD;
-  if(!confirm('להפוך את ' + ((LOWN_BY[key]||{}).name||'') + ' לבעלים הראשי?\n\nהבעלים הראשי הנוכחי יוסר מהליד.')) return;
+  if(!confirm('להפוך את ' + ((LOWN_BY[key]||{}).name||'') + ' לבעלים הראשי?\n\nהבעלים הראשי הנוכחי יוסר מ' + ownK().hd.replace('שיוך ','') + '.')) return;
   await window.lbSetOwner(id, lbOwnUuid(key), true);
   lbOwnerDraw();
 };
@@ -22869,12 +22864,18 @@ function lbOwnerSync(id){
      ו-#lb-ownbox לא היה מתעדכן: החלפת בעלים נראית בטבלה ובחלון אבל
      לא בכרטיס שמאחוריהם, עד סגירה ופתיחה. זו בדיוק המחלקה של VIS_GRP
      (6.83.1): מטמון עם צרכן שנשכח. הריענון בטוח גם כשהכרטיס גלוי. */
-  /* ⚠️ שני מכלים, אחד לכל סוג — id יחיד לכל אחד, כדי ש-
-     getElementById לא יחזיר את הראשון בסדר ה-DOM (המחלקה של 6.135.0). */
-  const box = document.getElementById('lb-ownbox');
-  if(box){ const l = (LEADS||[]).find(x=>x.id===id); if(l) box.innerHTML = lbOwnerCellName(l); }
-  const dbox = document.getElementById('dl-ownbox');
-  if(dbox){ const d = (DEALS||[]).find(x=>x.id===id); if(d) dbox.innerHTML = dlOwnerCellName(d); }
+  /* ⚠️ מכל אחד לכל סוג — id ייחודי לכל אחד, כדי ש-getElementById לא
+     יחזיר את הראשון בסדר ה-DOM (המחלקה של 6.135.0).
+     🔴 6.185.0 — הרשימה **נגזרת מהרג'יסטרי** (שדה box) ולא מוקלדת.
+     עד כאן היו שני getElementById קשיחים ועוד מסלול שלישי inline
+     בתוך sOwnerSet לפגישה — שני מסלולים שאינם חופפים, והבא שיוסיף
+     סוג היה שוכח אחד מהם. */
+  Object.keys(OWN_KIND).forEach(function(kind){
+    const k = OWN_KIND[kind];
+    const el = document.getElementById(k.box); if(!el) return;
+    const e = (k.rows()||[]).find(x=>x.id===id); if(!e) return;
+    el.innerHTML = k.cell(e);
+  });
 }
 window.lbSetOwner = async (leadId, ownerKey, quiet)=>{
   /* 🔴 6.163.0 — גם המסלול הזה עובר ברג'יסטרי. הוא מזין את
@@ -22903,6 +22904,9 @@ window.lbSetOwner = async (leadId, ownerKey, quiet)=>{
   /* ⚠️ פתיחה מחדש רק במסלול הליד: לעסקה openDeal הוא async ומצייר
      כרטיס שלם, והבורר ממילא מרענן דרך lbOwnerSync. */
   if(!quiet && LBOWN_K === 'lead') openLead(leadId);
+  /* 🔴 6.185.0 — הסנכרון גם כאן. עד כאן הוא נקרא רק מ-lbOwnerAdd/Remove,
+     ולכן "קבע כראשי" עדכן את הטבלה ולא את הקופסה בכרטיס שמאחוריה. */
+  lbOwnerSync(leadId);
   _k.paint();
 };
 /* יומן העדכונים — הוספה בלבד.

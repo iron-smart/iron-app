@@ -2186,6 +2186,9 @@ td.lb-today .lb-dt{ background-color:transparent; }
    ⚠️ ווריאנט :hover נפרד **חובה** — בלעדיו משוב הריחוף נעלם דווקא
       בשורות שההדגשה נועדה להן. הלקח מ-6.119.0. */
 #meets-list .tbl tbody tr.mt-week{ background-color:#fff7e6; box-shadow:inset 3px 0 0 #f0b45f; }
+#meets-list .mt-lnk, .mt-lnk{ cursor:pointer; border-bottom:1px dashed #cbd5e1; }
+#meets-list .mt-lnk:hover, .mt-lnk:hover{ border-bottom-color:#0f4c81; }
+.mt-nolink{ color:#b45309; }
 #meets-list .tbl tbody tr.mt-week:hover{ background-color:#fdeecd; }
 /* שבב הישות המקושרת בבורר (6.130.0) */
 .tkl-box{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; min-height:24px; margin-bottom:4px; }
@@ -2638,7 +2641,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.181.0</div>
+      <div class="ver">גרסה 6.182.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2767,7 +2770,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.181.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.182.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3194,6 +3197,16 @@ tr.lb-on td{ background-color:#eef5fd !important; }
 <div class="modal hidden" id="lbMeetModal">
   <div class="sheet">
     <h3>פגישה חדשה</h3>
+    <!-- 🔴 6.182.0 — הקישור **ראשון וחובה**. רומן, 01/09/2026: "בעת
+         יצירת פגישה חדשה הדבר הראשון שעושים זה בחירה של לקוח או ליד".
+         וזה גם מה שמאפשר לשלושת השדות שמתחתיו למלא את עצמם: הנושא
+         נגזר מהשם, והטלפון מהישות. -->
+    <div class="field"><label>מקושרת ל־<span class="req">*</span></label>
+      <div id="lm-lnkchip" class="tkl-box"></div>
+      <input id="lm-lnkq" autocomplete="off" placeholder="חיפוש ליד או לקוח…" oninput="tklPick('lm',this.value,'lead,customer')" onfocus="tklPick('lm',this.value,'lead,customer')" onblur="setTimeout(()=>{const b=document.getElementById('lm-lnkres'); if(b) b.hidden=true;},150)">
+      <div id="lm-lnkres" class="ac-menu" hidden></div>
+      <input type="hidden" id="lm-lnk" value="">
+    </div>
     <div class="field"><label>נושא *</label><input id="lm-subj"></div>
     <div class="field"><label>תאריך *</label><input id="lm-date" type="date"></div>
     <div class="field"><label>שעת התחלה</label><input id="lm-start" type="time" value="10:00"></div>
@@ -3202,12 +3215,6 @@ tr.lb-on td{ background-color:#eef5fd !important; }
          עד כאן הוא הציע 'פרונטלי' (כתיב שגוי) ו'פגישת מכירה' (מה
          ש-outlook כותב, לא סוג), **בלי allowEmpty** — ולכן כל פגישה
          שנוצרה כאן נכתבה 'פרונטלי' גם כשאיש לא בחר. -->
-    <div class="field"><label>מקושרת ל־</label>
-      <div id="lm-lnkchip" class="tkl-box"></div>
-      <input id="lm-lnkq" autocomplete="off" placeholder="חיפוש ליד, לקוח או תהליך מכירה…" oninput="tklPick('lm',this.value)" onfocus="tklPick('lm',this.value)" onblur="setTimeout(()=>{const b=document.getElementById('lm-lnkres'); if(b) b.hidden=true;},150)">
-      <div id="lm-lnkres" class="ac-menu" hidden></div>
-      <input type="hidden" id="lm-lnk" value="">
-    </div>
     <div class="field"><label>סוג פגישה<span class="req">*</span></label>
       <select id="lm-type" onchange="lmTypeChanged()"></select></div>
     <!-- ⚠️ שדה אחד שמשתנה לפי הסוג, באותה חלוקה של mtDetail — שלושה
@@ -3222,6 +3229,28 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       <button class="ghost" id="lm-cancel">ביטול</button>
     </div>
     <div class="err" id="lm-err"></div>
+  </div>
+</div>
+
+<!-- 🔴 6.182.0 — קישור פגישה קיימת. נמדד 01/09/2026 ש-13 מתוך 13
+     הפגישות העתידיות חסרות קישור (כולן מ-Outlook), ולכן meeting_send
+     נכשלת בכולן. בלי מסלול תיקון בדיעבד, חובת הקישור ביצירה לא הייתה
+     נוגעת באף אחת מהן. -->
+<div class="modal modal-over hidden" id="mtLinkModal">
+  <div class="sheet">
+    <h3>קישור הפגישה</h3>
+    <div class="note" id="ml-sub"></div>
+    <div class="field"><label>מקושרת ל־<span class="req">*</span></label>
+      <div id="ml-lnkchip" class="tkl-box"></div>
+      <input id="ml-lnkq" autocomplete="off" placeholder="חיפוש ליד או לקוח…" oninput="tklPick('ml',this.value,'lead,customer')" onfocus="tklPick('ml',this.value,'lead,customer')" onblur="setTimeout(()=>{const b=document.getElementById('ml-lnkres'); if(b) b.hidden=true;},150)">
+      <div id="ml-lnkres" class="ac-menu" hidden></div>
+      <input type="hidden" id="ml-lnk" value="">
+    </div>
+    <div class="actions">
+      <button class="btn green" id="ml-save">שמירה</button>
+      <button class="ghost" id="ml-cancel">ביטול</button>
+    </div>
+    <div class="err" id="ml-err"></div>
   </div>
 </div>
 
@@ -9794,7 +9823,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'cardwide-2026-08-31b';
+const BUILD_ID = 'meetlink-2026-09-01a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -16166,7 +16195,7 @@ function tklName(type, id){
   if(type==='deal'){     const d=(DEALS||[]).find(x=>x.id===id); return d?(d.name||''):''; }
   return '';
 }
-function tklSearch(q){
+function tklSearch(q, kinds){
   q=(q||'').trim(); if(!q) return [];
   const ql=q.toLowerCase(), dig=q.replace(/\D/g,'');
   const hit=s=>String(s||'').toLowerCase().includes(ql);
@@ -16187,12 +16216,17 @@ function tklSearch(q){
   const deals=(DEALS||[]).filter(d=>hit(d.name)||hit(cxn.get(d.customer_id))||(dig&&String(d.priority_quote_id||'').includes(dig)))
     .slice(0,TKL_MAX_KIND).map(d=>({type:'deal', id:d.id, nm:d.name||'עסקה',
       sub:[d.stage,cxn.get(d.customer_id)].filter(Boolean).join(' · ')}));
-  return leads.concat(custs, deals);
+  /* 🔴 6.182.0 — סינון לפי סוג. רומן: "צריך להיות תמיד מקושר ללקוח
+     או ליד", והכרעתו כשהוצג לו ש-100 פגישות כבר מקושרות לעסקה:
+     "רק ליד או לקוח". ⚠️ linkedName **ממשיכה להכיר deal** — אותן
+     100 חייבות להמשיך להיות מוצגות; מה שנחסם הוא הבחירה מכאן. */
+  const K = kinds ? String(kinds).split(',') : null;
+  return leads.concat(custs, deals).filter(r => !K || K.indexOf(r.type) >= 0);
 }
-window.tklPick = (pfx, q)=>{
+window.tklPick = (pfx, q, kinds)=>{
   const box=document.getElementById(pfx+'-lnkres'); if(!box) return;
   if(!String(q||'').trim()){ box.hidden=true; box.innerHTML=''; return; }
-  const res=tklSearch(q).slice(0,30);
+  const res=tklSearch(q, kinds).slice(0,30);
   box.innerHTML = res.length
     ? res.map(r=>`<button type="button" class="ac-item" onmousedown="event.preventDefault()" onclick="tklChoose('${jsq(pfx)}','${jsq(r.type)}','${jsq(r.id)}')"><b><span class="tk-kind tk-k-${esc(r.type)}">${esc(TK_KIND_LBL[r.type]||'')}</span>${esc(r.nm)}</b><span>${esc(r.sub)}</span></button>`).join('')
     : '<div class="ac-empty">לא נמצא ליד, לקוח או תהליך מכירה תואם</div>';
@@ -16213,6 +16247,7 @@ window.tklChoose = (pfx, type, id)=>{
   const qi=document.getElementById(pfx+'-lnkq'); if(qi) qi.value='';
   const box=document.getElementById(pfx+'-lnkres'); if(box){ box.hidden=true; box.innerHTML=''; }
   tklPaint(pfx);
+  if(window.TKL_HOOK && window.TKL_HOOK[pfx]){ try{ window.TKL_HOOK[pfx](type, id); }catch(_e){} }
 };
 window.tklClear = pfx => tklChoose(pfx, '', '');
 function tklPaint(pfx){
@@ -20648,6 +20683,7 @@ const MEET_STATUSES=['חדשה','מתוכננת','תואמה','נדחתה','הת
    ⚠️ הנרמול **בלקוח בזמן ציור ולא במסד**: כל UPDATE ל-97 שורות
       האאוטלוק היה נמחק בריצת הסנכרון הבאה. */
 const MEET_TYPES = ['פרונטלית','טלפונית','מקוונת'];
+const MEET_TYPE_COLORS = { 'פרונטלית':'#0369a1', 'מקוונת':'#7c3aed', 'טלפונית':'#b45309' };
 const MEET_TYPE_ALIAS = { 'פרונטלי':'פרונטלית' };
 const MT_PHONE_RE = /^[0-9+\-() ]{7,}$/;
 const MT_ONLINE_RE = /(teams|zoom|meet\.google|webex|whereby)/i;
@@ -20697,6 +20733,8 @@ window.lmTypeChanged = ()=>{
   Object.values(MT_FIELD).forEach(([x])=>{ const e=document.getElementById(x); if(e) e.classList.add('hidden'); });
   const e = document.getElementById(id); if(e) e.classList.remove('hidden');
   const l = document.getElementById('lm-detlbl'); if(l) l.textContent = lbl;
+  /* 6.182.0 — סעיפים 4 ו-5. שניהם ממלאים **רק שדה ריק**. */
+  mtLocFill(); mtPhoneFill();
 };
 /* 🔴 עמודה **אחת** ולא שלוש: שלוש היו מוסיפות ~360px לטבלה שכבר
    גלילה אופקית, ושתיים מהן ריקות בכל שורה. */
@@ -20713,6 +20751,98 @@ function mtDetail(m){
   }
   return esc(m.location||'') || '<span class="lb-na">·</span>';
 }
+
+/* ═══ קישור · נושא · מיקום · טלפון (6.182.0) ══════════════════════════
+   רומן, 01/09/2026, ארבע מתוך שש ההערות. שלושתן האחרונות **נסמכות על
+   הראשונה**: הנושא נגזר משם הישות, והטלפון מהישות עצמה — ולכן הקישור
+   הוא הפעולה הראשונה במודאל ולא עוד שדה ברשימה. */
+function mtLinkCell(m, ln){
+  const body = ln ? (ln.label + ': ' + esc(ln.name)) : '<b class="mt-nolink">לא מקושרת</b>';
+  /* ⚠️ ופגישה **מבוטלת** אינה ניתנת לקישור — עקבי עם mtActs, שאינו
+     מציג עליה שום פעולה. שתי הצגות של אותו כלל היו נפרדות בשקט. */
+  if(!window.canEdit('crm.meets') || m.status==='בוטלה')
+    return ln ? body : '<span class="lb-na">—</span>';
+  return '<span class="mt-lnk" title="קישור הפגישה"'
+       + ' onclick="event.stopPropagation();mtLinkOpen(&quot;' + jsq(m.id) + '&quot;)">' + body + '</span>';
+}
+let MT_LINK_ID = null;
+window.mtLinkOpen = (id)=>{
+  const m = (MEETS||[]).find(x=>x.id===id); if(!m) return;
+  if(!window.canEdit('crm.meets')){ toast('אין הרשאת עריכה לפגישות'); return; }
+  MT_LINK_ID = id;
+  const s = document.getElementById('ml-sub'); if(s) s.textContent = m.subject || '';
+  const e = document.getElementById('ml-err'); if(e) e.textContent = '';
+  document.getElementById('mtLinkModal').classList.remove('hidden');
+  tklInit('ml', (m.linked_type && m.linked_id) ? (m.linked_type + ':' + m.linked_id) : '');
+};
+window.mtLinkSave = async ()=>{
+  const id = MT_LINK_ID; if(!id) return;
+  const v = ((document.getElementById('ml-lnk')||{}).value) || '', i = v.indexOf(':');
+  const err = document.getElementById('ml-err');
+  if(i <= 0){ if(err) err.textContent = 'יש לבחור ליד או לקוח.'; return; }
+  const { data, error } = await sb.schema('crm').rpc('meeting_set_link',
+    { p_meet:id, p_type:v.slice(0,i), p_id:v.slice(i+1) });
+  if(error){ if(err) err.textContent = 'השמירה נכשלה — ' + error.message; return; }
+  const r = Array.isArray(data) ? data[0] : data;
+  const m = (MEETS||[]).find(x=>x.id===id);
+  if(m && r){ m.linked_type = r.linked_type; m.linked_id = r.linked_id; }
+  document.getElementById('mtLinkModal').classList.add('hidden');
+  MT_LINK_ID = null;
+  toast('הקישור נשמר ✓');
+  renderMeets();
+  /* הכרטיס עשוי להיות פתוח מתחת — מציירים את השורה שלו במקום, ולא
+     openMeet: הוא מאפס גלילה ומיקוד. */
+  const lb = document.getElementById('mt-lnkbox');
+  if(lb && m) lb.innerHTML = mtLinkRow(m);
+};
+function mtLinkRow(m){
+  const ln = linkedName(m);
+  return ln ? (esc(ln.label) + ': ' + esc(ln.name)) : '<b class="mt-nolink">לא מקושרת</b>';
+}
+
+let LM_AUTO_SUBJ = '';
+/* 🔴 דורס **רק** נושא ריק או כזה שאנחנו עצמנו כתבנו. רומן ביקש "תמיד
+   יהיה", והתבנית אכן מוחלת בכל בחירת ישות — אבל משתמש שהקליד נושא
+   משלו ואז החליף לקוח היה מאבד אותו, וזו אינה "אוטומציה" אלא דריסה. */
+window.mtSubjFill = (type, id)=>{
+  const el = document.getElementById('lm-subj'); if(!el) return;
+  const cur = (el.value || '').trim();
+  if(cur && cur !== LM_AUTO_SUBJ) return;
+  const nm = (type && id) ? tklName(type, id) : '';
+  if(!nm) return;
+  LM_AUTO_SUBJ = crmTaskName('crm_meet_subject', 'פגישת איפיון ראשונית - {שם}', nm);
+  el.value = LM_AUTO_SUBJ;
+};
+/* ⚠️ הנפילה אחורה בשרת (crm.meeting_create) **נשארת** — היא מגנה על
+   קוראים אחרים. כאן זו חשיפה בלבד, כדי שרומן יראה את הכתובת ויוכל
+   לשנות אותה, במקום שתיכתב מאחורי הקלעים. */
+window.mtLocFill = ()=>{
+  const el = document.getElementById('lm-loc'); if(!el) return;
+  if((document.getElementById('lm-type')||{}).value !== 'פרונטלית') return;
+  if((el.value || '').trim()) return;
+  el.value = osetStr('crm_meet_location', 'קומבה 32, חדרה');
+};
+/* 🟢 נקודת חנק אחת: mtPhone היא אותה פונקציה שהטבלה והכרטיס מציגים
+   דרכה טלפון. כלל שני כאן היה נפרד ממנה ביום שמישהו ישנה אחד מהם. */
+window.mtPhoneFill = ()=>{
+  const el = document.getElementById('lm-phone'); if(!el) return;
+  if((document.getElementById('lm-type')||{}).value !== 'טלפונית') return;
+  if((el.value || '').trim()) return;
+  const v = ((document.getElementById('lm-lnk')||{}).value) || '', i = v.indexOf(':');
+  if(i <= 0) return;
+  el.value = mtPhone({ linked_type:v.slice(0,i), linked_id:v.slice(i+1), location:'', contact_phone:'' }) || '';
+};
+window.TKL_HOOK = window.TKL_HOOK || {};
+window.TKL_HOOK.lm = (type, id)=>{ mtSubjFill(type, id); mtPhoneFill(); };
+/* בכרטיס: אווטאר **ושם** ולחיץ. בטבלה sOwnerCell (אווטאר בלבד) —
+   שם מלא שם דוחף את שאר העמודות בטבלה שגלילה אופקית. */
+window.mtOwnerBox = (m)=>{
+  const body = window.sOwnerName(m);
+  if(!window.canEdit('crm.meets')) return body;
+  return '<span class="lb-owc lb-owc-go" title="שינוי בעלים"'
+       + ' onclick="event.stopPropagation();sOwnerPick(&quot;meet&quot;,&quot;' + jsq(m.id) + '&quot;,event)">'
+       + body + '</span>';
+};
 /* 🔴 6.157.0 — רג'יסטרי עמודות + מפת-שם למיון, בדפוס LB_COLS/TK_COLS/
    DL_COLS. **מפת-שם ולא מפת-אינדקס**: הוספה או מחיקה של עמודה אינה
    יכולה לשבור את המיון בשקט (מחלקת children[length-7] מ-6.148.0). */
@@ -20763,12 +20893,15 @@ function meetTable(list){
       <td style="max-width:280px"><b>${esc(m.subject)}</b></td>
       <td data-sort="${esc(m.meet_date||'')}">${m.meet_date?fmtD(m.meet_date):'—'}${m.meet_date?`<div class="note-preview">${dayNameHe(m.meet_date)}</div>`:''}</td>
       <td>${esc(m.start_time||'—')}${m.end_time?' – '+esc(m.end_time):''}</td>
-      <td>${esc(mtType(m))||'<span class="lb-na">·</span>'}</td>
+      <td>${ieSel('meet',m.id,'meet_type',MEET_TYPES,mtType(m),{mdColors:MEET_TYPE_COLORS,mdK:LB_TK,allowEmpty:true})}</td>
       <td style="max-width:220px">${mtDetail(m)}</td>
-      <td>${ln?ln.label+': '+esc(ln.name):'—'}</td>
+      <td>${mtLinkCell(m,ln)}</td>
       <!-- ⚠️ אווטאר בלבד בטבלה, בדיוק כמו lbOwnerCell בלידים: הטבלה
-           גלילה אופקית ושם מלא דוחף את שאר העמודות. -->
-      <td>${lbAva(m.owner_id||'')}</td>
+           גלילה אופקית ושם מלא דוחף את שאר העמודות.
+           🔴 6.182.0 — ומאזין. רומן: "לתקן שיהיה אפשרות לחבר בעלים
+           מתצוגה טבלאית ומכרטיס פגישה". התא היה lbAva יבש, בדיוק
+           כמו שבורד המשימות היה עד 6.149.0. -->
+      <td>${sOwnerCell('meet',m)}</td>
       <td>${ieSel('meet',m.id,'status',MEET_STATUSES,m.status,{mdColors:MSTATUS_COLOR,mdK:LB_TK})}</td>
     </tr>`;}).join('');
   return mtHead()+rows+`</tbody></table></div>${pgFoot('meets',list.length,'פגישות')}`;
@@ -21129,12 +21262,15 @@ window.openMeet = (id)=>{
     <div class="row"><span class="k">סטטוס</span><span class="v"><span class="pill ${meetStClass(m.status)}">${esc(m.status)}</span></span></div>
     <div class="row"><span class="k">תאריך</span><span class="v">${m.meet_date?new Date(m.meet_date+'T00:00').toLocaleDateString('he-IL',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'}):'—'}</span></div>
     <div class="row"><span class="k">שעות</span><span class="v">${esc(m.start_time||'—')}${m.end_time?' – '+esc(m.end_time):''}</span></div>
-    <div class="row"><span class="k">סוג</span><span class="v">${esc(mtType(m))||'—'}</span></div>
+    <div class="row"><span class="k">סוג</span><span class="v">${mdPill(mtType(m), MEET_TYPE_COLORS, LB_TK)||'—'}</span></div>
     <!-- ⚠️ אותה נקודת חנק של הטבלה: mtDetail. שתי הצגות של אותו כלל
          היו נפרדות בשקט ביום שהכלל ישתנה. -->
     <div class="row"><span class="k">${mtType(m)==='מקוונת'?'קישור':(mtType(m)==='טלפונית'?'טלפון':'מיקום')}</span><span class="v">${mtDetail(m)}</span></div>
-    <div class="row"><span class="k">בעלים</span><span class="v">${(LOWN_BY[m.owner_id||'']||{}).name || '<span class="lb-na">ללא בעלים</span>'}</span></div>
-    ${ln?`<div class="row"><span class="k">מקושרת אל</span><span class="v">${ln.label}: ${esc(ln.name)}</span></div>`:''}
+    <div class="row"><span class="k">בעלים</span><span class="v" id="mt-ownbox">${mtOwnerBox(m)}</span></div>
+    <!-- 🔴 6.182.0 — מוצג **תמיד**, גם כשאין קישור. עד כאן הוא נעלם,
+         ולכן פגישה לא-מקושרת נראתה כמו פגישה תקינה — וזה בדיוק המצב
+         ש-meeting_send נכשלת בו ב-13 מתוך 13 הפגישות העתידיות. -->
+    <div class="row"><span class="k">מקושרת אל</span><span class="v" id="mt-lnkbox">${mtLinkRow(m)}</span>${(window.canEdit('crm.meets') && m.status!=='בוטלה')?`<button type="button" class="chip mt-lnkbtn" onclick="mtLinkOpen('${jsq(m.id)}')">קישור</button>`:''}</div>
     ${mtActs(m)}`;
   mountCard('meetModal', ()=>openMeet(id));
 };
@@ -22533,52 +22669,83 @@ window.lbOwnerClose = ()=>{
    רומן: "לא מצליח ללחוץ על שינוי בעלים בתצוגה הטבלאית". נמדד שהתא היה
    `lbAva(t.owner_id)` — אווטאר בלבד, בלי שום מאזין. כלומר לא באג אלא
    תכונה שלא מומשה, והלידים התנהגו אחרת ולכן זה נחווה כתקלה. */
-function tkOwnerCell(t){
-  const can = window.canEdit('crm.tasks');
-  const body = lbAva(t.owner_id||'');
-  if(!can) return '<div class="lb-owc">'+body+'</div>';
+/* 🟢 6.182.0 — רג'יסטרי בעלים-יחיד, במראה של OWN_KIND (6.163.0).
+   חמישה שדות: מהיכן קוראים את הישות · מפתח ההרשאה · שם ה-RPC · שם
+   הפרמטר הראשון · כותרת החלון. */
+const SOWN_KIND = {
+  task: { rows:()=>TASKS, perm:'crm.tasks', rpc:'task_set_owner',    arg:'p_task', hd:'בעלים של המשימה' },
+  meet: { rows:()=>MEETS, perm:'crm.meets', rpc:'meeting_set_owner', arg:'p_meet', hd:'בעלים של הפגישה' }
+};
+let SOWN_K = 'task', SOWN_ID = null;
+const sownK = ()=> SOWN_KIND[SOWN_K] || SOWN_KIND.task;
+
+window.sOwnerCell = (kind, ent)=>{
+  const k = SOWN_KIND[kind] || SOWN_KIND.task;
+  const body = lbAva((ent && ent.owner_id) || '');
+  if(!window.canEdit(k.perm)) return '<div class="lb-owc">' + body + '</div>';
   return '<div class="lb-owc lb-owc-go" title="שינוי בעלים"'
-    + ' onclick="event.stopPropagation();tkOwnerPick(&quot;'+jsq(t.id)+'&quot;,event)">'
+    + ' onclick="event.stopPropagation();sOwnerPick(&quot;' + jsq(kind) + '&quot;,&quot;' + jsq(ent.id) + '&quot;,event)">'
     + body + '</div>';
-}
-let TKOWN_ID = null;
-window.tkOwnerPick = (taskId, ev)=>{
-  TKOWN_ID = taskId;
+};
+/* אווטאר + שם, לכרטיס. בטבלה **אסור** — היא גלילה אופקית ושם מלא דוחף
+   את שאר העמודות (ההערה הקיימת בתא הבעלים). */
+window.sOwnerName = (ent)=>{
+  const o = LOWN_BY[(ent && ent.owner_id) || ''];
+  if(!o) return '<span class="lb-na">ללא בעלים</span>';
+  /* אותה תגית בדיוק של lbOwnerCellName — שני ניסוחים לאותו מצב הם שתי
+     שפות ויזואליות שייפרדו ביום שמישהו ישנה אחת מהן. */
+  const old = (o.kind === 'legacy') ? ' <span class="note lb-ownx">(לשעבר)</span>' : '';
+  return lbAva(ent.owner_id) + '<span class="lb-ownm">' + esc(o.name) + old + '</span>';
+};
+window.sOwnerPick = (kind, id, ev)=>{
+  SOWN_K = SOWN_KIND[kind] ? kind : 'task';
+  SOWN_ID = id;
   lbPopClose();
   const bd = document.createElement('div'); bd.className='lb-popbd'; bd.id='lb-popbd';
   bd.onclick = lbPopClose;
   const pop = document.createElement('div'); pop.className='lb-pop'; pop.id='lb-pop';
   document.body.appendChild(bd); document.body.appendChild(pop);
-  tkOwnerDraw();
+  sOwnerDraw();
   const r = (ev && (ev.currentTarget||ev.target)) ? (ev.currentTarget||ev.target).getBoundingClientRect() : {bottom:80,left:80};
   const w = pop.offsetWidth || 330, h = pop.offsetHeight || 300;
   pop.style.top  = Math.max(8, Math.min(window.innerHeight - h - 8, r.bottom + 6)) + 'px';
   pop.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, r.left)) + 'px';
 };
-function tkOwnerDraw(){
+function sOwnerDraw(){
   const pop = document.getElementById('lb-pop'); if(!pop) return;
-  const t = (TASKS||[]).find(x=>x.id===TKOWN_ID); if(!t) return;
-  const cur = t.owner_id || '';
+  const ent = (sownK().rows()||[]).find(x=>x.id===SOWN_ID); if(!ent) return;
+  const cur = ent.owner_id || '';
   const rows = LOWN.filter(o=>o.assignable).map(o=>
       '<div class="lbop-row'+(o.owner_key===cur?' on':'')+'"'
-    + ' onclick="tkOwnerSet(&quot;'+jsq(o.owner_key)+'&quot;)">'
+    + ' onclick="sOwnerSet(&quot;'+jsq(o.owner_key)+'&quot;)">'
     + lbAva(o.owner_key)
     + '<span class="lbop-who"><span class="lbop-nm">'+esc(o.name)+'</span>'
     + (o.job_title?'<span class="lbop-jt">'+esc(o.job_title)+'</span>':'')
     + '</span>'+(o.owner_key===cur?'<span class="lbop-tag">נוכחי</span>':'')+'</div>').join('');
-  pop.innerHTML = '<div class="lbop-hd">בעלים של המשימה</div>'
+  pop.innerHTML = '<div class="lbop-hd">'+esc(sownK().hd)+'</div>'
     + '<div class="lbop-list">'+(rows||'<div class="note">אין אנשי מכירות להקצאה.</div>')+'</div>';
 }
-window.tkOwnerSet = async (key)=>{
-  const id = TKOWN_ID, uid = (key && String(key).indexOf('legacy:')!==0) ? key : null;
-  if(!uid){ toast('עובד לשעבר אינו יכול לקבל משימה'); return; }
-  /* 🔴 RPC ולא update ישיר: owner_id היא מראה של crm.task_owners, וכתיבה
-     אליה נדרסת ביישור היומי — המחלקה של crm.leads.owner_id. */
-  const { error } = await sb.schema('crm').rpc('task_set_owner', { p_task:id, p_owner:uid });
+window.sOwnerSet = async (key)=>{
+  const k = sownK(), id = SOWN_ID;
+  const uid = (key && String(key).indexOf('legacy:')!==0) ? key : null;
+  if(!uid){ toast('עובד לשעבר אינו יכול לקבל בעלות'); return; }
+  /* 🔴 RPC ולא update ישיר — אבל **לא מאותה סיבה בשני הסוגים**, וזה
+     מתועד כאן כדי שאיש לא "יאחד" אותן. במשימה owner_id היא מראה של
+     crm.task_owners; בפגישה היא עמודה עצמאית (נמדד 01/09/2026: אין
+     meeting_owners, הטריגר היחיד הוא סטטוס, ו-outlook אינו כותב
+     אליה), וה-RPC שם הוא בשביל שער ההרשאה ושורת היומן. */
+  const args = { p_owner: uid }; args[k.arg] = id;
+  const { error } = await sb.schema('crm').rpc(k.rpc, args);
   if(error){ toast('שינוי הבעלים נכשל — '+error.message); return; }
-  const t = (TASKS||[]).find(x=>x.id===id); if(t) t.owner_id = uid;
+  const ent = (k.rows()||[]).find(x=>x.id===id); if(ent) ent.owner_id = uid;
+  const box = document.getElementById('mt-ownbox');
+  if(box && SOWN_K==='meet' && ent) box.innerHTML = window.mtOwnerBox(ent);
   lbPopClose(); toast('הבעלים עודכן ✓'); crmRepaint();
 };
+/* עטיפות — בורד המשימות קורא לשמות האלה. */
+function tkOwnerCell(t){ return window.sOwnerCell('task', t); }
+window.tkOwnerPick = (taskId, ev)=> window.sOwnerPick('task', taskId, ev);
+window.tkOwnerSet  = (key)=> window.sOwnerSet(key);
 window.lbPopClose = ()=>{
   ['lb-pop','lb-popbd'].forEach(id=>{ const e=document.getElementById(id); if(e) e.remove(); });
 };
@@ -23036,37 +23203,51 @@ window.leadFup = (id)=>{
   setTimeout(()=>{ try{ $('#fu-date').focus(); }catch(_e){} }, 30);
 };
 /* נקודת חנק אחת לפתיחת המודאל — שני עוטפים דקים מעליה. */
-function meetOpenFor(t, id, title){
-  LB_MEET_T = { t: t, id: id };
-  $('#lm-subj').value = title ? ('פגישה — ' + title) : ''; $('#lm-err').textContent='';
+function meetOpenFor(t, id, back){
+  LB_MEET_T = { t: t, id: id, back: back || null };
+  LM_AUTO_SUBJ = '';
+  $('#lm-subj').value = ''; $('#lm-err').textContent='';
   $('#lm-date').value = todayStr();
   /* הבורר נבנה בכל פתיחה מ-MEET_TYPES — רשימה אחת, בלי ליטרל שני. */
   $('#lm-type').innerHTML = MEET_TYPES.map(x=>`<option>${esc(x)}</option>`).join('');
   $('#lm-type').value = 'פרונטלית';
   ['lm-loc','lm-url','lm-phone'].forEach(x=>{ const e=document.getElementById(x); if(e) e.value=''; });
-  /* ⚠️ הבורר מוצג **רק** ביצירה מהמסך: מכרטיס ליד או עסקה הקישור
-     כבר ידוע, ובורר פתוח שם מזמין לשייך את הפגישה לישות אחרת. */
+  /* 🔴 6.182.0 — הבורר מוצג **תמיד**, גם כשהגענו מכרטיס. עד כאן הוא
+     הוסתר כשהקישור ידוע, וזה היה נכון כל עוד קישור היה אופציונלי;
+     מרגע שהוא חובה, **שדה חובה מוסתר** הוא בדיוק המתכון ל"השמירה
+     נכשלה ואני לא רואה למה". הוא נפתח עם הישות כבר בחורה. */
   const lw = $('#lm-lnkq') && $('#lm-lnkq').parentElement;
-  if(lw) lw.classList.toggle('hidden', !!id);
-  tklInit('lm', id ? (t + ':' + id) : '');
-  lmTypeChanged();
+  if(lw) lw.classList.remove('hidden');
+  /* ⚠️ tklInit **אחרי** mountCard: הוא מסתיר את כל המודלים ומצייר מחדש,
+     ואתחול שיבוא לפניו היה נמחק. */
   mountCard('lbMeetModal', ()=>$('#lbMeetModal').classList.remove('hidden'));
+  tklInit('lm', (t && id) ? (t + ':' + id) : '');
+  if(t && id) mtSubjFill(t, id);
+  lmTypeChanged();
 }
 /* ＋פגישה חדשה מהמסך — בלי ישות מקושרת מראש. */
 window.meetNew = ()=>{
   if(!window.canEdit('crm.meets')){ toast('אין הרשאת עריכה לפגישות'); return; }
-  meetOpenFor('', '', '');
+  meetOpenFor('', '', null);
 };
 window.leadMeet = (id)=>{
   const l=LEADS.find(x=>x.id===id); if(!l) return;
-  meetOpenFor('lead', id, l.full_name);
+  meetOpenFor('lead', id, {t:'lead', id:id});
 };
-/* ＋פגישה מכרטיס העסקה. ⚠️ crm.deal_meeting_create ולא הגרסה של הליד:
-   זו סוגרת את כל משימות הליד ודוחפת אותו ל'תואמה פגישה' — שתי פעולות
-   שגויות על עסקה. */
+/* ＋פגישה מכרטיס העסקה.
+   🔴 6.182.0 — הקישור נפתר ל**לקוח** של העסקה (ואם אין, לליד שלה),
+   ולכן היא כבר אינה עוברת ב-crm.deal_meeting_create. ההערה הקודמת כאן
+   הסבירה למה **כן** משתמשים בה — הנימוק ההוא (deal_meeting_create אינה
+   סוגרת את משימות הליד) נשאר נכון, ופשוט אינו רלוונטי מרגע שהכרעת רומן
+   היא "רק ליד או לקוח". crm.meeting_create מנתבת לענף הישיר, שאינו
+   מזיז שום פייפליין.
+   ⚠️ ונמדד 01/09/2026 ש-**28 מתוך 199** העסקאות הפתוחות אין להן לא
+      לקוח ולא ליד. שם הבורר נפתח **ריק** ומבקש לבחור, במקום ליפול
+      בשקט או ליצור פגישה יתומה. */
 window.dealMeet = (id)=>{
   const d=(DEALS||[]).find(x=>x.id===id); if(!d) return;
-  meetOpenFor('deal', id, d.name);
+  const t = d.customer_id ? 'customer' : (d.lead_id ? 'lead' : '');
+  meetOpenFor(t, d.customer_id || d.lead_id || '', {t:'deal', id:id});
 };
 /* ＋משימה מכרטיס העסקה — מראה מדויקת של leadTask, כולל tklInit **אחרי**
    mountCard (הוא מסתיר את כל המודלים ומצייר מחדש). */
@@ -23113,6 +23294,8 @@ $('#fu-save').onclick = async ()=>{
       category:'פולואפ' } : null });
 };
 $('#meetAddBtn').onclick = ()=> meetNew();
+$('#ml-save').onclick   = ()=> mtLinkSave();
+$('#ml-cancel').onclick = ()=>{ $('#mtLinkModal').classList.add('hidden'); MT_LINK_ID=null; };
 $('#pw-cancel').onclick = ()=> { PW_USER = null; closeCards(); };
 $('#pw-save').onclick   = ()=> window.pwDo();
 $('#pw-eye').onclick    = ()=>{
@@ -23124,9 +23307,15 @@ $('#pw-eye').onclick    = ()=>{
 $('#pw-b').addEventListener('keydown', e=>{ if(e.key==='Enter') window.pwDo(); });
 $('#lm-cancel').onclick = ()=> closeCards();
 $('#lm-save').onclick = async ()=>{
-  const tg=LB_MEET_T; if(!tg) return; const id=tg.id || '';
+  const tg=LB_MEET_T; if(!tg) return;
   const subj=$('#lm-subj').value.trim(), d=$('#lm-date').value;
-  const miss=[!subj?'נושא':null, !d?'תאריך':null].filter(Boolean);
+  /* 🔴 6.182.0 — הקישור חובה. השער קיים **גם בשרת** (crm.meeting_create),
+     כדי שלשונית שנשארה פתוחה בחלון שבין הפריסה לניתוק תיכשל בקול. */
+  const _v = (($('#lm-lnk') && $('#lm-lnk').value) || ''), _ci = _v.indexOf(':');
+  const _lt = _ci > 0 ? _v.slice(0, _ci) : '';
+  const _li = _ci > 0 ? _v.slice(_ci + 1) : null;
+  const _mt = $('#lm-type').value || '';
+  const miss=[!_lt?'ליד או לקוח':null, !subj?'נושא':null, !d?'תאריך':null].filter(Boolean);
   if(miss.length){ $('#lm-err').textContent='חסרים שדות חובה: '+miss.join(' · ')+'.'; return; }
   /* 🔴 6.125.0 — סעיף 5 באיפיון. עד כאן זו הייתה הכנסה ישירה
      ל-crm.meetings ותו לא: **אפס נגיעה במשימות**, והליד לא זז.
@@ -23141,20 +23330,17 @@ $('#lm-save').onclick = async ()=>{
   /* 🔴 6.160.0 — נקודת כניסה אחת: crm.meeting_create. היא מאצילה
      ל-lead_meeting_create / deal_meeting_create כשיש קישור, ולכן כללי
      הפייפליין נשארים בהגדרה אחת. */
-  const _lnk = (($('#lm-lnk') && $('#lm-lnk').value) || '').split(':');
-  const _lt = id ? tg.t : (_lnk[0] || '');
-  const _li = id || (_lnk[1] || null);
   const { data, error } = await sb.schema('crm').rpc('meeting_create', {
     p_link_type: _lt || null, p_link_id: _li || null,
     p_subject: subj, p_date: d,
     p_start: $('#lm-start').value||null, p_end: $('#lm-end').value||null,
-    p_type: $('#lm-type').value||null,
+    p_type: _mt||null,
     /* ⚠️ שלושת השדות נשלחים **תמיד**, גם ריקים: מפתח עם undefined
        נשמט מה-JSON ב-supabase-js והשרת רואה NULL — כלומר ניקוי שדה
        היה נבלע בשקט. הלקח מ-ord.team_day_set. */
-    p_location: ($('#lm-loc').value||'').trim() || null,
-    p_phone:    ($('#lm-phone').value||'').trim() || null,
-    p_link_url: ($('#lm-url').value||'').trim() || null
+    p_location: _mt==='פרונטלית' ? (($('#lm-loc').value||'').trim() || null) : null,
+    p_phone:    _mt==='טלפונית'  ? (($('#lm-phone').value||'').trim() || null) : null,
+    p_link_url: _mt==='מקוונת'   ? (($('#lm-url').value||'').trim() || null) : null
   });
   if(error){ $('#lm-err').textContent='השמירה נכשלה — '+error.message; return; }
   const r = Array.isArray(data) ? data[0] : data;
@@ -23163,10 +23349,19 @@ $('#lm-save').onclick = async ()=>{
     ? 'נקבעה פגישה ✓ · נפתחה משימה ל' + new Date(r.due_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})
     : 'נקבעה פגישה ✓');
   await loadLeads();
-  /* ⚠️ הכרטיס שנפתח מחדש נגזר מהסוג. openLead קשיח היה פותח כרטיס ליד
-     על מזהה עסקה — וזה נראה כמו "לא קרה כלום".
+  /* ⚠️ הכרטיס שנפתח מחדש נגזר מ-back ולא מסוג הקישור. 🔴 מ-6.182.0
+     פגישה מכרטיס **עסקה** נשמרת עם קישור ללקוח, ולכן גזירה מהסוג הייתה
+     פותחת כרטיס לקוח במקום לחזור לעסקה שממנה באנו.
      🔴 ומהמסך אין כרטיס מקור לחזור אליו — שם רק מציירים את הרשימה. */
-  if(!id) renderMeets(); else if(tg.t==='deal') openDeal(id); else openLead(id);
+  const bk = tg && tg.back;
+  /* ⚠️ ענף customer מפורש: openLead על מזהה לקוח **יוצא בשקט**
+     (LEADS.find מחזיר undefined) — כלומר הכרטיס פשוט לא נפתח, בלי
+     שגיאה. אין היום נקודת כניסה מלקוח, וזו בדיוק הסיבה להוסיף אותו
+     עכשיו. (עלה בסקירה של סשן מקביל, 01/09/2026.) */
+  if(!bk) renderMeets();
+  else if(bk.t==='deal') openDeal(bk.id);
+  else if(bk.t==='customer') openCust(bk.id);
+  else openLead(bk.id);
 };
 
 let CONV_RESULT = null;   /* {id, html} — תוצאת ההמרה האחרונה, שורדת ציור מחדש */

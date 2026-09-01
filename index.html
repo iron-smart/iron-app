@@ -2032,6 +2032,11 @@ td.lb-today .lb-dt{ background-color:transparent; }
 /* שבב ספירת הלידים בטבלה — אותה שפה של tk-kind, בלי כלל חדש. */
 .cu-ln{ font-size:11px; font-weight:800; padding:1px 8px; border-radius:999px;
         background-color:#e8f3ff; color:#1c4e80; border:1px solid #c7e0f7; cursor:pointer; }
+#customers-list td.cu-act{ width:74px; min-width:74px; white-space:nowrap;
+        text-align:center; padding-inline:4px; }
+.cu-ab{ font-size:15px; line-height:1; padding:4px 5px; border:1px solid #dfe3e6;
+        border-radius:8px; background:#fff; cursor:pointer; }
+.cu-ab:hover{ background:#f2f6fa; border-color:#c7e0f7; }
 .cu-ln:hover{ background-color:#d8ebff; }
 #dealSheet .tk-lnk{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 #tasks-list .tbl tbody tr.tk-ovr{ background-color:#fdecea; }
@@ -2641,7 +2646,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.182.0</div>
+      <div class="ver">גרסה 6.183.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2770,7 +2775,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.182.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.183.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9823,7 +9828,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'meetlink-2026-09-01a';
+const BUILD_ID = 'custdeal-2026-09-01a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -16729,7 +16734,8 @@ function custRow(c){
       יש `assert` בבנייה שאוסר כתיבה כלשהי לטבלה. (הועלה בסקירה מקבילה.) */
 const CU_COLS = [
   ['#','rownum'], ['לקוח','srt'], ["מס' פריוריטי",'srt'], ['טלפון',''],
-  ['עיר / כתובת','srt'], ['לידים','srt'], ['סוג','srt'], ['מחירון','srt'], ['פעיל?','srt']
+  ['עיר / כתובת','srt'], ['לידים','srt'], ['סוג','srt'], ['מחירון','srt'], ['פעיל?','srt'],
+  ['','']
 ];
 let CU_VIEW = 'active', CU_SORT = [null, 1];
 const CU_KEY = {
@@ -16808,6 +16814,7 @@ function custTable(list){
     <td>${esc(c.customer_type||'')||'<span class="lb-na">·</span>'}</td>
     <td>${esc(c.price_group||'')||'<span class="lb-na">·</span>'}</td>
     <td><span class="pill ${c.status==='פעיל'?'st-rel':(c.status==='לא פעיל'?'st-no':'st-def')}">${esc(c.status||'—')}</span></td>
+    <td class="cu-act">${cuRowActs(c)}</td>
   </tr>`;}).join('');
   return cuHead()+rows+'</tbody></table></div>'+pgFoot('cust',list.length,'לקוחות');
 }
@@ -16826,6 +16833,9 @@ function renderCustomers(){
 }
 window.openCust = async (id)=>{
   const c = CUSTS.find(x=>x.id===id); if(!c) return;
+  /* התוצאה שייכת ללקוח שעליו נלחץ. בלי האיפוס היא הייתה מוצגת שוב
+     בכרטיס אחר בכל פתיחה — הדפוס של CONV_RESULT ב-6.166.0. */
+  if(CUD_RESULT && CUD_RESULT.id !== id) CUD_RESULT = null;
   const { data: contacts } = await sb.schema('core').from('contacts').select('*').eq('customer_id', id);
   const { data: deals } = await sb.schema('crm').from('deals').select('*').eq('customer_id', id);
   const actPill = c.status==='פעיל' ? '<span class="pill st-rel">✓ לקוח פעיל</span>' : (c.status==='לא פעיל' ? '<span class="pill st-no">לקוח לא פעיל</span>' : `<span class="pill st-def">${esc(c.status||'—')}</span>`);
@@ -16855,6 +16865,8 @@ window.openCust = async (id)=>{
     <h3>${esc(c.name)} ${actPill}</h3>
     ${ctabsHtml('cu')}
     <div id="cu-pn-main">
+    <div class="lb-convrow" id="cu-actrow">${cuDealBox(c)}</div>
+    <div id="cudResultSlot">${CUD_RESULT && CUD_RESULT.id===id ? CUD_RESULT.html : ''}</div>
     <div class="form-grid">
       <div class="form-sep">פרטי הלקוח</div>
       <div><label>מספר בפריוריטי</label>${roIn(c.priority_id||'',{ltr:1})}</div>
@@ -16875,7 +16887,7 @@ window.openCust = async (id)=>{
       ${c.logistics_notes?`<div class="span4"><div class="note">🚚 ${esc(c.logistics_notes)}</div></div>`:''}
 
       <div class="form-sep">משימות ופגישות</div>
-      <div class="span4">${lbTmBlock(cuTasks, cuMeets)}</div>
+      <div class="span4">${lbTmBlock(cuTasks, cuMeets, cuTmActs(id))}</div>
     </div>
 
     <section class="ob-card" id="cu-leads"><h2 class="sec">לידים ופניות (${ld.length})</h2>
@@ -23244,6 +23256,97 @@ window.leadMeet = (id)=>{
    ⚠️ ונמדד 01/09/2026 ש-**28 מתוך 199** העסקאות הפתוחות אין להן לא
       לקוח ולא ליד. שם הבורר נפתח **ריק** ומבקש לבחור, במקום ליפול
       בשקט או ליצור פגישה יתומה. */
+/* ═══ פעולות מסך הלקוחות (6.183.0, רומן) ══════════════════════════
+   ⚠️ meetOpenFor(t, id, back) — הפרמטר השלישי הוא **יעד החזרה** מאז
+      6.182.0, לא כותרת. כאן שניהם הלקוח: הפגישה מקושרת אליו, ואליו
+      גם חוזרים. */
+window.custMeet = (id)=>{
+  const c = (CUSTS||[]).find(x=>x.id===id); if(!c) return;
+  meetOpenFor('customer', id, {t:'customer', id:id});
+};
+
+/* ＋פגישה בכרטיס הלקוח. מראה של dlTmActs, ובלי ＋משימה: רומן ביקש
+   פגישה בלבד, ותוספת שלא התבקשה בכרטיס היא רעש. */
+window.cuTmActs = (id)=>
+  (window.canEdit('crm.meets')
+    ? '<button type="button" class="chip" onclick="custMeet(\'' + jsq(id) + '\')">＋ פגישה</button>'
+    : '');
+
+let CUD_RESULT = null;   /* {id, html} — תוצאת פתיחת התהליך, שורדת ציור מחדש */
+
+/* 🔴 פעולה שאי אפשר לבצע — לא מציגים. לקוח בלי מספר בפריוריטי מקבל
+   409 מהשרת, וכפתור שנלחץ ולא קורה כלום הוא בדיוק מה שמדווח כ"תקוע".
+   נמדד 01/09/2026: 109 לקוחות פעילים מתוך 3,434 במצב הזה. */
+window.cuDealBox = (c)=>{
+  if(!c || !window.canEdit('crm.deals')) return '';
+  if(!String(c.priority_id||'').trim())
+    return '<div class="note">ללקוח אין מספר בפריוריטי — אי אפשר לפתוח לו הצעת מחיר.</div>';
+  return '<button class="btn green" style="width:auto" onclick="custDeal(\'' + jsq(c.id) + '\', this)">＋ יצירת תהליך מכירה</button>'
+       + '<span class="note">תיפתח הצעת מחיר בפריוריטי ועסקה חדשה. הלקוח עצמו אינו נפתח מחדש.</span>';
+};
+
+window.cuRowActs = (c)=>{
+  const a = [];
+  /* ⚠️ event.stopPropagation() בשניהם: כל השורה היא onclick="openCust",
+     ובלעדיו כל לחיצה על אייקון הייתה פותחת את הכרטיס במקום לפעול. */
+  if(window.canEdit('crm.deals') && String(c.priority_id||'').trim())
+    a.push('<button type="button" class="cu-ab" title="יצירת תהליך מכירה" onclick="event.stopPropagation();custDeal(\'' + jsq(c.id) + '\', this)">&#128188;</button>');
+  if(window.canEdit('crm.meets'))
+    a.push('<button type="button" class="cu-ab" title="יצירת פגישה" onclick="event.stopPropagation();custMeet(\'' + jsq(c.id) + '\')">&#128197;</button>');
+  return a.join(' ');
+};
+
+function cudPaint(id){
+  const el = document.getElementById('cudResultSlot');
+  if(el && CUD_RESULT && CUD_RESULT.id === id) el.innerHTML = CUD_RESULT.html;
+}
+
+window.custDeal = async (id, btn)=>{
+  /* מניעת לחיצה כפולה בדפוס convertLead. ⚠️ והיא **אינה** ההגנה
+     היחידה: crm-customer-deal מחזירה עסקה שנפתחה בשתי הדקות האחרונות
+     במקום ליצור שנייה, כי שתי לשוניות עוקפות ניטרול כפתור (6.168.0). */
+  if(btn){ if(btn.disabled) return; btn.disabled = true;
+           btn.dataset.lbl = btn.textContent; btn.textContent = 'פותח…'; }
+  busyShow('פותח הצעת מחיר ועסקה בפריוריטי…\nזה עשוי לקחת כמה שניות.');
+  try{
+    let data = null, error = null;
+    try { ({ data, error } = await sb.functions.invoke('crm-customer-deal', { body:{ customer_id: id } })); }
+    catch(e){ error = e; }
+    if(error || (data && data.ok === false)){
+      /* 🔴 חילוץ מגוף התשובה. convertLead מציג את error.message הגנרי,
+         וכל כשל בפונקציה הוא 500 — כלומר ההודעה בעברית נבלעת והמשתמש
+         רואה "non-2xx". הלקח של 6.167.0. */
+      let msg = (data && data.error) || '';
+      if(!msg && error && error.context && typeof error.context.json === 'function'){
+        try{ const j = await error.context.json(); msg = (j && j.error) || ''; }catch(_e){}
+      }
+      CUD_RESULT = { id: id, html: '<div class="note" style="color:#c0392b">שגיאה: '
+        + esc(msg || (error && error.message) || 'לא ידוע') + '</div>' };
+      cudPaint(id); return;
+    }
+    if(!data){
+      CUD_RESULT = { id: id, html: '<div class="note" style="color:#c0392b">לא התקבלה תשובה מהשרת</div>' };
+      cudPaint(id); return;
+    }
+    const warn = [data.owner_error, data.log_error, data.doer_error].filter(Boolean).join(' · ');
+    CUD_RESULT = { id: id, html: '<div class="ok-box">'
+      + (data.created ? '✅ נפתח תהליך מכירה!' : 'ℹ️ ' + esc(data.note || 'התהליך כבר קיים'))
+      + '<br>הצעת מחיר: <b>' + esc(data.cprofnum || '—') + '</b> '
+      + '<button type="button" class="chip" onclick="goCard(()=>openDeal(\'' + jsq(String(data.deal_id||'')) + '\'))">פתיחת כרטיס העסקה</button>'
+      + (warn ? '<br><span style="color:#b45309">⚠️ ' + esc(warn) + '</span>' : '')
+      + '</div>' };
+    /* ⚠️ loadLeads ואז openCust — העסקה החדשה חייבת להיכנס ל-DEALS
+       לפני שהכרטיס נבנה מחדש, אחרת בלוק העסקאות שלו לא יראה אותה. */
+    await loadLeads();
+    openCust(id);
+  } finally {
+    /* ⚠️ finally ולא בסוף המסלול המוצלח — מסלול השגיאה חוזר ב-return
+       מוקדם, ובלעדיו הכפתור היה נשאר מנוטרל לנצח אחרי כשל אחד. */
+    busyHide();
+    if(btn){ btn.disabled = false; btn.textContent = btn.dataset.lbl || '＋ יצירת תהליך מכירה'; }
+  }
+};
+
 window.dealMeet = (id)=>{
   const d=(DEALS||[]).find(x=>x.id===id); if(!d) return;
   const t = d.customer_id ? 'customer' : (d.lead_id ? 'lead' : '');

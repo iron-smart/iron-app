@@ -760,7 +760,29 @@
   /* מירכוז עמודות הסטטוס בטבלת ההזמנות (בקשת רומן 31/07/2026) */
   .tbl th.stcell, .tbl td.stcell{ text-align:center; }
   .tbl td.stcell select.inline-edit{ display:inline-block; margin-inline:auto; text-align:center; text-align-last:center; }
-  select.inline-edit.mdc{ color:#fff; border:none; border-radius:99px; font-weight:700; padding:5px 12px; font-size:12px; -webkit-appearance:none; appearance:none; }
+  select.inline-edit.mdc, select.pilled.mdc{ color:#fff; border:none; border-radius:99px; font-weight:700; padding:5px 12px; font-size:12px; -webkit-appearance:none; appearance:none; }
+  /* 🔴 6.187.0 — צבע **בתוך** התפריט הנפתח. נמדד בדפדפן (Chrome 152 /
+     macOS 15.6, קליק אמיתי, select במצב :open): ל-<option> יש
+     getComputedStyle תקין אבל **אפס קופסאות פריסה** — getClientRects()
+     מחזיר 0 ו-getBoundingClientRect הוא 0x0. התפריט הנייטיב הוא תפריט
+     של מערכת ההפעלה ואינו חלק מה-DOM, ולכן style על option פשוט אין לו
+     על מה להיצבע.
+     ⚠️ ו-getComputedStyle **כן** מחזיר את הצבע — בדיקה שתסתפק בו תדווח
+        "עובד" על משהו שאינו נראה. מלכודת מדידה, לא רק מלכודת מימוש.
+     🟢 appearance:base-select הופך את הבורר ואת ה-picker לאלמנטים
+        מצוירי-DOM (נמדד: option עובר ל-display:flex), ולכן ניתנים
+        לצביעה. ⚠️ ב-@supports בלבד — דפדפן שאינו תומך מקבל **בדיוק** את
+        הבורר הסגור הצבוע שיש לו היום. נפילה רכה, לא שבירה. */
+  @supports (appearance: base-select){
+    select.inline-edit.mdc, select.pilled.mdc{ appearance: base-select; }
+    select.inline-edit.mdc::picker(select), select.pilled.mdc::picker(select){
+      appearance: base-select; background:#fff; border:1px solid #e2e8f0;
+      border-radius:12px; box-shadow:0 10px 28px rgba(15,23,42,.14); padding:6px; }
+    select.inline-edit.mdc option, select.pilled.mdc option{
+      border-radius:99px; padding:5px 12px; margin:2px 0; font-weight:700;
+      font-size:12px; cursor:pointer; }
+    select.inline-edit.mdc option:hover, select.pilled.mdc option:hover{ filter:brightness(.96); }
+  }
   /* 6.9.3 — עמודות צוות / שעות / תאריך בטבלאות (בקשת רומן 01/08/2026) */
   .tbl th.teamcell, .tbl td.teamcell, .tbl th.slotcell, .tbl td.slotcell{ text-align:center; }
   .tbl td.teamcell select.inline-edit, .tbl td.slotcell select.inline-edit{ display:inline-block; margin-inline:auto; text-align:center; text-align-last:center; }
@@ -2662,7 +2684,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.186.0</div>
+      <div class="ver">גרסה 6.187.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2791,7 +2813,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.186.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.187.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3639,11 +3661,37 @@ function onWhite(bg){
 function tint(bg, k){ const c=_rgbOf(bg); if(!c) return '#f1f5f9'; const m=x=>Math.round(x+(255-x)*k); return `rgb(${m(c[0])},${m(c[1])},${m(c[2])})`; }
 /* 6.107.0 — k אופציונלי: עוצמת הגוון. ברירת המחדל .85/.68 היא הפסטל
    של 6.24.4 ואינה זזה. LB_TK מועבר רק מאתרי הקריאה של הלידים. */
+/* 🔴 6.187.0 — selSty היא נקודת החנק היחידה לסגנון בורר/שבב צבוע.
+   שלושה אתרים החזיקו את הליטרל הזה בנפרד ו**כבר נפרדו** בפועל.
+   selPal מחזירה פלטה לפי שם — ולא מפה שנבנית מראש — כי teamColorMap()
+   נגזרת מהצוותים שנטענו, ומטמון שלה היה קופא על המצב שלפני הטעינה. */
+function selSty(val, colors, k, dflt){
+  const bg = (colors && colors[val]) || dflt || '';
+  if(!bg) return '';
+  const kb = (k==null ? .85 : k), kd = (k==null ? .68 : Math.max(0, k-.20));
+  return `background:${tint(bg,kb)};color:${onWhite(bg)};border:1px solid ${tint(bg,kd)}`;
+}
+function selPal(n){
+  switch(n){
+    case 'taskst':   return TASK_ST_COLORS;
+    case 'taskcat':  return TASK_CAT_COLORS;
+    case 'leadtype': return LEAD_TYPE_COLORS;
+    case 'leadsrc':  return LEAD_SRC_COLORS;
+    case 'meettype': return MEET_TYPE_COLORS;
+    case 'meetst':   return MSTATUS_COLOR;
+    case 'slot':     return SLOT_COLORS;
+    case 'team':     return teamColorMap();
+    default:         return null;
+  }
+}
+window.selPaint = (el, pal, k)=>{
+  el.className = 'pilled mdc';
+  el.style.cssText = selSty(el.value, selPal(pal), k);
+};
 const mdPill = (v, colors, k) => {
   if(!v) return '';
   const bg = (colors && colors[v]) || '';
-  const _kb = (k==null? .85 : k), _kd = (k==null? .68 : Math.max(0,k-.20));
-  return bg ? `<span class="pill" style="background:${tint(bg,_kb)};color:${onWhite(bg)};border:1px solid ${tint(bg,_kd)}">${esc(v)}</span>`
+  return bg ? `<span class="pill" style="${selSty(v,colors,k)}">${esc(v)}</span>`
             : `<span class="pill" style="background:#f1f5f9;color:#475569">${esc(v)}</span>`;
 };
 
@@ -4761,12 +4809,15 @@ const canIE = (kind, field)=>{
 /* select צבעוני בתא — צבעי הלוח (pilled) או צבעי מאנדיי (mdc) */
 function ieSel(kind,id,field,options,val,opts){
   opts=opts||{};
-  if(!canIE(kind,field)) return opts.mdColors ? mdPill(val,opts.mdColors) : (STATUS_PILL[val]?`<span class="pill ${STATUS_PILL[val]}">${esc(val)}</span>`:`<span>${esc(val||'—')}</span>`);
+  /* 🔴 6.187.0 — opts.mdK מועבר. עד כה הנפילה הזאת קראה mdPill בלי
+     הפרמטר, ולכן **צופה-בלבד ראה גוון אחר מעורך** על אותו ערך. */
+  if(!canIE(kind,field)) return opts.mdColors ? mdPill(val,opts.mdColors,opts.mdK) : (STATUS_PILL[val]?`<span class="pill ${STATUS_PILL[val]}">${esc(val)}</span>`:`<span>${esc(val||'—')}</span>`);
   const list=(opts.allowEmpty?[['',opts.emptyLabel||'—']]:[]).concat([...new Set([...(options||[]), ...(val?[val]:[])])].map(o=>[o,o]));
   let cls='inline-edit', style='';
-  if(opts.mdColors){ cls+=' mdc'; const _bg=opts.mdColors[val]||'#94a3b8';
-    const _kb=(opts.mdK==null? .85 : opts.mdK), _kd=(opts.mdK==null? .68 : Math.max(0,opts.mdK-.20));
-    style=`background:${tint(_bg,_kb)};color:${onWhite(_bg)};border:1px solid ${tint(_bg,_kd)}`; } /* 6.24.4 — שבב פסטל אחיד · 6.107.0 — mdK אופציונלי */
+  if(opts.mdColors){ cls+=' mdc';
+    /* 6.24.4 — שבב פסטל אחיד · 6.107.0 — mdK אופציונלי · 6.187.0 — selSty.
+       ⚠️ ברירת המחדל '#94a3b8' נשמרת: ערך שאינו בפלטה מקבל אפור ולא ריק. */
+    style = selSty(val, opts.mdColors, opts.mdK, '#94a3b8'); }
   else if(STATUS_PILL[val]) cls+=` pilled ${STATUS_PILL[val]}`;
   /* 🔴 6.153.0 — opts.on מחליף את ieSave. הצורך: תת-הסטטוס בטבלה חייב
      לעבור ב-lbPipeSet ולא ב-UPDATE ישיר, ושכפול הליטרל הזה ל-lbSubCell
@@ -4774,7 +4825,7 @@ function ieSel(kind,id,field,options,val,opts){
      ⚠️ וכש-on קיים, data-ie **אינו נפלט**: תכונה שאיש אינו קורא היא
         הזמנה לטעות אצל מי שיראה אותה כראיה ש-ieSave מטפל. */
   const _ie = opts.on ? '' : ` data-ie="${esc(kind+'|'+id+'|'+field)}"`;
-  return `<select class="${cls}" style="${style}"${_ie} onclick="event.stopPropagation()" onchange="${opts.on || 'ieSave(this)'}">${list.map(([v,l])=>`<option value="${esc(v)}" ${String(val||'')===v?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
+  return `<select class="${cls}" style="${style}"${_ie} onclick="event.stopPropagation()" onchange="${opts.on || 'ieSave(this)'}">${list.map(([v,l])=>`<option value="${esc(v)}" ${String(val||'')===v?'selected':''} style="${opts.mdColors?selSty(v,opts.mdColors,opts.mdK):''}">${esc(l)}</option>`).join('')}</select>`;
 }
 function ieDate(kind,id,field,val){
   if(!canIE(kind,field)) return val?`<b>${fmtD(val)}</b>`:'<span class="note-preview">—</span>';
@@ -9844,7 +9895,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'tkcard-2026-09-02a';
+const BUILD_ID = 'seluni-2026-09-02a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -15913,10 +15964,11 @@ function myOpenTodayTasks(){
       pay_code בשני מטמונים, שני מסכים שחלקו על אותה הזמנה), ו-owner_id
       כמראה חלקית (694 לידים שהוצגו כחסרי בעלים). מקור אחד, פתרון בקריאה.
 
-   ⚠️ **ענף העסקה שקט כרגע ואינו שגוי:** `crm.deals` נטענת בלי `lead_id`
-      (נמדד — 1,144 שורות מחזיקות אותו במסד מאז 20/08, והלקוח פשוט אינו
-      שולף אותו). השדה נוסף ל-select בבנייה 3. עד אז `ctxOf('deal',…)`
-      מוצאת לקוח ולא ליד. מתועד כאן במפורש כדי שלא ייקרא כבאג. */
+   🔴 **6.187.0 — ctxOf היא העשרה, לא הכרעה.** ההערה שהייתה כאן אמרה
+      שענף העסקה "שקט כי crm.deals נטענת בלי lead_id"; השדה נוסף
+      לשאילתה ב-6.178.0 (31/08) וההערה התיישנה בלי שאיש הבחין. התוצאה:
+      1,417 משימות ניווטו לכרטיס הליד במקום לעסקה. **מי שרוצה לדעת
+      לאן ללכת קורא ל-tkTarget, לא ל-ctxOf.** */
 function ctxOf(type, id){
   const out = { lead:null, deal:null, cust:null };
   if(!type || !id) return out;
@@ -16224,20 +16276,66 @@ function tkChips(){
     (window.canEdit('crm.tasks')?`<button class="chip ${TK_BULK?'active':''}" onclick="tkBulkToggle()">${TK_BULK?'✕ סיום בחירה':'☑︎ בחירה מרובה'}</button>`:'');
 }
 /* ---- הישות המקושרת ---- */
-/* 🔴 נקודת החנק ל"לאן השורה הזאת מובילה". גם התא וגם ה-tr קוראים לה,
-   ולכן אי אפשר שהם יובילו לשני מקומות שונים. בבנייה 2 היא תוחלף
-   בכרטיס המשימה עצמו — שינוי בשורה אחת. */
-function tkGoJs(t){
-  const x = ctxOf(t.linked_type, t.linked_id);
-  if(x.lead) return `openLead('${jsq(x.lead.id)}')`;
-  if(x.deal) return `openDeal('${jsq(x.deal.id)}')`;
-  if(x.cust) return `openCust('${jsq(x.cust.id)}')`;
-  return '';
+/* 🔴 6.187.0 — העסקה של ליד, כשיש יותר מאחת. נמדד: **185 לידים
+   מחזיקים 546 עסקאות**, ולכן "העסקה של הליד" אינה מוגדרת מאליה.
+   הכרעת רומן: **הפתוחה האחרונה**, ואם אין פתוחה — האחרונה שנוצרה. */
+const DEAL_DONE = ['הושלם','לא רלוונטי'];
+function dealOfLead(leadId){
+  if(!leadId) return null;
+  const all = (DEALS||[]).filter(d=>d.lead_id===leadId);
+  if(!all.length) return null;
+  const open = all.filter(d=>DEAL_DONE.indexOf(d.stage||'') < 0);
+  return (open.length?open:all).slice()
+    .sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')))[0] || null;
 }
-function tkLinkName(t){
+/* 🔴 נקודת החנק ל"לאן השורה הזאת מובילה" — היעד, השם **והתווית**.
+   שלושתם נגזרים מכאן, ולכן אי אפשר שהשבב יאמר דבר אחד והקליק יוביל
+   למקום אחר. זו בדיוק הסכיזמה שרומן ראה.
+   הכלל, מילה במילה ממנו (02/09/2026):
+     "אם הסיווג הוא תהליך מכירה זה חייב להוביל לתהליך מכירה. אם היה
+      ליד אז לליד. אם היה פולואפ אז גם לליד. אם הסיווג הוא פגישה אז
+      לליד במקרה ואין עדיין תהליך מכירה ואם יש תהליך מכירה אז לתהליך."
+   ⚠️ "פגישה" אינו סיווג קיים במסד — אפס משימות. הקרוב אליו הוא
+      **"תואמה פגישה"** (68 משימות), וזו הכרעתו המפורשת.
+   🔴 **וענף ברירת המחדל הוא שמתקן את רוב הבאג:** 1,713 משימות
+      מקושרות לעסקה **בלי סיווג כלל**, והכלל לפי סיווג לבדו לא היה
+      נוגע בהן. שם ההכרעה היא linked_type בדיוק — הקישור שנקבע
+      ב-crm.task_create ואינו ניתן לשינוי מהכרטיס. */
+const TK_CAT_LEAD = ['ליד','פולואפ'];
+function tkTarget(t){
   const x = ctxOf(t.linked_type, t.linked_id);
-  return (x.lead && x.lead.full_name) || (x.deal && x.deal.name) || (x.cust && x.cust.name) || '';
+  const cat = (t && t.category) || '';
+  let ent = null, kind = '';
+  if(cat==='תהליך מכירה'){
+    const d = x.deal || (x.lead ? dealOfLead(x.lead.id) : null);
+    if(d){ ent = d; kind = 'deal'; }
+  } else if(TK_CAT_LEAD.indexOf(cat) >= 0){
+    if(x.lead){ ent = x.lead; kind = 'lead'; }
+  } else if(cat==='תואמה פגישה'){
+    const d = x.deal || (x.lead ? dealOfLead(x.lead.id) : null);
+    if(d){ ent = d; kind = 'deal'; }
+    else if(x.lead){ ent = x.lead; kind = 'lead'; }
+  }
+  if(!ent){
+    if(t.linked_type==='deal'     && x.deal){ ent = x.deal; kind = 'deal'; }
+    else if(t.linked_type==='lead'     && x.lead){ ent = x.lead; kind = 'lead'; }
+    else if(t.linked_type==='customer' && x.cust){ ent = x.cust; kind = 'cust'; }
+    else if(x.lead){ ent = x.lead; kind = 'lead'; }
+    else if(x.deal){ ent = x.deal; kind = 'deal'; }
+    else if(x.cust){ ent = x.cust; kind = 'cust'; }
+  }
+  const nm = !ent ? '' : (kind==='lead' ? (ent.full_name||'') : (ent.name||''));
+  const go = !ent ? '' : (kind==='lead' ? `openLead('${jsq(ent.id)}')`
+                        : kind==='deal' ? `openDeal('${jsq(ent.id)}')`
+                        :                 `openCust('${jsq(ent.id)}')`);
+  const lbl = kind==='lead' ? TK_KIND_LBL.lead
+            : kind==='deal' ? TK_KIND_LBL.deal
+            : kind==='cust' ? TK_KIND_LBL.customer
+            : (TK_KIND_LBL[t.linked_type] || '');
+  return { kind, ent, name:nm, go, label:lbl, ctx:x };
 }
+function tkGoJs(t){ return tkTarget(t).go; }
+function tkLinkName(t){ return tkTarget(t).name; }
 function tkLinkPhone(t){
   const x = ctxOf(t.linked_type, t.linked_id);
   return (x.lead && x.lead.phone) || (x.cust && x.cust.phone) || '';
@@ -16498,7 +16596,7 @@ function tkRow(t, i){
       <td class="tk-lnkc">${tkLinkCell(t)}</td>
       <td dir="ltr">${phCell(tkLinkPhone(t))}</td>
       <td>${ieSel('task',t.id,'status',TASK_STATUSES,t.status,{mdColors:TASK_ST_COLORS,mdK:LB_TK})}</td>
-      <td>${t.category?mdPill(t.category,TASK_CAT_COLORS,LB_TK):'<span class="lb-na">·</span>'}</td>
+      <td>${ieSel('task',t.id,'category',tkCats(),t.category,{mdColors:TASK_CAT_COLORS,mdK:LB_TK,allowEmpty:true})}</td>
       <td data-sort="${esc(t.due_at||'')}"${done?' class="tk-dndt"':(dmk.cls?` class="${dmk.cls}"`:'')}><span class="lb-duew">${dmk.ico}${dueCell}</span></td>
       <td data-sort="${esc(t.created_at||'')}">${t.created_at?esc(new Date(t.created_at).toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit'})):'<span class="lb-na">·</span>'}</td>
     </tr>`;
@@ -16568,10 +16666,14 @@ window.openTask = (id)=>{
   const t = (TASKS||[]).find(x=>x.id===id); if(!t) return;
   const x = ctxOf(t.linked_type, t.linked_id);
   const editable = window.canEdit('crm.tasks');
-  const ent = x.lead || x.deal || x.cust || null;
-  const entName = (x.lead && x.lead.full_name) || (x.deal && x.deal.name) || (x.cust && x.cust.name) || '';
+  /* 🔴 6.187.0 — שלושתם מ-tkTarget. עד כה השם והיעד נגזרו בסדר קשיח
+     lead→deal→cust והתווית מ-linked_type, ולכן הכרטיס הציג שם של ליד
+     על שבב שאומר "תהליך" ופתח את הכרטיס הלא נכון. */
+  const tg = tkTarget(t);
+  const ent = tg.ent, entName = tg.name, go = tg.go, entLbl = tg.label;
+  /* ⚠️ הטלפון נשאר מהליד/לקוח בכל מקרה — לעסקה אין טלפון משלה,
+     והוא נכון גם כשהיעד הוא העסקה. */
   const entPhone = (x.lead && x.lead.phone) || (x.cust && x.cust.phone) || '';
-  const go = tkGoJs(t);
   const dmk = lbDueMark(t.due_at, t.status==='הושלם');
   /* אחים — אותה פנייה בדיוק. ⚠️ משימה בלי קישור אין לה אחים, ולכן
      התנאי בודק גם את linked_id ולא רק את השוויון (null===null אמת). */
@@ -16587,9 +16689,9 @@ window.openTask = (id)=>{
     <div class="form-grid">
       <div class="form-sep">פרטי המשימה</div>
       ${ent?`
-      <div class="span2"><label>${esc(TK_KIND_LBL[t.linked_type]||'מקושר ל־')}</label>
-        ${go?`<a class="dl-tile" href="#" onclick="event.preventDefault();goCard(()=>${go})"><span class="tk-kind tk-k-${esc(t.linked_type||'')}">${esc(TK_KIND_LBL[t.linked_type]||'')}</span><span class="dlt-nm">${esc(entName)}</span><span class="dlt-ar">↗</span></a>`
-             :`<div class="tk-lnk"><span class="tk-kind tk-k-${esc(t.linked_type||'')}">${esc(TK_KIND_LBL[t.linked_type]||'')}</span>${esc(entName)}</div>`}</div>
+      <div class="span2"><label>${esc(entLbl||'מקושר ל־')}</label>
+        ${go?`<a class="dl-tile" href="#" onclick="event.preventDefault();goCard(()=>${go})"><span class="tk-kind tk-k-${esc(tg.kind==='cust'?'customer':tg.kind)}">${esc(entLbl)}</span><span class="dlt-nm">${esc(entName)}</span><span class="dlt-ar">↗</span></a>`
+             :`<div class="tk-lnk"><span class="tk-kind tk-k-${esc(tg.kind==='cust'?'customer':tg.kind)}">${esc(entLbl)}</span>${esc(entName)}</div>`}</div>
       <div class="cell-2up">
         <div class="c2-wide"><label>טלפון ${phBtns(entPhone)}</label>${roIn(entPhone,{ltr:1})}</div>
         ${(x.lead&&x.lead.company)?`<div class="c2-wide"><label>שם חברה</label>${roIn(x.lead.company)}</div>`:''}
@@ -16599,8 +16701,8 @@ window.openTask = (id)=>{
 
       <div class="span4"><label>מה צריך לעשות?<span class="req">*</span></label><input id="tk-name" value="${esc(t.name||'')}"></div>
       <div><label>מועד יעד</label><input type="datetime-local" id="tk-due" value="${esc(lbDtLocal(t.due_at))}"></div>
-      <div><label>סטטוס</label>${selHtml('tk-status',TASK_STATUSES,t.status)}</div>
-      <div><label>סיווג</label>${selHtml('tk-cat',tkCats(),t.category,true)}</div>
+      <div><label>סטטוס</label>${selHtml('tk-status',TASK_STATUSES,t.status,false,'','taskst')}</div>
+      <div><label>סיווג</label>${selHtml('tk-cat',tkCats(),t.category,true,'','taskcat')}</div>
       <div><label>בעלים ושותפים</label><div id="tk-ownbox">${ownCellName('task',t)}</div></div>
 
       <div class="form-sep">משימות ופגישות על אותה פנייה</div>
@@ -19103,7 +19205,20 @@ function scCustId(s){
   return c ? c.id : '';
 }
 /* select-ים בכרטיסים נצבעים לפי הערך ומתעדכנים מיד עם שינוי (איפיון 8א) */
-const selHtml = (id, vals, cur, allowEmpty, extraOnChange) => `<select id="${id}" class="pilled ${STATUS_PILL[cur]||''}" onchange="this.className='pilled '+(STATUS_PILL[this.value]||'');${extraOnChange||''}">${allowEmpty?'<option value=""></option>':''}${[...new Set([...(vals||[]), ...(cur?[cur]:[])])].map(v=>`<option ${v===cur?'selected':''}>${esc(v)}</option>`).join('')}</select>`;
+const selHtml = (id, vals, cur, allowEmpty, extraOnChange, pal, k) => {
+  const _c  = pal ? selPal(pal) : null;
+  const _k  = (k==null && _c) ? LB_TK : k;   /* LB_TK הוא הגוון של כל שאר ה-CRM */
+  const _cl = _c ? 'pilled mdc' : ('pilled ' + (STATUS_PILL[cur]||''));
+  /* ⚠️ הצבע חייב להתרענן גם ב-onchange — בלעדיו הוא קופא על הערך הישן
+     מיד אחרי בחירה, וזה נראה בדיוק כמו "הצבע לא עובד". */
+  const _oc = _c ? `selPaint(this,'${pal}',${_k==null?'null':_k});`
+                 : `this.className='pilled '+(STATUS_PILL[this.value]||'');`;
+  const _op = v => `<option ${v===cur?'selected':''} style="${_c?selSty(v,_c,_k):''}">${esc(v)}</option>`;
+  return `<select id="${id}" class="${_cl}" style="${_c?selSty(cur,_c,_k):''}" onchange="${_oc}${extraOnChange||''}">`
+    + (allowEmpty?'<option value=""></option>':'')
+    + [...new Set([...(vals||[]), ...(cur?[cur]:[])])].map(_op).join('')
+    + `</select>`;
+};
 
 window.openScall = (id)=>{
   const s = SCALLS.find(x=>x.id===id); if(!s) return;
@@ -19158,9 +19273,9 @@ window.openScall = (id)=>{
       <div class="span4"><label>פרטי התקלה</label><textarea id="se-fault" rows="2" placeholder="מה התקלה, ממתי, ומה כבר נוסה">${esc(s.fault_details||'')}</textarea></div>
 
       <div class="form-sep">תיאום וביצוע</div>
-      <div><label>צוות</label>${selHtml('se-team',teamVals,s.team,true)}${window.tdHint(s.scheduled_date,s.team,'seTdHint')}</div>
+      <div><label>צוות</label>${selHtml('se-team',teamVals,s.team,true,'','team')}${window.tdHint(s.scheduled_date,s.team,'seTdHint')}</div>
       <div><label>תאריך מתואם</label><input id="se-date" type="date" value="${esc(s.scheduled_date||'')}"></div>
-      <div><label>משבצת זמן</label>${selHtml('se-slot',TIME_SLOTS,s.time_slot,true)}</div>
+      <div><label>משבצת זמן</label>${selHtml('se-slot',TIME_SLOTS,s.time_slot,true,'','slot')}</div>
 
       <div class="form-sep">הערות</div>
       <div class="span4"><textarea id="se-notes" rows="3" placeholder="הערות פנימיות על הקריאה">${esc(s.notes||'')}</textarea></div>
@@ -19308,9 +19423,9 @@ window.openNewScall = ()=>{
       <div class="span4"><label>פרטי התקלה<span class="req">*</span></label><textarea id="ne-fault" rows="2" placeholder="מה התקלה, ממתי, ומה כבר נוסה"></textarea></div>
 
       <div class="form-sep">תיאום וביצוע</div>
-      <div><label>צוות</label>${selHtml('ne-team',teamVals,'',true)}</div>
+      <div><label>צוות</label>${selHtml('ne-team',teamVals,'',true,'','team')}</div>
       <div><label>תאריך מתואם</label><input id="ne-date" type="date"></div>
-      <div><label>משבצת זמן</label>${selHtml('ne-slot',TIME_SLOTS,'',true)}</div>
+      <div><label>משבצת זמן</label>${selHtml('ne-slot',TIME_SLOTS,'',true,'','slot')}</div>
     </div>
     <div class="modal-actions">
       <button class="btn btnw" onclick="saveNewScall()">💾 פתיחת קריאה</button>
@@ -19688,13 +19803,13 @@ window.openOrd = (id, ctx)=>{
       <div><label>סטטוס הזמנה</label>${selHtml('oe-status',ORDER_STATUSES,o.order_status)}</div>
       <div><label>יצרנו קשר?</label>${selHtml('oe-contact',CONTACT_STATUSES,o.contact_status)}</div>
       <div><label>אזור גיאוגרפי</label>${selHtml('oe-region',REGIONS,o.region,true)}</div>
-      <div><label>צוות</label>${selHtml('oe-team',teamVals,o.team,true)}${window.tdHint(o.scheduled_date,o.team,'oeTdHint')}</div>
+      <div><label>צוות</label>${selHtml('oe-team',teamVals,o.team,true,'','team')}${window.tdHint(o.scheduled_date,o.team,'oeTdHint')}</div>
       <div class="coord-row">
       ${canView('logi.orders.eta')?`<div><label>צפי אספקה <small style="font-weight:400;color:#64748b">${o.eta_date&&o.scheduled_date?'(הוחלף בתאריך המתואם)':'(כשאין עדיין תיאום)'}</small></label><input id="oe-eta" type="date" value="${esc(o.eta_date||'')}"${o.eta_date&&o.scheduled_date?' style="opacity:.55"':''}>
         ${o.eta_date&&!o.scheduled_date?`<div class="eta-span" title="נגזר מ&quot;מספר ימים&quot; ומדילוג על שבת${o.friday_ok?'':' ושישי'}">📅 ${esc(etaSpanText(o))}</div>`:''}</div>`:''}
       <div><label>תאריך מתואם</label><input id="oe-date" type="date" value="${esc(o.scheduled_date||'')}"></div>
       <div><label>מספר ימים</label><input id="oe-days" type="number" min="1" placeholder="1" value="${o.days_count>1?o.days_count:''}" oninput="oeDaysSlot(this.value)"></div>
-      <div><label>משבצת זמן</label>${selHtml('oe-slot',TIME_SLOTS,o.time_slot,true)}</div>
+      <div><label>משבצת זמן</label>${selHtml('oe-slot',TIME_SLOTS,o.time_slot,true,'','slot')}</div>
       <div><label class="chk-line chk-compact"><input type="checkbox" id="oe-friday" ${o.friday_ok?'checked':''}> <b>לאשר עבודה ביום שישי בהזמנה זו</b></label></div>
       </div>
       ${showSupply?`<div class="form-sep">אספקה ומחסן</div>`:''}
@@ -20215,6 +20330,18 @@ const DCIX = lbl => DL_COLS.findIndex(x=>x[0]===lbl);
    שהמסך אינו מציג וצץ מחדש אם השלב יוחזר. */
 function dlSubCol(st){ return st==='לא רלוונטי' ? 'irrelevant_reason'
   : (['נשלחה הצעת מחיר ראשונית','נשלחה הצעת מחיר לחתימה'].includes(st) ? 'quote_status' : null); }
+function dlSubCell(d){
+  const col = dlSubCol(d.stage), opts = dlSubOpts(d.stage) || [];
+  const now = col ? (d[col]||'') : '';
+  if(!col || !opts.length) return now ? esc(now) : '<span class="lb-na">·</span>';
+  /* ⚠️ ערך קיים שאינו ברשימה מוצג בכל זאת — 57 עסקאות מחזיקות
+     irrelevant_reason חופשי, והסתרתו נראית כאילו אין תת-סטטוס. */
+  const all = (now && opts.indexOf(now)<0) ? opts.concat([now]) : opts;
+  const bg = DEAL_ST_COLORS[d.stage] || '#94a3b8', pal = {};
+  all.forEach(o=>{ pal[o] = bg; });
+  return ieSel('deal',d.id,col,all,now,{mdColors:pal,mdK:LB_TK,allowEmpty:true,
+    on:`dlPipeSet('${jsq(d.id)}','${jsq(d.stage||'')}',this.value)`});
+}
 function dlSubOpts(st){ return st==='לא רלוונטי' ? DEAL_IRRELEVANT
   : (dlSubCol(st)==='quote_status' ? QUOTE_STATUSES : null); }
 function dlLead(d){ return (d && d.lead_id) ? ((LEADS||[]).find(x=>x.id===d.lead_id)||null) : null; }
@@ -20329,7 +20456,7 @@ function dlRow(d, i, nt){
       <td data-sort="${esc(d.amount==null?'':String(Math.round(Number(d.amount)||0)))}">${d.amount!=null?shekel(d.amount):'<span class="lb-na">·</span>'}</td>
       <td>${ieSel('deal',d.id,'stage',STAGES,d.stage,{mdColors:DEAL_ST_COLORS,mdK:LB_TK,
             on:`dlPipeSet('${jsq(d.id)}',this.value,'')`})}</td>
-      <td>${esc(sub)||'<span class="lb-na">·</span>'}</td>
+      <td>${dlSubCell(d)}</td>
       <td>${d.quote_doc_path
             ? `<span class="tk-link" data-qpk="${esc(d.id)}" onclick="event.stopPropagation();dlOpenDoc('${jsq(d.quote_doc_path)}')">PDF &#8599;</span>`
             : '<span class="lb-na">·</span>'}</td>
@@ -21326,10 +21453,10 @@ window.openMeet = (id)=>{
   const ln = linkedName(m);
   $('#meetSheet').innerHTML = `
     <h3>${esc(m.subject)}</h3>
-    <div class="row"><span class="k">סטטוס</span><span class="v"><span class="pill ${meetStClass(m.status)}">${esc(m.status)}</span></span></div>
+    <div class="row"><span class="k">סטטוס</span><span class="v">${ieSel('meet',m.id,'status',MEET_STATUSES,m.status,{mdColors:MSTATUS_COLOR,mdK:LB_TK})}</span></div>
     <div class="row"><span class="k">תאריך</span><span class="v">${m.meet_date?new Date(m.meet_date+'T00:00').toLocaleDateString('he-IL',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'}):'—'}</span></div>
     <div class="row"><span class="k">שעות</span><span class="v">${esc(m.start_time||'—')}${m.end_time?' – '+esc(m.end_time):''}</span></div>
-    <div class="row"><span class="k">סוג</span><span class="v">${mdPill(mtType(m), MEET_TYPE_COLORS, LB_TK)||'—'}</span></div>
+    <div class="row"><span class="k">סוג</span><span class="v">${ieSel('meet',m.id,'meet_type',MEET_TYPES,mtType(m),{mdColors:MEET_TYPE_COLORS,mdK:LB_TK,allowEmpty:true})}</span></div>
     <!-- ⚠️ אותה נקודת חנק של הטבלה: mtDetail. שתי הצגות של אותו כלל
          היו נפרדות בשקט ביום שהכלל ישתנה. -->
     <div class="row"><span class="k">${mtType(m)==='מקוונת'?'קישור':(mtType(m)==='טלפונית'?'טלפון':'מיקום')}</span><span class="v">${mtDetail(m)}</span></div>
@@ -21456,11 +21583,10 @@ function lbChips(){
       מזהירה על קפיצה לא סדורה, ומעדכנת מקומית. אין כאן מסלול שני. */
 function lbStatusCell(l){
   if(!canIE('lead','status')) return mdPill(l.status, LEAD_ST_COLORS, LB_TK);
-  const bg = LEAD_ST_COLORS[l.status] || '#94a3b8';
-  const stl = `background:${tint(bg,LB_TK)};color:${onWhite(bg)};border:1px solid ${tint(bg,LB_TK-.20)}`;
+  const stl = selSty(l.status, LEAD_ST_COLORS, LB_TK, '#94a3b8');
   return `<select class="inline-edit mdc" style="${stl}" onclick="event.stopPropagation()"`
     + ` onchange="lbPipeSet('${jsq(l.id)}', this.value, '')">`
-    + LEAD_STATUSES.map(s=>`<option ${s===l.status?'selected':''}>${esc(s)}</option>`).join('')
+    + LEAD_STATUSES.map(s=>`<option ${s===l.status?'selected':''} style="${selSty(s,LEAD_ST_COLORS,LB_TK)}">${esc(s)}</option>`).join('')
     + `</select>`;
 }
 /* 🔴 6.153.0 — תת-הסטטוס בטבלה עבר ל-lbPipeSet, בדיוק כמו שהסטטוס
@@ -22009,8 +22135,7 @@ function lbSubCol(st){ const a = LB_SUB_AXES.find(x=>x[0]===st); return a ? a[1]
 function lbSubOpts(st){ return st==='רלוונטי'?SUB_RELEVANT : st==='סירוב'?SUB_REFUSAL : st==='לא רלוונטי'?SUB_IRRELEVANT : null; }
 /* אותה נוסחת פסטל של ieSel, לבורר שנבנה ידנית בכרטיס */
 function lbSubStyle(st, val){
-  const map = SUB_COLORS[st] || {}; const bg = map[val];
-  return bg ? `background:${tint(bg,LB_TK)};color:${onWhite(bg)};border:1px solid ${tint(bg,LB_TK-.20)}` : '';
+  return selSty(val, SUB_COLORS[st] || {}, LB_TK);
 }
 window.lbSubTint = ()=>{
   const el = document.getElementById('lb-sub'); const box = document.getElementById('lb-subbox');
@@ -22453,8 +22578,8 @@ window.openLead = (id)=>{
       <div><label>שם חברה</label><input id="lb-company" value="${esc(l.company||'')}"></div>
       <div><label>תפקיד</label><input id="lb-position" value="${esc(l.position||'')}"></div>
       <div><label>עיר</label><input id="lb-city" value="${esc(l.city||'')}"></div>
-      <div><label>סוג לקוח</label>${selHtml('lb-ctype',LEAD_TYPES,l.customer_type,true)}</div>
-      <div><label>מקור הגעה</label>${selHtml('lb-source',LEAD_SOURCES,l.source,true)}</div>
+      <div><label>סוג לקוח</label>${selHtml('lb-ctype',LEAD_TYPES,l.customer_type,true,'','leadtype')}</div>
+      <div><label>מקור הגעה</label>${selHtml('lb-source',LEAD_SOURCES,l.source,true,'','leadsrc')}</div>
       <div><label>לשלוח קטלוג בוואטסאפ?</label>${selHtml('lb-wacat',['כן','לא'],l.send_whatsapp_catalog===true?'כן':(l.send_whatsapp_catalog===false?'לא':null),true)}</div>
       <div><label>בעלים ושותפים</label><div id="lb-ownbox">${lbOwnerCellName(l)}</div></div>
       <div><label>נוצר</label>${roIn(fmtDT(l.created_at),{ltr:1})}</div>

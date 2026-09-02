@@ -2662,7 +2662,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.185.0</div>
+      <div class="ver">גרסה 6.186.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2791,7 +2791,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.185.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.186.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9844,7 +9844,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'crmmark-2026-09-01a';
+const BUILD_ID = 'tkcard-2026-09-02a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -16545,8 +16545,12 @@ const TASK_CARD_FIELDS = [
      עכשיו דרך crm.task_set_owner, כמו בטבלה. */
   /* 🔴 6.185.0 — 'tk-owner' ירד: הבעלות הפכה לראשי+שותפים ועוברת
      ב-lbOwnerPick בלחיצה, כמו בליד ובעסקה. שדה בחוזה ה-snapshot
-     שמצביע על אלמנט שאינו קיים היה נשמט בשקט מכל patch. */
-  ['tk-cat','category'], ['tk-lnk','__link']
+     שמצביע על אלמנט שאינו קיים היה נשמט בשקט מכל patch.
+     🔴 6.186.0 — ו-'tk-lnk' ירד מאותה סיבה בדיוק. רומן: "המשימה
+     נוצרת מקושרת וזהו". הקישור נקבע ב-crm.task_create ואינו ניתן
+     לשינוי מהכרטיס; **הבורר בכפתור «＋ משימה חדשה» נשאר** (הכרעתו),
+     כי בלעדיו אי אפשר לפתוח משימה עצמאית כלל. */
+  ['tk-cat','category']
 ];
 let TASK_SNAP = null;
 /* חוזה ה-snapshot: **מה שהוצג מול מה שיש עכשיו**, שתי מחרוזות מאותו
@@ -16581,28 +16585,19 @@ window.openTask = (id)=>{
     ${ctabsHtml('tk')}
     <div id="tk-pn-main">
     <div class="form-grid">
-      <div class="form-sep">פרטי הפנייה המקושרת</div>
-      ${editable?`
-      <div class="span2 ac-wrap"><label>מקושר ל־</label>
-        <div id="tk-lnkchip" class="tkl-box"></div>
-        <input id="tk-lnkq" autocomplete="off" placeholder="חיפוש ליד, לקוח או תהליך מכירה…" oninput="tklPick('tk',this.value)" onfocus="tklPick('tk',this.value)" onblur="setTimeout(()=>{const b=document.getElementById('tk-lnkres'); if(b) b.hidden=true;},150)">
-        <div id="tk-lnkres" class="ac-menu" hidden></div>
-        <input type="hidden" id="tk-lnk" value="">
-      </div>`:''}
+      <div class="form-sep">פרטי המשימה</div>
       ${ent?`
       <div class="span2"><label>${esc(TK_KIND_LBL[t.linked_type]||'מקושר ל־')}</label>
-        <div class="tk-lnk"><span class="tk-kind tk-k-${esc(t.linked_type||'')}">${esc(TK_KIND_LBL[t.linked_type]||'')}</span>
-        ${go?`<a href="#" onclick="event.preventDefault();goCard(()=>${go})">${esc(entName)} ↗</a>`:esc(entName)}</div></div>
-      <div><label>טלפון ${phBtns(entPhone)}</label>${roIn(entPhone,{ltr:1})}</div>
-      ${x.lead?`<div><label>סטטוס הפנייה</label><div class="tk-lnk">${mdPill(x.lead.status||'—',LEAD_ST_COLORS,LB_TK)}</div></div>
-      <div><label>בעלים של הפנייה</label><div class="tk-lnk">${lbOwnerCellName(x.lead)}</div></div>
-      ${x.lead.company?`<div><label>שם חברה</label>${roIn(x.lead.company)}</div>`:''}`:''}
-      ${x.deal?`<div><label>שלב העסקה</label><div class="tk-lnk">${mdPill(x.deal.stage||'—',DEAL_ST_COLORS,LB_TK)}</div></div>`:''}
-      ${x.cust?`<div class="span2"><label>לקוח מקושר</label><div class="tk-lnk"><a href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(x.cust.id)}'))">${esc(x.cust.name||'כרטיס הלקוח')} ↗</a></div></div>`:''}
+        ${go?`<a class="dl-tile" href="#" onclick="event.preventDefault();goCard(()=>${go})"><span class="tk-kind tk-k-${esc(t.linked_type||'')}">${esc(TK_KIND_LBL[t.linked_type]||'')}</span><span class="dlt-nm">${esc(entName)}</span><span class="dlt-ar">↗</span></a>`
+             :`<div class="tk-lnk"><span class="tk-kind tk-k-${esc(t.linked_type||'')}">${esc(TK_KIND_LBL[t.linked_type]||'')}</span>${esc(entName)}</div>`}</div>
+      <div class="cell-2up">
+        <div class="c2-wide"><label>טלפון ${phBtns(entPhone)}</label>${roIn(entPhone,{ltr:1})}</div>
+        ${(x.lead&&x.lead.company)?`<div class="c2-wide"><label>שם חברה</label>${roIn(x.lead.company)}</div>`:''}
+      </div>
+      ${x.lead?`<div><label>בעלים של הפנייה</label><div class="tk-lnk">${lbOwnerCellName(x.lead)}</div></div>`:'<div></div>'}
       `:'<div class="span4"><div class="note">למשימה זו אין פנייה מקושרת.</div></div>'}
 
-      <div class="form-sep">פרטי המשימה</div>
-      <div class="span2"><label>מה צריך לעשות?<span class="req">*</span></label><input id="tk-name" value="${esc(t.name||'')}"></div>
+      <div class="span4"><label>מה צריך לעשות?<span class="req">*</span></label><input id="tk-name" value="${esc(t.name||'')}"></div>
       <div><label>מועד יעד</label><input type="datetime-local" id="tk-due" value="${esc(lbDtLocal(t.due_at))}"></div>
       <div><label>סטטוס</label>${selHtml('tk-status',TASK_STATUSES,t.status)}</div>
       <div><label>סיווג</label>${selHtml('tk-cat',tkCats(),t.category,true)}</div>
@@ -16630,10 +16625,6 @@ window.openTask = (id)=>{
     </section>
     </div>
 `;
-  /* 🔴 **לפני** ה-snapshot. החוזה הוא "מה שהוצג מול מה שיש עכשיו", ואתחול
-     שיבוא אחריו היה נרשם כשינוי של המשתמש כבר בשמירה הראשונה — כלומר
-     כתיבת linked_* על כל שמירה, גם כשאיש לא נגע בקישור. */
-  tklInit('tk', (t.linked_type && t.linked_id) ? t.linked_type+':'+t.linked_id : '');
   tkSnapshot(id);
   mountCard('tkModal', ()=>openTask(id));
   try{ window.markEmpty('tkModal'); }catch(_e){}
@@ -16660,12 +16651,6 @@ window.saveTask = async (id)=>{
     /* 6.130.0 — שתי עמודות מקלט אחד. ניתוק הקישור מאפס את שתיהן יחד;
        linked_type בלי linked_id הוא מצב שאין לו משמעות. */
     /* 🔴 בעלים דרך RPC, לא בעמודה. נאסף כאן ונשלח אחרי ה-UPDATE. */
-    if(col==='__link'){
-      const ci=now.indexOf(':');
-      upd.linked_type = ci>0 ? now.slice(0,ci) : null;
-      upd.linked_id   = ci>0 ? now.slice(ci+1) : null;
-      return;
-    }
     upd[col]= now===''?null:now;
   });
   if(('name' in upd) && !String(upd.name||'').trim()){
@@ -16732,14 +16717,18 @@ function renderTasks(){
      הראשון בלבד, כלומר בדיוק המקרה שקשה לשחזר. */
   tkInitDef(); tkChips(); renderTkFilters(); tkSelBar();
   const q=($('#taskSearch').value||'').trim();
+  const base = tkApplyF(tkViewList());
   if(q){
-    /* חיפוש חוצה-תצוגות ואינו כפוף לסינון — מי שמקליד שם מצפה למצוא
-       אותו, לא ל"אין תוצאות" בגלל מסנן שנשמר אתמול. הדפוס מ-renderLeads. */
-    const list=(TASKS||[]).filter(t=>(t.name||'').includes(q)||tkLinkName(t).includes(q)||tkLinkPhone(t).includes(q));
+    /* 🔴 6.186.0 — החיפוש **מכבד את הסינון והתצוגה**. רומן דיווח חי:
+       "אני מסנן סטטוס חדש ובעדיפות ורשמתי רומן בחיפוש וזה מראה לי גם
+       סטטוס הושלם". ההערה שהייתה כאן הצהירה שזה מכוון — הצהרה
+       שהתיישנה מול הכרעתו ב-31/08 לעסקאות ("לכבד את הסינון הפעיל").
+       ⚠️ ולכן מי שיחפש משימה שהושלמה יצטרך לשנות סינון. */
+    const list=base.filter(t=>(t.name||'').includes(q)||tkLinkName(t).includes(q)||tkLinkPhone(t).includes(q));
     paintKeep('#tasks-list', wideScreen() ? tkFlat(list) : capped(list, taskRow, 'לא נמצאו משימות'));
     return;
   }
-  const list = tkApplyF(tkViewList());
+  const list = base;
   /* 🔴 6.148.0 — רומן: "אני לא רוצה את הסיווגים ... תסיר את כולם."
      טבלה שטוחה. ⚠️ tkBucket עצמו **נשאר**: בורד העסקאות צובע לפיו את
      שורותיו (TK_PAINT), וסימון האיחור בשורה מגיע מ-lbDueMark ולא מהדלי. */
@@ -16895,14 +16884,15 @@ function custTable(list){
 function renderCustomers(){
   cuChips(); renderCuFilters();
   const q=($('#custSearch').value||'').trim();
+  const base = cuApplyF(cuViewList());
   if(q){
-    /* חיפוש חוצה-תצוגות — כולל שם הליד שממנו הלקוח הגיע. */
-    const list=CUSTS.filter(c=>(c.name||'').includes(q)||(c.phone||'').includes(q)
+    /* 6.186.0 — מכבד את הסינון, כמו בשאר המסכים. כולל שם הליד. */
+    const list=base.filter(c=>(c.name||'').includes(q)||(c.phone||'').includes(q)
       ||(c.priority_id||'').includes(q)||custLeads(c).some(l=>(l.full_name||'').includes(q)));
     paintKeep('#customers-list', wideScreen() ? custTable(list) : capped(list, custRow, 'לא נמצאו לקוחות'));
     return;
   }
-  const list=cuApplyF(cuViewList());
+  const list=base;
   paintKeep('#customers-list', wideScreen() ? custTable(list) : capped(list, custRow, 'לא נמצאו לקוחות'));
 }
 window.openCust = async (id)=>{
@@ -21739,15 +21729,17 @@ function lbPaint(html){ paintKeep('#leads-list', html); }
 function renderLeads(){
   lbChips(); lbInitDef(); renderLbFilters(); lbSelBar();
   const q = ($('#search').value||'').trim();
-  /* חיפוש חוצה-תצוגות: רשימה שטוחה על כל הלידים — ליד בסטטוס סופי חייב
-     להימצא גם כשהתצוגה הפעילה מסתירה אותו. הסינון **אינו** חל על חיפוש:
-     מי שמקליד שם מצפה למצוא אותו, לא ל"אין תוצאות" בגלל מסנן שנשמר אתמול. */
+  /* 🔴 6.186.0 — החיפוש **מכבד את הסינון והתצוגה**, כמו בעסקאות
+     (6.177.0) ובמשימות. ההערה שהייתה כאן הצהירה שזה מכוון; היא
+     התיישנה מול הכרעת רומן, והבאג התגלה כשהוא סינן שני סטטוסים
+     וקיבל בחיפוש גם "הושלם". */
+  const base = lbApplyF(lbViewList());
   if(q){
-    const list = LEADS.filter(l=>(l.full_name||'').includes(q)||(l.phone||'').includes(q)||(l.company||'').includes(q));
+    const list = base.filter(l=>(l.full_name||'').includes(q)||(l.phone||'').includes(q)||(l.company||'').includes(q));
     lbPaint(wideScreen() ? lbTable(list,false) : capped(list, leadRow, 'לא נמצאו לידים'));
     return;
   }
-  const list = lbApplyF(lbViewList());
+  const list = base;
   lbPaint(wideScreen() ? lbTable(list,true) : capped(list, leadRow, LB_VIEW==='mine'?'אין לך לידים בתהליך 🎉':'לא נמצאו לידים'));
 }
 debounceSearch($('#search'), renderLeads);

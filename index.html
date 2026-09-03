@@ -910,7 +910,12 @@
   .md-nm{ font-weight:800; font-size:14.5px; margin:3px 0 1px }
   .md-meta{ font-size:12px; color:#64748b; margin-bottom:5px }
   .md-act{ display:flex; gap:6px; flex-wrap:wrap }
-  .md-act .chip{ font-size:12.5px; padding:5px 11px; text-decoration:none }
+  .md-card{ cursor:pointer }
+  .md-card:active{ background:#f8fafc }
+  /* 6.189.0 — הכפתורים מודגשים (רומן): מלאים בכחול הבית, יעד מגע 40px. */
+  .md-act .chip{ font-size:13.5px; font-weight:700; padding:9px 16px; min-height:40px; text-decoration:none;
+                 background:var(--navy); color:#fff; border-color:var(--navy) }
+  .md-act .chip.chip-done{ background:#15803d; border-color:#15803d }
   .md-day{ font-size:12.5px; font-weight:800; color:var(--navy); margin:9px 0 5px; display:flex; gap:8px; align-items:center }
   .md-day small{ color:#94a3b8; font-weight:600 }
   /* משפך המכירות */
@@ -2684,7 +2689,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.188.0</div>
+      <div class="ver">גרסה 6.189.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2813,7 +2818,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.188.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.189.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -4892,7 +4897,15 @@ const DASH_ORDER = {
 };
 /* למנכ"ל סקשנים משניים מתקפלים כברירת מחדל — רואים את הדגלים ב-badge בלי לגלול */
 const DASH_FOLD_DEF = { ceo:{sales:true,sup:true,ops:true}, vp:{}, mgr:{}, sales:{}, min:{} };
+/* 6.189.0 — הסנכרון הידני שמור לעורכי הלוגיסטיקה (רומן: "לאף אחד מלבד
+   מיקי רומן ונח, וגם זה זמני עד שנוריד אותו לגמרי"). עד כאן #syncBtn לא
+   היה מגודר כלל. השער כאן הוא נראות בלבד; priority-sync v28 אוכף בשרת. */
+window.syncBtnGate = ()=>{
+  const b = document.getElementById('syncBtn'); if(!b) return;
+  b.classList.toggle('hidden', !window.canEdit('logi.orders'));
+};
 function applyDashboard(){
+  window.syncBtnGate();
   const prof = dashProfile(), st = dashSecState(), ord = DASH_ORDER[prof]||DASH_ORDER.min;
   document.querySelectorAll('#dash-secs .dash-sec').forEach(el=>{
     const s = DASH_SECS.find(x=>x.sec===el.dataset.sec);
@@ -5439,9 +5452,16 @@ function mdCard(e){
   const phone = o.contact_phone||o.phone||'';
   const items = svc ? [o.product, o.fault_details].filter(Boolean).join(' — ')
                     : [o.equipment_list, o.warehouse_notes?('מחסן: '+o.warehouse_notes):''].filter(Boolean).join(' · ');
-  const canDone = svc && window.pLevel('dash.myday')>=2
-                  && !['הושלם','הושלמה','בוטלה','סגורה'].includes(o.status);
-  return '<div class="md-card'+(svc?' svc':'')+(o.__fup?' fup':'')+'">'+
+  /* 6.189.0 — "בוצע" גם להזמנה, ורק כשהכול סופק לפי פריוריטי. ⚠️ ordHasOpen
+     ולא openAny: openAny שואל "דורש ביקור השלמה" (supply_state), בעוד השרת
+     שואל open_lines>0 — הזמנה 'בתהליך' עוברת את הראשון ונדחית בשני. */
+  const stDone = svc ? ['הושלם','הושלמה','בוטלה','סגורה'].includes(o.status)
+                     : ['הושלם','בוטל','מבוטלת'].includes(o.order_status);
+  const canDone = window.pLevel('dash.myday')>=2 && !stDone && (svc || !ordHasOpen(o.order_number));
+  const openCard = svc ? "openScall('"+o.id+"')" : "openOrd('"+o.id+"')";
+  /* הכרטיס עצמו לחיץ (רומן: "כפתור כרטיס למה נחוץ?"); כל כפתור בתוכו
+     עוצר את הבעבוע, אחרת לחיצה על "חיוג" פותחת גם את הכרטיס. */
+  return '<div class="md-card'+(svc?' svc':'')+(o.__fup?' fup':'')+'" role="button" tabindex="0" onclick="'+openCard+'" onkeydown="if(event.key===\'Enter\'){'+openCard+'}">'+
     '<div class="md-hd"><b>'+esc(o.time_slot||'ללא שעה')+'</b>'+
       (svc?'<span class="pill '+(o.urgency==='משביתה'?'p-red':'p-gray')+'">'+esc(o.urgency||'קריאת שירות')+'</span>':'')+
       (o.__fup?'<span class="pill" style="background:#fae8ff;color:#86198f">השלמה</span>':'')+
@@ -5452,17 +5472,19 @@ function mdCard(e){
     (items?'<div class="md-meta">'+esc(items)+'</div>':'')+
     '<div class="md-act">'+
       (addr?'<a class="chip" target="_blank" rel="noopener" href="'+wazeUrl(addr)+'" onclick="event.stopPropagation()">ניווט</a>':'')+
-      (phone?'<a class="chip" href="tel:'+esc(String(phone))+'">חיוג</a>':'')+
-      '<button type="button" class="chip" onclick="'+(svc?"openScall('"+o.id+"')":"openOrd('"+o.id+"')")+'">כרטיס</button>'+
-      (window.canEdit('docs.media.upload')?'<button type="button" class="chip" onclick="uploadMedia(\''+(svc?'call':'order')+'\',\''+o.id+'\')">תמונות</button>':'')+
-      (canDone?'<button type="button" class="chip" style="font-weight:800;color:#15803d" onclick="mdDone(\''+o.id+'\')">בוצע</button>':'')+
+      (phone?'<a class="chip" href="tel:'+esc(String(phone))+'" onclick="event.stopPropagation()">חיוג</a>':'')+
+      (window.canEdit('docs.media.upload')?'<button type="button" class="chip" onclick="event.stopPropagation();uploadMedia(\''+(svc?'call':'order')+'\',\''+o.id+'\')">תמונות</button>':'')+
+      (canDone?'<button type="button" class="chip chip-done" onclick="event.stopPropagation();mdDone(\''+o.id+'\',\''+(svc?'call':'order')+'\')">✓ בוצע</button>':'')+
     '</div></div>';
 }
-window.mdDone = async id=>{
-  if(!confirm('לסמן את קריאת השירות כבוצעה?')) return;
-  const r = await sb.schema('ord').rpc('scall_mark_done', { p_id: id });
+window.mdDone = async (id, kind)=>{
+  /* 6.189.0 — kind אופציונלי: 'order' מסמן הזמנה דרך ord.order_mark_done;
+     ברירת המחדל נשארת קריאת שירות, כדי שהקוראים הקיימים לא יזוזו. */
+  const isOrd = kind === 'order';
+  if(!confirm(isOrd ? 'לסמן את ההזמנה כבוצעה? ההודעה תגיע למנהלי הלוגיסטיקה.' : 'לסמן את קריאת השירות כבוצעה?')) return;
+  const r = await sb.schema('ord').rpc(isOrd ? 'order_mark_done' : 'scall_mark_done', { p_id: id });
   if(r.error){ toast('סימון נכשל: '+r.error.message); return; }
-  const s = SCALLS.find(x=>String(x.id)===String(id));
+  const s = (isOrd ? ORDS : SCALLS).find(x=>String(x.id)===String(id));
   if(s && r.data) Object.assign(s, r.data);
   toast('סומן כבוצע ✓');
   try{ renderOrders(); renderLogi(); renderCal(); }catch(_e){}
@@ -7216,6 +7238,7 @@ function renderCal(){
 /* ===== סנכרון פריוריטי מהמסך הראשי =====
    מ-6.0.0 הסנכרון רץ על הפלטפורמה עצמה — המערכת אוחדה והישן נמחק. */
 window.syncPriority = async ()=>{
+  if(!window.canEdit('logi.orders')){ toast('הסנכרון הידני שמור למנהלי הלוגיסטיקה'); return; }
   const btn = $('#syncBtn'); if(btn.disabled) return;
   /* תיקון סבב 4ב — btn.textContent מוחק את אייקון ה-SVG שנוסף לכפתור בסבב 4.
      לכן מעדכנים רק את צומת הטקסט עצמו, והאייקון נשאר במקומו. */
@@ -9461,6 +9484,54 @@ window.uploadMedia = (kind, parentId)=>{
 /* 6.23.0 — בלוק תמונות מהשטח, משותף לכרטיס ההזמנה ולכרטיס קריאת השירות.
    הוא מרונדר מיד ממה שכבר בזיכרון; אם רשימת הקבצים עדיין לא נטענה הוא
    טוען אותה ברקע ומחליף רק את תוכן ה-div, בלי לרנדר מחדש את כל הכרטיס. */
+/* ===== דוח אישור תקינות (6.189.0) =====
+   בלוק לכרטיס ההזמנה ולכרטיס קריאת השירות. canView('docs.reports') קובע
+   קיום, canEdit קובע את כפתור היצירה ואת הקישור — אותו כלל של 6.188.0.
+   ⚠️ p_doc_type אינו חופשי: protocol_create דוחה בקטגוריה הזאת את
+      'פרוטוקול הכנה להתקנה' ו'אישור הצעת מחיר', ו-sign מסתעפת
+      isReport = doc_type !== PROTOCOL_TYPE. הערך אומת חי 02/09/2026. */
+const REPORT_DOC_TYPE = 'דוח אישור תקינות ציוד';
+window.reportBlock = (kind, parentId)=>{
+  if(!window.canView('docs.reports')) return '';
+  const key = kind==='call' ? 'call_id' : 'order_id';
+  const may = window.canEdit('docs.reports');
+  const mine = (PROTS||[]).filter(p=>p[key]===parentId && p.category==='reports');
+  const rows = mine.map(p=>{ const ds=docStatus(p);
+    return `<div class="row"><span class="k">${esc(p.doc_type)}${p.sent_at?' · נוצר '+new Date(p.sent_at).toLocaleDateString('he-IL'):''}</span><span class="v">${(p.status==='נחתם'||p.signed_at)?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','open')">צפייה</a>`:(may?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','copy')">קישור</a>${p.phone?` · <a href="#" onclick="event.preventDefault();openDocLink('${p.id}','wa')">וואטסאפ</a>`:''}`:'<span style="color:#94a3b8">אין הרשאה לקישור</span>')} <span class="pill ${ds.cls}" title="${esc(ds.title)}">${esc(ds.label)}</span></span></div>`; }).join('');
+  return `<section class="ob-card" id="rep-box-${parentId}"><h2 class="sec">דוח אישור תקינות (${mine.length})</h2>${rows}`+
+    (may?`<button class="ghost" style="margin-top:8px" onclick="createReport('${kind}','${parentId}')">יצירת דוח תקינות לחתימה</button>`:'')+'</section>';
+};
+window.createReport = async (kind, parentId)=>{
+  if(!window.canEdit('docs.reports')){ alert('אין לך הרשאת עריכה בדוחות התקינות.'); return; }
+  const isCall = kind==='call';
+  const parent = (isCall ? SCALLS : ORDS).find(x=>x.id===parentId); if(!parent) return;
+  if(!confirm('ליצור דוח תקינות לחתימה עבור '+(parent.customer_name||'')+'?')) return;
+  const { data, error } = await sb.schema('ord').rpc('protocol_create', {
+    p_order_id: isCall?null:parentId, p_call_id: isCall?parentId:null, p_deal_id:null,
+    p_category:'reports', p_doc_type: REPORT_DOC_TYPE });
+  if(error){ alert('יצירת הדוח נכשלה: '+error.message); return; }
+  if(data) PROTS.unshift(data);
+  /* ציור הבלוק בלבד — פתיחת הכרטיס מחדש מאפסת גלילה ומיקוד (הלקח מ-6.154.0). */
+  const box = document.getElementById('rep-box-'+parentId);
+  if(box) box.outerHTML = window.reportBlock(kind, parentId);
+  try{ renderDocs(); }catch(_e){}
+  toast('הדוח נוצר — אפשר להפיק קישור חתימה');
+};
+
+/* ===== "בוצע" מהכרטיס (6.189.0) =====
+   מוצג למי שמחזיק dash.myday=2 (הטכנאים) או עורך את הדומיין. להזמנה — רק
+   כשאין שורות פתוחות לפי פריוריטי; אחרת הסבר ולא כפתור (הכרעת רומן).
+   השרת אוכף את שני התנאים שוב, ומתריע למנהלי הלוגיסטיקה. */
+window.doneBlock = (kind, o)=>{
+  const isCall = kind==='call';
+  const stDone = isCall ? ['הושלם','הושלמה','בוטלה','סגורה'].includes(o.status)
+                        : ['הושלם','בוטל','מבוטלת'].includes(o.order_status);
+  const allowed = window.pLevel('dash.myday')>=2 || window.canEdit(isCall?'logi.calls':'logi.orders');
+  if(!allowed || stDone) return '';
+  if(!isCall && ordHasOpen(o.order_number))
+    return `<div class="note" id="done-note-${o.id}">נותרו פריטים לאספקה לפי פריוריטי — אי אפשר לסמן כבוצע עד שהכול סופק.</div>`;
+  return `<button class="btn" id="done-btn-${o.id}" style="background:#15803d;border-color:#15803d" onclick="mdDone('${o.id}','${isCall?'call':'order'}')">✓ בוצע</button>`;
+};
 window.mediaBlock = (kind, parentId)=>{
   if(!window.canView('docs.media')) return '';
   const key = kind==='call' ? 'call_id' : 'order_id';
@@ -9905,7 +9976,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'techscope-2026-09-02a';
+const BUILD_ID = 'techfield-2026-09-03a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -15326,6 +15397,8 @@ const openCnt = on => { const r = openOf(on); return r ? Number(r.open_lines)||0
    כלל. ord.order_open_items_v ממשיך להחזיר את כל המצבים; ההחלטה מה מוצג
    נעשית כאן, כדי שאפשר יהיה להחזיר מצב לתצוגה בלי לגעת במסד. */
 const openStuck = on => { const r = openOf(on); return !!(r && r.supply_state === 'השלמה לתיאום'); };
+/* 6.189.0 — "נותרו שורות פתוחות לפי פריוריטי" — אותו פרדיקט של ord.order_mark_done. */
+const ordHasOpen = on => { const r = openOf(on); return !!(r && Number(r.open_lines) > 0); };
 /* השלמה שכבר קיבלה תאריך ביקור. עד 13/08/2026 היא פשוט נעלמה מהעין — הדרך
    היחידה לתאם הייתה לדרוס את scheduled_date, וזה הוציא אותה מהשבב בלי
    להשאיר שום עקבה. עכשיו היא נשארת מוצגת עד שהפריטים באמת סופקו. */
@@ -17008,6 +17081,8 @@ function renderCustomers(){
   paintKeep('#customers-list', wideScreen() ? custTable(list) : capped(list, custRow, 'לא נמצאו לקוחות'));
 }
 window.openCust = async (id)=>{
+  /* 6.189.0 — עד כאן ההגנה היחידה הייתה ש-CUSTS ריק ל-RLS. שער מפורש. */
+  if(!window.canView('crm.customers')) return;
   const c = CUSTS.find(x=>x.id===id); if(!c) return;
   /* התוצאה שייכת ללקוח שעליו נלחץ. בלי האיפוס היא הייתה מוצגת שוב
      בכרטיס אחר בכל פתיחה — הדפוס של CONV_RESULT ב-6.166.0. */
@@ -19230,11 +19305,52 @@ const selHtml = (id, vals, cur, allowEmpty, extraOnChange, pal, k) => {
     + `</select>`;
 };
 
+window.scallTechCard = (s)=>{
+  const arrive = s.address ? (s.address+' '+(s.city||'')) : '';
+  const ship = [s.ship_addr1, s.ship_addr2, s.ship_addr3].filter(Boolean).join(', ');
+  return `
+    <h3>🛠️ ${esc(s.call_number||'קריאה')} — ${esc(s.customer_name||'')}</h3>
+    <div class="note" style="margin:4px 0 14px">נפתחה ב-${fmtD(s.opened_date)||'—'}</div>
+    <div class="form-grid">
+      <div class="form-sep">פרטי הקריאה</div>
+      <div><label>מס' קריאה</label>${roIn(s.call_number,{ltr:1})}</div>
+      <div><label>שם לקוח</label>${roIn(s.customer_name)}</div>
+      <div><label>טלפון ${phBtns(s.phone)}</label>${roIn(s.phone,{ltr:1})}</div>
+      <div><label>סטטוס</label>${roIn(s.status)}</div>
+      <div><label>איש קשר</label>${roIn(s.contact_name)}</div>
+      <div><label>טלפון איש קשר ${phBtns(s.contact_phone)}</label>${roIn(s.contact_phone,{ltr:1})}</div>
+      <div class="span2"><label>🚚 כתובת הגעה ${wazeBtn(arrive||ship||s.customer_address)}</label>${roIn(arrive||ship||s.customer_address)}</div>
+      <div class="form-sep">התקלה</div>
+      <div class="span2"><label>מוצרים</label>${roIn(s.product)}</div>
+      <div><label>מהות הקריאה</label>${roIn(s.call_type)}</div>
+      <div><label>רמת דחיפות</label>${roIn(s.urgency)}</div>
+      <div class="span4"><label>פרטי התקלה</label>${roIn(s.fault_details)}</div>
+      <div class="form-sep">תיאום</div>
+      <div><label>תאריך מתואם</label>${roIn(fmtD(s.scheduled_date))}</div>
+      <div><label>משבצת זמן</label>${roIn(s.time_slot)}</div>
+      <div><label>צוות</label>${roIn(s.team)}</div>
+      <div><label>אחריות</label>${roIn(s.warranty)}</div>
+      ${s.notes?`<div class="span4"><label>הערות</label>${roIn(s.notes)}</div>`:''}
+    </div>
+    ${window.mediaBlock('call', s.id)}
+    ${window.reportBlock('call', s.id)}
+    <div class="modal-actions">${window.doneBlock('call', s)}</div>
+    <div class="err" id="se-err"></div>`;
+};
 window.openScall = (id)=>{
   const s = SCALLS.find(x=>x.id===id); if(!s) return;
   /* 6.21.0 — הרשאה במקום תפקיד. כל שדות קריאת השירות נשלטים במפתח logi.calls,
      בדיוק כמו במפה שבתוך ord.service_call_patch. */
   const editable = window.canEdit('logi.calls');
+  /* 6.189.0 — בלי הרשאת עריכה הכרטיס אינו חמישה סקשנים של פקדים מושבתים
+     אלא סיכום קריאה-בלבד: מה שהטכנאי צריך בשטח, ותו לא. כל 19 שדות הקריאה
+     ממופים ל-logi.calls (נמדד ב-field_policy), ולכן אין כאן מה לפרק לפי
+     מפתח — התבנית היא ההבחנה. */
+  if(!editable){
+    $('#ordSheet').innerHTML = window.scallTechCard(s);
+    mountCard('ordModal', ()=>openScall(id)); window.markEmpty('ordModal');
+    return;
+  }
   const L = !!s.erp_status; /* קריאה שסונכרנה מפריוריטי — שדות המקור נעולים ואפורים */
   const tag = L?SRC_TAG:'';
   const teamVals = [...new Set([...OTEAMS.filter(t=>t.active!==false).map(t=>t.name), ...uniqVals(SCALLS,'team',s.team)])];
@@ -19291,7 +19407,9 @@ window.openScall = (id)=>{
       <div class="span4"><textarea id="se-notes" rows="3" placeholder="הערות פנימיות על הקריאה">${esc(s.notes||'')}</textarea></div>
     </div>
     ${window.mediaBlock('call', s.id)}
+    ${window.reportBlock('call', s.id)}
     <div class="modal-actions">
+      ${window.doneBlock('call', s)}
       ${editable?`<button class="btn btnw" onclick="saveScall('${s.id}')">💾 שמירה</button>`:'<div class="note">אין לך הרשאת עריכה לקריאות שירות.</div>'}
     </div>
     <div class="err" id="se-err"></div>`;
@@ -19862,11 +19980,13 @@ window.openOrd = (id, ctx)=>{
         return `<div class="row"><span class="k">${esc(p.doc_type)}${p.sent_at?' · נוצר '+new Date(p.sent_at).toLocaleDateString('he-IL'):''}</span><span class="v">${(p.status==='נחתם'||p.signed_at)?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','open')">צפייה</a>`:(may?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','copy')">קישור</a>${p.phone?` · <a href="#" onclick="event.preventDefault();openDocLink('${p.id}','wa')">וואטסאפ</a>`:''}`:'<span style="color:#94a3b8">אין הרשאה לקישור</span>')} <span class="pill ${ds.cls}" title="${esc(ds.title)}">${esc(ds.label)}</span></span></div>`; }).join(''))+
       ((window.canEdit('crm.orders.docs')&&window.canEdit('docs.protocols'))?`<button class="ghost" style="margin-top:8px" onclick="createProtocol('${o.id}','${ctx||''}')">יצירת פרוטוקול הכנה לחתימה</button>`:'')+'</section>'; })():''}
     ${window.mediaBlock('order', o.id)}
+    ${window.reportBlock('order', o.id)}
     </div>
     <div class="modal-actions ord-actions">
+      ${window.doneBlock('order', o)}
       <button class="btn btnw hidden" id="oe-save" onclick="saveOrd('${o.id}')">שמירה</button>
       <div class="note hidden" id="oe-nosave">אין לך הרשאת עריכה לשדות שבכרטיס זה.</div>
-      ${(showSales&&cust)?`<button class="ghost" style="width:auto;padding:11px 18px" onclick="goCard(()=>openCust('${cust.id}'))">לכרטיס הלקוח ←</button>`:''}
+      ${(showSales&&cust&&window.canView('crm.customers'))?`<button class="ghost" style="width:auto;padding:11px 18px" onclick="goCard(()=>openCust('${cust.id}'))">לכרטיס הלקוח ←</button>`:''}
     </div>
     <div class="err" id="oe-err"></div>`;
   /* 6.21.0 — נעילה לפי שדה במקום נעילה גורפת לפי תפקיד. כל שדה נבדק מול מפתח

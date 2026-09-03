@@ -910,6 +910,10 @@
   .md-nm{ font-weight:800; font-size:14.5px; margin:3px 0 1px }
   .md-meta{ font-size:12px; color:#64748b; margin-bottom:5px }
   .md-act{ display:flex; gap:6px; flex-wrap:wrap }
+  /* 6.190.0 — כפתור סנכרון ההזמנה: כחול מודגש במעלה הכרטיס (רומן) */
+  .ord-sync-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:6px 0 2px }
+  .ord-sync-btn{ width:auto; background:#1d4ed8; border-color:#1d4ed8; color:#fff; font-weight:800; padding:9px 16px }
+  .ord-sync-btn:disabled{ opacity:.6 }
   .md-card{ cursor:pointer }
   .md-card:active{ background:#f8fafc }
   /* 6.189.0 — הכפתורים מודגשים (רומן): מלאים בכחול הבית, יעד מגע 40px. */
@@ -2689,7 +2693,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.189.0</div>
+      <div class="ver">גרסה 6.190.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2818,7 +2822,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.189.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.190.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -6361,17 +6365,22 @@ const evSortKey=e=>{ if(e.kind==='eta') return 9999;
   if(String(e.o.time_slot||'').trim()==='יום מלא') return -2;
   const sp=evSpan(e); if(sp) return sp.s;
   return -1; };
-function layoutDay(evs){
-  const timed=evs.filter(e=>evSpan(e)).slice(), allday=evs.filter(e=>!evSpan(e));
+/* 6.190.0 — dayMode: בתצוגה היומית "יום מלא" אינו נמתח על כל העמודה אלא
+   יושב כבלוק של שעתיים במעלה היום (רומן). הסימון full נשמר (CSS + תווית),
+   ו-top מסמן שהמיקום האופקי שלו נקבע כמו כל שיבוץ (עמודה משלו), ולא
+   כרצועה — אחרת היה מכסה שיבוץ של 08:00. השבועי אינו מושפע. */
+function layoutDay(evs, dayMode){
+  const spanOf = e => { const sp = evSpan(e); return (sp && sp.full && dayMode) ? {s:sp.s, e:sp.s+120, full:true, top:true} : sp; };
+  const timed=evs.filter(e=>spanOf(e)).slice(), allday=evs.filter(e=>!spanOf(e));
   /* היום המלא נערם אחרון ולכן מקבל תמיד את העמודה האחרונה. בלי זה
      העמודה שלו הייתה תלויה בשאלה אם קיים שיבוץ שמתחיל ב-08:00 בדיוק
      (שם ההשוואה על e מקדימה אותו), והבלוק היה קופץ מצד לצד בין יום
      ליום — אותו לוח, פריסה לא יציבה. */
-  timed.sort((a,b)=>{const x=evSpan(a),y=evSpan(b);
+  timed.sort((a,b)=>{const x=spanOf(a),y=spanOf(b);
     return (x.full?1:0)-(y.full?1:0) || x.s-y.s || x.e-y.e;});
   const ends=[], place=[];
   for(const e of timed){
-    const sp=evSpan(e);
+    const sp=spanOf(e);
     let ci=ends.findIndex(end=>end<=sp.s);
     if(ci<0){ ci=ends.length; ends.push(0); }
     ends[ci]=sp.e; place.push({e,sp,ci});
@@ -6405,7 +6414,7 @@ function tgNowLine(ds){
   return `<div class="tg-now" style="top:${tgTop(m)}px"></div>`;
 }
 function tgDay(ds, evs, compact, adH, adCap){
-  const {allday, place, n}=layoutDay(evs);
+  const {allday, place, n}=layoutDay(evs, !compact);
   /* רצועת "ללא שעה" בשבועי חסומה בגובה משותף לכל הימים. יום שיש בו יותר
      שבבים מהגובה שהוקצה מקבל סימון מפורש — אחרת השבב החמישי פשוט נעלם
      ואיש לא יודע שצריך לגלול. */
@@ -6428,7 +6437,7 @@ function tgDay(ds, evs, compact, adH, adCap){
         const RAIL = 64, gap = k*RAIL;
         return place.map(p=>{ const t=tgTop(p.sp.s), b=tgTop(p.sp.e);
           let pos, slim=false;
-          if(p.sp.full){
+          if(p.sp.full && !p.sp.top){
             const i=fulls.indexOf(p);
             if(rail){ pos=`inset-inline-start:calc(100% - ${(k-i)*RAIL}px);width:${RAIL-4}px`; slim=true; }
             else { pos=`inset-inline-start:calc(${i*100/k}% + 1px);width:calc(${100/k}% - 4px)`;
@@ -9976,7 +9985,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'techfield-2026-09-03a';
+const BUILD_ID = 'ordsync-2026-09-03a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -19889,6 +19898,40 @@ function renderOrders(){
 /* 6.21.0 — הכרטיס מקבל פרופיל תצוגה: 'logi' ממסך ההזמנות והתיאומים, 'sales' ממסך
    ההזמנות של ה-CRM, ו-null מכל כניסה אחרת (לוח מחוונים, לוח שנה, כרטיס לקוח, חיפוש)
    שבה אין הקשר מסך. הפרופיל רק מצמצם תצוגה — מה שמותר לערוך נקבע בהרשאה בלבד. */
+/* 6.190.0 — סנכרון הזמנה בודדת (רומן: "מיקי מדווח שלפעמים לא מתרענן").
+   שני מסלולים, שניהם explicit: priority-sync v30 (כותרת: סטטוס, מחיר,
+   כתובות, לקוח) ו-orders-detail-sync (פירוט השורות והדו-שיח). אחרי שניהם
+   השורה נמשכת מחדש מ-orders_v — לא ממה שהפונקציה החזירה — ומצוירת במקום.
+   השער זהה לכפתור הסנכרון הכללי: canEdit('logi.orders'), וגם בשרת. */
+window.ordSyncOne = async (id, ctx)=>{
+  if(!window.canEdit('logi.orders')){ toast('הסנכרון שמור למנהלי הלוגיסטיקה'); return; }
+  const o = ORDS.find(x=>x.id===id); if(!o) return;
+  const btn = document.getElementById('ord-sync-'+id);
+  if(btn && btn.disabled) return;
+  if(btn){ btn.disabled = true; btn.textContent = 'מסנכרן…'; }
+  let tok = null;
+  try{ const { data } = await sb.auth.getSession(); tok = data && data.session && data.session.access_token; }catch(_e){}
+  if(!tok){ toast('ההתחברות פגה — רעננו את הדף'); if(btn){ btn.disabled=false; btn.textContent='↻ סנכרון הזמנה זו מפריוריטי'; } return; }
+  const hdrs = { 'Content-Type':'application/json', 'Authorization':'Bearer '+tok, 'apikey': SB_KEY };
+  const body = JSON.stringify({ source:'app', orders:[o.order_number] });
+  const call = async fn => {
+    try{
+      const r = await fetch(SB_URL + '/functions/v1/' + fn, { method:'POST', headers:hdrs, body });
+      let j = null; try{ j = await r.json(); }catch(_e){}
+      return { ok: r.ok && !(j && j.ok === false), j, status: r.status };
+    }catch(e){ return { ok:false, j:{ error:String(e && e.message || e) }, status:0 }; }
+  };
+  const [a, b] = await Promise.all([call('priority-sync'), call('orders-detail-sync')]);
+  /* השורה נמשכת מחדש מה-view — שם המיסוך לפי הרשאה, וזה גם מה שהמסך מציג */
+  const { data:row } = await sb.schema('ord').from('orders_v').select('*').eq('id', id).maybeSingle();
+  if(row) Object.assign(o, row);
+  try{ renderOrders(); renderLogi(); renderCal(); }catch(_e){}
+  if(document.getElementById('ordSheet') && !document.getElementById('ordModal').classList.contains('hidden')) openOrd(id, ctx||undefined);
+  const upd = a.j && a.j.orders_updated, miss = a.j && a.j.explicit_missing && a.j.explicit_missing.length;
+  if(!a.ok || !b.ok) toast('הסנכרון נכשל: ' + ((a.j&&a.j.error) || (b.j&&b.j.error) || ('שגיאה '+(a.status||b.status))));
+  else if(miss) toast('ההזמנה לא נמצאה בפריוריטי');
+  else toast(upd ? 'ההזמנה עודכנה מפריוריטי ✓' : 'ההזמנה זהה לפריוריטי — אין שינוי');
+};
 window.openOrd = (id, ctx)=>{
   const o = ORDS.find(x=>x.id===id); if(!o) return;
   ctx = (ctx==='logi' || ctx==='sales') ? ctx : null;
@@ -19902,6 +19945,7 @@ window.openOrd = (id, ctx)=>{
   const hasSame=myAddr && others.some(x=>norm(shipAddrOnly(x))===myAddr);
   $('#ordSheet').innerHTML = `
     <h3>${esc(o.order_number)} — ${esc(o.customer_name||'')}${o.erp_status?` <span class="pill p-violet" title="הסטטוס בפריוריטי — מתעדכן בסנכרון">${PRI_ICO}פריוריטי: ${esc(o.erp_status)}</span>`:''}${o.erp_synced_at?`<span class="pill" style="font-weight:400" title="התאריך שבו השתנה לאחרונה שדה שמגיע מפריוריטי. הסנכרון עצמו בודק את ההזמנה כל שעה — מועד הבדיקה האחרונה מוצג בראש המסך.">עודכן מפריוריטי ${new Date(o.erp_synced_at).toLocaleDateString('he-IL')}</span>`:''}${window.regressTag?window.regressTag(o):''}${openBadge(o.order_number,1)}${retBadge(o.order_number,1)}</h3>
+    ${window.canEdit('logi.orders')?`<div class="ord-sync-row"><button class="btn ord-sync-btn" id="ord-sync-${o.id}" onclick="ordSyncOne('${o.id}','${ctx||''}')">↻ סנכרון הזמנה זו מפריוריטי</button><span class="note" style="margin:0">מושך את הכותרת, הפירוט והדו-שיח של ההזמנה הזו בלבד</span></div>`:''}
     <div style="height:10px"></div>
     <div class="form-grid">
       <div class="form-sep">פרטי ההזמנה מפריוריטי</div>

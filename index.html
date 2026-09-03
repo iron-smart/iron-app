@@ -10,6 +10,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&family=Rubik:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{ --navy:#002D48; --green:#6A9F85; --dark:#061827; --bg:#f4f6f8; --line:#e2e8f0; --red:#c0392b; --amber:#d97706;
+  /* 6.192.0 — חג · ערב חג · חול המועד בסגנון אחד ממשפחת ה-navy (רומן, 03/09/2026:
+     "כל מיני צבעים שונים ולא הבנתי למה — תיצור אחידות"). מחלקות הסוג נשארות ב-DOM.
+     רחוק מענבר הצפי (--amber) ומאפור כותרת היום (#e9eff3). */
+  --hol-bg:#dbe6ef; --hol-ink:#002D48; --hol-wash:rgba(0,45,72,.08);
   /* סולם עיצוב (6.72.3). כל החלטת רווח/רדיוס/גודל נקבעת כאן ולא בכל כלל בנפרד. */
   --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px;
   --r-sm:6px; --r-md:8px; --r-lg:12px; --r-pill:999px;
@@ -910,9 +914,10 @@
   .md-nm{ font-weight:800; font-size:14.5px; margin:3px 0 1px }
   .md-meta{ font-size:12px; color:#64748b; margin-bottom:5px }
   .md-act{ display:flex; gap:6px; flex-wrap:wrap }
-  /* 6.190.0 — כפתור סנכרון ההזמנה: כחול מודגש במעלה הכרטיס (רומן) */
+  /* 6.190.0 — כפתור סנכרון ההזמנה במעלה הכרטיס. 6.192.0 — בכחול המותג (--navy)
+     ולא בכחול זר: #1d4ed8 היה הצבע היחיד בקובץ שאינו מהפלטה (רומן, 03/09/2026) */
   .ord-sync-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:6px 0 2px }
-  .ord-sync-btn{ width:auto; background:#1d4ed8; border-color:#1d4ed8; color:#fff; font-weight:800; padding:9px 16px }
+  .ord-sync-btn{ width:auto; background:var(--navy); border-color:var(--navy); color:#fff; font-weight:800; padding:9px 16px }
   .ord-sync-btn:disabled{ opacity:.6 }
   .md-card{ cursor:pointer }
   .md-card:active{ background:#f8fafc }
@@ -1137,6 +1142,18 @@
   .tg-col{ background:#fff; border:1px solid var(--line); border-radius:10px; padding:4px; box-shadow:0 1px 3px rgba(6,24,39,.06); }
   .tg-col.nowork{ background:repeating-linear-gradient(45deg,#f7f7f5,#f7f7f5 8px,#f1f1ee 8px,#f1f1ee 16px); }
   .tg-allday{ overflow-y:auto; overflow-x:hidden; scrollbar-width:thin }
+  /* 6.192.0 — בתצוגה היומית עמודת השעות נצמדת לתחתית העמודה, ולכן 08:00 מיושר
+     לגוף הרשת בלי תלות בגובה הכותרת, רצועת "יום מלא" ורצועת "ללא שעה". עד כאן
+     הכותרת (~38px) הסיטה את התווית — ה-"08:00" החתוך בצילום של רומן. השבועי לא זז.
+     4px = הריפוד של .tg-col. */
+  .tg-wrap.tg-wrap-day{ align-items:stretch; }
+  .tg-wrap.tg-wrap-day > div:first-child{ display:flex; flex-direction:column; justify-content:flex-end; padding-bottom:4px; }
+  /* רצועת "יום מלא": background-image ולא background — הצפי שומר על הרקע הענברי שלו (הלקח של 6.90.1) */
+  .tg-fullday{ border:1px solid var(--line); border-radius:10px; padding:6px 8px 2px; margin-bottom:8px; background:#fff; }
+  .tg-fullday-t{ font-size:11.5px; font-weight:800; color:#64748b; margin-bottom:4px; }
+  .tg-fullday-cards{ display:flex; flex-wrap:wrap; gap:8px; }
+  .tg-fullday-cards .ev{ flex:1 1 260px; max-width:420px; margin-bottom:6px; background-image:linear-gradient(rgba(99,102,241,.07),rgba(99,102,241,.07)); }
+  .tg-fullday-cards .ev .ev-time{ background:#e0e7ff; color:#3730a3; border-radius:5px; padding:1px 6px; }
   .tg-allday.has{ border-bottom:1px dashed #dbe3ea; }
   .tg-more{ font-size:11px; color:#4338ca; text-align:center; padding:2px 0 4px }
   /* 6.2.6 — שיבוץ "יום מלא" מציג את אותם פרטים ככל שיבוץ אחר (רומן 30/07/2026) */
@@ -1183,25 +1200,25 @@
      repeating-linear-gradient, ו-shorthand מחליף ואינו מוסיף. זו התקלה
      המדודה של 6.90.1, שבה קריאת שירות ביום מלא איבדה את הוורוד שלה. */
   .hol-tag{ border-radius:4px; padding:0 5px; font-size:10.5px; font-weight:800; margin-inline-start:4px; white-space:nowrap; }
-  .hol-tag.hol-chag{ background:#dbeafe; color:#1e3a8a; }
-  .hol-tag.hol-erev{ background:#fef3c7; color:#92400e; }
-  .hol-tag.hol-moed{ background:#e0f2fe; color:#075985; }
-  #cal-wrap .tg-col.hol-chag, #meet-cal-wrap .tg-col.hol-chag{ background-image:linear-gradient(rgba(59,130,246,.09),rgba(59,130,246,.09)); }
-  #cal-wrap .tg-col.hol-erev, #meet-cal-wrap .tg-col.hol-erev{ background-image:linear-gradient(rgba(245,158,11,.08),rgba(245,158,11,.08)); }
-  #cal-wrap .tg-col.hol-moed, #meet-cal-wrap .tg-col.hol-moed{ background-image:linear-gradient(rgba(14,165,233,.06),rgba(14,165,233,.06)); }
-  #cal-wrap .month-cell.hol-chag, #meet-cal-wrap .month-cell.hol-chag{ background-image:linear-gradient(rgba(59,130,246,.09),rgba(59,130,246,.09)); }
-  #cal-wrap .month-cell.hol-erev, #meet-cal-wrap .month-cell.hol-erev{ background-image:linear-gradient(rgba(245,158,11,.08),rgba(245,158,11,.08)); }
-  #cal-wrap .month-cell.hol-moed, #meet-cal-wrap .month-cell.hol-moed{ background-image:linear-gradient(rgba(14,165,233,.06),rgba(14,165,233,.06)); }
+  .hol-tag.hol-chag{ background:var(--hol-bg); color:var(--hol-ink); }
+  .hol-tag.hol-erev{ background:var(--hol-bg); color:var(--hol-ink); }
+  .hol-tag.hol-moed{ background:var(--hol-bg); color:var(--hol-ink); }
+  #cal-wrap .tg-col.hol-chag, #meet-cal-wrap .tg-col.hol-chag{ background-image:linear-gradient(var(--hol-wash),var(--hol-wash)); }
+  #cal-wrap .tg-col.hol-erev, #meet-cal-wrap .tg-col.hol-erev{ background-image:linear-gradient(var(--hol-wash),var(--hol-wash)); }
+  #cal-wrap .tg-col.hol-moed, #meet-cal-wrap .tg-col.hol-moed{ background-image:linear-gradient(var(--hol-wash),var(--hol-wash)); }
+  #cal-wrap .month-cell.hol-chag, #meet-cal-wrap .month-cell.hol-chag{ background-image:linear-gradient(var(--hol-wash),var(--hol-wash)); }
+  #cal-wrap .month-cell.hol-erev, #meet-cal-wrap .month-cell.hol-erev{ background-image:linear-gradient(var(--hol-wash),var(--hol-wash)); }
+  #cal-wrap .month-cell.hol-moed, #meet-cal-wrap .month-cell.hol-moed{ background-image:linear-gradient(var(--hol-wash),var(--hol-wash)); }
   /* 🔴 והשער "background-image ולא background" הוא **הכרחי ולא מספיק**:
      `background-image` גם הוא **מחליף** background-image. `.tg-col.nowork`
      מגדיר את הפסים ב-shorthand (כלומר ב-background-image), ולכן הגוון שלי
      מחק אותם — שישי שהוא גם ערב חג איבד את הפסים שלו. נתפס בבדיקה, לא
      בעין. הצורה הנכונה היא **להרכיב את השכבות**, הגוון מעל הפסים. */
-  #cal-wrap .tg-col.nowork.hol-chag, #meet-cal-wrap .tg-col.nowork.hol-chag{ background-image:linear-gradient(rgba(59,130,246,.09),rgba(59,130,246,.09)),repeating-linear-gradient(45deg,#f7f7f5,#f7f7f5 8px,#f1f1ee 8px,#f1f1ee 16px); }
-  #cal-wrap .tg-col.nowork.hol-erev, #meet-cal-wrap .tg-col.nowork.hol-erev{ background-image:linear-gradient(rgba(245,158,11,.08),rgba(245,158,11,.08)),repeating-linear-gradient(45deg,#f7f7f5,#f7f7f5 8px,#f1f1ee 8px,#f1f1ee 16px); }
-  #cal-wrap .tg-col.nowork.hol-moed, #meet-cal-wrap .tg-col.nowork.hol-moed{ background-image:linear-gradient(rgba(14,165,233,.06),rgba(14,165,233,.06)),repeating-linear-gradient(45deg,#f7f7f5,#f7f7f5 8px,#f1f1ee 8px,#f1f1ee 16px); }
+  #cal-wrap .tg-col.nowork.hol-chag, #meet-cal-wrap .tg-col.nowork.hol-chag{ background-image:linear-gradient(var(--hol-wash),var(--hol-wash)),repeating-linear-gradient(45deg,#f7f7f5,#f7f7f5 8px,#f1f1ee 8px,#f1f1ee 16px); }
+  #cal-wrap .tg-col.nowork.hol-erev, #meet-cal-wrap .tg-col.nowork.hol-erev{ background-image:linear-gradient(var(--hol-wash),var(--hol-wash)),repeating-linear-gradient(45deg,#f7f7f5,#f7f7f5 8px,#f1f1ee 8px,#f1f1ee 16px); }
+  #cal-wrap .tg-col.nowork.hol-moed, #meet-cal-wrap .tg-col.nowork.hol-moed{ background-image:linear-gradient(var(--hol-wash),var(--hol-wash)),repeating-linear-gradient(45deg,#f7f7f5,#f7f7f5 8px,#f1f1ee 8px,#f1f1ee 16px); }
   .mhol{ font-size:10.5px; font-weight:800; margin:-2px 0 4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .mhol.hol-chag{ color:#1e3a8a; } .mhol.hol-erev{ color:#92400e; } .mhol.hol-moed{ color:#075985; }
+  .mhol.hol-chag, .mhol.hol-erev, .mhol.hol-moed{ color:var(--hol-ink); }
   .ev{ border-radius:8px; padding:7px 9px; font-size:12.5px; margin-bottom:7px; cursor:pointer; border-inline-start:4px solid #94a3b8; background:#f6f8fa; line-height:1.45; }
   .ev:hover{ filter:brightness(.96); }
   .ev .t{ font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:13px; }
@@ -1388,9 +1405,15 @@
   #ordModal .ord-bottom .ob-card{ border:1px solid var(--line); border-radius:10px; background:#fff; padding:12px 14px; }
   #ordModal .ord-bottom .ob-card h2.sec{ margin:0 0 10px; font-size:14px; }
   #ordModal .ord-bottom .others-box{ margin-top:0; }
-  #ordModal .modal-actions.ord-actions{ position:sticky; bottom:0; z-index:5; background:#fff; border-top:1px solid var(--line); box-shadow:0 -8px 18px rgba(0,0,0,.07); padding:10px 0; margin-top:16px; gap:10px; }
+  /* 6.192.0 — שורת הפעולות של **כל** כרטיס נדבקת לתחתית הגיליון, לא רק בהזמנה
+     (רומן, 03/09/2026: "רעיון מעולה ואני רוצה להחיל גם ביתר המערכת"). ילד ישיר
+     בלבד: בגופי הגיליונות יש .modal-actions מקוננים (תבניות תשלום #ptForm, לוח
+     הפעימות) שאסור להדביק. הגיליון הוא מיכל הגלילה (overflow:auto) גם ב-.tabbed,
+     ולכן sticky עובד בשניהם. "✓ בוצע" שומר על הירוק הכהה שלו — inline גובר. */
+  .modal .sheet > .modal-actions{ position:sticky; bottom:0; z-index:5; background:#fff; border-top:1px solid var(--line); box-shadow:0 -8px 18px rgba(0,0,0,.07); padding:10px 0; margin-top:16px; gap:10px; }
+  .modal .sheet > .modal-actions > .btn{ border-radius:11px; font-size:15px; background:linear-gradient(135deg,var(--green),#4e8168); box-shadow:0 6px 18px rgba(106,159,133,.38); }
+  @media(min-width:561px){ .modal .sheet > .modal-actions > .btn{ width:auto; padding:11px 32px; } }
   #ordModal .modal-actions.ord-actions .ghost{ padding:var(--sp-2) var(--sp-4); font-size:var(--fs-md); width:auto; min-height:36px; }
-  #ordModal .modal-actions.ord-actions #oe-save{ width:auto !important; padding:11px 32px !important; font-size:15px; border-radius:11px; background:linear-gradient(135deg,var(--green),#4e8168); box-shadow:0 6px 18px rgba(106,159,133,.38); }
   .form-grid label{ display:flex; align-items:center; flex-wrap:wrap; gap:4px 5px; min-height:20px; font-size:12px; color:#475569; margin-bottom:4px; font-weight:600; line-height:1.45; }
   .form-grid label .ph-btn, .form-grid label .waze-btn, .form-grid label .src-tag{ flex:none; }
   /* 6.75.3 — שדה עריכה מוגדר מעתה במפורש כלבן עם מסגרת נראית. הרקע לא נקבע
@@ -2552,6 +2575,16 @@ tr.lb-on td{ background-color:#eef5fd !important; }
    הוא ה-popover של הבעלים; 70 נמצא מעל שניהם. מחלקה נפרדת ולא
    z-index על המזהה: שלושה מנגנונים גלובליים מזהים אותה בשמה. */
 .modal-over{ z-index:70; }
+/* 6.192.0 — שיבוץ הזמנה מהיומן (רומן, 03/09/2026) */
+.cal-pick-btn{ flex:none; min-width:22px; height:22px; padding:0 6px; border:1px solid var(--line); border-radius:6px; background:#fff; color:var(--navy); font-weight:800; font-size:13px; line-height:1; cursor:pointer; vertical-align:middle; }
+.cal-pick-btn:hover{ background:#f1f5f9; }
+.cal-pick-btn.lbl{ font-size:12px; padding:0 10px; }
+.cal-pick-q{ width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px; font-size:15px; }
+.cal-pick-list{ max-height:52vh; overflow:auto; margin-top:8px; }
+.cal-pick-row{ padding:8px 10px; border-bottom:1px solid var(--line); cursor:pointer; font-size:13.5px; }
+.cal-pick-row:hover{ background:#f8fafc; }
+.cal-pick-row b{ color:var(--navy); }
+.cal-pick-row .s{ color:#64748b; font-size:12px; margin-top:2px; }
   /* משלוח והתקנה (6.175.0). בסקופ #set-wrap כדי שלא ידלוף למסכים אחרים. */
   #set-wrap .shp-bar{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:8px }
   #set-wrap .shp-search{ flex:1 1 260px; min-width:180px }
@@ -2693,7 +2726,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.191.0</div>
+      <div class="ver">גרסה 6.192.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2822,7 +2855,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.191.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.192.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3276,7 +3309,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       <input id="lm-url" class="hidden" placeholder="קישור לפגישה המקוונת" dir="ltr">
       <input id="lm-phone" class="hidden" placeholder="טלפון ליצירת קשר" dir="ltr">
     </div>
-    <div class="actions">
+    <div class="modal-actions">
       <button class="btn green" id="lm-save">שמירה</button>
       <button class="ghost" id="lm-cancel">ביטול</button>
     </div>
@@ -3382,6 +3415,18 @@ tr.lb-on td{ background-color:#eef5fd !important; }
 <!-- מודל כרטיס הזמנה / קריאת שירות (מערכת התיאומים) -->
 <div class="modal hidden" id="ordModal">
   <div class="sheet wide" id="ordSheet"></div>
+</div>
+<!-- 6.192.0 — בורר הזמנה לשיבוץ מהיומן (רומן, 03/09/2026: "לחיצה על יום ספציפי
+     תאפשר למשוך הזמנה עם חיפוש ותמקם אותה כבר דרך היומן"). .modal-over: נפתח מעל
+     מסך היומן, נסגר ב-Esc ובלחיצת רקע דרך השערים הגלובליים הקיימים, ואינו כרטיס
+     (בלי mountCard) — ולכן X בכרטיס ההזמנה שנפתח ממנו מחזיר ליומן. -->
+<div class="modal modal-over hidden" id="calPickModal">
+  <div class="sheet">
+    <h3>שיבוץ הזמנה ליום <span id="calPickDay"></span></h3>
+    <div class="note" style="margin:0 0 10px">הזמנות פתוחות שטרם תואמו. הבחירה פותחת את כרטיס ההזמנה עם התאריך ממולא — השיבוץ נשמר רק בלחיצה על שמירה.</div>
+    <input id="calPickQ" class="cal-pick-q" autocomplete="off" placeholder="חיפוש לפי לקוח, מספר הזמנה, עיר או טלפון…" oninput="calPickSearch(this.value)">
+    <div id="calPickList" class="cal-pick-list"></div>
+  </div>
 </div>
 
 <!-- מודל שורת תשלום ידנית -->
@@ -6366,12 +6411,13 @@ const evSortKey=e=>{ if(e.kind==='eta') return 9999;
   if(String(e.o.time_slot||'').trim()==='יום מלא') return -2;
   const sp=evSpan(e); if(sp) return sp.s;
   return -1; };
-/* 6.190.0 — dayMode: בתצוגה היומית "יום מלא" אינו נמתח על כל העמודה אלא
-   יושב כבלוק של שעתיים במעלה היום (רומן). הסימון full נשמר (CSS + תווית),
-   ו-top מסמן שהמיקום האופקי שלו נקבע כמו כל שיבוץ (עמודה משלו), ולא
-   כרצועה — אחרת היה מכסה שיבוץ של 08:00. השבועי אינו מושפע. */
-function layoutDay(evs, dayMode){
-  const spanOf = e => { const sp = evSpan(e); return (sp && sp.full && dayMode) ? {s:sp.s, e:sp.s+120, full:true, top:true} : sp; };
+/* 6.192.0 — היום המלא בתצוגה היומית יצא מרשת השעות לרצועה משלו מעל הרשת
+   (renderCal, ענף day), ולכן dayMode של 6.190.0 ירד: "יום מלא בלוח שנה
+   שיהיה מחוץ לשעות הפעילות, מעל כל השעות" (רומן, 03/09/2026). השבועי
+   ממשיך לקבל את הפריסה המלאה — כאן אין יותר ענף לפי תצוגה. */
+const evFull = e => { const sp = evSpan(e); return !!(sp && sp.full); };
+function layoutDay(evs){
+  const spanOf = evSpan;
   const timed=evs.filter(e=>spanOf(e)).slice(), allday=evs.filter(e=>!spanOf(e));
   /* היום המלא נערם אחרון ולכן מקבל תמיד את העמודה האחרונה. בלי זה
      העמודה שלו הייתה תלויה בשאלה אם קיים שיבוץ שמתחיל ב-08:00 בדיוק
@@ -6415,7 +6461,7 @@ function tgNowLine(ds){
   return `<div class="tg-now" style="top:${tgTop(m)}px"></div>`;
 }
 function tgDay(ds, evs, compact, adH, adCap){
-  const {allday, place, n}=layoutDay(evs, !compact);
+  const {allday, place, n}=layoutDay(evs);
   /* רצועת "ללא שעה" בשבועי חסומה בגובה משותף לכל הימים. יום שיש בו יותר
      שבבים מהגובה שהוקצה מקבל סימון מפורש — אחרת השבב החמישי פשוט נעלם
      ואיש לא יודע שצריך לגלול. */
@@ -6438,7 +6484,7 @@ function tgDay(ds, evs, compact, adH, adCap){
         const RAIL = 64, gap = k*RAIL;
         return place.map(p=>{ const t=tgTop(p.sp.s), b=tgTop(p.sp.e);
           let pos, slim=false;
-          if(p.sp.full && !p.sp.top){
+          if(p.sp.full){
             const i=fulls.indexOf(p);
             if(rail){ pos=`inset-inline-start:calc(100% - ${(k-i)*RAIL}px);width:${RAIL-4}px`; slim=true; }
             else { pos=`inset-inline-start:calc(${i*100/k}% + 1px);width:calc(${100/k}% - 4px)`;
@@ -7110,6 +7156,45 @@ window.tdCopyFrom = async ()=>{
   }
 };
 
+/* 6.192.0 — שיבוץ הזמנה מהיומן (רומן, 03/09/2026: "בוחרים הזמנה ואז זה פותח את
+   כרטיס ההזמנה ומזינים את הפרטים כרגיל עם אפשרות לחזור אחורה ליומן").
+   הבורר אינו כרטיס — היומן הוא מסך, ולכן סגירת הכרטיס מחזירה אליו, ו-saveOrd
+   כבר קורא renderCal. התאריך ממולא ב-#oe-date **אחרי** ordSnapshot (שרץ בסוף
+   openOrd), ולכן saveOrd רואה אותו כשינוי ושולח אותו; עד "שמירה" לא נכתב דבר.
+   "פתוחה שטרם תואמה" = אותו פרדיקט של הצפי (ETA_SKIP + needs_scheduling) —
+   הגדרה אחת, שני צרכנים. השער: canEdit('logi.orders.schedule'), כמו השדה עצמו. */
+let CAL_PICK_DS = null;
+const calPickable = o => !o.scheduled_date && !ETA_SKIP.includes(o.order_status) && o.needs_scheduling !== false;
+const calPickBtn = (ds, lbl) => canEdit('logi.orders.schedule')
+  ? `<button type="button" class="cal-pick-btn${lbl?' lbl':''}" title="שיבוץ הזמנה ליום זה" onclick="event.stopPropagation();calPickOpen('${ds}')">${lbl?'＋ שיבוץ הזמנה ליום זה':'＋'}</button>` : '';
+window.calPickOpen = ds => {
+  if(!canEdit('logi.orders.schedule')) return;
+  CAL_PICK_DS = ds;
+  const d=$('#calPickDay'); if(d) d.textContent = dayNameHe(ds)+', '+fmtD(ds);
+  const q=$('#calPickQ'); if(q) q.value='';
+  calPickSearch('');
+  $('#calPickModal').classList.remove('hidden');
+  setTimeout(()=>{ try{ if(q) q.focus(); }catch(_e){} }, 30);
+};
+window.calPickSearch = q => {
+  const box=$('#calPickList'); if(!box) return;
+  const s=String(q||'').trim().toLowerCase(), dig=s.replace(/\D/g,'');
+  const list=ORDS.filter(calPickable).filter(o=>!s
+      || [o.order_number,o.customer_name,o.city,o.contact_name].some(v=>v&&String(v).toLowerCase().includes(s))
+      || (dig && [o.phone,o.contact_phone].some(v=>v&&String(v).replace(/\D/g,'').includes(dig))))
+    .sort((a,b)=>String(b.order_number).localeCompare(String(a.order_number)));
+  const n=list.length;
+  box.innerHTML = n ? list.slice(0,30).map(o=>`<div class="cal-pick-row" onclick="calPickChoose('${jsq(o.id)}')"><b>${esc(o.order_number||'')}</b> · ${esc(o.customer_name||'')}${o.city?` · ${esc(o.city)}`:''}<div class="s">${esc(o.order_status||'')}${o.items_count?` · ${o.items_count} פר'`:''}${o.eta_date?` · צפי ${fmtD(o.eta_date)}`:''}</div></div>`).join('')
+      + (n>30?`<div class="note">מוצגות 30 מתוך ${n} — צמצמו את החיפוש</div>`:'')
+    : '<div class="empty">אין הזמנות פתוחות שממתינות לתיאום</div>';
+};
+window.calPickChoose = id => {
+  const ds=CAL_PICK_DS; $('#calPickModal').classList.add('hidden');
+  openOrd(id, 'logi');
+  const d=document.getElementById('oe-date');
+  /* change עם bubbles — מאזין tdHint יושב על document (6.24.18) */
+  if(d && !d.disabled){ d.value=ds; d.dispatchEvent(new Event('change',{bubbles:true})); toast('התאריך '+fmtD(ds)+' מולא — השיבוץ יישמר בלחיצה על שמירה'); }
+};
 window.calGoDay = ds=>{ CAL_D=new Date(ds+'T12:00:00'); CAL_VIEW='day'; renderCal(); };
 function renderCal(){
   const el = $('#cal-wrap'); if(!el) return;
@@ -7135,7 +7220,7 @@ function renderCal(){
         const nowork=dowOf(d)===CAL_FRIDAY&&!evs.length;
         return `<div class="month-cell ${inMonth?'':'out'} ${d===t?'today':''} ${nowork?'nowork':''}${heCls(d)}" onclick="calGoDay('${d}')">
           ${heDay(d)?`<div class="mhol hol-${heDay(d).kind}" title="${esc(heDay(d).name)}">${esc(heDay(d).name)}</div>`:''}
-          <div class="mnum"><span>${parseInt(d.slice(8),10)}</span>${nReal?`<span class="mcount">${nReal}</span>`:''}${nEta?`<span class="mcount eta" title="צפי אספקה — אינו תיאום">${nEta} צפי</span>`:''}</div>
+          <div class="mnum"><span>${parseInt(d.slice(8),10)}</span>${nReal?`<span class="mcount">${nReal}</span>`:''}${nEta?`<span class="mcount eta" title="צפי אספקה — אינו תיאום">${nEta} צפי</span>`:''}${calPickBtn(d)}</div>
           ${shown.map(e=>{ const o=e.o, col=evColor(e), done=evDone(e), ok=evOk(e), st=evStatus(e);
             if(e.kind==='eta'){
               const mates=etaMates(e);
@@ -7143,7 +7228,7 @@ function renderCal(){
                  על התצוגה היומית ונכנסת ישר לכרטיס ההזמנה — המקום היחיד
                  שבו הופכים אותו לתיאום אמיתי. */
               return `<div class="mini-ev eta" style="border-inline-start-color:${col};cursor:pointer" onclick="event.stopPropagation();goCard(()=>openOrd('${jsq(o.id)}'))" title="${esc(o.customer_name||'')} · צפי אספקה ${esc(etaSpanText(o))}${o.eta_note?' · '+esc(o.eta_note):''}${mates.length?' · ביקור משותף עם '+esc(mates.map(x=>x.order_number).join(', ')):''} — אינו תיאום, ואינו מחייב צוות או שעה">
-                <div class="me-line1"><span class="eta-tag">צפי בלבד</span><b>${esc(o.customer_name||'')}</b>${e.dayTotal>1?`<span class="me-time">${e.dayIdx}/${e.dayTotal}</span>`:''}</div>
+                <div class="me-line1"><span class="eta-tag">צפי בלבד</span>${o.time_slot==='יום מלא'?'<span class="me-time">יום מלא</span>':''}<b>${esc(o.customer_name||'')}</b>${e.dayTotal>1?`<span class="me-time">${e.dayIdx}/${e.dayTotal}</span>`:''}</div>
                 <div class="me-line2"><span class="me-dot" style="background:${col}"></span>${esc(o.order_number||'')}${mates.length?` +${mates.length}`:''}${o.city?` · ${esc(o.city)}`:''}</div>
               </div>`;
             }
@@ -7178,7 +7263,7 @@ function renderCal(){
     body=`<div class="cal-scroll"><div class="tg-wrap" style="grid-template-columns:56px repeat(${days.length},minmax(150px,1fr))">
       ${tgGutter(adH)}
       ${days.map(d=>`<div class="tg-col ${dowOf(d)===CAL_FRIDAY?'nowork':''}${heCls(d)}">
-          <div class="tg-head ${d===t?'today':''}" onclick="calGoDay('${d}')"><span>${dayNameHe(d)}${dowOf(d)===CAL_FRIDAY?' <span class="fri-tag">שישי</span>':''}${heTag(d)}</span><span class="dnum">${fmtD(d)}</span></div>
+          <div class="tg-head ${d===t?'today':''}" onclick="calGoDay('${d}')"><span>${dayNameHe(d)}${dowOf(d)===CAL_FRIDAY?' <span class="fri-tag">שישי</span>':''}${heTag(d)}</span><span class="dnum">${fmtD(d)} ${calPickBtn(d)}</span></div>
           ${tgDay(d, wkEv[d], true, adH, adCap)}
         </div>`).join('')}
     </div></div>`;
@@ -7189,13 +7274,19 @@ function renderCal(){
     scope=[cd];
     title=`${dayNameHe(cd)}, ${fmtD(cd)}${heDay(cd)?' · '+heDay(cd).name:''}`;
     /* 6.2.5 — התצוגה היומית היא אותה רשת שעות, בעמודה אחת ובכרטיסים מלאים. */
-    const adDay=evs.filter(e=>!evSpan(e)).length;
+    /* 6.192.0 — "יום מלא" (שיבוץ אמיתי וגם צפי) יושב ברצועה משלו מתחת לכותרת
+       היום ומעל 08:00, באותו כרטיס מלא כמו ברשת (evCard ולא tgChip). הרשת
+       מקבלת את השאר. עמודת השעות נצמדת לתחתית העמודה ב-CSS (.tg-wrap-day),
+       ולכן הרצועה בגובה אוטומטי אינה מסיטה את 08:00. (רומן, 03/09/2026) */
+    const fulls=evs.filter(evFull), rest=evs.filter(e=>!evFull(e));
+    const adDay=rest.filter(e=>!evSpan(e)).length;
     const adH=adDay? adDay*CAL_CHIP+6 : 0;
-    body=`<div class="cal-scroll"><div class="tg-wrap" style="grid-template-columns:56px minmax(260px,1fr)">
+    body=`<div class="cal-scroll"><div class="tg-wrap tg-wrap-day" style="grid-template-columns:56px minmax(260px,1fr)">
       ${tgGutter(adH)}
       <div class="tg-col ${dowOf(cd)===CAL_FRIDAY?'nowork':''}${heCls(cd)}">
-        <div class="tg-head ${cd===t?'today':''}"><span>${dayNameHe(cd)}${heTag(cd)}</span><span class="dnum">${fmtD(cd)}</span></div>
-        ${evs.length? tgDay(cd, evs, false, adH) : `<div class="empty">${CAL_Q?'אין אירועים תואמים לחיפוש ביום זה':'אין אירועים מתואמים ליום זה'}</div>`}
+        <div class="tg-head ${cd===t?'today':''}"><span>${dayNameHe(cd)}${heTag(cd)}</span><span class="dnum">${fmtD(cd)} ${calPickBtn(cd,true)}</span></div>
+        ${fulls.length?`<div class="tg-fullday"><div class="tg-fullday-t">יום מלא · מחוץ לשעות הפעילות</div><div class="tg-fullday-cards">${fulls.map(e=>evCard(e,false)).join('')}</div></div>`:''}
+        ${evs.length? tgDay(cd, rest, false, adH) : `<div class="empty">${CAL_Q?'אין אירועים תואמים לחיפוש ביום זה':'אין אירועים מתואמים ליום זה'}</div>`}
       </div>
     </div></div>`;
   }
@@ -8213,7 +8304,7 @@ function _openSku(pn){
           <div class="d3"><input id="sk-len" type="text" inputmode="decimal" dir="ltr" placeholder="אורך" value="${s.length_cm??''}" oninput="skuVol()"><b>×</b><input id="sk-wid" type="text" inputmode="decimal" dir="ltr" placeholder="רוחב" value="${s.width_cm??''}" oninput="skuVol()"><b>×</b><input id="sk-hei" type="text" inputmode="decimal" dir="ltr" placeholder="גובה" value="${s.height_cm??''}" oninput="skuVol()"></div>
           <div class="auto-hint" id="sk-vol">${volHint(s.length_cm,s.width_cm,s.height_cm)}</div></div>
       </div>
-      <button class="btn green" onclick="saveSku('${jsq(s.partname)}')">שמירה</button>
+      <div class="modal-actions"><button class="btn green" onclick="saveSku('${jsq(s.partname)}')">שמירה</button></div>
       <div class="err" id="sk-err"></div>`
       :`<div class="sku-grid">
         ${kpi('נדרשת התקנה', s.needs_install===true?'כן':(s.needs_install===false?'לא':'—'), s.needs_install===true?'ok':(s.needs_install===false?'neg':''))}
@@ -10049,7 +10140,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'techfield-2026-09-03c';
+const BUILD_ID = 'calsched-2026-09-03d';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -20015,7 +20106,7 @@ window.openOrd = (id, ctx)=>{
   const hasSame=myAddr && others.some(x=>norm(shipAddrOnly(x))===myAddr);
   $('#ordSheet').innerHTML = `
     <h3>${esc(o.order_number)} — ${esc(o.customer_name||'')}${o.erp_status?` <span class="pill p-violet" title="הסטטוס בפריוריטי — מתעדכן בסנכרון">${PRI_ICO}פריוריטי: ${esc(o.erp_status)}</span>`:''}${o.erp_synced_at?`<span class="pill" style="font-weight:400" title="התאריך שבו השתנה לאחרונה שדה שמגיע מפריוריטי. הסנכרון עצמו בודק את ההזמנה כל שעה — מועד הבדיקה האחרונה מוצג בראש המסך.">עודכן מפריוריטי ${new Date(o.erp_synced_at).toLocaleDateString('he-IL')}</span>`:''}${window.regressTag?window.regressTag(o):''}${openBadge(o.order_number,1)}${retBadge(o.order_number,1)}</h3>
-    ${window.canEdit('logi.orders')?`<div class="ord-sync-row"><button class="btn ord-sync-btn" id="ord-sync-${o.id}" onclick="ordSyncOne('${o.id}','${ctx||''}')">↻ סנכרון הזמנה זו מפריוריטי</button><span class="note" style="margin:0">מושך את הכותרת, הפירוט והדו-שיח של ההזמנה הזו בלבד</span></div>`:''}
+    ${window.canEdit('logi.orders')?`<div class="ord-sync-row"><button class="btn ord-sync-btn" id="ord-sync-${o.id}" onclick="ordSyncOne('${o.id}','${ctx||''}')">↻ סנכרון הזמנה זו מפריוריטי</button><span class="note" style="margin:0">מושך את הכותרת, הפירוט, הדו-שיח, הערות ההזמנה ופרטי הלקוח של ההזמנה הזו בלבד</span></div>`:''}
     <div style="height:10px"></div>
     <div class="form-grid">
       <div class="form-sep">פרטי ההזמנה מפריוריטי</div>

@@ -2693,7 +2693,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.190.1</div>
+      <div class="ver">גרסה 6.191.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2822,7 +2822,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.190.1</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.191.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5478,6 +5478,7 @@ function mdCard(e){
       (addr?'<a class="chip" target="_blank" rel="noopener" href="'+wazeUrl(addr)+'" onclick="event.stopPropagation()">ניווט</a>':'')+
       (phone?'<a class="chip" href="tel:'+esc(String(phone))+'" onclick="event.stopPropagation()">חיוג</a>':'')+
       (window.canEdit('docs.media.upload')?'<button type="button" class="chip" onclick="event.stopPropagation();uploadMedia(\''+(svc?'call':'order')+'\',\''+o.id+'\')">תמונות</button>':'')+
+      (window.canEdit('docs.reports')?'<button type="button" class="chip" onclick="event.stopPropagation();mdReport(\''+o.id+'\',\''+(svc?'call':'order')+'\')">דוח תקינות</button>':'')+
       (canDone?'<button type="button" class="chip chip-done" onclick="event.stopPropagation();mdDone(\''+o.id+'\',\''+(svc?'call':'order')+'\')">✓ בוצע</button>':'')+
     '</div></div>';
 }
@@ -9457,22 +9458,35 @@ window.openMediaFile = async (id)=>{
   tab.location.href = data.signedUrl;
 };
 const MEDIA_EXT = ['jpg','jpeg','png','webp','pdf'];
+/* 6.191.0 — crypto.randomUUID קיים בכל דפדפן מודרני, אבל מכשיר שטח ישן
+   נופל כאן בשקט ("crypto.randomUUID is not a function") לפני שהקובץ נשלח. */
+function mediaUuid(){
+  if(crypto && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  const b = crypto.getRandomValues(new Uint8Array(16)); b[6] = (b[6] & 15) | 64; b[8] = (b[8] & 63) | 128;
+  const h = [...b].map(x=>x.toString(16).padStart(2,'0')).join('');
+  return h.slice(0,8)+'-'+h.slice(8,12)+'-'+h.slice(12,16)+'-'+h.slice(16,20)+'-'+h.slice(20);
+}
 /* שם הקובץ באחסון נקבע תמיד על ידי המערכת ולעולם לא על ידי המשתמש: מדיניות
    האחסון דורשת בדיוק את התבנית media/<uuid>/<uuid>.<סיומת>, ולכן שם מקורי
    חריג אינו יכול לחרוג מתיקיית רשומת האב. השם שהמשתמש בחר נשמר ב-file_name. */
 window.uploadMedia = (kind, parentId)=>{
   if(!window.canEdit('docs.media.upload')){ alert('אין לך הרשאה להעלות תמונות מהשטח.'); return; }
   if(!parentId){ alert('אין רשומת אב לשיוך הקובץ.'); return; }
+  /* 6.191.0 — ה-input חייב לשבת ב-DOM בזמן ה-click: Safari ל-iOS לא פותח
+     את בורר הקבצים לאלמנט מנותק, בלי שגיאה ובלי סימן. נמדד 03/09/2026:
+     הטלפונים טענו את הבלוק (GET doc_files) ואף העלאה לא יצאה מהם. */
+  document.querySelectorAll('input.media-picker').forEach(x=>x.remove());
   const inp = document.createElement('input');
   inp.type='file'; inp.multiple=true; inp.accept='image/jpeg,image/png,image/webp,application/pdf';
+  inp.className='media-picker'; inp.style.cssText='position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0';
   inp.onchange = async ()=>{
-    const files = [...(inp.files||[])]; if(!files.length) return;
+    const files = [...(inp.files||[])]; try{ inp.remove(); }catch(_e){} if(!files.length) return;
     let okN=0; const bad=[];
     for(const file of files){
       const ext = (file.name.split('.').pop()||'').toLowerCase();
       if(MEDIA_EXT.indexOf(ext)<0){ bad.push(file.name+' — סוג קובץ שאינו נתמך'); continue; }
       if(file.size > 15*1024*1024){ bad.push(file.name+' — גדול מ-15 מגה'); continue; }
-      const path = 'media/'+parentId+'/'+crypto.randomUUID()+'.'+(ext==='jpeg'?'jpg':ext);
+      const path = 'media/'+parentId+'/'+mediaUuid()+'.'+(ext==='jpeg'?'jpg':ext);
       const up = await sb.storage.from('docs').upload(path, file, { contentType:file.type||undefined, upsert:false });
       if(up.error){ bad.push(file.name+' — '+up.error.message); continue; }
       const row = { category:'media', storage_path:path, file_name:file.name,
@@ -9488,6 +9502,7 @@ window.uploadMedia = (kind, parentId)=>{
     try{ renderDocs(); }catch(_e){}
     if(kind==='call') openScall(parentId); else openOrd(parentId,'sales');
   };
+  document.body.appendChild(inp);
   inp.click();
 };
 /* 6.23.0 — בלוק תמונות מהשטח, משותף לכרטיס ההזמנה ולכרטיס קריאת השירות.
@@ -9506,7 +9521,7 @@ window.reportBlock = (kind, parentId)=>{
   const may = window.canEdit('docs.reports');
   const mine = (PROTS||[]).filter(p=>p[key]===parentId && p.category==='reports');
   const rows = mine.map(p=>{ const ds=docStatus(p);
-    return `<div class="row"><span class="k">${esc(p.doc_type)}${p.sent_at?' · נוצר '+new Date(p.sent_at).toLocaleDateString('he-IL'):''}</span><span class="v">${(p.status==='נחתם'||p.signed_at)?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','open')">צפייה</a>`:(may?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','copy')">קישור</a>${p.phone?` · <a href="#" onclick="event.preventDefault();openDocLink('${p.id}','wa')">וואטסאפ</a>`:''}`:'<span style="color:#94a3b8">אין הרשאה לקישור</span>')} <span class="pill ${ds.cls}" title="${esc(ds.title)}">${esc(ds.label)}</span></span></div>`; }).join('');
+    return `<div class="row"><span class="k">${esc(p.doc_type)}${p.sent_at?' · נוצר '+new Date(p.sent_at).toLocaleDateString('he-IL'):''}</span><span class="v">${(p.status==='נחתם'||p.signed_at)?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','open')">צפייה</a>`:(may?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','open')"><b>פתיחה</b></a> · <a href="#" onclick="event.preventDefault();openDocLink('${p.id}','copy')">קישור</a>${p.phone?` · <a href="#" onclick="event.preventDefault();openDocLink('${p.id}','wa')">וואטסאפ</a>`:''}`:'<span style="color:#94a3b8">אין הרשאה לקישור</span>')} <span class="pill ${ds.cls}" title="${esc(ds.title)}">${esc(ds.label)}</span></span></div>`; }).join('');
   return `<section class="ob-card" id="rep-box-${parentId}"><h2 class="sec">דוח אישור תקינות (${mine.length})</h2>${rows}`+
     (may?`<button class="ghost" style="margin-top:8px" onclick="createReport('${kind}','${parentId}')">יצירת דוח תקינות לחתימה</button>`:'')+'</section>';
 };
@@ -9527,6 +9542,36 @@ window.createReport = async (kind, parentId)=>{
   toast('הדוח נוצר — אפשר להפיק קישור חתימה');
 };
 
+/* 6.191.0 — הדוח מ"היום שלי": הטכנאי עומד מול הלקוח, והדוח צריך להיפתח
+   על הטלפון שלו — לא להיות מועתק ללוח ולא להישלח בוואטסאפ. יש דוח פתוח
+   להזמנה/לקריאה — פותחים אותו; אין — יוצרים ופותחים. הלשונית נפתחת לפני
+   ה-await, אחרת חוסם החלונות הקופצים בולע אותה (הלקח של openDocLink). */
+window.mdReport = async (parentId, kind)=>{
+  if(!window.canEdit('docs.reports')){ alert('אין לך הרשאת עריכה בדוחות התקינות.'); return; }
+  const isCall = kind==='call', key = isCall ? 'call_id' : 'order_id';
+  const parent = (isCall ? SCALLS : ORDS).find(x=>x.id===parentId); if(!parent) return;
+  /* האחרון שנוצר קודם: אם יש חתום וגם פתוח — הפתוח הוא זה שממלאים */
+  const mine = (PROTS||[]).filter(p=>p[key]===parentId && p.category==='reports')
+    .sort((a,b)=>String(b.sent_at||'').localeCompare(String(a.sent_at||'')));
+  let p = mine.find(x=>!(x.status==='נחתם'||x.signed_at)) || mine[0];
+  if(!p && !confirm('ליצור דוח תקינות לחתימה עבור '+(parent.customer_name||'')+'?')) return;
+  const tab = window.open('', '_blank');
+  if(!p){
+    const r = await sb.schema('ord').rpc('protocol_create', {
+      p_order_id: isCall?null:parentId, p_call_id: isCall?parentId:null, p_deal_id:null,
+      p_category:'reports', p_doc_type: REPORT_DOC_TYPE });
+    if(r.error || !r.data){ if(tab){ try{ tab.close(); }catch(_e){} } alert('יצירת הדוח נכשלה: '+((r.error&&r.error.message)||'')); return; }
+    p = r.data; PROTS.unshift(p);
+    const box = document.getElementById('rep-box-'+parentId);
+    if(box) box.outerHTML = window.reportBlock(kind, parentId);
+    try{ renderDocs(); }catch(_e){}
+  }
+  const l = await sb.schema('ord').rpc('protocol_link', { p_id: p.id, p_via: null });
+  if(l.error || !l.data || !l.data.token){ if(tab){ try{ tab.close(); }catch(_e){} } alert('פתיחת הדוח נכשלה — '+((l.error&&l.error.message)||'אין לך הרשאה למסמך הזה')); return; }
+  const url = l.data.kind==='view' ? viewUrl(l.data.token) : signUrl(l.data.token);
+  if(tab) tab.location.href = url; else location.href = url;
+};
+
 /* ===== "בוצע" מהכרטיס (6.189.0) =====
    מוצג למי שמחזיק dash.myday=2 (הטכנאים) או עורך את הדומיין. להזמנה — רק
    כשאין שורות פתוחות לפי פריוריטי; אחרת הסבר ולא כפתור (הכרעת רומן).
@@ -9545,14 +9590,33 @@ window.mediaBlock = (kind, parentId)=>{
   if(!window.canView('docs.media')) return '';
   const key = kind==='call' ? 'call_id' : 'order_id';
   const boxId = 'media-box-'+parentId;
-  const rows = list => list.map(f=>`<div class="row"><span class="k">${esc(f.file_name||'קובץ')}</span><span class="v"><a href="#" onclick="event.preventDefault();openMediaFile('${f.id}')">פתיחה</a>${f.uploaded_at?' · '+new Date(f.uploaded_at).toLocaleDateString('he-IL'):''}</span></div>`).join('') || '<div class="note">אין עדיין תמונות מהשטח.</div>';
+  /* 6.191.0 — "מחיקה" למי שהעלה את הקובץ (docs.media.upload) או למי שמוחק
+     כל קובץ (docs.media=2). השרת אוכף את אותם שני תנאים בשני policies. */
+  const me = (typeof ME!=='undefined' && ME && ME.email) || null;
+  const canDel = f => window.canEdit('docs.media') || (window.canEdit('docs.media.upload') && !!me && f.uploaded_by===me);
+  const rows = list => list.map(f=>`<div class="row"><span class="k">${esc(f.file_name||'קובץ')}</span><span class="v"><a href="#" onclick="event.preventDefault();openMediaFile('${f.id}')">פתיחה</a>${f.uploaded_at?' · '+new Date(f.uploaded_at).toLocaleDateString('he-IL'):''}${canDel(f)?` · <a href="#" class="media-del" onclick="event.preventDefault();deleteMediaFile('${f.id}')">מחיקה</a>`:''}</span></div>`).join('') || '<div class="note">אין עדיין תמונות מהשטח.</div>';
   if(DOCFILES===null){
     loadDocFiles().then(()=>{ const el=document.getElementById(boxId); if(el) el.innerHTML = rows((DOCFILES||[]).filter(f=>f[key]===parentId)); });
   }
   const mine = (DOCFILES||[]).filter(f=>f[key]===parentId);
-  return `<section class="ob-card"><h2 class="sec">תמונות מהשטח (${DOCFILES===null?'…':mine.length})</h2>
+  return `<section class="ob-card" id="media-sec-${parentId}"><h2 class="sec">תמונות מהשטח (${DOCFILES===null?'…':mine.length})</h2>
     <div id="${boxId}">${DOCFILES===null?'<div class="note">טוען…</div>':rows(mine)}</div>`+
     (window.canEdit('docs.media.upload')?`<button class="ghost" style="margin-top:8px" onclick="uploadMedia('${kind}','${parentId}')">העלאת תמונות מהשטח</button>`:'')+'</section>';
+};
+window.deleteMediaFile = async (id)=>{
+  const f = (DOCFILES||[]).find(x=>x.id===id); if(!f) return;
+  if(!confirm('למחוק את "'+(f.file_name||'הקובץ')+'"?')) return;
+  /* הרשומה קודם והקובץ אחריה: רשומה בלי קובץ היא קישור מת שכולם רואים,
+     קובץ בלי רשומה הוא בלתי נראה. ו-select אחרי delete — RLS שדוחה מחזיר
+     אפס שורות בלי שגיאה, וזה היה נראה כמו הצלחה. */
+  const del = await sb.schema('ord').from('doc_files').delete().eq('id', id).select('id');
+  if(del.error || !del.data || !del.data.length){ alert('המחיקה נכשלה — '+((del.error&&del.error.message)||'אין לך הרשאה למחוק את הקובץ הזה')); return; }
+  try{ await sb.storage.from('docs').remove([f.storage_path]); }catch(_e){}
+  await loadDocFiles(true);
+  const pid = f.order_id || f.call_id;
+  const sec = document.getElementById('media-sec-'+pid);
+  if(sec) sec.outerHTML = window.mediaBlock(f.call_id?'call':'order', pid);
+  try{ renderDocs(); }catch(_e){}
 };
 function mediaCard(f){
   const isPdf = (f.mime_type||'').indexOf('pdf')>-1 || /\.pdf$/i.test(f.storage_path||'');
@@ -9985,7 +10049,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'ordsync-2026-09-03b';
+const BUILD_ID = 'techfield-2026-09-03c';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====

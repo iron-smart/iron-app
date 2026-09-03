@@ -321,6 +321,7 @@ function renderReport(d){
 
   <div class="card"><h2>✍️ אישור הלקוח</h2>
     <div class="statement">${esc(d.customer_statement||'')}</div>
+    <div class="agree"><input type="checkbox" id="agree"><span>קראתי את ההצהרה שלעיל ואני מאשר/ת אותה</span></div>
     <label>שם הלקוח</label>
     <input type="text" id="custName" value="${esc(d.customer_name)}">
     <label style="margin-top:12px">חתימת הלקוח</label>
@@ -339,15 +340,19 @@ function renderReport(d){
 
   <div class="card">
     <button class="btn-send" id="sendBtn" disabled>שליחת הדוח החתום ✓</button>
-    <div id="hintSend" style="font-size:.8rem;color:#84898f;margin-top:8px;text-align:center">נדרשות שתי חתימות — של הלקוח ושל הטכנאי</div>
+    <div id="hintSend" style="font-size:.8rem;color:#84898f;margin-top:8px;text-align:center">נדרשים אישור ההצהרה ושתי חתימות — של הלקוח ושל הטכנאי</div>
     <div id="err" style="color:#a92f2f;font-weight:700;font-size:.85rem;margin-top:8px"></div>
   </div>
   <div class="foot">צוות איירון פיטנס בע"מ · טלפון 074-7779988</div>
 </div>`;
   const pad1=makePad('pad1','hint1','clear1',check);
   const pad2=makePad('pad2','hint2','clear2',check);
-  const sendBtn=document.getElementById('sendBtn');
-  function check(){ const ok=pad1.hasInk()&&pad2.hasInk(); sendBtn.disabled=!ok; document.getElementById('hintSend').style.display=ok?'none':'block'; }
+  const sendBtn=document.getElementById('sendBtn'), agree=document.getElementById('agree');
+  /* 03/09/2026 — השרת (sign גרסה 12+) דורש agreed:true לכל חתימה ומתעד
+     "אישר את ההצהרה" ב-trail; לטופס הדוח לא הייתה תיבה כלל, וכל שליחה
+     נדחתה ב-400 "יש לסמן את ההצהרה". נמדד: ארבע שליחות של טכנאי בשטח. */
+  function check(){ const ok=pad1.hasInk()&&pad2.hasInk()&&agree.checked; sendBtn.disabled=!ok; document.getElementById('hintSend').style.display=ok?'none':'block'; }
+  agree.onchange=check;
   // סימון ויזואלי של שורות מסומנות + פתיחת שדה ליקויים
   document.querySelectorAll('.chk input').forEach(inp=>inp.addEventListener('change',()=>{
     inp.closest('.chk').classList.toggle('on',inp.checked);
@@ -372,7 +377,7 @@ function renderReport(d){
             customer_name:document.getElementById('custName').value.trim(),
             tech_name:document.getElementById('techName').value.trim(),
           },
-          customer_sig:cSig, tech_sig:tSig})});
+          agreed:agree.checked, customer_sig:cSig, tech_sig:tSig})});
       const dd=await r.json();
       if(!r.ok||!dd.ok) throw new Error(dd.error||'שגיאה');
       show('<div class="v">✅</div><h2 style="margin:10px 0 6px">דוח התקינות נחתם בהצלחה!</h2><p style="font-size:.9rem;color:#4c5560">הדוח תויק אוטומטית במערכת.<br><br>תודה, צוות איירון פיטנס 💪</p>');

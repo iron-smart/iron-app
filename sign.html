@@ -131,6 +131,13 @@ const qpdfFit=(h,ph)=>{
       וזה הלקח מ-printLabel שנשען על CDN בזמן הדפסה. */
 const PDFJS_LIB='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
 const PDFJS_WRK='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+/* 🔴 02/09/2026 — נכסי הפונטים. בלעדיהם pdf.js אינו יכול לפתור פונט
+   שאינו מוטמע ואינו קורא CMap חיצוני, והתוצאה היא בדיוק מה שרומן
+   צילם: ספרות ולטינית מרונדרות ואותיות עבריות נופלות או מוחלפות.
+   ⚠️ **cdnjs מחזיר 403 על שתי התיקיות האלה** (נמדד), ולכן הן מגיעות
+      מ-jsDelivr בעוד הספרייה נשארת ב-cdnjs. אימות: cmaps/ 200 ·
+      standard_fonts/LiberationSans-Regular.ttf 200. */
+const PDFJS_CDN='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/';
 async function qpdfMobile(){
   const box=document.querySelector('.qpdf-m');
   try{
@@ -148,18 +155,27 @@ async function qpdfMobile(){
     });
     const lib=window.pdfjsLib; if(!lib) throw new Error('lib');
     lib.GlobalWorkerOptions.workerSrc=PDFJS_WRK;
-    const pdf=await lib.getDocument({url:src}).promise;
+    const pdf=await lib.getDocument({url:src,
+      cMapUrl:PDFJS_CDN+'cmaps/', cMapPacked:true,
+      standardFontDataUrl:PDFJS_CDN+'standard_fonts/'}).promise;
     const n=Math.min(pdf.numPages||0, 30);
     if(!n) throw new Error('empty');
     box.innerHTML='';
-    /* רוחב לפי המכולה, צפיפות לפי המסך — עד פי 2 בלבד, אחרת מסך
-       Retina מייצר קנבס ענק שמפיל טלפון ישן על זיכרון. */
+    /* 🔴 החדות בזום. עד כה הרינדור היה ברוחב ה-CSS כפול dpr (עד 2),
+       כלומר קנבס של ~780px — וזום על הטלפון רק הגדיל ביטמאפ. עכשיו
+       הרוחב הוא **מטרה בפיקסלים** ואינו תלוי ברוחב התצוגה.
+       ⚠️ ותקציב כולל: 1600px לעמוד הם ~3.2M פיקסלים ≈ 13MB, ובהצעה
+          בת עשרה עמודים זה 130MB ומפיל טלפון. הסקאלה יורדת לפי מספר
+          העמודים — **ולעולם אינה יורדת מתחת למה שהיה עד היום**. */
     const w=Math.max(240, Math.min(box.clientWidth||360, 1400));
     const dpr=Math.min(window.devicePixelRatio||1, 2);
+    const BUDGET=26e6;                       /* ~104MB בסך הכול */
+    const tgt=Math.min(1600, Math.sqrt(BUDGET/(n*1.414)));
+    const px=Math.max(w*dpr, tgt);           /* לעולם לא פחות מהקודם */
     for(let i=1;i<=n;i++){
       const pg=await pdf.getPage(i);
       const base=pg.getViewport({scale:1});
-      const vp=pg.getViewport({scale:(w/base.width)*dpr});
+      const vp=pg.getViewport({scale:px/base.width});
       const cv=document.createElement('canvas');
       cv.width=Math.round(vp.width); cv.height=Math.round(vp.height);
       box.appendChild(cv);

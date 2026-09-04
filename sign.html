@@ -44,6 +44,18 @@ textarea{width:100%;border:1px solid #c0c5c9;border-radius:9px;padding:10px 12px
 .btn-send:disabled{background:#b8bdc2}
 .qpdf{width:100%;height:68vh;min-height:420px;border:1px solid #dfe3e6;border-radius:10px;background:#fff;display:block}
 .qpdf-nt{font-size:.78rem;color:#84898f;margin-top:6px}
+.qpdf-m{display:none}
+.qpdf-ld{font-size:.9rem;color:#84898f;padding:18px 0;text-align:center}
+@media (max-width:760px){
+  .qpdf{display:none}
+  .qpdf-hint{display:none}
+  .qpdf-nt{font-size:1.02rem;color:#0b1620;margin-top:0}
+  .qpdf-nt a{display:block;text-align:center;background:#002d48;color:#fff;border-radius:11px;padding:14px;font-weight:800;text-decoration:none}
+  .qpdf-m{display:block}
+  .qpdf-m canvas{width:100%;height:auto;display:block;border:1px solid #dfe3e6;border-radius:10px;background:#fff;margin:0 0 8px}
+  .qpdf-m:not(:empty){margin-bottom:10px}
+  .qpdf-m:not(:empty)+.qpdf-nt a{background:#fff;color:#002d48;border:1px solid #cdd4da;font-weight:700}
+}
 .qfp{font-size:.72rem;color:#a8adb3;margin-top:6px;word-break:break-all}
 .qsum{margin-top:10px;font-size:.9rem}
 .qsum div{display:flex;justify-content:space-between;padding:4px 0}
@@ -93,12 +105,72 @@ const qpdfFit=(h,ph)=>{
   s=s.replace(/<p class="qpdf-nt">[^<]*<a href="([^"]*)"([^>]*)>[^<]*<\/a>\.?<\/p>/,
               '<p class="qpdf-nt"><span class="qpdf-hint">אם המסמך אינו מוצג — </span>'
               +'<a href="$1"$2>פתיחת ההצעה במסך מלא</a><span class="qpdf-hint">.</span></p>');
+  /* 🔴 02/09/2026 — רומן: "אני רוצה שיראו את ההצעה בטלפון כששולחים
+     ללקוח הצעת מחיר". עד כה המובייל קיבל **כפתור** ולא את ההצעה:
+     ה-iframe אינו מרנדר PDF שם כלל, ולכן הוסתר (01/09). כאן נולדת
+     מכולה שמרונדרת לקנבס ב-pdf.js.
+     ⚠️ נקודת העיגון היא <p class="qpdf-nt"> ולא </iframe> — ההחלפה
+        שמעליה כותבת את ה-<p> מחדש, אבל תג הפתיחה שורד את שתיהן. */
+  const _u = s.match(/<iframe class="qpdf" src="([^"#]*)/);
+  if(_u) s = s.replace('<p class="qpdf-nt">',
+    '<div class="qpdf-m" data-src="'+_u[1].replace(/"/g,'&quot;')+'"></div><p class="qpdf-nt">');
   const p=String(ph||'').trim();
   if(p && s.indexOf('>טלפון<')<0)
     s=s.replace(/(<span class="lbl">שם לקוח<\/span><b>[^<]*<\/b><\/div>)/,
                 '$1<div><span class="lbl">טלפון</span><b dir="ltr">'+esc(p)+'</b></div>');
   return s;
 };
+/* 🔴 02/09/2026 — רינדור ההצעה בטלפון. שתי מדידות הן שמאפשרות זאת:
+   `?doc=` מוגש עם access-control-allow-origin:* ולכן pdf.js יכול
+   למשוך אותו חוצה-מקור; ול-sign.html **אין CSP כלל** — לא כותרת ולא
+   meta (נמדד אפס). ה-CSP יושב על index.html בלבד.
+   ⚠️ טעינה עצלה **רק במובייל**: הספרייה ~350KB, ובשולחן ה-iframe כבר
+      עובד. נמדד ש-pdfjsLib נשאר undefined ב-1280px.
+   🔴 וכל כשל — CDN חסום, רשת גרועה, דפדפן ישן — מרוקן את המכולה
+      ומחזיר **בדיוק** את התנהגות 01/09: הכפתור. נפילה רכה ולא שבירה,
+      וזה הלקח מ-printLabel שנשען על CDN בזמן הדפסה. */
+const PDFJS_LIB='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+const PDFJS_WRK='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+async function qpdfMobile(){
+  const box=document.querySelector('.qpdf-m');
+  try{
+    if(!box || box.dataset.done) return;
+    /* אותה נקודת שבירה של ה-CSS (760px). שתי הגדרות של "מובייל" היו
+       נפרדות בשקט ביום שמישהו ישנה אחת מהן. */
+    if(!window.matchMedia('(max-width:760px)').matches) return;
+    const src=box.getAttribute('data-src'); if(!src) return;
+    box.dataset.done='1';
+    box.innerHTML='<div class="qpdf-ld">טוען את ההצעה…</div>';
+    if(!window.pdfjsLib) await new Promise((ok,bad)=>{
+      const el=document.createElement('script');
+      el.src=PDFJS_LIB; el.onload=ok; el.onerror=()=>bad(new Error('cdn'));
+      document.head.appendChild(el);
+    });
+    const lib=window.pdfjsLib; if(!lib) throw new Error('lib');
+    lib.GlobalWorkerOptions.workerSrc=PDFJS_WRK;
+    const pdf=await lib.getDocument({url:src}).promise;
+    const n=Math.min(pdf.numPages||0, 30);
+    if(!n) throw new Error('empty');
+    box.innerHTML='';
+    /* רוחב לפי המכולה, צפיפות לפי המסך — עד פי 2 בלבד, אחרת מסך
+       Retina מייצר קנבס ענק שמפיל טלפון ישן על זיכרון. */
+    const w=Math.max(240, Math.min(box.clientWidth||360, 1400));
+    const dpr=Math.min(window.devicePixelRatio||1, 2);
+    for(let i=1;i<=n;i++){
+      const pg=await pdf.getPage(i);
+      const base=pg.getViewport({scale:1});
+      const vp=pg.getViewport({scale:(w/base.width)*dpr});
+      const cv=document.createElement('canvas');
+      cv.width=Math.round(vp.width); cv.height=Math.round(vp.height);
+      box.appendChild(cv);
+      await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
+    }
+  }catch(e){
+    /* מרוקנים בשקט: הכפתור שמתחת הוא המסלול שעבד עד היום, והודעת
+       שגיאה על מסמך שאפשר לפתוח בהקשה רק תבהיל את הלקוח. */
+    if(box){ box.innerHTML=''; delete box.dataset.done; }
+  }
+}
 const q=new URLSearchParams(location.search);
 const token=q.get('t'), view=q.get('view');
 
@@ -148,15 +220,12 @@ async function init(){
       st.textContent='.card.wm,.ok-card{background-image:url("data:image/png;base64,'+d.wm+'");'
         +'background-repeat:no-repeat;background-position:center center}'
         +'.card.wm{background-size:80% auto}.ok-card{background-size:auto 80%}'
-        +'@media print{.card.wm{-webkit-print-color-adjust:exact;print-color-adjust:exact}}'
-        /* רומן: "לא מציג בתצוגה טלפונית". ה-iframe אינו מרנדר PDF בטלפון
-           כלל — לא ב-iOS ולא באנדרואיד — ולכן שם הוא תיבה ריקה ולא תצוגה
-           מקדימה. מסתירים אותו ומציגים את הקישור ככפתור. הצבע מ-.btn-send.
-           🔴 ובשורה אחת, וזה לא סגנון: הגיליון נבנה בשרשור מחרוזות
-              שורה-בשורה, וכל שורה היא מחרוזת בפני עצמה. בלוק רב-שורתי
-              בתוך אחת מהן משאיר מחרוזת פתוחה ומפיל את **כל** הסקריפט
-              ב-SyntaxError — הדף נתקע על "טוען…". קרה בפועל 01/09/2026. */
-        +'@media (max-width:760px){.qpdf{display:none}.qpdf-hint{display:none}.qpdf-nt{font-size:1.02rem;color:#0b1620;margin-top:0}.qpdf-nt a{display:block;text-align:center;background:#002d48;color:#fff;border-radius:11px;padding:14px;font-weight:800;text-decoration:none}}';
+        +'@media print{.card.wm{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
+      /* 🔴 02/09/2026 — כללי המובייל ירדו מכאן לגיליון הסטטי. הם היו
+         בתוך `if(d.wm …)`, כלומר **תלויים בקיומו של סימן המים**: יום
+         שבו wm_png_b64 חסר או פגום, תיקון המובייל של 01/09 לא היה חל
+         והלקוח היה מקבל תיבה לבנה ריקה. נמדד בהדמיה ב-390px:
+         iframeDisplay='block' בבנייה החיה בלי wm. */
       document.head.appendChild(st);
     }
     /* 🔴 ההצעה קודם. הניתוב הקיים הוא לפי doc_type בלבד, ולכן
@@ -249,6 +318,7 @@ function renderProtocol(d){
   </div>
   <div class="foot">צוות איירון פיטנס בע"מ · טלפון 074-7779988</div>
 </div>`;
+  qpdfMobile();
   const pad=makePad('pad1','hint1','clear1',check);
   const agree=document.getElementById('agree'), auth=document.getElementById('auth'), sendBtn=document.getElementById('sendBtn');
   const nameEl=document.getElementById('signerName');

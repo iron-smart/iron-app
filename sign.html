@@ -155,9 +155,21 @@ async function qpdfMobile(){
     });
     const lib=window.pdfjsLib; if(!lib) throw new Error('lib');
     lib.GlobalWorkerOptions.workerSrc=PDFJS_WRK;
+    /* 🔴 02/09/2026, סבב שלישי — **disableFontFace הוא התיקון**, וזה
+       נמדד ולא הוסק. pdf.js מצייר טקסט דרך @font-face שהוא מזריק
+       ל-DOM; בתוך sign.html הטעינה הזאת נכשלת, הדפדפן מחליף בפונט
+       ברירת מחדל, ומזהי הגליפים של תת-הקבוצה המוטמעת מצביעים על
+       אותיות אחרות. התוצאה: ספרות ולטינית תקינות, עברית משובשת —
+       "אי חן פ טס בע"מ" במקום "אירון פיטנס בע"מ", בדיוק כפי שרומן
+       צילם. עם הדגל pdf.js מצייר **קווי מתאר של גליפים** ישירות על
+       הקנבס, בלי מסלול ה-DOM ובלי החלפה.
+       ⚠️ **ובדף עצמאי ריק זה לא קורה** — הבקרה הראשונה שלי רינדרה את
+          אותו PDF בדיוק ויצאה מושלמת, ולכן "עובד אצלי" היה חסר ערך.
+          הרפרודוקציה חייבת לרוץ **בתוך הדף האמיתי**. */
     const pdf=await lib.getDocument({url:src,
       cMapUrl:PDFJS_CDN+'cmaps/', cMapPacked:true,
-      standardFontDataUrl:PDFJS_CDN+'standard_fonts/'}).promise;
+      standardFontDataUrl:PDFJS_CDN+'standard_fonts/',
+      disableFontFace:true}).promise;
     const n=Math.min(pdf.numPages||0, 30);
     if(!n) throw new Error('empty');
     box.innerHTML='';
@@ -169,8 +181,12 @@ async function qpdfMobile(){
           העמודים — **ולעולם אינה יורדת מתחת למה שהיה עד היום**. */
     const w=Math.max(240, Math.min(box.clientWidth||360, 1400));
     const dpr=Math.min(window.devicePixelRatio||1, 2);
-    const BUDGET=26e6;                       /* ~104MB בסך הכול */
-    const tgt=Math.min(1600, Math.sqrt(BUDGET/(n*1.414)));
+    /* תקרה 2400 ולא 1600: הצעה טיפוסית היא **שני עמודים** (נמדד על
+       PQ26001011), ושם התקרה היא שחוסמת — לא התקציב. 2×2400 הם
+       ~16M פיקסלים ≈ 65MB, ובהצעה בת עשרה עמודים הנוסחה מורידה
+       ל-~1360 מעצמה. */
+    const BUDGET=18e6;                       /* ~72MB בסך הכול */
+    const tgt=Math.min(2400, Math.sqrt(BUDGET/(n*1.414)));
     const px=Math.max(w*dpr, tgt);           /* לעולם לא פחות מהקודם */
     for(let i=1;i<=n;i++){
       const pg=await pdf.getPage(i);

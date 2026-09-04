@@ -10,6 +10,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&family=Rubik:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{ --navy:#002D48; --green:#6A9F85; --dark:#061827; --bg:#f4f6f8; --line:#e2e8f0; --red:#c0392b; --amber:#d97706;
+  /* 6.197.0 — רקעי "באיחור" / "היום" / "חדש" של ה-CRM (נמדדו ארבעה כתומים במרחק 3 hex). הערכים
+     זהים לאלה שהיו — הבדיקות מקבעות rgb. */
+  --red-bg:#fdecea; --red-bg-h:#fbdcd8; --amber-bg:#fff4e5; --amber-bg-h:#ffe9cc; --new-bg:#fff7e6; --warn:#f0b45f;
   /* 6.192.0 — חג · ערב חג · חול המועד בסגנון אחד ממשפחת ה-navy (רומן, 03/09/2026:
      "כל מיני צבעים שונים ולא הבנתי למה — תיצור אחידות"). מחלקות הסוג נשארות ב-DOM.
      רחוק מענבר הצפי (--amber) ומאפור כותרת היום (#e9eff3). */
@@ -138,6 +141,31 @@
   .chips{ display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; margin-bottom:12px; -webkit-overflow-scrolling:touch; }
   .chip{ flex:none; border:1px solid var(--line); background:#fff; border-radius:20px; padding:8px 14px; font-size:13px; color:#475569; }
   .chip.active{ background:var(--navy); color:#fff; border-color:var(--navy); font-weight:600; }
+  /* 6.197.0 — צ'יפ **מצב** (בחירה מרובה · יומן/רשימה) נבדל מצ'יפ **סינון**: מקווקו, ובמצב פעיל
+     מסגרת navy ולא מילוי — כך שני "פעילים" באותו פס אינם נראים כסתירה. */
+  .chip.chip-mode{ border-style:dashed; color:var(--navy); }
+  .chip.chip-mode.active{ background:#eef4ff; color:var(--navy); border:1.5px solid var(--navy); font-weight:700; }
+  /* רמז גלילה לפס הצ'יפים (במובייל 174px גלשו בלי סימן) — אותו מנגנון של .tbl-wrap. */
+  .chips{ background-image:
+    linear-gradient(to left, var(--bg) 30%, rgba(244,246,248,0)),
+    linear-gradient(to right, var(--bg) 30%, rgba(244,246,248,0)),
+    linear-gradient(to left, rgba(15,23,42,.12), rgba(0,0,0,0)),
+    linear-gradient(to right, rgba(15,23,42,.12), rgba(0,0,0,0));
+    background-position:left center, right center, left center, right center;
+    background-repeat:no-repeat; background-size:24px 100%,24px 100%,10px 100%,10px 100%;
+    background-attachment:local, local, scroll, scroll; }
+  /* סרגל הסינון מתקפל במובייל. <details class="lf-wrap"> ולא lf-multi: סוגר-הקליק ו-Esc עוברים
+     על details.lf-multi[open] בלבד. בשולחן ה-summary מוסתר וה-details פתוח תמיד. */
+  .lf-wrap > summary{ display:none; }
+  @media(max-width:760px){
+    .lf-wrap > summary{ display:inline-flex; align-items:center; gap:6px; list-style:none; cursor:pointer;
+      font-size:13px; font-weight:700; color:#475569; border:1px solid var(--line); border-radius:20px;
+      padding:8px 14px; min-height:38px; background:#fff; margin-bottom:8px; }
+    .lf-wrap > summary::-webkit-details-marker{ display:none; }
+    .lf-wrap > summary::after{ content:'▾'; }
+    .lf-wrap[open] > summary::after{ content:'▴'; }
+    .lf-wrap > summary .lf-n{ background:var(--navy); color:#fff; border-radius:999px; padding:1px 8px; font-size:11.5px; }
+  }
   .chip{ transition:background .12s, color .12s, transform .08s; }
   .chip:active{ transform:translateY(1px); }
   .chip small{ opacity:.75; }
@@ -2022,7 +2050,6 @@
 .tbl tr.lb-grp1 td, .tbl tr.lb-grp1:hover td{ cursor:default; background-color:#e3ebf5; background-image:linear-gradient(#e8eef7,#dde5f0); }
 .lb-arr{ display:inline-block; width:15px; color:#64748b; }
 .lb-cnt{ color:#475569; font-weight:700; font-size:12.5px; margin-inline-start:8px; background:#fff; border:1px solid #cbd5e1; border-radius:999px; padding:1px 9px; }
-.pill.lb-mine{ background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; }
 /* רומן, 19/08/2026: "תאריך משימה הבאה — במקום להוסיף טקסט 'באיחור', פשוט
    תצבע את איפה שרשום תאריך ושעה בצבע אדמדם." הרקע על **התא** ולא על אלמנט
    פנימי, כי התוכן הוא <input> שיש לו צבע משלו.
@@ -2057,10 +2084,10 @@
       ולכן אין כאן !important להילחם בו.
    ⚠️ tr.lb-on td (!important) ימשיך לגבור בבחירה מרובה — רצוי;
       האייקון הוא שמשאיר את הדחיפות נראית שם. */
-#leads-list .tbl tbody tr.lb-ovr{ background-color:#fdecea; }
-#leads-list .tbl tbody tr.lb-todr{ background-color:#fff4e5; }
-#leads-list .tbl tbody tr.lb-ovr:hover{ background-color:#fbdcd8; }
-#leads-list .tbl tbody tr.lb-todr:hover{ background-color:#ffe9cc; }
+#leads-list .tbl tbody tr.lb-ovr{ background-color:var(--red-bg); }
+#leads-list .tbl tbody tr.lb-todr{ background-color:var(--amber-bg); }
+#leads-list .tbl tbody tr.lb-ovr:hover{ background-color:var(--red-bg-h); }
+#leads-list .tbl tbody tr.lb-todr:hover{ background-color:var(--amber-bg-h); }
 /* 6.196.0 — ההערה למעלה ("row-new אינו קיים בטבלת הלידים") התיישנה: lbRow מוסיף row-new
    מ-6.142.0, והוא !important (731) — ליד חדש **וגם** באיחור נצבע כתום. נמדד rgb(255,247,230)
    על class="lb-ovr row-new". האיחור דחוף מהחדש; (1,3,2)+!important גובר על (0,3,2). */
@@ -2079,10 +2106,10 @@ td.lb-today{ color:#b45309; font-weight:700; }
 .lb-tmi .k.lb-today, .lb-tmw .k.lb-today{ color:#b45309 !important; font-weight:700; }
 /* ⚠️ הלובי והמובייל מציגים כרטיסי .lead ולא שורות טבלה — בלעדיהם
    "בכל מסכי ה-CRM" לא היה כולל את "היום שלי". */
-.lead.lb-ovr{ background:#fdecea; box-shadow:inset -4px 0 0 #c0392b; }
-.lead.lb-ovr:hover{ background:#fbdcd8; }
-.lead.lb-todr{ background:#fff4e5; box-shadow:inset -4px 0 0 #f0b45f; }
-.lead.lb-todr:hover{ background:#ffe9cc; }
+.lead.lb-ovr{ background:var(--red-bg); box-shadow:inset -4px 0 0 var(--red); }
+.lead.lb-ovr:hover{ background:var(--red-bg-h); }
+.lead.lb-todr{ background:var(--amber-bg); box-shadow:inset -4px 0 0 var(--warn); }
+.lead.lb-todr:hover{ background:var(--amber-bg-h); }
 /* 🔴 האיפוס של רקע הקלט חיוני **יותר** מקודם: .lb-dt מוגדר
    background:#fff, ובלעדיו הקלט הוא מלבן לבן שצף על רקע **השורה**.
    אותה מחלקה של 6.103.0, על שטח גדול יותר. */
@@ -2101,27 +2128,28 @@ td.lb-today .lb-dt{ background-color:transparent; }
 /* ---- בורד העסקאות (6.123.0) ----
    אותה מלכודת ספציפיות, אותו פתרון: הזברה היא (0,2,2) והעיגון
    ב-#deals-list מעלה ל-(1,2,2). וריאנט ריחוף חובה. */
-#deals-list .tbl tbody tr.tk-ovr{ background-color:#fdecea; }
-#deals-list .tbl tbody tr.tk-todr{ background-color:#fff4e5; }
-#deals-list .tbl tbody tr.tk-ovr:hover{ background-color:#fbdcd8; }
-#deals-list .tbl tbody tr.tk-todr:hover{ background-color:#ffe9cc; }
+#deals-list .tbl tbody tr.tk-ovr{ background-color:var(--red-bg); }
+#deals-list .tbl tbody tr.tk-todr{ background-color:var(--amber-bg); }
+#deals-list .tbl tbody tr.tk-ovr:hover{ background-color:var(--red-bg-h); }
+#deals-list .tbl tbody tr.tk-todr:hover{ background-color:var(--amber-bg-h); }
 #dealSheet .ob-card, #custSheet .ob-card{ margin-top:12px; }
 /* שבב ספירת הלידים בטבלה — אותה שפה של tk-kind, בלי כלל חדש. */
 .cu-ln{ font-size:11px; font-weight:800; padding:1px 8px; border-radius:999px;
         background-color:#e8f3ff; color:#1c4e80; border:1px solid #c7e0f7; cursor:pointer; }
-#customers-list td.cu-act{ width:74px; min-width:74px; white-space:nowrap;
+/* 6.197.0 — כפתורי טקסט ולא אמוג'י (רומן); הכותרת "פעולות" ב-CU_COLS. יעד מגע 34/38. */
+#customers-list td.cu-act{ width:150px; min-width:150px; white-space:nowrap;
         text-align:center; padding-inline:4px; }
-.cu-ab{ font-size:15px; line-height:1; padding:4px 5px; border:1px solid #dfe3e6;
-        border-radius:8px; background:#fff; cursor:pointer; }
+.cu-ab{ font-size:12px; font-weight:700; line-height:1; padding:8px 9px; border:1px solid #dfe3e6;
+        border-radius:999px; background:#fff; cursor:pointer; color:var(--navy); font-family:inherit; }
 .cu-ab:hover{ background:#f2f6fa; border-color:#c7e0f7; }
 .cu-ln:hover{ background-color:#d8ebff; }
 #dealSheet .tk-lnk{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 /* 6.196.0 — עמודת שם העסקה: אותה שלישייה של td.tk-nm, אחרת שם ארוך מותח את הטבלה. */
 #deals-list td.dl-nm{ width:220px; min-width:220px; max-width:220px; text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-#tasks-list .tbl tbody tr.tk-ovr{ background-color:#fdecea; }
-#tasks-list .tbl tbody tr.tk-todr{ background-color:#fff4e5; }
-#tasks-list .tbl tbody tr.tk-ovr:hover{ background-color:#fbdcd8; }
-#tasks-list .tbl tbody tr.tk-todr:hover{ background-color:#ffe9cc; }
+#tasks-list .tbl tbody tr.tk-ovr{ background-color:var(--red-bg); }
+#tasks-list .tbl tbody tr.tk-todr{ background-color:var(--amber-bg); }
+#tasks-list .tbl tbody tr.tk-ovr:hover{ background-color:var(--red-bg-h); }
+#tasks-list .tbl tbody tr.tk-todr:hover{ background-color:var(--amber-bg-h); }
 /* 6.196.0 — אותו כלל ללידים (row-new !important היה גובר על האיחור). */
 #tasks-list .tbl tbody tr.tk-ovr.row-new, #tasks-list .tbl tbody tr.tk-ovr.row-new:nth-child(even){ background-color:#fdecea !important; box-shadow:inset -4px 0 0 #c0392b; }
 #tasks-list .tbl tbody tr.tk-ovr.row-new:hover{ background-color:#fbdcd8 !important; }
@@ -2184,7 +2212,6 @@ td.lb-today .lb-dt{ background-color:transparent; }
 .ctab:hover{ color:var(--navy); }
 .ctab.on{ color:var(--navy); border-bottom-color:var(--green); }
 .ctab:focus-visible{ outline:2px solid var(--navy); outline-offset:2px; }
-.ctab .ctab-n{ font-weight:800; opacity:.7; margin-inline-start:5px; font-size:12px; }
 /* ⚠️ יעד מגע. נמדד ב-390px שהכפתור יצא 34px, בעוד ש-.chip מקבל
    min-height:38px מתחת ל-900px — המוסכמה הקיימת בפרויקט. מיישרים אליה
    במקום להמציא מספר. */
@@ -2277,7 +2304,7 @@ td.lb-today .lb-dt{ background-color:transparent; }
    ובלי סימן. העיגון ב-#meets-list מעלה ל-(1,2,2).
    ⚠️ ווריאנט :hover נפרד **חובה** — בלעדיו משוב הריחוף נעלם דווקא
       בשורות שההדגשה נועדה להן. הלקח מ-6.119.0. */
-#meets-list .tbl tbody tr.mt-week{ background-color:#fff7e6; box-shadow:inset 3px 0 0 #f0b45f; }
+#meets-list .tbl tbody tr.mt-week{ background-color:var(--new-bg); box-shadow:inset 3px 0 0 var(--warn); }
 #meets-list .mt-lnk, .mt-lnk{ cursor:pointer; border-bottom:1px dashed #cbd5e1; }
 #meets-list .mt-lnk:hover, .mt-lnk:hover{ border-bottom-color:#0f4c81; }
 .mt-nolink{ color:#b45309; }
@@ -2559,13 +2586,7 @@ td.lb-today .lb-dt{ background-color:transparent; }
 #leadSheet .form-grid, #tkSheet .form-grid{ align-items:end; }
 #leadSheet .form-grid > div, #addModal .form-grid > div, #tkSheet .form-grid > div{ min-width:0; }
 #leadSheet label, #addModal label, #tkSheet label{ min-height:17px; }
-/* ---- סטטוס ובעלות קומפקטי (6.114.0) ---- */
-.lb-sob{ display:flex; flex-wrap:wrap; align-items:center; gap:10px;
-  padding:8px 10px; border:1px solid var(--line); border-radius:10px;
-  background-color:#fbfcfe; }
-.lb-sob > label{ font-size:11.5px; color:var(--ink-3); margin:0 0 0 2px; min-height:0; }
-.lb-sob select{ width:auto; min-width:130px; }
-.lb-sob .lbo-wrap{ margin:0; }
+/* 6.197.0 — .lb-sob* (6.114.0) ירד: אפס מפיקי HTML, נמדד. */
 /* 6.135.0 — האקורדיון "ציר פעילות" ירד: הוא ורשימת העדכונים אוחדו
    לרשימה אחת עם מסנן (הכרעת רומן 23/08/2026). ה-CSS יורד איתו — .tabs
    שנשאר כזבל אחרי ה-side-nav כבר לימד שכלל מת מבלבל את מי שיחפש אותו. */
@@ -2767,7 +2788,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.196.0</div>
+      <div class="ver">גרסה 6.197.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2896,7 +2917,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.196.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.197.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -2926,7 +2947,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
     <!-- תהליכי מכירה — בורד מלא (6.123.0): קיבוץ לפי שלב + סינון -->
     <section id="tab-deals" class="hidden">
       <div class="chips" id="deal-chips"></div>
-      <div class="logi-filters" id="dl-filters"></div>
+      <details class="lf-wrap" open><summary>סינון</summary><div class="logi-filters" id="dl-filters"></div></details>
       <div class="toolbar"><input id="dealSearch" type="search" placeholder="חיפוש לפי שם עסקה, לקוח, פנייה, טלפון או מס' הצעה…"></div>
       <div id="deals-list"></div>
     </section>
@@ -2946,7 +2967,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
     <!-- לידים — בורד מלא (6.93.0): שלוש תצוגות + קיבוץ לפי סטטוס -->
     <section id="tab-leads" class="hidden">
       <div class="chips" id="lb-chips"></div>
-      <div class="logi-filters" id="lb-filters"></div>
+      <details class="lf-wrap" open><summary>סינון</summary><div class="logi-filters" id="lb-filters"></div></details>
       <div id="lb-selbar"></div>
       <div class="toolbar">
         <input id="search" type="search" placeholder="חיפוש לפי שם, טלפון או חברה…">
@@ -2960,7 +2981,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
          ולא תור עבודה, וקיבוץ לפי סטטוס היה קבוצה אחת ענקית. -->
     <section id="tab-customers" class="hidden">
       <div class="chips" id="cu-chips"></div>
-      <div class="logi-filters" id="cu-filters"></div>
+      <details class="lf-wrap" open><summary>סינון</summary><div class="logi-filters" id="cu-filters"></div></details>
       <div class="toolbar"><input id="custSearch" type="search" placeholder="חיפוש לפי שם, טלפון, מס' פריוריטי או שם ליד…"></div>
       <div id="customers-list"></div>
     </section>
@@ -3047,7 +3068,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
     <!-- משימות — בורד מלא (6.121.0): תצוגות + קיבוץ לפי מועד + סינון -->
     <section id="tab-tasks" class="hidden">
       <div class="chips" id="tk-chips"></div>
-      <div class="logi-filters" id="tk-filters"></div>
+      <details class="lf-wrap" open><summary>סינון</summary><div class="logi-filters" id="tk-filters"></div></details>
       <div id="tk-selbar"></div>
       <div class="toolbar">
         <input id="taskSearch" type="search" placeholder="חיפוש לפי משימה, שם מקושר או טלפון…">
@@ -3321,8 +3342,8 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       <div id="lm-lnkres" class="ac-menu" hidden></div>
       <input type="hidden" id="lm-lnk" value="">
     </div>
-    <div class="field"><label>נושא *</label><input id="lm-subj"></div>
-    <div class="field"><label>תאריך *</label><input id="lm-date" type="date"></div>
+    <div class="field"><label>נושא<span class="req">*</span></label><input id="lm-subj"></div>
+    <div class="field"><label>תאריך<span class="req">*</span></label><input id="lm-date" type="date"></div>
     <div class="field"><label>שעת התחלה</label><input id="lm-start" type="time" value="10:00"></div>
     <div class="field"><label>שעת סיום</label><input id="lm-end" type="time" value="11:00"></div>
     <!-- 🔴 6.160.0 — הבורר נבנה מ-MEET_TYPES ולא מרשימה מוקלדת.
@@ -3403,7 +3424,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
 
 <!-- מודל כרטיס פגישה -->
 <div class="modal hidden" id="meetModal">
-  <div class="sheet" id="meetSheet"></div>
+  <div class="sheet wide" id="meetSheet"></div>
 </div>
 
 <!-- 🔴 6.161.0 — שינוי מועד. `.modal-over` (z-index 70) כדי שהוא ייפתח
@@ -3605,9 +3626,10 @@ const LEAD_SRC_COLORS  = {'קשרים אישיים':'#00c875','Paycall - שיח�
 /* סדר העמודות הוא **בדיוק** הרשימה של רומן. colspan של שורות הקבוצה נגזר
    מהאורך ולא מקודד — עמודה שתתווסף לא תשבור את הכותרות בשקט. */
 const LB_COLS = [
-  ['#','rownum'], ['שם מלא','srt'], ['לקוח','srt'], ['שם חברה','srt'], ['בעלים ליד','srt'],
+  ['#','rownum'], ['שם מלא','srt'], ['לקוח','srt'], ['שם חברה','srt'], ['בעלים','srt'],
   ['טלפון',''], ['ת.משימה הבאה','srt'], ['מקור הגעה','srt'],
-  ['סטטוס','srt'], ['סטטוס רלוונטי','lb-sub'], ['סטטוס לסירוב','lb-sub'], ['סטטוס לא רלוונטי','lb-sub'], ['סוג לקוח','srt'],
+  /* 6.197.0 — תוויות כמו בכרטיס (lbSubLabel): "סיבת" ולא "סטטוס"; "בעלים" כמו במשימות ובעסקאות. */
+  ['סטטוס','srt'], ['סטטוס רלוונטי','lb-sub'], ['סיבת סירוב','lb-sub'], ['סיבת לא רלוונטי','lb-sub'], ['סוג לקוח','srt'],
   /* 6.147.0 — נוספו **בסוף** (בקשת רומן, ובסדר הזה).
      6.196.0 — ההקפאה ורוחב תת-הסטטוס עברו ממיקום (nth-child) למחלקה: lb-fz1..3 לשלוש
      הקפואות (lbHead/lbRow) ו-'lb-sub' כאן. ההערה הקודמת הצהירה -n+4 / n+11..13 וה-CSS היה
@@ -10128,10 +10150,10 @@ window.dlSignBox = (d)=>{
     return `<div class="tk-lnk"><span class="st ${ds.cls}" title="${esc(ds.title||'')}">${esc(ds.label)}</span>`
       + (row.signer_name ? ` <span class="lb-mut">· ${esc(row.signer_name)}</span>` : '')
       + (signed
-          ? ` <button type="button" class="chip" onclick="openDocLink('${jsq(row.id)}','open')">📄 צפייה במסמך החתום</button>`
+          ? ` <button type="button" class="chip" onclick="openDocLink('${jsq(row.id)}','open')">↗ צפייה במסמך החתום</button>`
           : (may
-              ? ` <button type="button" class="chip" onclick="openDocLink('${jsq(row.id)}','copy')">🔗 העתקת קישור</button>`
-                + (row.phone ? ` <button type="button" class="chip" onclick="openDocLink('${jsq(row.id)}','wa')">💬 וואטסאפ</button>` : '')
+              ? ` <button type="button" class="chip" onclick="openDocLink('${jsq(row.id)}','copy')">⧉ העתקת קישור</button>`
+                + (row.phone ? ` <button type="button" class="chip" onclick="openDocLink('${jsq(row.id)}','wa')">וואטסאפ</button>` : '')
               : ` <span class="lb-mut">אין לך הרשאה להפיק קישור בקטגוריה הזו</span>`))
       + `</div>`;
   }
@@ -10146,10 +10168,10 @@ window.dlSignBox = (d)=>{
      ⚠️ אבל **שני** בסדר ולא ראשון: הפעולה הראשית של המשבצת היא הפקת
         מסמך החתימה, והמחשבון עזר לה. נתפס בבדיקה — dealtest לוחצת על
         הכפתור הראשון במשבצת, וההיפוך שלח אותה למחשבון. */
-  const shipBtn = `<button type="button" class="chip" onclick="dlShipCalc('${jsq(d.id)}')">📦 חשב משלוח והתקנה</button>`;
+  const shipBtn = `<button type="button" class="chip" onclick="dlShipCalc('${jsq(d.id)}')">חשב משלוח והתקנה</button>`;
   if(!window.canEdit('docs.' + DL_QCAT))
     return `<div class="tk-lnk">${shipBtn}</div><div class="note">אין לך הרשאת עריכה בקטגוריית ההצעות.</div>`;
-  return `<div class="tk-lnk"><button type="button" class="chip" onclick="dlQuoteDoc('${jsq(d.id)}')">✍️ צור מסמך לחתימה</button> ${shipBtn}`
+  return `<div class="tk-lnk"><button type="button" class="chip" onclick="dlQuoteDoc('${jsq(d.id)}')">✎ צור מסמך לחתימה</button> ${shipBtn}`
        + ` <span class="lb-mut">הצעה ${esc(d.priority_quote_id)}</span></div>`;
 };
 
@@ -10356,7 +10378,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'crmfix-2026-09-04a';
+const BUILD_ID = 'crmpolish-2026-09-04b';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -16537,8 +16559,9 @@ function chainOf(type, id){
      מצטמצמת למשימה עצמה: כרטיס המשימה היה מציג את העדכון שלו ותו לא.
      נתפס ב-cardtest ולא בעין. המשימה נפתרת דרך הקישור שלה. */
   let x;
-  if(type==='task'){
-    const _t = (TASKS||[]).find(t=>t.id===id);
+  if(type==='task' || type==='meeting'){
+    /* 6.197.0 — גם פגישה נפתרת דרך הקישור שלה (כרטיס הפגישה קיבל לשונית עדכונים). */
+    const _t = type==='task' ? (TASKS||[]).find(t=>t.id===id) : (MEETS||[]).find(m=>m.id===id);
     x = _t ? ctxOf(_t.linked_type, _t.linked_id) : { lead:null, deal:null, cust:null };
   } else x = ctxOf(type, id);
   let cust = x.cust;
@@ -16548,6 +16571,7 @@ function chainOf(type, id){
   else if(type==='deal')     add('deal', id, (x.deal||{}).name);
   else if(type==='customer') add('customer', id, (cust||{}).name);
   else if(type==='task')     add('task', id, ((TASKS||[]).find(t=>t.id===id)||{}).name);
+  else if(type==='meeting')  add('meeting', id, ((MEETS||[]).find(m=>m.id===id)||{}).subject);
 
   if(x.lead) add('lead', x.lead.id, x.lead.full_name);
   if(x.deal) add('deal', x.deal.id, x.deal.name);
@@ -16584,7 +16608,8 @@ const TK_COLS = [
      בכרטיס המשימה ובמסך "היום שלי" — הכרעתו הייתה "רק בטבלה". */
   ['סטטוס','srt'], ['סיווג','srt'], ['מועד','srt'], ['תאריך יצירה','srt']
 ];
-const TK_KIND_LBL = { lead:'ליד', deal:'תהליך', customer:'לקוח', payment:'תשלום' };
+/* 6.197.0 — 'תהליך מכירה' כמו הלשונית, הסיווג והסינון; 'תהליך' לבדו היה השם הרביעי לאותה ישות. */
+const TK_KIND_LBL = { lead:'ליד', deal:'תהליך מכירה', customer:'לקוח', payment:'תשלום' };
 /* הדליים. הסדר הוא סדר העבודה: מה שהיום, ואז האיחור מהטרי לישן, ואז
    העתיד. ⚠️ folded — הכרעת רומן "נעשה סדר אחרי זה" מיושמת כקיפול
    ולא כהסתרה: המשימות שם, הספירה בכותרת, והן פשוט אינן צועקות. */
@@ -16731,7 +16756,7 @@ function tkChips(){
     `<button class="chip ${TK_VIEW==='mine'?'active':''}" onclick="tkSetView('mine')">שלי ${mine}</button>`+
     `<button class="chip ${TK_VIEW==='open'?'active':''}" onclick="tkSetView('open')">כל הפתוחות ${o.length}</button>`+
     `<button class="chip ${TK_VIEW==='done'?'active':''}" onclick="tkSetView('done')">הושלמו ${done}</button>`+
-    (window.canEdit('crm.tasks')?`<button class="chip ${TK_BULK?'active':''}" onclick="tkBulkToggle()">${TK_BULK?'✕ סיום בחירה':'☑︎ בחירה מרובה'}</button>`:'');
+    (window.canEdit('crm.tasks')?`<button class="chip chip-mode ${TK_BULK?'active':''}" onclick="tkBulkToggle()">${TK_BULK?'✕ סיום בחירה':'☑︎ בחירה מרובה'}</button>`:'');
 }
 /* ---- הישות המקושרת ---- */
 /* 🔴 6.187.0 — העסקה של ליד, כשיש יותר מאחת. נמדד: **185 לידים
@@ -17060,12 +17085,12 @@ function tkRow(t, i){
     </tr>`;
 }
 function tkFlat(list){
-  if(!list.length) return '<div class="empty">לא נמצאו משימות</div>';
+  if(!list.length) return crmEmpty('משימות');
   let body=''; tkOrder(list).slice(0,pgLim('tasks')).forEach((t,i)=>{ body+=tkRow(t,i+1); });
   return tkHead()+body+'</tbody></table></div>'+pgFoot('tasks',list.length,'משימות');
 }
 function tkTable(list){
-  if(!list.length) return '<div class="empty">אין משימות בסינון הזה</div>';
+  if(!list.length) return crmEmpty('משימות');
   const CS = TK_COLS.length + (TK_BULK?1:0), byS = {};
   for(const t of list){ const k = t.status || '—'; (byS[k] = byS[k] || []).push(t); }
   /* 🔴 6.149.0 — הסדר מ-TASK_STATUSES, שהוא **בדיוק** סדר התוויות
@@ -17174,7 +17199,7 @@ window.openTask = (id)=>{
       <div class="lbu-list" id="tk-updlist"><div class="note">טוען…</div></div>
     </div>
     <div class="modal-actions">
-      ${editable?`<button class="btn btnw" onclick="saveTask('${jsq(id)}')">💾 שמירה</button>
+      ${editable?`<button class="btn btnw" onclick="saveTask('${jsq(id)}')">שמירה</button>
       ${t.status!=='הושלם'?`<button type="button" class="chip" onclick="doneTask('${jsq(id)}')">בוצע ✓</button>`:''}`
       :'<div class="note">אין לך הרשאת עריכה למשימות.</div>'}
     </div>
@@ -17275,7 +17300,7 @@ function renderTasks(){
   /* ⚠️ tkInitDef **לפני** הצ'יפים: הוא עשוי לשנות את TK_VIEW, ובסדר
      ההפוך הצ'יפים היו מציירים תצוגה אחת והטבלה מתחתם אחרת — בציור
      הראשון בלבד, כלומר בדיוק המקרה שקשה לשחזר. */
-  tkInitDef(); tkChips(); renderTkFilters(); tkSelBar();
+  tkInitDef(); tkChips(); renderTkFilters(); lfWrapSync('tk-filters'); tkSelBar();
   const q=($('#taskSearch').value||'').trim();
   const base = tkApplyF(tkViewList());
   if(q){
@@ -17285,7 +17310,7 @@ function renderTasks(){
        שהתיישנה מול הכרעתו ב-31/08 לעסקאות ("לכבד את הסינון הפעיל").
        ⚠️ ולכן מי שיחפש משימה שהושלמה יצטרך לשנות סינון. */
     const list=base.filter(t=>(t.name||'').includes(q)||tkLinkName(t).includes(q)||tkLinkPhone(t).includes(q));
-    paintKeep('#tasks-list', wideScreen() ? tkFlat(list) : capped(list, taskRow, 'לא נמצאו משימות'));
+    paintKeep('#tasks-list', wideScreen() ? tkFlat(list) : capped(list, taskRow, crmEmptyMsg('משימות')));
     return;
   }
   const list = base;
@@ -17293,7 +17318,7 @@ function renderTasks(){
      טבלה שטוחה. ⚠️ tkBucket עצמו **נשאר**: בורד העסקאות צובע לפיו את
      שורותיו (TK_PAINT), וסימון האיחור בשורה מגיע מ-lbDueMark ולא מהדלי. */
   paintKeep('#tasks-list', wideScreen() ? tkTable(list)
-    : capped(list, taskRow, TK_VIEW==='mine'?'אין לך משימות פתוחות 🎉':'לא נמצאו משימות'));
+    : capped(list, taskRow, TK_VIEW==='mine'?'אין לך משימות פתוחות':crmEmptyMsg('משימות')));
 }
 window.doneTask = async (id)=>{
   const { error } = await sb.schema('crm').from('tasks').update({ status:'הושלם', closed_at: new Date().toISOString() }).eq('id', id);
@@ -17357,8 +17382,9 @@ function custRow(c){
       יש `assert` בבנייה שאוסר כתיבה כלשהי לטבלה. (הועלה בסקירה מקבילה.) */
 const CU_COLS = [
   ['#','rownum'], ['לקוח','srt'], ["מס' פריוריטי",'srt'], ['טלפון',''],
-  ['עיר / כתובת','srt'], ['לידים','srt'], ['סוג','srt'], ['מחירון','srt'], ['פעיל?','srt'],
-  ['','']
+  /* 6.197.0 — 'פניות' (כמו 'פנייה מקורית' בעסקאות); עמודת הפעולות קיבלה כותרת. */
+  ['עיר / כתובת','srt'], ['פניות','srt'], ['סוג','srt'], ['מחירון','srt'], ['פעיל?','srt'],
+  ['פעולות','']
 ];
 let CU_VIEW = 'active', CU_SORT = [null, 1];
 const CU_KEY = {
@@ -17397,7 +17423,7 @@ function cuChips(){
   const wl =CUSTS.filter(k=>custLeads(k).length).length;
   el.innerHTML =
     `<button class="chip ${CU_VIEW==='active'?'active':''}" onclick="cuSetView('active')">פעילים ${act}</button>`+
-    `<button class="chip ${CU_VIEW==='leads'?'active':''}" onclick="cuSetView('leads')">הגיעו מפנייה ${wl}</button>`+
+    `<button class="chip ${CU_VIEW==='leads'?'active':''}" onclick="cuSetView('leads')">עם פנייה ${wl}</button>`+
     `<button class="chip ${CU_VIEW==='all'?'active':''}" onclick="cuSetView('all')">הכל ${CUSTS.length}</button>`;
 }
 function renderCuFilters(){
@@ -17410,7 +17436,7 @@ function renderCuFilters(){
     sel('type','סוג לקוח — הכל',uniq(k=>k.customer_type).map(s=>[s,s]))+
     sel('price','מחירון — הכל',uniq(k=>k.price_group).map(s=>[s,s]))+
     sel('city','עיר — הכל',uniq(k=>k.city).map(s=>[s,s]))+
-    sel('leads','פנייה מקורית — הכל',[['yes','הגיע מפנייה'],['no','ללא פנייה']])+
+    sel('leads','פנייה — הכל',[['yes','עם פנייה'],['no','ללא פנייה']])+
     (cuFilterActive()?`<button type="button" class="lf-clear" onclick="cuFilterClear()">✕ ניקוי סינון</button>`:'');
 }
 function cuHead(){
@@ -17419,7 +17445,7 @@ function cuHead(){
     + '</tr></thead><tbody>';
 }
 function custTable(list){
-  if(!list.length) return '<div class="empty">לא נמצאו לקוחות</div>';
+  if(!list.length) return crmEmpty('לקוחות');
   const rows=cuOrder(list).slice(0,pgLim('cust')).map((c,i)=>{
     const ld = custLeads(c);
     /* ⚠️ stopPropagation — אחרת נפתח גם כרטיס הלקוח. השבב מוביל לליד
@@ -17432,7 +17458,7 @@ function custTable(list){
     <td><b>${esc(c.name)}</b></td>
     <td dir="ltr">${esc(c.priority_id||'')||'<span class="lb-na">·</span>'}</td>
     <td dir="ltr">${phCell(c.phone)}</td>
-    <td>${esc(c.city||'')}${c.address?`<div class="note-preview" title="${esc(c.address)}">🏠 ${esc(String(c.address).slice(0,22))}</div>`:''}</td>
+    <td>${esc(c.city||'')}${c.address?`<div class="note-preview" title="${esc(c.address)}">${esc(String(c.address).slice(0,22))}</div>`:''}</td>
     <td data-sort="${ld.length}">${ldCell}</td>
     <td>${esc(c.customer_type||'')||'<span class="lb-na">·</span>'}</td>
     <td>${esc(c.price_group||'')||'<span class="lb-na">·</span>'}</td>
@@ -17442,18 +17468,18 @@ function custTable(list){
   return cuHead()+rows+'</tbody></table></div>'+pgFoot('cust',list.length,'לקוחות');
 }
 function renderCustomers(){
-  cuChips(); renderCuFilters();
+  cuChips(); renderCuFilters(); lfWrapSync('cu-filters');
   const q=($('#custSearch').value||'').trim();
   const base = cuApplyF(cuViewList());
   if(q){
     /* 6.186.0 — מכבד את הסינון, כמו בשאר המסכים. כולל שם הליד. */
     const list=base.filter(c=>(c.name||'').includes(q)||(c.phone||'').includes(q)
       ||(c.priority_id||'').includes(q)||custLeads(c).some(l=>(l.full_name||'').includes(q)));
-    paintKeep('#customers-list', wideScreen() ? custTable(list) : capped(list, custRow, 'לא נמצאו לקוחות'));
+    paintKeep('#customers-list', wideScreen() ? custTable(list) : capped(list, custRow, crmEmptyMsg('לקוחות')));
     return;
   }
   const list=base;
-  paintKeep('#customers-list', wideScreen() ? custTable(list) : capped(list, custRow, 'לא נמצאו לקוחות'));
+  paintKeep('#customers-list', wideScreen() ? custTable(list) : capped(list, custRow, crmEmptyMsg('לקוחות')));
 }
 window.openCust = async (id)=>{
   /* 6.189.0 — עד כאן ההגנה היחידה הייתה ש-CUSTS ריק ל-RLS. שער מפורש. */
@@ -17510,13 +17536,13 @@ window.openCust = async (id)=>{
       <div><label>סוג לקוח</label>${roIn(c.customer_type||'')}</div>
       <div class="span2"><label>כתובת</label>${roIn([c.address,c.city].filter(Boolean).join(', '))}</div>
       <div class="span4" id="cu-pl-slot"></div>
-      ${c.logistics_notes?`<div class="span4"><div class="note">🚚 ${esc(c.logistics_notes)}</div></div>`:''}
+      ${c.logistics_notes?`<div class="span4"><div class="note">לוגיסטיקה: ${esc(c.logistics_notes)}</div></div>`:''}
 
       <div class="form-sep">משימות ופגישות</div>
       <div class="span4">${lbTmBlock(cuTasks, cuMeets, cuTmActs(id))}</div>
     </div>
 
-    <section class="ob-card" id="cu-leads"><h2 class="sec">לידים ופניות (${ld.length})</h2>
+    <section class="ob-card" id="cu-leads"><h2 class="sec">פניות (${ld.length})</h2>
       ${ld.length ? ld.map(l=>{
         const how = l.customer_id===id ? '' : ' <span class="note">(הוצלב לפי טלפון)</span>';
         return `<div class="row" style="cursor:pointer" onclick="goCard(()=>openLead('${jsq(l.id)}'))">`
@@ -17529,15 +17555,15 @@ window.openCust = async (id)=>{
       ${(deals||[]).map(d=>`<div class="row"><span class="k">${esc(d.priority_quote_id||'ללא הצעה')}</span><span class="v">${esc(d.stage)}${d.amount?' · ₪'+Number(d.amount).toLocaleString():''}</span></div>`).join('')||'<div class="empty" style="padding:10px">אין עסקאות</div>'}
     </section>
 
-    ${ordOpen.length?`<section class="ob-card"><h2 class="sec">📦 הזמנות פתוחות (${ordOpen.length})</h2>${ordOpen.map(ordRow).join('')}</section>`:''}
-    ${cs.length?`<section class="ob-card"><h2 class="sec">🛠️ קריאות שירות (${cs.length})</h2>${cs.slice(0,15).map(s=>`<div class="row" style="cursor:pointer" onclick="goCard(()=>openScall('${jsq(s.id)}'))"><span class="k">${esc(s.call_number||'')}${s.opened_date?' · '+fmtD(s.opened_date):''}${s.product?' · '+esc(String(s.product).slice(0,26)):''}</span><span class="v"><span class="pill ${scStClass(s.status)}">${esc(s.status||'—')}</span></span></div>`).join('')}</section>`:''}
-    ${cp.length?`<section class="ob-card"><h2 class="sec">💳 תשלומים (${cp.length})</h2>${cp.slice(0,10).map(p=>`<div class="row"><span class="k">${p.due_date?fmtD(p.due_date):'—'}</span><span class="v">${shekel(p.total_amount)} · ${esc(p.status||'')}</span></div>`).join('')}</section>`:''}
+    ${ordOpen.length?`<section class="ob-card"><h2 class="sec">הזמנות פתוחות (${ordOpen.length})</h2>${ordOpen.map(ordRow).join('')}</section>`:''}
+    ${cs.length?`<section class="ob-card"><h2 class="sec">קריאות שירות (${cs.length})</h2>${cs.slice(0,15).map(s=>`<div class="row" style="cursor:pointer" onclick="goCard(()=>openScall('${jsq(s.id)}'))"><span class="k">${esc(s.call_number||'')}${s.opened_date?' · '+fmtD(s.opened_date):''}${s.product?' · '+esc(String(s.product).slice(0,26)):''}</span><span class="v"><span class="pill ${scStClass(s.status)}">${esc(s.status||'—')}</span></span></div>`).join('')}</section>`:''}
+    ${cp.length?`<section class="ob-card"><h2 class="sec">תשלומים (${cp.length})</h2>${cp.slice(0,10).map(p=>`<div class="row"><span class="k">${p.due_date?fmtD(p.due_date):'—'}</span><span class="v">${shekel(p.total_amount)} · ${esc(p.status||'')}</span></div>`).join('')}</section>`:''}
 
     <section class="ob-card"><h2 class="sec">אנשי קשר (${(contacts||[]).length})</h2>
       ${(contacts||[]).map(p=>`<div class="row"><span class="k">${esc(p.full_name)}</span><span class="v">${esc(p.phone||p.email||'—')}</span></div>`).join('')||'<div class="empty" style="padding:10px">אין אנשי קשר</div>'}
     </section>
 
-    ${ss.length?`<section class="ob-card"><h2 class="sec">📍 אתרי הלקוח (${ss.length})</h2>${ss.map(s=>{
+    ${ss.length?`<section class="ob-card"><h2 class="sec">אתרי הלקוח (${ss.length})</h2>${ss.map(s=>{
         const ad = siteAddr(s);
         return `<div class="csite-row"><span><span class="csite-nm">${esc(s.name||'ללא שם')}</span>`
           + `<span class="csite-cd" dir="ltr">${esc(s.site_code)}</span>`
@@ -17558,7 +17584,7 @@ window.openCust = async (id)=>{
     <section class="ob-card"><h2 class="sec">היסטוריה (${hsTasks.length+hsMeets.length})</h2>
       ${lbHistBlock(hsTasks, hsMeets)}
     </section>
-    ${ordPast.length?`<section class="ob-card"><h2 class="sec">🗄️ הזמנות עבר (${ordPast.length})</h2>${ordPast.map(ordRow).join('')}</section>`:''}
+    ${ordPast.length?`<section class="ob-card"><h2 class="sec">הזמנות עבר (${ordPast.length})</h2>${ordPast.map(ordRow).join('')}</section>`:''}
     </div>
 `;
   mountCard('custModal', ()=>openCust(id));
@@ -20166,8 +20192,21 @@ window.saveNewScall = async ()=>{
 /* 760 ולא 700: ה-CSS עובר לתצוגת כרטיסים ב-760px, ובפער שביניהם ה-JS בנה
    טבלה בזמן שהעיצוב כבר היה במובייל. שני המספרים חייבים להיות זהים. */
 const wideScreen = ()=> window.matchMedia('(min-width:760px)').matches;
+/* 6.197.0 — מצב-ריק אחד לחמשת הבורדים. עד כאן: "לא נמצאו X" / "אין X בסינון הזה" / "אין לך X 🎉",
+   ובעסקאות שתי הצורות בשורות סמוכות. */
+const crmEmpty = noun => `<div class="empty">אין ${noun} בסינון הזה</div>`;
+const crmEmptyMsg = noun => `אין ${noun} בסינון הזה`;
 /* תיקון ממצא 24 — סיבוב מסך או שינוי גודל חוצה את סף 700px: מציירים מחדש כדי לעבור טבלה⇄כרטיסים */
 let _wideNow = wideScreen(), _vpTimer = null;
+/* 6.197.0 — סרגל הסינון: במובייל נפתח סגור (296px מתוך 844 לפני השורה הראשונה, נמדד), וה-summary
+   מונה סינונים פעילים (.lf-on) — כדי שסינון סגור לא יסתיר שהוא פועל. */
+function lfWrapSync(id){
+  const box = document.getElementById(id); if(!box) return;
+  const d = box.closest('details.lf-wrap'); if(!d) return;
+  const n = box.querySelectorAll('.lf-on').length;
+  const s = d.querySelector('summary'); if(s) s.innerHTML = 'סינון' + (n ? ' <span class="lf-n">' + n + '</span>' : '');
+}
+if(!_wideNow) document.querySelectorAll('details.lf-wrap').forEach(d=>{ d.open = false; });
 function _viewportChanged(){
   clearTimeout(_vpTimer);
   _vpTimer = setTimeout(function(){
@@ -21036,7 +21075,7 @@ function dlRow(d, i, nt){
     </tr>`;
 }
 function dlTable(list, grouped){
-  if(!list.length) return '<div class="empty">אין עסקאות בסינון הזה</div>';
+  if(!list.length) return crmEmpty('תהליכי מכירה');
   const nt = nextTaskBy('deal').due;
   const CS = DL_COLS.length;
   let body='';
@@ -21064,7 +21103,7 @@ function dlTable(list, grouped){
 const DL_FOLD = new Set();
 window.dlFold = st=>{ if(DL_FOLD.has(st)) DL_FOLD.delete(st); else DL_FOLD.add(st); renderDeals(); };
 function renderDeals(){
-  dlInitDef(); dealChips(); renderDlFilters();
+  dlInitDef(); dealChips(); renderDlFilters(); lfWrapSync('dl-filters');
   const q = ($('#dealSearch').value||'').trim();
   dlPendLoad();   /* עצל, לא חוסם — השבב מופיע כשהתשובה חוזרת */
   const base = DEAL_FILTER==='pending' ? (()=>{ const s=dlPendIds(); return DEALS.filter(d=>s.has(d.id)); })()
@@ -21088,11 +21127,11 @@ function renderDeals(){
           || ((l&&l.full_name)||'').includes(q)
           || (((l&&l.phone)||(k&&k.phone)||'')).includes(q);
     });
-    paintKeep('#deals-list', wideScreen() ? dlTable(list,false) : capped(list, _row, 'לא נמצאו עסקאות'));
+    paintKeep('#deals-list', wideScreen() ? dlTable(list,false) : capped(list, _row, crmEmptyMsg('תהליכי מכירה')));
     return;
   }
   const list = dlApplyF(base);
-  paintKeep('#deals-list', wideScreen() ? dlTable(list,true) : capped(list, _row, 'אין עסקאות בסינון הזה'));
+  paintKeep('#deals-list', wideScreen() ? dlTable(list,true) : capped(list, _row, crmEmptyMsg('תהליכי מכירה')));
 }
 debounceSearch($('#dealSearch'), renderDeals);
 /* 6.196.0 — #meet-q היה היחיד ב-srchAttr (בלי flush ב-Enter). */
@@ -21429,8 +21468,8 @@ function meetChips(){
                 week: MEETS.filter(mtWeekIn).length,
                 future: MEETS.filter(m=>m.meet_date>=t).length };
   $('#meet-chips').innerHTML = `
-    <button class="chip ${MEET_MODE==='cal'?'active':''}" onclick="setMeetMode('cal')">יומן</button>
-    <button class="chip ${MEET_MODE==='list'?'active':''}" onclick="setMeetMode('list')">רשימה</button>` + (MEET_MODE==='cal' ? '' : `
+    <button class="chip chip-mode ${MEET_MODE==='cal'?'active':''}" onclick="setMeetMode('cal')">יומן</button>
+    <button class="chip chip-mode ${MEET_MODE==='list'?'active':''}" onclick="setMeetMode('list')">רשימה</button>` + (MEET_MODE==='cal' ? '' : `
     <button class="chip ${MEET_FILTER==='today'?'active':''}" onclick="setMeetFilter('today')">היום ${cnt.today}</button>
     <button class="chip ${MEET_FILTER==='week'?'active':''}" onclick="setMeetFilter('week')">השבוע ${cnt.week}</button>
     <button class="chip ${MEET_FILTER==='future'?'active':''}" onclick="setMeetFilter('future')">עתידיות ${cnt.future}</button>
@@ -21652,7 +21691,7 @@ function mtHead(){
     + '</tr></thead><tbody>';
 }
 function meetTable(list){
-  if(!list.length) return '<div class="empty">אין פגישות בסינון הזה</div>';
+  if(!list.length) return crmEmpty('פגישות');
   const rows=mtOrder(list).slice(0,pgLim('meets')).map((m,i)=>{
     const ln=linkedName(m);
     /* ⚠️ הצביעה נגזרת מ-mtWeekIn — אותה נקודת חנק של הצ'יפ והמונה. */
@@ -21746,7 +21785,7 @@ function mCard(m,compact){
   const att=Array.isArray(m.attendees)?m.attendees.length:0;
   return `<div class="ev ${compact?'ev-c':''}" style="border-inline-start-color:${col};${done?'opacity:.55':''}" onclick="openMeet('${m.id}')">
     <div class="ev-top"><span class="ev-time">${esc(mSlot(m)||'ללא שעה')}</span>${mark?`<span class="ev-done" style="color:${col}">${mark}</span>`:''}</div>
-    <div class="t">${m.source==='outlook'?'📅 ':''}${esc(m.subject||'ללא נושא')}</div>
+    <div class="t">${esc(m.subject||'ללא נושא')}</div>
     ${ln?`<div class="s">${ln.label}: ${esc(ln.name||'')}</div>`:''}
     ${m.location?`<div class="s">📍 ${esc(String(m.location).slice(0,32))}</div>`:''}
     <div class="s ev-foot">${m.organizer_name?`<span class="teamchip" style="background:${col}">${esc(m.organizer_name)}</span>`:'<span class="teamchip nochip">ללא מארגן</span>'}${att?`<span class="tagx">${att} משתתפים</span>`:''}${(m.teams_link||m.web_link)?'<span class="tagx" title="קישור לפגישה">🔗</span>':''}</div>
@@ -21809,7 +21848,7 @@ function meetCal(){
           <div class="mnum"><span>${parseInt(d.slice(8),10)}</span>${evs.length?`<span class="mcount">${evs.length}</span>`:''}</div>
           ${shown.map(m=>{ const col=mColor(m);
             return `<div class="mini-ev" style="border-inline-start-color:${col};${mDone(m)?'opacity:.5':''}" title="${esc(m.subject||'')} · ${esc(mSlot(m)||'ללא שעה')} · ${esc(m.status||'')}${m.organizer_name?' · '+esc(m.organizer_name):''}">
-              <div class="me-line1"><span class="me-time">${esc((mSlot(m)||'').split('-')[0])||'—'}</span><b>${m.source==='outlook'?'📅':''}${esc(m.subject||'')}</b>${mOk(m)?`<span class="me-ok" style="color:${col}">✓</span>`:''}</div>
+              <div class="me-line1"><span class="me-time">${esc((mSlot(m)||'').split('-')[0])||'—'}</span><b>${esc(m.subject||'')}</b>${mOk(m)?`<span class="me-ok" style="color:${col}">✓</span>`:''}</div>
               <div class="me-line2"><span class="me-dot" style="background:${col}"></span>${esc(m.organizer_name||m.meet_type||'פגישה')}${m.location?` · ${esc(String(m.location).slice(0,18))}`:''}</div>
             </div>`;}).join('')}
           ${evs.length>3?`<div class="mini-more">+${evs.length-3} נוספות…</div>`:''}
@@ -21843,7 +21882,7 @@ function meetCal(){
     </div></div>`;
   }
   const legend = MCAL_LEGEND.map(s=>`<span class="cal-lg"><span class="cal-dot" style="background:${MSTATUS_COLOR[s]};border-radius:3px"></span>${esc(s)}</span>`).join('')
-    + '<span class="cal-lg">📅 מיומן Outlook המשותף</span>';
+    + '<span class="cal-lg">מיומן Outlook המשותף</span>';
   return `<div class="cal-topbar">
       <span class="cal-title">${title}</span>
       <span class="grow"></span>
@@ -21885,7 +21924,7 @@ function renderMeets(){
   });
   /* ⚠️ paintKeep ולא innerHTML=: כל שינוי סינון או מיון היה מחזיר את
      הגלילה האופקית לראש — הלקח מ-6.116.0 בטבלת הלידים. */
-  paintKeep('#meets-list', wideScreen() ? meetTable(list) : capped(list, meetRow, 'אין פגישות בסינון הזה'));
+  paintKeep('#meets-list', wideScreen() ? meetTable(list) : capped(list, meetRow, crmEmptyMsg('פגישות')));
 }
 /* ═══ פעולות על הפגישה (6.161.0, רומן) ════════════════════════════
    ⚠️ הכפתורים **בכרטיס בלבד ולא בטבלה**: ביטול משורה בטבלה של 468
@@ -21899,7 +21938,7 @@ function mtActs(m){
   const ol = m.source==='outlook';
   return `<div class="lbu-bar" style="margin-top:12px">`
     + (done ? `<span class="note">הפגישה בוטלה.</span>`
-            : `<button type="button" class="chip" onclick="mtSendOpen('${jsq(m.id)}')">📤 שיגור זימון</button>`
+            : `<button type="button" class="chip" onclick="mtSendOpen('${jsq(m.id)}')">שיגור זימון</button>`
             + `<button type="button" class="chip" onclick="mtReschedOpen('${jsq(m.id)}')">✎ שינוי מועד</button>`
             + `<button type="button" class="chip" onclick="mtCancel('${jsq(m.id)}')">✕ ביטול הפגישה</button>`)
     + (ol && m.web_link ? `<a class="chip" href="${esc(safeUrl(m.web_link))}" target="_blank" rel="noopener">↗ פתיחה באאוטלוק</a>` : '')
@@ -22037,22 +22076,42 @@ $('#mt-rs-save').onclick = async ()=>{
 window.openMeet = (id)=>{
   const m = MEETS.find(x=>x.id===id); if(!m) return;
   const ln = linkedName(m);
+  /* 6.197.0 — form-grid + לשוניות כמו ארבעת הכרטיסים האחרים (היה .row/.k/.v ב-15px, בלי עדכונים).
+     ⚠️ אותה נקודת חנק של הטבלה: mtDetail; ואותם ids (mt-ownbox · mt-lnkbox) — lbOwnerSync ו-mtLinkSave. */
+  const _dt = m.meet_date ? new Date(m.meet_date+'T00:00').toLocaleDateString('he-IL',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
+  const _hr = (m.start_time||'—') + (m.end_time ? ' – ' + m.end_time : '');
+  const _lt = m.linked_type, _lid = m.linked_id;
+  const hsT = (_lt && _lid) ? (TASKS||[]).filter(t=>t.linked_type===_lt && t.linked_id===_lid && tmDone(t)) : [];
+  const hsM = (_lt && _lid) ? (MEETS||[]).filter(x=>x.id!==m.id && x.linked_type===_lt && x.linked_id===_lid && !mFut(x)) : [];
   $('#meetSheet').innerHTML = `
-    <h3>${esc(m.subject)}</h3>
-    <div class="row"><span class="k">סטטוס</span><span class="v">${ieSel('meet',m.id,'status',MEET_STATUSES,m.status,{mdColors:MSTATUS_COLOR,mdK:LB_TK})}</span></div>
-    <div class="row"><span class="k">תאריך</span><span class="v">${m.meet_date?new Date(m.meet_date+'T00:00').toLocaleDateString('he-IL',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'}):'—'}</span></div>
-    <div class="row"><span class="k">שעות</span><span class="v">${esc(m.start_time||'—')}${m.end_time?' – '+esc(m.end_time):''}</span></div>
-    <div class="row"><span class="k">סוג</span><span class="v">${ieSel('meet',m.id,'meet_type',MEET_TYPES,mtType(m),{mdColors:MEET_TYPE_COLORS,mdK:LB_TK,allowEmpty:true})}</span></div>
-    <!-- ⚠️ אותה נקודת חנק של הטבלה: mtDetail. שתי הצגות של אותו כלל
-         היו נפרדות בשקט ביום שהכלל ישתנה. -->
-    <div class="row"><span class="k">${mtType(m)==='מקוונת'?'קישור':(mtType(m)==='טלפונית'?'טלפון':'מיקום')}</span><span class="v">${mtDetail(m)}</span></div>
-    <div class="row"><span class="k">בעלים ושותפים</span><span class="v" id="mt-ownbox">${ownCellName('meet',m)}</span></div>
-    <!-- 🔴 6.182.0 — מוצג **תמיד**, גם כשאין קישור. עד כאן הוא נעלם,
-         ולכן פגישה לא-מקושרת נראתה כמו פגישה תקינה — וזה בדיוק המצב
-         ש-meeting_send נכשלת בו ב-13 מתוך 13 הפגישות העתידיות. -->
-    <div class="row"><span class="k">מקושרת אל</span><span class="v" id="mt-lnkbox">${mtLinkRow(m)}</span>${(window.canEdit('crm.meets') && m.status!=='בוטלה')?`<button type="button" class="chip mt-lnkbtn" onclick="mtLinkOpen('${jsq(m.id)}')">קישור</button>`:''}</div>
-    ${mtActs(m)}`;
+    <h3>${esc(m.subject)} ${mdPill(m.status||'—',MSTATUS_COLOR,LB_TK)}</h3>
+    ${ctabsHtml('mt')}
+    <div id="mt-pn-main">
+    <div class="form-grid">
+      <div class="form-sep">פרטי הפגישה</div>
+      <div><label>סטטוס</label><div class="tk-lnk">${ieSel('meet',m.id,'status',MEET_STATUSES,m.status,{mdColors:MSTATUS_COLOR,mdK:LB_TK})}</div></div>
+      <div><label>תאריך</label>${roIn(_dt)}</div>
+      <div><label>שעות</label>${roIn(_hr)}</div>
+      <div><label>סוג</label><div class="tk-lnk">${ieSel('meet',m.id,'meet_type',MEET_TYPES,mtType(m),{mdColors:MEET_TYPE_COLORS,mdK:LB_TK,allowEmpty:true})}</div></div>
+      <div class="span2"><label>${mtType(m)==='מקוונת'?'קישור':(mtType(m)==='טלפונית'?'טלפון':'מיקום')}</label><div class="tk-lnk">${mtDetail(m)}</div></div>
+      <div class="span2"><label>בעלים ושותפים</label><div class="tk-lnk" id="mt-ownbox">${ownCellName('meet',m)}</div></div>
+      <div class="span4"><label>מקושרת אל</label><div class="tk-lnk"><span id="mt-lnkbox">${mtLinkRow(m)}</span>${(window.canEdit('crm.meets') && m.status!=='בוטלה')?`<button type="button" class="chip mt-lnkbtn" onclick="mtLinkOpen('${jsq(m.id)}')">קישור</button>`:''}</div></div>
+    </div>
+    ${mtActs(m)}
+    </div>
+    <div id="mt-pn-upd" class="hidden">
+      <div class="note" style="margin-bottom:6px">העדכון נרשם על הפגישה, ומוצג גם בכרטיס הפנייה, העסקה והלקוח עם תגית מקור.</div>
+      ${window.canEdit('crm')?`<div class="lbu-add"><textarea id="mt-upd" rows="2" placeholder="מה קרה בפגישה?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${jsq(m.id)}','meeting','mt')">הוספה</button></div>`:''}
+      <div class="lbu-bar" id="mt-updbar"></div>
+      <div class="lbu-list" id="mt-updlist"><div class="note">טוען…</div></div>
+    </div>
+    <div id="mt-pn-hist" class="hidden">
+    <section class="ob-card"><h2 class="sec">היסטוריה על אותה פנייה (${hsT.length+hsM.length})</h2>
+      ${lbHistBlock(hsT, hsM)}
+    </section>
+    </div>`;
   mountCard('meetModal', ()=>openMeet(id));
+  ctabArm('mt', id, 'meeting');
 };
 
 function renderStats(){
@@ -22191,8 +22250,8 @@ function lbChips(){
     <button class="chip ${LB_VIEW==='mine'?'active':''}" onclick="lbSetView('mine')">שלי בתהליך ${mine}</button>
     <button class="chip ${LB_VIEW==='active'?'active':''}" onclick="lbSetView('active')">כל הלידים בתהליך ${act}</button>
     <button class="chip ${LB_VIEW==='main'?'active':''}" onclick="lbSetView('main')">ראשי ${LEADS.length}</button>
-    <button class="chip ${LB_VIEW==='trash'?'active':''}" onclick="lbSetView('trash')">🗑️ נמחקו</button>
-    ${window.canEdit('crm.leads')?`<button class="chip ${LB_BULK?'active':''}" onclick="lbBulkToggle()">${LB_BULK?'✕ סיום בחירה':'☑︎ בחירה מרובה'}</button>`:''}`;
+    <button class="chip ${LB_VIEW==='trash'?'active':''}" onclick="lbSetView('trash')">נמחקו</button>
+    ${window.canEdit('crm.leads')?`<button class="chip chip-mode ${LB_BULK?'active':''}" onclick="lbBulkToggle()">${LB_BULK?'✕ סיום בחירה':'☑︎ בחירה מרובה'}</button>`:''}`;
 }
 /* תא תת-סטטוס. שלוש עמודות נפרדות לפי בקשת רומן, אבל **נערכת רק זו
    ששייכת לסטטוס הנוכחי** — כתיבת sub_status לליד שסטטוסו 'סירוב' הייתה
@@ -22380,7 +22439,7 @@ function lbSelBar(){
         <button type="button" class="chip" onclick="lbBulk('partner')">הוסף</button>
         <select id="lb-blk-st"><option value="">שינוי סטטוס אל…</option>${LEAD_STATUSES.map(s=>`<option>${esc(s)}</option>`).join('')}</select>
         <button type="button" class="chip" onclick="lbBulk('status')">שנה</button>
-        <button type="button" class="lb-del" style="padding:4px 10px;font-size:12px" onclick="lbBulk('delete')">🗑️ מחיקה</button>`
+        <button type="button" class="lb-del" style="padding:4px 10px;font-size:12px" onclick="lbBulk('delete')">מחיקה</button>`
        :'<span class="note">סמנו לידים בטבלה כדי לפעול עליהם.</span>'}
     <button type="button" class="chip lb-selx" onclick="lbBulkToggle()">✕ יציאה ממצב בחירה</button>
     <div class="lb-selrep" id="lb-selrep"></div></div>`;
@@ -22435,7 +22494,7 @@ window.lbBulk = async (op)=>{
   toast(bad.length ? `${ok} הצליחו, ${bad.length} נכשלו — ראו פירוט` : `${ok} עודכנו ✓`);
 };
 function lbTable(list, grouped){
-  if(!list.length) return '<div class="empty">לא נמצאו לידים</div>';
+  if(!list.length) return crmEmpty('לידים');
   const {nt,nm,ntid}=lbNextMaps();
   const CS = LB_COLS.length + (LB_BULK?1:0);
   let body='';
@@ -22478,7 +22537,7 @@ function paintKeep(sel, html){
 }
 function lbPaint(html){ paintKeep('#leads-list', html); }
 function renderLeads(){
-  lbChips(); lbInitDef(); renderLbFilters(); lbSelBar();
+  lbChips(); lbInitDef(); renderLbFilters(); lfWrapSync('lb-filters'); lbSelBar();
   const q = ($('#search').value||'').trim();
   /* 🔴 6.186.0 — החיפוש **מכבד את הסינון והתצוגה**, כמו בעסקאות
      (6.177.0) ובמשימות. ההערה שהייתה כאן הצהירה שזה מכוון; היא
@@ -22490,11 +22549,11 @@ function renderLeads(){
   const _row = l => leadRow(l, _nt);
   if(q){
     const list = base.filter(l=>(l.full_name||'').includes(q)||(l.phone||'').includes(q)||(l.company||'').includes(q));
-    lbPaint(wideScreen() ? lbTable(list,false) : capped(list, _row, 'לא נמצאו לידים'));
+    lbPaint(wideScreen() ? lbTable(list,false) : capped(list, _row, crmEmptyMsg('לידים')));
     return;
   }
   const list = base;
-  lbPaint(wideScreen() ? lbTable(list,true) : capped(list, _row, LB_VIEW==='mine'?'אין לך לידים בתהליך 🎉':'לא נמצאו לידים'));
+  lbPaint(wideScreen() ? lbTable(list,true) : capped(list, _row, LB_VIEW==='mine'?'אין לך לידים בתהליך':crmEmptyMsg('לידים')));
 }
 debounceSearch($('#search'), renderLeads);
 
@@ -23058,7 +23117,7 @@ function lbTmActs(id){
        + `${window.canEdit('crm.leads')?`<button type="button" class="chip" onclick="leadFup('${jsq(id)}')">↻ פולואפ</button>`:''}`
        /* 🔴 6.162.0 — מגודר ב-canEdit('crm') ולא ב-crm.leads: הפעולה
           כותבת activity ולא שדה על הליד, וזה בדיוק השער של כתיבת עדכון. */
-       + `${window.canEdit('crm')?`<button type="button" class="chip" onclick="goCard(()=>lqOpen('${jsq(id)}'))">📋 תשאול</button>`:''}`;
+       + `${window.canEdit('crm')?`<button type="button" class="chip" onclick="goCard(()=>lqOpen('${jsq(id)}'))">תשאול</button>`:''}`;
 }
 /* ציור מחדש **במקומו** של בלוק המשימות והפגישות בכרטיס הליד.
    ⚠️ ולא openLead: mountCard מאפס scrollTop=0, והמשתמש נמצא בתחתית
@@ -23125,7 +23184,7 @@ function lbTmBlock(tasks, meets, addBtns){
     });
     h += ms.map(function(m,i){
       return '<button type="button" class="lb-tmi" onclick="openMeet(\''+jsq(m.id)+'\')">'
-        + '<span class="lb-tmi-ic">&#128197;</span>'
+        + '<span class="lb-tmi-ic">&#9711;</span>'
         + '<span class="v">'+esc(m.subject||'פגישה')+' '+mdPill(m.status,MSTATUS_COLOR,LB_TK)+'</span>'
         + '<span class="k">'+((i===0 && mFut(m) && m.meet_date)?'הפגישה הקרובה':'פגישה')+' · '+tmDtM(m.meet_date)+'</span>'
         + '<span class="lb-tmi-go">&#8599;</span></button>';
@@ -23157,7 +23216,7 @@ function lbHistBlock(tasks, meets){
   h += meets.slice().sort(function(a,b){ return String(b.meet_date||'').localeCompare(String(a.meet_date||'')); })
     .map(function(m){
       return '<button type="button" class="lb-tmi" onclick="openMeet(\''+jsq(m.id)+'\')">'
-        + '<span class="lb-tmi-ic">&#128197;</span>'
+        + '<span class="lb-tmi-ic">&#9711;</span>'
         + '<span class="v">'+esc(m.subject||'פגישה')+' '+mdPill(m.status,MSTATUS_COLOR,LB_TK)+'</span>'
         + '<span class="k">פגישה · '+tmDtM(m.meet_date)+'</span>'
         + '<span class="lb-tmi-go">&#8599;</span></button>';
@@ -23227,8 +23286,8 @@ window.openLead = (id)=>{
       <div class="lbu-list" id="lb-updlist"><div class="note">טוען…</div></div>
     </div>
     <div class="modal-actions">
-      ${editable?`<button class="btn btnw" onclick="saveLead('${l.id}')">💾 שמירה</button>
-      <button type="button" class="lb-del" onclick="lbDelete('${l.id}')">🗑️ מחיקת ליד</button>`:'<div class="note">אין לך הרשאת עריכה ללידים.</div>'}
+      ${editable?`<button class="btn btnw" onclick="saveLead('${l.id}')">שמירה</button>
+      <button type="button" class="lb-del" onclick="lbDelete('${l.id}')">מחיקת ליד</button>`:'<div class="note">אין לך הרשאת עריכה ללידים.</div>'}
     </div>
     <div class="err" id="lb-err"></div>
     <div id="lb-pn-hist" class="hidden">
@@ -24042,9 +24101,9 @@ window.cuRowActs = (c)=>{
   /* ⚠️ event.stopPropagation() בשניהם: כל השורה היא onclick="openCust",
      ובלעדיו כל לחיצה על אייקון הייתה פותחת את הכרטיס במקום לפעול. */
   if(window.canEdit('crm.deals') && String(c.priority_id||'').trim())
-    a.push('<button type="button" class="cu-ab" title="יצירת תהליך מכירה" onclick="event.stopPropagation();custDeal(\'' + jsq(c.id) + '\', this)">&#128188;</button>');
+    a.push('<button type="button" class="cu-ab" title="יצירת תהליך מכירה" onclick="event.stopPropagation();custDeal(\'' + jsq(c.id) + '\', this)">＋ תהליך</button>');
   if(window.canEdit('crm.meets'))
-    a.push('<button type="button" class="cu-ab" title="יצירת פגישה" onclick="event.stopPropagation();custMeet(\'' + jsq(c.id) + '\')">&#128197;</button>');
+    a.push('<button type="button" class="cu-ab" title="יצירת פגישה" onclick="event.stopPropagation();custMeet(\'' + jsq(c.id) + '\')">＋ פגישה</button>');
   return a.join(' ');
 };
 

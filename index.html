@@ -852,8 +852,17 @@
   .sync-pill.warn{ background:#fffbeb; color:#b45309; border-color:#fde68a }
   .sync-pill.bad{ background:#fef2f2; color:#b91c1c; border-color:#fecaca }
   /* הקוקפיט — רק מה שדורש פעולה היום; מספרי-ייחוס יושבים בכותרת הכרטיס של הדומיין */
-  #db-kpis{ margin-bottom:16px }
-  #db-kpis .stats{ display:grid; grid-template-columns:repeat(auto-fill,minmax(136px,1fr)); gap:10px; margin:0 }
+  /* 6.194.1 — הקוקפיט מקובץ לפי דומיין (רומן: "סדר לפי קטגוריות לכולם"). קבוצה =
+     כותרת קטנה + האריחים שלה; הקבוצות זורמות זו לצד זו ונשברות כיחידה, ולכן שורה
+     שנייה מתחילה תמיד בקבוצה ולא באמצע דומיין. אריח ברוחב קבוע — אחרת auto-fill
+     היה מותח קבוצה בת אריח אחד לכל הרוחב. */
+  #db-kpis{ display:flex; flex-wrap:wrap; gap:12px 22px; margin-bottom:18px; align-items:flex-start }
+  .kgrp{ display:flex; flex-direction:column; gap:6px; min-width:0 }
+  .kgrp .kg-l{ font-size:11.5px; font-weight:800; color:#64748b; padding-inline-start:6px; letter-spacing:.2px }
+  .kgrp .kg-l::before{ content:''; display:inline-block; width:8px; height:8px; border-radius:3px; background:var(--kd,#cbd5e1); margin-inline-end:6px; vertical-align:-1px }
+  .kgrp.d-ops{ --kd:#0b3f63 } .kgrp.d-fin{ --kd:#15803d } .kgrp.d-inv{ --kd:#b45309 } .kgrp.d-sales{ --kd:#7c3aed } .kgrp.d-rem{ --kd:#64748b }
+  #db-kpis .stats{ display:flex; flex-wrap:wrap; gap:10px; margin:0 }
+  #db-kpis .stat{ width:148px; flex:none }
   #db-kpis .stat{ position:relative; overflow:hidden; text-align:start; min-width:0; padding:11px 14px 10px 12px;
     border-radius:14px; border:1px solid #e6ebf1; background:#fff; box-shadow:0 1px 2px rgba(2,32,71,.04) }
   #db-kpis .stat::before{ content:''; position:absolute; inset-inline-start:0; top:10px; bottom:10px; width:3px; border-radius:3px; background:var(--kd,#cbd5e1) }
@@ -943,7 +952,7 @@
   .fun-bar div{ height:100%; background:var(--navy); border-radius:20px }
   .fun-row b{ width:28px; text-align:center; flex:none }
   .fun-a{ width:64px; flex:none; font-size:11px; color:#64748b; text-align:left }
-  @media(max-width:760px){ .dash-date{ font-size:18px } #db-kpis .stats{ grid-template-columns:repeat(2,minmax(0,1fr)) } #db-kpis .stat .n{ font-size:22px } .db-block{ padding:12px 13px 8px } }
+  @media(max-width:760px){ .dash-date{ font-size:18px } #db-kpis{ gap:12px } .kgrp{ width:100% } #db-kpis .stats{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)) } #db-kpis .stat{ width:auto } #db-kpis .stat .n{ font-size:22px } .db-block{ padding:12px 13px 8px } }
   /* שלד טעינה — במקום להציג 0 עד שהנתונים מגיעים (הערת רומן 29/07) */
   .skel{ display:inline-block; border-radius:8px; background:#e9eef3;
          background-image:linear-gradient(90deg,#e9eef3 25%,#f7fafc 37%,#e9eef3 63%);
@@ -2739,7 +2748,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.194.0</div>
+      <div class="ver">גרסה 6.194.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2868,7 +2877,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.194.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.194.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5173,9 +5182,14 @@ function dashOwnsTasks(){
   const me = (typeof ME!=='undefined' && ME) ? String(ME.id||'') : '';
   return !!me && (TASKS||[]).some(t=>t.status!=='הושלם' && ownOwnersOf('task', t).map(String).includes(me));
 }
+/* 6.194.1 — סדר הקבוצות קבוע לכל הפרופילים (רומן: "סדר לפי קטגוריות לכולם") */
+const KPI_GROUPS = [['ops','תפעול'],['sales','מכירות'],['fin','כספים'],['inv','מלאי'],['rem','תזכורות']];
 function renderKpiStrip(){
   const el = $('#db-kpis'); if(!el) return;
-  const T = [];
+  /* T שומר על ממשק push כדי שהאריחים למטה לא ישתנו; הדומיין נקרא מהמחלקה d-<dom>
+     ש-kTile כבר מטביע (6.194.0). אריח בלי דומיין מוכר נופל לתפעול. */
+  const G = {}; KPI_GROUPS.forEach(([k])=>G[k]=[]);
+  const T = { push(h){ const m = / d-(ops|sales|fin|inv|rem)\b/.exec(h); G[m ? m[1] : 'ops'].push(h); } };
   const today = isoD(new Date());
   const sup = canView('dash.supervise');
   if(canView('dash.ops') && canView('logi')){
@@ -5238,7 +5252,8 @@ function renderKpiStrip(){
     if(mine.length || dashOwnsTasks()) T.push(kTile('המשימות שלי להיום', mine.length, "gotoTab('tasks')",
       late ? kSub(late+' באיחור', true) : '', 'sales'));
   }
-  el.innerHTML = T.length ? '<div class="stats">'+T.join('')+'</div>' : '';
+  el.innerHTML = KPI_GROUPS.filter(([k])=>G[k].length).map(([k,lbl])=>
+    '<div class="kgrp d-'+k+'"><div class="kg-l">'+lbl+'</div><div class="stats">'+G[k].join('')+'</div></div>').join('');
   if(document.getElementById('b1a-n')) b1aRefresh();
 }
 function renderCoordQueue(){
@@ -10200,7 +10215,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'dashlite-2026-09-03f';
+const BUILD_ID = 'kpigroups-2026-09-04a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====

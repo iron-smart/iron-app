@@ -699,7 +699,9 @@
 
   /* ===== מעטפת מאוחדת — סרגל עליון + תפריט צד ימני (עיצוב לוח התיאום) ===== */
   .topnav{ position:sticky; top:var(--verbar-h,0px); z-index:30; display:flex; align-items:center; gap:12px; background:linear-gradient(135deg,#061827,#0b3552); color:#fff; padding:9px 14px; min-height:52px; box-sizing:border-box; }
-  .topnav .burger{ background:rgba(255,255,255,.12); border:none; color:#fff; font-size:19px; border-radius:var(--r-md); padding:5px 12px; }
+  /* 6.200.1 — flex:none: הכפתור היה הפריט היחיד בכותרת שמותר לו להתכווץ (min-width:44px ב-≤900),
+     ובמסך צר עם הלוגו וכפתור הסנכרון הוא ירד ל-44px והסמל נדחס ל-20×22 (רומן, 05/09/2026). */
+  .topnav .burger{ background:rgba(255,255,255,.12); border:none; color:#fff; font-size:19px; border-radius:var(--r-md); padding:5px 12px; flex:none; }
   .brand-wm{ height:36px; width:auto; }
   /* .user-chip הוסר בסבב 4 (28/07/2026) לבקשת רומן — "נא להוריד את כפתור
      היציאה וכפתור המשתמש כי גם ככה יש בפאנל הימני בצד ימין". שם המשתמש וההרשאה
@@ -728,8 +730,9 @@
   .nav-wrap{ position:relative; }
   .nav-arrow{ font-size:13px; opacity:.55; display:inline-flex; align-items:center; }
   .chev{ width:1em; height:1em; display:inline-block; vertical-align:-.12em; flex:none; }
-  .burger-sym{ height:22px; width:auto; display:block; }
-  .topnav-wm{ height:34px; width:auto; display:block; opacity:.95; }
+  .burger-sym{ height:22px; width:35px; object-fit:contain; display:block; }
+  /* 6.200.1 — הלוגו הוא שמוותר במסך צר: min-width:0 מאפשר לו להתכווץ ו-contain שומר על היחס */
+  .topnav-wm{ height:34px; width:auto; max-width:min(220px, 40vw); min-width:0; flex:0 1 auto; object-fit:contain; display:block; opacity:.95; }
   .ic-mail{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; width:100%; margin-bottom:6px; }
   .ic-mail label{ font-size:11.5px; color:#64748b; }
   .ic-mail input{ flex:1; min-width:150px; padding:5px 8px; border:1px solid var(--line); border-radius:var(--r-sm); font-size:12.5px; }
@@ -1012,12 +1015,19 @@
   @media(max-width:800px){
     /* תיקון ממצא 17 — ב-RTL‏ inset-inline-start הוא הצד הימני, שם הסרגל יושב בדסקטופ */
     aside#side{ position:fixed; inset-inline-start:0; inset-inline-end:auto; top:calc(52px + var(--verbar-h,0px)); z-index:29; box-shadow:0 0 40px rgba(0,0,0,.45); max-width:82vw; }
-    /* תיקון ממצא 18 — במגע אין hover, לכן תפריטי המשנה נפרסים בתוך הרשימה */
-    .submenu{ display:block; position:static; min-width:0; padding:2px 0 6px; border:none; border-radius:0; box-shadow:none; background:rgba(255,255,255,.05); }
+    /* תיקון ממצא 18 — במגע אין hover, לכן תפריטי המשנה נפרסים בתוך הרשימה.
+       6.200.1 — אבל רק כשהקבוצה נפתחה בלחיצה (.nav-wrap.open). עד כאן display:block היה ללא תנאי —
+       כל שש הקבוצות פתוחות תמיד (רומן, 05/09/2026). :hover נכלל בכלל ה-none כי iOS משאיר :hover דבוק
+       אחרי הקשה, וכלל ה-hover הגלובלי (0,2,1) היה גובר על .submenu (0,1,0). */
+    .submenu, .nav-wrap:hover .submenu{ display:none; position:static; min-width:0; padding:2px 0 6px; border:none; border-radius:0; box-shadow:none; background:rgba(255,255,255,.05); }
+    .nav-wrap.open .submenu{ display:block; }
     .submenu button{ padding:8px 34px; font-size:13px; }
+    .nav-wrap .nav-arrow .chev{ transition:transform .18s ease; }
+    .nav-wrap.open .nav-arrow .chev{ transform:rotate(-90deg); }
     .tbl-wrap:has(> table.tbl){ max-height:calc(100vh - 168px); }
     #board-wrap{ height:calc(100vh - 165px); }
     #lastSync{ display:none; }
+    .topnav{ gap:8px; }   /* 6.200.1 — 20px שנחסכים מהלוגו במסך צר */
     .brand-wm{ height:28px; }
   }
 
@@ -2849,7 +2859,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.200.0</div>
+      <div class="ver">גרסה 6.200.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2922,7 +2932,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
     <button class="nav-item active" data-tab="today"><span>דשבורד</span></button>
     <!-- CRM — שבעת מסכי ניהול הלקוחות והמכירה תחת קטגוריית אב אחת (רומן 29/07/2026) -->
     <div class="nav-wrap" data-tabs="tasks,leads,deals,customers,contacts,meets,orders,mkt">
-      <button class="nav-item" data-tab="tasks">CRM <span class="nav-arrow"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span></button>
+      <button class="nav-item" data-tab="tasks" aria-expanded="false">CRM <span class="nav-arrow"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span></button>
       <div class="submenu">
         <button data-tab="tasks"     onclick="gotoTab('tasks')">משימות</button>
         <button data-tab="leads"     onclick="gotoTab('leads')">לידים</button>
@@ -2931,12 +2941,12 @@ tr.lb-on td{ background-color:#eef5fd !important; }
         <button data-tab="contacts"  onclick="gotoTab('contacts')">אנשי קשר</button>
         <button data-tab="meets"     onclick="gotoTab('meets')">פגישות</button>
         <button data-tab="orders"    onclick="gotoTab('orders')">הזמנות</button>
-        <button data-tab="mkt"       onclick="gotoTab('mkt')">📊 דשבורד שיווק</button>
+        <button data-tab="mkt"       onclick="gotoTab('mkt')">דשבורד שיווק</button>
       </div>
     </div>
     <!-- לוגיסטיקה — שלושה מסכים אמיתיים, ולכן תת-קטגוריות. הסדר לפי רומן 29/07/2026 -->
     <div class="nav-wrap" data-tabs="logi">
-      <button class="nav-item" data-tab="logi">לוגיסטיקה <span class="nav-arrow"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span></button>
+      <button class="nav-item" data-tab="logi" aria-expanded="false">לוגיסטיקה <span class="nav-arrow"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span></button>
       <div class="submenu">
         <button data-view="orders" onclick="gotoLogi('orders')">הזמנות ותיאומים</button>
         <button data-view="calls"  onclick="gotoLogi('calls')">קריאות שירות</button>
@@ -2950,7 +2960,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
     <button class="nav-item" data-tab="skus">כרטיסי פריט</button>
     <!-- מלאי ורכש — שתי תת-קטגוריות אמיתיות: מעקב מלאי (המסך הקיים) והזמנות רכש (רומן, 02/08/2026) -->
     <div class="nav-wrap" data-tabs="inv,po">
-      <button class="nav-item" data-tab="inv">מלאי ורכש <span class="nav-arrow"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span></button>
+      <button class="nav-item" data-tab="inv" aria-expanded="false">מלאי ורכש <span class="nav-arrow"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span></button>
       <div class="submenu">
         <button data-tab="inv" onclick="gotoTab('inv')">מעקב מלאי</button>
         <button data-tab="po" onclick="gotoTab('po')">הזמנות רכש</button>
@@ -2960,7 +2970,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       <button class="nav-item" data-tab="prc">תמחור ומחירונים</button>
     </div>
     <div class="nav-wrap" data-tabs="pays,sup,sinv">
-      <button class="nav-item" data-tab="pays">הנהלת חשבונות <span class="nav-arrow"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span></button>
+      <button class="nav-item" data-tab="pays" aria-expanded="false">הנהלת חשבונות <span class="nav-arrow"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span></button>
       <div class="submenu">
         <button data-tab="pays" onclick="gotoPays('open')">תשלומים</button>
         <button data-tab="sup" onclick="gotoTab('sup')">ספקים</button>
@@ -2968,7 +2978,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
     </div>
     <div class="nav-wrap" data-tabs="set">
-      <button class="nav-item" data-tab="set">הגדרות <span class="nav-arrow"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span></button>
+      <button class="nav-item" data-tab="set" aria-expanded="false">הגדרות <span class="nav-arrow"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span></button>
       <div class="submenu" id="setSubmenu"></div>
     </div>
     </nav>
@@ -2979,7 +2989,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.200.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.200.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -4441,9 +4451,34 @@ window.gotoTab = t=>{
   if(t==='mkt') renderMkt();
   if(window.innerWidth<800) setSide(false);
 };
+/* 6.200.1 — במגע ובמסך צר כותרת קבוצה פותחת/סוגרת את תת-התפריט ואינה מנווטת. עד כאן היא ניווטה
+   למסך הראשון וסגרה את המגירה (setSide(false) ב-gotoTab), ולכן בטלפון לא הייתה שום דרך "לפתוח קבוצה"
+   — וה-CSS פרש את כולן מראש (רומן, 05/09/2026). בדסקטופ עם עכבר ההתנהגות לא זזה: hover פותח flyout,
+   לחיצה מנווטת. הסף 800 זהה ל-@media שהופך את תת-התפריט ל-static. */
+const _navNarrow = ()=> !!(window.matchMedia && window.matchMedia('(max-width:800px)').matches);
+window.navTouchMode = ()=> _navNarrow() || !(window.matchMedia && window.matchMedia('(hover: hover)').matches);
+function _navAria(w, on){ const b = w && w.querySelector('.nav-item'); if(b && b.hasAttribute('aria-expanded')) b.setAttribute('aria-expanded', String(!!on)); }
+function navGroupToggle(wrap, open){
+  const on = open === undefined ? !wrap.classList.contains('open') : !!open;
+  _subCancel();
+  closeSubmenus(on ? wrap : null);
+  wrap.classList.toggle('open', on); _navAria(wrap, on);
+  if(on) placeSubmenu(wrap);   /* במסך צר התפריט static וזה no-op; בטאבלט ללא hover הוא ממקם את ה-flyout */
+  return on;
+}
+/* הקבוצה של המסך הנוכחי נפתחת יחד עם המגירה — רואים "איפה אני" בלי לפתוח ידנית */
+function navOpenActiveGroup(){
+  const w = Array.prototype.find.call(document.querySelectorAll('#side .nav-wrap'), x=>(x.dataset.tabs||'').split(',').includes(CUR_TAB));
+  closeSubmenus(w||null);
+  if(w && !w.hidden) navGroupToggle(w, true);
+}
 document.querySelectorAll('#side .nav-item').forEach(b=> b.onclick=()=>{
   let t=b.dataset.tab;
   const wrap=b.closest('.nav-wrap');
+  if(wrap && navTouchMode()){
+    const sm = wrap.querySelector('.submenu');
+    if(sm && sm.querySelector('button:not([hidden])')){ navGroupToggle(wrap); return; }
+  }
   if(wrap && !navCanTab(t)){
     const tabs=(wrap.dataset.tabs||'').split(',').filter(Boolean);
     t = tabs.find(x=>navCanTab(x)) || t;
@@ -4465,6 +4500,8 @@ window.setSide = open=>{
     }
     bd.style.display = 'block';
   } else if(bd){ bd.style.display = 'none'; }
+  /* 6.200.1 — במסך צר: הקבוצה של המסך הנוכחי נפתחת עם המגירה, השאר סגורות */
+  if(open && _navNarrow()){ try{ navOpenActiveGroup(); }catch(_e){} }
 };
 $('#sideToggle').onclick = ()=> setSide($('#side').classList.contains('closed'));
 
@@ -4493,7 +4530,7 @@ const SUB_CLOSE_MS = 420;
 let _subTimer = null;
 function _subCancel(){ if(_subTimer){ clearTimeout(_subTimer); _subTimer=null; } }
 function closeSubmenus(except){
-  document.querySelectorAll('.nav-wrap.open').forEach(w=>{ if(w!==except) w.classList.remove('open'); });
+  document.querySelectorAll('.nav-wrap.open').forEach(w=>{ if(w!==except){ w.classList.remove('open'); _navAria(w, false); } });
 }
 function openSubmenu(w){
   const sm = w.querySelector('.submenu');
@@ -4501,7 +4538,7 @@ function openSubmenu(w){
   if(!sm || !sm.children.length){ closeSubmenus(null); return; }
   if(w.classList.contains('open')) return;   /* כבר פתוח — די היה בביטול טיימר הסגירה */
   closeSubmenus(w);
-  w.classList.add('open');
+  w.classList.add('open'); _navAria(w, true);
   placeSubmenu(w);
 }
 function scheduleCloseSubmenus(){
@@ -4529,10 +4566,12 @@ document.querySelectorAll('#side .nav-wrap').forEach(w=>{
      בחזרה אל הפריט הראשי, כי התפריט הצף הוא צאצא של אותו .nav-wrap ומבחינת ה-DOM
      העכבר מעולם לא "יצא". התוצאה הייתה שאחרי לחיצה על תת-קטגוריה התפריט לא נפתח
      שוב עד שהעכבר יצא מהאזור לגמרי. mouseover נורה בכל מעבר בין צאצאים. */
-  w.addEventListener('mouseover', ()=> openSubmenu(w));
-  w.addEventListener('mouseleave', scheduleCloseSubmenus);
-  w.addEventListener('focusin',    ()=> openSubmenu(w));
-  w.addEventListener('focusout',   e=>{ if(!w.contains(e.relatedTarget)) scheduleCloseSubmenus(); });
+  /* 6.200.1 — במגע/מסך צר הפתיחה היא בלחיצה בלבד (navGroupToggle). iOS מדמה mouseover בהקשה
+     הראשונה, ובלי השער הקבוצה הייתה נפתחת ב-mouseover ונסגרת מיד ב-click. */
+  w.addEventListener('mouseover', ()=>{ if(!navTouchMode()) openSubmenu(w); });
+  w.addEventListener('mouseleave', ()=>{ if(!navTouchMode()) scheduleCloseSubmenus(); });
+  w.addEventListener('focusin',    ()=>{ if(!navTouchMode()) openSubmenu(w); });
+  w.addEventListener('focusout',   e=>{ if(!navTouchMode() && !w.contains(e.relatedTarget)) scheduleCloseSubmenus(); });
   const sm = w.querySelector('.submenu');
   if(sm) sm.addEventListener('click', ()=> { _subCancel(); closeSubmenus(null); });
 });
@@ -4540,7 +4579,7 @@ document.querySelectorAll('#side .nav-wrap').forEach(w=>{
 document.querySelectorAll('#side nav > .nav-item').forEach(b=>
   b.addEventListener('mouseenter', ()=>{ _subCancel(); closeSubmenus(null); }));
 document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ _subCancel(); closeSubmenus(null); } });
-document.addEventListener('click',   e=>{ const t=e.target; if(!(t && t.closest && t.closest('.nav-wrap'))){ _subCancel(); closeSubmenus(null); } });
+document.addEventListener('click',   e=>{ const t=e.target; if(!(t && t.closest && t.closest('.nav-wrap, #sideToggle, #sideOpenTab'))){ _subCancel(); closeSubmenus(null); } });
 const _posSubmenus = ()=>document.querySelectorAll('.nav-wrap.open').forEach(w=>placeSubmenu(w));
 window.addEventListener('resize', _posSubmenus);
 window.addEventListener('scroll', _posSubmenus, true);
@@ -10485,7 +10524,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'crmload-2026-09-04e';
+const BUILD_ID = 'mobnav-2026-09-05a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -26016,6 +26055,7 @@ boot();
     var btn = wrap.querySelector('.nav-item');
     if(!btn) return;
     btn.innerHTML = 'תמחור ומחירונים <span class="nav-arrow"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span>';
+    btn.setAttribute('aria-expanded', 'false');   /* 6.200.1 — כותרת קבוצה */
     var sm = document.createElement('div');
     sm.className = 'submenu';
     sm.innerHTML = '<button type="button" onclick="gotoTab(\'prc\')">תמחור</button>' +

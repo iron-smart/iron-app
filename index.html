@@ -782,11 +782,18 @@
      כאן הכול אוחד: צבע כותרת אחיד ומלא ללא גרדיאנט, פס זברה אחד, ריחוף אחד,
      והכול מיושר וממורכז אנכית ואופקית. */
   .tbl-wrap{ background:#fff; border:1px solid var(--line); border-radius:var(--r-lg); overflow:auto; }
-  table.tbl{ width:100%; border-collapse:collapse; font-size:var(--fs-md); background:#fff; }
+  /* 6.205.0 — טבלאות (ביקורת 05/09/2026, פאזה 3א): טקסט לימין, מספרים (td.num) לשמאל, ספרות ברוחב אחיד;
+     מרכוז רק לפקדים ולעמודות הצרות (rownum · selcol · lb-ck · stcell · teamcell · slotcell · datecell) ולאייקונים
+     (td.ctr). עד כאן הכול היה ממורכז. ⚠️ right/left ולא start/end: תאי dir=ltr (טלפון, מספרי הזמנה) היו נצמדים
+     לקצה ההפוך של שכניהם. */
+  table.tbl{ width:100%; border-collapse:collapse; font-size:var(--fs-md); background:#fff; font-variant-numeric:tabular-nums; }
   .tbl thead, .tbl thead tr{ background:var(--navy); }
-  .tbl th{ text-align:center; vertical-align:middle; color:#fff; background:var(--navy); background-image:none; font-weight:700; font-size:var(--fs-sm); padding:9px 7px; white-space:nowrap; position:sticky; top:0; z-index:3; box-shadow:inset 0 -1px 0 rgba(255,255,255,.14); }
+  .tbl th{ text-align:right; vertical-align:middle; color:#fff; background:var(--navy); background-image:none; font-weight:700; font-size:var(--fs-sm); padding:9px 7px; white-space:nowrap; position:sticky; top:0; z-index:3; box-shadow:inset 0 -1px 0 rgba(255,255,255,.14); }
   .tbl th + th{ border-inline-start:1px solid rgba(255,255,255,.08); }
-  .tbl td{ text-align:center; vertical-align:middle; padding:8px 7px; border-bottom:1px solid #eef1f4; white-space:nowrap; line-height:1.35; }
+  .tbl td{ text-align:right; vertical-align:middle; padding:8px 7px; border-bottom:1px solid #eef1f4; white-space:nowrap; line-height:1.35; }
+  .tbl th.num, .tbl td.num{ text-align:left; }
+  /* rownum/selcol מוצהרים כ-(0,1,0) ולכן הכלל של .tbl td (0,1,1) היה גובר עליהם — נמדד: # ותיבת הסימון לימין */
+  .tbl th.ctr, .tbl td.ctr, .tbl th.rownum, .tbl td.rownum, .tbl th.selcol, .tbl td.selcol{ text-align:center; }
   /* קיצוץ טקסט הוא בחירה מפורשת בלבד. קיצוץ גורף (סבב 4) הסתיר נתונים בעמודות
      ארוכות בלי שום דרך לראות אותם, וגם חתך את טבעת המיקוד של הנגישות. */
   .tbl td.clip{ max-width:200px; overflow:hidden; text-overflow:ellipsis; }
@@ -844,23 +851,30 @@
         לצביעה. ⚠️ ב-@supports בלבד — דפדפן שאינו תומך מקבל **בדיוק** את
         הבורר הסגור הצבוע שיש לו היום. נפילה רכה, לא שבירה. */
   @supports (appearance: base-select){
-    select.inline-edit.mdc, select.pilled.mdc{ appearance: base-select; }
-    select.inline-edit.mdc::picker(select), select.pilled.mdc::picker(select){
+    /* 6.205.0 — H12: גם הבוררים בפלטת הלוח (pilled — לוגיסטיקה, קריאות, רכש): עד כאן appearance:none בלי חץ,
+       בעוד ה-mdc של ה-CRM כבר הציגו אחד. אותו פקד, אותו רמז, בכל הבורדים. */
+    select.inline-edit.mdc, select.pilled.mdc, select.inline-edit.pilled{ appearance: base-select; }
+    select.inline-edit.mdc::picker(select), select.pilled.mdc::picker(select), select.inline-edit.pilled::picker(select){
       appearance: base-select; background:#fff; border:1px solid #e2e8f0;
       border-radius:var(--r-lg); box-shadow:0 10px 28px rgba(15,23,42,.14); padding:6px; }
-    select.inline-edit.mdc option, select.pilled.mdc option{
+    select.inline-edit.mdc option, select.pilled.mdc option, select.inline-edit.pilled option{
       border-radius:var(--r-pill); padding:5px 12px; margin:2px 0; font-weight:700;
       font-size:12px; cursor:pointer; }
-    select.inline-edit.mdc option:hover, select.pilled.mdc option:hover{ filter:brightness(.96); }
+    select.inline-edit.mdc option:hover, select.pilled.mdc option:hover, select.inline-edit.pilled option:hover{ filter:brightness(.96); }
   }
   /* 6.9.3 — עמודות צוות / שעות / תאריך בטבלאות (בקשת רומן 01/08/2026) */
   .tbl th.teamcell, .tbl td.teamcell, .tbl th.slotcell, .tbl td.slotcell{ text-align:center; }
   .tbl td.teamcell select.inline-edit, .tbl td.slotcell select.inline-edit{ display:inline-block; margin-inline:auto; text-align:center; text-align-last:center; }
+  /* 6.205.0 — display:inline-block על בורר base-select פורס אותו לשתי שורות (44px, נמדד על ארבעת הבוררים בשורת הלוגיסטיקה);
+     inline-flex מחזיר אותו ל-28 כמו בבורדי ה-CRM. אחרי הכללים שמעליו בכוונה — אותה ספציפיות, המאוחר מנצח. */
+  @supports (appearance: base-select){ .tbl td.stcell select.inline-edit, .tbl td.teamcell select.inline-edit, .tbl td.slotcell select.inline-edit{ display:inline-flex; align-items:center; } }
   .tbl th.datecell, .tbl td.datecell{ text-align:center; white-space:nowrap; }
   .datewrap{ display:inline-flex; flex-direction:row; align-items:center; gap:6px; justify-content:center; }
-  .datewrap .inline-edit.ie-date{ max-width:128px; font-family:'Heebo',sans-serif; font-size:13px; font-weight:800; color:var(--navy); background:linear-gradient(135deg,#f8fafc,#fff); border:1.5px solid #cbd5e1; border-radius:var(--r-md); padding:6px 8px; text-align:center; box-shadow:0 1px 2px rgba(0,0,0,.04); transition:all .2s; }
-  .datewrap .inline-edit.ie-date:hover{ background:linear-gradient(135deg,#fff,#f0f4ff); border-color:#93c5fd; box-shadow:0 2px 4px rgba(59,130,246,.1); }
-  .datewrap .ie-date::-webkit-calendar-picker-indicator{ opacity:.4; padding:0; margin:0; }
+  /* 6.205.0 — M13: התאריך בטבלה נראה כערך, כמו כל .inline-edit (מסגרת בריחוף, אייקון היומן הוא הרמז שזה פקד).
+     נמדד לפני: 31px, גרדיאנט ומסגרת 1.5px — הפריט הכבד ביותר בשורת הלוגיסטיקה. */
+  .datewrap .inline-edit.ie-date{ max-width:128px; font-family:'Heebo',sans-serif; font-size:var(--fs-sm); font-weight:800; color:var(--navy); background:transparent; border:1px solid transparent; border-radius:var(--r-sm); padding:3px 5px; text-align:center; transition:background .12s, border-color .12s; }
+  .datewrap .inline-edit.ie-date:hover{ background:#fff; border-color:var(--line); }
+  .datewrap .ie-date::-webkit-calendar-picker-indicator{ opacity:.55; padding:0; margin:0; }
   .dw-day{ font-size:10.5px; font-weight:800; color:var(--ink-2); background:#eef2f7; border-radius:var(--r-pill); padding:2px 9px; white-space:nowrap; }
   .dw-day.empty{ color:var(--ink-3); background:transparent; font-weight:600; }
   .btn-wa2{ background:#1faa53; color:#fff; padding:4px 9px; border-radius:var(--r-sm); font-size:var(--fs-sm); font-weight:700; text-decoration:none; display:inline-flex; gap:4px; align-items:center; }
@@ -2652,6 +2666,8 @@ td.lb-today .lb-dt{ background-color:transparent; }
 td.lb-ck, th.lb-ck{ width:34px; min-width:34px; max-width:34px; text-align:center; }
 td.lb-ck input, th.lb-ck input{ cursor:pointer; width:15px; height:15px; }
 tr.lb-on td{ background-color:#eef5fd !important; }
+/* 6.205.0 — שורה נבחרת: פס בתחילת השורה (הדפוס של row-new) ולא רקע בלבד; חל על כל בורד שמסמן lb-on */
+.tbl tbody tr.lb-on{ box-shadow:inset -3px 0 0 var(--navy); }
 /* ---- חלון צף לשיוך מהטבלה (6.115.0) ---- */
 .lb-pop{ position:fixed; z-index:60; width:330px; max-width:calc(100vw - 20px);
   max-height:min(460px, calc(100vh - 40px)); overflow:auto;
@@ -2918,7 +2934,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.204.0</div>
+      <div class="ver">גרסה 6.205.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3048,7 +3064,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.204.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.205.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -6192,7 +6208,7 @@ document.addEventListener('change', function(e){
       const f = (window.LOGI_FOLD||{})[o.order_number];
       if(f) f.ids.forEach(id=>LOGI_SEL.add(id)); else LOGI_SEL.add(String(o.id));
     });
-    document.querySelectorAll('#logi-tbl .ordsel').forEach(cb=>{ cb.checked=t.checked; });
+    document.querySelectorAll('#logi-tbl .ordsel').forEach(cb=>{ cb.checked=t.checked; const _r = cb.closest('tr'); if(_r) _r.classList.toggle('lb-on', t.checked); });
     logiBulkBar(); return;
   }
   if(t.classList && t.classList.contains('ordsel')){
@@ -6202,6 +6218,7 @@ document.addEventListener('change', function(e){
        האמיתי, כך שזה גלוי ולא מפתיע. */
     const ids = String(t.dataset.fold || t.dataset.oid || '').split(',').filter(Boolean);
     ids.forEach(id => { if(t.checked) LOGI_SEL.add(id); else LOGI_SEL.delete(id); });
+    const _r = t.closest('tr'); if(_r) _r.classList.toggle('lb-on', t.checked);   /* 6.205.0 — השורה מסומנת כמו בבורדי ה-CRM */
     logiBulkBar();
   }
 });
@@ -8562,16 +8579,16 @@ function skuCell(s,c){
   return esc(s[c.k]||'—');
 }
 function skuHead(){
-  const th = c => `<th class="srt${SKU_F.sort===c.k?' on':''}"${c.w?` style="width:${c.w}"`:''} onclick="skuSortBy('${c.k}')" title="מיון לפי ${esc(c.t)}">${esc(c.t)}<span class="ar">${SKU_F.sort===c.k?(SKU_F.dir==='desc'?'▼':'▲'):'⇅'}</span></th>`;
-  return `<th class="rownum">#</th><th style="width:50px">תמונה</th>`+skuTableCols().map(th).join('');
+  const th = c => `<th class="srt${(c.y==='m'||c.y==='n')?' num':''}${SKU_F.sort===c.k?' on':''}"${c.w?` style="width:${c.w}"`:''} onclick="skuSortBy('${c.k}')" title="מיון לפי ${esc(c.t)}">${esc(c.t)}<span class="ar">${SKU_F.sort===c.k?(SKU_F.dir==='desc'?'▼':'▲'):'⇅'}</span></th>`;
+  return `<th class="rownum">#</th><th class="ctr" style="width:50px">תמונה</th>`+skuTableCols().map(th).join('');
 }
 function skuTable(list){
   if(!list.length) return '<div class="empty">אין מק"טים להצגה בסינון הזה</div>';
   const cols=skuTableCols();
   const rows=list.slice(0,pgLim('sku')).map((s,i)=>`<tr onclick="openSku('${jsq(s.partname)}')">
     <td class="rownum">${i+1}</td>
-    <td>${s.image_url?`<img class="sku-img" style="width:38px;height:38px" src="${esc(s.image_url)}" loading="lazy" onclick="event.stopPropagation();window.open('${jsq(s.image_full||s.image_url)}','_blank')">`:'<span style="color:#c3cbd4">—</span>'}</td>
-    ${cols.map(c=>`<td${c.k==='partdes'?' class="td-desc"':''}>${skuCell(s,c)}</td>`).join('')}</tr>`).join('');
+    <td class="ctr">${s.image_url?`<img class="sku-img" style="width:38px;height:38px" src="${esc(s.image_url)}" loading="lazy" onclick="event.stopPropagation();window.open('${jsq(s.image_full||s.image_url)}','_blank')">`:'<span style="color:#c3cbd4">—</span>'}</td>
+    ${cols.map(c=>`<td${c.k==='partdes'?' class="td-desc"':((c.y==='m'||c.y==='n')?' class="num"':'')}>${skuCell(s,c)}</td>`).join('')}</tr>`).join('');
   return `<div class="tbl-wrap"><table class="tbl"><thead><tr>${skuHead()}</tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('sku',list.length,'מק"טים')}`;
 }
 function renderSkus(){
@@ -9636,9 +9653,9 @@ function poBody(){
   el.innerHTML = '<div class="tbl-wrap"><table class="tbl"><thead><tr>'
     + '<th class="rownum">#</th>'
     + '<th>מס\' הזמנה</th><th>ספק</th><th>תאריך</th><th>הזמנת ספק</th>'
-    + '<th title="כולל מע&quot;מ, במטבע ההזמנה">סכום</th>'
-    + '<th title="שורות שטרם סופקו, מתוך כלל שורות ההזמנה">שורות פתוחות</th>'
-    + '<th title="יתרת הכמות לאספקה בשורות הפתוחות">יתרה</th>'
+    + '<th class="num" title="כולל מע&quot;מ, במטבע ההזמנה">סכום</th>'
+    + '<th class="num" title="שורות שטרם סופקו, מתוך כלל שורות ההזמנה">שורות פתוחות</th>'
+    + '<th class="num" title="יתרת הכמות לאספקה בשורות הפתוחות">יתרה</th>'
     + '<th title="מועד האספקה הקרוב בשורות הפתוחות (מפריוריטי)">אספקה הבאה</th>'
     + '<th class="stcell">סטטוס</th><th>הגעה לנמל</th>'
     + '</tr></thead><tbody>'
@@ -9657,17 +9674,17 @@ function poBody(){
         + '<td class="po-sup" title="'+esc(r.supplier_name||'')+'">'+esc(poSupShort(r.supplier_name) || r.supplier_no || '—')+'</td>'
         + '<td data-sort="'+esc(r.curdate||'')+'">'+poDate(r.curdate)+'</td>'
         + '<td dir="ltr">'+esc(r.supordnum||'—')+'</td>'
-        + '<td class="po-money" data-sort="'+num(r.price_incl_vat)+'" title="לפני מע&quot;מ: '+esc(poMoney(r.price_before_vat, r.currency))+'">'+poMoney(r.price_incl_vat, r.currency)+'</td>'
-        + '<td data-sort="'+g.open+'">'+(g.lines ? g.open+' / '+g.lines : '—')+'</td>'
-        + '<td data-sort="'+g.bal+'">'+(g.lines ? fmtNum(g.bal) : '—')+'</td>'
+        + '<td class="po-money num" data-sort="'+num(r.price_incl_vat)+'" title="לפני מע&quot;מ: '+esc(poMoney(r.price_before_vat, r.currency))+'">'+poMoney(r.price_incl_vat, r.currency)+'</td>'
+        + '<td class="num" data-sort="'+g.open+'">'+(g.lines ? g.open+' / '+g.lines : '—')+'</td>'
+        + '<td class="num" data-sort="'+g.bal+'">'+(g.lines ? fmtNum(g.bal) : '—')+'</td>'
         + '<td data-sort="'+esc(g.next||'')+'"'+(dueLate ? ' class="po-warn" title="מועד האספקה עבר ויש שורות פתוחות"' : '')+'>'+(g.open ? poDate(g.next) : '—')+'</td>'
         + '<td class="stcell">'+ieSel('po', r.ordname, 'our_status', PO_STATUSES, r.our_status, {mdColors:PO_ST_MD})+'</td>'
         + '<td class="datecell'+(late?' po-late':'')+'">'+eta+'</td>'
         + '</tr>';
     }).join('')
     + '</tbody><tfoot><tr><td></td><td colspan="4" style="text-align:right">סה"כ · '+rows.length+' הזמנות</td>'
-    + '<td class="po-money">'+Object.keys(tot).map(k=>k+Number(tot[k]).toLocaleString('he-IL',{maximumFractionDigits:0})).join(' · ')+'</td>'
-    + '<td>'+totOpen+'</td><td>'+fmtNum(totBal)+'</td><td colspan="3"></td></tr></tfoot></table></div>';
+    + '<td class="po-money num">'+Object.keys(tot).map(k=>k+Number(tot[k]).toLocaleString('he-IL',{maximumFractionDigits:0})).join(' · ')+'</td>'
+    + '<td class="num">'+totOpen+'</td><td class="num">'+fmtNum(totBal)+'</td><td colspan="3"></td></tr></tfoot></table></div>';
   el.onclick = ev=>{
     const a = ev.target.closest('[data-po-eta]');
     if(a){
@@ -9742,7 +9759,7 @@ async function openPo(on){
     if(!data || !data.length){ w.innerHTML = '<div class="empty">אין שורות להזמנה זו</div>'; return; }
     const skuSet = (typeof SKUS!=='undefined' && SKUS && SKUS.length) ? new Set(SKUS.map(x=>String(x.partname))) : null;
     w.innerHTML = '<div class="tbl-wrap"><table class="tbl"><thead><tr>'
-      + '<th>מק"ט</th><th>תאור</th><th>כמות</th><th>יתרה</th><th>מחיר יח\'</th><th>סה"כ</th><th>אספקה</th><th>מצב</th>'
+      + '<th>מק"ט</th><th>תאור</th><th class="num">כמות</th><th class="num">יתרה</th><th class="num">מחיר יח\'</th><th class="num">סה"כ</th><th>אספקה</th><th>מצב</th>'
       + '</tr></thead><tbody>'
       + data.map(it=>{
         const pn = String(it.partname||'');
@@ -9753,10 +9770,10 @@ async function openPo(on){
         return '<tr'+(it.closed?' class="po-cl"':'')+'>'
           + '<td class="r1" dir="ltr">'+pnCell+'</td>'
           + '<td class="r1">'+esc(it.pdes||'—')+'</td>'
-          + '<td>'+fmtNum(it.tquant)+'</td>'
-          + '<td>'+fmtNum(it.tbalance)+'</td>'
-          + '<td data-sort="'+(Number(it.price)||0)+'">'+poMoney(it.price, it.icode||r.currency)+'</td>'
-          + '<td data-sort="'+(Number(it.qprice)||0)+'">'+poMoney(it.qprice, it.icode||r.currency)+'</td>'
+          + '<td class="num">'+fmtNum(it.tquant)+'</td>'
+          + '<td class="num">'+fmtNum(it.tbalance)+'</td>'
+          + '<td class="num" data-sort="'+(Number(it.price)||0)+'">'+poMoney(it.price, it.icode||r.currency)+'</td>'
+          + '<td class="num" data-sort="'+(Number(it.qprice)||0)+'">'+poMoney(it.qprice, it.icode||r.currency)+'</td>'
           + '<td data-sort="'+esc(it.duedate||it.reqdate||'')+'">'+poDate(it.duedate||it.reqdate)+'</td>'
           + '<td>'+(it.closed?'סגורה':'פתוחה')+'</td>'
           + '</tr>';
@@ -10600,7 +10617,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'layout-2026-09-05e';
+const BUILD_ID = 'tables-2026-09-05f';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -10622,7 +10639,7 @@ const PV_CSS = `
 #tab-prc, #tab-prc input, #tab-prc select, #tab-prc button, #tab-prc textarea{ font-family:'Heebo',-apple-system,"Segoe UI",Rubik,Arial,sans-serif }
 #tab-prc .pv-bar{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; width:100% }
 #tab-prc .pv-chips{ display:flex; gap:8px; flex-wrap:wrap }
-#tab-prc .pv-chip{ flex:none; border:1px solid var(--pv-line); background:#fff; border-radius:20px; padding:8px 14px; cursor:pointer; font-size:13px; color:var(--pv-ink2); display:inline-flex; align-items:center; gap:7px; transition:background .12s, color .12s, transform .08s }
+#tab-prc .pv-chip{ flex:none; border:1px solid var(--pv-line); background:#fff; border-radius:20px; padding:6px 14px; cursor:pointer; font-size:13px; color:var(--pv-ink2); display:inline-flex; align-items:center; gap:7px; min-height:var(--ctl-h-sm); box-sizing:border-box; transition:background .12s, color .12s, transform .08s }
 #tab-prc .pv-chip:active{ transform:translateY(1px) }
 #tab-prc .pv-chip .pv-dot{ width:9px; height:9px; border-radius:50%; display:inline-block; flex:none }
 #tab-prc .pv-chip:hover{ background:#f1f5f9 }
@@ -10631,11 +10648,11 @@ const PV_CSS = `
 #tab-prc .pv-gtag{ display:inline-block; font-size:12px; line-height:1.15; padding:7px 12px; border-radius:20px; white-space:nowrap; font-weight:700; color:var(--pv-ink) }
 #tab-prc .pv-gtag .pv-dot{ width:9px; height:9px; border-radius:50%; display:inline-block; margin-inline-end:7px; vertical-align:0 }
 #tab-prc .pv-sep{ width:1px; height:26px; background:var(--pv-line) }
-#tab-prc input[type=search].pv-q{ border:1px solid var(--pv-line); border-radius:9px; padding:7px 12px; width:220px; font-size:12.5px; color:#334155; background:#fff }
+#tab-prc input[type=search].pv-q{ border:1px solid var(--pv-line); border-radius:9px; padding:7px 12px; width:220px; font-size:12.5px; color:#334155; background:#fff; min-height:var(--ctl-h-md); box-sizing:border-box }
 #tab-prc select.pv-f{ border:1px solid var(--pv-line); border-radius:9px; padding:7px 10px; background:#fff; font-size:12.5px; color:#334155; cursor:pointer; max-width:190px }
 #tab-prc input[type=search].pv-q:focus, #tab-prc select.pv-f:focus{ border-color:var(--pv-brand); outline:none; box-shadow:var(--sh-focus) }
 #tab-prc label.pv-tgl{ display:flex; align-items:center; gap:6px; color:var(--pv-ink2); font-size:12.5px; font-weight:600; cursor:pointer }
-#tab-prc .pv-vbtn{ background:#fff; border:1px solid var(--pv-line); border-radius:9px; padding:7px 14px; cursor:pointer; font-size:12.5px; font-weight:600; color:var(--pv-ink2); white-space:nowrap }
+#tab-prc .pv-vbtn{ background:#fff; border:1px solid var(--pv-line); border-radius:9px; padding:7px 14px; cursor:pointer; font-size:12.5px; font-weight:600; color:var(--pv-ink2); white-space:nowrap; min-height:var(--ctl-h-md); box-sizing:border-box }
 #tab-prc .pv-vbtn:hover{ background:#f1f5f9 }
 #tab-prc .pv-vbtn.on{ background:var(--pv-brand); border-color:var(--pv-brand); color:#fff; font-weight:700 }
 /* פס סטטיסטיקות קומפקטי — כל שורה שהוא חוסך היא שורת טבלה שנראית. */
@@ -10999,7 +11016,7 @@ const PV_CSS = `
 #tab-prc .pv-clientbar select{ max-width:170px }
 #tab-prc .pv-clientbar input{ width:190px }
 #tab-prc .pv-clientbar input:focus, #tab-prc .pv-clientbar select:focus{ border-color:var(--pv-brand); outline:none; box-shadow:var(--sh-focus) }
-#tab-prc .pv-btn{ background:var(--pv-brand); color:#fff; border:1px solid var(--pv-brand); border-radius:10px; padding:8px 16px; cursor:pointer; font-size:12.5px; font-weight:800; white-space:nowrap }
+#tab-prc .pv-btn{ background:var(--pv-brand); color:#fff; border:1px solid var(--pv-brand); border-radius:10px; padding:8px 16px; cursor:pointer; font-size:12.5px; font-weight:800; white-space:nowrap; min-height:var(--ctl-h-md); box-sizing:border-box }
 #tab-prc .pv-btn:hover{ background:var(--pv-brand2); border-color:var(--pv-brand2) }
 #tab-prc .pv-btn.ghost{ background:#fff; color:var(--pv-ink2); border:1px solid var(--pv-line); font-weight:600 }
 #tab-prc .pv-btn.ghost:hover{ background:#f1f5f9 }
@@ -18227,7 +18244,7 @@ const CU_COLS = [
   ['#','rownum'], ['לקוח','srt'], ["מס' פריוריטי",'srt'], ['טלפון',''],
   /* 6.197.0 — 'פניות' (כמו 'פנייה מקורית' בעסקאות); עמודת הפעולות קיבלה כותרת. */
   ['עיר / כתובת','srt'], ['פניות','srt'], ['סוג','srt'], ['מחירון','srt'], ['פעיל?','srt'],
-  ['פעולות','']
+  ['פעולות','ctr']
 ];
 let CU_VIEW = 'active', CU_SORT = [null, 1];
 const CU_KEY = {
@@ -18935,12 +18952,13 @@ document.addEventListener('change', function(e){
   if(t.id === 'paySelAll'){
     PAY_SEL.clear();
     if(t.checked) PAY_SHOWN.forEach(on => PAY_SEL.add(on));
-    document.querySelectorAll('#pays-list .paysel').forEach(cb => { cb.checked = t.checked; });
+    document.querySelectorAll('#pays-list .paysel').forEach(cb => { cb.checked = t.checked; const _r = cb.closest('tr'); if(_r) _r.classList.toggle('lb-on', t.checked); });
     payBulkBar(); return;
   }
   if(t.classList && t.classList.contains('paysel')){
     const on = String(t.dataset.on || ''); if(!on) return;
     if(t.checked) PAY_SEL.add(on); else PAY_SEL.delete(on);
+    const _r = t.closest('tr'); if(_r) _r.classList.toggle('lb-on', t.checked);   /* 6.205.0 — השורה מסומנת כמו בבורדי ה-CRM */
     payBulkBar();
   }
 });
@@ -20091,7 +20109,7 @@ function payTable(list){
       : esc(f.notes||'');
     /* הסימון נגזר מאותה נקודת חנק שמזינה את האריח, ולא מהשוואת תאריך
        נפרדת — שני מימושים של אותו כלל היו נפרדים בשקט ביום שהכלל ישתנה. */
-    return '<tr class="pay-row' + (payWeekAmt(f) > 0 ? ' pay-wk' : '') + '" onclick="payOpen(\'' + jsq(f.order_number) + '\')">' +
+    return '<tr class="pay-row' + (payWeekAmt(f) > 0 ? ' pay-wk' : '') + (PAY_SEL.has(String(f.order_number)) ? ' lb-on' : '') + '" onclick="payOpen(\'' + jsq(f.order_number) + '\')">' +
       (ed ? '<td class="selcol" onclick="event.stopPropagation()"><input type="checkbox" class="paysel" data-on="' +
             esc(f.order_number) + '"' + (PAY_SEL.has(String(f.order_number)) ? ' checked' : '') + '></td>' : '') +
       '<td class="rownum">' + (i+1) + '</td>' +
@@ -20106,9 +20124,9 @@ function payTable(list){
       '<td><b>' + esc(f.customer_name||'—') + '</b>' + manTag(f) + c.flags + '</td>' +
       '<td>' + (f.order_date?fmtD(f.order_date):'—') + '</td>' +
 
-      '<td>' + (c.masked ? '<span class="fin-muted">—</span>' : shekel(c.ordered)) + '<div class="fin-sub">חויב ' + shekel(c.inv) + '</div></td>' +
-      '<td>' + (c.rec ? '<span class="fin-ok">' + shekel(c.rec) + '</span>' : '—') + '</td>' +
-      '<td>' + finBalCell(c) + '</td>' +
+      '<td class="num">' + (c.masked ? '<span class="fin-muted">—</span>' : shekel(c.ordered)) + '<div class="fin-sub">חויב ' + shekel(c.inv) + '</div></td>' +
+      '<td class="num">' + (c.rec ? '<span class="fin-ok">' + shekel(c.rec) + '</span>' : '—') + '</td>' +
+      '<td class="num">' + finBalCell(c) + '</td>' +
       '<td>' + payStateCell(f) + '</td>' +
       '<td>' + payDueCell(f) + '</td>' +
       '<td onclick="event.stopPropagation()">' + termSel + payMethTag(f.order_number) + payCloseTag(f.order_number) + '</td>' +
@@ -20117,7 +20135,7 @@ function payTable(list){
   return '<div class="tbl-wrap"><table class="tbl"><thead><tr>' +
     (ed ? '<th class="selcol"><input type="checkbox" id="paySelAll" title="בחירת כל השורות המוצגות"></th>' : '') +
     '<th class="rownum">#</th><th>מס\' הזמנה</th><th>שם לקוח</th><th>ת. הזמנה</th>' +
-    '<th>סה"כ</th><th>שולם</th><th>נותר לתשלום</th><th title="נגזר מלוח הפעימות — אינו נערך ידנית">סטטוס תשלום</th>' +
+    '<th class="num">סה"כ</th><th class="num">שולם</th><th class="num">נותר לתשלום</th><th title="נגזר מלוח הפעימות — אינו נערך ידנית">סטטוס תשלום</th>' +
     '<th class="th-sort" title="הפעימה הפתוחה הקרובה. לחיצה ממיינת מהקרוב לרחוק ובחזרה." onclick="setPaySort(PAY_SORT===\'due\'?\'duedesc\':\'due\')">מועד לגבייה' +
       (PAY_SORT === 'due' ? '<span class="ar">▲</span>' : (PAY_SORT === 'duedesc' ? '<span class="ar">▼</span>' : '')) + '</th>' +
     '<th>תנאי תשלום</th><th>הערות</th>' +
@@ -20294,6 +20312,8 @@ function phoneKey(s){ return phoneNorm(s) || phoneTail(s); }
 window.phoneNorm = phoneNorm; window.phoneTail = phoneTail; window.phoneKey = phoneKey;
 const ordStClass = s => s==='הושלם' ? 'st-rel' : (['בוטל','מבוטלת'].includes(s) ? 'st-no' : (s==='הזמנה חדשה' ? 'st-new' : 'st-def'));
 const fmtD = d => d ? new Date(d+'T00:00').toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '';
+/* 6.205.0 — תאריך ISO גולמי (ספקים/חשבוניות) בפורמט של כל שאר המסכים; ערך שאינו ISO מוצג כמות שהוא, מוברח. */
+const fmtIso = v => /^\d{4}-\d{2}-\d{2}/.test(String(v||'')) ? fmtD(String(v).slice(0,10)) : esc(v||'—');
 /* 🔴 6.147.0 — הוצא מגוף שני הכרטיסים, שהחזיקו אותו כ-const מקומי בגוף
    זהה בייט-בייט. הצרכן השלישי (עמודת "נוצר" בטבלת הלידים) הוא שהצדיק
    את החילוץ — שני מימושים לאותו עיצוב הם המחלקה של FIN מול FINM_BY. */
@@ -20490,10 +20510,10 @@ function scTable(list){
       <td class="teamcell">${ieSel('scall',s.id,'team',OTEAMS.filter(t=>t.active!==false).map(t=>t.name),s.team,{allowEmpty:true,emptyLabel:'לא משויך',mdColors:teamColorMap()})}</td>
       <td class="datecell"><div class="datewrap">${ieDate('scall',s.id,'scheduled_date',s.scheduled_date)}</div></td>
       <td class="slotcell">${ieSel('scall',s.id,'time_slot',TIME_SLOTS,s.time_slot,{allowEmpty:true,mdColors:SLOT_COLORS})}</td>
-      <td>${wa?`<a class="btn-wa2" href="${wa}" target="_blank" onclick="event.stopPropagation()">📱</a>`:''}</td>
+      <td class="ctr">${wa?`<a class="btn-wa2" href="${wa}" target="_blank" onclick="event.stopPropagation()">📱</a>`:''}</td>
     </tr>`;}).join('');
   return `<div class="tbl-wrap"><table class="tbl"><thead><tr>
-    <th class="selcol"></th><th class="rownum">#</th><th>קריאה</th><th>לקוח</th><th>טלפון</th><th>מוצר</th><th>עיר / אזור</th><th>סטטוס</th><th>דחיפות</th><th class="teamcell">צוות</th><th class="datecell">תאריך</th><th class="slotcell">שעות</th><th>וואטסאפ</th>
+    <th class="selcol"></th><th class="rownum">#</th><th>קריאה</th><th>לקוח</th><th>טלפון</th><th>מוצר</th><th>עיר / אזור</th><th>סטטוס</th><th>דחיפות</th><th class="teamcell">צוות</th><th class="datecell">תאריך</th><th class="slotcell">שעות</th><th class="ctr">וואטסאפ</th>
   </tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('calls',list.length,'קריאות')}`;
 }
 /* קבועי הלוח הישן — כרטיסים מלאים (הערות 21–22) */
@@ -21159,7 +21179,7 @@ const ORD_COLS = [
   ['#','','rownum'], ['תאריך הזמנה','order_date','odate'], ['הזמנה','order_number',''],
   ['לקוח','customer_name',''], ['טלפון','phone',''], ['עיר / אזור','city',''],
   ['סטטוס לוגיסטי','order_status','stcell'], ['יצרנו קשר?','contact_status','stcell'], ['צוות','team','teamcell'],
-  ['תאריך','scheduled_date','datecell'], ['שעות','time_slot','slotcell'], ['וואטסאפ','',''],
+  ['תאריך','scheduled_date','datecell'], ['שעות','time_slot','slotcell'], ['וואטסאפ','','ctr'],
 ];
 function ordHead(sel){
   return (sel?('<th class="selcol">'+(window.canEdit('logi.orders.bulk')?'<input type="checkbox" id="ordSelAll" title="בחירת הכל">':'')+'</th>'):'')+ORD_COLS.map(([lbl,key,cls])=>{
@@ -21178,7 +21198,7 @@ function ordTable(list,opts){
     const wa = o.phone && o.scheduled_date ? waLink(o.phone, waCoordMsg(o)) : '';
     const _f = (window.LOGI_FOLD||{})[o.order_number];
     const _sub = !!(window.LOGI_FOLD||{})['__sub__'+o.order_number];
-    return `<tr class="${window.isNewRec(o)?'row-new':''} ${_sub?'fold-sub':''}" onclick="openOrd('${o.id}'${CTX?(",'"+CTX+"'"):''})">
+    return `<tr class="${window.isNewRec(o)?'row-new':''} ${_sub?'fold-sub':''}${LOGI_SEL.has(String(o.id))?' lb-on':''}" onclick="openOrd('${o.id}'${CTX?(",'"+CTX+"'"):''})">
       ${SEL?`<td class="selcol" onclick="event.stopPropagation()">${window.canEdit('logi.orders.bulk')?`<input type="checkbox" class="ordsel" data-oid="${o.id}"${_f?` data-fold="${esc(_f.ids.join(','))}"`:''}>`:''}${window.canEdit('logi.orders')?`<button type="button" class="qdone" title="סימון כהושלם" onclick="ordQuickDone('${o.id}')">✓</button>`:''}</td>`:''}
       <td class="rownum">${i+1}</td>
       <td class="odate">${fmtD(o.order_date)||'—'}</td>
@@ -21191,7 +21211,7 @@ function ordTable(list,opts){
       <td class="teamcell">${ieSel('ord',o.id,'team',OTEAMS.filter(t=>t.active!==false).map(t=>t.name),o.team,{allowEmpty:true,emptyLabel:'לא משויך',mdColors:teamColorMap()})}${o.team2?`<div class="team2tag" style="background:${teamColor(o.team2)}" title="צוות נוסף — נערך מכרטיס ההזמנה">+ ${esc(o.team2)}</div>`:''}</td>
       <td class="datecell"><div class="datewrap">${ieDate('ord',o.id,'scheduled_date',o.scheduled_date)}${(o.scheduled_date&&o.days_count>1)?`<span class="dw-day">${o.days_count} ימים</span>`:''}</div></td>
       <td class="slotcell">${ieSel('ord',o.id,'time_slot',TIME_SLOTS,o.time_slot,{allowEmpty:true,mdColors:SLOT_COLORS})}</td>
-      <td>${(window.canView('logi.orders.whatsapp')&&wa)?`<a class="btn-wa2" href="${wa}" target="_blank" onclick="event.stopPropagation()">📱</a>`:''}</td>
+      <td class="ctr">${(window.canView('logi.orders.whatsapp')&&wa)?`<a class="btn-wa2" href="${wa}" target="_blank" onclick="event.stopPropagation()">📱</a>`:''}</td>
     </tr>`;}).join('');
   return `<div class="tbl-wrap"><table class="tbl"><thead><tr>${ordHead(SEL)}</tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('orders',list.length,'הזמנות')}`;
 }
@@ -22033,11 +22053,12 @@ function dealRow(d, nt){
     ${mdPill(d.stage,DEAL_ST_COLORS)}</div>`;
 }
 /* 🔴 data-gs="own" — בלעדיו gsSort זורק את שורות הקבוצה לתחתית. */
+const DL_NUM = new Set(['סכום (לפני מע"מ)']);   /* 6.205.0 — עמודות מספריות: th/td.num מיושרים לשמאל */
 function dlHead(){
   /* 6.198.0 — עמודת הסימון בראש (הדפוס של tkHead); DL_KEY נגזר משם ולא מאינדקס ולכן אינו זז. */
   const ck = DL_BULK ? '<th class="lb-ck"><input type="checkbox" title="סימון הכל" onclick="dlSelAll(this.checked)"></th>' : '';
   return '<div class="tbl-wrap"><table class="tbl" data-gs="own"><thead><tr>' + ck
-    + DL_COLS.map(([lbl,cls],i)=>`<th class="${lbl==='#'?'rownum':cls}${cls==='srt'&&DL_SORT[0]===i?' on':''}"${cls==='srt'?` data-ar="${DL_SORT[1]>0?'▲':'▼'}" onclick="dlSortBy(${i})"`:''}>${lbl}</th>`).join('')
+    + DL_COLS.map(([lbl,cls],i)=>`<th class="${lbl==='#'?'rownum':cls}${DL_NUM.has(lbl)?' num':''}${cls==='srt'&&DL_SORT[0]===i?' on':''}"${cls==='srt'?` data-ar="${DL_SORT[1]>0?'▲':'▼'}" onclick="dlSortBy(${i})"`:''}>${lbl}</th>`).join('')
     + '</tr></thead><tbody>';
 }
 function dlRow(d, i, nt){
@@ -22057,7 +22078,7 @@ function dlRow(d, i, nt){
       <td>${dlOwnerCell(d)}</td>
       <td dir="ltr">${phCell(dlPhone(d))}</td>
       <td data-sort="${esc(t||'')}"${dmk.cls?` class="${dmk.cls}"`:''}><span class="lb-duew">${dmk.ico}${t?esc(new Date(t).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})):'<span class="lb-na">·</span>'}</span></td>
-      <td data-sort="${esc(d.amount==null?'':String(Math.round(Number(d.amount)||0)))}">${d.amount!=null?shekel(d.amount):'<span class="lb-na">·</span>'}</td>
+      <td class="num" data-sort="${esc(d.amount==null?'':String(Math.round(Number(d.amount)||0)))}">${d.amount!=null?shekel(d.amount):'<span class="lb-na">·</span>'}</td>
       <td>${ieSel('deal',d.id,'stage',STAGES,d.stage,{mdColors:DEAL_ST_COLORS,mdK:LB_TK,
             on:`dlPipeSet('${jsq(d.id)}',this.value,'')`})}</td>
       <td>${dlSubCell(d)}</td>
@@ -25529,7 +25550,7 @@ let SPI_ROWS=null, SPI_OPEN=null, SPI_DET=null, SPI_FILTER='פתוחות';
 let SPI_BUSY=false, SPI_ERR='', SPI_PUSH_ON=false, SPI_SUPS=[];
 
 const spiMoney = v => (v==null||v==='') ? '—'
-  : Number(v).toLocaleString('he-IL',{minimumFractionDigits:2,maximumFractionDigits:2});
+  : '₪' + Number(v).toLocaleString('he-IL',{minimumFractionDigits:2,maximumFractionDigits:2});   /* 6.205.0 — ₪ לפני המספר, כמו shekel() */
 const SPI_OPEN_STATES = ['נקלט','חולץ','ממתין לאישור','ממתין לספק','שגיאה בחילוץ','לא ידוע'];
 
 function spiStClass(s){
@@ -25625,16 +25646,16 @@ function spiTable(){
   else if(SPI_FILTER!=='הכל') rows=rows.filter(r=>r.state===SPI_FILTER);
   if(!rows.length) return '<div class="empty">אין חשבוניות להצגה. העלי קובץ כדי להתחיל.</div>';
   const head='<thead><tr><th>מצב</th><th>ספק</th><th>מספר חשבונית</th><th>תאריך</th>'+
-    '<th>סה"כ</th><th>סוג</th></tr></thead>';
+    '<th class="num">סה"כ</th><th>סוג</th></tr></thead>';
   const body=rows.map(r=>{
     const sup = r.supdes || r.supplier_name_raw || '—';
     return '<tr class="spi-row" onclick="spiOpen(\''+esc(r.id)+'\')">'+
       '<td><span class="spi-st '+spiStClass(r.state)+'">'+esc(r.state)+'</span></td>'+
-      '<td style="text-align:start">'+esc(sup)+
+      '<td>'+esc(sup)+
         (r.supplier_confident===false?' <span style="color:#b45309">⚠</span>':'')+'</td>'+
       '<td>'+esc(r.book_num||'—')+'</td>'+
-      '<td>'+esc(r.ivdate||'—')+'</td>'+
-      '<td>'+spiMoney(r.total)+'</td>'+
+      '<td>'+fmtIso(r.ivdate)+'</td>'+
+      '<td class="num">'+spiMoney(r.total)+'</td>'+
       '<td>'+esc(r.doc_type||'—')+'</td></tr>';
   }).join('');
   return '<div class="tbl-wrap"><table class="tbl">'+head+'<tbody>'+body+'</tbody></table></div>';
@@ -25868,7 +25889,7 @@ let SI_FILTER='all', SI_OPEN=null;
 
 const siNum = v => (v==null||v==='') ? '—' : Number(v).toLocaleString('he-IL');
 const siMoney = v => (v==null||v==='') ? '—'
-  : Number(v).toLocaleString('he-IL',{minimumFractionDigits:0, maximumFractionDigits:0}) + ' ₪';
+  : '₪' + Number(v).toLocaleString('he-IL',{minimumFractionDigits:0, maximumFractionDigits:0});   /* 6.205.0 — ₪ לפני המספר, כמו shekel() */
 
 /* טעינה עצלה. ⚠️ במכוון אינה נוגעת ב-Promise.all של loadLeads — שאילתה
    שנוספת שם באמצע מסיטה בשקט כל גלובל שאחריה. */
@@ -25955,7 +25976,7 @@ function siNote(){
 function siTable(rows){
   if(!rows.length) return '<div class="empty">אין ספקים תואמים.</div>';
   const head='<thead><tr><th>מספר</th><th>שם</th><th>סוג</th><th>חשבון אופייני</th>'+
-    '<th>חשבוניות</th><th>מצטבר</th><th>אחרונה</th></tr></thead>';
+    '<th class="num">חשבוניות</th><th class="num">מצטבר</th><th>אחרונה</th></tr></thead>';
   const body=rows.map(s=>{
     const r=siMainAcc(s.supplier_no);
     const kind = s.kind==='סחורה' ? '<span class="si-kind goods">סחורה</span>'
@@ -25966,12 +25987,12 @@ function siTable(rows){
     return '<tr class="si-row'+(s.active===false?' si-inactive':'')+
       '" onclick="siOpen(\''+esc(s.supplier_no)+'\')">'+
       '<td>'+esc(s.supplier_no)+'</td>'+
-      '<td style="text-align:start">'+esc(s.name||'—')+'</td>'+
+      '<td>'+esc(s.name||'—')+'</td>'+
       '<td>'+kind+'</td>'+
-      '<td style="text-align:start">'+acc+'</td>'+
-      '<td>'+siNum(s.doc_count)+'</td>'+
-      '<td>'+siMoney(s.total_amount)+'</td>'+
-      '<td>'+esc(s.last_seen||'—')+'</td></tr>';
+      '<td>'+acc+'</td>'+
+      '<td class="num">'+siNum(s.doc_count)+'</td>'+
+      '<td class="num">'+siMoney(s.total_amount)+'</td>'+
+      '<td>'+fmtIso(s.last_seen)+'</td></tr>';
   }).join('');
   return '<div class="tbl-wrap"><table class="tbl">'+head+'<tbody>'+body+'</tbody></table></div>';
 }

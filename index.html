@@ -2677,6 +2677,10 @@ tr.lb-on td{ background-color:#eef5fd !important; }
             border-top-color:var(--navy); border-radius:50%; animation:busyspin .8s linear infinite; }
 @keyframes busyspin{ to{ transform:rotate(360deg); } }
 .busy-msg{ font-size:14px; color:#374151; line-height:1.5; }
+/* 6.200.0 — מצב טעינה אחד ל-CRM (crmLoading): ספינר 16px בשורה עם הטקסט, בגוון .note.
+   (0,2,0) גובר על .busy-spin (0,1,0) ומאפס את המרווח והגודל של המודאל העסוק. */
+.crm-load{ display:flex; align-items:center; gap:8px; font-size:13px; color:#64748b; padding:10px 12px; }
+.crm-load .busy-spin{ width:16px; height:16px; margin:0; border-width:2px; flex:none; }
 .fu-hint{ display:inline-block; margin-inline-start:6px; padding:1px 7px; border-radius:var(--r-md);
           background:#eef4ff; color:var(--navy); font-size:11.5px; font-weight:700; }
 /* ---- תצוגת נמחקו (6.115.0) ---- */
@@ -2845,7 +2849,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.199.0</div>
+      <div class="ver">גרסה 6.200.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2975,7 +2979,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.199.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.200.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -10481,7 +10485,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'mktdash-2026-09-04d';
+const BUILD_ID = 'crmload-2026-09-04e';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -14607,7 +14611,7 @@ function shipGapList(title, arr, withKind){
 
 window.dlShipCalc = async (dealId)=>{
   const e = shipCalcEl(), b = document.getElementById('dl-shipbody');
-  b.innerHTML = '<div class="empty">מושך את שורות ההצעה מפריוריטי…</div>';
+  b.innerHTML = crmLoading('מושך את שורות ההצעה מפריוריטי…');
   e.classList.remove('hidden');
   let items = null;
   try{
@@ -14616,15 +14620,16 @@ window.dlShipCalc = async (dealId)=>{
     if(!data || !data.ok) throw new Error((data && data.error) || 'תשובה לא צפויה');
     items = ((data.snapshot || {}).items) || [];
   }catch(err){
-    b.innerHTML = '<div class="empty">משיכת ההצעה נכשלה — ' + esc(String(err && err.message || err)) + '</div>';
+    /* 6.200.0 — שגיאה ב-.err ולא ב-.empty: אפור נקרא כ"אין נתונים", וזה כשל. */
+    b.innerHTML = '<div class="err">משיכת ההצעה נכשלה — ' + esc(String(err && err.message || err)) + '</div>';
     return;
   }
   if(!items.length){ b.innerHTML = '<div class="empty">להצעה אין שורות בפריוריטי</div>'; return; }
 
   const lines = items.map(it=>({ partname: it.sku, qty: Number(it.qty || 0) })).filter(x=>x.partname);
-  b.innerHTML = '<div class="empty">מחשב…</div>';
+  b.innerHTML = crmLoading('מחשב…');
   const { data: res, error: cErr } = await sb.schema('ord').rpc('sku_ship_calc', { p_lines: lines });
-  if(cErr){ b.innerHTML = '<div class="empty">החישוב נכשל — ' + esc(cErr.message) + '</div>'; return; }
+  if(cErr){ b.innerHTML = '<div class="err">החישוב נכשל — ' + esc(cErr.message) + '</div>'; return; }
 
   const r = res || {};
   let h = '<div class="note">' + lines.length + ' שורות בהצעה. המחיר <b>ליחידה</b> נלקח מהמסך '
@@ -17738,7 +17743,7 @@ window.openTask = (id)=>{
       <div class="note" style="margin-bottom:6px">העדכון נרשם על המשימה, ומוצג גם בכרטיס הפנייה, העסקה והלקוח עם תגית מקור. עריכה ומחיקה — לכותב בלבד.</div>
       ${window.canEdit('crm')?`<div class="lbu-add"><textarea id="tk-upd" rows="2" placeholder="מה קרה?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${jsq(id)}','task','tk')">הוספה</button></div>`:''}
       <div class="lbu-bar" id="tk-updbar"></div>
-      <div class="lbu-list" id="tk-updlist"><div class="note">טוען…</div></div>
+      <div class="lbu-list" id="tk-updlist">${crmLoading()}</div>
     </div>
     <div class="modal-actions">
       ${editable?`<button class="btn btnw" onclick="saveTask('${jsq(id)}')">שמירה</button>
@@ -18144,7 +18149,7 @@ window.openCust = async (id)=>{
       <div class="note" style="margin-bottom:6px">העדכון נרשם על הלקוח, ומוצג גם בכרטיסי הפניות, העסקאות והמשימות שלו עם תגית מקור.</div>
       ${window.canEdit('crm')?`<div class="lbu-add"><textarea id="cu-upd" rows="2" placeholder="מה קרה עם הלקוח הזה?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${jsq(id)}','customer','cu')">הוספה</button></div>`:''}
       <div class="lbu-bar" id="cu-updbar"></div>
-      <div class="lbu-list" id="cu-updlist"><div class="note">טוען…</div></div>
+      <div class="lbu-list" id="cu-updlist">${crmLoading()}</div>
     </div>
 
     <div id="cu-pn-hist" class="hidden">
@@ -20763,6 +20768,8 @@ const wideScreen = ()=> window.matchMedia('(min-width:760px)').matches;
    ובעסקאות שתי הצורות בשורות סמוכות. */
 const crmEmpty = noun => `<div class="empty">אין ${noun} בסינון הזה</div>`;
 const crmEmptyMsg = noun => `אין ${noun} בסינון הזה`;
+/* 6.200.0 — מצב טעינה אחד (היו "טוען…" ב-.note בחמישה כרטיסים, ו-.empty במחשבון המשלוח). */
+const crmLoading = msg => `<div class="crm-load"><span class="busy-spin"></span>${esc(msg||'טוען…')}</div>`;
 /* תיקון ממצא 24 — סיבוב מסך או שינוי גודל חוצה את סף 700px: מציירים מחדש כדי לעבור טבלה⇄כרטיסים */
 let _wideNow = wideScreen(), _vpTimer = null;
 /* 6.197.0 — סרגל הסינון: במובייל נפתח סגור (296px מתוך 844 לפני השורה הראשונה, נמדד), וה-summary
@@ -21953,7 +21960,7 @@ window.openDeal = async (id)=>{
       <div class="note" style="margin-bottom:6px">העדכון נרשם על העסקה, ומוצג גם בכרטיס הפנייה, המשימה והלקוח עם תגית מקור. עריכה ומחיקה — לכותב בלבד.</div>
       ${window.canEdit('crm')?`<div class="lbu-add"><textarea id="dl-upd" rows="2" placeholder="מה קרה עם העסקה הזאת?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${jsq(id)}','deal','dl')">הוספה</button></div>`:''}
       <div class="lbu-bar" id="dl-updbar"></div>
-      <div class="lbu-list" id="dl-updlist"><div class="note">טוען…</div></div>
+      <div class="lbu-list" id="dl-updlist">${crmLoading()}</div>
     </div>
     <div class="err" id="d-err"></div>
     <div id="dl-pn-hist" class="hidden">
@@ -22795,7 +22802,7 @@ window.openMeet = (id)=>{
       <div class="note" style="margin-bottom:6px">העדכון נרשם על הפגישה, ומוצג גם בכרטיס הפנייה, העסקה והלקוח עם תגית מקור.</div>
       ${window.canEdit('crm')?`<div class="lbu-add"><textarea id="mt-upd" rows="2" placeholder="מה קרה בפגישה?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${jsq(m.id)}','meeting','mt')">הוספה</button></div>`:''}
       <div class="lbu-bar" id="mt-updbar"></div>
-      <div class="lbu-list" id="mt-updlist"><div class="note">טוען…</div></div>
+      <div class="lbu-list" id="mt-updlist">${crmLoading()}</div>
     </div>
     <div id="mt-pn-hist" class="hidden">
     <section class="ob-card"><h2 class="sec">היסטוריה על אותה פנייה (${hsT.length+hsM.length})</h2>
@@ -23976,7 +23983,7 @@ window.openLead = (id)=>{
     <div id="lb-pn-upd" class="hidden">
       ${window.canEdit('crm')?`<div class="lbu-add"><textarea id="lb-upd" rows="2" placeholder="מה קרה עם הליד הזה?"></textarea><button type="button" class="chip" onclick="lbAddUpdate('${jsq(l.id)}','lead','lb')">הוספה</button></div>`:''}
       <div class="lbu-bar" id="lb-updbar"></div>
-      <div class="lbu-list" id="lb-updlist"><div class="note">טוען…</div></div>
+      <div class="lbu-list" id="lb-updlist">${crmLoading()}</div>
     </div>
     <div class="modal-actions">
       ${editable?`<button class="btn btnw" onclick="saveLead('${l.id}')">שמירה</button>

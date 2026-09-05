@@ -29,7 +29,12 @@
   --sh-card:0 1px 3px rgba(6,24,39,.06); --sh-focus:0 0 0 3px rgba(0,45,72,.10);
   /* ריפוד שדה — טוקן רכיב. משרת את שלושת סוגי הפקדים באותו ערך בדיוק,
      וזה כל העניין: input, select ו-textarea חייבים לצאת באותו גובה. */
-  --field-py:8px; --field-px:10px; }
+  --field-py:6px; --field-px:10px;
+  /* 6.203.0 — סולם גובה אחד לפקדים (ביקורת 05/09/2026, H3/H4). sm = שדות בכרטיסים · מסננים · צ'יפים · כפתורים
+     קטנים; md = הסרגל (חיפוש · בוררים · כפתור ראשי · tools-bar); lg = פעולות המודאל. במגע (≤900): touch לפקדים
+     ראשיים, touch-sm לצ'יפים · מסננים · לשוניות. הגובה ניתן ב-min-height עם box-sizing:border-box, כך שהריפוד
+     קובע רוחב בלבד. נמדד לפני: חיפוש 41 · יצירה 46 · מסנן 30 · צ'יפ 33 באותו סרגל; שדה 33 לצד קריאה-בלבד 27. */
+  --ctl-h-sm:30px; --ctl-h-md:36px; --ctl-h-lg:40px; --ctl-h-touch:44px; --ctl-h-touch-sm:40px; }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   body{ margin:0; font-family:'Heebo',-apple-system,"Segoe UI",Rubik,Arial,sans-serif; background:var(--bg); color:var(--dark); }
   button{ font-family:inherit; cursor:pointer; }
@@ -91,11 +96,11 @@
   }
   .field{ margin-bottom:14px; }
   .field label{ display:block; font-size:13px; color:var(--ink-2); margin-bottom:6px; }
-  .field input{ width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:var(--r-md); font-size:16px; }
+  .field input, .field select{ width:100%; padding:6px 12px; border:1px solid var(--line); border-radius:var(--r-md); font-size:var(--fs-md); height:var(--ctl-h-sm); box-sizing:border-box; font-family:inherit; }
   /* 6.196.0 — textarea ב-.field: נמדד 181px מתוך 556 במודאל הפולואפ (inline-block בלי width).
      ⚠️ #leadSheet/#tkSheet textarea (1,0,1) ו-.form-grid textarea מאוחר יותר ממשיכים לגבור — רצוי. */
-  .field textarea{ width:100%; box-sizing:border-box; padding:12px 14px; border:1px solid var(--line); border-radius:var(--r-md); font-size:16px; font-family:inherit; resize:vertical; }
-  .btn{ width:100%; padding:13px; border:none; border-radius:var(--r-md); background:var(--navy); color:#fff; font-size:16px; font-weight:600; }
+  .field textarea{ width:100%; box-sizing:border-box; padding:8px 12px; border:1px solid var(--line); border-radius:var(--r-md); font-size:var(--fs-md); font-family:inherit; resize:vertical; }
+  .btn{ width:100%; padding:9px 20px; min-height:var(--ctl-h-lg); box-sizing:border-box; border:none; border-radius:var(--r-md); background:var(--navy); color:#fff; font-size:var(--fs-lg); font-weight:600; }
   .btn:active{ opacity:.85; }
   .btn.green{ background:var(--green); }
   .err{ color:var(--red); font-size:13px; text-align:center; margin-top:10px; min-height:18px; }
@@ -116,12 +121,12 @@
   .toolbar{ display:flex; gap:10px; margin-bottom:14px; align-items:center; }
   /* 6.2.2 — מונה תוצאות לצד שדה החיפוש בלוח השנה */
   .qinfo{ font-size:var(--fs-sm); color:var(--ink-3); white-space:nowrap; }
-  .toolbar input{ flex:1; padding:11px 14px; border:1px solid var(--line); border-radius:var(--r-md); font-size:var(--fs-lg); }
+  .toolbar input{ flex:1; padding:7px 14px; border:1px solid var(--line); border-radius:var(--r-md); font-size:var(--fs-lg); min-height:var(--ctl-h-md); box-sizing:border-box; }
 /* ⚠️ גובה מפורש: עד 6.102.0 לא היה כאן גובה כלל, והכפתור נשען על
    align-items:center — כלומר הוא יצא **נמוך מהשדה** שלצדו בדסקטופ.
    ה-min-height שקיים ב-media query של 900px הסתיר את זה במובייל בלבד.
    הגודל ירד מ-22px כי עכשיו יש בו מלל ולא סימן בודד. */
-  .toolbar .add{ background:var(--green); color:#fff; border:none; border-radius:var(--r-md); padding:0 18px; font-size:var(--fs-lg); font-weight:700; min-height:46px; white-space:nowrap; }
+  .toolbar .add{ background:var(--green); color:#fff; border:none; border-radius:var(--r-md); padding:0 18px; font-size:var(--fs-md); font-weight:700; min-height:var(--ctl-h-md); white-space:nowrap; }
 
   .lead{ background:#fff; border-radius:var(--r-lg); padding:14px; margin-bottom:10px; box-shadow:0 1px 3px rgba(0,0,0,.06); display:flex; justify-content:space-between; align-items:center; gap:10px; }
   .lead:active{ background:#f8fafc; }
@@ -131,7 +136,7 @@
      flex בלי min-width:0 נותן לטקסט את הרוחב ומכווץ את הפעולות. */
   .lead > div:first-child{ min-width:0; flex:1 1 auto; }
   .lead .acts{ display:flex; gap:6px; align-items:center; flex:none; }
-  .lead .acts .ghost{ width:auto; padding:8px 12px; white-space:nowrap; min-height:40px; }
+  .lead .acts .ghost{ width:auto; padding:8px 12px; white-space:nowrap; min-height:var(--ctl-h-touch-sm); }
   .lead .acts select{ width:auto; }
   .lead .meta.lb-ov{ color:var(--red); font-weight:600; }
   .pill{ display:inline-block; font-size:12px; line-height:1.15; padding:7px 12px; border-radius:var(--r-xl); white-space:nowrap; }
@@ -139,7 +144,7 @@
   .st-no{ background:#fee2e2; color:#991b1b; } .st-def{ background:#f1f5f9; color:var(--ink-2); }
   .empty{ text-align:center; color:var(--ink-3); padding:40px 20px; }
   .chips{ display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; margin-bottom:12px; -webkit-overflow-scrolling:touch; }
-  .chip{ flex:none; border:1px solid var(--line); background:#fff; border-radius:var(--r-xl); padding:8px 14px; font-size:13px; color:var(--ink-2); }
+  .chip{ flex:none; border:1px solid var(--line); background:#fff; border-radius:var(--r-xl); padding:6px 14px; font-size:var(--fs-sm); color:var(--ink-2); min-height:var(--ctl-h-sm); box-sizing:border-box; }
   .chip.active{ background:var(--navy); color:#fff; border-color:var(--navy); font-weight:600; }
   /* 6.197.0 — צ'יפ **מצב** (בחירה מרובה · יומן/רשימה) נבדל מצ'יפ **סינון**: מקווקו, ובמצב פעיל
      מסגרת navy ולא מילוי — כך שני "פעילים" באותו פס אינם נראים כסתירה. */
@@ -160,7 +165,7 @@
   @media(max-width:760px){
     .lf-wrap > summary{ display:inline-flex; align-items:center; gap:6px; list-style:none; cursor:pointer;
       font-size:13px; font-weight:700; color:var(--ink-2); border:1px solid var(--line); border-radius:var(--r-xl);
-      padding:8px 14px; min-height:38px; background:#fff; margin-bottom:8px; }
+      padding:8px 14px; min-height:var(--ctl-h-touch-sm); background:#fff; margin-bottom:8px; }
     .lf-wrap > summary::-webkit-details-marker{ display:none; }
     .lf-wrap > summary::after{ content:'▾'; }
     .lf-wrap[open] > summary::after{ content:'▴'; }
@@ -187,6 +192,7 @@
   .lf-save:hover{ background:#e8f0ff; }
   .lf-new{ font-size:var(--fs-sm); padding:6px 14px; border:1px solid var(--navy); background:var(--navy); color:#fff; border-radius:var(--r-md); cursor:pointer; font-family:inherit; font-weight:800; }
   .lf-new:hover{ filter:brightness(1.1); }
+  .lf-sel, .lf-multi>summary, .lf-clear, .lf-save, .lf-new{ height:var(--ctl-h-sm); box-sizing:border-box; }
   /* 6.24.10 — חיפוש-השלמה לבחירת לקוח/מוצר והצעת הזמנה מוצלבת */
   .ac-wrap{ position:relative; }
   .ac-menu{ position:absolute; z-index:70; top:100%; inset-inline-start:0; inset-inline-end:0; background:#fff; border:1px solid var(--line); border-radius:var(--r-md); box-shadow:0 10px 28px rgba(6,24,39,.18); max-height:260px; overflow:auto; margin-top:3px; }
@@ -332,11 +338,11 @@
   #tab-pays .chips{ padding-bottom:4px; margin-bottom:8px }
   #tab-pays .chip{ padding:5px 11px; font-size:var(--fs-sm) }
   #tab-pays .toolbar{ flex-wrap:wrap; margin-bottom:10px }
-  #tab-pays .toolbar input{ flex:1 1 380px; min-width:230px; max-width:none; min-height:40px;
-       padding:9px 13px; font-size:14px; box-sizing:border-box }
-  #tab-pays .toolbar select{ width:auto; flex:0 1 auto; max-width:200px; min-height:40px;
+  #tab-pays .toolbar input{ flex:1 1 380px; min-width:230px; max-width:none; min-height:var(--ctl-h-md);
+       padding:7px 13px; font-size:14px; box-sizing:border-box }
+  #tab-pays .toolbar select{ width:auto; flex:0 1 auto; max-width:200px; min-height:var(--ctl-h-md);
        padding:8px 10px; font-size:13px; color:#334155; box-sizing:border-box }
-  #tab-pays .toolbar .ghost{ min-height:40px; padding:8px 13px; font-size:13px;
+  #tab-pays .toolbar .ghost{ min-height:var(--ctl-h-md); padding:8px 13px; font-size:13px;
        white-space:nowrap; box-sizing:border-box }
   #tab-pays .toolbar .who2{ margin-inline-start:auto; order:10 }
   /* תווית "עודכן" — מצב ולא כפתור, ולכן דהויה ולא לחיצה. */
@@ -352,7 +358,7 @@
   /* יעדי מגע בטאבלט: (1,1,1) גובר על .btn,.ghost,.btnw{min-height:46px} */
   @media(max-width:900px){
     #tab-pays .toolbar input, #tab-pays .toolbar select, #tab-pays .toolbar .ghost,
-    #tab-pays .pay-legend summary{ min-height:44px }
+    #tab-pays .pay-legend summary{ min-height:var(--ctl-h-touch) }
   }
   /* תיוג ידני — חייב להיות מובחן מיידית משורה שהגיעה מפריוריטי, אחרת
      אי אפשר לדעת על איזה מספר אפשר לסמוך. */
@@ -661,7 +667,12 @@
     .modal-over .sheet .actions{ flex-direction:row; align-items:center; flex-wrap:wrap; }
     .modal-over .sheet .actions > .btn, .modal-over .sheet .actions > .ghost{ width:auto; padding-inline:20px; }
   }
-  .ghost{ background:#f1f5f9; color:var(--navy); border:none; border-radius:var(--r-md); padding:12px; font-size:var(--fs-lg); }
+  /* 6.203.0 — משני = מסגרת על לבן (H4), כמו .tb-btn ו-.inv-btn.ghost שכבר היו כך; עד כאן מילוי אפור בלי מסגרת.
+     בלי min-height כאן בכוונה — יש ghost זעירים בסגנון inline (16–23px); הגובה ניתן לפי הקשר בשני הכללים שאחריו. */
+  .ghost{ background:#fff; color:var(--navy); border:1px solid var(--line); border-radius:var(--r-md); padding:8px 16px; font-size:var(--fs-md); font-weight:600; }
+  .ghost:hover{ background:#f1f5f9; }
+  .toolbar .ghost{ min-height:var(--ctl-h-md); box-sizing:border-box; }
+  .modal-actions > .ghost, .modal .sheet > .modal-actions .ghost, .modal-over .sheet .actions > .ghost{ min-height:var(--ctl-h-lg); font-size:var(--fs-lg); padding:9px 20px; box-sizing:border-box; }
   select,.actions input{ width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:var(--r-md); font-size:16px; }
   .note{ font-size:13px; color:var(--ink-3); background:#f8fafc; border-radius:var(--r-md); padding:10px 12px; margin-top:10px; }
   .okb-act{ margin-top:10px; }
@@ -842,12 +853,12 @@
   .btn-wa2:hover{ background:#178a43; }
   .tools-bar{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; align-items:center; }
   .tools-bar .search{ flex:1; min-width:200px; position:relative; }
-  .tools-bar .search input{ width:100%; padding:9px 32px 9px 12px; border:1px solid var(--line); border-radius:var(--r-md); font-size:14px; box-sizing:border-box; }
+  .tools-bar .search input{ width:100%; padding:7px 32px 7px 12px; border:1px solid var(--line); border-radius:var(--r-md); font-size:14px; box-sizing:border-box; min-height:var(--ctl-h-md); }
   /* איקון זכוכית מגדלת משורטט — החליף אימוג׳י, לבקשת רומן "בלי אימוג׳ים" */
   .tools-bar .search::before{ content:''; position:absolute; inset-inline-start:9px; top:9px; width:15px; height:15px; opacity:1;
     background:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%2394a3b8'%20stroke-width='2.2'%20stroke-linecap='round'%3E%3Ccircle%20cx='10.5'%20cy='10.5'%20r='6.5'/%3E%3Cpath%20d='M20%2020l-4.6-4.6'/%3E%3C/svg%3E") center/contain no-repeat; }
-  .tools-bar select{ width:auto; min-width:110px; padding:8px 9px; font-size:13px; border:1px solid var(--line); border-radius:var(--r-md); background:#fff; }
-  .tools-bar input[type=date]{ width:auto; padding:7px 8px; font-size:13px; border:1px solid var(--line); border-radius:var(--r-md); }
+  .tools-bar select{ width:auto; min-width:110px; padding:8px 9px; font-size:13px; border:1px solid var(--line); border-radius:var(--r-md); background:#fff; min-height:var(--ctl-h-md); box-sizing:border-box; }
+  .tools-bar input[type=date]{ width:auto; padding:7px 8px; font-size:13px; border:1px solid var(--line); border-radius:var(--r-md); min-height:var(--ctl-h-md); box-sizing:border-box; }
   .tools-bar .tb-lbl{ font-size:12px; color:var(--ink-3); white-space:nowrap; }
   .tools-bar .tb-group{ display:flex; gap:5px; align-items:center; white-space:nowrap; }
   .chip .n{ font-weight:800; }
@@ -1051,7 +1062,7 @@
   #sku-tools .tb-sync{ display:inline-flex; align-items:center; gap:6px; font-size:var(--fs-xs); font-weight:600; color:var(--ink-3); white-space:nowrap; padding:0 2px; cursor:default; }
   #sku-tools .tb-sync::before{ content:''; width:7px; height:7px; border-radius:50%; background:var(--green); flex:none; }
   #sku-tools .tb-sync.stale::before{ background:#d97706; }
-  button.tb-btn{ background:#fff; border:1px solid var(--line); border-radius:var(--r-md); padding:7px 12px; font-size:var(--fs-sm); font-family:inherit; font-weight:600; color:var(--ink-2); cursor:pointer; white-space:nowrap; }
+  button.tb-btn{ background:#fff; border:1px solid var(--line); border-radius:var(--r-md); padding:7px 12px; font-size:var(--fs-sm); font-family:inherit; font-weight:600; color:var(--ink-2); cursor:pointer; white-space:nowrap; min-height:var(--ctl-h-md); box-sizing:border-box; }
   button.tb-btn:hover{ background:#f1f5f9; color:var(--ink-1); }
   button.tb-btn.adv{ color:var(--navy); border-color:#c3d3e0; background:#f7fafc; }
   button.tb-btn.adv:hover{ background:#eaf1f7; }
@@ -1065,7 +1076,7 @@
   .qdone{ margin-inline-start:3px; background:#ecfdf5; border:1px solid #a7f3d0; color:#047857; border-radius:var(--r-sm); padding:1px 5px; font-size:var(--fs-sm); font-weight:700; cursor:pointer; }
   .qdone:hover{ background:#d1fae5; }
   #logi-bulk{ align-items:center; gap:9px; }
-  button.tb-clear{ background:#fff; border:1px solid var(--line); border-radius:var(--r-md); padding:7px 11px; font-size:var(--fs-sm); font-family:inherit; font-weight:600; color:var(--ink-3); cursor:pointer; }
+  button.tb-clear{ background:#fff; border:1px solid var(--line); border-radius:var(--r-md); padding:7px 11px; font-size:var(--fs-sm); font-family:inherit; font-weight:600; color:var(--ink-3); cursor:pointer; min-height:var(--ctl-h-md); box-sizing:border-box; }
   button.tb-clear:hover{ background:#f1f5f9; color:var(--ink-1); }
   @media(max-width:800px){
     #sku-tools .search{ flex:1 1 100%; max-width:none; }
@@ -1109,7 +1120,7 @@
   .sku-box.install .need-sel.yes{ color:#166534; border-color:#8fcfa8; background:#f1fbf5; }
   .sku-box.install .need-sel.no{ color:#991b1b; border-color:#e8aca4; background:#fdf4f3; }
   .sku-box.install .auto-hint{ font-size:9.5px; color:#8a6410; line-height:1.2; margin-top:2px; }
-  .sku-box.install .btn{ width:auto; padding:6px 18px; font-size:var(--fs-sm); font-weight:700; border-radius:var(--r-md); margin-top:8px; }
+  .sku-box.install .btn{ width:auto; padding:6px 18px; font-size:var(--fs-sm); font-weight:700; border-radius:var(--r-md); margin-top:8px; min-height:var(--ctl-h-sm); }
   /* סבב 6 — משקל ומידות */
   .sku-box.install .field.dim3{ grid-column:span 2; }
   .sku-box.install .d3{ display:flex; align-items:center; gap:4px; }
@@ -1485,13 +1496,15 @@
   .modal .sheet > .modal-actions{ position:sticky; bottom:0; z-index:5; background:#fff; border-top:1px solid var(--line); box-shadow:0 -8px 18px rgba(0,0,0,.07); padding:10px 0; margin-top:16px; gap:10px; }
   .modal .sheet > .modal-actions > .btn{ border-radius:var(--r-lg); font-size:var(--fs-lg); background:linear-gradient(135deg,var(--green),#4e8168); box-shadow:0 6px 18px rgba(106,159,133,.38); }
   @media(min-width:561px){ .modal .sheet > .modal-actions > .btn{ width:auto; padding:11px 32px; } }
-  #ordModal .modal-actions.ord-actions .ghost{ padding:var(--sp-2) var(--sp-4); font-size:var(--fs-md); width:auto; min-height:36px; }
+  #ordModal .modal-actions.ord-actions .ghost{ padding:9px 20px; font-size:var(--fs-lg); width:auto; min-height:var(--ctl-h-lg); }
   .form-grid label{ display:flex; align-items:center; flex-wrap:wrap; gap:4px 5px; min-height:20px; font-size:12px; color:var(--ink-2); margin-bottom:4px; font-weight:600; line-height:1.45; }
   .form-grid label .ph-btn, .form-grid label .waze-btn, .form-grid label .src-tag{ flex:none; }
   /* 6.75.3 — שדה עריכה מוגדר מעתה במפורש כלבן עם מסגרת נראית. הרקע לא נקבע
      כאן קודם, ולכן .is-empty יכול היה לצבוע אותו באפרפר ולהשוותו לשדות
      הנעולים (רומן, 14/08/2026). */
-  .form-grid input,.form-grid select,.form-grid textarea{ width:100%; padding:var(--field-py) var(--field-px); background:#fff; border:1px solid #cbd5e1; border-radius:var(--r-md); font-size:var(--fs-md); font-family:inherit; box-sizing:border-box; }
+  .form-grid input,.form-grid select,.form-grid textarea{ width:100%; padding:var(--field-py) var(--field-px); background:#fff; border:1px solid #cbd5e1; border-radius:var(--r-md); font-size:var(--fs-md); font-family:inherit; box-sizing:border-box; min-height:var(--ctl-h-sm); }
+/* 6.203.0 — height ולא רק min-height: שדות תאריך/שעה גבוהים טבעית ב-2–4px ומין-גובה לבדו השאיר אותם 32–34 בשורה של 30. textarea נשאר על min-height. */
+.form-grid input:not([type=checkbox]):not([type=radio]),.form-grid select{ height:var(--ctl-h-sm); }
   .form-grid input[dir="ltr"]{ text-align:right; }
   .form-sep{ grid-column:1/-1; font-size:var(--fs-lg); font-weight:800; letter-spacing:.015em; color:var(--navy); border-bottom:2px solid #94a3b8; padding-bottom:var(--sp-2); margin-top:var(--sp-5); margin-bottom:var(--sp-1); }
   /* הכותרת הראשונה בכרטיס צמודה ל-h3 שמעליה — רווח כפול היה נראה כמו חור. */
@@ -1576,7 +1589,7 @@
      המסגרת לא חוזרת — היא זו שגרמה לשדה להיראות כתיבת עריכה שמזמינה
      קליק. רקע בלי מסגרת קורא כ"שדה מידע". הריפוד נשאר צפוף (26px לשורה
      במקום 33px המקוריים) והטקסט כהה ובמשקל 600, כי הנתון הוא העיקר. */
-  .form-grid input.ro,.form-grid select.ro,.form-grid textarea.ro{ background:#eef1f4 !important; border:1px solid transparent !important; border-radius:var(--r-md); color:#334155 !important; font-weight:600; padding:5px 9px !important; min-height:26px; cursor:default; }
+  .form-grid input.ro,.form-grid select.ro,.form-grid textarea.ro{ background:#eef1f4 !important; border:1px solid transparent !important; border-radius:var(--r-md); color:#334155 !important; font-weight:600; padding:5px 9px !important; min-height:var(--ctl-h-sm); cursor:default; }
   /* ערך ריק מוצג כ-"—" חיוור ובמשקל רגיל, כדי שייקרא כ"אין נתון" ולא
      ייראה כמו ערך אמיתי שסתם קצר. הרקע נשאר — גם "אין נתון" הוא מידע
      שמגיע מפריוריטי. */
@@ -1722,7 +1735,7 @@
   .tbl th.gsrt.asc::after{ content:'\25B2'; opacity:1; color:#9cd326; }
   .tbl th.gsrt.desc::after{ content:'\25BC'; opacity:1; color:#9cd326; }
   .tbl td.odate{ white-space:nowrap; font-size:var(--fs-sm); color:var(--ink-2); font-weight:600; }
-  .tools-bar .tb-clear{ background:#fff; border:1px solid var(--line); border-radius:var(--r-md); padding:8px 11px; font-size:var(--fs-sm); color:var(--ink-3); cursor:pointer; font-weight:600; }
+  .tools-bar .tb-clear{ background:#fff; border:1px solid var(--line); border-radius:var(--r-md); padding:8px 11px; font-size:var(--fs-sm); color:var(--ink-3); cursor:pointer; font-weight:600; min-height:var(--ctl-h-md); box-sizing:border-box; }
   .tools-bar .tb-clear:hover{ background:#f1f5f9; color:var(--ink-1); }
   .pill.p-blue{ background:#e0e7ff; color:#3730a3; } .pill.p-violet{ background:#ede9fe; color:#5b21b6; }
   .pill.p-orange{ background:#ffedd5; color:#9a3412; } .pill.p-yellow{ background:#fef9c3; color:#854d0e; }
@@ -1967,14 +1980,17 @@
   .rownum,.tbl th.rownum{ display:none; }
 }
 @media(max-width:900px){
-  .chip{ min-height:38px; display:inline-flex; align-items:center; }
-  #dealSheet .dl-tile{ min-height:38px; }
-  .toolbar .add{ min-width:54px; min-height:46px; }
-  .toolbar input{ min-height:46px; }
-  .tools-bar .search input,.tools-bar select,.tools-bar input[type=date],.tools-bar .tb-clear{ min-height:42px; }
+  .chip{ min-height:var(--ctl-h-touch-sm); display:inline-flex; align-items:center; }
+  #dealSheet .dl-tile{ min-height:var(--ctl-h-touch-sm); }
+  .toolbar .add{ min-width:54px; min-height:var(--ctl-h-touch); }
+  .toolbar input{ min-height:var(--ctl-h-touch); }
+  .tools-bar .search input,.tools-bar select,.tools-bar input[type=date],.tools-bar .tb-clear{ min-height:var(--ctl-h-touch); }
   .burger{ min-height:42px; min-width:44px; }
   #side .nav-item,.submenu button{ min-height:46px; }
-  .btn,.ghost,.btnw{ min-height:46px; }
+  .btn,.ghost,.btnw{ min-height:var(--ctl-h-touch); }
+  .field input, .field select{ min-height:var(--ctl-h-touch); }
+  /* 6.203.0 — כללי ה-lg של שורת הפעולות הם (0,2,0)+ וגוברים על .ghost (0,1,0) שמעליהם גם במגע; לכן אותם בוררים כאן, במגע, ל-44 */
+  .modal-actions > .ghost, .modal .sheet > .modal-actions .ghost, .modal-over .sheet .actions > .ghost, #ordModal .modal-actions.ord-actions .ghost{ min-height:var(--ctl-h-touch); }
 }
 @media(max-width:760px){
   main{ padding:14px 12px; }
@@ -2226,7 +2242,7 @@ td.lb-today .lb-dt{ background-color:transparent; }
 /* ⚠️ יעד מגע. נמדד ב-390px שהכפתור יצא 34px, בעוד ש-.chip מקבל
    min-height:38px מתחת ל-900px — המוסכמה הקיימת בפרויקט. מיישרים אליה
    במקום להמציא מספר. */
-@media(max-width:900px){ .ctab{ min-height:38px; } }
+@media(max-width:900px){ .ctab{ min-height:var(--ctl-h-touch-sm); } }
 @media(max-width:560px){ .ctab{ padding:8px 11px; font-size:13px; } }
 .tk-done{ text-decoration:line-through; color:var(--ink-3); }
 /* 🔴 6.172.0 — הקו-חוצה על שדה המועד (רומן: "רק מועד").
@@ -2609,7 +2625,7 @@ td.lb-today .lb-dt{ background-color:transparent; }
    משותפים לכל המערכת, ושינוי גלובלי היה מקטין כפתורים בחמישה
    מודולים בבת אחת (אותו שיקול כמו .card-x ב-6.118.0). */
 #leadModal .lb-convrow{ gap:8px; margin:0 0 8px; }
-#leadModal .lb-convrow .btn{ padding:6px 14px; font-size:var(--fs-sm); border-radius:var(--r-md); }
+#leadModal .lb-convrow .btn{ padding:6px 14px; font-size:var(--fs-sm); border-radius:var(--r-md); min-height:var(--ctl-h-sm); }
 #leadModal .lb-convrow .note{ font-size:11px; line-height:1.35; }
 .lb-convrow .note{ flex:1; min-width:200px; }
 /* ---- בחירה מרובה (6.115.0) ---- */
@@ -2772,10 +2788,10 @@ tr.lb-on td{ background-color:#eef5fd !important; }
    אחרי הבלוק הראשון (1910) באותה ספציפיות, וכלל שם היה מפסיד ב"המאוחר מנצח". נמדד ב-390:
    סרגל הסינון 29–31px, פילי תת-הסטטוס 22, מקטעי הפייפליין 30, ✕ הקישור 13×21, תיבות 15. */
 @media(max-width:900px){
-  .lf-sel, .lf-multi>summary, .lf-clear, .lf-save, .lf-new{ min-height:40px; display:inline-flex; align-items:center; box-sizing:border-box; }
+  .lf-sel, .lf-multi>summary, .lf-clear, .lf-save, .lf-new{ min-height:var(--ctl-h-touch-sm); display:inline-flex; align-items:center; box-sizing:border-box; }
   .lb-psub button{ min-height:36px; }
-  .lb-pseg{ min-height:40px; }
-  .tkl-x{ min-width:40px; min-height:40px; }
+  .lb-pseg{ min-height:var(--ctl-h-touch-sm); }
+  .tkl-x{ min-width:40px; min-height:var(--ctl-h-touch-sm); }
   td.lb-ck input, th.lb-ck input{ width:22px; height:22px; }
 }
 /* ===== 6.199.0 — דשבורד שיווק ===== */
@@ -2889,7 +2905,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.202.0</div>
+      <div class="ver">גרסה 6.203.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3019,7 +3035,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.202.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.203.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -10559,7 +10575,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'mktfix-2026-09-05c';
+const BUILD_ID = 'ctlscale-2026-09-05d';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====

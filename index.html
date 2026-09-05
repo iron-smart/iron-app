@@ -162,6 +162,18 @@
   /* סרגל הסינון מתקפל במובייל. <details class="lf-wrap"> ולא lf-multi: סוגר-הקליק ו-Esc עוברים
      על details.lf-multi[open] בלבד. בשולחן ה-summary מוסתר וה-details פתוח תמיד. */
   .lf-wrap > summary{ display:none; }
+  /* 6.204.0 — סרגל בורד אחד (H11): בדסקטופ ה-details מקופל כברירת מחדל (נזכר לכל בורד), והכפתור + צ'יפי
+     המסננים הפעילים בשורת החיפוש. במובייל (≤760) ה-summary של 6.197.0 ממשיך לשרת, והכפתור מוסתר. */
+  .lf-toggle{ display:inline-flex; align-items:center; gap:6px; background:#fff; color:var(--navy); border:1px solid var(--line); border-radius:var(--r-md); padding:0 12px; min-height:var(--ctl-h-md); box-sizing:border-box; font-family:inherit; font-size:var(--fs-md); font-weight:600; cursor:pointer; white-space:nowrap; flex:none; }
+  .lf-toggle:hover{ background:#f1f5f9; }
+  .lf-toggle.on{ border-color:var(--navy); background:#eef4ff; }
+  .lf-toggle svg{ width:14px; height:14px; }
+  .lf-toggle .lf-n{ background:var(--navy); color:#fff; border-radius:var(--r-pill); padding:1px 8px; font-size:var(--fs-xs); margin-inline-start:2px; }
+  .lf-active{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; min-width:0; flex:0 1 auto; }
+  .lf-chip{ display:inline-flex; align-items:center; gap:5px; background:#eef4ff; color:var(--navy); border:1px solid #cfe0f5; border-radius:var(--r-pill); padding:0 10px; min-height:var(--ctl-h-sm); box-sizing:border-box; font-family:inherit; font-size:var(--fs-sm); font-weight:700; cursor:pointer; white-space:nowrap; max-width:240px; overflow:hidden; text-overflow:ellipsis; }
+  .lf-chip:hover{ background:#e0ecff; }
+  .lf-chip .x{ opacity:.6; font-size:11px; }
+  @media(max-width:760px){ .lf-toggle, .lf-active{ display:none; } }
   @media(max-width:760px){
     .lf-wrap > summary{ display:inline-flex; align-items:center; gap:6px; list-style:none; cursor:pointer;
       font-size:13px; font-weight:700; color:var(--ink-2); border:1px solid var(--line); border-radius:var(--r-xl);
@@ -696,7 +708,7 @@
     .lead:only-child{ border-radius:var(--r-lg); }
     .lead .nm{ font-size:var(--fs-lg); }
     .lead .meta{ font-size:var(--fs-sm); }
-    .modal .sheet{ max-width:600px; }
+    .modal .sheet{ max-width:640px; }   /* 6.204.0 — M7: 600→640, אחד משלושה רוחבים (640 · 1100 · 1240) */
     .toolbar input{ max-width:520px; }
   }
   @media(max-width:380px){
@@ -721,6 +733,8 @@
   .side-out:hover{ color:#fff; background:rgba(255,255,255,.08); }
   .side-out svg{ width:18px; height:18px; }
   .topnav .spacer{ flex:1; }
+  /* 6.204.0 — כותרת המסך (H10) יושבת ב-spacer עצמו: אותו flex:1, אפס תוספת לדחיסת הכותרת במסך צר. */
+  .scr-title{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#fff; font-weight:700; font-size:var(--fs-md); opacity:.92; text-align:start; }
   .topnav .who2{ font-size:13px; opacity:.92; }
   .topnav button.out{ background:rgba(255,255,255,.15); color:#fff; border:none; border-radius:var(--r-md); padding:7px 12px; font-size:13px; }
   .shell{ display:flex; align-items:stretch; }
@@ -1084,8 +1098,7 @@
   }
 
   /* --- כרטיס המק"ט --- */
-  #skuModal .sheet{ max-width:900px; }
-  @media(min-width:1200px){ #skuModal .sheet{ max-width:1040px; } }
+  #skuModal .sheet{ max-width:min(1100px, calc(100vw - 48px)); }   /* 6.204.0 — M7: 900/1040 → הרוחב של .wide */
   .sku-hero{ display:flex; gap:10px; align-items:flex-start; flex-wrap:wrap; background:linear-gradient(135deg,#f6f9fc,#eef4f8); border:1px solid var(--line); border-radius:var(--r-lg); padding:9px; margin-bottom:10px; }
   .sku-hero .ph{ width:96px; height:96px; object-fit:contain; background:#fff; border-radius:var(--r-md); border:1px solid var(--line); cursor:pointer; }
   /* סבב 9 סעיף 1 — כל נתון זיהוי הוא כרטיסון נפרד: תווית קטנה מעל וערך מודגש מתחת.
@@ -1680,7 +1693,7 @@
   .ev-ph .wa-ico{ display:inline-flex; width:19px; height:19px; align-items:center; justify-content:center; border-radius:var(--r-sm); background:#e7f8ee; border:1px solid #bbf7d0; flex:none; }
   .ev-ph .wa-ico svg{ width:12px; height:12px; display:block; }
   /* 6.3.0 — אזור אישי מעוצב (רומן 30/07/2026) */
-  #profModal .sheet{ max-width:560px; padding:0; overflow:hidden; }
+  #profModal .sheet{ max-width:640px; padding:0; overflow:hidden; }
   #profModal .card-bar{ padding:10px 14px 0; }
   .pf-hero{ background:linear-gradient(135deg,#12304a 0%,#1f6f4a 100%); color:#fff; padding:18px 22px 20px; display:flex; align-items:center; gap:16px; }
   .pf-ava{ position:relative; width:78px; height:78px; flex:none; }
@@ -2905,7 +2918,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.203.0</div>
+      <div class="ver">גרסה 6.204.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -2954,7 +2967,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="topnav">
     <button class="burger" id="sideToggle" title="הצגה/הסתרה של התפריט" aria-label="הצגה או הסתרה של התפריט" aria-expanded="true" aria-controls="side"><img class="burger-sym" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIsAAABYCAYAAADFswR+AAAKYElEQVR42u2dXdCVVRXHf+s55wjNhCQpWONM9kUzzmg5NHahXTSoGR8pEGiQTJQNohfEhZnMUBR2g81U1ATTRX6V2gyUiCihGGMkpUHUODYpIKVmCmFK8CLnY3XxrN3Znnlf369z3r2fc/aaOXMYOJzz7LV/z9p7//fa6xFaTFUzEWnYn88AFgDzgAuAyfYxoTusDpSA34nIJS1tFxFRVZ0AHADOArSL2o615x/AHuDnwK9F5LiqZgDOF87KLaCURKSuquOBG4EbgA+QrFtNgPfZay6wX1XXiMhdrYEDIOsHlPOB3cB3DZSGvTT5titNvf79EHCnqm5V1XNEpKGqpbfA4oFyMbAL+BhQtS/I7CXJr10bXVz/NoAaMAPYYcDU3bCUWaipq+p5wMPA6fYfKgmQnrPMpiZVYKoBc6YbklxkGQ/cC0ywSV85+a2nrWIBYypwu5u3uAnMDbbaqdrqIFmysgEzS1XniUgjU9WJwAobrxIoyVrnMwrc4oahzwPntK6OkiXzgseFwMUZMNPoSUvjZP1Zw4LIjAz4hIWbNAQlG2goAvhURi5jJ0s2GCyTszT8JBsiLO9PymyywcwFkyMZcCL5I9kQ7HAG/MGb9SZL1t9qCODvGfBQS7hJlqw/25EBvwT6SIJcsv4tMz42ZSJyENhiE91a8k0yz2rGxRYReT5TVQFWAsdp7gUkS+ZSSI8DK1VVMqAkIgeAm8hV3HryUzKa+ck3GR+lTERqlim3HlhHM/klWe9a1ThYJyLrjY+am9Q27C+WAxtpJr8k6815SgV4UESWW0plA6MHO/LgknMXk6dWXm7/sRxZQ9odanUIQ2/NXu0+ChLbBq7r70eA+cZDQ0QUHwQDRkWkT1WvAv4InOeNXTFYuUPf965BOvRMuj/V1KXTPgfMF5GTlp+t/Trfpf4bMJ8xwqYGBsbdzX3A3cBpbVyxuVyN57zfarVTwHry/OR2RBZ3YsIdwVgEjCfsATbXv/uB6SLyujvxMXhr7KyIqn5EVd/Q3OoazuqqWlPVZV21NlX9nrUrtG8b1s8f9fu/vxA7UEPKtlK6BNgKvNP+KQscYVaJyK2q+o42rtr07e4iVW3nEFS2EH838AUvuoXyqdpcZbqI7HL9PhLyy/Z+pVFYMwpDWdXev2zXVSlYJHH+XGntOBXQlw3Pn4vbclN4DfyS12GNgA2smZOv6sBd30lQKvZ+Swv4oW+8r7T1xvMa+o0IGtrwoJldBGA8/y2J4IbzI9rajvjPizC3RRBC3aTsdTvIP+CkLKKhZ475rBYJKOvc9dn+YFsbLd4qaVMkwKiqvhIrMF5Eme1BEsOcb4uqZqpaGg4oMlxgbD2eAZuBKwKrvE4feBW4UET+OWR9oPOguMoUFwCPmyquAVc+rp9+Y+p8w1aBQ9ashnXh9sUNETllYtIzdgGhOsftkk8GHlDVSX6JiEhAeQSYGBgUp84+Q34Cte71Jx2JLJ4zMlN73wP8FvhgYJXX/fYe4DLgP7kvpBEQlLOBfcCUwL5xOs6LwEUi8nJrRaeORJZ+tgVeBuZb5/x/dzJQhKkC04C73B3T9onb0G6iuqpOAh6MBBSsf+YaKKWR3kQySuc4lfciYCcwLrDK68blXwAL7Trqww23IwXFhpqJwKMGbug9NQfMJ0Vk94jV2Q4sDa+JTEO4Y6w0GFspZvb+QETqbENVF0WlRXnALI5EnXQdtbrTjjJAyrYMvS8ydfa6KLdFPE1hTQR3lu+w1Z10mHej3B5Ju93v3xr1/llkKq+2faNs4PaujgyUH0W/DeKFZFHVjZHsI1VN7b26nQ70IunqyIaejTYktl/G7+BkL1PVbZEA47YGZrYjNHugXBsZKE86CT96UPxlpF3wu1V1n5cLE3rj8aiqThvNPlLL6q8ewerP+XWfqk52N2sn+lU6CYyJd2cBTwLnRqJkHgUuF5E9w91HUtWKiFRVdQZ59mDDfCiB2/Rv2xt7oZN7Yx0TzzyV9zAwBzgSWOXNDNZJto802dTW0hBBKRko04CfeaJXSFDE/HpZp0HpuNLqOkNE9tHcoQ55ntptPL4XeFRVpwxl49Hb75kGbAfOIOzGoO+/a0TkT6bOFv/osTfOz7cxPpZx/i/2PKEB95EcSKo6RVVfiGD+5VZ4NVWdH/0SeZQriKWRrSA2q+o4NykfYKJ+toEVGhT/uldELbq1EZhVkYlYP21dIXkSwDhVfSoSUNz1rgoBypiOuTZBLIvIGmAD+QHskBUb3IT7/H7mAu6xb+OADxP2fA/mpwpwp4iscRPuroXFrG5j7I3kj62JAZi+QSaTJwOD4iob3AcsMf81QjiKMY4urmqBishC4AnCl/jIIrypfFDKwFPkFS5gjHJ0onCCNdQpjbPJKzaEzOWN1Vzu7F7g0056CAFK0DvGpfaJyFHgs8ArpoOkerxN0a1kfpknIq/RfJgYPQWLA8bL5b0U+BfNBzv2OihOnb1URA7FcMQleO1bU0bLIvI0cLWF3l6umukqG9SBRSLydCzqbBSFki3puywijwOfM0f14rOk1Rt+FojI9uBJ1rHB4gFTEZHNwHJ6s8xqzdp9s4j8KiZQooLFgKkaMD8Gbqb5BNBeAaUCfFNE1pofomp7dPX6PZV3LfATeqMur9NS7hCRb5voFt1NEuvDHdykdylwD+FV3rEAZZOILLH9qXooLaVwsLgD+CbaXUccKm8nQXmCXMbPGGZlgxRZeIto10eeOLW3y+YwfmWDK0TkmN/uBMsIgDEx6hiwAHjJHFx00c4tj18E5ojIsdEcWE+wNIFxqZkHgOnkCddZgYFx6ZjHyRPHn42lAFHhYfGAKYvI38iL0bxJMZ9y70S3k+Qlz/9apNzZwjzqzlN5twPzaG46asFAKQELReTh2ES3roHFA6YiIluBr5rji+Jsp86uMHW2UiRQCgeLAeNU3h8AXy/Iktqps98Ske9bREkPABuzmN48XrJhFMnfLgF7l31X5n2/2PsEVX3VO4Yx0iTrDe66C3MOueiRxdcpbBVxPXHk8vZnLsn6fhG5PmZ1tqthMYerp/LujGxIckPPTuDa2NXZbo8svsp7ApgJ/Jk4cnmdOvs8eZXI//rXm2AJCIwNRyeAucAhwubCuEoRh8hTIl8rgjrbE7AYMG7+cpC8aPIbhEn+VvvdPvIk64Ndc2C9W2DxgCmLyH7yEh/HGVuV14lufcAsEdlbNNGtZ2AxYJxo9xjwRcZO5fXV2aUi8lgRRbde1WDcAfxlgxRybofO4j8+bpn/+8mKA4wT7d6uLm87YHHfe5v/u8mKC8y6AYAZLSwuovzQRZSiqrMJFq9yo1dTv9omWNz3bLPPlbodlKybG+epvCXyTLvttOe0QNW+ZwdwpUHWKLI6m6wZJVx08as4nfKiw3AiixvKnrWyrYR+clqKLO2NMA2ry/smMAvYRr5v47YGhhIRnLBWAX5Prs4e7hZ1NtnAESZT1a+p6hGLErsHiSyH7XN9qvodVT2tlyJKTwPjgXCuqq5X1a2t9e69z5yuqi+p6r2q+vFW8HrJ/gchFqglJyyWDgAAAABJRU5ErkJggg==" alt="תפריט"></button>
       <img class="topnav-wm" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'">
-    <div class="spacer"></div>
+    <div class="spacer scr-title" id="scrTitle"></div>
     <span class="who2" id="lastSync" title="סנכרון אחרון מפריוריטי"></span>
     <button class="nf-btn" id="nfBtn" onclick="nfToggle()" title="התראות" aria-label="התראות">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
@@ -3035,7 +3048,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.203.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.204.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3243,8 +3256,10 @@ tr.lb-on td{ background-color:#eef5fd !important; }
             <div class="pl-i"><b>הזמנה שהושלמה</b><span>אינה מציגה חלון אספקה כלל — הוא חסר משמעות אחרי האספקה.</span></div>
           </div>
         </details>
+        <details class="lf-wrap" open><summary>סינון</summary>
         <div class="logi-filters hidden" id="logi-filters"></div>
         <div class="logi-filters hidden" id="logi-filters-calls"></div>
+        </details>
         <div id="logi-bulk" class="toolbar hidden"></div>
         <div id="logi-tbl"></div>
       </div>
@@ -4415,6 +4430,13 @@ const NAV_VIEW = {
      מסוננים בתוך המסך ולכן אינם משתתפים בסימון התפריט הצף. */
   logi: ()=>LOGI_VIEW, set: ()=>SET_VIEW, inv: ()=>INV_VIEW, prc: ()=>PRC_VIEW
 };
+/* 6.204.0 — "איפה אני" (H10): הכותרת נגזרת מהסימון שכבר קיים (.active על הקבוצה, .on על תת-הפריט). */
+function scrTitleSync(){
+  const el = document.getElementById('scrTitle'); if(!el) return;
+  const grp = document.querySelector('#side .nav-item.active'), sub = document.querySelector('#side .submenu button.on');
+  const g = grp ? grp.textContent.replace(/\s+/g,' ').trim() : '', s = sub ? sub.textContent.replace(/\s+/g,' ').trim() : '';
+  el.textContent = (g && s && s !== g) ? (g + ' · ' + s) : (s || g);
+}
 function navMark(){
   prcGate();
   let view = null;
@@ -4431,6 +4453,7 @@ function navMark(){
     const okView = b.dataset.view !== undefined ? String(b.dataset.view)===String(view==null?'':view) : true;
     b.classList.toggle('on', !!(okTab && okView));
   });
+  scrTitleSync();
 }
 /* 6.24.0 — הסתרת פריטי ניווט לפי מפת ההרשאות. האכיפה האמיתית היא ב-RLS;
    כאן זו רק חוויית משתמש — שלא יראה מסכים שיחזירו לו טבלאות ריקות. */
@@ -6129,6 +6152,7 @@ function renderLogiFilters(){
     (logiFilterActive()?`<button type="button" class="lf-clear" onclick="logiFilterClear()">✕ ניקוי סינון</button>`:'')+
     `<button type="button" class="lf-save" onclick="logiDefSave()" title="שמירת הסינון וההיקף הנוכחיים כברירת מחדל בדפדפן זה">★ שמור כברירת מחדל</button>`+
     (logiDefExists()?`<button type="button" class="lf-clear" onclick="logiDefClear()">↺ אפס ברירת מחדל</button>`:'');
+  lfWrapSync('logi-filters');
 }
 /* 6.24.6 — סינון מסך קריאות השירות */
 window.scFilter = (k,v)=>{ SC_F[k]=v; renderScFilters(); logiRenderTable(); };
@@ -6152,6 +6176,7 @@ function renderScFilters(){
     (scFilterActive()?`<button type="button" class="lf-clear" onclick="scFilterClear()">✕ ניקוי סינון</button>`:'')+
     `<button type="button" class="lf-save" onclick="scDefSave()" title="שמירת הסינון הנוכחי כברירת מחדל בדפדפן זה">★ שמור כברירת מחדל</button>`+
     (scDefExists()?`<button type="button" class="lf-clear" onclick="scDefClear()">↺ אפס ברירת מחדל</button>`:'');
+  lfWrapSync('logi-filters');
 }
 function logiBulkBar(){
   const bar=$('#logi-bulk'); if(!bar) return;
@@ -7067,7 +7092,7 @@ window.openTeamDay = async (ds)=>{
   TD_DATE = ds || isoD(new Date());
   TD_VIEW = 'day';   /* 6.24.19 — כל קריאה מפורשת ליום פותחת בתצוגה היומית */
   const sh = $('#ordSheet'); if(!sh) return;
-  sh.innerHTML = `<h3>👷 שיבוץ יומי</h3><div class="note">טוען…</div>`;
+  sh.innerHTML = `<h3>👷 שיבוץ יומי</h3>${crmLoading()}`;
   mountCard('ordModal', ()=>openTeamDay(TD_DATE));
   await tdLoadBoard();
 };
@@ -7234,7 +7259,7 @@ function tdRenderRange(){
       <button class="nav-b" onclick="tdGo(1)" title="הבא">◂</button>
     </div>
     ${(!miss && tdRangeErr(r))?'<div class="td-warn">⚠️ טעינת השיבוץ לטווח הזה נכשלה. <button class="ghost" style="width:auto;padding:3px 10px;margin-inline-start:6px" onclick="tdRetry()">ניסיון חוזר</button></div>':''}
-    ${miss ? '<div class="note">טוען שיבוץ…</div>' : (TD_VIEW==='week' ? tdWeekHtml(r) : tdMonthHtml(r))}
+    ${miss ? crmLoading('טוען שיבוץ…') : (TD_VIEW==='week' ? tdWeekHtml(r) : tdMonthHtml(r))}
     <div class="err" id="td-err"></div>`;
   mountCard('ordModal', ()=>openTeamDay(TD_DATE));
   sh.classList.add('tdwide');
@@ -8630,7 +8655,7 @@ function _openSku(pn){
 
     <div class="sku-box">
       <div class="bx-t">מחירונים ללקוח</div>
-      <div id="sku-pl-box"><div class="note">טוען מחירונים…</div></div>
+      <div id="sku-pl-box">${crmLoading('טוען מחירונים…')}</div>
     </div>
 
     <div class="sku-box install">
@@ -8890,7 +8915,7 @@ function invAgg(rows, fld){
 
 function invBody(){
   const el = $('#inv-body'); if(!el) return;
-  if(INV_LOADING){ el.innerHTML = '<div class="empty">טוען נתוני מלאי ורכש…</div>'; return; }
+  if(INV_LOADING){ el.innerHTML = crmLoading('טוען נתוני מלאי ורכש…'); return; }
   if(INV_ERR){
     el.innerHTML = '<div class="err">' + esc(INV_ERR) + '</div>'
       + '<div style="text-align:center;margin-top:12px"><button class="inv-btn" id="inv-retry">נסה שוב</button></div>';
@@ -9586,7 +9611,7 @@ function poFiltered(){
 
 function poBody(){
   const el = $('#po-body'); if(!el) return;
-  if(PO_LOADING){ el.innerHTML = '<div class="empty">טוען הזמנות רכש…</div>'; return; }
+  if(PO_LOADING){ el.innerHTML = crmLoading('טוען הזמנות רכש…'); return; }
   if(PO_ERR){
     el.innerHTML = '<div class="err">'+esc(PO_ERR)+'</div>'
       + '<div style="text-align:center;margin-top:12px"><button class="inv-btn" id="po-retry">נסה שוב</button></div>';
@@ -9705,7 +9730,7 @@ async function openPo(on){
     + '<div class="span2"><label>הערות</label>'+(can ? '<textarea id="po-f-notes" rows="1">'+esc(r.notes||'')+'</textarea>' : roIn(r.notes||''))+'</div>'
     /* סקשן 3 — הפירוט, נטען אסינכרונית, תמיד אחרון */
     + '<div class="form-sep sep-items">שורות ההזמנה'+SRC_TAG+'</div>'
-    + '<div class="span4" id="po-lines-wrap"><div class="empty">טוען שורות…</div></div>'
+    + '<div class="span4" id="po-lines-wrap">' + crmLoading('טוען שורות…') + '</div>'
     + '</div>'
     + (can ? '<div class="modal-actions"><button class="btn green" id="po-save">שמירה</button><span class="err" id="po-err" style="margin:0"></span></div>' : '');
   const sv = $('#po-save'); if(sv) sv.onclick = ()=> poSave(on);
@@ -10124,7 +10149,7 @@ window.mediaBlock = (kind, parentId)=>{
   }
   const mine = (DOCFILES||[]).filter(f=>f[key]===parentId);
   return `<section class="ob-card" id="media-sec-${parentId}"><h2 class="sec">תמונות מהשטח (${DOCFILES===null?'…':mine.length})</h2>
-    <div id="${boxId}">${DOCFILES===null?'<div class="note">טוען…</div>':rows(mine)}</div>`+
+    <div id="${boxId}">${DOCFILES===null?crmLoading():rows(mine)}</div>`+
     (window.canEdit('docs.media.upload')?`<button class="ghost" style="margin-top:8px" onclick="uploadMedia('${kind}','${parentId}')">העלאת תמונות מהשטח</button>`:'')+'</section>';
 };
 window.deleteMediaFile = async (id)=>{
@@ -10204,7 +10229,7 @@ function renderDocs(){
   const q=($('#docSearch').value||'').trim();
   if(DOC_CAT==='media'){
     if(!window.canView('docs.media')){ $('#docs-list').innerHTML='<div class="empty">אין לך הרשאה לקטגוריה הזו</div>'; return; }
-    if(DOCFILES===null){ $('#docs-list').innerHTML='<div class="empty">טוען…</div>'; loadDocFiles().then(()=>renderDocs()); return; }
+    if(DOCFILES===null){ $('#docs-list').innerHTML=crmLoading(); loadDocFiles().then(()=>renderDocs()); return; }
     let ml = DOCFILES.slice();
     if(q) ml = ml.filter(f=>(f.file_name||'').includes(q)||mediaParentLabel(f).includes(q));
     $('#docs-list').innerHTML = capped(ml, f=>mediaCard(f), 'אין עדיין תמונות מהשטח');
@@ -10575,7 +10600,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'ctlscale-2026-09-05d';
+const BUILD_ID = 'layout-2026-09-05e';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -14542,7 +14567,7 @@ function syncWhen(ts){ if(!ts) return '—'; return new Date(ts).toLocaleString(
 function syncLogHtml(){
   return `<h2 class="sec" style="margin-top:0">יומן סנכרון</h2>
     <div class="note">כל ריצה של סנכרון מפריוריטי נרשמת כאן — מתי רצה, אם הצליחה, כמה זמן לקחה ומה בדיוק התעדכן. היומן גלוי לאדמיניסטרטור בלבד ונשמר בטבלה <b dir="ltr">ord.sync_log</b> במסד.</div>
-    <div id="synclogBox"><div class="empty">טוען את יומן הסנכרון…</div></div>`;
+    <div id="synclogBox">${crmLoading('טוען את יומן הסנכרון…')}</div>`;
 }
 window.loadSyncLog = async function(force){
   if(SYNCLOG_BUSY) return;
@@ -14561,7 +14586,7 @@ window.syncLogToggle = function(id){ SYNCLOG_OPEN[id]=!SYNCLOG_OPEN[id]; paintSy
 function paintSyncLog(){
   const box=$('#synclogBox'); if(!box) return;
   if(SYNCLOG_ERR){ box.innerHTML='<div class="empty">לא ניתן לטעון את יומן הסנכרון: '+esc(SYNCLOG_ERR)+'</div>'; return; }
-  if(!SYNCLOG){ box.innerHTML='<div class="empty">טוען את יומן הסנכרון…</div>'; return; }
+  if(!SYNCLOG){ box.innerHTML=crmLoading('טוען את יומן הסנכרון…'); return; }
   const rows=SYNCLOG;
   /* כרטיסי מצב — שורה אחרונה לכל סנכרון */
   const fns=[]; rows.forEach(r=>{ const f=syncFnOf(r); if(!fns.includes(f)) fns.push(f); });
@@ -14743,7 +14768,7 @@ window.dlShipCalc = async (dealId)=>{
 window.shipSettingsHtml = ()=>{
   if(SHIP_ROWS === null){ setTimeout(shipLoad, 0);
     return '<h2 class="sec" style="margin-top:0">משלוח והתקנה</h2>'
-         + '<div id="shipBox" class="tbl-wrap" style="padding:12px"><div class="empty">טוען מק"טים…</div></div>'; }
+         + '<div id="shipBox" class="tbl-wrap" style="padding:12px">' + crmLoading('טוען מק"טים…') + '</div>'; }
   return '<h2 class="sec" style="margin-top:0">משלוח והתקנה</h2>'
     + '<div class="note">לכל מק"ט: האם יש לו משלוח, האם יש לו התקנה, ומה המחיר <b>ליחידה</b> של כל רכיב. '
     + 'המחשבון בכרטיס העסקה מכפיל בכמות שבהצעה. שדה שנשאר <b>ריק</b> נחשב "טרם הוגדר" והמחשבון מדווח עליו — '
@@ -14992,14 +15017,14 @@ function intErrText(e, verb){
 function integHtml(){
   return `<h2 class="sec" style="margin-top:0">חיבורים</h2>
     <div class="note">כל חיבור לאפליקציה חיצונית מנוהל כאן בנפרד, יחד עם מצב הסנכרון שלו בפועל. פרטי ההתחברות עצמם — מפתחות, סיסמאות וטוקנים — נשמרים בכספת המערכת ואינם מוצגים כאן ואינם ניתנים לעריכה מהמסך.</div>
-    <div id="integBox"><div class="empty">טוען חיבורים…</div></div>`;
+    <div id="integBox">${crmLoading('טוען חיבורים…')}</div>`;
 }
 
 async function loadIntegrations(force){
   const box = $('#integBox'); if(!box) return;
   if(INT_LOADING) return;
   INT_LOADING = true; INT_ERR = '';
-  if(force || !INTEGS.length) box.innerHTML = '<div class="empty">טוען חיבורים…</div>';
+  if(force || !INTEGS.length) box.innerHTML = crmLoading('טוען חיבורים…');
   try{
     const { data, error } = await sb.schema('core').from('v_integration_health')
       .select('key,name,provider,category,description,doc_url,status,enabled,last_sync_at,last_error,'
@@ -15207,7 +15232,7 @@ function renderSettings(){
   if(SET_VIEW==='users' && canView('set.users')){
     body = `<h2 class="sec" style="margin-top:0">ניהול משתמשים</h2>
       <div class="note">כניסה אחת לכל המערכת. הרשאה קובעת מה מותר; דשבורד קובע מה רואים בכניסה; תפקיד — הגדרת התפקיד בחברה.</div>
-      <div id="usersBox" class="tbl-wrap" style="padding:12px"><div class="empty">טוען משתמשים…</div></div>
+      <div id="usersBox" class="tbl-wrap" style="padding:12px">${crmLoading('טוען משתמשים…')}</div>
       ${uEdit?`<h2 class="sec">➕ הוספת משתמש חדש</h2>
       <div class="note">הקלידו סיסמה ראשונית ומסרו אותה למשתמש. המערכת תחייב אותו להחליף אותה בכניסה הראשונה. כתובת הדואר האלקטרוני חייבת להיות בדומיין ironfitness.co.il, והרשאת מנהל מערכת מוענקת בנפרד לאחר היצירה.</div>
       <div class="tbl-wrap" style="padding:12px">
@@ -15224,7 +15249,7 @@ function renderSettings(){
       </div>`:''}
       <h2 class="sec">🧩 קבוצות הרשאות</h2>
       <div class="note">קבוצה היא תבנית: שיוך משתמש לקבוצה משכפל אליו את ההרשאות שלה. אחרי השכפול ההרשאות אישיות לגמרי — אפשר לחרוג בהן לכל משתמש בנפרד. שינוי מאוחר בקבוצה אינו זולג מעצמו; לשם כך יש "שכפול לכל החברים".</div>
-      <div id="pmGroups" class="tbl-wrap" style="padding:12px"><div class="empty">טוען קבוצות…</div></div>
+      <div id="pmGroups" class="tbl-wrap" style="padding:12px">${crmLoading('טוען קבוצות…')}</div>
       <div id="pmPanel"></div>`;
   } else if(SET_VIEW==='teams'){
     body = `<h2 class="sec" style="margin-top:0">צוותי לוגיסטיקה (צבע · שם · פעיל)</h2>
@@ -15238,7 +15263,7 @@ function renderSettings(){
     </div>
     <h2 class="sec">עובדים זמניים</h2>
     <div class="note">אנשים שאינם משתמשי המערכת — למשל קבלן שעובד תחת חשבונית. אפשר לשבץ אותם בשיבוץ היומי בנתיבי החברה (משאית, סקודו), ואין להם חשבון התחברות ואין להם הרשאות.</div>
-    <div class="tbl-wrap" style="padding:12px" id="tmWrap"><div class="empty">טוען…</div></div>
+    <div class="tbl-wrap" style="padding:12px" id="tmWrap">${crmLoading()}</div>
     ${(setTimeout(tmLoad,0),'')}`;
   } else if(SET_VIEW==='texts'){
     /* טקסטים מקובצים לפי קטגוריה (הערות 5–6, סבב 3) */
@@ -19495,9 +19520,9 @@ window.payOpen = on => {
         (canEdit('acc.pays') ? ' <a href="#" onclick="event.preventDefault();payManOpen(FIN.find(x=>x.order_number===\'' + jsq(f.order_number) + '\'))">עריכה</a>' : '') +
       '</div>' : '') +
     payCloseBox(f) +
-    '<h2 class="sec">לוח פעימות</h2><div id="payBeats"><div class="items-loading">טוען…</div></div>' +
+    '<h2 class="sec">לוח פעימות</h2><div id="payBeats">' + crmLoading() + '</div>' +
     '<div id="beEditor"></div>' +
-    '<h2 class="sec">כרטסת הלקוח</h2><div id="payLedger"><div class="items-loading">טוען…</div></div>';
+    '<h2 class="sec">כרטסת הלקוח</h2><div id="payLedger">' + crmLoading() + '</div>';
   mountCard('payModal', ()=>payOpen(on));
   BE_ORD = on; BE_ROWS = [];
   const be = $('#beEditor'); if(be) be.innerHTML = beBtn(on);
@@ -21045,12 +21070,55 @@ let _wideNow = wideScreen(), _vpTimer = null;
 /* 6.197.0 — סרגל הסינון: במובייל נפתח סגור (296px מתוך 844 לפני השורה הראשונה, נמדד), וה-summary
    מונה סינונים פעילים (.lf-on) — כדי שסינון סגור לא יסתיר שהוא פועל. */
 function lfWrapSync(id){
-  const box = document.getElementById(id); if(!box) return;
+  let box = document.getElementById(id); if(!box) return;
   const d = box.closest('details.lf-wrap'); if(!d) return;
-  const n = box.querySelectorAll('.lf-on').length;
+  /* לוגיסטיקה: שני .logi-filters בתוך details אחד (הזמנות/קריאות), הגלוי הוא שנספר */
+  if(box.classList.contains('hidden')){ const alt = [...d.querySelectorAll('.logi-filters')].find(x=>!x.classList.contains('hidden')); if(alt) box = alt; }
+  const on = [...box.querySelectorAll('.lf-on')];
+  const n = on.length;
   const s = d.querySelector('summary'); if(s) s.innerHTML = 'סינון' + (n ? ' <span class="lf-n">' + n + '</span>' : '');
+  /* 6.204.0 — סרגל בורד אחד (H11): כפתור "מסננים" וצ'יפי המסננים הפעילים בשורת החיפוש, בדסקטופ */
+  const tb = d.parentElement ? d.parentElement.querySelector(':scope > .toolbar') : null; if(!tb) return;
+  const tg = tb.querySelector('.lf-toggle'), ac = tb.querySelector('.lf-active'); if(!tg || !ac) return;
+  tg.classList.toggle('on', !!d.open); tg.setAttribute('aria-expanded', String(!!d.open));
+  const nb = tg.querySelector('.lf-n'); if(nb){ nb.textContent = String(n); nb.hidden = !n; }
+  ac.innerHTML = on.map((el,i)=>{
+    let lbl = '', val = '';
+    if(el.tagName === 'SELECT'){
+      const o0 = el.options[0], oc = el.options[el.selectedIndex];
+      lbl = (o0 ? o0.textContent : '').split(' — ')[0].trim(); val = oc ? oc.textContent.trim() : '';
+    } else { const sm = el.querySelector('summary'); val = sm ? sm.textContent.trim() : ''; }
+    const txt = (lbl && val) ? (lbl + ': ' + val) : (val || lbl);
+    const isSel = el.tagName === 'SELECT';
+    return '<button type="button" class="lf-chip" data-i="' + i + '" title="' + (isSel ? 'הסרת הסינון' : 'פתיחת הסינון') + '">' + esc(txt) + (isSel ? ' <span class="x">✕</span>' : '') + '</button>';
+  }).join('');
+  ac.querySelectorAll('.lf-chip').forEach(ch=>{ ch.onclick = ()=>{ const el = on[+ch.dataset.i]; if(!el) return;
+    /* select: איפוס + change — ה-onchange של הבורד מצייר מחדש ומסנכרן; lf-multi: פותחים את הסרגל */
+    if(el.tagName === 'SELECT'){ el.value = ''; el.dispatchEvent(new Event('change')); } else { lfWrapOpen(d, true); } }; });
+}
+const LF_KEY = id => 'iron_lf_open_' + id;
+function lfWrapOpen(d, on){
+  d.open = !!on;
+  const box = d.querySelector('.logi-filters');
+  if(box && box.id){ try{ localStorage.setItem(LF_KEY(box.id), on ? '1' : '0'); }catch(_e){} lfWrapSync(box.id); }
+}
+/* 6.204.0 — בדסקטופ הסרגל מתקפל ונזכר לכל בורד; הכפתור והצ'יפים נוספים פעם אחת לשורת החיפוש של אותו מכל */
+function lfBarInit(){
+  document.querySelectorAll('details.lf-wrap').forEach(d=>{
+    const box = d.querySelector('.logi-filters'); if(!box || !box.id) return;
+    const tb = d.parentElement ? d.parentElement.querySelector(':scope > .toolbar') : null; if(!tb || tb.querySelector('.lf-toggle')) return;
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'lf-toggle'; b.setAttribute('aria-controls', box.id); b.setAttribute('aria-expanded', 'false');
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4-2v-4z"/></svg>מסננים<b class="lf-n" hidden></b>';
+    b.onclick = ()=>{ lfWrapOpen(d, !d.open); };
+    const ac = document.createElement('span'); ac.className = 'lf-active';
+    tb.appendChild(b); tb.appendChild(ac);
+    let open = false; try{ open = localStorage.getItem(LF_KEY(box.id)) === '1'; }catch(_e){}
+    if(_wideNow) d.open = open;
+    lfWrapSync(box.id);
+  });
 }
 if(!_wideNow) document.querySelectorAll('details.lf-wrap').forEach(d=>{ d.open = false; });
+lfBarInit();
 function _viewportChanged(){
   clearTimeout(_vpTimer);
   _vpTimer = setTimeout(function(){
@@ -21256,7 +21324,7 @@ window.openOrd = (id, ctx)=>{
       ${ordSecShow(['crm.orders.dialog'])?`<div class="form-sep">דו שיח פנימי${SRC_TAG}</div>
       <div class="span4"><div class="dialog-box">${o.internal_dialog?esc(o.internal_dialog).replace(/\n/g,'<br>'):'<span class="dialog-empty">אין דו שיח פנימי בהזמנה זו</span>'}</div></div>`:''}
       <div class="form-sep sep-items">פירוט ההזמנה${SRC_TAG}${openBadge(o.order_number)}${retBadge(o.order_number)}</div>
-      <div class="span4" id="orderItemsBox"><div class="items-loading">טוען פירוט הזמנה מפריוריטי…</div></div>
+      <div class="span4" id="orderItemsBox">${crmLoading('טוען פירוט הזמנה מפריוריטי…')}</div>
       ${canView('logi.orders.coord')?'<div class="span4" id="ordVisitBox"></div>':''}
     </div>
     <div class="ord-bottom">
@@ -24745,7 +24813,7 @@ function updArm(pfx){
 window.updRetry = p=>{
   const pn = document.getElementById((p||'lb')+'-pn-upd'); if(pn) delete pn.dataset.loaded;
   const box = document.getElementById((p||'lb')+'-updlist');
-  if(box) box.innerHTML = '<div class="note">טוען…</div>';
+  if(box) box.innerHTML = crmLoading();
   updArm(p);
 };
 window.updSys  = on=>{ if(UPD_CTX){ UPD_CTX.sys  = !!on; updRun(UPD_CTX.id, UPD_CTX.type, UPD_CTX.pfx); } };
@@ -25613,7 +25681,7 @@ function spiSupSelect(cur){
 }
 
 function spiCard(){
-  if(!SPI_DET) return '<div class="empty">טוען…</div>';
+  if(!SPI_DET) return crmLoading();
   if(SPI_DET.err) return '<div class="spi-warn">'+esc(SPI_DET.err)+'</div>';
   const h=SPI_DET.h, ed=canEdit('acc.sinv') &&
     !['נשלח לפריוריטי','בוטל'].includes(h.state);
@@ -25743,7 +25811,7 @@ function spiPaint(){
 window.spiRender = async function(){
   spiInjectCss();
   const b=$('#spi-body'); if(!b) return;
-  if(!SPI_ROWS){ b.innerHTML='<div class="empty">טוען…</div>'; await spiLoad(); }
+  if(!SPI_ROWS){ b.innerHTML=crmLoading(); await spiLoad(); }
   const f=$('#spi-file');
   if(f && !f._spiWired){
     f._spiWired=true;
@@ -25962,7 +26030,7 @@ function siPaint(){
 window.siRender = async function(){
   siInjectCss();
   const b=$('#si-body'); if(!b) return;
-  if(!SI_SUPS){ b.innerHTML='<div class="empty">טוען ספקים…</div>'; await siLoad(); }
+  if(!SI_SUPS){ b.innerHTML=crmLoading('טוען ספקים…'); await siLoad(); }
   const q=$('#si-q');
   if(q && !q._siWired){
     q._siWired=true;

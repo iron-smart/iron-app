@@ -940,20 +940,21 @@
      כותרת קטנה + האריחים שלה; הקבוצות זורמות זו לצד זו ונשברות כיחידה, ולכן שורה
      שנייה מתחילה תמיד בקבוצה ולא באמצע דומיין. אריח ברוחב קבוע — אחרת auto-fill
      היה מותח קבוצה בת אריח אחד לכל הרוחב. */
-  #db-kpis{ display:flex; flex-wrap:wrap; gap:12px 22px; margin-bottom:18px; align-items:flex-start }
+  /* 6.207.0 — H9: אריח 148→128, ריפוד ומספר קטנים יותר, רווחים צרים. נמדד לפני: 148×85, קוקפיט 219px. */
+  #db-kpis{ display:flex; flex-wrap:wrap; gap:10px 18px; margin-bottom:14px; align-items:flex-start }
   .kgrp{ display:flex; flex-direction:column; gap:6px; min-width:0 }
   .kgrp .kg-l{ font-size:var(--fs-xs); font-weight:800; color:var(--ink-3); padding-inline-start:6px; letter-spacing:.2px }
   .kgrp .kg-l::before{ content:''; display:inline-block; width:8px; height:8px; border-radius:3px; background:var(--kd,#cbd5e1); margin-inline-end:6px; vertical-align:-1px }
   .kgrp.d-ops{ --kd:#0b3f63 } .kgrp.d-fin{ --kd:#15803d } .kgrp.d-inv{ --kd:#b45309 } .kgrp.d-sales{ --kd:#7c3aed } .kgrp.d-rem{ --kd:#64748b }
-  #db-kpis .stats{ display:flex; flex-wrap:wrap; gap:10px; margin:0 }
-  #db-kpis .stat{ width:148px; flex:none }
-  #db-kpis .stat{ position:relative; overflow:hidden; text-align:start; min-width:0; padding:11px 14px 10px 12px;
+  #db-kpis .stats{ display:flex; flex-wrap:wrap; gap:8px; margin:0 }
+  #db-kpis .stat{ width:128px; flex:none }
+  #db-kpis .stat{ position:relative; overflow:hidden; text-align:start; min-width:0; padding:9px 12px 8px 10px;
     border-radius:14px; border:1px solid #e6ebf1; background:#fff; box-shadow:0 1px 2px rgba(2,32,71,.04) }
   #db-kpis .stat::before{ content:''; position:absolute; inset-inline-start:0; top:10px; bottom:10px; width:3px; border-radius:3px; background:var(--kd,#cbd5e1) }
   #db-kpis .stat.d-ops{ --kd:#0b3f63 } #db-kpis .stat.d-fin{ --kd:#15803d } #db-kpis .stat.d-inv{ --kd:#b45309 }
   #db-kpis .stat.d-sales{ --kd:#7c3aed } #db-kpis .stat.d-rem{ --kd:#64748b }
-  #db-kpis .stat .n{ font-size:24px; font-weight:800; color:var(--navy); line-height:1.1 }
-  #db-kpis .stat .l{ font-size:12px; color:var(--ink-3); margin-top:3px; line-height:1.3 }
+  #db-kpis .stat .n{ font-size:var(--fs-h); font-weight:800; color:var(--navy); line-height:1.1 }
+  #db-kpis .stat .l{ font-size:var(--fs-xs); color:var(--ink-3); margin-top:3px; line-height:1.3 }
   .k-sub{ font-size:11px; color:var(--ink-3); line-height:1.3; margin-top:3px }
   .k-sub.red{ color:#dc2626; font-weight:800 }
   .stat.clk{ cursor:pointer }
@@ -999,6 +1000,13 @@
   .exc-row.sev2{ border-inline-start:3px solid #d97706 }
   .exc-row.sev1{ border-inline-start:3px solid #94a3b8 }
   #db-exc .exc-wrap{ display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:0 12px }
+  /* 6.207.0 — H9: "דורש תשומת לב" נבלע לקוקפיט — הבלוק הראשון בגריד (order:-10 מ-applyDashboard), בלי כרטיס, כותרת כתווית-קבוצה,
+     והשורות כצ'יפים בשורה גולשת. ה-DOM לא זז: dashdatatest מודדת .exc-row ואת "אין חריגים פתוחים". */
+  #db-exc{ background:transparent; border:none; box-shadow:none; padding:0 0 2px; }
+  #db-exc h3{ font-size:var(--fs-xs); color:var(--ink-3); margin:0 0 6px; padding-inline-start:6px; letter-spacing:.2px; }
+  #db-exc h3::before{ content:''; display:inline-block; width:8px; height:8px; border-radius:3px; background:#dc2626; margin-inline-end:6px; vertical-align:-1px; }
+  #db-exc .exc-wrap{ display:flex; flex-wrap:wrap; gap:6px 10px; }
+  #db-exc .exc-row{ margin-bottom:0; padding:5px 10px; font-size:var(--fs-sm); }
   /* טריות */
   .db-asof{ font-size:10.5px; color:var(--ink-3); margin-top:6px }
   .db-asof.stale{ color:#b45309; font-weight:700 }
@@ -2830,7 +2838,15 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   td.lb-ck input, th.lb-ck input{ width:22px; height:22px; }
 }
 /* ===== 6.199.0 — דשבורד שיווק ===== */
-#tab-mkt .mkt-bar{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px; }
+#tab-mkt .mkt-bar{ display:block; margin-bottom:6px; }   /* 6.207.0 — הילדים (.toolbar + details.lf-wrap) מסדרים את עצמם */
+#tab-mkt .mkt-tools{ flex-wrap:wrap; margin-bottom:8px; }
+#tab-mkt .mkt-tools .lf-sel{ width:auto; flex:none; height:var(--ctl-h-md); }
+#tab-mkt .mkt-tools input[type=date]{ flex:none; width:auto; }
+#tab-mkt .mkt-tools .lf-save{ height:var(--ctl-h-md); }
+#tab-mkt .mkt-kpis.mkt-main{ grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); }
+#tab-mkt .mkt-kpis.hidden{ display:none; }   /* #tab-mkt .mkt-kpis הוא (1,1,0) וגובר על .hidden — כלל מפורש, הלקח של [hidden] ב-6.194.0 */
+#tab-mkt .mkt-more-bar{ display:flex; justify-content:flex-end; margin:-8px 0 10px; }
+#tab-mkt .mkt-more-btn{ width:auto; min-height:var(--ctl-h-sm); padding:4px 14px; font-size:var(--fs-sm); }
 #tab-mkt .mkt-bar .lf-sel{ max-width:220px; }
 #tab-mkt .mkt-bar input[type=date]{ font-size:var(--fs-sm); padding:5px 8px; border:1px solid var(--line); border-radius:var(--r-md); font-family:inherit; }
 #tab-mkt .mkt-bar .mkt-upd{ font-size:var(--fs-xs); color:var(--ink-3); margin-inline-start:auto; white-space:nowrap; }
@@ -2940,7 +2956,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.206.0</div>
+      <div class="ver">גרסה 6.207.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3070,7 +3086,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.206.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.207.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5295,8 +5311,9 @@ function applyDashboard(){
     if(s.sec==='myday' && window.MD_HIDE) show = false;
     el.hidden = !show;
     /* 6.194.0 — הסקשן הוא display:contents, ולכן order חל על הכרטיסים שבתוכו:
-       עשרה מקומות לסקשן, לפי סדר הפרופיל; "היום שלי" תמיד ראשון. */
-    const base = s.sec==='myday' ? 0 : (ord.indexOf(s.sec)+1)*10;
+       עשרה מקומות לסקשן, לפי סדר הפרופיל; "היום שלי" ראשון — ומ-6.207.0 "דורש תשומת לב" לפניו (order:-10):
+       הוא חלק מהקוקפיט (רצועה בלי כרטיס מתחת לאריחים), לא כרטיס. */
+    const base = s.sec==='myday' ? 0 : s.sec==='exc' ? -10 : (ord.indexOf(s.sec)+1)*10;
     el.querySelectorAll('.dash-bd > *').forEach((b,i)=>{ b.style.order = String(base + i); });
     /* 6.89.0 — אין קיפול: המידע גלוי תמיד. דגלים ישנים ב-localStorage מנוטרלים. */
     el.classList.remove('folded');
@@ -5508,7 +5525,8 @@ function renderKpiStrip(){
   /* T שומר על ממשק push כדי שהאריחים למטה לא ישתנו; הדומיין נקרא מהמחלקה d-<dom>
      ש-kTile כבר מטביע (6.194.0). אריח בלי דומיין מוכר נופל לתפעול. */
   const G = {}; KPI_GROUPS.forEach(([k])=>G[k]=[]);
-  const T = { push(h){ const m = / d-(ops|sales|fin|inv|rem)\b/.exec(h); G[m ? m[1] : 'ops'].push(h); } };
+  /* 6.207.0 — M14: אריח בלי נתון ("—" מ-ilsK על null) אינו מוצג; אפס נשאר — הוא נתון. */
+  const T = { push(h){ if(/<div class="n">—<\/div>/.test(h)) return; const m = / d-(ops|sales|fin|inv|rem)\b/.exec(h); G[m ? m[1] : 'ops'].push(h); } };
   const today = isoD(new Date());
   const sup = canView('dash.supervise');
   if(canView('dash.ops') && canView('logi')){
@@ -5749,11 +5767,12 @@ function renderArBlock(){
   /* מספרי-הייחוס שירדו מהקוקפיט: מתחילת השנה (+דלתא מול אשתקד) · תקבולים החודש · הזמנות עם יתרה */
   const dlt = d.rev_prev_ytd>0 ? Math.round((d.rev_ytd-d.rev_prev_ytd)/d.rev_prev_ytd*100) : null;
   el.innerHTML = dbHead('כספים', null, "gotoPays('open')", 'לתשלומים') +
-    '<div class="db-fin">' +
-      '<div><b>'+ilsK(d.rev_ytd)+'</b><small>מתחילת השנה</small>'+(dlt==null?'':'<small class="'+(dlt<0?'red':'')+'">'+(dlt>=0?'+':'')+dlt+'% מול אשתקד</small>')+'</div>' +
-      '<div><b>'+ilsK(d.receipts_mtd)+'</b><small>תקבולים החודש</small></div>' +
-      '<div><b>'+(d.ar_n||0)+'</b><small>הזמנות עם יתרה · '+ilsK(d.ar_sum)+'</small></div>' +
-    '</div>' +
+    /* 6.207.0 — M14: קופסה בלי נתון אינה מצוירת ("—" ×3 בכרטיס הכספים, נמדד) */
+    (function(){ const b=[];
+      if(d.rev_ytd!=null) b.push('<div><b>'+ilsK(d.rev_ytd)+'</b><small>מתחילת השנה</small>'+(dlt==null?'':'<small class="'+(dlt<0?'red':'')+'">'+(dlt>=0?'+':'')+dlt+'% מול אשתקד</small>')+'</div>');
+      if(d.receipts_mtd!=null) b.push('<div><b>'+ilsK(d.receipts_mtd)+'</b><small>תקבולים החודש</small></div>');
+      if(d.ar_n!=null || d.ar_sum!=null) b.push('<div><b>'+(d.ar_n||0)+'</b><small>הזמנות עם יתרה'+(d.ar_sum!=null?' · '+ilsK(d.ar_sum):'')+'</small></div>');
+      return b.length ? '<div class="db-fin">'+b.join('')+'</div>' : ''; })() +
     '<div class="db-day"><b>החייבים הגדולים</b></div>' +
     ((d.top_debtors||[]).slice(0,DB_CAP).map(t=>dbRow("gotoPays('open')", esc(t.customer||''), esc(t.order_number||'')+' · '+esc(t.pay_state||''), '<span class="v">'+ilsK(t.balance)+'</span>')).join('')||'<div class="db-empty">אין יתרות פתוחות</div>') +
     dashAsOf(d.as_of, 26);
@@ -5776,9 +5795,9 @@ function renderInvBlock(){
   if(!canView('dash.inv')||!x){ el.innerHTML=''; return; }
   if(x.err){ _dbErr(el); return; }
   const d=x.d||{};
-  el.innerHTML = dbHead('מלאי', (d.late_n||0)+' בהזמנה מאחרת · '+ilsK(d.late_value), "gotoTab('inv')", 'למלאי')+
+  el.innerHTML = dbHead('מלאי', (d.late_n||0)+' בהזמנה מאחרת'+(+d.late_value>0?' · '+ilsK(d.late_value):''), "gotoTab('inv')", 'למלאי')+
     '<div class="db-day"><b>הפריטים בסיכון הגבוה</b></div>'+
-    ((d.top||[]).slice(0,DB_CAP).map(t=>dbRow("gotoTab('inv')", esc(t.partname||''), '', '<span class="v">'+ilsK(t.value)+'</span>')).join('')||'<div class="db-empty">אין פריטים בסיכון</div>')+
+    ((d.top||[]).slice(0,DB_CAP).map(t=>dbRow("gotoTab('inv')", esc(t.partname||''), '', (+t.value>0?'<span class="v">'+ilsK(t.value)+'</span>':''))).join('')||'<div class="db-empty">אין פריטים בסיכון</div>')+
     dashAsOf(d.as_of, 30);
 }
 function renderPoBlock(){
@@ -10638,7 +10657,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'forms-2026-09-05g';
+const BUILD_ID = 'dash-2026-09-06a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -16383,24 +16402,30 @@ function mktPaintBar(){
     return (opts[dim]||[]).map(v=>[v, v]);
   };
   const r=mktRange(MKT_F);
-  let h='';
+  let h='', f='';   /* 6.207.0 — h = שורת הכלים (.toolbar), f = המסננים (details.lf-wrap) */
   h += `<select class="lf-sel${MKT_F.preset!=='30d'?' lf-on':''}" onchange="mktPreset(this.value)" aria-label="טווח תאריכים">${MKT_PRESETS.map(([k,l])=>`<option value="${k}" ${MKT_F.preset===k?'selected':''}>${l}</option>`).join('')}</select>`;
   if(MKT_F.preset==='custom') h += `<input type="date" value="${esc(r.from)}" onchange="mktDate('from',this.value)" aria-label="מתאריך"><span class="tb-lbl">עד</span><input type="date" value="${esc(r.to)}" onchange="mktDate('to',this.value)" aria-label="עד תאריך">`;
   else h += `<span class="tb-lbl">${esc(fmtD(r.from))} – ${esc(fmtD(r.to))}</span>`;
-  h += `<select class="lf-sel" onchange="mktMode(this.value)" title="לפי מה מיוחסות העסקאות לטווח"><option value="lead" ${MKT_F.date_mode==='lead'?'selected':''}>לפי תאריך יצירת הליד (קוהורט)</option><option value="close" ${MKT_F.date_mode==='close'?'selected':''}>לפי תאריך סגירת העסקה</option></select>`;
-  h += `<select class="lf-sel" onchange="mktTouch(this.value)" title="איזה מגע של הליד קובע את המקור והקמפיין"><option value="first" ${MKT_F.touch==='first'?'selected':''}>מגע ראשון</option><option value="last" ${MKT_F.touch==='last'?'selected':''}>מגע אחרון</option></select>`;
-  h += `<select class="lf-sel" onchange="mktGrain(this.value)" title="רזולוציית הגרף"><option value="day" ${MKT_F.grain==='day'?'selected':''}>יומי</option><option value="week" ${MKT_F.grain==='week'?'selected':''}>שבועי</option><option value="month" ${MKT_F.grain==='month'?'selected':''}>חודשי</option></select>`;
+  f += `<select class="lf-sel" onchange="mktMode(this.value)" title="לפי מה מיוחסות העסקאות לטווח"><option value="lead" ${MKT_F.date_mode==='lead'?'selected':''}>לפי תאריך יצירת הליד (קוהורט)</option><option value="close" ${MKT_F.date_mode==='close'?'selected':''}>לפי תאריך סגירת העסקה</option></select>`;
+  f += `<select class="lf-sel" onchange="mktTouch(this.value)" title="איזה מגע של הליד קובע את המקור והקמפיין"><option value="first" ${MKT_F.touch==='first'?'selected':''}>מגע ראשון</option><option value="last" ${MKT_F.touch==='last'?'selected':''}>מגע אחרון</option></select>`;
+  f += `<select class="lf-sel" onchange="mktGrain(this.value)" title="רזולוציית הגרף"><option value="day" ${MKT_F.grain==='day'?'selected':''}>יומי</option><option value="week" ${MKT_F.grain==='week'?'selected':''}>שבועי</option><option value="month" ${MKT_F.grain==='month'?'selected':''}>חודשי</option></select>`;
   MKT_DIMS.forEach(([dim,lbl])=>{
     const cur=(MKT_F[dim]||[]), pairs=optOf(dim);
     /* ערך שנשמר ואינו ברשימה עדיין מוצג (מסומן) — אחרת סינון שנשמר לקמפיין שנעלם היה מסנן הכול בשקט */
     const extra = cur.filter(v=>!pairs.some(([k])=>k===v)).map(v=>[v, mktLbl(dim,v)]);
     const items = pairs.concat(extra).map(([k,l])=>`<label class="lf-opt"><input type="checkbox" ${cur.includes(k)?'checked':''} onchange="mktTog('${jsq(dim)}','${jsq(k)}',this.checked)">${esc(l)}</label>`).join('');
-    h += `<details class="lf-multi ${cur.length?'lf-on':''}" data-dim="${esc(dim)}"><summary>${cur.length?esc(lbl)+' ('+cur.length+')':esc(lbl)+' — הכל'}</summary><div class="lf-menu">${items||'<div class="empty" style="padding:8px">אין ערכים</div>'}</div></details>`;
+    f += `<details class="lf-multi ${cur.length?'lf-on':''}" data-dim="${esc(dim)}"><summary>${cur.length?esc(lbl)+' ('+cur.length+')':esc(lbl)+' — הכל'}</summary><div class="lf-menu">${items||'<div class="empty" style="padding:8px">אין ערכים</div>'}</div></details>`;
   });
-  if(mktActive()) h += `<button type="button" class="lf-clear" onclick="mktClear()">✕ ניקוי מסננים</button>`;
+  if(mktActive()) f += `<button type="button" class="lf-clear" onclick="mktClear()">✕ ניקוי מסננים</button>`;
   h += `<button type="button" class="lf-save" onclick="mktRefresh()" title="טעינה מחדש מהשרת">↻ רענון</button>`;
   h += `<span class="mkt-upd" id="mkt-upd">${MKT_AT?('עודכן '+new Date(MKT_AT).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})):''}</span>`;
-  bar.innerHTML = h;
+  /* 6.207.0 — M15: הסרגל בדפוס פאזה 2 — .toolbar עם הטווח, הרענון ו"עודכן"; המסננים ב-details.lf-wrap (#mkt-filters),
+     lfBarInit מוסיף "מסננים (N)" וצ'יפים, ובדסקטופ פותח לפי מה שהמשתמש זכר (הדפוס של ששת הבורדים, 6.204.0 —
+     מקופל כברירת מחדל, הצ'יפים מראים מה פעיל); הציור החוזר משמר את המצב במובייל. נמדד לפני: 106px ב-1440, 422px ב-390. */
+  const _wrap = bar.querySelector('details.lf-wrap'), _wasOpen = _wrap ? _wrap.open : null;
+  bar.innerHTML = '<div class="toolbar mkt-tools">'+h+'</div>'+
+    '<details class="lf-wrap"'+(_wasOpen===true ? ' open' : '')+'><summary>סינון</summary><div class="logi-filters" id="mkt-filters">'+f+'</div></details>';
+  lfBarInit(); lfWrapSync('mkt-filters');
   if(_open){ const d=bar.querySelector('details.lf-multi[data-dim="'+_open+'"]'); if(d) d.open=true; }
 }
 function mktStatus(msg){ const b=document.getElementById('mkt-body'); if(b) b.innerHTML='<div class="empty">'+esc(msg)+'</div>'; }
@@ -16604,10 +16629,28 @@ function mktBarList(rows, lblOf, nOf, kind, dimK, valOf, subOf){
   if(!rows.length) return '<div class="db-empty">אין</div>';
   return '<div class="mkt-bars">'+rows.map(r=>'<div class="fun-row" role="button" tabindex="0" data-mkt="'+esc(kind)+'" data-dim="'+esc(dimK)+'" data-val="'+esc(valOf(r))+'" data-title="'+esc(lblOf(r))+'"><span class="fun-l" title="'+esc(lblOf(r))+'">'+esc(lblOf(r))+'</span><div class="fun-bar"><div style="width:'+Math.round(nOf(r)/mx*100)+'%;background:#c0392b"></div></div><b>'+mktN(nOf(r))+'</b>'+(subOf?'<span class="fun-a">'+esc(subOf(r))+'</span>':'')+'</div>').join('')+'</div>';
 }
+/* 6.207.0 — M15: שמונה אריחים ראשיים (לפי תווית, לא לפי מיקום) והשאר תחת "עוד N מדדים", נזכר ב-localStorage.
+   האריחים עצמם לא זזו — רק העטיפה. שני הגרידים נושאים .mkt-kpis, ולכן ספירת mkttest (14 עם Spend) לא זזה. */
+const MKT_KPI_MAIN = new Set(['לידים','לידים רלוונטיים','עסקאות שנסגרו','אחוז המרה (עסקאות / לידים)','הכנסות (לפני מע"מ)','Pipeline פתוח','לידים אבודים','עסקאות אבודות']);
+function mktKpiGrid(html){
+  const tiles = String(html||'').split(/(?=<div class="stat[" ])/).filter(Boolean);   /* אריח בלי kind הוא class="stat" — בלי הרווח; נתפס ב-dstest (ROAS נבלע לראשי) */
+  const lbl = t => { const m = /<div class="l">(.*?)<\/div>/.exec(t); return m ? m[1].replace(/&quot;/g,'"') : ''; };   /* התווית עוברת esc — מע"מ יוצא &quot; */
+  const main = tiles.filter(t=>MKT_KPI_MAIN.has(lbl(t))), more = tiles.filter(t=>!MKT_KPI_MAIN.has(lbl(t)));
+  let open = false; try{ open = localStorage.getItem('iron_mkt_more') === '1'; }catch(_e){}
+  return '<div class="mkt-kpis mkt-main">' + main.join('') + '</div>' +
+    (more.length ? '<div class="mkt-more-bar"><button type="button" class="ghost mkt-more-btn" aria-expanded="'+(open?'true':'false')+'" aria-controls="mkt-more" onclick="mktMore(this)">'+(open ? 'פחות מדדים ▴' : 'עוד '+more.length+' מדדים ▾')+'</button></div>' +
+      '<div id="mkt-more" class="mkt-kpis'+(open?'':' hidden')+'" data-n="'+more.length+'">' + more.join('') + '</div>' : '');
+}
+window.mktMore = btn => {
+  const el = document.getElementById('mkt-more'); if(!el) return;
+  const nowHidden = el.classList.toggle('hidden');
+  try{ localStorage.setItem('iron_mkt_more', nowHidden ? '0' : '1'); }catch(_e){}
+  if(btn){ btn.setAttribute('aria-expanded', nowHidden ? 'false' : 'true'); btn.textContent = nowHidden ? 'עוד '+(el.dataset.n||'')+' מדדים ▾' : 'פחות מדדים ▴'; }
+};
 function mktPaint(){
   const D=MKT_D, body=document.getElementById('mkt-body'); if(!D||!body) return;
   const k=D.kpi.cur, pv=D.kpi.prev, lm=mktLeadMode();
-  let h='<div class="mkt-kpis">'+
+  let h=mktKpiGrid(
     mktTile('לידים', mktN(k.leads), k.leads, pv.leads, lm?'leads':null)+
     mktTile('לידים רלוונטיים', mktN(k.qualified), k.qualified, pv.qualified, lm?'leads_qualified':null)+
     mktTile('עסקאות שנסגרו', mktN(k.won_n), k.won_n, pv.won_n, 'deals_won')+
@@ -16618,8 +16661,7 @@ function mktPaint(){
     mktTile('Pipeline פתוח', mktMk(k.open_amount)+' <small style="font-size:12px;color:var(--ink-3)">· '+mktN(k.open_n)+'</small>', k.open_amount, pv.open_amount, 'deals_open', 'money')+
     mktTile('לידים אבודים', mktN(k.lost_leads), k.lost_leads, pv.lost_leads, lm?'leads_lost':null, 'bad', false)+
     mktTile('עסקאות אבודות', mktN(k.lost_deals), k.lost_deals, pv.lost_deals, 'deals_lost', 'bad', false)+
-    (k.spend>0 ? mktTile('הוצאת פרסום', mktMk(k.spend), k.spend, pv.spend, null, 'money', false)+mktTile('CPL — עלות לליד', mktM(k.cpl), k.cpl, pv.cpl, null, 'money', false)+mktTile('CAC — עלות ללקוח', mktM(k.cac), k.cac, pv.cac, null, 'money', false)+mktTile('ROAS', k.roas==null?'—':(Math.round(k.roas*100)/100)+'×', k.roas, pv.roas, null, 'money') : '')+
-    '</div>'+
+    (k.spend>0 ? mktTile('הוצאת פרסום', mktMk(k.spend), k.spend, pv.spend, null, 'money', false)+mktTile('CPL — עלות לליד', mktM(k.cpl), k.cpl, pv.cpl, null, 'money', false)+mktTile('CAC — עלות ללקוח', mktM(k.cac), k.cac, pv.cac, null, 'money', false)+mktTile('ROAS', k.roas==null?'—':(Math.round(k.roas*100)/100)+'×', k.roas, pv.roas, null, 'money') : ''))+
     (D.mode_note ? '<div class="mkt-modenote">'+esc(D.mode_note)+'</div>' : '')+
     '<div class="mkt-note" style="margin:-6px 0 12px">השוואה מול '+esc(fmtD(D.kpi.prev_from))+' – '+esc(fmtD(D.kpi.prev_to))+' · '+(MKT_F.date_mode==='close'?'עסקאות לפי תאריך סגירה':'כל העסקאות של הלידים שנוצרו בטווח (קוהורט); עסקה בלי ליד — לפי תאריך סגירתה')+' · לחיצה על כל מספר פותחת את הרשומות</div>'+
     '<div class="mkt-card" id="mkt-trend"></div>'+

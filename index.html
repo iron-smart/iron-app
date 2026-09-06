@@ -116,7 +116,7 @@
   .stat{ background:#fff; border-radius:14px; padding:18px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,.06); }
   .stat .n{ font-size:32px; font-weight:800; color:var(--navy); }
   .stat .l{ font-size:13px; color:var(--ink-3); margin-top:4px; }
-  h2.sec{ font-size:16px; color:var(--navy); margin:22px 4px 12px; }
+  h2.sec{ font-size:16px; color:var(--navy); margin:var(--sp-5) 4px var(--sp-3); }   /* 6.206.0 — M25: 22/12 → טוקנים (24/12), כמו .form-sep */
 
   .toolbar{ display:flex; gap:10px; margin-bottom:14px; align-items:center; }
   /* 6.2.2 — מונה תוצאות לצד שדה החיפוש בלוח השנה */
@@ -306,6 +306,8 @@
   .pay-close input{ border:1px solid var(--line); border-radius:var(--r-sm); padding:4px 8px; font:inherit }
   .pay-close #pc-note{ flex:1 1 220px }
   .pay-close #pc-cred{ width:120px }
+  /* 6.206.0 — M11: שני כפתורי הסגירה היו .btn ברוחב מלא (1030px, נמדד) זה מתחת לזה; משניים, ברוחב טבעי, בגובה השדות שלצידם */
+  .pay-close .ghost{ width:auto; flex:none; min-height:var(--ctl-h-sm); box-sizing:border-box; padding:4px 14px; }
   /* לוח פעימות של הזמנה שנסגרה ידנית — מעומעם ולא פעיל. הנתונים שורדים
      במסד; זו תצוגה בלבד, ולכן ביטול הסימון מחזיר הכול. */
   #payBeats.beats-closed{ opacity:.5 }
@@ -1148,6 +1150,8 @@
   .sku-box.install .need-sel.no{ color:#991b1b; border-color:#e8aca4; background:#fdf4f3; }
   .sku-box.install .auto-hint{ font-size:9.5px; color:#8a6410; line-height:1.2; margin-top:2px; }
   .sku-box.install .btn{ width:auto; padding:6px 18px; font-size:var(--fs-sm); font-weight:700; border-radius:var(--r-md); margin-top:8px; min-height:var(--ctl-h-sm); }
+  /* 6.206.0 — כלל ה-sm שמעליו (1ב) תפס גם את שמירת הכרטיס שיושבת בתוך הקופסה; השמירה היא הפעולה הראשית — lg כמו בכל כרטיס */
+  .sku-box.install .modal-actions .btn{ min-height:var(--ctl-h-lg); font-size:var(--fs-lg); padding:9px 20px; }
   /* סבב 6 — משקל ומידות */
   .sku-box.install .field.dim3{ grid-column:span 2; }
   .sku-box.install .d3{ display:flex; align-items:center; gap:4px; }
@@ -1449,7 +1453,7 @@
   #leadModal .sheet h3{ margin:0 0 8px; font-size:16px; }
   #leadModal .card-x{ width:24px; height:24px; font-size:12px; }
   #leadModal .card-bar{ margin-bottom:4px; }
-  #leadModal .form-sep{ margin-top:10px; }
+  #leadModal .form-sep{ margin-top:var(--sp-3); }   /* 6.206.0 — הניב הקומפקטי (6.108.0) מטוקן: 10/3 → 12/4 */
   .form-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
   /* 6.25.0 — שורת הכתובות: חמישה שדות באותה שורה, מצטמצמת לפי רוחב המסך */
   .form-grid .addr-row{ grid-column:span 4; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; }
@@ -1522,6 +1526,8 @@
      ולכן sticky עובד בשניהם. "✓ בוצע" שומר על הירוק הכהה שלו — inline גובר. */
   .modal .sheet > .modal-actions{ position:sticky; bottom:0; z-index:5; background:#fff; border-top:1px solid var(--line); box-shadow:0 -8px 18px rgba(0,0,0,.07); padding:10px 0; margin-top:16px; gap:10px; }
   .modal .sheet > .modal-actions > .btn{ border-radius:var(--r-lg); font-size:var(--fs-lg); background:linear-gradient(135deg,var(--green),#4e8168); box-shadow:0 6px 18px rgba(106,159,133,.38); }
+  /* 6.206.0 — צ'יפ בשורת הפעולות ("בוצע ✓" במשימה) בגובה השורה (lg), לא בגובה צ'יפ הסרגל (30) */
+  .modal .sheet > .modal-actions > .chip{ min-height:var(--ctl-h-lg); font-size:var(--fs-md); padding:0 16px; }
   @media(min-width:561px){ .modal .sheet > .modal-actions > .btn{ width:auto; padding:11px 32px; } }
   #ordModal .modal-actions.ord-actions .ghost{ padding:9px 20px; font-size:var(--fs-lg); width:auto; min-height:var(--ctl-h-lg); }
   .form-grid label{ display:flex; align-items:center; flex-wrap:wrap; gap:4px 5px; min-height:20px; font-size:12px; color:var(--ink-2); margin-bottom:4px; font-weight:600; line-height:1.45; }
@@ -2620,7 +2626,7 @@ td.lb-today .lb-dt{ background-color:transparent; }
 .lb-psub button:disabled{ cursor:default; }
 /* ---- דחיסת כרטיס הליד (6.108.0, רומן: "יותר דחוס וקומפקטי") ---- */
 #leadSheet .form-grid, #tkSheet .form-grid{ gap:9px 12px; }
-#leadSheet .form-sep, #tkSheet .form-sep{ margin-top:10px; padding-bottom:3px; }
+#leadSheet .form-sep, #tkSheet .form-sep{ margin-top:var(--sp-3); padding-bottom:var(--sp-1); }
 #leadSheet label, #tkSheet label{ margin-bottom:2px; }
 #leadSheet input, #leadSheet select, #tkSheet input, #tkSheet select{ padding:6px 9px; }
 #leadSheet textarea, #tkSheet textarea{ padding:6px 9px; }
@@ -2775,7 +2781,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
 .lbop-empty{ font-size:var(--fs-sm); color:var(--ink-3); padding:8px 4px; }
 /* ---- טופס ליד חדש בשפת הכרטיסים (6.110.0) ---- */
 #addModal .form-grid{ gap:9px 12px; }
-#addModal .form-sep{ margin-top:10px; padding-bottom:3px; }
+#addModal .form-sep{ margin-top:var(--sp-3); padding-bottom:var(--sp-1); }
 #addModal label{ margin-bottom:2px; }
 #addModal input, #addModal select, #addModal textarea{ padding:6px 9px; }
 /* 6.116.0 — יישור הפקדים: התא נמתח לגובה השורה (stretch) והתוכן
@@ -2934,7 +2940,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.205.0</div>
+      <div class="ver">גרסה 6.206.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3064,7 +3070,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.205.0</div>
+    <div class="side-foot">איירון פיטנס בע"מ · המערכת · גרסה 6.206.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -4684,6 +4690,19 @@ window.closeCards = () => {
   const r = A11Y_RETURN; A11Y_RETURN = null;
   if(r && r.focus && document.contains(r)){ try{ r.focus(); }catch(e){} }
 };
+/* 6.206.0 — M21: קישור label→פקד בנקודת החנק ולא ב-400 תבניות. נמדד לפני: 0 מתוך 114 תאים בכרטיסים.
+   תווית שעוטפת את הפקד (checkbox) כבר מקושרת; תווית עם for נשארת; פקד בלי id מקבל fld-N (מונה גלובלי ⇒ ייחודי). */
+let _LBL_SEQ = 0;
+function wireLabels(root){
+  if(!root || !root.querySelectorAll) return;
+  root.querySelectorAll('.form-grid > div, .field, .cell-2up > div, .addr-row > div, .coord-row > div').forEach(cell=>{   /* .cell-2up / .addr-row / .coord-row: התווית יושבת בתת-התא */
+    const lb = cell.querySelector(':scope > label'); if(!lb || lb.htmlFor) return;
+    const ct = cell.querySelector('input:not([type=hidden]), select, textarea'); if(!ct || lb.contains(ct)) return;
+    if(!ct.id) ct.id = 'fld-' + (++_LBL_SEQ);
+    lb.htmlFor = ct.id;
+  });
+}
+window.wireLabels = wireLabels;
 function mountCard(mid, reopen){
   if(CARD_BACK){ /* חזרה — המחסנית כבר קוצרה */ }
   else if(CARD_NAV && CARD_CUR){ CARD_STACK.push(CARD_CUR); }
@@ -4702,6 +4721,7 @@ function mountCard(mid, reopen){
   const bar=document.createElement('div'); bar.className='card-bar';
   bar.innerHTML=(CARD_STACK.length?`<button class="card-back" onclick="cardBack()">→ חזרה</button>`:'<span></span>')+`<button class="card-x" title="סגירה" aria-label="סגירת הכרטיס" onclick="closeCards()">✕</button>`;
   sheet.prepend(bar);
+  wireLabels(sheet);   /* 6.206.0 — כל הפותחים מציבים innerHTML לפני mountCard */
   modal.classList.remove('hidden');
   sheet.scrollTop=0;
   /* תיקון ממצא 14 — הכרטיס מוכרז כדיאלוג, מקבל מיקוד, ומחזיר אותו בסגירה */
@@ -6106,7 +6126,7 @@ window.foldTag = o => {
    כאן רק מציגים את זה, כי הקפאה שקטה גרועה מדריסה גלויה. */
 window.regressTag = o => {
   if(!o || !o.erp_regress_status) return '';
-  const d = o.erp_regress_at ? new Date(o.erp_regress_at).toLocaleDateString('he-IL') : '';
+  const d = o.erp_regress_at ? fmtIso(o.erp_regress_at) : '';   /* 6.206.0 — dd.mm.yy כמו בכל המסכים */
   return '<span class="regress-tag" title="' + esc(
       'בפריוריטי ההזמנה הוחזרה לסטטוס "' + o.erp_regress_status + '"' + (d ? ' ב-' + d : '') +
       ' — כנראה מישהו פתח אותה לעריכה. כדי שההזמנה לא תזוז בלוח, הסנכרון הקפיא את ' +
@@ -9503,7 +9523,7 @@ const poMoney = (v,c) => (v==null || v==='' || isNaN(Number(v))) ? '—'
   : poCur(c) + Number(v).toLocaleString('he-IL',{maximumFractionDigits:2});
 /* 6.195.0 — פורמט המערכת (fmtD: dd.mm.yy). עד כאן d/m/yyyy, שונה מכל מסך אחר. */
 const poDate = v => { const t=String(v||'').slice(0,10); return /^\d{4}-\d{2}-\d{2}$/.test(t) ? fmtD(t) : '—'; };
-const poDT = v => { if(!v) return ''; const d=new Date(v); return isNaN(d) ? '' : d.toLocaleDateString('he-IL')+' '+d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}); };
+const poDT = v => { if(!v) return ''; const d=new Date(v); return isNaN(d) ? '' : fmtDT(v); };   /* 6.206.0 — dd.mm.yy, HH:MM כמו fmtDT בכל המסכים */
 /* מראה של ord.po_is_open — הגדרה אחת ל"פתוח" ללובי ולמסך. שינוי כאן = שינוי גם שם. */
 const poCancelled = r => /בוטל|טיוט/.test(String(r.priority_status||''));
 const poIsOpen = r => !poCancelled(r) && r.our_status !== 'הושלם';
@@ -9750,6 +9770,7 @@ async function openPo(on){
     + '<div class="span4" id="po-lines-wrap">' + crmLoading('טוען שורות…') + '</div>'
     + '</div>'
     + (can ? '<div class="modal-actions"><button class="btn green" id="po-save">שמירה</button><span class="err" id="po-err" style="margin:0"></span></div>' : '');
+  wireLabels(sh);   /* 6.206.0 — mountCard רץ כאן לפני innerHTML, ולכן הקישור חוזר אחרי הציור */
   const sv = $('#po-save'); if(sv) sv.onclick = ()=> poSave(on);
   try{
     const { data, error } = await sb.schema('ord').from('purchase_order_items')
@@ -9944,7 +9965,7 @@ const DOC_VIA = { whatsapp:'וואטסאפ', link:'העתקת קישור' };
    הסינון במסך המסמכים. */
 const docPending = p => p.status!=='נחתם' && p.status!=='בוטל' && !p.signed_at;
 function docStatus(p){
-  const d = x => x ? new Date(x).toLocaleDateString('he-IL') : '';
+  const d = x => x ? fmtIso(x) : '';
   if(p.status==='בוטל')
     return { label:'בוטל', cls:'st-def',
              title:'נותר ממתין כשמסמך אחר של אותו לקוח נחתם. נשמר לתיעוד.' };
@@ -10087,7 +10108,7 @@ window.reportBlock = (kind, parentId)=>{
   const may = window.canEdit('docs.reports');
   const mine = (PROTS||[]).filter(p=>p[key]===parentId && p.category==='reports');
   const rows = mine.map(p=>{ const ds=docStatus(p);
-    return `<div class="row"><span class="k">${esc(p.doc_type)}${p.sent_at?' · נוצר '+new Date(p.sent_at).toLocaleDateString('he-IL'):''}</span><span class="v">${(p.status==='נחתם'||p.signed_at)?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','open')">צפייה</a>`:(may?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','open')"><b>פתיחה</b></a> · <a href="#" onclick="event.preventDefault();openDocLink('${p.id}','copy')">קישור</a>${p.phone?` · <a href="#" onclick="event.preventDefault();openDocLink('${p.id}','wa')">וואטסאפ</a>`:''}`:'<span style="color:var(--ink-3)">אין הרשאה לקישור</span>')} <span class="pill ${ds.cls}" title="${esc(ds.title)}">${esc(ds.label)}</span></span></div>`; }).join('');
+    return `<div class="row"><span class="k">${esc(p.doc_type)}${p.sent_at?' · נוצר '+fmtIso(p.sent_at):''}</span><span class="v">${(p.status==='נחתם'||p.signed_at)?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','open')">צפייה</a>`:(may?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','open')"><b>פתיחה</b></a> · <a href="#" onclick="event.preventDefault();openDocLink('${p.id}','copy')">קישור</a>${p.phone?` · <a href="#" onclick="event.preventDefault();openDocLink('${p.id}','wa')">וואטסאפ</a>`:''}`:'<span style="color:var(--ink-3)">אין הרשאה לקישור</span>')} <span class="pill ${ds.cls}" title="${esc(ds.title)}">${esc(ds.label)}</span></span></div>`; }).join('');
   return `<section class="ob-card" id="rep-box-${parentId}"><h2 class="sec">דוח אישור תקינות (${mine.length})</h2>${rows}`+
     (may?`<button class="ghost" style="margin-top:8px" onclick="createReport('${kind}','${parentId}')">יצירת דוח תקינות לחתימה</button>`:'')+'</section>';
 };
@@ -10160,7 +10181,7 @@ window.mediaBlock = (kind, parentId)=>{
      כל קובץ (docs.media=2). השרת אוכף את אותם שני תנאים בשני policies. */
   const me = (typeof ME!=='undefined' && ME && ME.email) || null;
   const canDel = f => window.canEdit('docs.media') || (window.canEdit('docs.media.upload') && !!me && f.uploaded_by===me);
-  const rows = list => list.map(f=>`<div class="row"><span class="k">${esc(f.file_name||'קובץ')}</span><span class="v"><a href="#" onclick="event.preventDefault();openMediaFile('${f.id}')">פתיחה</a>${f.uploaded_at?' · '+new Date(f.uploaded_at).toLocaleDateString('he-IL'):''}${canDel(f)?` · <a href="#" class="media-del" onclick="event.preventDefault();deleteMediaFile('${f.id}')">מחיקה</a>`:''}</span></div>`).join('') || '<div class="note">אין עדיין תמונות מהשטח.</div>';
+  const rows = list => list.map(f=>`<div class="row"><span class="k">${esc(f.file_name||'קובץ')}</span><span class="v"><a href="#" onclick="event.preventDefault();openMediaFile('${f.id}')">פתיחה</a>${f.uploaded_at?' · '+fmtIso(f.uploaded_at):''}${canDel(f)?` · <a href="#" class="media-del" onclick="event.preventDefault();deleteMediaFile('${f.id}')">מחיקה</a>`:''}</span></div>`).join('') || '<div class="note">אין עדיין תמונות מהשטח.</div>';
   if(DOCFILES===null){
     loadDocFiles().then(()=>{ const el=document.getElementById(boxId); if(el) el.innerHTML = rows((DOCFILES||[]).filter(f=>f[key]===parentId)); });
   }
@@ -10191,7 +10212,7 @@ function mediaCard(f){
   const _new = window.isNewRec({ created_at: f.uploaded_at });
   return `<div class="lead${_new?' row-new':''}" style="cursor:pointer" onclick="openMediaFile('${f.id}')">
     <div style="flex:1"><div class="nm">${isPdf?'📄':'🖼️'} ${esc(f.file_name||'קובץ')}</div>
-    <div class="meta">${esc(mediaParentLabel(f))} · ${f.uploaded_at?new Date(f.uploaded_at).toLocaleDateString('he-IL'):'—'}${f.uploaded_by?' · '+esc(f.uploaded_by):''}</div></div>
+    <div class="meta">${esc(mediaParentLabel(f))} · ${fmtIso(f.uploaded_at)}${f.uploaded_by?' · '+esc(f.uploaded_by):''}</div></div>
     <span class="pill st-def">פתיחה</span></div>`;
 }
 function docChips(){
@@ -10232,7 +10253,7 @@ function docRow(p){
   const ds=docStatus(p);
   return `<div class="lead${_new?' row-new':''}" style="cursor:default">
     <div style="flex:1"><div class="nm">${esc(p.customer_name||'—')}${_new?window.newChip({created_at:docStamp(p)}):''} <small style="color:var(--ink-3);font-weight:400">· ${esc(p.doc_type)}${p.order_number?' · '+esc(p.order_number):''}</small></div>
-    <div class="meta">${esc(docCatLabel(cat))} · נוצר ${p.sent_at?new Date(p.sent_at).toLocaleDateString('he-IL'):'—'}${signed?' · נחתם '+new Date(p.signed_at).toLocaleDateString('he-IL')+(p.signer_name?' ע"י '+esc(p.signer_name):''):''}</div>
+    <div class="meta">${esc(docCatLabel(cat))} · נוצר ${fmtIso(p.sent_at)}${signed?' · נחתם '+fmtIso(p.signed_at)+(p.signer_name?' ע"י '+esc(p.signer_name):''):''}</div>
     <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
       ${signed?`<button class="chip" onclick="openDocLink('${p.id}','open')">📄 צפייה במסמך החתום</button>`
         :(mayLink?`<button class="chip" onclick="openDocLink('${p.id}','copy')">🔗 העתקת קישור</button>
@@ -10617,7 +10638,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'tables-2026-09-05f';
+const BUILD_ID = 'forms-2026-09-05g';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -14768,9 +14789,9 @@ window.dlShipCalc = async (dealId)=>{
   let h = '<div class="note">' + lines.length + ' שורות בהצעה. המחיר <b>ליחידה</b> נלקח מהמסך '
         + '<b>הגדרות ← משלוח והתקנה</b> ומוכפל בכמות.</div>'
     + '<div class="tbl-wrap" style="padding:12px">'
-    + '<div class="row"><span class="k">משלוח (SH-1)</span><span class="v"><b>' + shipMoney(r.ship_total) + ' ₪</b></span></div>'
-    + '<div class="row"><span class="k">התקנה (IN-2)</span><span class="v"><b>' + shipMoney(r.install_total) + ' ₪</b></span></div>'
-    + '<div class="row"><span class="k">סה"כ</span><span class="v"><b>' + shipMoney(r.total) + ' ₪</b></span></div>'
+    + '<div class="row"><span class="k">משלוח (SH-1)</span><span class="v"><b>₪' + shipMoney(r.ship_total) + '</b></span></div>'
+    + '<div class="row"><span class="k">התקנה (IN-2)</span><span class="v"><b>₪' + shipMoney(r.install_total) + '</b></span></div>'
+    + '<div class="row"><span class="k">סה"כ</span><span class="v"><b>₪' + shipMoney(r.total) + '</b></span></div>'
     + '</div>';
   if(r.ok === false)
     h += '<div class="note" style="border-color:#f0b45f;background:#fff7e6"><b>⚠️ החישוב חלקי.</b> '
@@ -18868,7 +18889,7 @@ function payCloseBox(f){
     '<span class="pc-hint">הלוח מחשב יתרה לפי הזמנה. אם הלקוח מאופס בכרטסת — סמן כאן, וההזמנה תצא מהגבייה בלי להיעלם מהמסך.</span>' +
     '<input id="pc-note" placeholder="הערה — למה נסגר">' +
     '<input id="pc-cred" type="number" min="0" step="1" placeholder="סכום זכות">' +
-    PAY_CLOSE_KINDS.map(k=>'<button type="button" class="btn" onclick="payCloseSet(\'' + jsq(on) + '\',\'' + k + '\')">' + k + '</button>').join('') +
+    PAY_CLOSE_KINDS.map(k=>'<button type="button" class="ghost" onclick="payCloseSet(\'' + jsq(on) + '\',\'' + k + '\')">' + k + '</button>').join('') +
     '</div>';
 }
 
@@ -20698,7 +20719,7 @@ window.openScall = (id)=>{
     ${window.reportBlock('call', s.id)}
     <div class="modal-actions">
       ${window.doneBlock('call', s)}
-      ${editable?`<button class="btn btnw" onclick="saveScall('${s.id}')">💾 שמירה</button>`:'<div class="note">אין לך הרשאת עריכה לקריאות שירות.</div>'}
+      ${editable?`<button class="btn btnw" onclick="saveScall('${s.id}')">שמירה</button>`:'<div class="note">אין לך הרשאת עריכה לקריאות שירות.</div>'}
     </div>
     <div class="err" id="se-err"></div>`;
   SC_PRODS = scProdParse(s.product); scProdRender('se');
@@ -21139,6 +21160,7 @@ function lfBarInit(){
 }
 if(!_wideNow) document.querySelectorAll('details.lf-wrap').forEach(d=>{ d.open = false; });
 lfBarInit();
+wireLabels(document.body);   /* 6.206.0 — המודאלים הסטטיים (ליד חדש, פולואפ, פגישה, סיסמה…) */
 function _viewportChanged(){
   clearTimeout(_vpTimer);
   _vpTimer = setTimeout(function(){
@@ -21287,7 +21309,7 @@ window.openOrd = (id, ctx)=>{
   const myAddr=norm(shipAddrOnly(o));
   const hasSame=myAddr && others.some(x=>norm(shipAddrOnly(x))===myAddr);
   $('#ordSheet').innerHTML = `
-    <h3>${esc(o.order_number)} — ${esc(o.customer_name||'')}${o.erp_status?` <span class="pill p-violet" title="הסטטוס בפריוריטי — מתעדכן בסנכרון">${PRI_ICO}פריוריטי: ${esc(o.erp_status)}</span>`:''}${o.erp_synced_at?`<span class="pill" style="font-weight:400" title="התאריך שבו השתנה לאחרונה שדה שמגיע מפריוריטי. הסנכרון עצמו בודק את ההזמנה כל שעה — מועד הבדיקה האחרונה מוצג בראש המסך.">עודכן מפריוריטי ${new Date(o.erp_synced_at).toLocaleDateString('he-IL')}</span>`:''}${window.regressTag?window.regressTag(o):''}${openBadge(o.order_number,1)}${retBadge(o.order_number,1)}</h3>
+    <h3>${esc(o.order_number)} — ${esc(o.customer_name||'')}${o.erp_status?` <span class="pill p-violet" title="הסטטוס בפריוריטי — מתעדכן בסנכרון">${PRI_ICO}פריוריטי: ${esc(o.erp_status)}</span>`:''}${o.erp_synced_at?`<span class="pill" style="font-weight:400" title="התאריך שבו השתנה לאחרונה שדה שמגיע מפריוריטי. הסנכרון עצמו בודק את ההזמנה כל שעה — מועד הבדיקה האחרונה מוצג בראש המסך.">עודכן מפריוריטי ${fmtIso(o.erp_synced_at)}</span>`:''}${window.regressTag?window.regressTag(o):''}${openBadge(o.order_number,1)}${retBadge(o.order_number,1)}</h3>
     ${window.canEdit('logi.orders')?`<div class="ord-sync-row"><button class="btn ord-sync-btn" id="ord-sync-${o.id}" onclick="ordSyncOne('${o.id}','${ctx||''}')">↻ סנכרון הזמנה זו מפריוריטי</button><span class="note" style="margin:0">מושך את הכותרת, הפירוט, הדו-שיח, הערות ההזמנה ופרטי הלקוח של ההזמנה הזו בלבד</span></div>`:''}
     <div style="height:10px"></div>
     <div class="form-grid">
@@ -21365,7 +21387,7 @@ window.openOrd = (id, ctx)=>{
          כפי שכתוב בראש openOrd. mediaBlock כבר התנהג כך. */
       const ps=PROTS.filter(p=>p.order_id===o.id && window.canView('docs.'+(p.category||'protocols'))); return `<section class="ob-card"><h2 class="sec">מסמכים וחתימות (${ps.length})</h2>`+
       (ps.map(p=>{ const ds=docStatus(p), may=window.canEdit('docs.'+(p.category||'protocols'));
-        return `<div class="row"><span class="k">${esc(p.doc_type)}${p.sent_at?' · נוצר '+new Date(p.sent_at).toLocaleDateString('he-IL'):''}</span><span class="v">${(p.status==='נחתם'||p.signed_at)?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','open')">צפייה</a>`:(may?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','copy')">קישור</a>${p.phone?` · <a href="#" onclick="event.preventDefault();openDocLink('${p.id}','wa')">וואטסאפ</a>`:''}`:'<span style="color:var(--ink-3)">אין הרשאה לקישור</span>')} <span class="pill ${ds.cls}" title="${esc(ds.title)}">${esc(ds.label)}</span></span></div>`; }).join(''))+
+        return `<div class="row"><span class="k">${esc(p.doc_type)}${p.sent_at?' · נוצר '+fmtIso(p.sent_at):''}</span><span class="v">${(p.status==='נחתם'||p.signed_at)?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','open')">צפייה</a>`:(may?`<a href="#" onclick="event.preventDefault();openDocLink('${p.id}','copy')">קישור</a>${p.phone?` · <a href="#" onclick="event.preventDefault();openDocLink('${p.id}','wa')">וואטסאפ</a>`:''}`:'<span style="color:var(--ink-3)">אין הרשאה לקישור</span>')} <span class="pill ${ds.cls}" title="${esc(ds.title)}">${esc(ds.label)}</span></span></div>`; }).join(''))+
       ((window.canEdit('crm.orders.docs')&&window.canEdit('docs.protocols'))?`<button class="ghost" style="margin-top:8px" onclick="createProtocol('${o.id}','${ctx||''}')">יצירת פרוטוקול הכנה לחתימה</button>`:'')+'</section>'; })():''}
     ${window.mediaBlock('order', o.id)}
     ${window.reportBlock('order', o.id)}
@@ -22247,7 +22269,7 @@ window.openDeal = async (id)=>{
      נשאר undefined, ואין catch שיצעק. **כשל שקט שנראה כמו נתון חסר.** */
   if(d.contact_id){ const r = await sb.schema('core').from('contacts').select('full_name,phone,email').eq('id',d.contact_id).maybeSingle(); contact = r.data; }
   /* ⚠️ שליפה עצלה ולא כניסה ב-Promise.all — האינדקסים אינם זזים. */
-  const dt = v => v ? new Date(v).toLocaleDateString('he-IL') : '—';
+  const dt = v => v ? fmtIso(v) : '—';   /* 6.206.0 */
   const phone = (lead && lead.phone) || (cust && cust.phone) || '';
   /* 🔴 6.173.0 — טלפון אחד בכרטיס (רומן מנה אחד), ואיש הקשר קודם.
      נמדד: 117 עסקאות שבהן טלפון איש הקשר שונה משל הליד/לקוח, ועוד 10

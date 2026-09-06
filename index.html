@@ -2950,6 +2950,12 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   @media (prefers-reduced-motion:reduce){ *, *::before, *::after{ transition-duration:.01ms !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important; } }
   /* 6.209.0 — M23: סמל SVG במקום אמוג'י — גודל האות, צבע הטקסט (ico(name)) */
   .ico{ width:1em; height:1em; display:inline-block; vertical-align:-.15em; flex:none; }
+  /* 6.210.0 — C4: דיאלוגי המערכת (sysConfirm · sysAlert · sysPrompt) במקום confirm/alert/prompt של הדפדפן. .modal-over כדי
+     שהשערים הגלובליים (רקע · Escape) יכירו אותו; z-index 80 מעל מודאל-על (70); 440 — דיאלוג, לא כרטיס. (0,2,0) אחרי .modal .sheet{640} ⇒ גובר. */
+  .sys-dlg{ z-index:80; }
+  .sys-dlg .sheet{ max-width:440px; }
+  .sys-dlg .sys-dlg-msg{ white-space:pre-line; font-size:var(--fs-lg); line-height:1.55; color:var(--dark); margin-bottom:6px; overflow-wrap:anywhere; }
+  .sys-dlg .btn.del{ background:var(--red); border-color:var(--red); }
 </style>
 </head>
 <body>
@@ -2977,7 +2983,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.209.0</div>
+      <div class="ver">גרסה 6.210.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3107,7 +3113,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="polish-2026-09-06c">גרסה 6.209.0</div>
+    <div class="side-foot" title="dialogs-2026-09-06d">גרסה 6.210.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -4808,6 +4814,62 @@ const ICO_PATHS = {
 };
 function ico(name){ const p = ICO_PATHS[name]; if(!p) return ''; return '<svg class="ico ico-'+name+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+p+'</svg>'; }
 window.ico = ico;
+
+/* ===== 6.210.0 — דיאלוגי המערכת (C4) =====
+   sysConfirm(msg, {ok, cancel, danger}) → Promise<boolean> · sysAlert(msg) → Promise<undefined> · sysPrompt(msg, value) → Promise<string|null>.
+   🔴 אלמנט אחד, נוצר בשימוש הראשון ומוכנס **ראשון ב-body**: שער ה-Escape (6.153.0) לוקח את ה-.modal-over הראשון ב-DOM, ו-_openModal()
+      (מלכודת ה-Tab) את ה-.modal הראשון — כך הדיאלוג נסגר ב-Esc ותופס Tab גם כשהוא מעל מודאל-על אחר (הוא תמיד העליון: z-index 80).
+   🔴 Esc · לחיצת רקע · closeCards · mountCard מוסיפים hidden בלבד ואינם יודעים על ה-Promise; MutationObserver על class הוא שמחזיר
+      "ביטול" (false / null). כך אין מאזין keydown גלובלי נוסף — ההתנגשות של 6.119.0 · 6.130.0 · 6.153.0 · 6.168.0, בפעם החמישית, נמנעת מראש.
+   ⚠️ דיאלוג שנפתח כשאחד כבר פתוח סוגר את הראשון ב"ביטול" — אין תור; בפועל כל האתרים הם שאלה אחת לפני פעולה. */
+let SYS_DLG = null;
+function sysDlgEl(){
+  let d = document.getElementById('sysDlg');
+  if(d) return d;
+  d = document.createElement('div');
+  d.id = 'sysDlg'; d.className = 'modal modal-over sys-dlg hidden';
+  d.setAttribute('role','alertdialog'); d.setAttribute('aria-modal','true'); d.setAttribute('aria-describedby','sysDlgMsg');
+  d.innerHTML = '<div class="sheet"><div class="sys-dlg-msg" id="sysDlgMsg"></div>'
+    + '<div class="field hidden" id="sysDlgField"><input id="sysDlgIn" autocomplete="off" aria-label="ערך"></div>'
+    + '<div class="actions"><button type="button" class="btn" id="sysDlgOk"></button><button type="button" class="ghost" id="sysDlgCancel"></button></div></div>';
+  document.body.insertBefore(d, document.body.firstChild);
+  new MutationObserver(()=>{ if(d.classList.contains('hidden')) sysDlgEnd(null); }).observe(d, { attributes:true, attributeFilter:['class'] });
+  d.querySelector('#sysDlgOk').onclick = ()=> sysDlgEnd(true);
+  d.querySelector('#sysDlgCancel').onclick = ()=> sysDlgEnd(false);
+  d.querySelector('#sysDlgIn').addEventListener('keydown', e=>{ if(e.key === 'Enter'){ e.preventDefault(); sysDlgEnd(true); } });
+  return d;
+}
+function sysDlgEnd(v){
+  const s = SYS_DLG; if(!s) return; SYS_DLG = null;
+  const d = document.getElementById('sysDlg');
+  d.classList.add('hidden');
+  /* המיקוד חוזר למי שפתח — הדפוס של closeCards (תיקון ממצא 14) */
+  const r = s.ret; if(r && r.focus && document.contains(r) && r !== document.body){ try{ r.focus(); }catch(_e){} }
+  s.resolve(s.kind === 'prompt' ? (v ? d.querySelector('#sysDlgIn').value : null) : (s.kind === 'alert' ? undefined : !!v));
+}
+function sysDlg(kind, msg, opts){
+  opts = opts || {};
+  if(SYS_DLG) sysDlgEnd(null);
+  const d = sysDlgEl();
+  d.querySelector('#sysDlgMsg').textContent = String(msg || '');
+  const fld = d.querySelector('#sysDlgField'), inp = d.querySelector('#sysDlgIn');
+  fld.classList.toggle('hidden', kind !== 'prompt');
+  inp.value = kind === 'prompt' ? String(opts.value == null ? '' : opts.value) : '';
+  const ok = d.querySelector('#sysDlgOk'), cancel = d.querySelector('#sysDlgCancel');
+  ok.textContent = opts.ok || (kind === 'alert' ? 'סגירה' : 'אישור');
+  cancel.textContent = opts.cancel || 'ביטול';
+  cancel.classList.toggle('hidden', kind === 'alert');
+  ok.classList.toggle('del', !!opts.danger);
+  const ret = document.activeElement;
+  d.classList.remove('hidden');
+  return new Promise(resolve=>{
+    SYS_DLG = { kind, resolve, ret };
+    setTimeout(()=>{ try{ (kind === 'prompt' ? inp : ok).focus(); if(kind === 'prompt') inp.select(); }catch(_e){} }, 30);
+  });
+}
+window.sysConfirm = (msg, opts)=> sysDlg('confirm', msg, opts);
+window.sysAlert   = (msg, opts)=> sysDlg('alert', msg, opts);
+window.sysPrompt  = (msg, value, opts)=> sysDlg('prompt', msg, Object.assign({ value }, opts || {}));
 /* אלמנטים שאפשר למקד בהם — לשימוש מלכודת המיקוד של הכרטיס */
 const A11Y_FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
 let A11Y_RETURN = null;
@@ -5901,7 +5963,7 @@ window.remSave = async ()=>{
   toast('התזכורת נשמרה ✓'); dashRetry();
 };
 window.remPaid = async id=>{
-  if(!confirm('לסמן את התזכורת כשולמה? תזכורת מחזורית תיצור את המופע הבא אוטומטית.')) return;
+  if(!(await sysConfirm('לסמן את התזכורת כשולמה? תזכורת מחזורית תיצור את המופע הבא אוטומטית.'))) return;
   const r = await sb.schema('ord').rpc('reminder_close', { p_id:id });
   if(r.error){ toast('סימון נכשל: '+r.error.message); return; }
   toast('סומן כשולם ✓'); dashRetry();
@@ -6006,7 +6068,7 @@ window.mdDone = async (id, kind)=>{
   /* 6.189.0 — kind אופציונלי: 'order' מסמן הזמנה דרך ord.order_mark_done;
      ברירת המחדל נשארת קריאת שירות, כדי שהקוראים הקיימים לא יזוזו. */
   const isOrd = kind === 'order';
-  if(!confirm(isOrd ? 'לסמן את ההזמנה כבוצעה? ההודעה תגיע למנהלי הלוגיסטיקה.' : 'לסמן את קריאת השירות כבוצעה?')) return;
+  if(!(await sysConfirm(isOrd ? 'לסמן את ההזמנה כבוצעה? ההודעה תגיע למנהלי הלוגיסטיקה.' : 'לסמן את קריאת השירות כבוצעה?'))) return;
   const r = await sb.schema('ord').rpc(isOrd ? 'order_mark_done' : 'scall_mark_done', { p_id: id });
   if(r.error){ toast('סימון נכשל: '+r.error.message); return; }
   const s = (isOrd ? ORDS : SCALLS).find(x=>String(x.id)===String(id));
@@ -6331,14 +6393,14 @@ window.ordBulkDone = async ()=>{
   const ids=[...LOGI_SEL];
   if(!ids.length) return;
   if(!window.canEdit('logi.orders.bulk')){ toast('אין הרשאה לפעולה מרוכזת'); return; }
-  if(!confirm('לסמן '+ids.length+' הזמנות כהושלמו?')) return;
+  if(!(await sysConfirm('לסמן '+ids.length+' הזמנות כהושלמו?'))) return;
   await ordCloseIds(ids);
 };
 /* סגירה בודדת אינה פעולה מרוכזת — היא זהה לשינוי הסטטוס מהטבלה, ולכן עוברת
    ב-order_patch עם logi.orders ולא ב-orders_close_bulk. */
 window.ordQuickDone = async (id)=>{
   if(!window.canEdit('logi.orders')){ toast('אין הרשאה לעדכון סטטוס'); return; }
-  if(!confirm('לסמן את ההזמנה כהושלמה?')) return;
+  if(!(await sysConfirm('לסמן את ההזמנה כהושלמה?'))) return;
   const { data: res, error } = await oldCall('update_order', { id, patch:{ order_status:'הושלם' } });
   if(error){ toast('שגיאה בסגירה: '+error.message); return; }
   const r = ORDS.find(o=>String(o.id)===String(id));
@@ -7817,11 +7879,11 @@ window.syncPriority = async ()=>{
   btn.disabled = true; lbl.nodeValue = 'מסנכרן מפריוריטי…';
   const { data:j, error } = await oldCall('sync');
   if(error){
-    alert('הסנכרון נכשל: ' + error.message);
+    toast('הסנכרון נכשל: ' + error.message, 'err');
   } else if(j && j.running){
-    alert('הסנכרון ממשיך לרוץ ברקע — רעננו את המסך בעוד כדקה');
+    toast('הסנכרון ממשיך לרוץ ברקע — רעננו את המסך בעוד כדקה', 'warn', 4000);
   } else {
-    alert(`סנכרון פריוריטי הושלם ✓\nהזמנות: ${j.orders_updated||0} עודכנו · ${j.orders_inserted||0} חדשות\nקריאות שירות: ${j.calls_updated||0} עודכנו · ${j.calls_inserted||0} חדשות` + (j && j.skipped ? '\n(סנכרון הסתיים לפני פחות מדקה — אלה התוצאות שלו)' : ''));
+    await sysAlert(`סנכרון פריוריטי הושלם ✓\nהזמנות: ${j.orders_updated||0} עודכנו · ${j.orders_inserted||0} חדשות\nקריאות שירות: ${j.calls_updated||0} עודכנו · ${j.calls_inserted||0} חדשות` + (j && j.skipped ? '\n(סנכרון הסתיים לפני פחות מדקה — אלה התוצאות שלו)' : ''));
   }
   await loadLeads();
   btn.disabled = false; lbl.nodeValue = t0;
@@ -8184,10 +8246,10 @@ window.syncSkus = async ()=>{
   const t0=btn.textContent; btn.disabled=true; btn.textContent='מסנכרן מק״טים…';
   try{
     const { data, error } = await sb.functions.invoke('inventory-sync', { body:{} });
-    if(error) alert('סנכרון המק״טים נכשל: '+error.message);
-    else if(data && data.ok===false) alert('סנכרון המק״טים נכשל: '+(data.error||''));
+    if(error) toast('סנכרון המק״טים נכשל: '+error.message, 'err');
+    else if(data && data.ok===false) toast('סנכרון המק״טים נכשל: '+(data.error||''), 'err');
     else { toast(`סונכרנו ${fmtNum(data&&data.items_synced)} מק״טים`); await loadLeads(); }
-  }catch(e){ alert('סנכרון המק״טים נכשל: '+(e&&e.message?e.message:e)); }
+  }catch(e){ toast('סנכרון המק״טים נכשל: '+(e&&e.message?e.message:e), 'err'); }
   btn.disabled=false; btn.textContent=t0;
 };
 
@@ -9965,7 +10027,7 @@ function openPoSups(){
     const cnt = PO.filter(x=>x.supplier_no===no).length;
     let msg = 'למחוק את הספק '+((s&&s.name)?s.name+' ':'')+'('+no+') מרשימת הרכש?';
     if(cnt) msg += '\n\n'+cnt+' הזמנות רכש שכבר נמשכו יישארו במערכת — רק הספק יוסר מרשימת המשיכה. ניתן להוסיף אותו חזרה בכל עת.';
-    if(!confirm(msg)) return;
+    if(!(await sysConfirm(msg, { danger:true, ok:'הסרה' }))) return;
     const { error } = await sb.schema('ord').from('po_suppliers').delete().eq('supplier_no', no);
     if(error){ $('#po-sup-err').textContent = error.message; return; }
     PO_SUPS = PO_SUPS.filter(x=>x.supplier_no!==no);
@@ -10003,7 +10065,7 @@ let DOC_CAT='all';
 const signUrl = t => new URL('sign.html?t='+t, location.href).href;
 const viewUrl = t => new URL('sign.html?view='+t, location.href).href;
 function waLink(phone, text){ let d=phoneNorm(phone); if(!d){ d=digitsOf(phone); if(d.startsWith('0')) d='972'+d.slice(1); } return 'https://wa.me/'+d+'?text='+encodeURIComponent(text); }
-window.copyTxt = async t=>{ try{ await navigator.clipboard.writeText(t); alert('הקישור הועתק ✓'); }catch(_e){ prompt('העתקה ידנית:', t); } };
+window.copyTxt = async t=>{ try{ await navigator.clipboard.writeText(t); toast('הקישור הועתק ✓'); }catch(_e){ await sysPrompt('העתקה ידנית:', t, { ok:'סגירה' }); } };
 /* 6.22.0 — ארבע קטגוריות המסמכים. כל קטגוריה נשלטת במפתח הרשאה משלה
    docs.quotes / docs.protocols / docs.reports / docs.media. */
 const DOC_CATS = [
@@ -10056,7 +10118,7 @@ window.openDocLink = async (id, mode)=>{
     { p_id:id, p_via: mode==='wa' ? 'whatsapp' : (mode==='copy' ? 'link' : null) });
   if(error || !data || !data.token){
     if(tab){ try{ tab.close(); }catch(_e){} }
-    alert('הפקת הקישור נכשלה — ' + ((error&&error.message)||'אין לך הרשאה למסמך הזה'));
+    toast('הפקת הקישור נכשלה — ' + ((error&&error.message)||'אין לך הרשאה למסמך הזה'), 'err');
     return;
   }
   const url = data.kind==='view' ? viewUrl(data.token) : signUrl(data.token);
@@ -10101,7 +10163,7 @@ window.openMediaFile = async (id)=>{
   const { data, error } = await sb.storage.from('docs').createSignedUrl(f.storage_path, 3600);
   if(error || !data || !data.signedUrl){
     if(tab){ try{ tab.close(); }catch(_e){} }
-    alert('פתיחת הקובץ נכשלה — ' + ((error&&error.message)||'אין לך הרשאה לקובץ הזה'));
+    toast('פתיחת הקובץ נכשלה — ' + ((error&&error.message)||'אין לך הרשאה לקובץ הזה'), 'err');
     return;
   }
   tab.location.href = data.signedUrl;
@@ -10119,8 +10181,8 @@ function mediaUuid(){
    האחסון דורשת בדיוק את התבנית media/<uuid>/<uuid>.<סיומת>, ולכן שם מקורי
    חריג אינו יכול לחרוג מתיקיית רשומת האב. השם שהמשתמש בחר נשמר ב-file_name. */
 window.uploadMedia = (kind, parentId)=>{
-  if(!window.canEdit('docs.media.upload')){ alert('אין לך הרשאה להעלות תמונות מהשטח.'); return; }
-  if(!parentId){ alert('אין רשומת אב לשיוך הקובץ.'); return; }
+  if(!window.canEdit('docs.media.upload')){ toast('אין לך הרשאה להעלות תמונות מהשטח.'); return; }
+  if(!parentId){ toast('אין רשומת אב לשיוך הקובץ.', 'err'); return; }
   /* 6.191.0 — ה-input חייב לשבת ב-DOM בזמן ה-click: Safari ל-iOS לא פותח
      את בורר הקבצים לאלמנט מנותק, בלי שגיאה ובלי סימן. נמדד 03/09/2026:
      הטלפונים טענו את הבלוק (GET doc_files) ואף העלאה לא יצאה מהם. */
@@ -10147,7 +10209,7 @@ window.uploadMedia = (kind, parentId)=>{
       okN++;
     }
     await loadDocFiles(true);
-    alert(bad.length ? ('הועלו '+okN+' קבצים.\nלא הועלו:\n'+bad.join('\n')) : ('הועלו '+okN+' קבצים ✓'));
+    if(bad.length) await sysAlert('הועלו '+okN+' קבצים.\nלא הועלו:\n'+bad.join('\n')); else toast('הועלו '+okN+' קבצים ✓');
     try{ renderDocs(); }catch(_e){}
     if(kind==='call') openScall(parentId); else openOrd(parentId,'sales');
   };
@@ -10175,14 +10237,14 @@ window.reportBlock = (kind, parentId)=>{
     (may?`<button class="ghost" style="margin-top:8px" onclick="createReport('${kind}','${parentId}')">יצירת דוח תקינות לחתימה</button>`:'')+'</section>';
 };
 window.createReport = async (kind, parentId)=>{
-  if(!window.canEdit('docs.reports')){ alert('אין לך הרשאת עריכה בדוחות התקינות.'); return; }
+  if(!window.canEdit('docs.reports')){ toast('אין לך הרשאת עריכה בדוחות התקינות.'); return; }
   const isCall = kind==='call';
   const parent = (isCall ? SCALLS : ORDS).find(x=>x.id===parentId); if(!parent) return;
-  if(!confirm('ליצור דוח תקינות לחתימה עבור '+(parent.customer_name||'')+'?')) return;
+  if(!(await sysConfirm('ליצור דוח תקינות לחתימה עבור '+(parent.customer_name||'')+'?'))) return;
   const { data, error } = await sb.schema('ord').rpc('protocol_create', {
     p_order_id: isCall?null:parentId, p_call_id: isCall?parentId:null, p_deal_id:null,
     p_category:'reports', p_doc_type: REPORT_DOC_TYPE });
-  if(error){ alert('יצירת הדוח נכשלה: '+error.message); return; }
+  if(error){ toast('יצירת הדוח נכשלה: '+error.message); return; }
   if(data) PROTS.unshift(data);
   /* ציור הבלוק בלבד — פתיחת הכרטיס מחדש מאפסת גלילה ומיקוד (הלקח מ-6.154.0). */
   const box = document.getElementById('rep-box-'+parentId);
@@ -10196,27 +10258,27 @@ window.createReport = async (kind, parentId)=>{
    להזמנה/לקריאה — פותחים אותו; אין — יוצרים ופותחים. הלשונית נפתחת לפני
    ה-await, אחרת חוסם החלונות הקופצים בולע אותה (הלקח של openDocLink). */
 window.mdReport = async (parentId, kind)=>{
-  if(!window.canEdit('docs.reports')){ alert('אין לך הרשאת עריכה בדוחות התקינות.'); return; }
+  if(!window.canEdit('docs.reports')){ toast('אין לך הרשאת עריכה בדוחות התקינות.'); return; }
   const isCall = kind==='call', key = isCall ? 'call_id' : 'order_id';
   const parent = (isCall ? SCALLS : ORDS).find(x=>x.id===parentId); if(!parent) return;
   /* האחרון שנוצר קודם: אם יש חתום וגם פתוח — הפתוח הוא זה שממלאים */
   const mine = (PROTS||[]).filter(p=>p[key]===parentId && p.category==='reports')
     .sort((a,b)=>String(b.sent_at||'').localeCompare(String(a.sent_at||'')));
   let p = mine.find(x=>!(x.status==='נחתם'||x.signed_at)) || mine[0];
-  if(!p && !confirm('ליצור דוח תקינות לחתימה עבור '+(parent.customer_name||'')+'?')) return;
+  if(!p && !(await sysConfirm('ליצור דוח תקינות לחתימה עבור '+(parent.customer_name||'')+'?'))) return;
   const tab = window.open('', '_blank');
   if(!p){
     const r = await sb.schema('ord').rpc('protocol_create', {
       p_order_id: isCall?null:parentId, p_call_id: isCall?parentId:null, p_deal_id:null,
       p_category:'reports', p_doc_type: REPORT_DOC_TYPE });
-    if(r.error || !r.data){ if(tab){ try{ tab.close(); }catch(_e){} } alert('יצירת הדוח נכשלה: '+((r.error&&r.error.message)||'')); return; }
+    if(r.error || !r.data){ if(tab){ try{ tab.close(); }catch(_e){} } toast('יצירת הדוח נכשלה: '+((r.error&&r.error.message)||'')); return; }
     p = r.data; PROTS.unshift(p);
     const box = document.getElementById('rep-box-'+parentId);
     if(box) box.outerHTML = window.reportBlock(kind, parentId);
     try{ renderDocs(); }catch(_e){}
   }
   const l = await sb.schema('ord').rpc('protocol_link', { p_id: p.id, p_via: null });
-  if(l.error || !l.data || !l.data.token){ if(tab){ try{ tab.close(); }catch(_e){} } alert('פתיחת הדוח נכשלה — '+((l.error&&l.error.message)||'אין לך הרשאה למסמך הזה')); return; }
+  if(l.error || !l.data || !l.data.token){ if(tab){ try{ tab.close(); }catch(_e){} } toast('פתיחת הדוח נכשלה — '+((l.error&&l.error.message)||'אין לך הרשאה למסמך הזה')); return; }
   const url = l.data.kind==='view' ? viewUrl(l.data.token) : signUrl(l.data.token);
   if(tab) tab.location.href = url; else location.href = url;
 };
@@ -10254,12 +10316,12 @@ window.mediaBlock = (kind, parentId)=>{
 };
 window.deleteMediaFile = async (id)=>{
   const f = (DOCFILES||[]).find(x=>x.id===id); if(!f) return;
-  if(!confirm('למחוק את "'+(f.file_name||'הקובץ')+'"?')) return;
+  if(!(await sysConfirm('למחוק את "'+(f.file_name||'הקובץ')+'"?', { danger:true, ok:'מחיקה' }))) return;
   /* הרשומה קודם והקובץ אחריה: רשומה בלי קובץ היא קישור מת שכולם רואים,
      קובץ בלי רשומה הוא בלתי נראה. ו-select אחרי delete — RLS שדוחה מחזיר
      אפס שורות בלי שגיאה, וזה היה נראה כמו הצלחה. */
   const del = await sb.schema('ord').from('doc_files').delete().eq('id', id).select('id');
-  if(del.error || !del.data || !del.data.length){ alert('המחיקה נכשלה — '+((del.error&&del.error.message)||'אין לך הרשאה למחוק את הקובץ הזה')); return; }
+  if(del.error || !del.data || !del.data.length){ toast('המחיקה נכשלה — '+((del.error&&del.error.message)||'אין לך הרשאה למחוק את הקובץ הזה')); return; }
   try{ await sb.storage.from('docs').remove([f.storage_path]); }catch(_e){}
   await loadDocFiles(true);
   const pid = f.order_id || f.call_id;
@@ -10642,8 +10704,8 @@ window.dlQuoteDoc = async (dealId)=>{
   /* ⚠️ האישור אומר במפורש שהמסמך מצטט תמונה ואינו מתעדכן. זו התכונה
      שהופכת אותו לראיה (הלקח של sign גרסה 12), והמשתמש צריך לדעת שהיא
      נלקחת עכשיו. */
-  if(!confirm('ליצור מסמך חתימה עבור הצעה ' + d.priority_quote_id + '?\n\n'
-    + 'המסמך יצטט את ההצעה כפי שהיא בפריוריטי ברגע זה, ולא ישתנה גם אם ההצעה תעודכן אחר כך.')) return;
+  if(!(await sysConfirm('ליצור מסמך חתימה עבור הצעה ' + d.priority_quote_id + '?\n\n'
+    + 'המסמך יצטט את ההצעה כפי שהיא בפריוריטי ברגע זה, ולא ישתנה גם אם ההצעה תעודכן אחר כך.'))) return;
   const box = document.getElementById('dl-signbox');
   if(box) box.innerHTML = '<div class="note">מפיק את המסמך מפריוריטי…</div>';
   let data = null, error = null;
@@ -10675,12 +10737,12 @@ window.dlQuoteDoc = async (dealId)=>{
 
 window.createProtocol = async (orderId, ctx)=>{
   const o = ORDS.find(x=>x.id===orderId); if(!o) return;
-  if(!window.canEdit('docs.protocols')){ alert('אין לך הרשאת עריכה בקטגוריית הפרוטוקולים.'); return; }
-  if(!confirm('ליצור קישור חתימה לפרוטוקול הכנה עבור '+(o.customer_name||o.order_number)+'?')) return;
+  if(!window.canEdit('docs.protocols')){ toast('אין לך הרשאת עריכה בקטגוריית הפרוטוקולים.'); return; }
+  if(!(await sysConfirm('ליצור קישור חתימה לפרוטוקול הכנה עבור '+(o.customer_name||o.order_number)+'?'))) return;
   const { data, error } = await sb.schema('ord').rpc('protocol_create', {
     p_order_id:o.id, p_call_id:null, p_deal_id:null,
     p_category:'protocols', p_doc_type:'פרוטוקול הכנה להתקנה' });
-  if(error){ alert('יצירת הפרוטוקול נכשלה: '+error.message); return; }
+  if(error){ toast('יצירת הפרוטוקול נכשלה: '+error.message); return; }
   if(data){
     PROTS.unshift(data);
     /* 6.127.0 — ord.protocol_create מעדכנת את contact_status ל'נוצר קשר
@@ -10700,7 +10762,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'polish-2026-09-06c';
+const BUILD_ID = 'dialogs-2026-09-06d';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -13563,7 +13625,7 @@ PV.markAll = async (kind, ev)=>{
   const on = !rows.every(p=>!!p[m.at]);
   const fc = gv('pv-fcat');
   const what = rows.length+' מק״טים'+(fc? ' בקטגוריה "'+fc+'"' : ' בתצוגה הנוכחית');
-  if(!window.confirm((on? m.askOn : m.askOff)+what+'?')) return;
+  if(!(await sysConfirm((on? m.askOn : m.askOff)+what+'?'))) return;
   const at = on? nowIso() : null, by = on? meNow() : null;
   const skus = rows.map(p=>p.sku);
   skus.forEach(x=>{ const q = byy[x]; if(q){ q[m.at] = at; q[m.by] = by || ''; } });
@@ -13825,7 +13887,7 @@ PV.mfgSet = async (sku, qty, field, v)=>{
 };
 PV.mfgDel = async (sku, qty)=>{
   if(!prcEdit()) return noEdit();
-  if(!window.confirm('להסיר את מדרגת הכמות '+fmt(qty,0)+' מהמק״ט '+sku+'?')) return;
+  if(!(await sysConfirm('להסיר את מדרגת הכמות '+fmt(qty,0)+' מהמק״ט '+sku+'?', { danger:true, ok:'הסרה' }))) return;
   const p = byy[sku];
   DATA.tiers = (DATA.tiers||[]).filter(t=>!(t.sku===sku && Number(t.qty)===Number(qty)));
   const wasChosen = !!p && Number(p.mfgQty)===Number(qty);
@@ -14503,8 +14565,8 @@ PV.importJSON = function(inp){
     }catch(_e){ toast('קובץ לא תקין'); return; }
     /* הניסוח מדויק בכוונה: הפעולה היא מיזוג ולא החלפה מלאה — היא דורסת את
        הנתונים של המק״טים שבקובץ בלבד, ומק״ט שקיים במסד ואינו בקובץ יישאר. */
-    if(!confirm('טעינת הגיבוי תדרוס את נתוני התמחור של '+d.products.length+' המק״טים שבקובץ, וכן את ההגדרות, הקבוצות ומטריצת המקדמים.\n\nמק״ט שקיים במסד ואינו בקובץ יישאר ללא שינוי — זו אינה החלפה מלאה של המאגר.\n\nלהמשיך?')) return;
-    if(!confirm('אישור אחרון — הפעולה משנה את המסד עבור כל המשתמשים. לבצע?')) return;
+    if(!(await sysConfirm('טעינת הגיבוי תדרוס את נתוני התמחור של '+d.products.length+' המק״טים שבקובץ, וכן את ההגדרות, הקבוצות ומטריצת המקדמים.\n\nמק״ט שקיים במסד ואינו בקובץ יישאר ללא שינוי — זו אינה החלפה מלאה של המאגר.\n\nלהמשיך?'))) return;
+    if(!(await sysConfirm('אישור אחרון — הפעולה משנה את המסד עבור כל המשתמשים. לבצע?'))) return;
     try{
       await importSnapshot(d);
       await prcLoad(true);
@@ -15027,7 +15089,7 @@ window.shipBulk = async ()=>{
   if(bi && bi.value !== '')  patch.has_install   = bi.value === '1';
   if(bip && bip.value !== '')patch.install_price = Number(bip.value);
   if(!Object.keys(patch).length){ toast('לא נבחר מה להחיל'); return; }
-  if(!confirm('להחיל על ' + rows.length + ' מק"טים?')) return;
+  if(!(await sysConfirm('להחיל על ' + rows.length + ' מק"טים?'))) return;
   patch.updated_by = (ME && ME.email) || null;
 
   /* ⚠️ מנות של 80 — מאות מק"טים ב-in() אחד חוצים את תקרת ה-GET. */
@@ -15743,7 +15805,7 @@ window.pmApplyGroup = async uid=>{
       toast('השיוך לקבוצה בוטל — ההרשאות הקיימות נשמרו');
     } else {
       const g=(PM_STATE&&PM_STATE.groups||[]).find(x=>x.id===gid);
-      if(!confirm('שכפול הרשאות הקבוצה "'+((g&&g.name)||'')+'" למשתמש. ההרשאות האישיות הקיימות יוחלפו. להמשיך?')){
+      if(!(await sysConfirm('שכפול הרשאות הקבוצה "'+((g&&g.name)||'')+'" למשתמש. ההרשאות האישיות הקיימות יוחלפו. להמשיך?'))){
         await renderUsers(); return;
       }
       const { error } = await sb.schema('core').rpc('admin_group_apply', { p_user: uid, p_group: gid });
@@ -15755,7 +15817,7 @@ window.pmApplyGroup = async uid=>{
 };
 window.pmApplyAll = async gid=>{
   const g=(PM_STATE&&PM_STATE.groups||[]).find(x=>x.id===gid); if(!g) return;
-  if(!confirm('שכפול הרשאות הקבוצה "'+g.name+'" אל '+g.members+' המשתמשים המשויכים אליה. הרשאות אישיות שנערכו ידנית יימחקו. להמשיך?')) return;
+  if(!(await sysConfirm('שכפול הרשאות הקבוצה "'+g.name+'" אל '+g.members+' המשתמשים המשויכים אליה. הרשאות אישיות שנערכו ידנית יימחקו. להמשיך?'))) return;
   try{
     const { data, error } = await sb.schema('core').rpc('admin_group_apply_all', { p_group: gid });
     if(error) throw error;
@@ -15765,7 +15827,7 @@ window.pmApplyAll = async gid=>{
 };
 window.pmDelGroup = async gid=>{
   const g=(PM_STATE&&PM_STATE.groups||[]).find(x=>x.id===gid); if(!g) return;
-  if(!confirm('מחיקת הקבוצה "'+g.name+'". ההרשאות שכבר שוכפלו למשתמשים יישארו כפי שהן. להמשיך?')) return;
+  if(!(await sysConfirm('מחיקת הקבוצה "'+g.name+'". ההרשאות שכבר שוכפלו למשתמשים יישארו כפי שהן. להמשיך?', { danger:true, ok:'מחיקה' }))) return;
   try{
     const { error } = await sb.schema('core').rpc('admin_group_delete', { p_id: gid });
     if(error) throw error;
@@ -15778,13 +15840,13 @@ window.saveUser = async id=>{
   /* 6.20.0 — הגנה מפני נעילה עצמית. השומר האמיתי הוא טריגר במסד (profiles_guard_last_admin);
      כאן רק אזהרה מקדימה כדי שלא ייווצר מצב מבלבל של שמירה שנכשלת. */
   if(id===ME.id && ($('#ur-'+id).value!==ME.role || !$('#ua-'+id).checked)){
-    if(!confirm('שינוי ההרשאה של עצמך או כיבוי המשתמש שלך עלול לנעול אותך מחוץ למערכת. להמשיך?')) return;
+    if(!(await sysConfirm('שינוי ההרשאה של עצמך או כיבוי המשתמש שלך עלול לנעול אותך מחוץ למערכת. להמשיך?'))) return;
   }
   const upd={ role:$('#ur-'+id).value, job_title:$('#uj-'+id).value||null, active:$('#ua-'+id).checked,
               priority_login:($('#up-'+id).value||'').trim()||null };
   const { error } = await sb.schema('core').from('profiles').update(upd).eq('id', id);
-  if(error){ alert('שמירה נכשלה: '+error.message); return; }
-  alert('המשתמש עודכן ✓');
+  if(error){ toast('שמירה נכשלה: '+error.message); return; }
+  toast('המשתמש עודכן ✓');
   if(id===ME.id){ ME={...ME,...upd}; $('#sideRole').textContent=ME.job_title||'אזור אישי'; }
 };
 async function adminUsersFn(body){
@@ -15824,7 +15886,7 @@ window.createUser = async ()=>{
     const j = await r.json();
     if(!r.ok || j.error){ err.textContent = j.error || ('יצירת המשתמש נכשלה ('+r.status+')'); return; }
     try{ await sb.schema('core').from('profiles').update({ job_title:$('#nu-job').value||null }).eq('id', j.user_id); }catch(_e){}
-    alert('המשתמש נוצר ✓ — מסרו לו את הסיסמה הראשונית. המערכת תדרוש ממנו להחליף אותה בכניסה הראשונה.');
+    await sysAlert('המשתמש נוצר ✓ — מסרו לו את הסיסמה הראשונית. המערכת תדרוש ממנו להחליף אותה בכניסה הראשונה.');
     $('#nu-name').value=''; $('#nu-email').value=''; $('#nu-pass').value='';
     renderUsers();
   }catch(e){ console.error('createUser', e); err.textContent='שגיאת רשת ביצירת המשתמש'; }
@@ -15877,11 +15939,11 @@ window.pwDo = async ()=>{
 };
 window.deleteUser = async id=>{
   const u=(SET_USERS||[]).find(x=>x.id===id);
-  if(!confirm('למחוק את המשתמש '+((u&&u.email)||'')+'? פעולה זו אינה הפיכה.')) return;
+  if(!(await sysConfirm('למחוק את המשתמש '+((u&&u.email)||'')+'? פעולה זו אינה הפיכה.', { danger:true, ok:'מחיקה' }))) return;
   const j = await adminUsersFn({ action:'delete-user', user_id:id });
-  if(j.error){ alert('שגיאה: '+j.error); return; }
+  if(j.error){ toast('שגיאה: '+j.error); return; }
   try{ await sb.schema('core').from('profiles').delete().eq('id', id); }catch(_e){}
-  alert('המשתמש נמחק');
+  toast('המשתמש נמחק');
   renderUsers();
 };
 /* ===== עובדים זמניים (6.120.0) =====
@@ -15944,9 +16006,9 @@ window.tmSave = async id=>{
 window.saveTeam = async id=>{
   const upd={ name:$('#tn-'+id).value.trim(), color:$('#tc-'+id).value, active:$('#ta-'+id).checked };
   const { error } = await sb.schema('ord').from('teams').update(upd).eq('id', id);
-  if(error){ alert('שמירה נכשלה: '+error.message); return; }
+  if(error){ toast('שמירה נכשלה: '+error.message); return; }
   const t=OTEAMS.find(x=>x.id===id); if(t) Object.assign(t,upd);
-  renderCal(); renderOps(); alert('הצוות נשמר ✓');
+  renderCal(); renderOps(); toast('הצוות נשמר ✓');
 };
 /* 6.142.0 — שמירת סף הסימון. משנה התנהגות מיד בציור הבא, בלי פריסה. */
 window.nmSave = async ()=>{
@@ -15970,7 +16032,7 @@ window.nmSave = async ()=>{
 window.saveSetting = async i=>{
   const s=OSET[i]; const v=$('#sv-'+i).value;
   const { error } = await sb.schema('ord').from('settings').update({value:v}).eq('key', s.key);
-  if(error){ alert('שמירה נכשלה: '+error.message); return; }
+  if(error){ toast('שמירה נכשלה: '+error.message); return; }
   s.value=v;
   /* ⚠️ הסיומת "ישתקף במסמכים הבאים שיישלחו" נכונה למפתחות של טקסטים
      ומסמכים (wa_* · protocol_* · report150_* · svc_report_*) — ו**שקר**
@@ -15979,7 +16041,7 @@ window.saveSetting = async i=>{
      הודעת אישור שמתארת תופעה שלא תקרה היא אותה מחלקה של רשומת יומן
      על פעולה שלא בוצעה: היא נראית כמו ראיה. */
   const _doc = /^(wa_|protocol_|report150_|svc_report_)/.test(s.key || '');
-  alert(_doc ? 'נשמר ✓ — ישתקף במסמכים הבאים שיישלחו' : 'נשמר ✓');
+  toast(_doc ? 'נשמר ✓ — ישתקף במסמכים הבאים שיישלחו' : 'נשמר ✓');
 };
 
 
@@ -16904,7 +16966,7 @@ window.mktSpendSave = async () => {
 };
 window.mktSpendDel = async id => {
   if(!canEdit('mkt.dash')) return;
-  if(!confirm('למחוק את שורת ההוצאה?')) return;
+  if(!(await sysConfirm('למחוק את שורת ההוצאה?', { danger:true, ok:'מחיקה' }))) return;
   const r=await sb.schema('crm').rpc('mkt_spend_delete',{p_id:id});
   if(r.error){ toast('המחיקה נכשלה: '+(r.error.message||'')); return; }
   mktLoad(true);
@@ -17674,7 +17736,7 @@ window.tkBulk = async (op)=>{
   const nameOf = id => (((TASKS||[]).find(x=>x.id===id)||{}).name)||id;
   if(op==='done'){
     const names = ids.slice(0,8).map(nameOf).join(' · ') + (ids.length>8?` ועוד ${ids.length-8}`:'');
-    if(!confirm(`לסמן ${ids.length} משימות כבוצעו?\n\n${names}`)) return;
+    if(!(await sysConfirm(`לסמן ${ids.length} משימות כבוצעו?\n\n${names}`))) return;
   }
   let patch;
   if(op==='done') patch = { status:'הושלם', closed_at: new Date().toISOString() };
@@ -19405,7 +19467,7 @@ window.payManSave = async ed => {
 };
 window.payManDelete = async ord => {
   if(!canEdit('acc.pays')) return finNoEdit();
-  if(!window.confirm('למחוק את השורה הידנית ' + ord + '?')) return;
+  if(!(await sysConfirm('למחוק את השורה הידנית ' + ord + '?', { danger:true, ok:'מחיקה' }))) return;
   const ok = await finDbw(()=>sb.schema('ord').from('pay_manual').delete().eq('order_number', ord), 'השורה נמחקה');
   if(!ok) return;
   const i = FIN.findIndex(f=>f.order_number===ord);
@@ -19794,7 +19856,7 @@ window.ptSave = async () => {
 window.ptDelete = async () => {
   if(!canEdit('acc.pays')) return finNoEdit();
   const code = PT_EDIT && PT_EDIT.code; if(!code) return;
-  if(!window.confirm('למחוק את התבנית ' + code + '?\n\nהזמנות שכבר נפרסו לפיה אינן מושפעות — הלוח שלהן כבר נשמר.')) return;
+  if(!(await sysConfirm('למחוק את התבנית ' + code + '?\n\nהזמנות שכבר נפרסו לפיה אינן מושפעות — הלוח שלהן כבר נשמר.', { danger:true, ok:'מחיקה' }))) return;
   const ok = await finDbw(()=>sb.schema('ord').from('payment_terms').delete().eq('code', code), 'התבנית נמחקה');
   if(!ok) return;
   await ptReload();
@@ -19924,9 +19986,9 @@ window.ledLink = async (kind, docNo, force) => {
   if(!canEdit('acc.pays')) return finNoEdit();
   const on = LED_ORD; if(!on) return;
   const f = FIN.find(x=>x.order_number===on) || {};
-  if(!force && !window.confirm('לשייך את המסמך ' + docNo + ' להזמנה ' + on +
+  if(!force && !(await sysConfirm('לשייך את המסמך ' + docNo + ' להזמנה ' + on +
       (f.customer_name ? ' (' + f.customer_name + ')' : '') +
-      '?\n\nהשיוך נשמר אצלנו בלבד ואינו משנה דבר בפריוריטי.')) return;
+      '?\n\nהשיוך נשמר אצלנו בלבד ואינו משנה דבר בפריוריטי.'))) return;
   /* בדיקות הסכום יושבות בשרת ולא כאן, כדי שגם קריאה ישירה תיחסם. אם השרת
      סירב — מציגים לו את נימוק הסירוב ומאפשרים לעקוף במודע, כי לפעמים
      המציאות באמת מוזרה יותר מהכלל. */
@@ -19936,7 +19998,7 @@ window.ledLink = async (kind, docNo, force) => {
   catch(e){ r = { error: e }; }
   if(r && r.error){
     const msg = (r.error && r.error.message) ? r.error.message : String(r.error);
-    if(!force && window.confirm(msg + '\n\nלשייך בכל זאת?')) return ledLink(kind, docNo, true);
+    if(!force && (await sysConfirm(msg + '\n\nלשייך בכל זאת?'))) return ledLink(kind, docNo, true);
     toast('השיוך לא בוצע: ' + msg);
     return;
   }
@@ -20596,7 +20658,7 @@ function scRow(s){
 }
 window.scQuickDone = async (id)=>{
   if(!window.canEdit('logi.calls')){ toast('אין הרשאה לעדכון קריאת שירות'); return; }
-  if(!confirm('לסמן את הקריאה כהושלמה?')) return;
+  if(!(await sysConfirm('לסמן את הקריאה כהושלמה?'))) return;
   const { data: res, error } = await oldCall('update_service_call', { id, patch:{ status:'הושלם' } });
   if(error){ toast('שגיאה: '+error.message); return; }
   const s = SCALLS.find(x=>String(x.id)===String(id));
@@ -21518,9 +21580,9 @@ window.openOrd = (id, ctx)=>{
 let VIS_ORD = null;
 window.visJoin = async (a, b, id, ctx) => {
   if(!canEdit('logi.orders.coord')){ toast('אין לך הרשאה לקיבוץ ביקור משותף'); return; }
-  if(!window.confirm('לצרף את ' + b + ' לאותו ביקור עם ' + a + '?\n\n' +
+  if(!(await sysConfirm('לצרף את ' + b + ' לאותו ביקור עם ' + a + '?\n\n' +
      'מכאן והלאה תאריך, צוות, שעות וסטטוס שיוזנו על אחת מהן יוחלו על שתיהן. ' +
-     'החשבוניות והקבלות נשארות נפרדות.')) return;
+     'החשבוניות והקבלות נשארות נפרדות.'))) return;
   try{
     const { error } = await sb.schema('ord').rpc('coord_join', { p_order: b, p_with: a });
     if(error) throw error;
@@ -21531,8 +21593,8 @@ window.visJoin = async (a, b, id, ctx) => {
 };
 window.visLeave = async (order, a, id, ctx) => {
   if(!canEdit('logi.orders.coord')){ toast('אין לך הרשאה לקיבוץ ביקור משותף'); return; }
-  if(!window.confirm('להוציא את ' + order + ' מהביקור המשותף?\n\n' +
-     'שדות התיאום שכבר נכתבו עליה נשארים כפי שהם — היא פשוט תפסיק להתעדכן יחד.')) return;
+  if(!(await sysConfirm('להוציא את ' + order + ' מהביקור המשותף?\n\n' +
+     'שדות התיאום שכבר נכתבו עליה נשארים כפי שהם — היא פשוט תפסיק להתעדכן יחד.'))) return;
   try{
     const { error } = await sb.schema('ord').rpc('coord_leave', { p_order: order });
     if(error) throw error;
@@ -23627,11 +23689,11 @@ window.lbBulk = async (op)=>{
   const nameOf = id => ((LEADS.find(x=>x.id===id)||{}).full_name)||id;
   if(op==='delete'){
     const names = ids.slice(0,8).map(nameOf).join(' · ') + (ids.length>8?` ועוד ${ids.length-8}`:'');
-    if(!confirm(`למחוק ${ids.length} לידים?\n\n${names}\n\nהמחיקה רכה וניתנת לשחזור מתצוגת "נמחקו".`)) return;
+    if(!(await sysConfirm(`למחוק ${ids.length} לידים?\n\n${names}\n\nהמחיקה רכה וניתנת לשחזור מתצוגת "נמחקו".`, { danger:true, ok:'מחיקה' }))) return;
   }
   if(op==='status'){
     const CH = ['ליד חדש','ללא מענה','ללא מענה2','ללא מענה3'];
-    if(CH.indexOf(val)>=0 && !confirm(`שינוי מרוכז ל־«${val}» **אינו** שולח הודעת "אין מענה" ואינו מסובב משימות.\nלשרשרת המלאה — שנו את השלב ברצועה שבכרטיס הליד.\n\nלהמשיך על ${ids.length} לידים?`)) return;
+    if(CH.indexOf(val)>=0 && !(await sysConfirm(`שינוי מרוכז ל־«${val}» **אינו** שולח הודעת "אין מענה" ואינו מסובב משימות.\nלשרשרת המלאה — שנו את השלב ברצועה שבכרטיס הליד.\n\nלהמשיך על ${ids.length} לידים?`))) return;
   }
   LB_BUSY = true;
   const rep = document.getElementById('lb-selrep');
@@ -24149,7 +24211,7 @@ window.lbPipeSet = async (id, st, sub)=>{
   if(LEAD_SNAP && LEAD_SNAP.__id===id){
     const dirty = LEAD_CARD_FIELDS.some(([eid])=>{ const el=document.getElementById(eid);
       return el && String(el.value||'')!==String(LEAD_SNAP[eid]||''); });
-    if(dirty && !confirm('יש בכרטיס שינויים שלא נשמרו. שינוי השלב יטען אותו מחדש ויאבד אותם. להמשיך?')) return;
+    if(dirty && !(await sysConfirm('יש בכרטיס שינויים שלא נשמרו. שינוי השלב יטען אותו מחדש ויאבד אותם. להמשיך?'))) return;
   }
   /* 🔴 השלב הבא בדיוק בשרשרת "אין מענה" → crm.lead_step, שעושה הכול
      בטרנזקציה אחת: וואטסאפ עם dedupe_key, סגירת המשימה ופתיחת הבאה
@@ -24164,7 +24226,7 @@ window.lbPipeSet = async (id, st, sub)=>{
         את אותו סטטוס, והראשונה הייתה סוגרת את המשימות פעמיים. */
   if(st==='רלוונטי' && sub==='פולואפ'){ leadFup(id); return; }
   if(CH.indexOf(cur)>=0 && (CH.indexOf(st)>=0 || st==='סירוב') && nextOf(cur)!==st){
-    if(!confirm('זו קפיצה לא סדורה בשרשרת "אין מענה".\nלא תישלח הודעה ללקוח, והמשימה הפתוחה לא תסתובב.\nלהמשיך?')) return;
+    if(!(await sysConfirm('זו קפיצה לא סדורה בשרשרת "אין מענה".\nלא תישלח הודעה ללקוח, והמשימה הפתוחה לא תסתובב.\nלהמשיך?'))) return;
   }
   /* 🔴 crm.lead_set_status — סטטוס + איפוס שלוש עמודות תת-הסטטוס +
      סגירת המשימות, **בטרנזקציה אחת**. עד 6.112.0 אלה היו שתי כתיבות
@@ -24824,7 +24886,7 @@ window.lbOwnerMakePrimary = async (key)=>{
 };
 window.lbOwnerPromote = async (key)=>{
   const id = LBOWN_LEAD;
-  if(!confirm('להפוך את ' + ((LOWN_BY[key]||{}).name||'') + ' לבעלים הראשי?\n\nהבעלים הראשי הנוכחי יוסר מ' + ownK().hd.replace('שיוך ','') + '.')) return;
+  if(!(await sysConfirm('להפוך את ' + ((LOWN_BY[key]||{}).name||'') + ' לבעלים הראשי?\n\nהבעלים הראשי הנוכחי יוסר מ' + ownK().hd.replace('שיוך ','') + '.'))) return;
   await window.lbSetOwner(id, lbOwnUuid(key), true);
   lbOwnerDraw();
 };
@@ -25038,7 +25100,7 @@ window.lbUpdSave = async (actId, id, type, pfx)=>{
   toast('העדכון נערך ✓'); updRun(id, type, pfx);
 };
 window.lbUpdDel = async (actId, id, type, pfx)=>{
-  if(!confirm('למחוק את העדכון? הפעולה אינה הפיכה.')) return;
+  if(!(await sysConfirm('למחוק את העדכון? הפעולה אינה הפיכה.', { danger:true, ok:'מחיקה' }))) return;
   const { error } = await sb.schema('crm').from('activities').delete().eq('id', actId);
   if(error){ toast('המחיקה נכשלה — '+error.message); return; }
   toast('העדכון נמחק ✓'); updRun(id, type, pfx);
@@ -25157,11 +25219,11 @@ window.lbDelete = async (id)=>{
   const open = (TASKS||[]).filter(t=>t.linked_type==='lead' && t.linked_id===id && t.status!=='הושלם').length;
   /* שתי האפשרויות שרומן ביקש. ברירת המחדל "עם המשימות" — ליד כפול שנמחק
      בלעדיהן משאיר משימה יתומה שאיש לא יסגור. */
-  const withTasks = open === 0 ? true : confirm(
+  const withTasks = open === 0 ? true : (await sysConfirm(
     'למחוק גם את ' + open + ' המשימות הפתוחות של הליד?\n\n' +
     'אישור = הליד והמשימות נסגרים יחד.\n' +
-    'ביטול = הליד נמחק והמשימות יישארו פתוחות.');
-  if(!confirm('למחוק את הליד "' + (l.full_name||'') + '"?\n\nהוא ייעלם מכל המסכים. הפעולה אינה הפיכה מהממשק.')) return;
+    'ביטול = הליד נמחק והמשימות יישארו פתוחות.'));
+  if(!(await sysConfirm('למחוק את הליד "' + (l.full_name||'') + '"?\n\nהוא ייעלם מכל המסכים. הפעולה אינה הפיכה מהממשק.', { danger:true, ok:'מחיקה' }))) return;
   const { data, error } = await sb.schema('crm').rpc('lead_delete', { p_lead:id, p_with_tasks:withTasks });
   if(error){ toast('המחיקה נכשלה — '+error.message); return; }
   const r = Array.isArray(data) ? data[0] : data;
@@ -26464,7 +26526,7 @@ boot();
         var u = b.getAttribute('data-url');
         (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(
           function(){ b.textContent = 'הועתק ✓'; setTimeout(function(){ b.textContent='העתקה'; }, 1800); },
-          function(){ window.prompt('העתיקו את הקישור:', u); });
+          function(){ sysPrompt('העתיקו את הקישור:', u, { ok:'סגירה' }); });
       });
     });
   }
@@ -26740,7 +26802,7 @@ boot();
         var b = this, u = String(o.yahav_shipment_no);
         (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(
           function(){ b.textContent = 'הועתק ✓'; setTimeout(function(){ b.textContent='העתקה'; }, 1800); },
-          function(){ window.prompt('מספר המשלוח:', u); });
+          function(){ sysPrompt('מספר המשלוח:', u, { ok:'סגירה' }); });
       });
       d.querySelector('#yh-label').addEventListener('click', async function(){
         /* 6.117.0 — נשלף גם response, כדי לקחת את המסלול מ-DeliveryNumberString.
@@ -26848,7 +26910,7 @@ boot();
 
   function printLabel(o){
     var w = window.open('', '_blank', 'width=760,height=560');
-    if(!w){ alert('יש לאפשר חלונות קופצים להדפסת המדבקה'); return; }
+    if(!w){ toast('יש לאפשר חלונות קופצים להדפסת המדבקה', 'warn', 4000); return; }
 
     var no    = String(o.yahav_shipment_no || '');
     var tot   = Math.max(1, parseInt(o.yahav_packages, 10) || 1);
@@ -26967,7 +27029,7 @@ boot();
 
   function say(m){
     try{ if(typeof toast === 'function'){ toast(m); return; } }catch(e){}
-    try{ window.alert(m); }catch(e){}
+    try{ sysAlert(m); }catch(e){}
   }
   function known(pn){
     try{ return (typeof SKUS !== 'undefined' && SKUS ? SKUS : []).some(function(s){ return String(s.partname) === pn; }); }
@@ -27285,8 +27347,8 @@ boot();
     var url = location.pathname + '?v=' + encodeURIComponent(b || String(Date.now())) + (location.hash || '');
     setTimeout(function(){ try{ location.replace(url); }catch(_e){ try{ location.reload(); }catch(_e2){} } }, 80);
   }
-  VER.refresh = function(){
-    if(verDirty() && !window.confirm('יש שינויים שלא נשמרו. רענון המערכת יגרום לאובדן השינויים. לרענן בכל זאת?')) return;
+  VER.refresh = async function(){
+    if(verDirty() && !(await sysConfirm('יש שינויים שלא נשמרו. רענון המערכת יגרום לאובדן השינויים. לרענן בכל זאת?'))) return;
     var r = verState() || {};
     verAudit('רענון לגרסה החדשה', r.v || r.b || '');
     /* לא מנקים כאן את מועד ההתנתקות: אם הרענון יחזיר בכל זאת את הגרסה הישנה,

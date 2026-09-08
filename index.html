@@ -2997,7 +2997,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.217.0</div>
+      <div class="ver">גרסה 6.218.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3127,7 +3127,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="closeout-2026-09-08g">גרסה 6.217.0</div>
+    <div class="side-foot" title="highs-2026-09-08h">גרסה 6.218.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5216,8 +5216,14 @@ const IE_TABLES = {
   pay:   { schema:'crm', table:'payments',      arr:()=>PAYS,  ent:'תשלום',        key:p=>String(p.id).slice(0,8), rerender:()=>renderPays() },
   po:    { schema:'ord', table:'purchase_orders', idCol:'ordname', arr:()=>PO, ent:'הזמנת רכש', key:o=>o.ordname, rerender:()=>{ if(typeof poBody==='function' && PO_LOADED) poBody(); } },
 };
-window.ieSave = async (el)=>{
-  const [kind,id,field]=el.dataset.ie.split('|');
+window.ieSave = async (el, desc)=>{
+  /* 🔴 6.218.0 — desc אופציונלי, ואינו נוחות. ieSel אינו פולט data-ie
+     כשמועבר לו opts.on (6.153.0: "תכונה שאיש אינו קורא היא הזמנה לטעות"),
+     ולכן קורא שנותב דרך on ובכל זאת רוצה את מסלול הכתיבה הרגיל חייב למסור
+     את המתאר בעצמו — אחרת el.dataset.ie הוא undefined והשורה זורקת.
+     ⚠️ שני הקוראים הקיימים (ieSel · ieDate) מעבירים el בלבד; אצלם desc הוא
+        undefined וההתנהגות זהה בייט-בייט. */
+  const [kind,id,field]=(desc || el.dataset.ie).split('|');
   const cfg=IE_TABLES[kind]; if(!cfg) return;
   const idCol = cfg.idCol || 'id';
   const rec=cfg.arr().find(x=>String(x[idCol])===id); if(!rec) return;
@@ -5234,7 +5240,6 @@ window.ieSave = async (el)=>{
   }
   if(error){ toast('שגיאה בשמירה: '+error.message); cfg.rerender(); return; }
   Object.assign(rec, row || patch);
-  if(kind === 'ord') await openRefresh(rec.order_number);
   if(cfg.schema==='ord' && !cfg.bridge){ /* ord/scall נרשמים ביומן בתוך ה-RPC — כאן רק po */
     try{ await sb.schema('ord').from('audit_log').insert({ user_email:ME.email, action:'עריכה ישירה מהטבלה', entity:cfg.ent, entity_id:String(cfg.key(rec)||''), label:field }); }catch(_e){}
   }
@@ -5246,6 +5251,16 @@ window.ieSave = async (el)=>{
   const _wrap=el.closest('.tbl-wrap');
   const _host=(_wrap&&_wrap.parentElement&&_wrap.parentElement.id)?_wrap.parentElement.id:'';
   const _wl=_wrap?_wrap.scrollLeft:0, _wt=_wrap?_wrap.scrollTop:0;
+  /* 6.85.3 — "נותר לספק" נגזר בשרת ולכן נמשך ולא מנוחש · 6.83.1 — בביקור
+     משותף ord.order_patch כותב תאריך, צוות, שעה וסטטוס גם על האחיות (זה
+     בדיוק הטקסט שהמשתמש מאשר ב-visJoin), וחמשת השדות הניתנים לעריכה
+     בטבלה הם אותם שדות — ולכן השורות המקומיות של האחיות נשארו מיושנות
+     עד רענון דף. saveOrd כבר עוברת בנקודת החנק הזאת; העריכה מהטבלה לא.
+     ⚠️ המיקום הוא נכונות ולא סגנון: visRefreshOrders מציירת מחדש בעצמה,
+     ולכן הרצתה **אחרי** לכידת הגלילה שלמעלה ולפני cfg.rerender היא
+     התנאי לכך ששמירת הגלילה של 6.24.5 תמשיך לעבוד — לכידה אחריה
+     הייתה קוראת DOM שכבר אופס, כלומר ביטול שקט שלה. */
+  if(kind === 'ord'){ await openRefresh(rec.order_number); await visRefreshOrders(); }
   cfg.rerender();
   if(_host){ const _nw=document.querySelector('#'+_host+' .tbl-wrap'); if(_nw){ _nw.scrollLeft=_wl; _nw.scrollTop=_wt; } }
   window.scrollTo(_sx,_sy);
@@ -6507,6 +6522,10 @@ window.ordQuickDone = async (id)=>{
   if(r) await openRefresh(r.order_number);
   toast('ההזמנה נסגרה ✓');
   renderLogi(); renderOrders();
+  /* סגירה בודדת עוברת ב-ord.order_patch, ו**סטטוס** הוא אחד מארבעת השדות
+     שהוא מפיץ לאחיות בביקור משותף — כך אומר הטקסט שהמשתמש מאשר ב-visJoin.
+     בלי המשיכה הזאת האחיות נשארות "בתהליך" על המסך אף שנסגרו בשרת. */
+  visRefreshOrders();
 };
 function renderLogi(){
   /* 6.2.1 — שורת השבבים העליונה הוסרה: המעבר בין שלוש התצוגות נעשה רק
@@ -9951,7 +9970,6 @@ function poBody(){
 
 async function openPo(on){
   const r = PO.find(x=>x.ordname===on); if(!r) return;
-  mountCard('poModal', ()=>openPo(on));
   const sh = $('#poSheet');
   const can = poMgr();
   const g = poAgg(on);
@@ -10000,7 +10018,14 @@ async function openPo(on){
     + '<div class="span4" id="po-lines-wrap">' + crmLoading('טוען שורות…') + '</div>'
     + '</div>'
     + (can ? '<div class="modal-actions"><button class="btn green" id="po-save">שמירה</button><span class="err" id="po-err" style="margin:0"></span></div>' : '');
-  wireLabels(sh);   /* 6.206.0 — mountCard רץ כאן לפני innerHTML, ולכן הקישור חוזר אחרי הציור */
+  wireLabels(sh);   /* 6.206.0 — נשארת אף שהיא כפולה: mountCard קורא לה גם הוא, והיא אידמפוטנטית (מדלגת על label שכבר יש לו htmlFor) */
+  /* 🔴 mountCard **אחרי** ה-innerHTML, כמו בכל שאר פותחי הכרטיסים. הוא עושה
+     sheet.prepend(bar) עם ✕ ועם "→ חזרה", ו-sh.innerHTML היה מוחק אותם: נמדד
+     שכניסה לכרטיס מהחיפוש הגלובלי (goCard מציב CARD_STACK.length=1) הציגה כרטיס
+     בלי ✕ ובלי חזרה, ושה-aria-labelledby הצביע על id של ה-h3 של הפתיחה הקודמת
+     שכבר נמחק. חייב להישאר לפני ה-await של שורות ההזמנה: goCard מציב CARD_NAV
+     סינכרונית, ומיקום אחרי await היה מאבד את מחסנית הכרטיסים. */
+  mountCard('poModal', ()=>openPo(on));
   const sv = $('#po-save'); if(sv) sv.onclick = ()=> poSave(on);
   try{
     const { data, error } = await sb.schema('ord').from('purchase_order_items')
@@ -10245,19 +10270,45 @@ function docsVisible(){ return PROTS.filter(p=>window.canView('docs.'+(p.categor
    והרשומה המקבילה יושבת ב-ord.doc_files. אין לקבצים כתובת ציבורית: כל
    צפייה מפיקה קישור חתום לשעה, ולכן תמונה של לקוח לא יכולה לדלוף מחוץ
    למערכת גם אם מישהו העתיק את הנתיב. */
-let DOCFILES = null, DOCFILES_BUSY = false;
+/* 🔴 כשל טעינה כאן לא היה "טוען…" תקוע אלא **לולאה אינסופית** (08/09/2026):
+   renderDocs עשה loadDocFiles().then(()=>renderDocs()), ובענף השגיאה DOCFILES
+   נשאר null (הענף החזיר [] ולא כתב אליו) ⇒ הציור החוזר נכנס לאותו ענף ויורה
+   שאילתה נוספת, בלי גבול. נמדד במודל מצומצם: 200 שאילתות עד תקרת הבדיקה.
+   ⚠️ ולענף התפוס היה גרוע מזה: הוא נפתר **מיד ובלי רשת**, ולכן השרשרת היא
+      לולאת microtask שמרעיבה את לולאת האירועים ומקפיאה את הלשונית — נגישה
+      מהקלדה ב-#docSearch בזמן שהטעינה הראשונה עוד באוויר.
+   🟢 שתי הצורות נסגרות כאן, בנקודת החנק, ולא באתרי הקריאה:
+      DOCFILES_ERR הופך כשל למצב **סופי** עם "נסה שוב" (הדפוס של updRun 6.152.0),
+      ו-DOCFILES_REQ מחזיר לקורא מקביל את **אותה** בקשה במקום תשובה ריקה
+      מיידית — ולכן ה-.then שלו נורה פעם אחת, על התוצאה האמיתית.
+   ⚠️ והפונקציה נשארת אי-דוחה (ה-catch בפנים): שלושת הקוראים עושים .then בלי
+      catch, ודחייה הייתה משאירה אותם על "טוען…" לנצח — כלומר מחליפה לולאה
+      בתקיעה שקטה. */
+let DOCFILES = null, DOCFILES_REQ = null, DOCFILES_ERR = '';
 async function loadDocFiles(force){
   if(DOCFILES && !force) return DOCFILES;
-  if(DOCFILES_BUSY) return DOCFILES || [];
-  DOCFILES_BUSY = true;
-  const { data, error } = await sb.schema('ord').from('doc_files')
-    .select('id,category,order_id,call_id,protocol_id,storage_path,file_name,mime_type,size_bytes,caption,uploaded_by,uploaded_at')
-    .order('uploaded_at',{ascending:false}).limit(5000);
-  DOCFILES_BUSY = false;
-  if(error){ console.error('טעינת תמונות מהשטח נכשלה', error); return DOCFILES || []; }
-  DOCFILES = data || [];
-  return DOCFILES;
+  if(DOCFILES_REQ) return DOCFILES_REQ;
+  DOCFILES_ERR = '';
+  DOCFILES_REQ = (async ()=>{
+    try{
+      const { data, error } = await sb.schema('ord').from('doc_files')
+        .select('id,category,order_id,call_id,protocol_id,storage_path,file_name,mime_type,size_bytes,caption,uploaded_by,uploaded_at')
+        .order('uploaded_at',{ascending:false}).limit(5000);
+      if(error) throw error;
+      DOCFILES = data || [];
+      return DOCFILES;
+    }catch(e){
+      DOCFILES_ERR = (e && e.message) || 'שגיאה לא צפויה';
+      console.error('טעינת תמונות מהשטח נכשלה', e);
+      return DOCFILES || [];
+    }
+  })();
+  try{ return await DOCFILES_REQ; } finally{ DOCFILES_REQ = null; }
 }
+function docFilesErrHtml(){
+  return `<div class="note">טעינת תמונות מהשטח נכשלה — ${esc(DOCFILES_ERR)} <button type="button" class="chip" onclick="docFilesRetry()">נסה שוב</button></div>`;
+}
+window.docFilesRetry = ()=>{ DOCFILES_ERR = ''; renderDocs(); };
 function mediaParentLabel(f){
   const o = f.order_id && ORDS.find(x=>x.id===f.order_id);
   if(o) return (o.customer_name||'') + (o.order_number?' · '+o.order_number:'');
@@ -10539,7 +10590,12 @@ function renderDocs(){
   const q=($('#docSearch').value||'').trim();
   if(DOC_CAT==='media'){
     if(!window.canView('docs.media')){ $('#docs-list').innerHTML='<div class="empty">אין לך הרשאה לקטגוריה הזו</div>'; return; }
-    if(DOCFILES===null){ $('#docs-list').innerHTML=crmLoading(); loadDocFiles().then(()=>renderDocs()); return; }
+    if(DOCFILES===null){
+      /* כשל הוא מצב סופי ולא "עוד לא נטען": בלי הענף הזה הציור החוזר יורה
+         שאילתה נוספת בכל סיבוב, כי DOCFILES נשאר null גם אחרי כשל. */
+      if(DOCFILES_ERR){ $('#docs-list').innerHTML = docFilesErrHtml(); return; }
+      $('#docs-list').innerHTML=crmLoading(); loadDocFiles().then(()=>renderDocs()); return;
+    }
     let ml = DOCFILES.slice();
     if(q) ml = ml.filter(f=>(f.file_name||'').includes(q)||mediaParentLabel(f).includes(q));
     $('#docs-list').innerHTML = capped(ml, f=>mediaCard(f), 'אין עדיין תמונות מהשטח');
@@ -10910,7 +10966,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'closeout-2026-09-08g';
+const BUILD_ID = 'highs-2026-09-08h';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -13163,7 +13219,14 @@ function plModel(){
   /* העיגול חל על המחיר כולל מע״מ — המספר שהלקוח משלם — וה-ex נגזר ממנו.
      עיגול של כל אחד בנפרד היה נותן שתי עמודות שאינן מתיישבות (ex×1.18≠inc),
      וזה בדיוק מה שלקוח בודק. */
-  const rnd = v=> (v==null? null : (round<=1? v : Math.ceil(v/round)*round));
+  /* 🔴 6.218.0 — סבילות לפני העיגול כלפי מעלה. בלעדיה מחיר שנקבע
+     ב-applyCharm להיות **בדיוק** 1,190 חוזר מ-finalInc כ-
+     1190.0000000000002 (רעש נקודה צפה של m = 1 - ca/ex), ו-
+     Math.ceil(119.00000000000002)*10 נותן 1,200 — הלקוח מקבל ב-PDF
+     ובאקסל מחיר גבוה ב-₪10 ממה שרומן קבע במפורש. בעיגול ל-₪5: 1,195.
+     ⚠️ 1e-9 על המנה, אותו סדר גודל שכבר בשימוש ב-charmPrice, ונמוך
+        בהרבה מאגורה — כלומר אינו יכול להוריד מחיר אמיתי מדרגה. */
+  const rnd = v=> (v==null? null : (round<=1? v : Math.ceil(v/round - 1e-9)*round));
   /* עמודת ההנחה מופיעה רק כשיש הנחה כלשהי במחירון הזה — רומן ביקש
      במפורש "הנחה רק במידה ויש במחירון". */
   const anyDisc = rows.some(p=>discOf(p.sku,g)!=null);
@@ -14710,10 +14773,14 @@ PV.importJSON = function(inp){
     if(!(await sysConfirm('טעינת הגיבוי תדרוס את נתוני התמחור של '+d.products.length+' המק״טים שבקובץ, וכן את ההגדרות, הקבוצות ומטריצת המקדמים.\n\nמק״ט שקיים במסד ואינו בקובץ יישאר ללא שינוי — זו אינה החלפה מלאה של המאגר.\n\nלהמשיך?'))) return;
     if(!(await sysConfirm('אישור אחרון — הפעולה משנה את המסד עבור כל המשתמשים. לבצע?'))) return;
     try{
-      await importSnapshot(d);
+      const res = await importSnapshot(d);
       await prcLoad(true);
       fillCatFilter(); renderPrcInner();
-      toast('הגיבוי נטען ונשמר במסד ✓');
+      /* ⚠️ toast משתמש באלמנט יחיד ועושה clearTimeout — שתי הודעות
+         ברצף פירושן שהראשונה נמחקת. לכן הדיווח על שורות הנחה שנפסלו
+         מתמזג להודעה אחת, ואינו טוסט שני שאיש לא יראה. */
+      if(res && res.discSkipped) toast('הגיבוי נטען ✓ — אך '+res.discSkipped+' שורות הנחה בקובץ לא נטענו (קבוצה שאינה מקבלת הנחה, או ערך מחוץ לטווח)', 'warn', 6000);
+      else toast('הגיבוי נטען ונשמר במסד ✓');
     }catch(e){
       toast('שגיאה בטעינת הגיבוי: '+(e && e.message? e.message : e));
       try{ await prcLoad(true); }catch(_e){}
@@ -14803,6 +14870,39 @@ async function importSnapshot(d){
   });
   await delIn('prc_excluded','partname',skuList);
   for(let i=0;i<exRows.length;i+=500) chk(await O().from('prc_excluded').upsert(exRows.slice(i,i+500),{onConflict:'partname,grp'}));
+
+  /* 6.74.0 הכניסה את ההנחות ל-buildSnapshot ולא לכאן. נמדד ב-pay4609:
+     'prc_discounts' מופיע אפס פעמים בגוף importSnapshot, בעוד discOf קובע
+     את מחיר המחירון ("הנחה מוגדרת קובעת את מחיר המחירון"). כלומר
+     שחזור גיבוי החזיר מוצרים, אחוזים והחרגות מהקובץ והשאיר את
+     שכבת ההנחות של המסד — תערובת שנראית כמו שחזור מוצלח ומתמחרת אחרת.
+     🔴 מפתח חסר אינו מפתח ריק: לגיבוי מלפני 6.74.0 אין discounts כלל,
+     ומחיקה על סמך היעדרו היתה מוחקת את כל ההנחות של המק״טים שבקובץ —
+     בדיוק האובדן השקט שהתיקון סוגר. אובייקט ריק כן מוחק, כי הוא אומר "אין הנחות". */
+  let discSkipped = 0;
+  if(d.discounts){
+    /* 🔴 gkeys ולא discGroups(): discGroups מסננת לפי GROUPS, שמתמלא
+       רק ב-prcLoad — והקורא מריץ prcLoad **אחרי** importSnapshot.
+       כלומר השער היה נמדד מול המסד שלפני הייבוא, בעוד המחיקה רצה
+       בלי תנאי: שחזור קבוצה חדשה היה מוחק את הנחותיה ומדווח הצלחה. */
+    const dcRows = [], dcOk = DISC_GROUPS.filter(g=>g!==DISC_BASE_GRP && gkeys.indexOf(g)>=0);
+    Object.keys(d.discounts).forEach(sku=>{
+      if(!skus.has(sku)) return;
+      Object.keys(d.discounts[sku]||{}).forEach(g=>{
+        const raw = d.discounts[sku][g], n = Number(raw);
+        /* אותו שער של PV.setDisc ולא עותק שני שלו: 'אתר' הוא בסיס
+           ההנחה ולעולם אינו מקבל אחת, ואפס פירושו ביטול ההנחה
+           ולא "הנחה של אפס" — ולכן אינו נספר כנפסל. ערך מחוץ לטווח
+           נדחה במסד ומפיל את הטעינה באמצע, ולכן נפסל כאן ונספר. */
+        if(raw==null || n===0) return;
+        if(dcOk.indexOf(g) < 0 || !(n > 0) || n >= 1){ discSkipped++; return; }
+        dcRows.push({partname:sku, grp:g, discount:n, updated_by:by, updated_at:at});
+      });
+    });
+    await delIn('prc_discounts','partname',skuList);
+    for(let i=0;i<dcRows.length;i+=500) chk(await O().from('prc_discounts').upsert(dcRows.slice(i,i+500),{onConflict:'partname,grp'}));
+  }
+  return { discSkipped };
 }
 
 /* ---------- כניסה למסך ---------- */
@@ -17946,14 +18046,23 @@ function tkFoldSet(){
 window.tkFold = k=>{ const f=tkFoldSet(); if(f.has(k)) f.delete(k); else f.add(k); renderTasks(); };
 window.tkSetView = v=>{ TK_VIEW=v; renderTasks(); };
 function tkOpen(){ return (TASKS||[]).filter(t=>t.status!=='הושלם'); }
+/* 🔴 6.185.0 יצרה את crm.task_owners, ו"שלי" נשאר על owner_id שהוא **מראה**
+   של הבעלים הראשי בלבד — כלומר שותף אינו רואה את המשימה ב"שלי" ואינו נספר
+   בצ'יפ. אותה מחלקה של 113 שורות הלידים שהיו נסתרות עד 6.105.0 ושל 223 שורות
+   השותפים שאף מסך לא הציג עד 6.185.0. הלובי כבר עבר לנקודת החנק
+   (dashMyTasks, 6.194.0) והבורד לא — כלומר שתי הגדרות ל"המשימה שלי" באותה
+   מערכת, ובאותה שורה: ownCell('task',t) כבר מצייר את אווטארי השותפים בזמן
+   שהצ'יפ אינו סופר אותה.
+   ⚠️ הנפילה אחורה ל-owner_id יושבת בתוך ownOwnersOf ואינה משוכפלת כאן. */
+const tkMine = t => ownOwnersOf('task', t).map(String).includes(String((typeof ME!=='undefined' && ME && ME.id) || ''));
 function tkViewList(){
   if(TK_VIEW==='done') return (TASKS||[]).filter(t=>t.status==='הושלם');
   const o = tkOpen();
-  return TK_VIEW==='mine' ? o.filter(t=>t.owner_id && t.owner_id===lbMe()) : o;
+  return TK_VIEW==='mine' ? o.filter(tkMine) : o;
 }
 function tkChips(){
   const el=document.getElementById('tk-chips'); if(!el) return;
-  const o=tkOpen(), mine=o.filter(t=>t.owner_id && t.owner_id===lbMe()).length;
+  const o=tkOpen(), mine=o.filter(tkMine).length;
   const done=(TASKS||[]).filter(t=>t.status==='הושלם').length;
   el.innerHTML =
     `<button class="chip ${TK_VIEW==='mine'?'active':''}" onclick="tkSetView('mine')">שלי ${mine}</button>`+
@@ -23213,7 +23322,7 @@ function meetTable(list){
            מתצוגה טבלאית ומכרטיס פגישה". התא היה lbAva יבש, בדיוק
            כמו שבורד המשימות היה עד 6.149.0. -->
       <td>${ownCell('meet',m)}</td>
-      <td>${ieSel('meet',m.id,'status',MEET_STATUSES,m.status,{mdColors:MSTATUS_COLOR,mdK:LB_TK})}</td>
+      <td>${ieSel('meet',m.id,'status',MEET_STATUSES,m.status,{mdColors:MSTATUS_COLOR,mdK:LB_TK,on:mtOnStatus(m)})}</td>
     </tr>`;}).join('');
   return mtHead()+rows+`</tbody></table></div>${pgFoot('meets',list.length,'פגישות')}`;
 }
@@ -23491,6 +23600,34 @@ function mtActs(m){
     + `</div>`
     + (ol && !done ? `<div class="note" style="margin-top:6px">⚠️ הפגישה מגיעה מיומן אאוטלוק. שינוי מועד כאן מתעדכן במערכת ובמשימה, <b>אך לא ביומן עצמו</b> — יש לעדכן גם שם.</div>` : '');
 }
+/* 🔴 6.218.0 — בורר הסטטוס עבר ל-mtStatusSet, בדיוק כמו שתת-הסטטוס של
+   הליד עבר ל-lbPipeSet ב-6.153.0. עד כאן שני הבוררים (הטבלה והכרטיס) היו
+   ieSel→ieSave→UPDATE ישיר על crm.meetings, ולכן בחירת «בוטלה» סימנה את
+   הפגישה כמבוטלת **בלי crm.meeting_cancel** — כלומר בלי סגירת המשימה
+   המקושרת ובלי סיבה. הכפתור "✕ ביטול הפגישה" עשה את הדבר הנכון, והבורר
+   שלצידו עשה חצי ממנו בשקט.
+   ⚠️ meetstest אוכפת `.from('meetings')` = select בלבד — והיא עברה בריק:
+      ieSave כותב דרך from(cfg.table) הגנרי, כלומר המחרוזת אינה קיימת
+      והערובה אינה קיימת. אותה מחלקה שנתפסה בעסקאות ב-6.156.0.
+   ⚠️ ושני הבוררים עוברים יחד: מסלול אחד שנשאר הוא ביטול שקט אצל מי
+      שעובד מהמסך השני. */
+const mtOnStatus = m => "mtStatusSet('"+jsq(m.id)+"',this.value,this)";
+window.mtStatusSet = async (id, st, el)=>{
+  const m = (MEETS||[]).find(x=>x.id===id); if(!m) return;
+  const cur = m.status||'';
+  if(!window.canEdit('crm.meets')){ if(el) el.value = cur; toast('אין לך הרשאת עריכה לפגישות.'); return; }
+  if(st === cur) return;
+  /* 🔴 «בוטלה» היא הסטטוס היחיד שיש לו נקודת חנק בשרת. mtCancel פותח את
+     #mtCancelModal, אוסף סיבה, ו-crm.meeting_cancel נשארת הקריאה היחידה
+     בקובץ — ולכן אין כאן מימוש שני של הביטול.
+     ⚠️ והבורר מוחזר **לפני** פתיחת המודאל: עד שהביטול נכתב הפגישה אינה
+        מבוטלת, ובורר שמראה «בוטלה» על פגישה חיה הוא מסך שמשקר. ביטול
+        המודאל משאיר אותו על הערך השמור בלי ציור מחדש. */
+  if(st === 'בוטלה'){ if(el) el.value = cur; window.mtCancel(id); return; }
+  /* שאר הסטטוסים הם עמודה בלבד, ו-ieSave היא נקודת החנק שלהם (טוסט,
+     יומן, rerender ושמירת הגלילה) — אין לשכפל אותה כאן. */
+  return window.ieSave(el, 'meet|'+id+'|status');
+};
 let MT_CX_ID = null;
 /* 6.196.0 — פתיחה בלבד; הקריאה ב-#mt-cx-go. classList ולא mountCard (מעלים את הכרטיס). */
 window.mtCancel = (id)=>{
@@ -23635,7 +23772,7 @@ window.openMeet = (id)=>{
     <div id="mt-pn-main">
     <div class="form-grid">
       <div class="form-sep">פרטי הפגישה</div>
-      <div><label>סטטוס</label><div class="tk-lnk">${ieSel('meet',m.id,'status',MEET_STATUSES,m.status,{mdColors:MSTATUS_COLOR,mdK:LB_TK})}</div></div>
+      <div><label>סטטוס</label><div class="tk-lnk">${ieSel('meet',m.id,'status',MEET_STATUSES,m.status,{mdColors:MSTATUS_COLOR,mdK:LB_TK,on:mtOnStatus(m)})}</div></div>
       <div><label>תאריך</label>${roIn(_dt)}</div>
       <div><label>שעות</label>${roIn(_hr)}</div>
       <div><label>סוג</label><div class="tk-lnk">${ieSel('meet',m.id,'meet_type',MEET_TYPES,mtType(m),{mdColors:MEET_TYPE_COLORS,mdK:LB_TK,allowEmpty:true})}</div></div>
@@ -23933,11 +24070,27 @@ window.lbSortBy = i=>{ LB_SORT = (LB_SORT[0]===i) ? [i,-LB_SORT[1]] : [i,1]; ren
 function ordBy(list, f, dir, fallback){
   if(!f) return fallback ? list.slice().sort(fallback) : list.slice();
   const col = new Intl.Collator('he');
-  return list.slice().sort((a,b)=>{
-    const x=String(f(a)), y=String(f(b));
+  /* 🔴 המפתח מחושב **פעם אחת לשורה** ולא בתוך הקומפרטור. עד כאן
+     f נקרא פעמיים בכל השוואה, כלומר O(n log n) קריאות במקום O(n) —
+     נמדד על 4,650 לקוחות: **101,264 קריאות מול 4,650**, פי 21.8.
+     ⚠️ וזה נושא משקל דווקא כאן, כי המפתחות אינם קריאת שדה:
+     עמודת "פניות" בלקוחות קוראת ל-custLeads שסורק את כל 3,163
+     הלידים, "לקוח" בעסקאות ו"מקושר ל" במשימות עוברות ב-ctxOf
+     שעושה עד ארבעה .find לינאריים, ו-lbMatch פורש Set למערך
+     בכל קריאה. כלומר מיון לפי "פניות" היה סורק את הלידים
+     מאה אלף פעם בלחיצה אחת על כותרת העמודה.
+     ⚠️ **הסדר אינו זז, וזו כל הנקודה**: מיון JS יציב מ-ES2019, ולכן
+     שורות בעלות מפתח זהה שומרות על סדרן המקורי בדיוק כמו קודם,
+     וכלל הריקים-בסוף בשני הכיוונים נשאר מילה במילה. אומת על
+     4,000 רשימות אקראיות עם מפתחות כפולים וריקים, בשני הכיוונים:
+     אפס סטיות. */
+  const dec = list.map(o=>({o, k:String(f(o))}));
+  dec.sort((a,b)=>{
+    const x=a.k, y=b.k;
     if(!x || !y) return x===y ? 0 : (x ? -1 : 1);
     return dir * col.compare(x,y);
   });
+  return dec.map(d=>d.o);
 }
 function lbOrder(grp, nt){
   const f = LB_KEY[LB_SORT[0]];
@@ -23981,7 +24134,12 @@ function lbSelPaint(){
 }
 function lbSelBar(){
   const el = document.getElementById('lb-selbar'); if(!el) return;
-  if(!LB_BULK){ el.innerHTML=''; return; }
+  /* ⚠️ 6.218.0 — בתצוגת הנמחקים אין שורות ואין תיבות סימון, ולכן סרגל
+     שמציג "N מסומנים" וכפתור מחיקה פועל על בחירה שאינה נראית —
+     בדיוק המסלול שמסך השחזור נבנה כדי לתקן.
+     ⚠️ LB_BULK ו-LB_SEL אינם מתאפסים: הסתרה ולא איפוס, ולכן חזרה
+        ל"בתהליך" מחזירה את הסרגל עם אותה בחירה בדיוק. */
+  if(!LB_BULK || LB_VIEW==='trash'){ el.innerHTML=''; return; }
   const n = LB_SEL.size;
   const own = LOWN.filter(o=>o.assignable).map(o=>`<option value="${esc(o.owner_key)}">${esc(o.name)}</option>`).join('');
   el.innerHTML = `<div class="lb-selbar">
@@ -24091,6 +24249,15 @@ function paintKeep(sel, html){
 function lbPaint(html){ paintKeep('#leads-list', html); }
 function renderLeads(){
   lbChips(); lbInitDef(); renderLbFilters(); lfWrapSync('lb-filters'); lbSelBar();
+  /* 🗑️ 6.218.0 — ענף הציור לתצוגת הנמחקים. תבנית שורות השחזור
+     נכתבה עם המסך ומעולם לא נקראה — נמדד ב-pay4609: **מופע אחד
+     בכל הקובץ, אפס אתרי קריאה**. לכן lbViewList נפלה ל-`return LEADS`
+     הכללי, והצ׳יפ "נמחקו" הציג את הרשימה הראשית במלואה —
+     **אותן השורות בדיוק כמו "ראשי"**, רק עם צ׳יפ אחר מודגש.
+     מסך שמציג לידים חיים תחת הכותרת "נמחקו" גרוע ממסך ריק.
+     ⚠️ הענף **אחרי** הצ׳יפים ולא לפניהם — בלעדיהם אין שום
+        דרך לצאת מתצוגת הנמחקים חזרה ללידים. */
+  if(LB_VIEW==='trash'){ lbPaint(lbTrashHtml()); return; }
   const q = ($('#search').value||'').trim();
   /* 🔴 6.186.0 — החיפוש **מכבד את הסינון והתצוגה**, כמו בעסקאות
      (6.177.0) ובמשימות. ההערה שהייתה כאן הצהירה שזה מכוון; היא

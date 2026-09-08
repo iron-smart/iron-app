@@ -2997,7 +2997,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.215.0</div>
+      <div class="ver">גרסה 6.216.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3127,7 +3127,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="accdash-2026-09-08e">גרסה 6.215.0</div>
+    <div class="side-foot" title="guards-2026-09-08f">גרסה 6.216.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -4754,6 +4754,9 @@ window.closeCards = () => {
   /* 🔴 6.180.0 — עצירת המנוי והתיקתוק. בלי זה נשארים מנוי פתוח לכל
      עסקה שנפתחה אי-פעם ותיקתוק שרץ על מזהה שאיש לא רואה. */
   try{ if(typeof dlLiveStop === 'function') dlLiveStop(); }catch(_e){}
+  /* 🔴 6.216.0 — עורך הפעימות הוא שער של payAutoHeld, וללא איפוס כאן
+     הרענון האוטומטי של לוח התשלומים נשאר מושהה עד רענון דף. */
+  try{ BE_ROWS = []; BE_ORD = null; }catch(_e){}
   CARD_STACK=[]; CARD_CUR=null;
   document.querySelectorAll('.modal').forEach(m=>{ m.classList.add('hidden'); m.removeAttribute('aria-modal'); });
   /* תיקון ממצא 14 — החזרת המיקוד לאלמנט שממנו נפתח הכרטיס */
@@ -10895,7 +10898,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'accdash-2026-09-08e';
+const BUILD_ID = 'guards-2026-09-08f';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -14457,12 +14460,16 @@ PV.addSku = async ()=>{
   if(role && !ROLE_LIST.includes(role)){ setErr('תפקיד פריט לא חוקי'); return; }
   const costRaw = gv('pv-af-cost').trim(), lov = gv('pv-af-lov').trim();
   const sub = gv('pv-af-sub').trim(), status = gv('pv-af-st').trim(), notes = gv('pv-af-notes').trim();
+  /* 🔴 6.216.0 — אותו שער שיש ב-saveEdit. בלעדיו 0 מייצר מחיר ₪0
+     שנכנס למחירון ללקוח, ושלילי מייצר מחיר שלילי. */
+  const lovN = lov==='' ? null : parseFloat(lov);
+  if(lovN !== null && (!isFinite(lovN) || lovN <= 0)){ setErr('מקדם העמסה ידני חייב להיות גדול מאפס'); return; }
   const row = {
     partname: sku, name, cat, sub: sub||null, source: src,
     item_role: role||ROLE_SELL,
     cost_usd: (src===SRC_IMPORT && costRaw!=='')? parseFloat(costRaw) : null,
     cost_ils: ((src===SRC_MAKE||src===SRC_LOCAL) && costRaw!=='')? parseFloat(costRaw) : null,
-    load_override: lov===''? null : parseFloat(lov),
+    load_override: lovN,
     prc_status: status||'פעיל', notes: notes||null,
     sort: DATA.products.length+1, v13_updated: today10(),
     updated_by: meNow(), updated_at: nowIso()
@@ -14523,19 +14530,9 @@ PV.delSku = async (sku)=>{
    חסרה, update היה מתאים ל-0 שורות בלי לזרוק שגיאה — ההודעה "נשמר" הייתה מוצגת
    והערך היה חוזר לברירת המחדל בטעינה הבאה. */
 async function saveSettings(patch){
-  const row = Object.assign({
-    id: 1,
-    usd_rate: Number(S.usdRate), vat: Number(S.vat),
-    load_import: Number(S.loadFactors[SRC_IMPORT]), load_manufacture: Number(S.loadFactors[SRC_MAKE]),
-    load_assembled: Number(S.loadFactors[SRC_ASM]), load_local: Number(S.loadFactors[SRC_LOCAL]),
-    margin_warn: (S.marginWarn==null? null : Number(S.marginWarn)),
-    margin_bad:  (S.marginBad==null?  null : Number(S.marginBad)),
-    usd_rate_floor: (S.usdFloor==null? null : Number(S.usdFloor)),
-    vat_floor: (S.vatFloor==null? null : Number(S.vatFloor)),
-    usd_floor_on: !!S.usdFloorOn, vat_floor_on: !!S.vatFloorOn,
-    updated_by: meNow(), updated_at: nowIso()
-  }, patch);
-  return dbw(()=>O().from('prc_settings').upsert(row, {onConflict:'id'}), 'ההגדרה נשמרה ✓');
+  /* 🔴 6.216.0 — **רק מה שהשתנה**. ראו הכותרת. */
+  const row = Object.assign({ updated_by: meNow(), updated_at: nowIso() }, patch);
+  return dbw(()=>O().from('prc_settings').update(row).eq('id', 1), 'ההגדרה נשמרה ✓');
 }
 PV.setUsd = async v => {
   if(!prcEdit()) return noEdit();
@@ -17839,8 +17836,15 @@ let TK_BULK = false, TK_SEL = new Set(), TK_BUSY = false;
 let TK_REP = '';
 window.tkBulkToggle = ()=>{ TK_BULK = !TK_BULK; if(!TK_BULK){ TK_SEL.clear(); TK_REP=''; } renderTasks(); };
 window.tkSelOne = (id, on)=>{ on ? TK_SEL.add(id) : TK_SEL.delete(id); tkSelBar(); tkSelPaint(); };
+/* 🔴 6.216.0 — נקודת חנק אחת ל"מה על המסך", לציור ולסימון גם יחד. */
+window.tkShown = ()=>{
+  const q = ((document.getElementById('taskSearch')||{}).value||'').trim();
+  const base = tkApplyF(tkViewList());
+  if(!q) return base;
+  return base.filter(t=>(t.name||'').includes(q)||tkLinkName(t).includes(q)||tkLinkPhone(t).includes(q));
+};
 window.tkSelAll = (on)=>{
-  const list = tkApplyF(tkViewList());
+  const list = tkShown();
   on ? list.forEach(t=>TK_SEL.add(t.id)) : TK_SEL.clear();
   renderTasks();
 };
@@ -17887,18 +17891,20 @@ window.tkBulk = async (op)=>{
     const names = ids.slice(0,8).map(nameOf).join(' · ') + (ids.length>8?` ועוד ${ids.length-8}`:'');
     if(!(await sysConfirm(`לסמן ${ids.length} משימות כבוצעו?\n\n${names}`))) return;
   }
-  let patch;
+  let patch = null;
   if(op==='done') patch = { status:'הושלם', closed_at: new Date().toISOString() };
-  else if(op==='owner') patch = { owner_id: val };
-  else { const d=new Date(val+'T09:00'); if(isNaN(d.getTime())){ toast('תאריך לא תקין'); return; }
+  else if(op==='due'){ const d=new Date(val+'T09:00'); if(isNaN(d.getTime())){ toast('תאריך לא תקין'); return; }
          patch = { due_at: d.toISOString() }; }
+  /* op==='owner' עובר ב-RPC ולא ב-UPDATE — ראו הלולאה. */
   TK_BUSY = true;
   const rep = document.getElementById('tk-selrep');
   const bad = []; let ok = 0;
   for(let i=0;i<ids.length;i++){
     const id = ids[i];
     if(rep) rep.textContent = `מבצע ${i+1} מתוך ${ids.length}…`;
-    const { error } = await sb.schema('crm').from('tasks').update(patch).eq('id', id);
+    const { error } = op==='owner'
+      ? await sb.schema('crm').rpc('task_set_owner', { p_task: id, p_owner: val || null })
+      : await sb.schema('crm').from('tasks').update(patch).eq('id', id);
     if(error) bad.push(nameOf(id)+' — '+error.message); else ok++;
   }
   TK_BUSY = false;
@@ -18483,14 +18489,14 @@ function renderTasks(){
      הראשון בלבד, כלומר בדיוק המקרה שקשה לשחזר. */
   tkInitDef(); tkChips(); renderTkFilters(); lfWrapSync('tk-filters'); tkSelBar();
   const q=($('#taskSearch').value||'').trim();
-  const base = tkApplyF(tkViewList());
+  const base = tkShown();
   if(q){
     /* 🔴 6.186.0 — החיפוש **מכבד את הסינון והתצוגה**. רומן דיווח חי:
        "אני מסנן סטטוס חדש ובעדיפות ורשמתי רומן בחיפוש וזה מראה לי גם
        סטטוס הושלם". ההערה שהייתה כאן הצהירה שזה מכוון — הצהרה
        שהתיישנה מול הכרעתו ב-31/08 לעסקאות ("לכבד את הסינון הפעיל").
        ⚠️ ולכן מי שיחפש משימה שהושלמה יצטרך לשנות סינון. */
-    const list=base.filter(t=>(t.name||'').includes(q)||tkLinkName(t).includes(q)||tkLinkPhone(t).includes(q));
+    const list=base;
     /* 6.198.0 — החיפוש שומר על הקיבוץ לפי סטטוס (היה tkFlat: כותרות הקבוצות נעלמו בהקלדה). */
     paintKeep('#tasks-list', wideScreen() ? tkTable(list) : capped(list, taskRow, crmEmptyMsg('משימות')));
     return;
@@ -22102,6 +22108,17 @@ window.fupBoxPaint = (o, keepTyped)=>{
   const typed = {};
   if(keepTyped) FUP_FIELDS.forEach(([elId])=>{ const el=document.getElementById(elId); if(el) typed[elId]=el.value; });
   box.innerHTML = window.fupBoxHtml(o);
+  /* 🔴 6.216.0 — רישום לחוזה ה-snapshot ברגע שהשדות נולדים. לפני
+     החזרת מה שהוקלד, כדי שהערך המוצג הוא "מה שהיה" ולא מה שהמשתמש
+     הקליד זה עתה. */
+  try{
+    if(ORD_SNAP && ORD_SNAP.__id === o.id){
+      FUP_FIELDS.forEach(([elId])=>{
+        const el0 = document.getElementById(elId);
+        if(el0 && ORD_SNAP[elId] === undefined) ORD_SNAP[elId] = el0.value;
+      });
+    }
+  }catch(_e){}
   FUP_FIELDS.forEach(([elId,col])=>{
     const el = document.getElementById(elId); if(!el) return;
     if(keepTyped && typed[elId] !== undefined && typed[elId] !== '') el.value = typed[elId];
@@ -22287,8 +22304,21 @@ const dlMine = d => dlOwnersOf(d).map(String).includes(String((typeof ME!=='unde
 let DL_BULK = false, DL_SEL = new Set(), DL_BUSY = false, DL_REP = '';
 window.dlBulkToggle = ()=>{ DL_BULK = !DL_BULK; if(!DL_BULK){ DL_SEL.clear(); DL_REP=''; } renderDeals(); };
 window.dlSelOne = (id, on)=>{ on ? DL_SEL.add(id) : DL_SEL.delete(id); dlSelBar(); dlSelPaint(); };
+/* 🔴 6.216.0 — ראו tkShown. כאן זה סוגר גם את היעדר dlApplyF בענף החיפוש. */
+window.dlShown = ()=>{
+  const q = ((document.getElementById('dealSearch')||{}).value||'').trim();
+  const base = dlApplyF(dlViewList());
+  if(!q) return base;
+  return base.filter(d=>{
+    if((d.name||'').includes(q) || (d.priority_quote_id||'').includes(q)) return true;
+    const l = dlLead(d), k = dlCust(d);
+    return ((k&&k.name)||'').includes(q)
+        || ((l&&l.full_name)||'').includes(q)
+        || (((l&&l.phone)||(k&&k.phone)||'')).includes(q);
+  });
+};
 window.dlSelAll = (on)=>{
-  const list = dlApplyF(dlViewList());
+  const list = dlShown();
   on ? list.forEach(d=>DL_SEL.add(d.id)) : DL_SEL.clear();
   renderDeals();
 };
@@ -22559,7 +22589,7 @@ function renderDeals(){
   dlInitDef(); dealChips(); renderDlFilters(); lfWrapSync('dl-filters'); dlSelBar();
   const q = ($('#dealSearch').value||'').trim();
   dlPendLoad();   /* עצל, לא חוסם — השבב מופיע כשהתשובה חוזרת */
-  const base = dlViewList();   /* 6.198.0 — הגדרה אחת לתצוגה (גם dlSelAll) */
+  const base = dlShown();      /* 6.216.0 — נקודת חנק אחת: כולל חיפוש וגם dlApplyF */
   /* 6.196.0 — המשימה הבאה לכרטיסי המובייל (dlTable מחשבת לעצמה). */
   const _nt = wideScreen() ? null : nextTaskBy('deal').due;
   const _row = d => dealRow(d, _nt);
@@ -22568,21 +22598,12 @@ function renderDeals(){
        הוא סרק את כל 1,978 העסקאות ודילג על הסינון, כלומר הענף היקר
        ביותר רץ תמיד על הסט המלא. בתצוגת ברירת המחדל: 195 במקום 1,978.
        ⚠️ ולכן עסקה שהושלמה או אינה רלוונטית לא תימצא עד שינוי הסינון. */
-    const list = base.filter(d=>{
-      if((d.name||'').includes(q) || (d.priority_quote_id||'').includes(q)) return true;
-      /* 🔴 ליד ולקוח **פעם אחת לעסקה**. dlPhone קרא שוב ל-dlLead ול-
-         dlCust, וכל dlCust הוא ctxOf עם ארבעה find לינאריים — כלומר
-         כל שורה שילמה פעמיים על אותו חישוב. נמדד: 105ms מתוך 161. */
-      const l = dlLead(d), k = dlCust(d);
-      return ((k&&k.name)||'').includes(q)
-          || ((l&&l.full_name)||'').includes(q)
-          || (((l&&l.phone)||(k&&k.phone)||'')).includes(q);
-    });
+    const list = base;
     /* 6.198.0 — החיפוש שומר על הקיבוץ לפי שלב וסכומי ה-₪ (היה שטוח). */
     paintKeep('#deals-list', wideScreen() ? dlTable(list,true) : capped(list, _row, crmEmptyMsg('תהליכי מכירה')));
     return;
   }
-  const list = dlApplyF(base);
+  const list = base;
   paintKeep('#deals-list', wideScreen() ? dlTable(list,true) : capped(list, _row, crmEmptyMsg('תהליכי מכירה')));
 }
 debounceSearch($('#dealSearch'), renderDeals);
@@ -23909,8 +23930,15 @@ function lbOrder(grp, nt){
 let LB_BULK = false, LB_SEL = new Set(), LB_BUSY = false;
 window.lbBulkToggle = ()=>{ LB_BULK = !LB_BULK; if(!LB_BULK) LB_SEL.clear(); renderLeads(); };
 window.lbSelOne = (id, on)=>{ on ? LB_SEL.add(id) : LB_SEL.delete(id); lbSelBar(); lbSelPaint(); };
+/* 🔴 6.216.0 — ראו tkShown. */
+window.lbShown = ()=>{
+  const q = ((document.getElementById('search')||{}).value||'').trim();
+  const base = lbApplyF(lbViewList());
+  if(!q) return base;
+  return base.filter(l=>(l.full_name||'').includes(q)||(l.phone||'').includes(q)||(l.company||'').includes(q));
+};
 window.lbSelAll = (on)=>{
-  const list = lbApplyF(lbViewList());
+  const list = lbShown();
   on ? list.forEach(l=>LB_SEL.add(l.id)) : LB_SEL.clear();
   renderLeads();
 };
@@ -24037,12 +24065,12 @@ function renderLeads(){
      (6.177.0) ובמשימות. ההערה שהייתה כאן הצהירה שזה מכוון; היא
      התיישנה מול הכרעת רומן, והבאג התגלה כשהוא סינן שני סטטוסים
      וקיבל בחיפוש גם "הושלם". */
-  const base = lbApplyF(lbViewList());
+  const base = lbShown();
   /* 6.196.0 — מפת המשימה הבאה גם לכרטיסי המובייל (lbTable מחשבת אותה בעצמה לטבלה). */
   const _nt = wideScreen() ? null : lbNextMaps().nt;
   const _row = l => leadRow(l, _nt);
   if(q){
-    const list = base.filter(l=>(l.full_name||'').includes(q)||(l.phone||'').includes(q)||(l.company||'').includes(q));
+    const list = base;
     /* 6.198.0 — החיפוש שומר על הקיבוץ לפי סטטוס (היה שטוח). */
     lbPaint(wideScreen() ? lbTable(list,true) : capped(list, _row, crmEmptyMsg('לידים')));
     return;

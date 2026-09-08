@@ -2997,7 +2997,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.214.0</div>
+      <div class="ver">גרסה 6.215.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3127,7 +3127,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="scallbtn-2026-09-08d">גרסה 6.214.0</div>
+    <div class="side-foot" title="accdash-2026-09-08e">גרסה 6.215.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3146,7 +3146,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       <section class="dash-sec" data-sec="exc" hidden><div class="dash-bd"><div id="db-exc" class="db-block"></div></div></section>
       <section class="dash-sec" data-sec="ops" hidden><div class="dash-bd"><div id="db-today" class="db-block"></div><div id="db-calls" class="db-block"></div><div id="db-teams" class="db-block"></div><div id="db-coordq"></div><div id="db-coordsug"></div><div id="db-returns"></div><div id="dash-board-wrap" class="hidden"></div></div></section>
       <section class="dash-sec" data-sec="sales" hidden><div class="dash-bd"><div id="db-meets" class="db-block"></div><div id="db-mytasks" class="db-block"></div><div id="db-newleads" class="db-block"></div><div id="db-funnel" class="db-block"></div><div id="db-salesrc"></div></div></section>
-      <section class="dash-sec" data-sec="fin" hidden><div class="dash-bd"><div id="db-ar" class="db-block"></div><div id="db-rev"></div><div id="db-strategic"></div></div></section>
+      <section class="dash-sec" data-sec="fin" hidden><div class="dash-bd"><div id="db-ar" class="db-block"></div><div id="db-paylate" class="db-block"></div><div id="db-payweek" class="db-block"></div><div id="db-rev"></div><div id="db-strategic"></div></div></section>
       <section class="dash-sec" data-sec="inv" hidden><div class="dash-bd"><div id="db-inv" class="db-block"></div><div id="db-po"></div></div></section>
       <section class="dash-sec" data-sec="rem" hidden><div class="dash-bd"><div id="db-rem" class="db-block"></div></div></section>
       <section class="dash-sec" data-sec="sup" hidden><div class="dash-bd"><div id="db-aging"></div></div></section>
@@ -5688,10 +5688,27 @@ function renderKpiStrip(){
     if(canEdit('logi.cal')) T.push('<div class="stat clk d-ops" id="b1a-tile" onclick="gotoLogi(\'cal\')"><div class="n" id="b1a-n">·</div><div class="l">ימים לא משובצים</div></div>');
   }
   const fin = DASH_DATA.fin && DASH_DATA.fin.d;
+  /* 6.215.0 — שלושת אריחי הגבייה (רומן: "יתרות גביה השבוע, יתרות החודש,
+     ויתרות כללי"), מ-payAggr ולא מ-dash_fin_summary.
+     🔴 עד כאן האריח "יתרות לגבייה" הציג את ar_sum של ה-RPC — ₪1,633,856
+     מול ₪1,417,598 במסך שאליו הוא מוביל, פער של ₪216,253 שכולו סגירות
+     ידניות (נמדד 08/09/2026). התוויות זהות עכשיו לאלה שבמסך התשלומים,
+     כי אריח שמוביל למסך חייב לשאת את אותו שם ואת אותו מספר.
+     ⚠️ שורת המשנה עברה מ-"N פעימות באיחור" ל-"N הזמנות" — הכרטיס החדש
+     מונה הזמנות, ושני מונים לאותה שורה הם בדיוק חוסר-ההתאמה שהבנייה
+     הזאת באה לסגור. */
+  if(canView('dash.fin') && canView('acc.pays')){
+    const A = payAggr();
+    T.push(kTile('לגבייה השבוע', ilsK(A.weekSum), "gotoPays('week')",
+      A.week.length ? kSub(A.week.length+' הזמנות', false) : '', 'fin'));
+    T.push(kTile('לגבייה החודש', ilsK(A.monthSum), "gotoPays('month')",
+      A.month.length ? kSub(A.month.length+' הזמנות', false) : '', 'fin'));
+    T.push(kTile('סך יתרה פתוחה', ilsK(A.openSum), "gotoPays('open')",
+      A.late.length ? kSub(A.late.length+' הזמנות באיחור · '+ilsK(A.lateSum), true)
+                    : kSub(A.open.length+' הזמנות', false), 'fin'));
+  }
   if(canView('dash.fin') && fin){
-    /* מתחילת השנה · תקבולים — מספרי-ייחוס, בכרטיס הכספים */
-    T.push(kTile('יתרות לגבייה', ilsK(fin.ar_sum), "gotoPays('open')",
-      fin.overdue_beats ? kSub(fin.overdue_beats+' פעימות באיחור', true) : '', 'fin'));
+    /* מתחילת השנה — מספר-ייחוס, בכרטיס הכספים */
     T.push(kTile('הכנסות החודש', ilsK(fin.rev_mtd), "gotoTab('pays')", '', 'fin'));
   }
   const inv = DASH_DATA.inv && DASH_DATA.inv.d;
@@ -5900,11 +5917,64 @@ function renderArBlock(){
     (function(){ const b=[];
       if(d.rev_ytd!=null) b.push('<div><b>'+ilsK(d.rev_ytd)+'</b><small>מתחילת השנה</small>'+(dlt==null?'':'<small class="'+(dlt<0?'red':'')+'">'+(dlt>=0?'+':'')+dlt+'% מול אשתקד</small>')+'</div>');
       if(d.receipts_mtd!=null) b.push('<div><b>'+ilsK(d.receipts_mtd)+'</b><small>תקבולים החודש</small></div>');
-      if(d.ar_n!=null || d.ar_sum!=null) b.push('<div><b>'+(d.ar_n||0)+'</b><small>הזמנות עם יתרה'+(d.ar_sum!=null?' · '+ilsK(d.ar_sum):'')+'</small></div>');
+      /* 6.215.0 — "הזמנות עם יתרה" ירדה: מרגע שהקוקפיט מציג את אותו נתון
+         מ-payAggr, זו הצגה שנייה של אותו מספר על אותו מסך — ובערך **שונה**,
+         כי ar_n/ar_sum של ה-RPC אינם מסננים fin_close (89/₪1.63M מול
+         53/₪1.42M, נמדד 08/09/2026). YTD ותקבולים נשארים: הם מספרי-ייחוס
+         שאין להם אריח. */
       return b.length ? '<div class="db-fin">'+b.join('')+'</div>' : ''; })() +
     '<div class="db-day"><b>החייבים הגדולים</b></div>' +
     ((d.top_debtors||[]).slice(0,DB_CAP).map(t=>dbRow("gotoPays('open')", esc(t.customer||''), esc(t.order_number||'')+' · '+esc(t.pay_state||''), '<span class="v">'+ilsK(t.balance)+'</span>')).join('')||'<div class="db-empty">אין יתרות פתוחות</div>') +
     dashAsOf(d.as_of, 26);
+}
+/* ═══ באיחור בתשלום · לגבייה השבוע (6.215.0) ════════════════════════════
+   רומן: "תצוגה טבלאית של כל מי שמאחר בתשלום וגם כל מי שיש תשלום בשבוע
+   הקרוב." שני הכרטיסים עוברים ב-payCardHtml, ולכן אינם יכולים להיפרד
+   בעיצוב או בכללי הסימון; המספרים מ-payAggr, כלומר זהים לאריחים ולמסך.
+   ⚠️ DB_CAP_PAY=12 ולא DB_CAP=5: רומן ביקש "כל מי", ונמדד 08/09/2026 שיש
+   7 מאחרים · 9 השבוע · 13 החודש — כלומר 12 מציג את כולם בפועל ובכל זאת
+   הוא תקרה, כדי שיום עם 60 מאחרים לא יהפוך את הלובי למגילה. השאר מאחורי
+   "עוד N" שמוביל למסך התשלומים עם **אותו מסנן בדיוק**.
+   ⚠️ טבלת "השבוע" כוללת גם את המאחרים — זו הכרעת רומן מ-23/08/2026 ("בגביה
+   השבוע יש לכלול גם גביות עבר"), וזה מה ש-payWeekAmt סופר. שורה כזאת
+   מסומנת lb-ovr ואומרת "N ימים באיחור", ולכן החפיפה גלויה. סינון אחר
+   בטבלה מזה שבאריח היה מחזיר את הפער שהבנייה סוגרת, בכיוון ההפוך. */
+const DB_CAP_PAY = 12;
+function payCardHtml(title, rows, sum, filt, amtFn, dueFn, emptyTxt){
+  const today = todayStr();
+  return dbHead(title, rows.length ? rows.length+' הזמנות · '+ilsK(sum) : null,
+      "gotoPays('"+filt+"')", 'לרשימה') +
+    (rows.slice(0, DB_CAP_PAY).map(f=>{
+      const d = dueFn(f), late = !!d && d < today, n = payDaysLate(d);
+      return dbRow("payOpen('"+jsq(f.order_number)+"')", esc(f.customer_name||''),
+        esc(f.order_number||'') +
+          (d ? ' · ' + (late ? n+' '+(n===1?'יום':'ימים')+' באיחור' : 'מועד '+fmtD(d)) : ' · ללא מועד') +
+          /* ⚠️ pay_state יורד בשורה שבאיחור: נמדד ב-1440/1280/390 שהתת-שורה
+             נקטמת (`… ממתין לת…`), ו-7 מ-7 המאחרים היום הם "ממתין לתשלום" —
+             כלומר בדיוק מה ש-"N ימים באיחור" כבר אומר. מידע שנחתך תמיד הוא
+             מידע שאינו צריך להיות שם. בשורה שאינה באיחור הוא נשאר, ושם
+             נמדד שהיא נכנסת. */
+          (!late && f.pay_state ? ' · '+esc(f.pay_state) : ''),
+        '<span class="v">'+ilsK(amtFn(f))+'</span>',
+        d ? fmtD(d) : '—', late ? 'lb-ovr' : '');
+    }).join('') || '<div class="db-empty">'+emptyTxt+'</div>') +
+    (rows.length > DB_CAP_PAY
+      ? dbRow("gotoPays('"+filt+"')", 'עוד '+(rows.length-DB_CAP_PAY)+' הזמנות', '', '', '') : '');
+}
+function renderPayCards(){
+  const lt = $('#db-paylate'), wk = $('#db-payweek');
+  if(!lt && !wk) return;
+  /* אותו שער של סקשן ה-fin ב-DASH_SECS: ההרשאה למסך **וגם** לנתונים.
+     ⚠️ כשל בטעינת FIN אינו מדווח כאן — loadErrBanner כבר מונה את "מעקב
+     תשלומים" ואת "לוח פעימות" בשמם בפס גלובלי, ושכבה שנייה באותו מסך
+     היא כפילות. */
+  if(!(canView('dash.fin') && canView('acc.pays'))){
+    if(lt) lt.innerHTML=''; if(wk) wk.innerHTML=''; return; }
+  const A = payAggr();
+  if(lt) lt.innerHTML = payCardHtml('באיחור בתשלום', A.late, A.lateSum, 'late',
+    payLateAmt, payLateDue, 'אין הזמנות באיחור');
+  if(wk) wk.innerHTML = payCardHtml('לגבייה השבוע', A.week, A.weekSum, 'week',
+    payWeekAmt, payWeekDue, 'אין גבייה מתוכננת השבוע');
 }
 function renderStrategicBlock(){
   const el=$('#db-strategic'); if(!el) return;
@@ -6161,7 +6231,7 @@ function renderSalesSrcBlock(){
 }
 function renderDashData(){
   renderKpiStrip();
-  renderSyncStrip(); renderRevBlock(); renderArBlock(); renderStrategicBlock();
+  renderSyncStrip(); renderRevBlock(); renderArBlock(); renderPayCards(); renderStrategicBlock();
   renderInvBlock(); renderPoBlock(); renderRemBlock(); renderExceptions();
   renderFunnelBlock(); renderSalesSrcBlock(); renderToday();
   dashBadges();
@@ -10825,7 +10895,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'scallbtn-2026-09-08d';
+const BUILD_ID = 'accdash-2026-09-08e';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -18840,16 +18910,29 @@ function beatsIndex(rows){
 const beatRem = b => Math.max(0, finNum(b.amount) - finNum(b.covered));
 /* estOk=false מחריג פעימה שתאריכה הוא צפי בלבד — אותה הבטחה שהמקרא נותן
    על "באיחור": פעימה בצפי לעולם אינה נספרת כאיחור. */
-function beatWinSum(on, from, to, estOk){
-  return (BEATS_BY[on]||[]).reduce((a,b)=>{
-    if(b.is_paid) return a;
-    if(!estOk && b.due_is_est) return a;
-    const d = b.due_show; if(!d) return a;
-    if(from && d < from) return a;
-    if(to   && d > to)   return a;
-    return a + beatRem(b);
-  }, 0);
+/* 6.215.0 — הסינון יצא לנקודת חנק אחת: beatWinSum סוכם עליה, ו-beatWinFirst
+   מחזיר את המועד המוקדם שבאותו חלון. שני צרכנים לאותו כלל, ולכן הסכום
+   שבשורה והתאריך שלצידו אינם יכולים לתאר חלונות שונים.
+   ⚠️ חתימת beatWinSum נשמרת בדיוק — היא מזינה את payLateAmt/payWeekAmt/
+   payMonthAmt, כלומר את שלושת אריחי הלוח וגם את צביעת pay-wk. */
+function beatWin(on, from, to, estOk){
+  return (BEATS_BY[on]||[]).filter(b=>{
+    if(b.is_paid) return false;
+    if(!estOk && b.due_is_est) return false;
+    const d = b.due_show; if(!d) return false;
+    if(from && d < from) return false;
+    if(to   && d > to)   return false;
+    return true;
+  });
 }
+function beatWinSum(on, from, to, estOk){
+  return beatWin(on, from, to, estOk).reduce((a,b)=>a+beatRem(b), 0);
+}
+/* המועד להצגה בשורה — מאותו חלון שממנו חושב הסכום.
+   ⚠️ ולא f.next_due: הוא ה"בא" של order_pay_state_v וכולל צפי, בעוד ששורת
+   "באיחור" מתארת דווקא פעימה שעברה את מועדה הוודאי. */
+const beatWinFirst = (on, from, to, estOk) =>
+  beatWin(on, from, to, estOk).reduce((m,b)=> (!m || b.due_show < m) ? b.due_show : m, null);
 /* 🔴 אי אפשר לגבות מהזמנה יותר ממה שהיא חייבת. נמדד 07/09/2026:
    SO26001115 תרמה ₪34,209 ל"לגבייה השבוע" בעוד יתרתה ₪26,032 — הפעימה
    היא 34,209, נגבו 13,866, וניתן זיכוי של 3,968 ש-`covered` בפעימה אינו
@@ -18888,6 +18971,38 @@ function payWeekEnd(){
 }
 const payWeekAmt  = f => payCap(f, payLateAmt(f) + beatWinSum(f.order_number, todayStr(), payWeekEnd(), true));
 const payMonthAmt = f => payCap(f, payLateAmt(f) + beatWinSum(f.order_number, todayStr(), payMonthEnd(), true));
+/* ═══ אגרגט הגבייה (6.215.0) — נקודת חנק אחת ללוח ולדשבורד ══════════════
+   רומן, 08/09/2026: "דשבורד של מנהל חשבונות — יתרות גביה השבוע, יתרות
+   החודש, ויתרות כללי ... תצוגה טבלאית של כל מי שמאחר בתשלום וגם כל מי
+   שיש תשלום בשבוע הקרוב."
+   🔴 עד כאן הלובי קרא את ord.dash_fin_summary, שסופרת sum(balance) על **כל**
+   order_finance_v — בלי finLive, בלי ordered, ובלי fin_close. נמדד
+   08/09/2026 שהאריח "יתרות לגבייה" הציג ₪1,633,856 (89 הזמנות) בעוד המסך
+   שאליו הוא מוביל הציג ₪1,417,598 (53), והפער — ₪216,253 — הוא **כולו**
+   סגירות ידניות, כי fin_close יושב ב-order_finance_meta ולא ב-view.
+   🟢 מכאן שני המסכים סופרים מכאן, ולכן אינם יכולים לסטות. יש שער בבנייה
+   שסופר את הצרכנים בשם. */
+const payLateDue = f => beatWinFirst(f.order_number, null, addDaysIso(todayStr(), -1), false);
+/* החלון של payWeekAmt הוא (איחור ודאי) + (היום..סוף השבוע, כולל צפי) —
+   ולכן המועד המוצג נגזר באותו סדר, ולא מחלון שלישי. */
+const payWeekDue = f => payLateDue(f) || beatWinFirst(f.order_number, todayStr(), payWeekEnd(), true);
+const payDaysLate = d => d ? Math.max(0, Math.round((new Date(todayStr()+'T00:00') - new Date(d+'T00:00'))/86400000)) : 0;
+function payAggr(){
+  const open  = FIN.filter(finIsOpen);
+  const sum   = (l, fn) => l.reduce((a,f)=>a+fn(f), 0);
+  const byDue = fn => (a,b) => String(fn(a)||'9').localeCompare(String(fn(b)||'9'));
+  /* slice מרומז: filter מחזיר מערך חדש, ולכן ה-sort אינו נוגע ב-FIN. */
+  const late  = open.filter(payIsLate).sort(byDue(payLateDue));
+  const week  = open.filter(f => payWeekAmt(f) > 0).sort(byDue(payWeekDue));
+  const month = open.filter(f => payMonthAmt(f) > 0);
+  const nodue = open.filter(f => !f.next_due);
+  return { open, late, week, month, nodue,
+    openSum:  sum(open,  f => finNum(f.balance)),
+    lateSum:  sum(late,  payLateAmt),
+    weekSum:  sum(week,  payWeekAmt),
+    monthSum: sum(month, payMonthAmt),
+    nodueSum: sum(nodue, f => finNum(f.balance)) };
+}
 const payStClass = s => s==='שולמה' ? 'st-rel' : (s==='שולמה חלקית' ? 'st-def' : 'st-no');
 const remaining = p => Math.max(0, Number(p.total_amount||0) - Number(p.paid_amount||0));
 /* ===== מסך התשלומים (6.47.1) — סביב ההזמנה ולא סביב רשומת תשלום =====
@@ -19019,8 +19134,10 @@ function finCreditSum(list){
 }
 function payChips(){
   const live = FIN.filter(finLive);
+  /* 6.215.0 — `open` מזין את הצ'יפ "בלי לוח תשלומים" בלבד. הסכום שהיה כאן
+     (sumRem) הזין את הצ'יפ "יתרה פתוחה" שירד ב-6.131.0, ונשאר מחושב בלי
+     צרכן — מקור רביעי לאותו נתון, שאיש אינו קורא. */
   const open = live.filter(finIsOpen);
-  const sumRem = open.reduce((a,f)=>a+finNum(f.balance), 0);
   const uninv  = live.filter(f => finNum(f.delivered_uninvoiced) > 0 && !finClosed(f));
   const sumUninv = uninv.reduce((a,f)=>a+finNum(f.delivered_uninvoiced_sum), 0);
   const noterm = open.filter(f => finNum(f.n_beats) === 0);
@@ -19059,15 +19176,12 @@ window.setPayTerm  = v => { PAY_TERM_F = v || ''; renderPays(); };
    מספר שאי אפשר לפעול לפיו. */
 function payTiles(){
   const el = $('#pay-tiles'); if(!el) return;
-  const live = FIN.filter(finLive), open = live.filter(finIsOpen);
-  const late  = open.filter(f => payIsLate(f));
-  const week  = open.filter(f => payWeekAmt(f) > 0);
-  const month = open.filter(f => payMonthAmt(f) > 0);
-  const nodue = open.filter(f => !f.next_due);
-  /* יתרה פתוחה וללא-מועד נשארים סכום היתרה — שם אין פעימה לדבר עליה,
-     והיתרה **היא** הנתון. שלושת אריחי החלון עוברים לסכום הפעימות. */
-  const sumBal = l => l.reduce((a,f)=>a+finNum(f.balance), 0);
-  const sumWin = (l, fn) => l.reduce((a,f)=>a+fn(f), 0);
+  /* 6.215.0 — האגרגט משותף עם הלובי (payAggr), אחרי שנמדד שם חישוב שני
+     שסטה ב-₪216,253. `live` הוסר: finIsOpen כולל את finLive ממילא, ושתי
+     הסינונים היו שקולים. יתרה פתוחה וללא-מועד נשארים **סכום היתרה** —
+     שם אין פעימה לדבר עליה, והיתרה היא הנתון; שלושת אריחי החלון סוכמים
+     פעימות. */
+  const A = payAggr();
   const tile = (key, cls, label, list, tip, amt) =>
     '<button class="payt ' + cls + (PAY_FILTER===key ? ' active' : '') + '" title="' + esc(tip) +
       '" onclick="setPayFilter(\'' + key + '\')">' +
@@ -19075,11 +19189,11 @@ function payTiles(){
       '<span class="payt-l">' + esc(label) + '</span>' +
       '<span class="payt-a">' + shekel(amt) + '</span></button>';
   el.innerHTML =
-    tile('open','payt-open','סך יתרה פתוחה',open,'כל ההזמנות החיות שנותר בהן לגבות',sumBal(open)) +
-    tile('late','payt-late','באיחור',late,'סכום הפעימות שעברו את מועדן הוודאי ולא כוסו — ולא יתרת ההזמנה כולה. פעימה בצפי אינה נספרת.',sumWin(late,payLateAmt)) +
-    tile('week','payt-week','לגבייה השבוע',week,'סכום הפעימות שיש לגבות עד סוף השבוע הקלנדרי — כולל פעימות שכבר איחרו וטרם נגבו',sumWin(week,payWeekAmt)) +
-    tile('month','payt-month','לגבייה החודש',month,'סכום הפעימות שיש לגבות עד סוף החודש — כולל פעימות שכבר איחרו וטרם נגבו',sumWin(month,payMonthAmt)) +
-    tile('nodue','payt-nodue','ללא מועד גבייה',nodue,'יתרה פתוחה בלי לוח פעימות — אינה נספרת בשום חלון זמן ואינה נכנסת לצפי',sumBal(nodue));
+    tile('open','payt-open','סך יתרה פתוחה',A.open,'כל ההזמנות החיות שנותר בהן לגבות',A.openSum) +
+    tile('late','payt-late','באיחור',A.late,'סכום הפעימות שעברו את מועדן הוודאי ולא כוסו — ולא יתרת ההזמנה כולה. פעימה בצפי אינה נספרת.',A.lateSum) +
+    tile('week','payt-week','לגבייה השבוע',A.week,'סכום הפעימות שיש לגבות עד סוף השבוע הקלנדרי — כולל פעימות שכבר איחרו וטרם נגבו',A.weekSum) +
+    tile('month','payt-month','לגבייה החודש',A.month,'סכום הפעימות שיש לגבות עד סוף החודש — כולל פעימות שכבר איחרו וטרם נגבו',A.monthSum) +
+    tile('nodue','payt-nodue','ללא מועד גבייה',A.nodue,'יתרה פתוחה בלי לוח פעימות — אינה נספרת בשום חלון זמן ואינה נכנסת לצפי',A.nodueSum);
 }
 
 /* ===== החלה מרוכזת של תנאי תשלום (6.100.0) ===== */

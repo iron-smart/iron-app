@@ -2997,7 +2997,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.213.0</div>
+      <div class="ver">גרסה 6.214.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3127,7 +3127,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="jobdept-2026-09-08c">גרסה 6.213.0</div>
+    <div class="side-foot" title="scallbtn-2026-09-08d">גרסה 6.214.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3318,6 +3318,15 @@ tr.lb-on td{ background-color:#eef5fd !important; }
         <div class="toolbar">
           <input id="logiSearchOrders" placeholder="חיפוש הזמנה — לקוח, מספר הזמנה, עיר או צוות…">
           <input id="logiSearchCalls" class="hidden" placeholder="חיפוש קריאת שירות — לקוח, מספר קריאה, עיר או מוצר…">
+          <!-- 6.214.0 — 🔴 הכפתור ישב עד כה בתוך שורת הסינון, ומ-6.204.0 היא
+               <details class="lf-wrap"> שמתקפל כברירת מחדל גם בדסקטופ — כלומר
+               פעולת יצירה נסגרה מאחורי פקד ששמו "מסננים", בלי שום רמז שהיא שם
+               (רומן, 08/09/2026: "לאן נעלמה האופציה לפתוח קריאות שירות?").
+               נמדד: btnVisible False ב-pay4604 מול True ב-pay4593.
+               כאן הוא בשורת החיפוש כמו בשלושת הבורדים האחרים — מחוץ ל-details,
+               ולכן אינו יכול להיסגר שוב. ההצגה נשלטת ב-renderLogi יחד עם
+               #logiSearchCalls, שהוא הפקד היחיד באותו כלל תצוגה. -->
+          <button class="add hidden" id="scAddBtn" title="קריאת שירות חדשה" onclick="openNewScall()">+ קריאת שירות חדשה</button>
         </div>
         <div class="chips" id="logi-scope"></div>
         <details class="pay-legend">
@@ -6343,7 +6352,6 @@ function renderScFilters(){
   const stItems=CALL_STATUSES.map(st=>`<label class="lf-opt"><input type="checkbox" ${stSel.includes(st)?'checked':''} onchange="scStatusToggle('${st}',this.checked)"><span class="pill ${STATUS_PILL[st]||'p-gray'}">${esc(st)}</span></label>`).join('');
   const statusMulti=`<details class="lf-multi ${stSel.length?'lf-on':''}"><summary>${stSel.length?`סטטוס (${stSel.length})`:'סטטוס — הכל'}</summary><div class="lf-menu">${stItems}</div></details>`;
   box.innerHTML =
-    (window.canEdit('logi.calls')?`<button type="button" class="lf-new" onclick="openNewScall()">＋ קריאת שירות חדשה</button>`:'')+
     statusMulti+
     sel('urgency','דחיפות — הכל',URGENCIES)+
     sel('team','צוות — הכל',teams)+
@@ -6438,6 +6446,7 @@ function renderLogi(){
   /* 6.2.2 — כל תצוגה מחפשת בשדה שלה, וכל שדה זוכר את מה שהוקלד בו */
   $('#logiSearchOrders').classList.toggle('hidden', isCalls);
   $('#logiSearchCalls').classList.toggle('hidden', !isCalls);
+  if($('#scAddBtn')) $('#scAddBtn').classList.toggle('hidden', !isCalls || !window.canEdit('logi.calls'));
   if($('#logi-scope')) $('#logi-scope').classList.toggle('hidden', isCalls);
   if($('#logi-filters')) $('#logi-filters').classList.toggle('hidden', isCalls);
   if($('#logi-filters-calls')) $('#logi-filters-calls').classList.toggle('hidden', !isCalls);
@@ -10816,7 +10825,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'jobdept-2026-09-08c';
+const BUILD_ID = 'scallbtn-2026-09-08d';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====

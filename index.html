@@ -532,11 +532,22 @@
   .items-tbl td.bal{ text-align:center; font-weight:800; color:#b45309 }
   .items-tbl tr.has-bal{ background:#fffbeb }
   #tab-pays .tbl td{ vertical-align:top }
-  #tab-pays .fin-note{ width:100%; border:1px solid transparent; background:transparent; border-radius:var(--r-sm);
+  /* 6.219.1 — עמודת ההערות (רומן, 09/09/2026: "תרחיב את עמודת ההערות אחרת לא רואים היא מאוד צרה").
+     ה-input הוא width:100%, ורוחב באחוזים תורם אפס לחישוב הרוחב של table-layout:auto — ולכן ברגע
+     שהטבלה מגיעה לרוחב התוכן שלה (1440 ומטה, או שם לקוח ארוך) העמודה קרסה ל-63px וגם הפלייסהולדר
+     נקטם. נמדד ב-pay4611: 63px ב-1440 · 169 ב-1700 · 196 ב-1920. שתי שכבות בכוונה: האחוז על th/td
+     נותן לעמודה נתח כשיש רווח (347px ב-1920), והרצפה על ה-input תופסת כשאין (234px) — רצפה על תא
+     טבלה אינה נאכפת בכל דפדפן, על input כן. 220 כי p90 של אורך הערה במסד הוא 34 תווים ≈ 210px.
+     המחיר, מדוד: ב-1440 ומטה הטבלה כבר גלשה (44px) והגלישה גדלה ב-171px — .tbl-wrap גליל. */
+  #tab-pays th.notecol, #tab-pays td.notecol{ width:22% }
+  #tab-pays .fin-note{ width:100%; min-width:220px; border:1px solid transparent; background:transparent; border-radius:var(--r-sm);
                        padding:3px 6px; font-family:inherit; font-size:var(--fs-sm); color:var(--ink-1) }
   #tab-pays .fin-note:hover{ border-color:var(--line) }
+  /* 6.219.1 — width:auto: select{width:100%} הגלובלי תורם אפס לרוחב העמודה, ולכן כשעמודת ההערות לקחה
+     את הרווח הבורר נדחס ל-79px ו"מקדמה 5" נקטם (ב-1440 היה 86 גם לפני). הרוחב הטבעי עם 13 שמות
+     התנאים שבמסד הוא 226px, ולכן התקרה 150 הקיימת היא שקובעת — כמו במסך רחב היום, גם כשאין רווח. */
   #tab-pays select.fin-term{ border:1px solid var(--line); border-radius:var(--r-sm); padding:3px 6px;
-                             font-family:inherit; font-size:var(--fs-sm); background:#fff; max-width:150px }
+                             font-family:inherit; font-size:var(--fs-sm); background:#fff; width:auto; max-width:150px }
   /* ===== פס גרסה חדשה (6.46.0) =====
      יושב מעל הסרגל העליון ודוחף אותו למטה דרך --verbar-h, כך ששניהם נשארים
      דביקים בגלילה ואף אחד לא מכסה את השני. הצבע כאן אינו צבע סטטוס אלא
@@ -3006,7 +3017,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.219.0</div>
+      <div class="ver">גרסה 6.219.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3136,7 +3147,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="podocs-2026-09-09a">גרסה 6.219.0</div>
+    <div class="side-foot" title="paynotes-2026-09-09a">גרסה 6.219.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -11105,7 +11116,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'podocs-2026-09-09a';
+const BUILD_ID = 'paynotes-2026-09-09a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -20809,8 +20820,10 @@ function payTable(list){
       ? '<select class="fin-term" onchange="finSetTerm(\'' + jsq(f.order_number) + '\', this.value)"><option value="">— בחר —</option>' +
         PTERMS.map(t=>'<option value="' + esc(t.code) + '"' + (String(f.pay_code||'')===t.code?' selected':'') + '>' + esc(t.name) + '</option>').join('') + '</select>'
       : esc(finTermName(f.pay_code) || '—');
+    /* 6.219.1 — title עם ההערה המלאה: העמודה רחבה יותר (notecol), אבל הערה ארוכה מהתיבה עדיין
+       נחתכת בתוכה, וריחוף מראה אותה כולה בלי להיכנס לשדה. */
     const note = ed
-      ? '<input class="fin-note" value="' + esc(f.notes||'') + '" placeholder="הערה…" onchange="finSetNote(\'' + jsq(f.order_number) + '\', this.value)">'
+      ? '<input class="fin-note" value="' + esc(f.notes||'') + '"' + (f.notes ? ' title="' + esc(f.notes) + '"' : '') + ' placeholder="הערה…" onchange="finSetNote(\'' + jsq(f.order_number) + '\', this.value)">'
       : esc(f.notes||'');
     /* הסימון נגזר מאותה נקודת חנק שמזינה את האריח, ולא מהשוואת תאריך
        נפרדת — שני מימושים של אותו כלל היו נפרדים בשקט ביום שהכלל ישתנה. */
@@ -20835,7 +20848,7 @@ function payTable(list){
       '<td>' + payStateCell(f) + '</td>' +
       '<td>' + payDueCell(f) + '</td>' +
       '<td onclick="event.stopPropagation()">' + termSel + payMethTag(f.order_number) + payCloseTag(f.order_number) + '</td>' +
-      '<td onclick="event.stopPropagation()">' + note + '</td>' +
+      '<td class="notecol" onclick="event.stopPropagation()">' + note + '</td>' +
     '</tr>'; }).join('');
   return '<div class="tbl-wrap"><table class="tbl"><thead><tr>' +
     (ed ? '<th class="selcol"><input type="checkbox" id="paySelAll" title="בחירת כל השורות המוצגות"></th>' : '') +
@@ -20843,7 +20856,7 @@ function payTable(list){
     '<th class="num">סה"כ</th><th class="num">שולם</th><th class="num">נותר לתשלום</th><th title="נגזר מלוח הפעימות — אינו נערך ידנית">סטטוס תשלום</th>' +
     '<th class="th-sort" title="הפעימה הפתוחה הקרובה. לחיצה ממיינת מהקרוב לרחוק ובחזרה." onclick="setPaySort(PAY_SORT===\'due\'?\'duedesc\':\'due\')">מועד לגבייה' +
       (PAY_SORT === 'due' ? '<span class="ar">▲</span>' : (PAY_SORT === 'duedesc' ? '<span class="ar">▼</span>' : '')) + '</th>' +
-    '<th>תנאי תשלום</th><th>הערות</th>' +
+    '<th>תנאי תשלום</th><th class="notecol">הערות</th>' +
     '</tr></thead><tbody>' + rows + '</tbody></table></div>' + pgFoot('pays', list.length, 'הזמנות');
 }
 function payRow(f){

@@ -543,6 +543,13 @@
   #tab-pays .fin-note{ width:100%; min-width:220px; border:1px solid transparent; background:transparent; border-radius:var(--r-sm);
                        padding:3px 6px; font-family:inherit; font-size:var(--fs-sm); color:var(--ink-1) }
   #tab-pays .fin-note:hover{ border-color:var(--line) }
+  /* 6.220.0 — התא הוא יומן ולא שדה: ההערה האחרונה למעלה, ומתחתיה שדה שמוסיף.
+     line-clamp ל-2 שורות כי ההערה הארוכה במסד היא 107 תווים, והתא 22% מהרוחב. */
+  #tab-pays .fn-last{ font-size:var(--fs-xs); color:var(--ink-2); line-height:1.45; margin-bottom:4px;
+                      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden }
+  #tab-pays .fn-cnt{ display:inline-block; min-width:15px; padding:0 4px; margin-inline-end:5px;
+                     border-radius:var(--r-pill); background:var(--navy); color:#fff;
+                     font-size:10px; font-weight:800; line-height:15px; text-align:center; vertical-align:1px }
   /* 6.219.1 — width:auto: select{width:100%} הגלובלי תורם אפס לרוחב העמודה, ולכן כשעמודת ההערות לקחה
      את הרווח הבורר נדחס ל-79px ו"מקדמה 5" נקטם (ב-1440 היה 86 גם לפני). הרוחב הטבעי עם 13 שמות
      התנאים שבמסד הוא 226px, ולכן התקרה 150 הקיימת היא שקובעת — כמו במסך רחב היום, גם כשאין רווח. */
@@ -3017,7 +3024,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.219.1</div>
+      <div class="ver">גרסה 6.220.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3147,7 +3154,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="paynotes-2026-09-09a">גרסה 6.219.1</div>
+    <div class="side-foot" title="notelog-2026-09-15a">גרסה 6.220.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -11116,7 +11123,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'paynotes-2026-09-09a';
+const BUILD_ID = 'notelog-2026-09-15a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -16697,7 +16704,7 @@ async function loadLeads(){
     sb.schema('ord').from('order_finance_v').select('*').order('order_date',{ascending:false}).limit(10000),
     sb.schema('ord').from('payment_terms').select('*').eq('active',true).order('sort_order',{ascending:true}),
     sb.schema('ord').from('order_open_items_v').select('*').limit(10000),
-    sb.schema('ord').from('order_finance_meta').select('order_number,pay_code,notes,pay_method,pay_installments,fin_close,fin_close_by,fin_close_at,fin_close_note,fin_credit_amt').limit(10000),
+    sb.schema('ord').from('order_finance_meta').select('order_number,pay_code,pay_method,pay_installments,fin_close,fin_close_by,fin_close_at,fin_close_note,fin_credit_amt').limit(10000),
     sb.schema('ord').from('pending_returns_v').select('*').limit(5000),
     /* קיזוזים מאושרים והצעות קיזוז — ריקים למי שאין לו acc.pays */
     sb.schema('ord').from('pay_offsets_v').select('*').limit(5000),
@@ -19714,16 +19721,56 @@ async function finRefreshRow(ord, addIfNew){
     else if(addIfNew) FIN.push(data);
   }catch(_e){}
 }
-window.finSetNote = async (ord, txt) => {
+/* ===== יומן הערות הגבייה (6.220.0) ===== */
+/* עד 6.219.1 ההערה הייתה שדה יחיד שנדרס: כל כתיבה מחקה את הקודמת, ואין בה
+   לא כותב ולא זמן. מכאן כל הערה היא שורה ב-ord.order_finance_notes, והתא
+   בטבלה מציג את האחרונה ומוסיף — לעולם לא דורס. */
+function finNoteWho(id){
+  const u = (typeof LOWN_BY !== 'undefined' && LOWN_BY) ? LOWN_BY[id] : null;
+  return u ? u.name : (id ? 'משתמש שאינו ברשימה' : 'ייבוא');
+}
+/* ⚠️ שורה מיובאת מציגה **תאריך בלבד**. שעת הכתיבה שלה אינה ידועה, ושעה
+   שהומצאה בהגירה היא בדיוק "מידע שנראה ודאי ואינו". fmtD מצפה ל-YYYY-MM-DD
+   (הוא מוסיף T00:00), ולכן slice — timestamp מלא היה מחזיר Invalid Date. */
+function finNoteWhen(at, approx, imported){
+  if(!at) return '';
+  const s = imported ? fmtD(String(at).slice(0,10)) : fmtDT(at);
+  return s + (approx ? ' (משוער)' : '');
+}
+/* תא ההערות: האחרונה + מונה כשיש יותר מאחת, ומתחת שדה שמוסיף. ה-title נושא
+   את הכותב והתאריך — בלעדיו "מי כתב" קיים במסד ואינו נראה בטבלה. */
+function finNoteCell(f, ed){
+  const n = finNum(f.notes_cnt), b = f.notes_last_body || '';
+  const ttl = b ? (finNoteWho(f.notes_last_by) +
+      (f.notes_last_at ? ' · ' + fmtD(String(f.notes_last_at).slice(0,10)) : '') + '\n' + b) : '';
+  const head = b
+    ? '<div class="fn-last" title="' + esc(ttl) + '">' +
+      (n > 1 ? '<span class="fn-cnt" title="' + n + ' הערות — כולן בכרטיס התשלום">' + n + '</span>' : '') +
+      esc(b) + '</div>'
+    : '';
+  if(!ed) return head || '<span class="fin-muted">—</span>';
+  /* ⚠️ המחלקה fin-note נשמרת: payTyping בודק אותה, ובלעדיה הרענון האוטומטי
+     היה מצייר מחדש תחת האצבעות ומוחק טקסט שטרם נשמר. */
+  return head + '<input class="fin-note" value="" placeholder="' + (b ? 'הוסף הערה…' : 'הערה…') +
+    '" onchange="finAddNote(\'' + jsq(f.order_number) + '\', this)">';
+}
+/* הוספה ולא דריסה — השדה ריק תמיד, ומה שמוקלד בו נוסף כשורה חדשה. */
+window.finAddNote = async (ord, el) => {
   if(!canEdit('acc.pays')) return finNoEdit();
-  const val = String(txt||'').trim() || null;
-  const was = finmWas(ord, 'notes');
-  if(String(was||'') === String(val||'')) return;
-  finmApply(ord, { notes: val });
-  await finDbw(()=>sb.schema('ord').from('order_finance_meta')
-      .upsert({ order_number:ord, notes:val, updated_by:finMe(), updated_at:finNowIso() }, { onConflict:'order_number' }),
-    'ההערה נשמרה',
-    ()=>{ finmApply(ord, { notes: was }); });
+  const body = String((el && el.value) || '').trim();
+  if(!body) return;
+  const ok = await finDbw(()=>sb.schema('ord').from('order_finance_notes')
+      .insert({ order_number: ord, body: body, created_by: (typeof ME !== 'undefined' && ME) ? ME.id : null }),
+    'ההערה נוספה');
+  if(!ok) return;
+  /* blur לפני הציור: onchange יורה גם ב-Enter, ואז payTyping עדיין אמת
+     ו-renderPays היה נדחה — כלומר ההערה שנוספה לא הייתה מופיעה עד שהמיקוד
+     יוצא. השדה כבר רוקן, ולכן אין מה לאבד. */
+  if(el){ el.value = ''; try{ el.blur(); }catch(_e){} }
+  await finRefreshRow(ord);
+  /* 🔴 ציור מחדש חובה. finSetNote הישן לא צייר, וזה לא הפריע רק מפני שהוא
+     דרס את מה שכבר היה בשדה — ביומן זה היה מסתיר את ההערה שהרגע נוספה. */
+  renderPays();
 };
 /* עריכת תנאי התשלום מכרטיס ההזמנה. אותה טבלה כמו במסך התשלומים, אבל
    מאחורי crm.orders.terms ולא acc.pays — כדי שאיש מכירות יזין תנאים
@@ -19741,16 +19788,6 @@ window.ordSetTerm = async (on, code) => {
      נשארה "ללא מועד גבייה". זה בדיוק המסלול של תרחיש 2. */
   if(code) await finSeedBeats(on, code);
 };
-window.ordSetFinNote = async (on, txt) => {
-  if(!window.canEdit('crm.orders.terms')) return finNoEdit();
-  const val = String(txt||'').trim() || null;
-  const was = finmWas(on, 'notes');
-  if(String(was||'') === String(val||'')) return;
-  finmApply(on, { notes: val });
-  await finDbw(()=>sb.schema('ord').from('order_finance_meta')
-      .upsert({ order_number:on, notes:val, updated_by:finMe(), updated_at:finNowIso() }, { onConflict:'order_number' }),
-    'ההערה נשמרה', ()=>{ finmApply(on, { notes: was }); });
-};
 function ordTermsBlock(o){
   if(!window.canView('crm.orders.terms')) return '';
   const m = finmOf(o.order_number), ed = window.canEdit('crm.orders.terms'), on = o.order_number;
@@ -19758,9 +19795,10 @@ function ordTermsBlock(o){
     ? '<select id="oe-payterm" onchange="ordSetTerm(\'' + jsq(o.order_number) + '\', this.value)"><option value="">— בחר —</option>' +
       PTERMS.map(t=>'<option value="' + esc(t.code) + '"' + (String(m.pay_code||'')===t.code?' selected':'') + '>' + esc(t.name) + '</option>').join('') + '</select>'
     : '<input value="' + esc(finTermName(m.pay_code) || '') + '" readonly class="ro" placeholder="—">';
-  const note = ed
-    ? '<input id="oe-paynote" value="' + esc(m.notes||'') + '" placeholder="הערה לגבייה…" onchange="ordSetFinNote(\'' + jsq(o.order_number) + '\', this.value)">'
-    : '<input value="' + esc(m.notes||'') + '" readonly class="ro" placeholder="—">';
+  /* 🔴 6.220.0 — שדה "הערת גבייה" ירד. הערות הגבייה הן יומן שנצבר
+     (ord.order_finance_notes), ושדה שדורס את אותו נתון היה **כותב שני עם
+     סמנטיקה הפוכה** — המחלקה של 6.153.0. ההצדקה מדודה: crm.orders.terms=2
+     מוחזק בידי מעיין בלבד, ולה גם acc.pays=2 ⇒ ההסרה אינה נועלת אף אחד. */
   /* 🔴 allowEmpty מפורש: העמודה חדשה ולכן NULL הוא המצב של כל ההזמנות
      הקיימות. בורר בלי אפשרות ריקה נופל לאפשרות הראשונה, ולולאת השמירה
      משווה '' מול null, מוצאת הבדל, וכותבת ערך שאיש לא בחר — בדיוק הבאג
@@ -19792,7 +19830,8 @@ function ordTermsBlock(o){
          '<div><label>אופן חיוב</label>' + meth + '</div>' +
          '<div id="oe-payinst-wrap"' + (payHasInst(m.pay_method) ? '' : ' class="hidden"') + '><label>מספר תשלומים</label>' + inst + '</div>' +
          bld +
-         '<div class="span3"><label>הערת גבייה</label>' + note + '</div>';
+         '<div class="span3"><label>הערות גבייה</label>' +
+           '<div class="note">יומן ההערות — מי כתב ומתי — מנוהל בכרטיס התשלום, בלוח התשלומים.</div></div>';
 }
 
 /* ===== אופן חיוב ובונה תוכנית תשלום (6.106.0) ===== */
@@ -20256,11 +20295,13 @@ window.payOpen = on => {
     payCloseBox(f) +
     '<h2 class="sec">לוח פעימות</h2><div id="payBeats">' + crmLoading() + '</div>' +
     '<div id="beEditor"></div>' +
+    '<h2 class="sec">הערות</h2><div id="payNotes">' + crmLoading() + '</div>' +
     '<h2 class="sec">כרטסת הלקוח</h2><div id="payLedger">' + crmLoading() + '</div>';
   mountCard('payModal', ()=>payOpen(on));
   BE_ORD = on; BE_ROWS = [];
   const be = $('#beEditor'); if(be) be.innerHTML = beBtn(on);
   payLoadBeats(on);
+  payLoadNotes(on);
   payLoadLedger(on);
   paySyncLast(on);
 };
@@ -20809,6 +20850,72 @@ async function payLoadBeats(on){
           '">' + esc(r.beat_state||'') + '</span></td></tr>').join('') + '</tbody></table>';
   }catch(e){ if(box.isConnected) box.innerHTML = '<div class="items-empty">לא ניתן לטעון את לוח הפעימות</div>'; }
 }
+
+/* יומן ההערות בכרטיס התשלום. משתמש ב-CSS של שרשרת העדכונים ב-CRM (.lbu-*) —
+   הוא גלובלי ולא מסוקף, ולכן שימוש חוזר בלי שורת CSS אחת. הקוד עצמו נפרד
+   בכוונה: updRun קשור ל-chainOf שנשען על חמישה גלובלים של CRM, ולהערת גבייה
+   אין שרשרת — הזמנה אחת, יומן אחד. ושכפול updRun היה מפיל ארבעה שערי בנייה
+   שסופרים שם בדיוק (updRun(==7 · lbLoadUpdates(==2 · updArm(==3 · 12 מזהים). */
+async function payLoadNotes(on){
+  const box = $('#payNotes'); if(!box) return;
+  const ed = canEdit('acc.pays');
+  try{
+    const { data, error } = await sb.schema('ord').from('order_finance_notes')
+      .select('id,body,created_by,created_at,imported,date_approx')
+      .eq('order_number', on).order('created_at', { ascending:false }).limit(200);
+    if(error) throw error;
+    if(!box.isConnected) return;
+    const rows = data || [];
+    const add = ed
+      ? '<div class="lbu-add"><textarea id="pay-note" rows="2" placeholder="מה קרה עם הגבייה של ההזמנה הזאת?"></textarea>' +
+        '<button type="button" class="chip" onclick="payAddNote(\'' + jsq(on) + '\')">הוספה</button></div>'
+      : '';
+    const list = rows.length
+      ? rows.map(a=>{
+          /* מחיקה לכותב בלבד, בדיוק כמו בשרשרת העדכונים. השרת אוכף
+             (ofn_del: created_by = auth.uid()); כאן רק ה-UI. */
+          const mine = ed && a.created_by && (typeof ME !== 'undefined' && ME) && a.created_by === ME.id;
+          const act = mine
+            ? '<span class="lbu-act"><button type="button" onclick="payNoteDel(\'' + jsq(a.id) + '\',\'' + jsq(on) + '\')">מחיקה</button></span>'
+            : '';
+          return '<div class="lbu-row' + (a.imported ? ' lbu-sys' : '') + '">' +
+            '<span class="lbu-who">' + esc(finNoteWho(a.created_by)) + '</span>' +
+            '<span class="lbu-when">' + esc(finNoteWhen(a.created_at, a.date_approx, a.imported)) + '</span>' +
+            '<span class="lbu-body">' + esc(a.body || '') + '</span>' + act + '</div>';
+        }).join('')
+      : '<div class="items-empty">אין עדיין הערות להזמנה הזאת</div>';
+    box.innerHTML = add + '<div class="lbu-list">' + list + '</div>';
+  }catch(e){ if(box.isConnected) box.innerHTML = '<div class="items-empty">לא ניתן לטעון את ההערות</div>'; }
+}
+window.payAddNote = async on => {
+  if(!canEdit('acc.pays')) return finNoEdit();
+  const el = $('#pay-note'); if(!el) return;
+  const body = (el.value || '').trim();
+  if(!body){ toast('אין מה להוסיף'); return; }
+  const ok = await finDbw(()=>sb.schema('ord').from('order_finance_notes')
+      .insert({ order_number: on, body: body, created_by: (typeof ME !== 'undefined' && ME) ? ME.id : null }),
+    'ההערה נוספה');
+  if(!ok) return;
+  el.value = '';
+  await finRefreshRow(on);
+  /* 🔴 payLoadNotes ולעולם לא payOpen — mountCard מאפס scrollTop, ותיבת
+     ההערות יושבת בתחתית הכרטיס. זה הלקח של lbTmRedraw (6.154.0). */
+  payLoadNotes(on);
+  renderPays();
+};
+window.payNoteDel = async (id, on) => {
+  if(!(await sysConfirm('למחוק את ההערה? הפעולה אינה הפיכה.', { danger:true, ok:'מחיקה' }))) return;
+  const { data, error } = await sb.schema('ord').from('order_finance_notes')
+    .delete().eq('id', id).select('id');
+  if(error){ toast('המחיקה נכשלה — ' + error.message); return; }
+  /* 🔴 RLS שדוחה מחזיר **אפס שורות בלי שגיאה** — בלי הבדיקה הזאת מחיקה
+     שנחסמה נראית בדיוק כמו הצלחה (המחלקה של 6.191.0). */
+  if(!data || !data.length){ toast('אפשר למחוק רק הערה שכתבת'); return; }
+  toast('ההערה נמחקה ✓');
+  await finRefreshRow(on);
+  payLoadNotes(on);
+  renderPays();
+};
 function payTable(list){
   const shown = list.slice(0, pgLim('pays'));
   PAY_SHOWN = shown.map(f => String(f.order_number));
@@ -20820,11 +20927,9 @@ function payTable(list){
       ? '<select class="fin-term" onchange="finSetTerm(\'' + jsq(f.order_number) + '\', this.value)"><option value="">— בחר —</option>' +
         PTERMS.map(t=>'<option value="' + esc(t.code) + '"' + (String(f.pay_code||'')===t.code?' selected':'') + '>' + esc(t.name) + '</option>').join('') + '</select>'
       : esc(finTermName(f.pay_code) || '—');
-    /* 6.219.1 — title עם ההערה המלאה: העמודה רחבה יותר (notecol), אבל הערה ארוכה מהתיבה עדיין
-       נחתכת בתוכה, וריחוף מראה אותה כולה בלי להיכנס לשדה. */
-    const note = ed
-      ? '<input class="fin-note" value="' + esc(f.notes||'') + '"' + (f.notes ? ' title="' + esc(f.notes) + '"' : '') + ' placeholder="הערה…" onchange="finSetNote(\'' + jsq(f.order_number) + '\', this.value)">'
-      : esc(f.notes||'');
+    /* 6.220.0 — התא הוא יומן: ההערה האחרונה + מונה, ומתחת שדה שמוסיף. ה-title
+       נושא את הכותב והתאריך ואת הטקסט המלא, כי העמודה קוטמת ל-2 שורות. */
+    const note = finNoteCell(f, ed);
     /* הסימון נגזר מאותה נקודת חנק שמזינה את האריח, ולא מהשוואת תאריך
        נפרדת — שני מימושים של אותו כלל היו נפרדים בשקט ביום שהכלל ישתנה. */
     return '<tr class="pay-row' + (payWeekAmt(f) > 0 ? ' pay-wk' : '') + (PAY_SEL.has(String(f.order_number)) ? ' lb-on' : '') + '" onclick="payOpen(\'' + jsq(f.order_number) + '\')">' +
@@ -20943,7 +21048,7 @@ async function payAutoRefresh(){
   try{
     const [fin, fm, bts] = await Promise.all([
       sb.schema('ord').from('order_finance_v').select('*').order('order_date',{ascending:false}).limit(10000),
-      sb.schema('ord').from('order_finance_meta').select('order_number,pay_code,notes,pay_method,pay_installments,fin_close,fin_close_by,fin_close_at,fin_close_note,fin_credit_amt').limit(10000),
+      sb.schema('ord').from('order_finance_meta').select('order_number,pay_code,pay_method,pay_installments,fin_close,fin_close_by,fin_close_at,fin_close_note,fin_credit_amt').limit(10000),
       sb.schema('ord').from('order_beats_v').select('order_number,seq,amount,covered,is_paid,due_show,due_is_est,due_src').limit(10000)
     ]);
     /* כשל בשליפה משאיר את הנתונים הקודמים במקום לצייר תמונה חלקית —

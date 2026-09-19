@@ -1285,21 +1285,30 @@
   .cal-seg button.on{ background:#fff; color:var(--navy); box-shadow:0 1px 3px rgba(6,24,39,.14); }
   .cal-scroll{ height:calc(100vh - 205px); min-height:340px; overflow:auto; }
   /* 6.2.5 — רשת שעות בלוח השנה: 08:00–17:00, אירוע ממוקם לפי שעתו (רומן 30/07/2026) */
-  .tg-wrap{ display:grid; gap:0 8px; align-items:start; padding-bottom:8px; }
+  .tg-wrap{ display:grid; gap:0 8px; align-items:stretch; padding-bottom:8px; }
   .tg-corner{ position:sticky; top:0; z-index:4; }
-  .tg-head{ position:sticky; top:0; z-index:3; background:#e9eff3; border-radius:var(--r-md); padding:6px 8px; font-size:var(--fs-sm); font-weight:800; color:var(--navy); display:flex; justify-content:space-between; align-items:center; gap:6px; cursor:pointer; margin-bottom:6px; }
+  .tg-head{ position:sticky; top:0; z-index:3; background:#e9eff3; border-radius:var(--r-md); padding:6px 8px; font-size:var(--fs-sm); font-weight:800; color:var(--navy); display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:4px 6px; cursor:pointer; margin-bottom:6px; white-space:nowrap; }
+  /* 6.221.0 — גריד ולא flex: שורה 1 (שם היום · תאריך) אינה יכולה להישבר — השם מתקצר באליפסיס
+     והתאריך ברוחב טבעי; תגית החג בשורה 2 על שתי העמודות, וכשיש חג בשבוע כל עמודה מקבלת
+     שורה כזאת (hol-none, נסתר) — כך כל הכותרות באותו גובה וקו 08:00 באותו גובה בכל הימים.
+     עד כאן flex-wrap שבר את הכותרת בחלק מהעמודות בלבד (נמדד 48 מול 34px, ו-68 מול 50 ב-1280). */
+  .tg-head > span:first-child{ display:contents; }
+  .tg-dn{ grid-area:1/1; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+  .tg-head .hol-tag{ grid-area:2/1/3/3; min-width:0; overflow:hidden; text-overflow:ellipsis; margin-inline-start:0; }
+  .tg-head .hol-tag.hol-none{ visibility:hidden; }
   .tg-head.today{ outline:2px solid var(--green); outline-offset:-1px; }
-  .tg-head .dnum{ font-size:12px; color:var(--ink-3); font-weight:700; }
+  .tg-head .dnum{ font-size:12px; color:var(--ink-3); font-weight:700; grid-area:1/2; }
   .tg-hr{ position:absolute; inset-inline-end:4px; transform:translateY(-7px); font-size:var(--fs-xs); font-weight:700; color:var(--ink-3); white-space:nowrap; }
   .tg-col{ background:#fff; border:1px solid var(--line); border-radius:var(--r-md); padding:4px; box-shadow:var(--sh-card); }
   .tg-col.nowork{ background:repeating-linear-gradient(45deg,#f7f7f5,#f7f7f5 8px,#f1f1ee 8px,#f1f1ee 16px); }
   .tg-allday{ overflow-y:auto; overflow-x:hidden; scrollbar-width:thin }
-  /* 6.192.0 — בתצוגה היומית עמודת השעות נצמדת לתחתית העמודה, ולכן 08:00 מיושר
-     לגוף הרשת בלי תלות בגובה הכותרת, רצועת "יום מלא" ורצועת "ללא שעה". עד כאן
-     הכותרת (~38px) הסיטה את התווית — ה-"08:00" החתוך בצילום של רומן. השבועי לא זז.
-     4px = הריפוד של .tg-col. */
-  .tg-wrap.tg-wrap-day{ align-items:stretch; }
-  .tg-wrap.tg-wrap-day > div:first-child{ display:flex; flex-direction:column; justify-content:flex-end; padding-bottom:4px; }
+  /* 6.192.0 — בתצוגה היומית עמודת השעות נצמדה לתחתית העמודה, ולכן 08:00 מיושר לגוף
+     הרשת בלי תלות בגובה הכותרת, רצועת "יום מלא" ורצועת "ללא שעה".
+     6.221.0 — הכלל הפך גנרי לארבע התצוגות (לוגיסטיקה ו-CRM, שבועי ויומי): נמדד
+     45/37/37px הסטה בשלוש שלא כוסו, ותווית 08:00 שנחתכת בראש .cal-scroll כשאין רצועת
+     "ללא שעה" (רומן, 19/09/2026). 5px = ריפוד .tg-col (4) + הגבול (1) — 6.192.0 כתבה 4
+     ומדדה -1. */
+  .tg-wrap > div:first-child{ display:flex; flex-direction:column; justify-content:flex-end; padding-bottom:5px; }
   /* רצועת "יום מלא": background-image ולא background — הצפי שומר על הרקע הענברי שלו (הלקח של 6.90.1) */
   .tg-fullday{ border:1px solid var(--line); border-radius:var(--r-md); padding:6px 8px 2px; margin-bottom:8px; background:#fff; }
   .tg-fullday-t{ font-size:var(--fs-xs); font-weight:800; color:var(--ink-3); margin-bottom:4px; }
@@ -3024,7 +3033,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.220.0</div>
+      <div class="ver">גרסה 6.221.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3154,7 +3163,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="notelog-2026-09-15a">גרסה 6.220.0</div>
+    <div class="side-foot" title="gutter-2026-09-19a">גרסה 6.221.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -7932,6 +7941,8 @@ function renderCal(){
        ימי השבוע, ולכן יום עמוס בצפי היה מנפח את כל השבוע — הרצועה חסומה
        בארבעה שבבים וגוללת מעבר לזה, כדי שקו 08:00 יישאר במקומו. */
     const wkEv = {}; days.forEach(d=>{ wkEv[d] = eventsOnCal(d); });
+    /* 6.221.0 — עמודה בלי חג בשבוע שיש בו חג מקבלת תגית נסתרת, כדי שכל הכותרות יהיו באותו גובה. */
+    const wkHolPh = days.some(d=>heDay(d)) ? '<span class="hol-tag hol-none">&nbsp;</span>' : '';
     const adCap=4;
     const adReal=Math.max(0,...days.map(d=>wkEv[d].filter(e=>!evSpan(e)).length));
     const adMax=Math.min(adCap, adReal);
@@ -7939,7 +7950,7 @@ function renderCal(){
     body=`<div class="cal-scroll"><div class="tg-wrap" style="grid-template-columns:56px repeat(${days.length},minmax(150px,1fr))">
       ${tgGutter(adH)}
       ${days.map(d=>`<div class="tg-col ${dowOf(d)===CAL_FRIDAY?'nowork':''}${heCls(d)}">
-          <div class="tg-head ${d===t?'today':''}" onclick="calGoDay('${d}')"><span>${dayNameHe(d)}${dowOf(d)===CAL_FRIDAY?' <span class="fri-tag">שישי</span>':''}${heTag(d)}</span><span class="dnum">${fmtD(d)} ${calPickBtn(d)}</span></div>
+          <div class="tg-head ${d===t?'today':''}" onclick="calGoDay('${d}')"><span><span class="tg-dn">${dayNameHe(d)}${dowOf(d)===CAL_FRIDAY?' <span class="fri-tag">שישי</span>':''}</span>${heTag(d)||wkHolPh}</span><span class="dnum">${fmtD(d)} ${calPickBtn(d)}</span></div>
           ${tgDay(d, wkEv[d], true, adH, adCap)}
         </div>`).join('')}
     </div></div>`;
@@ -7960,7 +7971,7 @@ function renderCal(){
     body=`<div class="cal-scroll"><div class="tg-wrap tg-wrap-day" style="grid-template-columns:56px minmax(260px,1fr)">
       ${tgGutter(adH)}
       <div class="tg-col ${dowOf(cd)===CAL_FRIDAY?'nowork':''}${heCls(cd)}">
-        <div class="tg-head ${cd===t?'today':''}"><span>${dayNameHe(cd)}${heTag(cd)}</span><span class="dnum">${fmtD(cd)} ${calPickBtn(cd,true)}</span></div>
+        <div class="tg-head ${cd===t?'today':''}"><span><span class="tg-dn">${dayNameHe(cd)}</span>${heTag(cd)}</span><span class="dnum">${fmtD(cd)} ${calPickBtn(cd,true)}</span></div>
         ${fulls.length?`<div class="tg-fullday"><div class="tg-fullday-t">יום מלא · מחוץ לשעות הפעילות</div><div class="tg-fullday-cards">${fulls.map(e=>evCard(e,false)).join('')}</div></div>`:''}
         ${evs.length? tgDay(cd, rest, false, adH) : `<div class="empty">${CAL_Q?'אין אירועים תואמים לחיפוש ביום זה':'אין אירועים מתואמים ליום זה'}</div>`}
       </div>
@@ -11123,7 +11134,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'notelog-2026-09-15a';
+const BUILD_ID = 'gutter-2026-09-19a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -23772,11 +23783,12 @@ function meetCal(){
     if(meetsOn(fri).length) days.push(fri);
     title=`שבוע ${fmtD(days[0])} — ${fmtD(days[days.length-1])}`;
     const adMax=Math.max(0,...days.map(mAdCount));
+    const wkHolPh = days.some(d=>heDay(d)) ? '<span class="hol-tag hol-none">&nbsp;</span>' : '';
     const adH=adMax? adMax*CAL_CHIP+6 : 0;
     body=`<div class="cal-scroll"><div class="tg-wrap" style="grid-template-columns:56px repeat(${days.length},minmax(150px,1fr))">
       ${tgGutter(adH)}
       ${days.map(d=>`<div class="tg-col ${dowOf(d)===CAL_FRIDAY?'nowork':''}${heCls(d)}">
-          <div class="tg-head ${d===t?'today':''}" onclick="mcalGoDay('${d}')"><span>${dayNameHe(d)}${dowOf(d)===CAL_FRIDAY?' <span class="fri-tag">שישי</span>':''}${heTag(d)}</span><span class="dnum">${fmtD(d)}</span></div>
+          <div class="tg-head ${d===t?'today':''}" onclick="mcalGoDay('${d}')"><span><span class="tg-dn">${dayNameHe(d)}${dowOf(d)===CAL_FRIDAY?' <span class="fri-tag">שישי</span>':''}</span>${heTag(d)||wkHolPh}</span><span class="dnum">${fmtD(d)}</span></div>
           ${mTgDay(d, meetsOn(d), true, adH)}
         </div>`).join('')}
     </div></div>`;
@@ -23787,7 +23799,7 @@ function meetCal(){
     body=`<div class="cal-scroll"><div class="tg-wrap" style="grid-template-columns:56px minmax(260px,1fr)">
       ${tgGutter(adH)}
       <div class="tg-col ${dowOf(cd)===CAL_FRIDAY?'nowork':''}${heCls(cd)}">
-        <div class="tg-head ${cd===t?'today':''}"><span>${dayNameHe(cd)}${heTag(cd)}</span><span class="dnum">${fmtD(cd)}</span></div>
+        <div class="tg-head ${cd===t?'today':''}"><span><span class="tg-dn">${dayNameHe(cd)}</span>${heTag(cd)}</span><span class="dnum">${fmtD(cd)}</span></div>
         ${evs.length? mTgDay(cd, evs, false, adH) : '<div class="empty">אין פגישות ליום זה</div>'}
       </div>
     </div></div>`;

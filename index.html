@@ -1227,8 +1227,10 @@
   .card-bar{ display:flex; justify-content:space-between; align-items:center; margin:-6px -6px 8px 0; }
   .card-x{ transition:background-color .12s, border-color .12s, color .12s, box-shadow .12s; background:#f1f5f9; border:none; color:var(--ink-2); width:32px; height:32px; border-radius:50%; font-size:var(--fs-lg); line-height:1; }
   .card-x:hover{ background:#e2e8f0; color:#0b3552; }
-  .card-back{ background:none; border:none; color:var(--navy); font-size:var(--fs-md); font-weight:700; padding:6px 8px; border-radius:var(--r-md); }
-  .card-back:hover{ background:#f1f5f9; }
+  /* 6.223.0 — רקע אפור בהיר תמיד, באותו גוון של ✕ (רומן, 09/10/2026: "שלא יתמזג עם הרקע
+     הלבן"). עד כאן background:none, והאפור הופיע רק בריחוף — כלומר במגע אף פעם. */
+  .card-back{ background:#f1f5f9; border:none; color:var(--navy); font-size:var(--fs-md); font-weight:700; padding:6px 12px; border-radius:var(--r-md); }
+  .card-back:hover{ background:#e2e8f0; }
 
   /* ===== הדגשת קטגוריה פעילה חזקה (הערה 4) ===== */
   .nav-item.active{ color:#fff; background:linear-gradient(90deg,rgba(106,159,133,.35),rgba(106,159,133,.08)); border-inline-start:4px solid var(--green); font-weight:800; }
@@ -1579,6 +1581,15 @@
   /* 6.206.0 — צ'יפ בשורת הפעולות ("בוצע ✓" במשימה) בגובה השורה (lg), לא בגובה צ'יפ הסרגל (30) */
   .modal .sheet > .modal-actions > .chip{ min-height:var(--ctl-h-lg); font-size:var(--fs-md); padding:0 16px; }
   @media(min-width:560px){ .modal .sheet > .modal-actions > .btn{ width:auto; padding:11px 32px; } }
+  /* 6.223.0 — "בוצע ✓" בכרטיס המשימה (רומן: "כמו כפתור השמירה, רק בכחול"). (0,5,1) גובר על
+     הגרדיאנט הירוק של שורת הפעולות (0,4,1) — המאוחר מנצח רק בתיקו, וזה אינו תיקו. */
+  .modal .sheet > .modal-actions > .btn.btn-navy{ background:var(--navy); box-shadow:0 6px 18px rgba(0,45,72,.28); }
+  .modal .sheet > .modal-actions > .btn.btn-navy:hover{ background:#0b3552; }
+  /* 6.223.0 — חלון "פגישה חדשה": תאריך + שעות בשורה אחת (רומן). במסך צר התאריך בשורה מלאה. */
+  .lm-when{ display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:var(--sp-3); }
+  .lm-when .field{ min-width:0; }
+  .lm-when input{ width:100%; min-width:0; box-sizing:border-box; }
+  @media(max-width:559.98px){ .lm-when{ grid-template-columns:1fr 1fr; } .lm-when > .field:first-child{ grid-column:1 / -1; } }
   #ordModal .modal-actions.ord-actions .ghost{ padding:9px 20px; font-size:var(--fs-lg); width:auto; min-height:var(--ctl-h-lg); }
   .form-grid label{ display:flex; align-items:center; flex-wrap:wrap; gap:4px 5px; min-height:20px; font-size:12px; color:var(--ink-2); margin-bottom:4px; font-weight:600; line-height:1.45; }
   .form-grid label .ph-btn, .form-grid label .waze-btn, .form-grid label .src-tag{ flex:none; }
@@ -2454,6 +2465,11 @@ td.lb-today .lb-dt{ background-color:transparent; }
 .tkl-box b{ font-size:13px; color:var(--ink-1); }
 .tkl-x{ background:none; border:none; color:var(--ink-3); cursor:pointer; font-size:13px; padding:0 4px; line-height:1; }
 .tkl-x:hover{ color:#c0392b; }
+/* 6.223.0 — קישור שכבר נבחר מוצג כ"נבחר": תיבה מודגשת, ושדה החיפוש מתקפל (רומן, 09/10/2026:
+   "לא ב-100% מובן לי שזה כבר מקושר"). עד כאן השם ישב כטקסט ומתחתיו שדה חיפוש ריק. */
+.tkl-box.tkl-on{ background:#eef6ff; border:1px solid #bfdbfe; border-radius:var(--r-md); padding:8px 10px; margin-bottom:0; }
+.tkl-ok{ color:#1d4ed8; font-weight:700; font-size:var(--fs-sm); }
+.tkl-chg{ margin-inline-start:auto; background:none; border:none; color:var(--navy); text-decoration:underline; cursor:pointer; font-size:var(--fs-sm); padding:0 4px; }
 /* ---- שלוש העמודות הפותחות מוקפאות ----
    שלוש עמודות תת-סטטוס שכמעט תמיד ריקות (הן בלעדיות הדדית) מוסיפות ~292px,
    והטבלה רחבה מהמסך גם בדסקטופ. בלי הקפאה, תא בקצה הנגלל מנותק מזהות הליד.
@@ -2616,6 +2632,7 @@ td.lb-today .lb-dt{ background-color:transparent; }
 .lb-del{ width:auto; font-size:13px; font-weight:700; padding:9px 16px; border:1px solid #f0bcbc; background-color:#fbe0e0; color:#a92f2f; border-radius:var(--r-md); cursor:pointer; font-family:inherit; }
 .lb-del:hover{ background-color:#f7cfcf; }
 .lb-links{ padding:8px 2px; font-size:13px; }
+.lb-links.lb-lp{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; direction:ltr; text-align:right; }
 .lb-own{ display:flex; align-items:center; min-height:34px; }
 .lb-grpfoot td{ padding:4px 10px; background:#fafbfc; }
 /* ---- רצועת הפייפליין בכרטיס הליד (6.108.0) ----
@@ -3041,7 +3058,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.222.0</div>
+      <div class="ver">גרסה 6.223.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3171,7 +3188,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="useredit-2026-10-08a">גרסה 6.222.0</div>
+    <div class="side-foot" title="leadflow-2026-10-09a">גרסה 6.223.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3634,9 +3651,12 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       <input type="hidden" id="lm-lnk" value="">
     </div>
     <div class="field"><label>נושא<span class="req">*</span></label><input id="lm-subj"></div>
-    <div class="field"><label>תאריך<span class="req">*</span></label><input id="lm-date" type="date"></div>
-    <div class="field"><label>שעת התחלה</label><input id="lm-start" type="time" value="10:00"></div>
-    <div class="field"><label>שעת סיום</label><input id="lm-end" type="time" value="11:00"></div>
+    <!-- 6.223.0 — שורה אחת (רומן: "לקצר ולנוחות"). ה-id-ים לא זזו, ולכן lm-save לא נגע. -->
+    <div class="lm-when">
+      <div class="field"><label>תאריך<span class="req">*</span></label><input id="lm-date" type="date"></div>
+      <div class="field"><label>שעת התחלה</label><input id="lm-start" type="time" value="10:00"></div>
+      <div class="field"><label>שעת סיום</label><input id="lm-end" type="time" value="11:00"></div>
+    </div>
     <!-- 🔴 6.160.0 — הבורר נבנה מ-MEET_TYPES ולא מרשימה מוקלדת.
          עד כאן הוא הציע 'פרונטלי' (כתיב שגוי) ו'פגישת מכירה' (מה
          ש-outlook כותב, לא סוג), **בלי allowEmpty** — ולכן כל פגישה
@@ -11159,7 +11179,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'useredit-2026-10-08a';
+const BUILD_ID = 'leadflow-2026-10-09a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -16776,7 +16796,7 @@ const LOAD_NAMES = ['לידים','לקוחות','משימות','עסקאות','�
    ⚠️ הטקסט הועתק **מתוך ה-Promise.all עצמו בזמן הבנייה** ולא הוקלד
       מחדש — כך אין סיכוי שהם ייפרדו בהעתקה. */
 const CRM_Q = {
-  leads: () => sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at,position,address,notes,utm_campaign,utm_source,utm_medium,utm_term,send_whatsapp_catalog,owner_id,updated_at').order('created_at',{ascending:false}).limit(10000),
+  leads: () => sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at,position,address,notes,utm_campaign,utm_source,utm_medium,utm_term,landing_page_url,send_whatsapp_catalog,owner_id,updated_at').order('created_at',{ascending:false}).limit(10000),
   custs: () => sb.schema('core').from('customers').select('id,name,phone,email,priority_id,status,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes').order('created_at',{ascending:false}).limit(10000),
   tasks: () => sb.schema('crm').from('tasks').select('id,name,status,value_tag,category,due_at,closed_at,created_at,linked_type,linked_id,owner_id').order('due_at',{ascending:true}).limit(10000),
   deals: () => sb.schema('crm').from('deals').select('id,name,stage,amount,amount_incl_vat,quote_doc_path,quote_status,irrelevant_reason,priority_quote_id,customer_id,contact_id,lead_id,send_channel,sign_link,approved_at,closed_at,created_at,monday_id').order('created_at',{ascending:false}).limit(10000),
@@ -18497,19 +18517,34 @@ window.tklChoose = (pfx, type, id)=>{
   tklPaint(pfx);
   if(window.TKL_HOOK && window.TKL_HOOK[pfx]){ try{ window.TKL_HOOK[pfx](type, id); }catch(_e){} }
 };
-window.tklClear = pfx => tklChoose(pfx, '', '');
+window.tklClear = pfx => {
+  tklChoose(pfx, '', '');
+  const qi=document.getElementById(pfx+'-lnkq'); if(qi){ try{ qi.focus(); }catch(_e){} }
+};
+/* 6.223.0 — "שינוי": מציג את שדה החיפוש בלי לנתק את הקישור הקיים. */
+window.tklEdit = pfx => {
+  const qi=document.getElementById(pfx+'-lnkq'); if(!qi) return;
+  qi.classList.remove('hidden'); try{ qi.focus(); }catch(_e){}
+};
 function tklPaint(pfx){
   const h=document.getElementById(pfx+'-lnk'), box=document.getElementById(pfx+'-lnkchip');
   if(!h || !box) return;
   const v=String(h.value||''), i=v.indexOf(':');
-  if(i<=0){ box.innerHTML='<span class="lb-na">לא מקושרת</span>'; return; }
+  /* 6.223.0 — שדה החיפוש מוצג רק כשאין קישור. הערך הנבחר **תמיד** גלוי, ולכן זה אינו
+     "שדה חובה מוסתר" (6.182.0) — רק החיפוש מתקפל כשאין בו צורך. */
+  const qi=document.getElementById(pfx+'-lnkq');
+  if(i<=0){ box.classList.remove('tkl-on'); box.innerHTML='<span class="lb-na">לא מקושרת</span>';
+            if(qi) qi.classList.remove('hidden'); return; }
   const type=v.slice(0,i), id=v.slice(i+1);
   /* ⚠️ נפילה אחורה לתווית הסוג כששם הישות אינו נפתר. במסד יש שורה אחת
      עם linked_type='payment' שהבורר אינו מציע — משימה כזאת אסור שתיראה
      ריקה ובלתי ניתנת לניקוי. */
   const nm=tklName(type,id) || (TK_KIND_LBL[type]||type);
-  box.innerHTML = `<span class="tk-kind tk-k-${esc(type)}">${esc(TK_KIND_LBL[type]||type)}</span><b>${esc(nm)}</b>`
+  box.classList.add('tkl-on');
+  box.innerHTML = `<span class="tkl-ok">✓ מקושרת ל:</span><span class="tk-kind tk-k-${esc(type)}">${esc(TK_KIND_LBL[type]||type)}</span><b>${esc(nm)}</b>`
+    + `<button type="button" class="tkl-chg" onclick="tklEdit('${jsq(pfx)}')">שינוי</button>`
     + `<button type="button" class="tkl-x" title="ניתוק הקישור" onclick="tklClear('${jsq(pfx)}')">✕</button>`;
+  if(qi) qi.classList.add('hidden');
 }
 window.tklInit = (pfx, val)=>{
   const h=document.getElementById(pfx+'-lnk'); if(h) h.value=val||'';
@@ -18781,7 +18816,7 @@ window.openTask = (id)=>{
     </div>
     <div class="modal-actions">
       ${editable?`<button class="btn btnw" onclick="saveTask('${jsq(id)}')">שמירה</button>
-      ${t.status!=='הושלם'?`<button type="button" class="chip" onclick="doneTask('${jsq(id)}')">בוצע ✓</button>`:''}`
+      ${t.status!=='הושלם'?`<button type="button" class="btn btnw btn-navy" onclick="doneTask('${jsq(id)}')">בוצע ✓</button>`:''}`
       :'<div class="note">אין לך הרשאת עריכה למשימות.</div>'}
     </div>
     <div class="err" id="tk-err"></div>
@@ -18913,7 +18948,7 @@ $('#addTaskBtn').onclick = ()=>{ $('#t-name').value=''; $('#t-err').textContent=
   $('#t-time').value='09:00';     /* עד 6.129.1 לא אופס ושמר את הערך הקודם */
   $('#t-due').value = todayStr(); /* תיקון ממצא 27 — תאריך מקומי ולא UTC */
   mountCard('taskModal', ()=>$('#taskModal').classList.remove('hidden')); };
-$('#t-cancel').onclick = ()=> closeCards();
+$('#t-cancel').onclick = ()=> (CARD_STACK.length ? cardBack() : closeCards());   /* 6.223.0 */
 $('#t-save').onclick = async ()=>{
   const name=$('#t-name').value.trim(), d=$('#t-due').value, tm=$('#t-time').value||'09:00';
   if(!name||!d){ $('#t-err').textContent='שם ותאריך יעד חובה'; return; }
@@ -18938,8 +18973,12 @@ $('#t-save').onclick = async ()=>{
   if(error){ $('#t-err').textContent='שגיאה בשמירה'; console.error(error); return; }
   /* closeCards ולא classList.add('hidden') — העקיפה השאירה את
      CARD_STACK/CARD_CUR/A11Y_RETURN מלוכלכים אחרי כל שמירה. */
+  /* 6.223.0 — יעד החזרה נלכד **לפני** closeCards (שמאפס את המחסנית). עד כאן רק ליד נפתח
+     מחדש; מכרטיס עסקה השמירה הייתה סוגרת הכול. */
+  const _back = CARD_STACK.length ? CARD_STACK[CARD_STACK.length-1] : null;
   closeCards(); await loadLeads();
-  if(_lnk && _lnk.type==='lead') openLead(_lnk.id);
+  if(_back) _back();
+  else if(_lnk && _lnk.type==='lead') openLead(_lnk.id);
 };
 
 function custRow(c){
@@ -23341,8 +23380,8 @@ function dlPipeDraw(id){
 /* שני כפתורי הפעולה בכרטיס העסקה. ⚠️ אין כאן "↻ פולואפ" — הוא מזיז
    את הפייפליין של הליד, ואין לו מקבילה בעסקה. */
 function dlTmActs(id){
-  return `${window.canEdit('crm.tasks')?`<button type="button" class="chip" onclick="dealTask('${jsq(id)}')">＋ משימה</button>`:''}`
-       + `${window.canEdit('crm.meets')?`<button type="button" class="chip" onclick="dealMeet('${jsq(id)}')">＋ פגישה</button>`:''}`;
+  return `${window.canEdit('crm.tasks')?`<button type="button" class="chip" onclick="goCard(()=>dealTask('${jsq(id)}'))">＋ משימה</button>`:''}`
+       + `${window.canEdit('crm.meets')?`<button type="button" class="chip" onclick="goCard(()=>dealMeet('${jsq(id)}'))">＋ פגישה</button>`:''}`;
 }
 /* ═══ לאן לשלוח את ההצעה (6.158.0, רומן) ═══════════════════════════
    🔴 שלוש התוויות והפלטה **הועתקו ממאנדיי** (status_mkkpsz2p) ולא נבחרו
@@ -23526,6 +23565,7 @@ const MT_FIELD = { 'מקוונת':['lm-url','קישור לפגישה'],
                    'טלפונית':['lm-phone','טלפון'],
                    'פרונטלית':['lm-loc','מיקום'] };
 window.lmTypeChanged = ()=>{
+  selPaint($('#lm-type'),'meettype',LB_TK);   /* 6.223.0 — הצבע עוקב אחרי הבחירה */
   const t = ($('#lm-type').value || 'פרונטלית');
   const [id, lbl] = MT_FIELD[t] || MT_FIELD['פרונטלית'];
   Object.values(MT_FIELD).forEach(([x])=>{ const e=document.getElementById(x); if(e) e.classList.add('hidden'); });
@@ -25163,6 +25203,7 @@ function lbSnapshot(id){
   LEAD_SNAP=snap;
 }
 /* קישור מאומת-סכימה — landing_page_url/chat_url מגיעים מטפסים חיצוניים */
+const lbLpTxt=u=>{ try{ const x=new URL(u); return (x.host + x.pathname).replace(/\/$/,''); }catch(_e){ return u; } };
 const lbLink=(u,txt)=>{ const s=esc(safeUrl(u)); return s?`<a href="${s}" target="_blank" rel="noopener">${esc(txt)} ↗</a>`:''; };
 /* ═══ סיכום משימות ופגישות בכרטיס (6.143.0) ═══════════════════════
    רומן, 26/08/2026: "אני רוצה שגם במסך הזה בתחתית יופיע משימות ופגישות —
@@ -25203,8 +25244,8 @@ const tmDtM = v => v ? esc(new Date(v+'T00:00').toLocaleDateString('he-IL',{day:
    openLead והציור מחדש אחרי עריכת מועד. בלי זה הציור מחדש היה מאבד
    אותם, או משכפל את הביטוי שבונה אותם — ואז הם ייפרדו. */
 function lbTmActs(id){
-  return `${window.canEdit('crm.tasks')?`<button type="button" class="chip" onclick="leadTask('${jsq(id)}')">＋ משימה</button>`:''}`
-       + `${window.canEdit('crm.meets')?`<button type="button" class="chip" onclick="leadMeet('${jsq(id)}')">＋ פגישה</button>`:''}`
+  return `${window.canEdit('crm.tasks')?`<button type="button" class="chip" onclick="goCard(()=>leadTask('${jsq(id)}'))">＋ משימה</button>`:''}`
+       + `${window.canEdit('crm.meets')?`<button type="button" class="chip" onclick="goCard(()=>leadMeet('${jsq(id)}'))">＋ פגישה</button>`:''}`
        + `${window.canEdit('crm.leads')?`<button type="button" class="chip" onclick="leadFup('${jsq(id)}')">↻ פולואפ</button>`:''}`
        /* 🔴 6.162.0 — מגודר ב-canEdit('crm') ולא ב-crm.leads: הפעולה
           כותבת activity ולא שדה על הליד, וזה בדיוק השער של כתיבת עדכון. */
@@ -25320,7 +25361,9 @@ window.openLead = (id)=>{
      מוצגת בכרטיס הבא שנפתח — מלכודת dataset.loaded של 6.136.0. */
   if(CONV_RESULT && CONV_RESULT.id!==id) CONV_RESULT = null;
   const editable = window.canEdit('crm.leads');
-  const utm=[l.utm_campaign,l.utm_source,l.utm_medium,l.utm_term].filter(Boolean).join(' · ');
+  /* 6.223.0 — UTM_CAMPAIGN שדה בפני עצמו (רומן); source · medium · term בריחוף עליו. */
+  const utmRest=[l.utm_source?'source: '+l.utm_source:'',l.utm_medium?'medium: '+l.utm_medium:'',l.utm_term?'term: '+l.utm_term:''].filter(Boolean).join(' · ');
+  const lpU=String(l.landing_page_url||'').trim(), lpA=lpU?lbLink(lpU, lbLpTxt(lpU)):'';
   const _lm=lbMatch(l), _lcid=lbCustId(l,_lm);
   const cust=_lcid?((CUSTS||[]).find(x=>x.id===_lcid)||(_lm&&!_lm.amb?{id:_lcid,name:_lm.name}:null)):null;
   const meId=lbMe();
@@ -25362,8 +25405,9 @@ window.openLead = (id)=>{
       <div><label>בעלים ושותפים</label><div id="lb-ownbox">${lbOwnerCellName(l)}</div></div>
       <div><label>נוצר</label>${roIn(fmtDT(l.created_at),{ltr:1})}</div>
       <div><label>עודכן לאחרונה</label>${roIn(fmtDT(l.updated_at),{ltr:1})}</div>
-      ${utm?`<div class="span2"><label>קמפיין (UTM)</label>${roIn(utm)}</div>`:''}
-      ${cust?`<div class="span2"><label>לקוח מקושר${l.customer_id?'':' <span class="note" style="font-weight:400">(הוצלב לפי טלפון)</span>'}</label><div class="lb-links"><a href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(cust.id)}'))">${esc(cust.name||'כרטיס הלקוח')} ↗</a></div></div>`:''}
+      <div class="span2"><label>דף שהשאיר פנייה</label>${lpA?`<div class="lb-links lb-lp" title="${esc(lpU)}">${lpA}</div>`:roIn('—')}</div>
+      <div class="${cust?'':'span2'}" title="${esc(utmRest)}"><label>UTM_CAMPAIGN</label>${roIn(l.utm_campaign||'—')}</div>
+      ${cust?`<div><label>לקוח מקושר${l.customer_id?'':' <span class="note" style="font-weight:400">(הוצלב לפי טלפון)</span>'}</label><div class="lb-links"><a href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(cust.id)}'))">${esc(cust.name||'כרטיס הלקוח')} ↗</a></div></div>`:''}
 
       <div class="form-sep">משימות ופגישות</div>
       <div class="span4" id="lb-tmblock" data-lead="${esc(l.id)}">${lbTmBlock(myTasks, myMeets, lbTmActs(l.id))}</div>
@@ -25713,6 +25757,28 @@ function lbOwnerDraw(keepQ){
 /* ⚠️ עובד לשעבר (legacy:) אינו profile_id ולכן אינו יכול לעבור ב-RPC.
    הוא מוצג בבורר כתווית ואין לו כפתורים — כך גם אין ניסיון שנדחה ב-22023. */
 const lbOwnUuid = k => (k && String(k).indexOf('legacy:')!==0) ? k : null;
+/* 6.223.0 — בעלות הליד זורמת למשימות הפתוחות שלו **בשרת** (lead_set_owner · lead_add_partner ·
+   lead_remove_partner). כאן רק מושכים את המצב החדש של משימות הליד ומציירים — הכלל אינו
+   משוכפל בדפדפן. ⚠️ TOWN_OF גובר על owner_id ב-ownOwnersOf, והרענון האוטומטי (2 דק׳) אינו
+   מרענן אותו — ולכן בלי זה המשימות היו מציגות את הבעלים הישנים עד רענון דף. */
+window.lbTasksRefresh = async (leadId)=>{
+  const ids = (TASKS||[]).filter(t=>t.linked_type==='lead' && t.linked_id===leadId).map(t=>t.id);
+  if(!ids.length) return 0;
+  const [tq, oq] = await Promise.all([
+    sb.schema('crm').from('tasks').select('id,owner_id').in('id', ids),
+    sb.schema('crm').from('task_owners').select('task_id,profile_id,is_primary').in('task_id', ids)
+  ]);
+  if(tq.error || oq.error){ console.warn('lbTasksRefresh', tq.error || oq.error); return -1; }
+  let moved = 0;
+  (tq.data||[]).forEach(r=>{ const t=TASKS.find(x=>x.id===r.id); if(t && t.owner_id!==r.owner_id){ t.owner_id=r.owner_id; moved++; } });
+  const fresh = {};
+  ownReindex(fresh, oq.data||[], 'task_id');
+  ids.forEach(i=>{ if(fresh[i]) TOWN_OF[i] = fresh[i]; else delete TOWN_OF[i]; });
+  if(typeof lbTmRedraw === 'function') lbTmRedraw(leadId);
+  if(typeof renderTasks === 'function') renderTasks();
+  if(typeof renderToday === 'function') renderToday();
+  return moved;
+};
 window.lbOwnerAdd = async (key)=>{
   const id = LBOWN_LEAD, uid = lbOwnUuid(key);
   if(!uid){ toast('עובד לשעבר אינו יכול להיות שותף'); return; }
@@ -25721,6 +25787,7 @@ window.lbOwnerAdd = async (key)=>{
   if(error){ toast('הוספת השותף נכשלה — '+error.message); return; }
   const _m = _k.map(); const a = _m[id] || (_m[id] = []); if(!a.includes(key)) a.push(key);
   toast('נוסף שותף ✓'); lbOwnerDraw(); _k.paint(); lbOwnerSync(id);
+  if(LBOWN_K === 'lead') lbTasksRefresh(id);   /* 6.223.0 — השותף נוסף גם למשימות הפתוחות */
 };
 window.lbOwnerRemove = async (key)=>{
   const id = LBOWN_LEAD, uid = lbOwnUuid(key);
@@ -25733,6 +25800,7 @@ window.lbOwnerRemove = async (key)=>{
   if(!(r && r.removed !== false)){ toast('לא הוסר — הבעלים הראשי מוחלף דרך "קבע כראשי"'); return; }
   _k.map()[id] = (_k.map()[id]||[]).filter(x=>x!==key);
   toast('השותף הוסר ✓'); lbOwnerDraw(); _k.paint(); lbOwnerSync(id);
+  if(LBOWN_K === 'lead') lbTasksRefresh(id);   /* 6.223.0 — והוסר גם מהמשימות הפתוחות */
 };
 /* קביעת ראשי = lead_set_owner. הראשי הקודם **יורד לגמרי** ולא הופך לשותף:
    זו ההתנהגות של הפונקציה בשרת (delete ואז insert), ואל תתקן אותה כאן
@@ -25793,7 +25861,9 @@ window.lbSetOwner = async (leadId, ownerKey, quiet)=>{
   /* המראה המקומית — owner_id — מתעדכנת לישות הנכונה. */
   const l = (_k.rows()||[]).find(x=>x.id===leadId);
   if(l) l.owner_id = (ownerKey && ownerKey.indexOf('legacy:')!==0) ? ownerKey : null;
-  toast('הבעלות עודכנה ✓');
+  /* 6.223.0 — המשימות הפתוחות עברו בשרת; ההודעה אומרת כמה, מהמצב שנמשך ולא מחישוב מקומי. */
+  const _mv = (LBOWN_K === 'lead' && ownerKey) ? await lbTasksRefresh(leadId) : 0;
+  toast('הבעלות עודכנה ✓' + (_mv > 0 ? ' · הועברו גם ' + _mv + ' משימות' : ''));
   /* ⚠️ בלי `quiet` הקריאה מהטבלה ומהבורר הייתה פותחת את כרטיס הליד
      בפני המשתמש בלי שביקש. */
   /* ⚠️ פתיחה מחדש רק במסלול הליד: לעסקה openDeal הוא async ומצייר
@@ -26123,8 +26193,11 @@ function meetOpenFor(t, id, back){
   $('#lm-subj').value = ''; $('#lm-err').textContent='';
   $('#lm-date').value = todayStr();
   /* הבורר נבנה בכל פתיחה מ-MEET_TYPES — רשימה אחת, בלי ליטרל שני. */
-  $('#lm-type').innerHTML = MEET_TYPES.map(x=>`<option>${esc(x)}</option>`).join('');
+  /* 6.223.0 — בצבע (רומן: "סוג פגישה תעשה צבעים שונים"), מאותה פלטה ש-מסך הפגישות צובע בה —
+     MEET_TYPE_COLORS דרך selSty, נקודת החנק של כל הבוררים הצבועים (6.187.0). */
+  $('#lm-type').innerHTML = MEET_TYPES.map(x=>`<option style="${selSty(x,MEET_TYPE_COLORS,LB_TK)}">${esc(x)}</option>`).join('');
   $('#lm-type').value = 'פרונטלית';
+  selPaint($('#lm-type'),'meettype',LB_TK);
   ['lm-loc','lm-url','lm-phone'].forEach(x=>{ const e=document.getElementById(x); if(e) e.value=''; });
   /* 🔴 6.182.0 — הבורר מוצג **תמיד**, גם כשהגענו מכרטיס. עד כאן הוא
      הוסתר כשהקישור ידוע, וזה היה נכון כל עוד קישור היה אופציונלי;
@@ -26171,7 +26244,7 @@ window.custMeet = (id)=>{
    פגישה בלבד, ותוספת שלא התבקשה בכרטיס היא רעש. */
 window.cuTmActs = (id)=>
   (window.canEdit('crm.meets')
-    ? '<button type="button" class="chip" onclick="custMeet(\'' + jsq(id) + '\')">＋ פגישה</button>'
+    ? '<button type="button" class="chip" onclick="goCard(()=>custMeet(\'' + jsq(id) + '\'))">＋ פגישה</button>'
     : '');
 
 let CUD_RESULT = null;   /* {id, html} — תוצאת פתיחת התהליך, שורדת ציור מחדש */
@@ -26310,7 +26383,7 @@ $('#pw-eye').onclick    = ()=>{
 };
 /* Enter בשדה האימות שולח — הדפוס של מסך ההתחברות */
 $('#pw-b').addEventListener('keydown', e=>{ if(e.key==='Enter') window.pwDo(); });
-$('#lm-cancel').onclick = ()=> closeCards();
+$('#lm-cancel').onclick = ()=> (CARD_STACK.length ? cardBack() : closeCards());  /* 6.223.0 */
 $('#lm-save').onclick = async ()=>{
   const tg=LB_MEET_T; if(!tg) return;
   const subj=$('#lm-subj').value.trim(), d=$('#lm-date').value;

@@ -3065,7 +3065,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.226.0</div>
+      <div class="ver">גרסה 6.226.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3195,7 +3195,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="skuship-2026-10-09a">גרסה 6.226.0</div>
+    <div class="side-foot" title="signflow-2026-10-09a">גרסה 6.226.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -10496,6 +10496,7 @@ window.openDocLink = async (id, mode)=>{
   /* 6.217.0 — ord.protocol_link (02/09/2026) מחזירה stage_note כשהקישור הופק אבל שלב העסקה לא זז
      (ערוץ שליחה חסר). עד כאן ההערה נבלעה והמשתמש חשב שהשלב התקדם. */
   if(data.stage_note) toast(String(data.stage_note), 'warn', 6000);
+  if(data.kind==='sign') dlSignAfterLink(p, url, mode==='wa' ? 'whatsapp' : (mode==='copy' ? 'link' : null));
   if(tab){ tab.location.href = (mode==='wa'&&p&&p.phone) ? waLink(p.phone, waProtocolMsg(p, url)) : url; return; }
   copyTxt(url);
 };
@@ -10974,6 +10975,31 @@ window.dlPull = async (dealId) => {
   dlPullPaint(dealId);
 };
 
+/* 6.225.2 — אחרי כל הפקת קישור (יצירה אוטומטית · העתקה): השורה ב-PROTS מתעדכנת מקומית כמו שהשרת
+   כתב (link_sent_at/via/count), הקישור נכנס ל-d.sign_link (protocol_link v3 כותב אותו למסד), ושתי
+   המשבצות בכרטיס מצוירות מחדש. רומן: "מופיע טרם נשלח למרות שקיבלתי הודעה בוואטסאפ" — PROTS לא
+   ידע שהקישור הופק. */
+window.dlSignAfterLink = (p, url, via)=>{
+  if(p){
+    p.link_sent_at = new Date().toISOString();
+    if(via) p.link_sent_via = via;
+    p.link_sent_count = (Number(p.link_sent_count)||0) + 1;
+  }
+  const d = p && p.deal_id ? (DEALS||[]).find(x=>x.id===p.deal_id) : null;
+  if(d && url){ d.sign_link = url; }
+  const sb_ = document.getElementById('dl-signbox');
+  if(sb_ && d) sb_.innerHTML = window.dlSignBox(d);
+  const sl = document.getElementById('dl-signlink');
+  if(sl && d) sl.innerHTML = window.dlSignLinkHtml(d);
+  try{ if(typeof renderDocs === 'function') renderDocs(); }catch(_e){}
+};
+/* התא "לינק לחתימה": הקישור של מודול החתימה (או PowerDoc ממאנדיי, בעסקאות ישנות) — פתיחה והעתקה. */
+window.dlSignLinkHtml = (d)=>{
+  if(!d || !d.sign_link) return `<div class="note">טרם נשלח לחתימה.</div>`;
+  const u = esc(safeUrl(d.sign_link));
+  return `<div class="tk-lnk"><a href="${u}" target="_blank" rel="noopener">פתיחה &#8599;</a>`
+       + ` <button type="button" class="chip" onclick="copyTxt('${jsq(d.sign_link)}')">⧉ העתקה</button></div>`;
+};
 window.dlSignBox = (d)=>{
   if(!d) return '';
   const rows   = window.dlQuoteRows(d.id);
@@ -10991,7 +11017,6 @@ window.dlSignBox = (d)=>{
           ? ` <button type="button" class="chip" onclick="openDocLink('${jsq(row.id)}','open')">↗ צפייה במסמך החתום</button>`
           : (may
               ? ` <button type="button" class="chip" onclick="openDocLink('${jsq(row.id)}','copy')">⧉ העתקת קישור</button>`
-                + (row.phone ? ` <button type="button" class="chip" onclick="openDocLink('${jsq(row.id)}','wa')">וואטסאפ</button>` : '')
               : ` <span class="lb-mut">אין לך הרשאה להפיק קישור בקטגוריה הזו</span>`))
       + `</div>`;
   }
@@ -11009,7 +11034,7 @@ window.dlSignBox = (d)=>{
   const shipBtn = `<button type="button" class="chip" onclick="dlShipCalc('${jsq(d.id)}')">חשב משלוח והתקנה</button>`;
   if(!window.canEdit('docs.' + DL_QCAT))
     return `<div class="tk-lnk">${shipBtn}</div><div class="note">אין לך הרשאת עריכה בקטגוריית ההצעות.</div>`;
-  return `<div class="tk-lnk"><button type="button" class="chip" onclick="dlQuoteDoc('${jsq(d.id)}')">✎ צור מסמך לחתימה</button> ${shipBtn}`
+  return `<div class="tk-lnk"><button type="button" class="btn" onclick="dlQuoteDoc('${jsq(d.id)}')">✎ צור מסמך לחתימה</button> ${shipBtn}`
        + ` <span class="lb-mut">הצעה ${esc(d.priority_quote_id)}</span></div>`;
 };
 
@@ -11185,6 +11210,20 @@ window.dlQuoteDoc = async (dealId)=>{
      **שורת המסמך עצמה היא המשוב**, ולכן אין הודעה זמנית שצריך לשמר
      במצב (המחלקה של TK_REP ו-CONV_RESULT). */
   if(box) box.innerHTML = window.dlSignBox(d);
+  /* 6.225.2 — יצירה = שליחה. עד כאן המסמך נוצר ושום דבר לא יצא עד שמישהו לחץ "העתקת קישור"
+     (נמדד 09/10: 35 שניות בין היצירה לקישור, והסטטוס "טרם נשלח" על מסמך שהוואטסאפ שלו כבר הגיע).
+     protocol_link הוא המפיק: ווטסאפ/גם וגם ⇒ 'whatsapp' (וההודעה יוצאת מיד), אחרת 'link'. */
+  if(data.protocol && data.protocol.id){
+    const via = /ווטסאפ|וואטסאפ|גם וגם/.test(String(d.send_channel||'')) ? 'whatsapp' : 'link';
+    const { data: lk, error: le } = await sb.schema('ord').rpc('protocol_link', { p_id: data.protocol.id, p_via: via });
+    if(le || !lk || !lk.token){
+      toast('המסמך נוצר, אבל הפקת הקישור נכשלה — ' + ((le&&le.message)||'ללא פירוט') + '. אפשר ללחוץ "העתקת קישור".', 'err', 6000);
+    } else {
+      if(lk.stage_note) toast(String(lk.stage_note), 'warn', 6000);
+      dlSignAfterLink(PROTS.find(x=>x.id===data.protocol.id) || data.protocol, signUrl(lk.token), via);
+      toast(via==='whatsapp' ? 'המסמך נוצר והקישור נשלח ללקוח בוואטסאפ ✓' : 'המסמך נוצר והקישור מוכן ✓', 'ok', 4000);
+    }
+  }
   try{ if(typeof renderDocs === 'function') renderDocs(); }catch(_e){}
   toast('נוצר מסמך לחתימה · ' + (data.items||0) + ' שורות ✓');
 };
@@ -11216,7 +11255,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'skuship-2026-10-09a';
+const BUILD_ID = 'signflow-2026-10-09a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -23072,6 +23111,7 @@ window.dlLiveApply = (row)=>{
   try{ dlPipeDraw(row.id); }catch(_e){}
   /* 6.225.0 — השבב בכותרת מתעדכן במקום (ולא openDeal, שמאפס scrollTop). */
   if(changed.indexOf('priority_quote_status') >= 0 || changed.indexOf('priority_quote_synced_at') >= 0){ const _p = document.getElementById('dl-pqs'); if(_p) _p.innerHTML = dlPqsPill(d); }
+  if(changed.indexOf('sign_link') >= 0){ const _l = document.getElementById('dl-signlink'); if(_l) _l.innerHTML = dlSignLinkHtml(d); }
   try{ renderDeals(); }catch(_e){}
   toast(changed.indexOf('stage') >= 0
         ? 'העסקה עודכנה: «' + (before||'—') + '» ← «' + (d.stage||'—') + '»'
@@ -23166,9 +23206,7 @@ window.openDeal = async (id)=>{
         <div id="dl-chanbox"></div></div>
       <div class="span2"><label>חתימה על ההצעה — מודול איירון</label>
         <div id="dl-signbox">${dlSignBox(d)}</div></div>
-      <div><label>לינק לחתימה</label>
-        ${d.sign_link?`<div class="tk-lnk"><a href="${esc(safeUrl(d.sign_link))}" target="_blank" rel="noopener">פתיחה &#8599;</a></div>`
-                     :`<div class="note">טרם נשלח לחתימה.</div>`}</div>
+      <div><label>לינק לחתימה</label><div id="dl-signlink">${dlSignLinkHtml(d)}</div></div>
       <div class="cell-2up">
         <!-- ⚠️ התוויות **מלאות**, אחרי מדידה. Fable הציע לקצר ל"אישור
              ההצעה"/"סגירה" בהערכה שהמלאה דורשת ~115px; המדידה בדפדפן

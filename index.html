@@ -1590,6 +1590,13 @@
   .lm-when .field{ min-width:0; }
   .lm-when input{ width:100%; min-width:0; box-sizing:border-box; }
   @media(max-width:559.98px){ .lm-when{ grid-template-columns:1fr 1fr; } .lm-when > .field:first-child{ grid-column:1 / -1; } }
+  /* 6.224.0 — שורת הנמען בחלון "פגישה חדשה": למי יישלח הזימון, לפני שלוחצים "שמור ושגר". */
+  .lm-rcpt{ border-radius:var(--r-md); padding:8px 10px; margin:0 0 14px; font-size:var(--fs-sm); line-height:1.5; border:1px solid var(--line); background:#f8fafc; color:var(--ink-2); }
+  .lm-rcpt.ok b{ color:var(--ink-1); }
+  .lm-rcpt.err{ background:var(--red-bg); border-color:#f5c2bd; color:var(--red); font-weight:600; }
+  .lm-rcpt.warn{ background:var(--amber-bg); border-color:var(--warn); color:#92400e; }
+  /* כפתור מושבת (אין טלפון / שיגור בתהליך) חייב להיראות מושבת — עד כאן לא היה כלל כזה בשורת הפעולות. */
+  .modal .sheet > .modal-actions > .btn:disabled{ opacity:.45; cursor:not-allowed; box-shadow:none; }
   #ordModal .modal-actions.ord-actions .ghost{ padding:9px 20px; font-size:var(--fs-lg); width:auto; min-height:var(--ctl-h-lg); }
   .form-grid label{ display:flex; align-items:center; flex-wrap:wrap; gap:4px 5px; min-height:20px; font-size:12px; color:var(--ink-2); margin-bottom:4px; font-weight:600; line-height:1.45; }
   .form-grid label .ph-btn, .form-grid label .waze-btn, .form-grid label .src-tag{ flex:none; }
@@ -3058,7 +3065,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.223.0</div>
+      <div class="ver">גרסה 6.224.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3188,7 +3195,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="leadflow-2026-10-09a">גרסה 6.223.0</div>
+    <div class="side-foot" title="meetsend-2026-10-09a">גרסה 6.224.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3650,6 +3657,10 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       <div id="lm-lnkres" class="ac-menu" hidden></div>
       <input type="hidden" id="lm-lnk" value="">
     </div>
+    <!-- 6.224.0 — למי יישלח הזימון. בלי טלפון "שמור ושגר" מושבת; בלי אימייל — התרעה ושדה לא-חובה. -->
+    <div id="lm-rcpt" class="lm-rcpt hidden" role="status"></div>
+    <div class="field hidden" id="lm-emwrap"><label>אימייל ללקוח (לא חובה — יישמר בכרטיס הליד)</label>
+      <input id="lm-email" type="email" dir="ltr" autocomplete="off" placeholder="name@example.com"></div>
     <div class="field"><label>נושא<span class="req">*</span></label><input id="lm-subj"></div>
     <!-- 6.223.0 — שורה אחת (רומן: "לקצר ולנוחות"). ה-id-ים לא זזו, ולכן lm-save לא נגע. -->
     <div class="lm-when">
@@ -3668,10 +3679,10 @@ tr.lb-on td{ background-color:#eef5fd !important; }
     <div class="field" id="lm-detwrap"><label id="lm-detlbl">מיקום</label>
       <input id="lm-loc" placeholder="כתובת מלאה">
       <input id="lm-url" class="hidden" placeholder="קישור לפגישה המקוונת" dir="ltr">
-      <input id="lm-phone" class="hidden" placeholder="טלפון ליצירת קשר" dir="ltr">
+      <input id="lm-phone" class="hidden" placeholder="טלפון ליצירת קשר" dir="ltr" oninput="lmRcptPaint()">
     </div>
     <div class="modal-actions">
-      <button class="btn green" id="lm-save">שמירה</button>
+      <button class="btn green" id="lm-save">שמור ושגר</button>
       <button class="ghost" id="lm-cancel">ביטול</button>
     </div>
     <div class="err" id="lm-err"></div>
@@ -11179,7 +11190,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'leadflow-2026-10-09a';
+const BUILD_ID = 'meetsend-2026-10-09a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -23572,7 +23583,7 @@ window.lmTypeChanged = ()=>{
   const e = document.getElementById(id); if(e) e.classList.remove('hidden');
   const l = document.getElementById('lm-detlbl'); if(l) l.textContent = lbl;
   /* 6.182.0 — סעיפים 4 ו-5. שניהם ממלאים **רק שדה ריק**. */
-  mtLocFill(); mtPhoneFill();
+  mtLocFill(); mtPhoneFill(); lmRcptPaint();
 };
 /* 🔴 עמודה **אחת** ולא שלוש: שלוש היו מוסיפות ~360px לטבלה שכבר
    גלילה אופקית, ושתיים מהן ריקות בכל שורה. */
@@ -23671,7 +23682,52 @@ window.mtPhoneFill = ()=>{
   el.value = mtPhone({ linked_type:v.slice(0,i), linked_id:v.slice(i+1), location:'', contact_phone:'' }) || '';
 };
 window.TKL_HOOK = window.TKL_HOOK || {};
-window.TKL_HOOK.lm = (type, id)=>{ mtSubjFill(type, id); mtPhoneFill(); };
+window.TKL_HOOK.lm = (type, id)=>{ mtSubjFill(type, id); mtPhoneFill(); lmRcptPaint(); };
+/* ═══ 6.224.0 — "שמור ושגר": הנמען ידוע לפני השמירה ════════════════════
+   🟢 הטלפון נגזר ב-mtPhone() על פגישה מדומה — אותו סדר של crm.meeting_send בשרת:
+      contact_phone (רק בפגישה טלפונית, ממה שהוקלד) ← הישות המקושרת. אין מימוש שני.
+   ⚠️ האימייל אינו נשלח בזימון (וואטסאפ בלבד) — הוא נשמר לליד לשימוש עתידי. */
+window.lmRcpt = ()=>{
+  const v = ((document.getElementById('lm-lnk')||{}).value) || '', i = v.indexOf(':');
+  if(i <= 0) return null;
+  const t = v.slice(0,i), id = v.slice(i+1);
+  const ty = (document.getElementById('lm-type')||{}).value || '';
+  const cp = ty==='טלפונית' ? String((document.getElementById('lm-phone')||{}).value||'').trim() : '';
+  const phone = mtPhone({ linked_type:t, linked_id:id, location:'', contact_phone:cp }) || '';
+  let email = '';
+  if(t==='lead'){ const l=(LEADS||[]).find(x=>x.id===id); email = (l && l.email) || ''; }
+  else if(t==='customer'){ const k=(CUSTS||[]).find(x=>x.id===id); email = (k && k.email) || ''; }
+  else if(t==='deal'){ const d=(DEALS||[]).find(x=>x.id===id); const k=d && (CUSTS||[]).find(x=>x.id===d.customer_id); email = (k && k.email) || ''; }
+  return { t, id, phone: String(phone).trim(), email: String(email).trim() };
+};
+window.lmRcptPaint = ()=>{
+  const box = document.getElementById('lm-rcpt'), ew = document.getElementById('lm-emwrap'), btn = document.getElementById('lm-save');
+  if(!box || !btn) return;
+  const r = lmRcpt();
+  if(!r){ box.className='lm-rcpt hidden'; box.innerHTML=''; if(ew) ew.classList.add('hidden'); btn.disabled=false; return; }
+  if(!r.phone){
+    box.className = 'lm-rcpt err';
+    box.textContent = 'אין טלפון ללקוח — לא ניתן לשמור ולשגר זימון. יש להוסיף טלפון בכרטיס ' + (r.t==='lead'?'הליד':'הלקוח') + '.';
+    if(ew) ew.classList.add('hidden'); btn.disabled = true; return;
+  }
+  btn.disabled = false;
+  if(r.email){
+    box.className = 'lm-rcpt ok';
+    box.innerHTML = 'הזימון יישלח בוואטסאפ אל <b dir="ltr">' + esc(r.phone) + '</b> · אימייל: <span dir="ltr">' + esc(r.email) + '</span>';
+    if(ew) ew.classList.add('hidden'); return;
+  }
+  box.className = 'lm-rcpt warn';
+  box.innerHTML = 'הזימון יישלח בוואטסאפ אל <b dir="ltr">' + esc(r.phone) + '</b> · <b>אין אימייל ללקוח</b> — '
+    + (r.t==='lead' && window.canEdit('crm.leads') ? 'אפשר להוסיף כאן, או לשגר בלעדיו.' : 'האימייל של לקוח מתעדכן מפריוריטי. אפשר לשגר בלעדיו.');
+  if(ew) ew.classList.toggle('hidden', !(r.t==='lead' && window.canEdit('crm.leads')));
+};
+/* ⚠️ מצב פילוט: outbox-dispatch מבטל כל נמען שאינו ב-ord.settings.wa_allow. בלי הציון הזה
+   המשתמש היה קורא "נכנס לתור" ומסיק שהלקוח קיבל. השוואה על 9 הספרות האחרונות — כמו השרת. */
+const lmP9 = s => String(s||'').replace(/\D/g,'').slice(-9);
+window.lmPilotBlocked = phone => {
+  const allow = String(osetStr('wa_allow','')||'').split(/[,;\s]+/).map(lmP9).filter(Boolean);
+  return !allow.includes(lmP9(phone));
+};
 /* 🔴 6.157.0 — רג'יסטרי עמודות + מפת-שם למיון, בדפוס LB_COLS/TK_COLS/
    DL_COLS. **מפת-שם ולא מפת-אינדקס**: הוספה או מחיקה של עמודה אינה
    יכולה לשבור את המיון בשקט (מחלקת children[length-7] מ-6.148.0). */
@@ -26210,6 +26266,8 @@ function meetOpenFor(t, id, back){
   mountCard('lbMeetModal', ()=>$('#lbMeetModal').classList.remove('hidden'));
   tklInit('lm', (t && id) ? (t + ':' + id) : '');
   if(t && id) mtSubjFill(t, id);
+  { const e=document.getElementById('lm-email'); if(e) e.value=''; }   /* 6.224.0 */
+  { const b=document.getElementById('lm-save'); if(b) b.disabled=false; }
   lmTypeChanged();
 }
 /* ＋פגישה חדשה מהמסך — בלי ישות מקושרת מראש. */
@@ -26395,6 +26453,22 @@ $('#lm-save').onclick = async ()=>{
   const _mt = $('#lm-type').value || '';
   const miss=[!_lt?'ליד או לקוח':null, !subj?'נושא':null, !d?'תאריך':null].filter(Boolean);
   if(miss.length){ $('#lm-err').textContent='חסרים שדות חובה: '+miss.join(' · ')+'.'; return; }
+  /* 🔴 6.224.0 — "שמור ושגר": שני השערים של crm.meeting_send נבדקים **לפני** השמירה, כדי שלא
+     תיווצר פגישה שאי אפשר לשגר (רומן: "ללא טלפון לא לאפשר בכלל"). השרת בודק שוב. */
+  const _rc = lmRcpt();
+  if(!_rc || !_rc.phone){ $('#lm-err').textContent='אין טלפון ללקוח — לא ניתן לשמור ולשגר זימון. יש להוסיף טלפון בכרטיס.'; return; }
+  if(_mt==='מקוונת' && !(($('#lm-url').value||'').trim())){ $('#lm-err').textContent='פגישה מקוונת — חסר קישור לפגישה.'; return; }
+  const _em = (($('#lm-email') && $('#lm-email').value) || '').trim();
+  if(_em && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(_em)){ $('#lm-err').textContent='האימייל אינו תקין.'; return; }
+  const _btn = $('#lm-save'); _btn.disabled = true;
+  try{
+  /* אימייל שנוסף — לליד בלבד, לפני השמירה. כשל כאן אינו עוצר את הפגישה: הוא נאמר בהודעה. */
+  let _emNote = '';
+  if(_em && _rc.t==='lead' && window.canEdit('crm.leads')){
+    const ur = await sb.schema('crm').from('leads').update({ email:_em }).eq('id', _rc.id).select('id');
+    if(ur.error || !(ur.data||[]).length) _emNote = ' · האימייל לא נשמר';
+    else { const l=(LEADS||[]).find(x=>x.id===_rc.id); if(l) l.email=_em; _emNote = ' · האימייל נשמר בכרטיס הליד'; }
+  }
   /* 🔴 6.125.0 — סעיף 5 באיפיון. עד כאן זו הייתה הכנסה ישירה
      ל-crm.meetings ותו לא: **אפס נגיעה במשימות**, והליד לא זז.
      עכשיו crm.lead_meeting_create עושה את הכול בטרנזקציה אחת —
@@ -26422,10 +26496,21 @@ $('#lm-save').onclick = async ()=>{
   });
   if(error){ $('#lm-err').textContent='השמירה נכשלה — '+error.message; return; }
   const r = Array.isArray(data) ? data[0] : data;
+  /* 🔴 6.224.0 — והשיגור, מיד. בלי תצוגה מקדימה (רומן: "וזהו"); השקיפות עברה להודעה,
+     שמציגה את מה **שהשרת** החזיר — סוג ותבנית נגזרים שם, לא בדפדפן. */
+  let _sent = null, _sendErr = '';
+  if(r && r.meet_id){
+    const sr = await sb.schema('crm').rpc('meeting_send', { p_meet: r.meet_id, p_dry: false });
+    const s = Array.isArray(sr.data) ? sr.data[0] : sr.data;
+    if(sr.error) _sendErr = sr.error.message; else if(!s || s.ok !== true) _sendErr = (s && s.note) || 'אין תשובה מהשרת'; else _sent = s;
+  } else _sendErr = 'מזהה הפגישה לא הוחזר';
   $('#lbMeetModal').classList.add('hidden'); LB_MEET_T=null;
-  toast(r && r.due_at
-    ? 'נקבעה פגישה ✓ · נפתחה משימה ל' + new Date(r.due_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})
-    : 'נקבעה פגישה ✓');
+  if(_sent){
+    toast('נקבעה פגישה ✓ · הזימון (' + (_sent.mtype||'') + ') נכנס לתור השליחה אל ' + (_sent.phone||'') + _emNote
+      + (lmPilotBlocked(_sent.phone) ? ' · ⚠️ מצב פילוט — לא ייצא ללקוח עד פתיחת רשימת ההיתר' : ''), 'ok', 7000);
+  } else {
+    toast('הפגישה נשמרה · הזימון לא נשלח — ' + _sendErr + _emNote, 'warn', 8000);
+  }
   await loadLeads();
   /* ⚠️ הכרטיס שנפתח מחדש נגזר מ-back ולא מסוג הקישור. 🔴 מ-6.182.0
      פגישה מכרטיס **עסקה** נשמרת עם קישור ללקוח, ולכן גזירה מהסוג הייתה
@@ -26440,6 +26525,7 @@ $('#lm-save').onclick = async ()=>{
   else if(bk.t==='deal') openDeal(bk.id);
   else if(bk.t==='customer') openCust(bk.id);
   else openLead(bk.id);
+  } finally { _btn.disabled = false; }
 };
 
 let CONV_RESULT = null;   /* {id, html} — תוצאת ההמרה האחרונה, שורדת ציור מחדש */

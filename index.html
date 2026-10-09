@@ -3065,7 +3065,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.225.1</div>
+      <div class="ver">גרסה 6.226.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3195,7 +3195,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="pqsync-2026-10-09a">גרסה 6.225.1</div>
+    <div class="side-foot" title="skuship-2026-10-09a">גרסה 6.226.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -4259,7 +4259,7 @@ window.TAB_PERM = {
   mkt:'mkt.dash'
 };
 window.LOGI_PERM = { orders:'logi.orders', calls:'logi.calls', cal:'logi.cal' };
-window.SET_PERM  = { users:'set.users', teams:'set.teams', texts:'set.texts', conn:'set.conn', synclog:'set.synclog', notif:'set.notif', crm:'set.crm', shipcalc:'prc.pricing', general:'set.general' };
+window.SET_PERM  = { users:'set.users', teams:'set.teams', texts:'set.texts', conn:'set.conn', synclog:'set.synclog', notif:'set.notif', crm:'set.crm', general:'set.general' };
 window.LOGI_VIEWS = ['orders','calls','cal'];
 window.navCanTab = t=>{
   /* 6.140.0 — logi.screen מפריד בין הנתונים לבין המסך.
@@ -8151,10 +8151,10 @@ const SKU_COLS = [
   {k:'sold_3m',     t:'נמכר 3 חוד׳',           y:'n'},
   {k:'sold_6m',     t:'נמכר 6 חוד׳',           y:'n'},
   {k:'needs_install',               t:'נדרשת התקנה',                 y:'b'},
-  {k:'install_price_iron',          t:'התקנה איירון (לפני מע"מ)',     y:'m'},
-  {k:'install_price_contractor',    t:'התקנה קבלני (לפני מע"מ)',      y:'m'},
-  {k:'install_price_contractor_vat',t:'התקנה קבלני (כולל מע"מ)',      y:'m'},
-  {k:'ship_price_single',           t:'שילוח מוצר בודד (לפני מע"מ)',  y:'m'},
+  {k:'install_price_iron',          t:'התקנה איירון (לפני מע"מ)',     y:'s'},
+  {k:'install_price_contractor',    t:'התקנה קבלני (לפני מע"מ)',      y:'s'},
+  {k:'install_price_contractor_vat',t:'התקנה קבלני (כולל מע"מ)',      y:'s'},
+  {k:'ship_price_single',           t:'שילוח מוצר בודד (לפני מע"מ)',  y:'s'},
   {k:'pallet_load_factor',          t:'מקדם משטחים',                 y:'n'},
   {k:'weight_kg',   t:'משקל (ק"ג)',            y:'n'},
   {k:'length_cm',   t:'אורך (ס"מ)',            y:'n'},
@@ -8167,8 +8167,9 @@ const SKU_COLS = [
 /* התצוגה הטבלאית — רק מה שרומן ביקש. מספור ותמונה מתווספים בנפרד בכותרת.
    סבב 7 — נוספה עמודת מק"ט מימין לתיאור (ב-RTL: לפניו בסדר ה-DOM). */
 const SKU_TABLE_KEYS = ['partname','partdes','family','erp_status','price_base','price_vat'];
-/* 6.217.0 — עמודת כסף (y:'m': מחירונים, עלויות התקנה ושילוח) דורשת sku.cards.cost — בטבלה ובייצוא. */
-const skuColsAllowed = () => SKU_COLS.filter(c=> c.y!=='m' || window.canView('sku.cards.cost'));
+/* 6.217.0 — עמודת כסף (y:'m': מחירונים) דורשת sku.cards.cost — בטבלה ובייצוא.
+   6.226.0 — מחירי ההתקנה והשילוח (y:'s') עברו למפתח משלהם, sku.ship (רומן: "לקבוע מי יכול לקרוא"). */
+const skuColsAllowed = () => SKU_COLS.filter(c=> (c.y!=='m' || window.canView('sku.cards.cost')) && (c.y!=='s' || window.canView('sku.ship')));
 const skuTableCols = () => skuColsAllowed().filter(c=>SKU_TABLE_KEYS.includes(c.k));
 
 /* ---- טעינה בשתי שכבות (משימת לילה 7, 30/07) ----
@@ -8981,6 +8982,10 @@ function _openSku(pn){
   /* 6.217.0 — sku.cards.cost: מחירוני הבסיס, מחירוני הלקוח ועלויות ההתקנה/השילוח מצוירים רק למי שהמפתח
      מותר אצלו. עד כאן המפתח הופיע אפס פעמים בקוד (נמדד 31/08/2026) — מיקי ונח ראו הכול. */
   const cost = window.canView('sku.cards.cost');
+  /* 6.226.0 — sku.ship: מחירי ההתקנה והשילוח ללקוח, שמזינים את המחשבון בכרטיס העסקה. מפתח שורש
+     (לאנשי המכירות sku=0, ותקרת האב הייתה חוסמת). 1 = קריאה · 2 = עריכה, דרך ord.sku_ship_set. */
+  const shipV = window.canView('sku.ship'), shipE = window.canEdit('sku.ship');
+  const roF = (l, v) => `<div class="field"><label>${l}</label><input class="ro" readonly dir="ltr" value="${esc(v==null?'':String(v))}"></div>`;
   const unit = esc(s.unit||'יח\'');
   /* סבב 9 סעיף 2 — כל מדד מלאי מוצג עם יחידת המידה, לא רק "מלאי זמין".
      סעיף 3 — פילוח "מלאי לפי מחסן" הוסר מהכרטיס לבקשת רומן. */
@@ -9039,24 +9044,29 @@ function _openSku(pn){
 
     <div class="sku-box install">
       <div class="bx-t">נתוני התקנה, שילוח ומשטחים</div>
-      ${mgr?`
+      ${shipV?`<div class="note">מחירי ההתקנה והשילוח הם <b>המחיר ללקוח ליחידה</b>. המחשבון "חשב משלוח והתקנה" בכרטיס העסקה מכפיל את <b>התקנה איירון</b> ואת <b>שילוח מוצר בודד</b> בכמות שבהצעה. שדה ריק נחשב "טרם הוגדר".</div>`:''}
+      ${(mgr||shipE)?`
       <div class="ig">
-        <div class="field"><label>נדרשת התקנה?</label><select id="sk-need" class="need-sel${s.needs_install===true?' yes':(s.needs_install===false?' no':'')}" onchange="skuNeedTint(this)"><option value=""${s.needs_install==null?' selected':''}>טרם נקבע</option><option value="1"${s.needs_install===true?' selected':''}>כן</option><option value="0"${s.needs_install===false?' selected':''}>לא</option></select></div>
-        ${cost?`        <div class="field"><label>התקנה איירון (לפני מע"מ)</label><input id="sk-inst-iron" type="text" inputmode="decimal" dir="ltr" value="${s.install_price_iron??''}"></div>
+        ${shipE?`<div class="field"><label>נדרשת התקנה?</label><select id="sk-need" class="need-sel${s.needs_install===true?' yes':(s.needs_install===false?' no':'')}" onchange="skuNeedTint(this)"><option value=""${s.needs_install==null?' selected':''}>טרם נקבע</option><option value="1"${s.needs_install===true?' selected':''}>כן</option><option value="0"${s.needs_install===false?' selected':''}>לא</option></select></div>`
+               :roF('נדרשת התקנה?', s.needs_install===true?'כן':(s.needs_install===false?'לא':'טרם נקבע'))}
+        ${shipE?`        <div class="field"><label>התקנה איירון (לפני מע"מ)</label><input id="sk-inst-iron" type="text" inputmode="decimal" dir="ltr" value="${s.install_price_iron??''}"></div>
         <div class="field"><label>התקנה קבלני (לפני מע"מ)</label><input id="sk-inst-cont" type="text" inputmode="decimal" dir="ltr" value="${s.install_price_contractor??''}" oninput="skuContVat()"></div>
         <div class="field"><label>התקנה קבלני (כולל מע"מ)</label><input id="sk-inst-cont-vat" type="text" inputmode="decimal" dir="ltr" value="${s.install_price_contractor_vat??''}"><div class="auto-hint">מתמלא לפי 18% · ניתן לדרוס</div></div>
-        <div class="field"><label>שילוח מוצר בודד (לפני מע"מ)</label><input id="sk-ship" type="text" inputmode="decimal" dir="ltr" value="${s.ship_price_single??''}"></div>`:''}
-        <div class="field"><label>מקדם משטחים</label><input id="sk-pallet" type="text" inputmode="decimal" dir="ltr" value="${s.pallet_load_factor??''}"></div>
+        <div class="field"><label>שילוח מוצר בודד (לפני מע"מ)</label><input id="sk-ship" type="text" inputmode="decimal" dir="ltr" value="${s.ship_price_single??''}"></div>`
+          :(shipV?roF('התקנה איירון (לפני מע"מ)', s.install_price_iron)+roF('התקנה קבלני (לפני מע"מ)', s.install_price_contractor)
+                 +roF('התקנה קבלני (כולל מע"מ)', s.install_price_contractor_vat)+roF('שילוח מוצר בודד (לפני מע"מ)', s.ship_price_single):'')}
+        ${mgr?`<div class="field"><label>מקדם משטחים</label><input id="sk-pallet" type="text" inputmode="decimal" dir="ltr" value="${s.pallet_load_factor??''}"></div>
         <div class="field"><label>משקל (ק"ג)</label><input id="sk-weight" type="text" inputmode="decimal" dir="ltr" value="${s.weight_kg??''}"></div>
         <div class="field dim3"><label>מידות (ס"מ) · אורך × רוחב × גובה</label>
           <div class="d3"><input id="sk-len" type="text" inputmode="decimal" dir="ltr" placeholder="אורך" value="${s.length_cm??''}" oninput="skuVol()"><b>×</b><input id="sk-wid" type="text" inputmode="decimal" dir="ltr" placeholder="רוחב" value="${s.width_cm??''}" oninput="skuVol()"><b>×</b><input id="sk-hei" type="text" inputmode="decimal" dir="ltr" placeholder="גובה" value="${s.height_cm??''}" oninput="skuVol()"></div>
-          <div class="auto-hint" id="sk-vol">${volHint(s.length_cm,s.width_cm,s.height_cm)}</div></div>
+          <div class="auto-hint" id="sk-vol">${volHint(s.length_cm,s.width_cm,s.height_cm)}</div></div>`
+          :roF('מקדם משטחים', s.pallet_load_factor)+roF('משקל (ק"ג)', s.weight_kg)+roF('מידות (ס"מ)', dimStr(s.length_cm,s.width_cm,s.height_cm))}
       </div>
       <div class="modal-actions"><button class="btn green" onclick="saveSku('${jsq(s.partname)}')">שמירה</button></div>
       <div class="err" id="sk-err"></div>`
       :`<div class="sku-grid">
         ${kpi('נדרשת התקנה', s.needs_install===true?'כן':(s.needs_install===false?'לא':'—'), s.needs_install===true?'ok':(s.needs_install===false?'neg':''))}
-        ${cost?`        ${kpi('התקנה איירון (לפני מע"מ)', money(s.install_price_iron))}
+        ${shipV?`        ${kpi('התקנה איירון (לפני מע"מ)', money(s.install_price_iron))}
         ${kpi('התקנה קבלני (לפני מע"מ)', money(s.install_price_contractor))}
         ${kpi('התקנה קבלני (כולל מע"מ)', money(s.install_price_contractor_vat))}
         ${kpi('שילוח מוצר בודד (לפני מע"מ)', money(s.ship_price_single))}`:''}
@@ -9111,24 +9121,40 @@ window.skuVol = ()=>{ const t=$('#sk-vol'); if(!t) return;
 window.saveSku = async (pn)=>{
   const s = SKUS.find(x=>String(x.partname)===String(pn)); if(!s) return;
   const bad=[];
-  /* 6.217.0 — שדה שלא צויר (sku.cards.cost=0) מחזיר undefined ונשמט מה-patch. null היה נכתב ומוחק את העלות בשקט. */
+  /* 6.217.0 — שדה שלא צויר מחזיר undefined ונשמט מה-patch. null היה נכתב ומוחק את הערך בשקט. */
   const nv = (id,lbl) => { const el=$(id); if(!el) return undefined; const v=numIn(el.value); if(v===undefined){ bad.push(lbl); return null; } return v; };
-  const ni = $('#sk-need').value;
-  const patch = { needs_install: ni===''?null:(ni==='1'),
-    install_price_iron:nv('#sk-inst-iron','עלות התקנה איירון (לפני מע"מ)'),
-    install_price_contractor:nv('#sk-inst-cont','עלות התקנה קבלני (לפני מע"מ)'),
-    install_price_contractor_vat:nv('#sk-inst-cont-vat','עלות התקנה קבלני (כולל מע"מ)'),
-    ship_price_single:nv('#sk-ship','עלות שילוח כמוצר בודד (לפני מע"מ)'),
-    pallet_load_factor:nv('#sk-pallet','מקדם משטחים'),
-    weight_kg:nv('#sk-weight','משקל (ק"ג)'),
-    length_cm:nv('#sk-len','אורך (ס"מ)'),
-    width_cm:nv('#sk-wid','רוחב (ס"מ)'),
-    height_cm:nv('#sk-hei','גובה (ס"מ)') };
-  for(const k of Object.keys(patch)) if(patch[k]===undefined) delete patch[k];
+  /* 6.226.0 — שתי כתיבות, שני שערים: מחירי ההתקנה והשילוח דרך ord.sku_ship_set (sku.ship=2;
+     ה-RLS על inv_items דורש inv.stock, ולכן לא update ישיר), ומשטחים/משקל/מידות ב-update הקיים. */
+  const ship = {};
+  if(window.canEdit('sku.ship')){
+    const ni = $('#sk-need'); if(ni) ship.needs_install = ni.value===''?null:(ni.value==='1');
+    ship.install_price_iron = nv('#sk-inst-iron','התקנה איירון (לפני מע"מ)');
+    ship.install_price_contractor = nv('#sk-inst-cont','התקנה קבלני (לפני מע"מ)');
+    ship.install_price_contractor_vat = nv('#sk-inst-cont-vat','התקנה קבלני (כולל מע"מ)');
+    ship.ship_price_single = nv('#sk-ship','שילוח מוצר בודד (לפני מע"מ)');
+  }
+  const base = {};
+  if(skuMgr()){
+    base.pallet_load_factor = nv('#sk-pallet','מקדם משטחים');
+    base.weight_kg = nv('#sk-weight','משקל (ק"ג)');
+    base.length_cm = nv('#sk-len','אורך (ס"מ)');
+    base.width_cm = nv('#sk-wid','רוחב (ס"מ)');
+    base.height_cm = nv('#sk-hei','גובה (ס"מ)');
+  }
+  for(const o of [ship, base]) for(const k of Object.keys(o)) if(o[k]===undefined) delete o[k];
   if(bad.length){ $('#sk-err').textContent='ערך מספרי לא תקין בשדה: '+bad.join(', '); return; }
-  const { error } = await sb.schema('ord').from('inv_items').update(patch).eq('partname', s.partname);
-  if(error){ $('#sk-err').textContent='השמירה נכשלה — '+error.message; return; }
-  Object.assign(s, patch);
+  const neg = Object.keys(ship).filter(k=>k!=='needs_install' && ship[k]!=null && ship[k] < 0);
+  if(neg.length){ $('#sk-err').textContent='מחיר לא יכול להיות שלילי'; return; }
+  if(Object.keys(ship).length){
+    const { data, error } = await sb.schema('ord').rpc('sku_ship_set', { p_partname: s.partname, p_patch: ship });
+    if(error){ $('#sk-err').textContent='שמירת מחירי ההתקנה והשילוח נכשלה — '+error.message; return; }
+    Object.assign(s, data || ship);
+  }
+  if(Object.keys(base).length){
+    const { error } = await sb.schema('ord').from('inv_items').update(base).eq('partname', s.partname);
+    if(error){ $('#sk-err').textContent=(Object.keys(ship).length?'מחירי ההתקנה והשילוח נשמרו, אבל ':'')+'שמירת המשטחים, המשקל והמידות נכשלה — '+error.message; return; }
+    Object.assign(s, base);
+  }
   toast('נשמר'); closeCards(); renderSkus();
 };
 
@@ -11190,7 +11216,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'pqsync-2026-10-09a';
+const BUILD_ID = 'skuship-2026-10-09a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -15308,25 +15334,6 @@ const ROLE_OPTS = [['admin','אדמיניסטרטור'],['manager','מנהל'],[
 let SET_VIEW='users', SET_USERS=null, SET_SHOW_OFF=false;
 window.setMode = v=>{ SET_VIEW=v; renderSettings(); navMark(); };
 /* מקור אחד לתתי-הקטגוריות של ההגדרות — משמש גם את המסך וגם את התפריט הצף בסרגל */
-/* ═══ משלוח והתקנה למק"ט (6.175.0) ═══════════════════════════════════
-   רומן, 30/08/2026: "כל מה שנותר לי הוא להזין את כל המחירים בכל מקט
-   והאם למקט זה יש התקנה או לא ואם יש למקט זה משלוח או לא".
-
-   🔴 **שלושה מצבים לכל רכיב ולא שניים:** ריק = טרם הוגדר · אין · יש.
-      ברירת מחדל "אין" הייתה הופכת 1,062 מק"טים שאיש לא בדק למק"טים
-      ללא משלוח, והמחשבון היה מחזיר אפס **בשקט** — כשל שנראה כהצלחה,
-      והמחלקה המסוכנת ביותר במערכת הזאת.
-   ⚠️ **הטעינה עצלה ואינה ב-Promise.all של loadLeads.** שאילתה שנוספת
-      שם מסיטה כל גלובל שאחריה (הלקח של 18/08, שהשבית מסך שלם).
-   ⚠️ **הפעולה המרוכזת מחלקת למנות של 80.** מאות מק"טים ב-in() אחד הם
-      ~11KB ב-query string של GET — הטווח שבו proxy מחזיר 414, והכשל
-      היה מוצג כ"השמירה נכשלה" רק כשמסננים רחב.
-   ℹ️ 1,062 שורות נזרעו מאיחוד price_list_items + order_items +
-      prc_item_ext. **לא מ-prc_item_ext לבדו** — נמדד ש-139 מק"טים
-      שנמכרו בפועל אינם בו. */
-let SHIP_ROWS = null, SHIP_BUSY = false;
-let SHIP_Q = '', SHIP_CAT = '', SHIP_ST = '';
-
 /* ═══ מחשבון משלוח והתקנה בכרטיס העסקה (6.175.0) ══════════════════════
    רומן: "תבנה כבר את כפתור «חשב משלוח והתקנה» בתהליך המכירה".
 
@@ -15390,8 +15397,9 @@ window.dlShipCalc = async (dealId)=>{
   if(cErr){ b.innerHTML = '<div class="err">החישוב נכשל — ' + esc(cErr.message) + '</div>'; return; }
 
   const r = res || {};
-  let h = '<div class="note">' + lines.length + ' שורות בהצעה. המחיר <b>ליחידה</b> נלקח מהמסך '
-        + '<b>הגדרות ← משלוח והתקנה</b> ומוכפל בכמות.</div>'
+  let h = '<div class="note">' + lines.length + ' שורות בהצעה. המחיר <b>ליחידה</b> נלקח מ<b>כרטיס הפריט</b> '
+        + '(התקנה איירון · שילוח מוצר בודד) ומוכפל בכמות.'
+        + (r.skipped ? ' שורות המשלוח וההתקנה עצמן (SH-1 · IN-2 · SH-IN1) אינן נספרות.' : '') + '</div>'
     + '<div class="tbl-wrap" style="padding:12px">'
     + '<div class="row"><span class="k">משלוח (SH-1)</span><span class="v"><b>₪' + shipMoney(r.ship_total) + '</b></span></div>'
     + '<div class="row"><span class="k">התקנה (IN-2)</span><span class="v"><b>₪' + shipMoney(r.install_total) + '</b></span></div>'
@@ -15400,194 +15408,27 @@ window.dlShipCalc = async (dealId)=>{
   if(r.ok === false)
     h += '<div class="note" style="border-color:#f0b45f;background:#fff7e6"><b>⚠️ החישוב חלקי.</b> '
        + 'הסכומים למעלה מחושבים רק מהמק"טים שהוגדרו — יש להשלים את החסרים לפני שמסתמכים עליהם.</div>';
-  h += shipGapList('מק"טים שאינם בטבלה', r.unknown, false)
-     + shipGapList('טרם הוגדר', r.undecided, true)
+  /* 6.226.0 — הפירוט ליחידה מגיע מהשרת רק למי שיש לו sku.ship; לאחרים — הסכומים בלבד. */
+  if(r.unit_visible && Array.isArray(r.lines) && r.lines.length){
+    const u = v => v==null ? '—' : '₪' + shipMoney(v);
+    h += '<div class="tbl-wrap" style="padding:12px"><table class="tbl"><thead><tr><th>מק"ט</th><th>תיאור</th><th>כמות</th>'
+       + '<th>משלוח ליח׳</th><th>התקנה ליח׳</th><th>סה"כ משלוח</th><th>סה"כ התקנה</th></tr></thead><tbody>'
+       + r.lines.map(x=>'<tr><td dir="ltr">' + esc(x.partname) + '</td><td>' + esc(x.partdes||'') + '</td><td class="num">' + esc(String(x.qty)) + '</td>'
+         + '<td class="num">' + u(x.ship_unit) + '</td><td class="num">' + u(x.install_unit) + '</td>'
+         + '<td class="num">' + u(x.ship) + '</td><td class="num">' + u(x.install) + '</td></tr>').join('')
+       + '</tbody></table></div>';
+  }
+  h += shipGapList('מק"טים שאינם בכרטיסי הפריט', r.unknown, false)
+     + shipGapList('טרם הוגדר בכרטיס הפריט', r.undecided, true)
      + shipGapList('מסומן "יש" בלי מחיר', r.missing_price, true);
   h += '<div class="note">להזין את שני הסכומים בשורות <b>SH-1</b> ו-<b>IN-2</b> בהצעה בפריוריטי.</div>';
   b.innerHTML = h;
 };
 
-window.shipSettingsHtml = ()=>{
-  if(SHIP_ROWS === null){ setTimeout(shipLoad, 0);
-    return '<h2 class="sec" style="margin-top:0">משלוח והתקנה</h2>'
-         + '<div id="shipBox" class="tbl-wrap" style="padding:12px">' + crmLoading('טוען מק"טים…') + '</div>'; }
-  return '<h2 class="sec" style="margin-top:0">משלוח והתקנה</h2>'
-    + '<div class="note">לכל מק"ט: האם יש לו משלוח, האם יש לו התקנה, ומה המחיר <b>ליחידה</b> של כל רכיב. '
-    + 'המחשבון בכרטיס העסקה מכפיל בכמות שבהצעה. שדה שנשאר <b>ריק</b> נחשב "טרם הוגדר" והמחשבון מדווח עליו — '
-    + 'זה בכוונה, כדי שלא יוחזר אפס בלי שאיש שם לב.</div>'
-    + '<div id="shipBox" class="tbl-wrap" style="padding:12px">' + shipInner() + '</div>';
-};
-
-window.shipLoad = async ()=>{
-  const { data, error } = await sb.schema('ord').from('sku_logistics')
-    .select('partname,partdes,cat,has_ship,ship_price,has_install,install_price,updated_by,updated_at')
-    .order('partname').limit(5000);
-  if(error){ SHIP_ROWS = []; const b=document.getElementById('shipBox');
-    if(b) b.innerHTML = '<div class="empty">טעינת המק"טים נכשלה — ' + esc(error.message) + '</div>'; return; }
-  SHIP_ROWS = data || [];
-  shipDraw();
-};
-
-function shipCats(){
-  const s = new Set();
-  (SHIP_ROWS||[]).forEach(r=>{ if(r.cat) s.add(r.cat); });
-  return Array.from(s).sort();
-}
-
-/* מצב שורה: 'new' טרם הוגדר · 'gap' מסומן "יש" בלי מחיר · 'ok' הוגדר */
-function shipState(r){
-  if(r.has_ship === null || r.has_install === null) return 'new';
-  if((r.has_ship && r.ship_price === null) || (r.has_install && r.install_price === null)) return 'gap';
-  return 'ok';
-}
-
-function shipFiltered(){
-  const q = SHIP_Q.trim().toLowerCase();
-  return (SHIP_ROWS||[]).filter(r=>{
-    if(SHIP_CAT && (r.cat||'') !== SHIP_CAT) return false;
-    if(SHIP_ST && shipState(r) !== SHIP_ST) return false;
-    if(q && (String(r.partname||'').toLowerCase().indexOf(q) < 0)
-         && (String(r.partdes||'').toLowerCase().indexOf(q) < 0)) return false;
-    return true;
-  });
-}
-
-function shipTri(r, fld){
-  const v = r[fld];
-  const cur = v === null ? '' : (v ? '1' : '0');
-  const ed = window.canEdit('prc.pricing');
-  if(!ed) return '<span class="lb-na">' + (cur === '' ? '—' : (cur === '1' ? 'יש' : 'אין')) + '</span>';
-  return '<select class="shp-tri" data-p="' + esc(r.partname) + '" data-f="' + fld + '">'
-       + '<option value=""'  + (cur === ''  ? ' selected' : '') + '>—</option>'
-       + '<option value="0"' + (cur === '0' ? ' selected' : '') + '>אין</option>'
-       + '<option value="1"' + (cur === '1' ? ' selected' : '') + '>יש</option></select>';
-}
-
-function shipPrice(r, fld, on){
-  const ed = window.canEdit('prc.pricing');
-  const v = r[fld] === null || r[fld] === undefined ? '' : String(r[fld]);
-  if(!ed) return '<span class="lb-na">' + (v === '' ? '—' : v) + '</span>';
-  return '<input class="shp-num" type="number" step="0.01" min="0" dir="ltr" data-p="' + esc(r.partname)
-       + '" data-f="' + fld + '" value="' + esc(v) + '"' + (on ? '' : ' disabled') + '>';
-}
-
-function shipInner(){
-  const rows = shipFiltered(), all = SHIP_ROWS || [];
-  const done = all.filter(r=>shipState(r) === 'ok').length;
-  const gap  = all.filter(r=>shipState(r) === 'gap').length;
-  const ed = window.canEdit('prc.pricing');
-  let h = '<div class="shp-bar">'
-    + '<input id="shp-q" class="shp-search" placeholder="חיפוש מק״ט או תיאור" value="' + esc(SHIP_Q) + '">'
-    + '<select id="shp-cat"><option value="">כל הקטגוריות</option>'
-      + shipCats().map(x=>'<option' + (x === SHIP_CAT ? ' selected' : '') + '>' + esc(x) + '</option>').join('')
-      + '</select>'
-    + '<select id="shp-st">'
-      + [['','כל המצבים'],['new','טרם הוגדר'],['gap','חסר מחיר'],['ok','הוגדר']]
-        .map(o=>'<option value="' + o[0] + '"' + (o[0] === SHIP_ST ? ' selected' : '') + '>' + o[1] + '</option>').join('')
-      + '</select>'
-    + '<span class="shp-cnt">הוגדרו <b>' + done + '</b> מתוך ' + all.length
-      + (gap ? ' · <b class="shp-gap">' + gap + '</b> חסרי מחיר' : '')
-      + ' · מוצגים ' + rows.length + '</span></div>';
-
-  if(ed) h += '<div class="shp-bulk">פעולה מרוכזת על ' + rows.length + ' המוצגים:'
-    + ' <select id="shp-bt"><option value="">משלוח —</option><option value="0">אין משלוח</option><option value="1">יש משלוח</option></select>'
-    + ' <input id="shp-bsp" type="number" step="0.01" min="0" dir="ltr" placeholder="מחיר משלוח">'
-    + ' <select id="shp-bi"><option value="">התקנה —</option><option value="0">אין התקנה</option><option value="1">יש התקנה</option></select>'
-    + ' <input id="shp-bip" type="number" step="0.01" min="0" dir="ltr" placeholder="מחיר התקנה">'
-    + ' <button type="button" class="chip" onclick="shipBulk()">החל</button>'
-    + ' <span class="lb-na">שדה שנשאר ריק לא ישתנה</span></div>';
-
-  h += '<div class="shp-scroll"><table class="tbl shp-tbl"><thead><tr>'
-    + '<th>מק"ט</th><th>תיאור</th><th>קטגוריה</th><th>משלוח</th><th>מחיר משלוח</th>'
-    + '<th>התקנה</th><th>מחיר התקנה</th><th>עודכן</th></tr></thead><tbody>';
-  if(!rows.length) h += '<tr><td colspan="8"><div class="empty">אין מק"טים שתואמים לסינון</div></td></tr>';
-  rows.slice(0, 400).forEach(r=>{
-    h += '<tr class="shp-' + shipState(r) + '"><td>' + esc(r.partname) + '</td>'
-      + '<td class="shp-des" title="' + esc(r.partdes || '') + '">' + esc(r.partdes || '') + '</td>'
-      + '<td>' + esc(r.cat || '') + '</td>'
-      + '<td>' + shipTri(r, 'has_ship') + '</td>'
-      + '<td>' + shipPrice(r, 'ship_price', r.has_ship === true) + '</td>'
-      + '<td>' + shipTri(r, 'has_install') + '</td>'
-      + '<td>' + shipPrice(r, 'install_price', r.has_install === true) + '</td>'
-      + '<td class="lb-na">' + esc(r.updated_by || '') + '</td></tr>';
-  });
-  h += '</tbody></table></div>';
-  if(rows.length > 400) h += '<div class="note">מוצגות 400 השורות הראשונות מתוך ' + rows.length
-    + '. צמצם בחיפוש או בקטגוריה כדי להגיע לשאר. <b>הפעולה המרוכזת חלה על כל ' + rows.length + '</b>, לא רק על המוצגות.</div>';
-  return h;
-}
-
-window.shipDraw = ()=>{
-  const b = document.getElementById('shipBox'); if(!b) return;
-  b.innerHTML = shipInner();
-  const q = document.getElementById('shp-q');
-  /* 🔴 6.177.0 — תיקון לקוד שכתבתי ב-6.175.0: shipDraw מצייר מחדש את
-     **התיבה עצמה**, ולכן צריך להחזיר מיקוד — ואני דחפתי את הסמן לסוף
-     בכל תו, כך שעריכה באמצע מחרוזת נשברה. עכשיו הסמן נשמר במקומו,
-     והציור מושהה כמו בשאר התיבות. */
-  if(q) debounceSearch(q, ()=>{
-    const el = document.getElementById('shp-q');
-    const pos = el ? el.selectionStart : null;
-    SHIP_Q = el ? el.value : '';
-    shipDraw();
-    const n = document.getElementById('shp-q');
-    if(n){ n.focus(); if(pos != null) n.setSelectionRange(pos, pos); }
-  });
-  const cat = document.getElementById('shp-cat'); if(cat) cat.onchange = ()=>{ SHIP_CAT = cat.value; shipDraw(); };
-  const st  = document.getElementById('shp-st');  if(st)  st.onchange  = ()=>{ SHIP_ST  = st.value;  shipDraw(); };
-  b.querySelectorAll('.shp-tri').forEach(el=>{ el.onchange = ()=>shipSet(el.dataset.p, el.dataset.f, el.value === '' ? null : el.value === '1'); });
-  b.querySelectorAll('.shp-num').forEach(el=>{ el.onchange = ()=>shipSet(el.dataset.p, el.dataset.f, el.value === '' ? null : Number(el.value)); });
-};
-
-/* 🔴 עדכון המצב המקומי **אחרי** שהשרת אישר, לא לפניו. עדכון אופטימי היה
-   מציג ערך שנדחה ב-RLS כאילו נשמר — וזה מסך תמחור. */
-window.shipSet = async (partname, fld, val)=>{
-  if(SHIP_BUSY) return;
-  SHIP_BUSY = true;
-  const patch = {}; patch[fld] = val; patch.updated_by = (ME && ME.email) || null;
-  const { error } = await sb.schema('ord').from('sku_logistics').update(patch).eq('partname', partname);
-  SHIP_BUSY = false;
-  if(error){ toast('השמירה נכשלה — ' + error.message); return; }
-  const r = (SHIP_ROWS || []).find(x=>x.partname === partname);
-  if(r){ r[fld] = val;
-    /* "אין רכיב" מנקה את המחיר שלו — אחרת נשאר מספר יתום שאיש אינו רואה. */
-    if(fld === 'has_ship'    && val === false && r.ship_price    !== null) shipSet(partname, 'ship_price', null);
-    if(fld === 'has_install' && val === false && r.install_price !== null) shipSet(partname, 'install_price', null);
-  }
-  shipDraw();
-};
-
-window.shipBulk = async ()=>{
-  const rows = shipFiltered();
-  if(!rows.length){ toast('אין שורות מוצגות'); return; }
-  const bt = document.getElementById('shp-bt'), bsp = document.getElementById('shp-bsp');
-  const bi = document.getElementById('shp-bi'), bip = document.getElementById('shp-bip');
-  const patch = {};
-  if(bt && bt.value !== '')  patch.has_ship      = bt.value === '1';
-  if(bsp && bsp.value !== '')patch.ship_price    = Number(bsp.value);
-  if(bi && bi.value !== '')  patch.has_install   = bi.value === '1';
-  if(bip && bip.value !== '')patch.install_price = Number(bip.value);
-  if(!Object.keys(patch).length){ toast('לא נבחר מה להחיל'); return; }
-  if(!(await sysConfirm('להחיל על ' + rows.length + ' מק"טים?'))) return;
-  patch.updated_by = (ME && ME.email) || null;
-
-  /* ⚠️ מנות של 80 — מאות מק"טים ב-in() אחד חוצים את תקרת ה-GET. */
-  const names = rows.map(r=>r.partname);
-  let done = 0, failed = 0, msg = '';
-  for(let i = 0; i < names.length; i += 80){
-    const part = names.slice(i, i + 80);
-    const { error } = await sb.schema('ord').from('sku_logistics').update(patch).in('partname', part);
-    if(error){ failed += part.length; if(!msg) msg = error.message; } else done += part.length;
-  }
-  if(failed) toast('הוחל על ' + done + ', נכשלו ' + failed + ' — ' + msg);
-  else toast('הוחל על ' + done + ' מק"טים ✓');
-  await shipLoad();
-};
-
 function settingsCats(){
   /* 6.24.0 — התפריט נגזר ממפתחות ההרשאה set.*, לא מתפקיד המשתמש.
      ללא אימוג׳ים — רומן 29/07/2026 */
-  const all = [['users','משתמשים והרשאות'],['teams','צוותי לוגיסטיקה'],['texts','טקסטים ומסמכים'],['conn','חיבורים'],['synclog','יומן סנכרון'],['notif','התראות'],['crm','CRM'],['shipcalc','משלוח והתקנה'],['general','כללי']];
+  const all = [['users','משתמשים והרשאות'],['teams','צוותי לוגיסטיקה'],['texts','טקסטים ומסמכים'],['conn','חיבורים'],['synclog','יומן סנכרון'],['notif','התראות'],['crm','CRM'],['general','כללי']];
   try{ return all.filter(c=> canView(SET_PERM[c[0]])); }catch(_e){ return []; }
 }
 /* תפריט ההגדרות בסרגל נבנה לפי ההרשאה בפועל — פריטי אדמין אינם מוצגים למי שאינו אדמין */
@@ -15934,8 +15775,6 @@ function renderSettings(){
     body = notifSettingsHtml();
   } else if(SET_VIEW==='crm' && canView('set.crm')){
     body = crmSettingsHtml();
-  } else if(SET_VIEW==='shipcalc' && canView('prc.pricing')){
-    body = shipSettingsHtml();
   } else if(SET_VIEW==='conn'){
     body = integHtml();
   } else if(SET_VIEW==='synclog' && canView('set.synclog')){

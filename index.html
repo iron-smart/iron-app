@@ -161,6 +161,26 @@
     background-attachment:local, local, scroll, scroll; }
   /* סרגל הסינון מתקפל במובייל. <details class="lf-wrap"> ולא lf-multi: סוגר-הקליק ו-Esc עוברים
      על details.lf-multi[open] בלבד. בשולחן ה-summary מוסתר וה-details פתוח תמיד. */
+  /* 6.238.0 — statdoc: סקשן תיעוד מקופל במסך ההגדרות. לא lf-wrap: ה-summary שלו מוסתר בדסקטופ ונפתח
+     רק מכפתור שהבורדים בונים (lfBarInit). כאן ה-summary גלוי בכל רוחב, והטבלאות גלילות ב-.tbl-wrap. */
+  /* במובייל .set-layout הוא עמודה עם align-items:flex-start ⇒ .set-body נמדדת לפי תוכנה, וטבלה רחבה
+     הייתה פורצת את הדף (נמדד: 800px ב-390). width:100% מחזיר את הגלילה ל-.tbl-wrap. */
+  #tab-set .set-body{ width:100%; }
+  #tab-set .set-fold{ border:1px solid var(--line); border-radius:var(--r-lg); background:#fff; padding:0 var(--sp-3) var(--sp-3); margin-bottom:var(--sp-3); }
+  #tab-set .set-fold > summary{ list-style:none; cursor:pointer; display:flex; align-items:center; gap:var(--sp-2); min-height:var(--ctl-h-md); padding:var(--sp-2) 0; font-size:var(--fs-md); font-weight:700; color:var(--navy); }
+  #tab-set .set-fold > summary::-webkit-details-marker{ display:none; }
+  #tab-set .set-fold > summary::before{ content:'▾'; color:var(--ink-3); }
+  #tab-set .set-fold[open] > summary::before{ content:'▴'; }
+  #tab-set .set-fold > summary small{ font-weight:500; color:var(--ink-3); font-size:var(--fs-sm); }
+  #tab-set .set-fold h3{ font-size:var(--fs-lg); color:var(--navy); margin:var(--sp-4) 0 var(--sp-2); }
+  #tab-set .set-fold .note{ margin:var(--sp-2) 0; line-height:1.7; }
+  #tab-set .set-fold .tbl-wrap{ margin:var(--sp-2) 0; }
+  #tab-set .esp-tbl{ min-width:760px; }
+  #tab-set .esp-tbl td{ vertical-align:top; white-space:normal; line-height:1.55; }
+  #tab-set .esp-tbl td.esp-st{ white-space:nowrap; }
+  #tab-set .esp-tbl .pill{ margin:1px 0; }
+  #tab-set .esp-tbl td.esp-yes{ color:var(--navy); font-weight:700; }
+  #tab-set .esp-tbl td.esp-no{ color:var(--ink-3); }
   .lf-wrap > summary{ display:none; }
   /* 6.204.0 — סרגל בורד אחד (H11): בדסקטופ ה-details מקופל כברירת מחדל (נזכר לכל בורד), והכפתור + צ'יפי
      המסננים הפעילים בשורת החיפוש. במובייל (≤760) ה-summary של 6.197.0 ממשיך לשרת, והכפתור מוסתר. */
@@ -3300,7 +3320,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.237.0</div>
+      <div class="ver">גרסה 6.238.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3429,7 +3449,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="srcswitch-2026-10-10a">גרסה 6.237.0</div>
+    <div class="side-foot" title="statdoc-2026-10-10a">גרסה 6.238.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -12121,7 +12141,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'srcswitch-2026-10-10a';
+const BUILD_ID = 'statdoc-2026-10-10a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -16583,7 +16603,7 @@ window.dlShipCalc = async (dealId)=>{
 function settingsCats(){
   /* 6.24.0 — התפריט נגזר ממפתחות ההרשאה set.*, לא מתפקיד המשתמש.
      ללא אימוג׳ים — רומן 29/07/2026 */
-  const all = [['users','משתמשים והרשאות'],['teams','צוותי לוגיסטיקה'],['texts','טקסטים ומסמכים'],['conn','חיבורים'],['synclog','יומן סנכרון'],['hooks','יומן וובהוקים'],['errors','יומן שגיאות'],['notif','התראות'],['crm','CRM'],['general','כללי']];
+  const all = [['users','משתמשים והרשאות'],['teams','צוותי לוגיסטיקה'],['texts','טקסטים ומסמכים'],['conn','חיבורים'],['synclog','יומן סנכרון'],['hooks','יומן וובהוקים'],['errors','יומן שגיאות'],['notif','התראות'],['crm','CRM ולוגיסטיקה'],['general','כללי']];
   try{ return all.filter(c=> canView(SET_PERM[c[0]])); }catch(_e){ return []; }
 }
 /* תפריט ההגדרות בסרגל נבנה לפי ההרשאה בפועל — פריטי אדמין אינם מוצגים למי שאינו אדמין */
@@ -16930,7 +16950,7 @@ function renderSettings(){
   } else if(SET_VIEW==='notif' && canView('set.notif')){
     body = notifSettingsHtml();
   } else if(SET_VIEW==='crm' && canView('set.crm')){
-    body = crmSettingsHtml();
+    body = crmSettingsHtml() + espSectionHtml();
   } else if(SET_VIEW==='conn'){
     body = integHtml();
   } else if(SET_VIEW==='synclog' && canView('set.synclog')){
@@ -16970,6 +16990,95 @@ function renderSettings(){
   if(SET_VIEW==='errors' && canView('set.errors')) errLogInit();
   if(SET_VIEW==='conn') loadIntegrations();
 }
+/* ===== 6.238.0 — statdoc: "סטטוסי פריוריטי מול הלוח" (הגדרות ← CRM ולוגיסטיקה) =====
+   רומן (10/10/2026): תיעוד טבלאי במערכת של מה שקורה לכל סטטוס הזמנה בפריוריטי מול הלוח אצלנו,
+   כפי שאומת על SO26001814 — 11 מעברים דרך חוק 3485. המקור: laneFor ב-priority-sync v34 ומדיניות
+   הקליטה ord.erp_status_policy. תיעוד בלבד — אפס כותב.
+   ⚠️ הטבלה החיה נשלפת בעצלות בפתיחה הראשונה של הסקשן (ontoggle), לא ב-Promise.all של loadLeads:
+      שאילתה באמצע המערך מסיטה בשקט כל גלובל שאחריה (18/08/2026). לקריאה יש SELECT ל-authenticated
+      עם RLS core.is_staff() — נמדד, ולכן אין RPC. כשל ⇒ .err עם הודעת השרת, לא טבלה ריקה.
+   ⚠️ הבלוק יושב מחוץ לטווח ה-cut של 6.235.0 (setui) ומחובר בשורת ה-dispatch, כדי ששני ה-rep ישרדו
+      בכל סדר פריסה. */
+const ESP_LANE = { not_handled:'ממתין לתשלום', active:'הזמנה חדשה', completed:'הושלם', cancelled:'בוטל' };
+/* [סטטוסים בפריוריטי] · קטגוריה בכניסה (null = לא נקלטת) · הערת כניסה · הזמנה קיימת שעוברת לכאן · מזיז קטגוריה? · הערה */
+const ESP_STATIC = [
+  [['מאושרת לקוח','שולמה','שולמה חלקית'], 'הזמנה חדשה', '(לתיאום)',
+   'מ"ממתין לתשלום" או מ"בוטל" ⇒ "הזמנה חדשה". אם כבר בלוח — לא זזה, והשיבוץ נשמר.',
+   'כן, רק כלפי מעלה', 'תשלום אינו דורס שיבוץ'],
+  [['ממתין לתשלום'], 'ממתין לתשלום', '',
+   'יורדת ל"ממתין לתשלום" גם אם משובצת — השיבוץ נשאר על השורה. מ"בוטל" ⇒ "ממתין לתשלום".',
+   'כן', ''],
+  [['מבוטלת'], null, 'לא נקלטת',
+   '⇒ "בוטל" תמיד. חזרה ממנו: למאושרת ⇒ "הזמנה חדשה", לממתין ⇒ "ממתין לתשלום". השיבוץ הישן חוזר עם השורה — הביטול אינו מנקה תאריך, צוות ושעה.',
+   'כן', ''],
+  [['טיוטא'], 'ממתין לתשלום', '(מ-10/10/2026)',
+   'קפואה במקומה: הקטגוריה, השיבוץ, הסטטוס בפריוריטי, המחיר והכתובת נשארים, ומוצגת תגית "נפתחה לעריכה בפריוריטי". חוזרת למאושרת ⇒ הנתונים מתעדכנים והתגית נעלמת.',
+   'לא', 'שורות הפריטים אינן קפואות'],
+  [['הושלם'], 'הושלם', '(מ-09/08/2026)',
+   'לא זזה — "הושלם" שלנו נקבע ב"בוצע" מהשטח או ידנית.',
+   'לא', "'הושלם' בפריוריטי = סגירה כספית"],
+  [['פתיחה חוזרת'], 'הושלם', '(מ-09/08/2026)',
+   'לא זזה. החזרות שדורשות איסוף מופיעות בצ\'יפ "החזרות לאיסוף".',
+   'לא', ''],
+  [['מיקור חוץ','מיקור הושלם'], 'הושלם', '(תיעוד בלבד)',
+   'לא זזה.',
+   'לא', ''],
+  [['נסגר-מ.קודמת'], null, 'לא נקלטת',
+   'אפס עדכון.',
+   'לא', 'מוחרג מהסנכרון'],
+];
+const espPri  = s => `<span class="pill p-violet">${PRI_ICO}${esc(s)}</span>`;
+const espLane = l => l ? `<span class="pill ${ordStClass(l)}">${esc(l)}</span>` : '';
+const espYN   = v => v ? '<td class="esp-yes">כן</td>' : '<td class="esp-no">לא</td>';
+function espStaticHtml(){
+  const rows = ESP_STATIC.map(([pri, lane, laneNote, existing, moves, note]) =>
+    `<tr><td class="esp-st">${pri.map(espPri).join('<br>')}</td>
+      <td>${espLane(lane)}${laneNote ? ' ' + esc(laneNote) : ''}</td>
+      <td>${esc(existing)}</td>
+      <td>${esc(moves)}</td>
+      <td>${esc(note)}</td></tr>`).join('');
+  return `<div class="tbl-wrap"><table class="tbl esp-tbl" id="esp-static" data-gs="own">
+    <thead><tr><th>סטטוס בפריוריטי</th><th>הזמנה חדשה שמגיעה כך</th><th>הזמנה קיימת שעוברת לכאן</th><th>מזיז קטגוריה?</th><th>הערה</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
+}
+function espSectionHtml(){
+  return `<h2 class="sec">סטטוסי פריוריטי מול הלוח</h2>
+    <details class="set-fold" id="esp-fold" ontoggle="espToggle(this)">
+      <summary>מה קורה לכל סטטוס הזמנה בפריוריטי אצלנו <small>תיעוד · קריאה בלבד</small></summary>
+      <div class="note">על כל הזמנה שני שדות: <b>סטטוס בפריוריטי</b> — קריאה בלבד, מתעדכן תמיד (חוץ מטיוטא קפואה ומ"נסגר-מ.קודמת"), ו<b>קטגוריה</b> — שלנו: הזמנה חדשה · תואם · ממתין לתשלום · בוטל · הושלם. הטבלה אומרת מה הסטטוס בפריוריטי עושה לקטגוריה.</div>
+      ${espStaticHtml()}
+      <h3>מדיניות הקליטה כפי שהיא במסד עכשיו</h3>
+      <div class="note">ord.erp_status_policy — הטבלה שהסנכרון קורא. סטטוס שאין לו שורה כאן אינו נקלט (fail-closed).</div>
+      <div id="esp-live">${crmLoading('טוען את מדיניות הקליטה מהמסד…')}</div>
+      <h3>מה מעדכן את זה</h3>
+      <div class="note"><b>וובהוק 3485</b> — כל שינוי סטטוס בהזמנה, תוך כ-5 שניות · <b>סנכרון שעתי</b> — עריכות בלי שינוי סטטוס, לפי UDATE · <b>orders-detail-sync</b> שעתי — שורות הפריטים · <b>crm-quote-watch</b> כל 15 דקות — הצעות המחיר.<br>הסוקרים נשארים כרשת ביטחון: הוובהוק למהירות, המשיכה לשלמות.</div>
+    </details>`;
+}
+/* דגל משלו (espLoaded) ולא dataset.loaded של הלשוניות — cardtest מקבעת שהדגל ההוא מוצב במקום אחד בלבד.
+   ובכשל הדגל יורד (הלקח של updRun 6.152.0): סגירה ופתיחה של הסקשן מנסות שוב, במקום להיתקע עד רענון. */
+window.espToggle = d => { if(d && d.open && !d.dataset.espLoaded){ d.dataset.espLoaded = '1'; espLoad(); } };
+async function espLoad(){
+  const box = document.getElementById('esp-live'); if(!box) return;
+  const { data, error } = await sb.from('erp_status_policy')
+    .select('priority_status,ingest,initial_lane,freeze_existing,ingest_min_date,sort_order,notes')
+    .order('sort_order');
+  if(error){
+    box.innerHTML = `<div class="err">שליפת מדיניות הקליטה נכשלה: ${esc(error.message || String(error))} · סגירה ופתיחה של הסקשן מנסות שוב</div>`;
+    const f = document.getElementById('esp-fold'); if(f) delete f.dataset.espLoaded;
+    return;
+  }
+  const rows = (data || []).map(p => `<tr>
+      <td class="esp-st">${espPri(p.priority_status)}</td>
+      ${espYN(p.ingest)}
+      <td>${p.initial_lane ? espLane(ESP_LANE[p.initial_lane] || p.initial_lane) : '—'}</td>
+      <td>${p.ingest_min_date ? fmtIso(p.ingest_min_date) : '—'}</td>
+      ${p.freeze_existing ? '<td class="esp-yes">כן</td>' : '<td class="esp-no">—</td>'}
+      <td>${esc(p.notes || '')}</td></tr>`).join('');
+  box.innerHTML = `<div class="tbl-wrap"><table class="tbl esp-tbl" id="esp-policy" data-gs="own">
+    <thead><tr><th>סטטוס</th><th>נקלטת</th><th>קטגוריית כניסה</th><th>מתאריך</th><th>הקפאה</th><th>הערה</th></tr></thead>
+    <tbody>${rows || '<tr><td colspan="6">אין שורות במדיניות — הסנכרון אינו קולט דבר</td></tr>'}</tbody></table></div>`;
+}
+
 /* ===== הגדרות ← התראות (6.96.0) =====
    רומן, 18/08/2026: "משימה שמגיע מועד זמנה, אפשר גם לבקש התראה זמן מסוים
    לפני ושיהיה ממש הגדרות להתראות לניהול של האדמין בלבד."

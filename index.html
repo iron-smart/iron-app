@@ -2061,10 +2061,58 @@
 /* 6.219.0 — תג "+N" ליד ת.אספקה, כותרות קבוצות התאריך בפירוט, ושורת העלאת מסמך ספק */
 #po-body .po-more{ display:inline-block; font-size:var(--fs-xs); color:var(--ink-3); border:1px solid var(--line); border-radius:var(--r-pill); padding:0 6px; margin-inline-start:4px; line-height:1.6; }
 #poSheet .tbl tr.po-dgrp td{ background:#f8fafc; color:var(--navy); font-weight:800; font-size:var(--fs-sm); text-align:right; border-top:2px solid var(--line); }
-#poSheet .po-doc-up{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px; }
-#poSheet .po-doc-up select{ width:auto; min-width:200px; }
-#poSheet .po-doc-up .ghost{ width:auto; }
-#poSheet .po-doc-row .k{ flex:none; }
+/* 6.231.0 — מסמכי ספק כאריחים: לחיצה = תצוגה מהירה, תגית הסוג ניתנת לעריכה, אריח העלאה שהוא גם יעד גרירה */
+#poSheet .pod-sec h2.sec{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+#poSheet .pod-sub{ font-size:var(--fs-xs); font-weight:400; color:var(--ink-3); }
+/* min(…, 50%) — בטלפון שני אריחים בשורה בלי נקודת שבירה חדשה (dstest סופרת את ה-759.98) */
+#poSheet .pod-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(min(176px, calc(50% - 5px)), 1fr)); gap:10px; }
+#poSheet .pod-tile{ display:flex; flex-direction:column; min-width:0; border:1px solid var(--line); border-radius:var(--r-md); background:#fff; transition:border-color .12s, box-shadow .12s; }
+#poSheet .pod-tile:hover{ border-color:#cbd5e1; box-shadow:var(--sh-card); }
+#poSheet .pod-open{ display:flex; flex-direction:column; align-items:flex-start; gap:6px; width:100%; min-height:0; padding:12px 12px 8px; border:0; border-radius:var(--r-md) var(--r-md) 0 0; background:none; color:inherit; font:inherit; text-align:right; cursor:zoom-in; }
+#poSheet .pod-open:focus-visible{ outline:2px solid var(--navy); outline-offset:-2px; }
+#poSheet .pod-ic{ display:flex; align-items:flex-end; justify-content:center; width:32px; height:38px; padding-bottom:4px; box-sizing:border-box; border-radius:var(--r-sm); background:#dc2626; color:#fff; font-size:var(--fs-xs); font-weight:800; }
+#poSheet .pod-ic.img{ align-items:center; padding:0; background:#2563eb; font-size:var(--fs-lg); }
+#poSheet .pod-nm{ width:100%; font-weight:700; font-size:var(--fs-sm); line-height:1.35; color:var(--ink-1); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere; }
+#poSheet .pod-meta{ font-size:var(--fs-xs); color:var(--ink-3); }
+#poSheet .pod-x{ font-size:var(--fs-xs); font-weight:700; color:var(--navy); }
+#poSheet .pod-busy{ display:flex; align-items:center; gap:6px; color:var(--ink-3); font-weight:400; }
+#poSheet .pod-ft{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:auto; padding:0 10px 10px; }
+#poSheet .pod-type{ display:inline-flex; align-items:baseline; gap:4px; max-width:100%; border:0; font:inherit; font-size:var(--fs-xs); cursor:default; }
+#poSheet button.pod-type{ cursor:pointer; }
+#poSheet .pod-type small{ opacity:.75; }
+#poSheet .pod-type .pod-ed{ opacity:0; transition:opacity .12s; }
+#poSheet .pod-tile:hover .pod-ed, #poSheet .pod-type:focus-visible .pod-ed{ opacity:.8; }
+#poSheet .pod-del{ display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; min-height:0; margin-inline-start:auto; padding:0; border:0; border-radius:var(--r-sm); background:none; color:var(--ink-3); cursor:pointer; }
+#poSheet .pod-del:hover{ color:var(--red); background:var(--red-bg); }
+#poSheet .pod-tsel, #poSheet .pod-tother{ width:100%; min-height:var(--ctl-h-sm); font-size:var(--fs-sm); }
+#poSheet .pod-ok, #poSheet .pod-no{ height:28px; min-height:0; padding:0 10px; border:1px solid var(--line); border-radius:var(--r-sm); background:#fff; font:inherit; cursor:pointer; }
+#poSheet .pod-ok{ border-color:var(--navy); background:var(--navy); color:#fff; }
+#poSheet .pod-drop{ display:flex; flex-direction:column; justify-content:center; gap:8px; min-height:132px; padding:10px; border:2px dashed #cbd5e1; border-radius:var(--r-md); background:#f8fafc; transition:border-color .12s, background-color .12s; }
+#poSheet .pod-pick{ display:flex; flex-direction:column; align-items:center; gap:2px; width:100%; min-height:0; padding:6px; border:0; background:none; color:var(--navy); font:inherit; cursor:pointer; }
+#poSheet .pod-plus{ font-size:var(--fs-xl); line-height:1; }
+#poSheet .pod-hint{ font-size:var(--fs-xs); color:var(--ink-3); }
+#poSheet .pod-upsel, #poSheet .pod-upother{ width:100%; min-height:var(--ctl-h-sm); font-size:var(--fs-sm); }
+#poModal.pod-dragging #poSheet{ outline:3px dashed var(--navy); outline-offset:-6px; }
+#poModal.pod-dragging .pod-drop{ border-color:var(--navy); background:#eef2ff; }
+#poModal.pod-dragging::before{ content:attr(data-podmsg); position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:5; padding:10px 18px; border-radius:var(--r-pill); background:var(--navy); color:#fff; font-weight:700; box-shadow:var(--sh-card); pointer-events:none; }
+/* 6.231.0 — "עודכן מתוך המסמך" מתחת לשדה שמולא מהמסמך */
+.po-src{ font-size:var(--fs-xs); color:var(--ink-3); margin-top:3px; line-height:1.4; }
+.po-src a{ color:var(--navy); }
+.po-src b{ color:#b45309; font-weight:600; }
+/* תאי .form-grid הם flex בעמודה — כל צומת טקסט ו-<b> היה שורה משלו; המשפט עטוף ב-span אחד */
+#poSheet .po-fill-rule b{ color:var(--ink-1); }
+/* 6.231.0 — תצוגה מהירה של מסמך ספק */
+#podView .pod-view{ display:flex; flex-direction:column; height:min(92vh, 980px); max-height:92vh; padding:0; overflow:hidden; }
+#podView .pod-vh{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:12px 16px; border-bottom:1px solid var(--line); }
+#podView #podv-name{ flex:1; min-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#podView #podv-pos{ font-size:var(--fs-xs); color:var(--ink-3); }
+#podView .pod-vact{ display:flex; gap:6px; flex-wrap:wrap; }
+#podView .pod-vact .ghost{ width:auto; min-height:var(--ctl-h-sm); padding:4px 12px; font-size:var(--fs-sm); }
+#podView .pod-vx{ padding:8px 16px; border-bottom:1px solid var(--line); background:#f8fafc; font-size:var(--fs-sm); }
+#podView .pod-vnote{ color:var(--ink-3); }
+#podView .pod-vbody{ flex:1; min-height:0; display:flex; align-items:center; justify-content:center; background:#e2e8f0; }
+#podView .pod-frame{ width:100%; height:100%; border:0; background:#fff; }
+#podView .pod-img{ max-width:100%; max-height:100%; object-fit:contain; }
 
     /* ===== תמחור ומחירונים — אדמיניסטרטור בלבד ===== */
     .nav-wrap[hidden]{ display:none !important; }
@@ -3136,7 +3184,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.230.0</div>
+      <div class="ver">גרסה 6.231.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3265,7 +3313,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="dashgrid-2026-10-10a">גרסה 6.230.0</div>
+    <div class="side-foot" title="podocs2-2026-10-10a">גרסה 6.231.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3798,6 +3846,25 @@ tr.lb-on td{ background-color:#eef5fd !important; }
 </div>
 
 <!-- מודל כרטיס הזמנת רכש -->
+<!-- 6.231.0 — תצוגה מהירה של מסמך ספק (לחיצה על אריח). modal-over ו**לפני** #poModal ב-DOM: שער ה-Escape
+     ו-_openModal (מלכודת ה-Tab) לוקחים את הראשון — כך Esc סוגר את התצוגה ולא את כרטיס ההזמנה. החצים — onkeydown
+     על האלמנט עצמו, לא מאזין keydown שביעי על document (dlgtest). -->
+<div class="modal modal-over hidden" id="podView" onkeydown="poDocViewKey(event)">
+  <div class="sheet wide pod-view" role="dialog" aria-modal="true" aria-labelledby="podv-name">
+    <div class="pod-vh">
+      <span id="podv-type"></span><b id="podv-name"></b><span id="podv-pos"></span>
+      <span class="pod-vact">
+        <button type="button" class="ghost" id="podv-prev" onclick="poDocStep(-1)" title="המסמך הקודם (→)">→ הקודם</button>
+        <button type="button" class="ghost" id="podv-next" onclick="poDocStep(1)" title="המסמך הבא (←)">הבא ←</button>
+        <button type="button" class="ghost" onclick="poDocViewTab()">פתיחה בלשונית</button>
+        <button type="button" class="ghost" onclick="poDocViewDl()">הורדה</button>
+        <button type="button" class="ghost pod-vclose" onclick="poDocViewClose()" aria-label="סגירה">✕</button>
+      </span>
+    </div>
+    <div id="podv-x" class="pod-vx" hidden></div>
+    <div id="podv-body" class="pod-vbody"></div>
+  </div>
+</div>
 <div class="modal hidden" id="poModal">
   <div class="sheet wide" id="poSheet"></div>
 </div>
@@ -10397,7 +10464,7 @@ function poBody(){
         + '<td class="stcell">'+(poVoid(r) ? mdPill(r.our_status||'מבוטלת', PO_ST_MD, LB_TK)
             : ieSel('po', r.ordname, 'our_status', PO_STATUSES, r.our_status, {mdColors:PO_ST_MD, mdK:LB_TK, on:"poStatusSet(this,'"+jsq(r.ordname)+"')"}))+'</td>'
         + '<td class="datecell'+(late?' po-late':'')+'">'+eta+'</td>'
-        + '<td class="num" data-sort="'+nd+'">'+(DOCFILES===null ? (DOCFILES_ERR ? '—' : '…') : (nd ? ico('doc')+' '+nd : '—'))+'</td>'
+        + '<td class="num" data-sort="'+nd+'" data-po-docs="'+esc(r.ordname)+'" title="מסמכי ספק — לחיצה פותחת אותם בכרטיס">'+(DOCFILES===null ? (DOCFILES_ERR ? '—' : '…') : (nd ? ico('doc')+' '+nd : '—'))+'</td>'
         + '</tr>';
     }).join('')
     + '</tbody><tfoot><tr><td></td><td colspan="4" style="text-align:right">סה"כ · '+rows.length+' הזמנות</td>'
@@ -10410,6 +10477,14 @@ function poBody(){
       const td = a.closest('td');
       td.innerHTML = '<div class="datewrap">'+ieDate('po', a.dataset.poEta, 'eta_port', '')+'</div>';
       const inp = td.querySelector('input'); if(inp){ inp.focus(); try{ if(inp.showPicker) inp.showPicker(); }catch(_e){} }
+      return;
+    }
+    /* 6.231.0 — מונה המסמכים: פותח את הכרטיס וגולל לבלוק המסמכים */
+    const dcl = ev.target.closest('[data-po-docs]');
+    if(dcl){
+      ev.stopPropagation();
+      const pon = dcl.dataset.poDocs;
+      Promise.resolve(openPo(pon)).then(()=>{ const s = document.getElementById('po-docs-'+pon); if(s) s.scrollIntoView({ block:'start' }); });
       return;
     }
     const c = ev.target.closest('[data-po]');
@@ -10426,8 +10501,8 @@ async function openPo(on){
   const payLbl = l => l+' ('+(payCur||'מטבע ההזמנה')+')';
   const ro  = (lbl,val,o)=>'<div'+((o&&o.cls)?' class="'+o.cls+'"':'')+'><label>'+lbl+'</label>'+roIn(val,{ltr:!!(o&&o.ltr)})+'</div>';
   /* לצופה (inv.po=1) השדות למילוי הם roIn ואין כפתור שמירה — "פעולה שאי אפשר לבצע לא מציגים" */
-  const fld = (id,lbl,val,type,cls)=>'<div'+(cls?' class="'+cls+'"':'')+'><label>'+lbl+'</label>'
-    + (can ? '<input id="'+id+'" type="'+(type||'text')+'" value="'+esc(val==null?'':String(val))+'">' : roIn(val==null?'':String(val)))+'</div>';
+  const fld = (id,lbl,val,type,cls,extra)=>'<div'+(cls?' class="'+cls+'"':'')+'><label>'+lbl+'</label>'
+    + (can ? '<input id="'+id+'" type="'+(type||'text')+'" value="'+esc(val==null?'':String(val))+'">' : roIn(val==null?'':String(val)))+(extra||'')+'</div>';
   sh.innerHTML =
       '<h3 style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">הזמנת רכש <span dir="ltr">'+esc(r.ordname)+'</span>'
     + '<span id="po-title-pills">'+poPill(r.our_status)+poPriPill(r.priority_status)+'</span></h3>'
@@ -10458,10 +10533,12 @@ async function openPo(on){
     + fld('po-f-eta','תאריך הגעה משוער לנמל', r.eta_port||'', 'date')
     + fld('po-f-cont','מספר מכולה', r.container_no)
     + fld('po-f-cust-decl','מספר רשימון', r.customs_declaration_no)
-    + fld('po-f-pi',payLbl('עלות PI'), r.pi_cost, 'number')
+    /* 6.231.0 — החוקיות גלויה בכרטיס (רומן: "את החוקיות תרשום בהערות"); המקור האחד הוא ord.po_doc_apply */
+    + '<div class="span4 po-note po-fill-rule"><span>↻ מתמלאים אוטומטית מהמסמכים שמועלים למטה, ומסמך חדש דורס: <b>עלות PI</b> ← חשבונית עסקה (Proforma) · <b>מקדמה CI</b> ← חשבונית מס מקדמה · <b>מקדמה CI ותשלום גמר</b> ← חשבונית מס גמר. עלות CI — ידני.</span></div>'
+    + fld('po-f-pi',payLbl('עלות PI'), r.pi_cost, 'number', '', poSrcHtml(r,'pi_cost'))
     + fld('po-f-ci',payLbl('עלות CI'), r.ci_cost, 'number')
-    + fld('po-f-adv',payLbl('מקדמה CI'), r.ci_advance, 'number')
-    + fld('po-f-fin',payLbl('תשלום גמר'), r.final_payment, 'number')
+    + fld('po-f-adv',payLbl('מקדמה CI'), r.ci_advance, 'number', '', poSrcHtml(r,'ci_advance'))
+    + fld('po-f-fin',payLbl('תשלום גמר'), r.final_payment, 'number', '', poSrcHtml(r,'final_payment'))
     + fld('po-f-ifn','מספר תיק ייבוא', r.import_file_no, 'text', 'span2')
     + '<div class="span2"><label>הערות</label>'+(can ? '<textarea id="po-f-notes" rows="1">'+esc(r.notes||'')+'</textarea>' : roIn(r.notes||''))+'</div>'
     /* סקשן 3 — הפירוט, נטען אסינכרונית, תמיד אחרון */
@@ -10567,6 +10644,7 @@ async function poSave(on){
   const tp = $('#po-title-pills'); if(tp) tp.innerHTML = poPill(r.our_status)+poPriPill(r.priority_status);
   const st = $('#po-f-st'); if(st && st.value !== r.our_status){ st.value = r.our_status; selPaint(st,'po',LB_TK); }   /* 6.219.0 — הצבע חייב לזוז עם הערך */
   cardSaved('po', on);
+  poFillPaint(on);   /* 6.231.0 — "נערך ידנית מאז" כשהערך שנשמר אינו מה שהמסמך כתב */
   poViews(); poBody();
 }
 
@@ -10656,81 +10734,342 @@ window.poStatusSet = async (el, on)=>{
    ספק לטכנאים (9/10 משתמשים עם docs=2). PDF ותמונות בלבד (הכרעת רומן; הבקט לא זז).
    סוגי המסמך ב-ord.settings.po_doc_types — ניתנים לעריכה בהגדרות ← כללי, בלי פריסה. */
 const poDocSize = n => { n = Number(n)||0; return n >= 1048576 ? (n/1048576).toFixed(1)+' MB' : n >= 1024 ? Math.round(n/1024)+' KB' : n+' B'; };
+/* ===== 6.231.0 — podocs2: אריחים · עריכת סוג · תצוגה מהירה · גרירה · סכומים מהמסמך (10/10/2026) =====
+   רומן, על PO26000164: "אפשרות עריכת קטגוריה למסמך" · "תציג את המסמכים כריבוע קטן שאפשר ללחוץ ולפתוח פתיחה
+   מהירה — חווית ה-UX חשובה" · "אפשרות גרירה לקובץ" · "תמשוך את המחיר שמופיע במסמך ותמלא אוטומטית בהזמנה בעת
+   העלאת המסמך, ואם זה כבר ממולא תדרוס בהתאם למסמך המעודכן" · "את החוקיות תרשום בהערות".
+   🔴 החוקיות — מקור אחד בלבד, ord.po_doc_apply במסד (כאן תצוגה):
+        עלות PI              ← חשבונית עסקה (Proforma)          · total_amount
+        מקדמה CI             ← חשבונית מס - מקדמה (Commercial)  · deposit_amount (ואם אין — amount_due)
+        מקדמה CI + תשלום גמר ← חשבונית מס - גמר (Commercial)    · deposit_amount + balance_amount (ואם אין — amount_due)
+        עלות CI — ידני (לא בהכרעת רומן). מסמך שמוחל **דורס** ערך קיים; המאוחר מנצח. סכום שלא נקרא אינו מוחק דבר.
+      הקריאה עצמה: po-doc-extract (Claude, בזהות המשתמש) → ord.po_doc_store_extract → po_doc_apply. שינוי סוג
+      בכרטיס (po_doc_set_type) מחיל מחדש מה-extract השמור, בלי קריאה שנייה למודל. מקור כל שדה נשמר ב-
+      purchase_orders.doc_fill — זו ההערה "↻ מתוך…" שמתחת לשדה, ו"נערך ידנית מאז" כשהערך כבר אינו מה שהמסמך כתב.
+   ⚠️ poDocKind היא מראה של ord.po_doc_kind — לצבע ולניחוש מהשם בלבד. ההחלה בשרת.
+   ⚠️ העלאה ב"זיהוי אוטומטי": ניחוש לפי שם הקובץ נכתב ב-insert (השרת דורש סוג), והסוג שהמודל זיהה מחליף אותו.
+   ⚠️ גרירה: dragover/drop על document עושים preventDefault לכל גרירת **קבצים** — אחרת הדפדפן פותח את הקובץ
+      במקום האפליקציה ושינויים שלא נשמרו אובדים. יעד: כל כרטיס רכש פתוח, למי שיש לו inv.po=2 (רק לו יש אריח העלאה).
+   ⚠️ תצוגה מהירה: iframe/img ב-#podView (modal-over). במובייל (<760) iframe אינו מצייר PDF (הלקח מ-sign.html)
+      ⇒ לשונית, כמו עד היום. */
+const PO_DOC_OTHER = 'אחר';
+const poDocKind = t => { t = String(t||''); return /proforma|עסקה/i.test(t) ? 'proforma' : /מקדמה|deposit/i.test(t) ? 'deposit'
+  : /גמר|final/i.test(t) ? 'final' : /packing|תעודת משלוח/i.test(t) ? 'packing' : /lading|שטר מטען/i.test(t) ? 'bl' : ''; };
+const PO_DOC_TONE = { proforma:'p-violet', deposit:'p-yellow', final:'p-green', packing:'p-blue', bl:'p-teal' };
+const poDocTone = t => PO_DOC_TONE[poDocKind(t)] || 'p-gray';
+const poDocTypes = () => lbQOpts('po_doc_types').filter(t=>t!==PO_DOC_OTHER);
+/* "חשבונית עסקה (Proforma)" ⇒ ['חשבונית עסקה','Proforma'] — שם עברי בולט והמונח הבינלאומי קטן לצידו */
+const poDocSplit = t => { t = String(t||''); const i = t.lastIndexOf(' ('); return (i > 0 && t.slice(-1) === ')') ? [t.slice(0, i), t.slice(i+2, -1)] : [t || PO_DOC_OTHER, '']; };
+/* ניחוש לפי שם הקובץ — רק כדי שה-insert יישא סוג סביר; המודל מכריע אחר כך במצב "זיהוי אוטומטי" */
+function poDocGuess(name){
+  const n = ' '+String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,' ')+' ';
+  let k = '';
+  if(/ (proforma|pi) /.test(n)) k = 'proforma';
+  else if(/ (packing|pl) /.test(n)) k = 'packing';
+  else if(/ (lading|bl|b l) /.test(n)) k = 'bl';
+  else if(/ (commercial|ci|invoice) /.test(n)) k = / (deposit|advance|down) /.test(n) ? 'deposit' : / (balance|final) /.test(n) ? 'final' : '';
+  return (k && poDocTypes().find(t=>poDocKind(t)===k)) || PO_DOC_OTHER;
+}
+const poDocCur = c => ({ USD:'$', ILS:'₪', EUR:'€', CNY:'¥' })[String(c||'').toUpperCase()] || (c ? String(c)+' ' : '');
+const poDocMoney = (v, c) => { if(v==null || v==='') return ''; const n = Number(v); return poDocCur(c) + n.toLocaleString('en-US', { minimumFractionDigits:(n % 1 ? 2 : 0), maximumFractionDigits:2 }); };
+/* מה שנקרא מהמסמך, לפי המשפחה — אותם שדות ש-po_doc_apply מחיל */
+function poDocReadLine(f){
+  const x = f && f.extract; if(!x) return '';
+  const k = poDocKind(f.doc_type), c = x.currency;
+  const parts = k==='deposit' ? [['מקדמה', x.deposit_amount!=null ? x.deposit_amount : x.amount_due]]
+              : k==='final'   ? [['מקדמה', x.deposit_amount], ['גמר', x.balance_amount!=null ? x.balance_amount : x.amount_due]]
+              : [['סה"כ', x.total_amount]];
+  return parts.filter(p=>p[1]!=null && p[1]!=='').map(p=>p[0]+' '+poDocMoney(p[1], c)).join(' · ');
+}
+const POD_BUSY = new Set();   /* מסמכים שנקראים כרגע במודל — האריח מציג "קורא את המסמך…" */
+function poDocTile(f, can){
+  const isPdf = /\.pdf$/i.test(String(f.storage_path||''));
+  const sp = poDocSplit(f.doc_type), id = jsq(f.id);
+  const chip = '<span class="pod-tmain">'+esc(sp[0])+'</span>'+(sp[1] ? '<small>'+esc(sp[1])+'</small>' : '');
+  const rl = poDocReadLine(f);
+  const read = POD_BUSY.has(f.id) ? '<span class="pod-x pod-busy"><span class="busy-spin"></span>קורא את המסמך…</span>'
+             : (rl ? '<span class="pod-x" title="'+esc((f.extract && f.extract.notes) || 'נקרא מהמסמך')+'">'+esc(rl)+'</span>' : '');
+  return '<div class="pod-tile" data-doc="'+esc(f.id)+'">'
+    + '<button type="button" class="pod-open" onclick="poDocView(\''+id+'\')" title="פתיחה מהירה — '+esc(f.file_name||'')+'">'
+    +   '<span class="pod-ic'+(isPdf ? '' : ' img')+'" aria-hidden="true">'+(isPdf ? 'PDF' : ico('image'))+'</span>'
+    +   '<span class="pod-nm" dir="auto">'+esc(f.file_name||'קובץ')+'</span>'
+    +   '<span class="pod-meta"'+(f.uploaded_by ? ' title="הועלה בידי '+esc(f.uploaded_by)+'"' : '')+'><bdi dir="ltr">'+esc(poDocSize(f.size_bytes))+'</bdi> · '+esc(fmtDT(f.uploaded_at))+'</span>'
+    +   read
+    + '</button>'
+    + '<div class="pod-ft" id="pod-ft-'+esc(f.id)+'">'
+    +   (can ? '<button type="button" class="pill '+poDocTone(f.doc_type)+' pod-type" onclick="poDocTypeEdit(\''+id+'\')" title="שינוי סוג המסמך">'+chip+'<span class="pod-ed" aria-hidden="true">✎</span></button>'
+             : '<span class="pill '+poDocTone(f.doc_type)+' pod-type">'+chip+'</span>')
+    +   (can ? '<button type="button" class="pod-del media-del" onclick="deleteMediaFile(\''+id+'\')" title="מחיקת המסמך" aria-label="מחיקת המסמך">'+ico('trash')+'</button>' : '')
+    + '</div></div>';
+}
+function poDocDropTile(on, empty){
+  const o = jsq(on);
+  return '<div class="pod-drop" data-po="'+esc(on)+'">'
+    + '<button type="button" class="pod-pick" onclick="uploadPoDoc(\''+o+'\')">'
+    +   '<span class="pod-plus" aria-hidden="true">＋</span><b>'+(empty ? 'העלאת המסמך הראשון' : 'העלאת מסמכים')+'</b>'
+    +   '<span class="pod-hint">גוררים לכאן או לוחצים · PDF ותמונות</span></button>'
+    + '<select id="po-doc-type-'+esc(on)+'" class="pod-upsel" title="סוג המסמכים שיועלו" onchange="poDocUpType(\''+o+'\')">'
+    +   '<option value="">סוג: זיהוי אוטומטי</option>'+poDocTypes().map(t=>'<option>'+esc(t)+'</option>').join('')
+    +   '<option value="__other">אחר…</option></select>'
+    + '<input id="po-doc-other-'+esc(on)+'" class="pod-upother" maxlength="80" placeholder="שם הסוג (לדוגמה: אישור העברה)" hidden>'
+    + '</div>';
+}
+window.poDocUpType = on => {
+  const s = document.getElementById('po-doc-type-'+on), i = document.getElementById('po-doc-other-'+on);
+  if(s && i){ i.hidden = s.value !== '__other'; if(!i.hidden) i.focus(); }
+};
 window.poDocsBlock = (on)=>{
   if(!window.canView('inv.po')) return '';
   const can = window.canEdit('inv.po');
   const boxId = 'po-docs-box-'+on;
-  const rows = list => list.map(f=>'<div class="row po-doc-row">'
-      + '<span class="k"><span class="pill p-gray">'+esc(f.doc_type||'אחר')+'</span></span>'
-      + '<span class="v"><a href="#" onclick="event.preventDefault();openMediaFile(\''+jsq(f.id)+'\',300)">'+esc(f.file_name||'קובץ')+'</a>'
-      + ' · '+esc(poDocSize(f.size_bytes))+' · '+esc(fmtDT(f.uploaded_at))+(f.uploaded_by ? ' · '+esc(f.uploaded_by) : '')
-      + (can ? ' · <a href="#" class="media-del" onclick="event.preventDefault();deleteMediaFile(\''+jsq(f.id)+'\')">מחיקה</a>' : '')
-      + '</span></div>').join('') || '<div class="note">אין מסמכי ספק להזמנה זו.</div>';
+  const grid = list => '<div class="pod-grid">'+list.map(f=>poDocTile(f, can)).join('')+(can ? poDocDropTile(on, !list.length) : '')+'</div>'
+    + ((!list.length && !can) ? '<div class="note">אין מסמכי ספק להזמנה זו.</div>' : '');
   if(DOCFILES===null){
-    loadDocFiles().then(()=>{ const el = document.getElementById(boxId); if(el) el.innerHTML = rows(poDocsOf(on));
+    loadDocFiles().then(()=>{ const el = document.getElementById(boxId); if(el) el.innerHTML = grid(poDocsOf(on));
                               const h = document.getElementById('po-docs-n-'+on); if(h) h.textContent = poDocsOf(on).length; });
   }
   const mine = poDocsOf(on);
-  const types = lbQOpts('po_doc_types');
-  return '<section class="ob-card" id="po-docs-'+esc(on)+'"><h2 class="sec">מסמכי ספק (<span id="po-docs-n-'+esc(on)+'">'+(DOCFILES===null ? '…' : mine.length)+'</span>)</h2>'
-    + '<div id="'+boxId+'">'+(DOCFILES===null ? crmLoading() : rows(mine))+'</div>'
-    + (can ? '<div class="po-doc-up"><select id="po-doc-type-'+esc(on)+'" class="pilled" title="סוג המסמך — הרשימה ב-ord.settings.po_doc_types"><option value="">סוג המסמך…</option>'
-             + types.map(t=>'<option>'+esc(t)+'</option>').join('')+'</select>'
-             + '<button type="button" class="ghost" onclick="uploadPoDoc(\''+jsq(on)+'\')">העלאת מסמך</button></div>' : '')
+  return '<section class="ob-card pod-sec" id="po-docs-'+esc(on)+'"><h2 class="sec"><span>מסמכי ספק (<span id="po-docs-n-'+esc(on)+'">'+(DOCFILES===null ? '…' : mine.length)+'</span>)</span>'
+    + (can ? '<span class="pod-sub">אפשר לגרור קבצים לכל מקום בכרטיס · הסוג והסכומים נקראים מהמסמך</span>' : '')+'</h2>'
+    + '<div id="'+boxId+'">'+(DOCFILES===null ? crmLoading() : grid(mine))+'</div>'
     + '</section>';
 };
+/* החלפת הבלוק בלבד — לא openPo: mountCard מאפס scrollTop (6.154.0) */
+window.poDocsRedraw = on => { const sec = document.getElementById('po-docs-'+on); if(sec) sec.outerHTML = window.poDocsBlock(on); };
+
+/* ── עריכת הסוג — בתוך האריח, לא popover (6.129.1: absolute נחתך ב-overflow של הכרטיס) ── */
+window.poDocTypeEdit = id => {
+  if(!window.canEdit('inv.po')) return;
+  const f = (DOCFILES||[]).find(x=>x.id===id), ft = document.getElementById('pod-ft-'+id); if(!f || !ft) return;
+  const types = poDocTypes(), known = types.indexOf(f.doc_type) >= 0, k = jsq(id);
+  const key = ' onkeydown="poDocTypeKey(event,\''+k+'\')"';
+  ft.innerHTML = '<select class="pod-tsel" id="pod-tsel-'+esc(id)+'" onchange="poDocTypeOther(\''+k+'\')"'+key+'>'
+    + types.map(t=>'<option'+(t===f.doc_type ? ' selected' : '')+'>'+esc(t)+'</option>').join('')
+    + '<option value="__other"'+(known ? '' : ' selected')+'>אחר…</option></select>'
+    + '<input class="pod-tother" id="pod-tother-'+esc(id)+'" maxlength="80" placeholder="שם הסוג" value="'+esc((known || f.doc_type===PO_DOC_OTHER) ? '' : (f.doc_type||''))+'"'+(known ? ' hidden' : '')+key+'>'
+    + '<button type="button" class="pod-ok" onclick="poDocTypeSave(\''+k+'\')" title="שמירה">✓</button>'
+    + '<button type="button" class="pod-no" onclick="poDocsRedraw(\''+jsq(f.po_ordname)+'\')" title="ביטול">✕</button>';
+  const s = document.getElementById('pod-tsel-'+id); if(s) s.focus();
+};
+window.poDocTypeOther = id => {
+  const s = document.getElementById('pod-tsel-'+id), i = document.getElementById('pod-tother-'+id);
+  if(s && i){ i.hidden = s.value !== '__other'; if(!i.hidden) i.focus(); }
+};
+/* Esc בעורך מבטל את העריכה בלבד — stopPropagation לפני שער ה-Escape הגלובלי, שהיה סוגר את הכרטיס כולו */
+window.poDocTypeKey = (e, id) => {
+  if(e.key === 'Enter'){ e.preventDefault(); poDocTypeSave(id); }
+  else if(e.key === 'Escape'){ e.preventDefault(); e.stopPropagation(); const f = (DOCFILES||[]).find(x=>x.id===id); if(f) poDocsRedraw(f.po_ordname); }
+};
+window.poDocTypeSave = async id => {
+  const f = (DOCFILES||[]).find(x=>x.id===id); if(!f) return;
+  const s = document.getElementById('pod-tsel-'+id), i = document.getElementById('pod-tother-'+id);
+  const v = (s && s.value === '__other') ? (String((i && i.value) || '').trim() || PO_DOC_OTHER) : String((s && s.value) || '').trim();
+  if(!v || v === f.doc_type){ poDocsRedraw(f.po_ordname); return; }
+  /* RPC ולא update: אין UPDATE ל-authenticated על doc_files (שאר העמודות הן נתיב אחסון ושיוך) */
+  const { data, error } = await sb.schema('ord').rpc('po_doc_set_type', { p_id:id, p_type:v });
+  if(error || !data){ toast('עדכון סוג המסמך נכשל — '+((error && error.message) || 'אין הרשאה'), 'err'); return; }
+  f.doc_type = data.doc_type || v;
+  const got = poDocApplied(f.po_ordname, data);
+  poDocsRedraw(f.po_ordname);
+  toast('סוג המסמך עודכן ✓'+(got ? ' · עודכן מתוך המסמך: '+got : ''));
+  /* מסמך שעוד לא נקרא (הועלה לפני 6.231.0, או שהקריאה נכשלה) וסוגו עכשיו כספי — קוראים אותו עכשיו */
+  if(data.extracted === false && ['proforma','deposit','final'].indexOf(data.kind) >= 0) poDocExtract(f.po_ordname, [id], false);
+};
+
+/* ── מילוי ההזמנה מהמסמך: השרת החזיר את השורה המעודכנת ── */
+const PO_FILL_LBL = { pi_cost:'עלות PI', ci_advance:'מקדמה CI', final_payment:'תשלום גמר' };
+const PO_FILL_INP = { pi_cost:'po-f-pi', ci_advance:'po-f-adv', final_payment:'po-f-fin' };
+function poDocApplied(on, res){
+  const a = res && res.applied; if(!a || !res.po) return '';
+  const r = PO.find(x=>x.ordname===on); if(!r) return '';
+  Object.assign(r, res.po);
+  const out = Object.keys(PO_FILL_LBL).filter(col=>a[col]).map(col=>PO_FILL_LBL[col]+' '+poDocMoney(a[col].value, a[col].currency));
+  poFillPaint(on);
+  if(PO_LOADED) poBody();
+  return out.join(' · ');
+}
+/* "דורס": גם ערך שהוקלד ולא נשמר מוחלף בערך מהמסמך — זו הכרעת רומן ("תדרוס בהתאם למסמך המעודכן") */
+function poFillPaint(on){
+  if(!document.getElementById('po-docs-'+on)) return;   /* הכרטיס של ההזמנה הזאת אינו פתוח */
+  const r = PO.find(x=>x.ordname===on); if(!r) return;
+  Object.keys(PO_FILL_INP).forEach(col=>{
+    const inp = document.getElementById(PO_FILL_INP[col]);
+    if(inp && r[col] != null && String(inp.value) !== String(r[col])) inp.value = r[col];
+    const s = document.getElementById('po-src-'+col); if(s) s.innerHTML = poSrcInner(r, col);
+  });
+}
+function poSrcInner(r, col){
+  const s = r && r.doc_fill && r.doc_fill[col]; if(!s) return '';
+  const manual = r[col] == null || Math.abs(Number(r[col]) - Number(s.value)) > 0.005;
+  return '↻ עודכן מתוך <a href="#" onclick="event.preventDefault();poDocView(\''+jsq(s.file_id||'')+'\')" title="'+esc(s.file_name||'')+'">'+esc(poDocSplit(s.doc_type)[0])+'</a> · '+esc(fmtDT(s.at))
+    + (manual ? ' · <b>נערך ידנית מאז (במסמך '+esc(poDocMoney(s.value, s.currency))+')</b>' : '');
+}
+function poSrcHtml(r, col){ return '<div class="po-src" id="po-src-'+col+'">'+poSrcInner(r, col)+'</div>'; }
+
+/* ── העלאה: picker (iOS — ה-input ב-DOM בזמן ה-click, 6.191.0) או גרירה, ושניהם לאותה פונקציה ── */
 window.uploadPoDoc = (on)=>{
   if(!window.canEdit('inv.po')){ toast('אין לך הרשאת עריכה בהזמנות רכש'); return; }
-  const tsel = document.getElementById('po-doc-type-'+on);
-  const dtype = tsel ? String(tsel.value||'').trim() : '';
-  /* סוג חובה: השרת דוחה doc_type ריק (doc_files_insert_purchase), ומסמך בלי סוג אינו ניתן לתיוק */
-  if(!dtype){ toast('יש לבחור את סוג המסמך לפני ההעלאה', 'warn'); if(tsel) tsel.focus(); return; }
-  /* ה-input ב-DOM בזמן ה-click — Safari ל-iOS (6.191.0). שש השורות משוכפלות מ-uploadMedia
-     בכוונה: הוא נבדק על iOS ומכוסה ב-techscopetest, ולא נוגעים בו. */
   document.querySelectorAll('input.media-picker').forEach(x=>x.remove());
   const inp = document.createElement('input');
   inp.type='file'; inp.multiple=true; inp.accept='application/pdf,image/*';
   inp.className='media-picker'; inp.style.cssText='position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0';
-  inp.onchange = async ()=>{
-    const files = [...(inp.files||[])]; try{ inp.remove(); }catch(_e){} if(!files.length) return;
-    let okN=0; const bad=[];
-    const MIME = { pdf:'application/pdf', jpg:'image/jpeg', png:'image/png', webp:'image/webp' };
-    for(const file of files){
-      let f = file;
-      let ext = (f.name.split('.').pop()||'').toLowerCase();
-      if(MEDIA_EXT.indexOf(ext) < 0){
-        if(!/^image\//.test(file.type||'') && ['heic','heif'].indexOf(ext) < 0){ bad.push(file.name+' — רק PDF ותמונות'); continue; }
-        /* צילום packing list מאייפון הוא HEIC — אותה המרה של תמונות השטח (6.212.0) */
-        try{ f = await mediaToJpeg(file); ext = 'jpg'; }
-        catch(_e){ bad.push(file.name+' — לא ניתן להמיר את התמונה במכשיר הזה'); continue; }
-      }
-      if(ext === 'jpeg') ext = 'jpg';
-      if(f.size > 15*1024*1024){ bad.push(file.name+' — גדול מ-15 מגה'); continue; }
-      const path = 'purchase/'+on+'/'+mediaUuid()+'.'+ext;
-      /* contentType מהסיומת כש-file.type ריק: PDF מ"קבצים" באייפון מגיע לעיתים בלי type, והבקט דוחה */
-      const ctype = f.type || MIME[ext] || undefined;
-      const up = await sb.storage.from('docs').upload(path, f, { contentType:ctype, upsert:false });
-      if(up.error){ bad.push(file.name+' — '+up.error.message); continue; }
-      const row = { category:'purchase', po_ordname:on, doc_type:dtype, storage_path:path, file_name:f.name,
-                    mime_type:ctype||null, size_bytes:f.size,
-                    uploaded_by:(typeof ME!=='undefined' && ME && ME.email) || null };
-      const ins = await sb.schema('ord').from('doc_files').insert(row).select('id').single();
-      if(ins.error){
-        /* 🔴 רשומה שנדחתה ⇒ מסירים את הקובץ, אחרת קובץ יתום שאיש אינו רואה (ב-media זה נבלע) */
-        try{ await sb.storage.from('docs').remove([path]); }catch(_e){ console.warn('קובץ יתום באחסון', path, _e); }
-        bad.push(file.name+' — '+ins.error.message); continue;
-      }
-      okN++;
-    }
-    await loadDocFiles(true);
-    if(bad.length) await sysAlert('הועלו '+okN+' מסמכים.\nלא הועלו:\n'+bad.join('\n')); else toast('הועלו '+okN+' מסמכים ✓');
-    /* החלפת הבלוק בלבד — לא openPo: mountCard מאפס scrollTop (6.154.0). ועמודת "מסמכים" בטבלה. */
-    const sec = document.getElementById('po-docs-'+on); if(sec) sec.outerHTML = window.poDocsBlock(on);
-    if(PO_LOADED) poBody();
-  };
+  inp.onchange = ()=>{ const files = [...(inp.files||[])]; try{ inp.remove(); }catch(_e){} if(files.length) poDocUpload(on, files); };
   document.body.appendChild(inp);
   inp.click();
 };
+async function poDocUpload(on, files){
+  if(!window.canEdit('inv.po')){ toast('אין לך הרשאת עריכה בהזמנות רכש'); return; }
+  const tsel = document.getElementById('po-doc-type-'+on), oth = document.getElementById('po-doc-other-'+on);
+  const pick = tsel ? String(tsel.value||'').trim() : '';
+  const auto = pick === '';
+  const fixed = pick === '__other' ? (String((oth && oth.value) || '').trim() || PO_DOC_OTHER) : pick;
+  let okN=0; const bad=[], done=[];
+  const MIME = { pdf:'application/pdf', jpg:'image/jpeg', png:'image/png', webp:'image/webp' };
+  for(const file of files){
+    let f = file;
+    let ext = (f.name.split('.').pop()||'').toLowerCase();
+    if(MEDIA_EXT.indexOf(ext) < 0){
+      if(!/^image\//.test(file.type||'') && ['heic','heif'].indexOf(ext) < 0){ bad.push(file.name+' — רק PDF ותמונות'); continue; }
+      /* צילום packing list מאייפון הוא HEIC — אותה המרה של תמונות השטח (6.212.0) */
+      try{ f = await mediaToJpeg(file); ext = 'jpg'; }
+      catch(_e){ bad.push(file.name+' — לא ניתן להמיר את התמונה במכשיר הזה'); continue; }
+    }
+    if(ext === 'jpeg') ext = 'jpg';
+    if(f.size > 15*1024*1024){ bad.push(file.name+' — גדול מ-15 מגה'); continue; }
+    const path = 'purchase/'+on+'/'+mediaUuid()+'.'+ext;
+    /* contentType מהסיומת כש-file.type ריק: PDF מ"קבצים" באייפון מגיע לעיתים בלי type, והבקט דוחה */
+    const ctype = f.type || MIME[ext] || undefined;
+    const up = await sb.storage.from('docs').upload(path, f, { contentType:ctype, upsert:false });
+    if(up.error){ bad.push(file.name+' — '+up.error.message); continue; }
+    /* סוג חובה בשרת (doc_files_insert_purchase) — ב"זיהוי אוטומטי" נכתב ניחוש לפי השם, והמודל מתקן */
+    const row = { category:'purchase', po_ordname:on, doc_type:(auto ? poDocGuess(file.name) : fixed), storage_path:path, file_name:f.name,
+                  mime_type:ctype||null, size_bytes:f.size,
+                  uploaded_by:(typeof ME!=='undefined' && ME && ME.email) || null };
+    const ins = await sb.schema('ord').from('doc_files').insert(row).select('id').single();
+    if(ins.error){
+      /* 🔴 רשומה שנדחתה ⇒ מסירים את הקובץ, אחרת קובץ יתום שאיש אינו רואה (ב-media זה נבלע) */
+      try{ await sb.storage.from('docs').remove([path]); }catch(_e){ console.warn('קובץ יתום באחסון', path, _e); }
+      bad.push(file.name+' — '+ins.error.message); continue;
+    }
+    okN++; if(ins.data && ins.data.id) done.push(ins.data.id);
+  }
+  await loadDocFiles(true);
+  done.forEach(id=>POD_BUSY.add(id));
+  window.poDocsRedraw(on);
+  if(PO_LOADED) poBody();
+  /* הקריאה במודל מתחילה מיד — אינה ממתינה לסגירת דוח הקבצים שנדחו */
+  const px = done.length ? poDocExtract(on, done, auto) : null;
+  if(bad.length) await sysAlert('הועלו '+okN+' מסמכים.\nלא הועלו:\n'+bad.join('\n')); else if(okN) toast('הועלו '+okN+' מסמכים ✓ · קורא את המסמכים…');
+  if(px) await px;
+}
+window.poDocUpload = poDocUpload;
+/* בטור ולא במקביל: "המאוחר מנצח" חייב להיות סדר הקבצים, לא סדר התשובות */
+async function poDocExtract(on, ids, auto){
+  const filled = [], failed = [];
+  ids.forEach(id=>POD_BUSY.add(id)); window.poDocsRedraw(on);
+  for(const id of ids){
+    let res = null, msg = '';
+    try{
+      const { data, error } = await sb.functions.invoke('po-doc-extract', { body:{ file_id:id, auto_type:!!auto } });
+      if(error){
+        /* ההודעה בעברית יושבת בגוף התשובה — error.message הוא "non-2xx" (6.167.0) */
+        msg = error.message; try{ const b = await error.context.json(); if(b && b.error) msg = b.error; }catch(_e){}
+      } else if(!data || data.ok !== true) msg = (data && data.error) || 'תשובה לא צפויה';
+      else res = data;
+    }catch(e){ msg = (e && e.message) || 'שגיאה'; }
+    POD_BUSY.delete(id);
+    const f = (DOCFILES||[]).find(x=>x.id===id);
+    if(res){
+      if(f){ f.extract = res.extract || f.extract; if(res.result && res.result.doc_type) f.doc_type = res.result.doc_type; }
+      const got = poDocApplied(on, res.result);
+      if(got) filled.push(got);
+    } else failed.push(((f && f.file_name) || 'מסמך')+' — '+msg);
+    window.poDocsRedraw(on);
+  }
+  if(filled.length) toast('עודכן מתוך המסמכים: '+filled.join(' · '), 'ok', 7000);
+  if(failed.length) toast('המסמך נשמר, אבל לא נקרא: '+failed.join(' ; '), 'warn', 8000);
+}
+window.poDocExtract = poDocExtract;
+
+/* ── גרירה ── */
+const poDragFiles = e => !!(e.dataTransfer && [...(e.dataTransfer.types||[])].indexOf('Files') >= 0);
+let POD_DRAG_T = 0;
+function poDragZone(){
+  const m = document.getElementById('poModal');
+  return (m && !m.classList.contains('hidden')) ? m.querySelector('.pod-drop') : null;
+}
+function poDragPaint(on){
+  const m = document.getElementById('poModal'); if(!m) return;
+  m.classList.toggle('pod-dragging', !!on);
+  if(on) m.dataset.podmsg = 'שחררו כדי לצרף להזמנה '+on;
+}
+document.addEventListener('dragover', e=>{
+  if(!poDragFiles(e)) return;
+  e.preventDefault();   /* 🔴 בלעדיו הדפדפן פותח את הקובץ במקום האפליקציה */
+  const z = poDragZone();
+  e.dataTransfer.dropEffect = z ? 'copy' : 'none';
+  poDragPaint(z ? z.dataset.po : null);
+  /* dragleave יורה על כל ילד; dragover יורה ברציפות — כשהוא מפסיק, הגרירה יצאה */
+  clearTimeout(POD_DRAG_T); POD_DRAG_T = setTimeout(()=>poDragPaint(null), 250);
+});
+document.addEventListener('drop', e=>{
+  if(!poDragFiles(e)) return;
+  e.preventDefault(); clearTimeout(POD_DRAG_T); poDragPaint(null);
+  const z = poDragZone(); if(!z) return;
+  const files = [...((e.dataTransfer && e.dataTransfer.files) || [])];
+  if(files.length) poDocUpload(z.dataset.po, files);
+});
+
+/* ── תצוגה מהירה ── */
+let POD_VIEW = null;   /* { id, on } */
+window.poDocView = async id => {
+  const f = (DOCFILES||[]).find(x=>x.id===id);
+  if(!f){ toast('המסמך אינו קיים עוד', 'warn'); return; }
+  const m = document.getElementById('podView');
+  if(!m || !wideScreen()){ openMediaFile(id, 300); return; }
+  POD_VIEW = { id, on:f.po_ordname };
+  const list = poDocsOf(f.po_ordname), i = list.findIndex(x=>x.id===id);
+  const sp = poDocSplit(f.doc_type);
+  document.getElementById('podv-type').innerHTML = '<span class="pill '+poDocTone(f.doc_type)+'">'+esc(sp[0])+(sp[1] ? ' <small>'+esc(sp[1])+'</small>' : '')+'</span>';
+  document.getElementById('podv-name').textContent = f.file_name || 'קובץ';
+  document.getElementById('podv-pos').textContent = list.length > 1 ? (i+1)+' / '+list.length : '';
+  document.getElementById('podv-prev').disabled = i <= 0;
+  document.getElementById('podv-next').disabled = i < 0 || i >= list.length-1;
+  const rl = poDocReadLine(f), nt = f.extract && f.extract.notes, xEl = document.getElementById('podv-x');
+  xEl.innerHTML = (rl || nt) ? '<b>נקרא מהמסמך:</b> '+esc(rl || '—')+(nt ? ' · <span class="pod-vnote">'+esc(nt)+'</span>' : '') : '';
+  xEl.hidden = !(rl || nt);
+  const body = document.getElementById('podv-body');
+  body.innerHTML = crmLoading('טוען את המסמך…');
+  m.classList.remove('hidden');
+  const cb = m.querySelector('.pod-vclose'); if(cb) cb.focus();
+  /* 5 דקות — מסמך עלות, כמו dlOpenDoc ו-openMediaFile(…,300) */
+  const { data, error } = await sb.storage.from('docs').createSignedUrl(f.storage_path, 300);
+  if(!POD_VIEW || POD_VIEW.id !== id) return;   /* בינתיים נבחר מסמך אחר */
+  if(error || !data || !data.signedUrl){ body.innerHTML = '<div class="err">פתיחת הקובץ נכשלה — '+esc((error && error.message) || 'אין הרשאה לקובץ')+'</div>'; return; }
+  body.innerHTML = /\.pdf$/i.test(f.storage_path||'')
+    ? '<iframe class="pod-frame" title="'+esc(f.file_name||'')+'" src="'+esc(data.signedUrl)+'#view=FitH"></iframe>'
+    : '<img class="pod-img" alt="'+esc(f.file_name||'')+'" src="'+esc(data.signedUrl)+'">';
+};
+window.poDocStep = d => {
+  if(!POD_VIEW) return;
+  const list = poDocsOf(POD_VIEW.on), i = list.findIndex(x=>x.id===POD_VIEW.id), n = list[i+d];
+  if(n) window.poDocView(n.id);
+};
+/* RTL: חץ שמאלה = הבא */
+window.poDocViewKey = e => {
+  if(e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
+  if(e.key === 'ArrowLeft'){ e.preventDefault(); window.poDocStep(1); }
+  else if(e.key === 'ArrowRight'){ e.preventDefault(); window.poDocStep(-1); }
+};
+window.poDocViewTab = ()=>{ if(POD_VIEW) openMediaFile(POD_VIEW.id, 300); };
+window.poDocViewDl = async ()=>{
+  if(!POD_VIEW) return;
+  const f = (DOCFILES||[]).find(x=>x.id===POD_VIEW.id); if(!f) return;
+  const { data, error } = await sb.storage.from('docs').createSignedUrl(f.storage_path, 300, { download: f.file_name || true });
+  if(error || !data || !data.signedUrl){ toast('ההורדה נכשלה — '+((error && error.message) || 'אין הרשאה לקובץ'), 'err'); return; }
+  const a = document.createElement('a'); a.href = data.signedUrl; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove();
+};
+window.poDocViewClose = ()=>{ const m = document.getElementById('podView'); if(m) m.classList.add('hidden'); POD_VIEW = null; };
 
 /* ===== מסמכים ופרוטוקולים — נטיבי (עמוד החתימה sign.html נשאר כמו שהוא) ===== */
 let DOC_FILTER='sent';
@@ -10838,7 +11177,7 @@ async function loadDocFiles(force){
   DOCFILES_REQ = (async ()=>{
     try{
       const { data, error } = await sb.schema('ord').from('doc_files')
-        .select('id,category,order_id,call_id,protocol_id,storage_path,file_name,mime_type,size_bytes,caption,uploaded_by,uploaded_at,po_ordname,doc_type')
+        .select('id,category,order_id,call_id,protocol_id,storage_path,file_name,mime_type,size_bytes,caption,uploaded_by,uploaded_at,po_ordname,doc_type,extract')
         .order('uploaded_at',{ascending:false}).limit(5000);
       if(error) throw error;
       DOCFILES = data || [];
@@ -11560,7 +11899,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'dashgrid-2026-10-10a';
+const BUILD_ID = 'podocs2-2026-10-10a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====

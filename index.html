@@ -2191,6 +2191,22 @@
 #po-body td.po-warn{ color:#b45309; font-weight:700; }
 #po-body .po-eta-add{ display:inline-block; font-size:var(--fs-xs); color:var(--ink-3); border:1px dashed #cbd5e1; border-radius:var(--r-sm); padding:2px 8px; cursor:pointer; white-space:nowrap; }
 #po-body .po-eta-add:hover{ color:var(--navy); border-color:var(--navy); }
+/* 6.240.0 — etaest: "צפי בלבד" ליד תאריך ההגעה לנמל, בטבלה ובכרטיס. כבוי = מסגרת מקווקוות שקטה,
+   דלוק = ענבר (אותה משפחה של "צפי" בלוח הלוגיסטיקה). */
+.po-etaw{ display:flex; align-items:center; gap:var(--sp-1); }
+/* בטבלה — השבב מתחת לתאריך ולא לצדו: לצדו הוא הרחיב את העמודה ב-80px והטבלה גלשה 108px ב-1440
+   (נמדד; 28px כבר לפני). בכרטיס — בשורה אחת עם השדה. */
+#po-body .po-etaw{ flex-direction:column; justify-content:center; gap:2px; }
+#poSheet .po-etaw input{ flex:1; min-width:0; }
+.po-est{ display:inline-flex; align-items:center; gap:4px; font:inherit; font-size:var(--fs-xs); font-weight:600; color:var(--ink-3);
+  background:#fff; border:1px dashed var(--line); border-radius:var(--r-pill); padding:2px 9px; cursor:pointer; white-space:nowrap; line-height:1.5; }
+.po-est:hover{ color:var(--navy); border-color:var(--navy); }
+.po-est.on{ color:var(--amber); background:var(--amber-bg); border:1px solid currentColor; }
+.po-est.on:hover{ background:var(--amber-bg-h); }
+.po-est:disabled{ opacity:.45; cursor:default; }
+span.po-est{ cursor:default; }
+#poSheet .po-etaw .po-est{ min-height:var(--ctl-h-sm); }
+@media(max-width:1024px){ .po-est{ min-height:var(--ctl-h-touch-sm); } }
 #po-body tfoot td{ background:#f8fafc; font-weight:800; color:var(--navy); border-top:2px solid var(--line); padding:9px 7px; text-align:center; white-space:nowrap; }
 /* 6.195.0 — הכרטיס */
 .po-note{ font-size:var(--fs-xs); color:var(--ink-3); margin-top:3px; line-height:1.4; }
@@ -3320,7 +3336,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.238.0</div>
+      <div class="ver">גרסה 6.240.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3449,7 +3465,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="statdoc-2026-10-10a">גרסה 6.238.0</div>
+    <div class="side-foot" title="etaest-2026-10-11a">גרסה 6.240.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5732,7 +5748,7 @@ const IE_TABLES = {
   deal:  { schema:'crm', table:'deals',         arr:()=>DEALS, ent:'עסקה',         key:d=>d.name,         rerender:crmRepaint },
   meet:  { schema:'crm', table:'meetings',      arr:()=>MEETS, ent:'פגישה',        key:m=>m.subject,      rerender:crmRepaint },
   pay:   { schema:'crm', table:'payments',      arr:()=>PAYS,  ent:'תשלום',        key:p=>String(p.id).slice(0,8), rerender:()=>renderPays() },
-  po:    { schema:'ord', table:'purchase_orders', idCol:'ordname', arr:()=>PO, ent:'הזמנת רכש', key:o=>o.ordname, rerender:()=>{ if(typeof poBody==='function' && PO_LOADED) poBody(); } },
+  po:    { schema:'ord', table:'purchase_orders', idCol:'ordname', arr:()=>PO, ent:'הזמנת רכש', key:o=>o.ordname, rerender:()=>{ (PO||[]).forEach(x=>{ if(!x.eta_port) x.eta_estimate = false; }); if(typeof poBody==='function' && PO_LOADED) poBody(); } },   /* 6.240.0 — מראה של zz_po_eta_estimate_clear: ieSave שולח eta_port בלבד */
 };
 window.ieSave = async (el, desc)=>{
   /* 🔴 6.218.0 — desc אופציונלי, ואינו נוחות. ieSel אינו פולט data-ie
@@ -10677,9 +10693,10 @@ function poBody(){
       const late = open && r.eta_port && r.eta_port < today;
       const dueLate = open && g.open > 0 && g.next && g.next < today;
       /* "＋ תאריך" ולא שדה תאריך ריק: 11 מ-12 השורות הפתוחות בלי ETA, ושדה ריק בכל שורה הוא רעש */
+      /* 6.240.0 — "צפי בלבד" לצד התאריך (poEstChip): לעורך כפתור, לצופה שבב רק כשמסומן */
       const eta = r.eta_port
-        ? (canE ? '<div class="datewrap">'+ieDate('po', r.ordname, 'eta_port', r.eta_port)+'</div>'
-                : '<span class="'+(late?'po-late':'')+'">'+poDate(r.eta_port)+'</span>')
+        ? '<div class="po-etaw">' + (canE ? '<div class="datewrap">'+ieDate('po', r.ordname, 'eta_port', r.eta_port)+'</div>'
+                : '<span class="'+(late?'po-late':'')+'">'+poDate(r.eta_port)+'</span>') + poEstChip(r, canE) + '</div>'
         : ((canE && open) ? '<span class="po-eta-add" data-po-eta="'+esc(r.ordname)+'" title="קביעת תאריך הגעה משוער לנמל">＋ תאריך</span>' : '—');
       return '<tr data-po="'+esc(r.ordname)+'">'
         + '<td class="rownum">'+(i+1)+'</td>'
@@ -10704,6 +10721,9 @@ function poBody(){
     + '<td class="po-money num">'+Object.keys(tot).map(k=>k+Number(tot[k]).toLocaleString('he-IL',{maximumFractionDigits:0})).join(' · ')+'</td>'
     + '<td class="num">'+totOpen+'</td><td class="num">'+fmtNum(totBal)+'</td><td colspan="4"></td></tr></tfoot></table></div>';
   el.onclick = ev=>{
+    /* 6.240.0 — "צפי בלבד": נשמר מיד, לפני פתיחת הכרטיס של השורה */
+    const eb = ev.target.closest('[data-po-est]');
+    if(eb){ ev.stopPropagation(); poEstSet(eb.dataset.poEst, eb.getAttribute('aria-pressed') !== 'true'); return; }
     const a = ev.target.closest('[data-po-eta]');
     if(a){
       ev.stopPropagation();
@@ -10763,7 +10783,11 @@ async function openPo(on){
       + ((can && !poVoid(r)) ? selHtml('po-f-st', PO_STATUSES, r.our_status, false, '', 'po')
                               : '<div class="ro-pill">'+(mdPill(r.our_status, PO_ST_MD, LB_TK) || roIn(''))+'</div>')
       + '<div class="po-note">מתקדם לבדו לפי פריוריטי (בדרך ← נשלחה · סגור ← הושלם · מבוטלת ← מבוטלת, לא ניתן לעריכה); בייצור ובנמל מסומנים כאן.</div></div>'
-    + fld('po-f-eta','תאריך הגעה משוער לנמל', r.eta_port||'', 'date')
+    /* 6.240.0 — "צפי בלבד" בשורת השדה; נשמר ב"שמירה" כמו שאר השדות. תאריך ריק ⇒ הכפתור מושבת */
+    + (can ? '<div><label for="po-f-eta">תאריך הגעה משוער לנמל</label><div class="po-etaw">'
+             + '<input id="po-f-eta" type="date" value="'+esc(r.eta_port||'')+'" oninput="poEstCardSync()" onchange="poEstCardSync()">'
+             + poEstBtn(r, 'po-f-est') + '</div></div>'
+           : '<div><label>תאריך הגעה משוער לנמל</label><div class="po-etaw">'+roIn(r.eta_port ? poDate(r.eta_port) : '')+poEstChip(r, false)+'</div></div>')
     + fld('po-f-cont','מספר מכולה', r.container_no)
     + fld('po-f-cust-decl','מספר רשימון', r.customs_declaration_no)
     /* 6.231.0 — החוקיות גלויה בכרטיס (רומן: "את החוקיות תרשום בהערות"); המקור האחד הוא ord.po_doc_apply */
@@ -10840,6 +10864,54 @@ async function openPo(on){
   }
 }
 
+/* ===== 6.240.0 — etaest: "צפי בלבד" לתאריך ההגעה לנמל =====
+   רומן (11/10/2026): בהזמנה חדשה אין תאריך הגעה ודאי, אבל רוצים לרשום צפי — וכפתור שמסמן אותו
+   "צפי בלבד", עם ביטול כשהתאריך מתדייק. המקור: ord.purchase_orders.eta_estimate; הטריגר
+   zz_po_eta_estimate_clear מאפס את הדגל כשהתאריך נמחק, ולכן "צפי" בלי תאריך אינו יכול להתקיים. */
+const PO_EST_OFF = '≈ צפי', PO_EST_ON = 'צפי בלבד ✕';
+const PO_EST_T_OFF = 'סימון התאריך כצפי בלבד (לא מאושר) — לחיצה נוספת מבטלת';
+const PO_EST_T_ON  = 'התאריך הוא צפי בלבד — לחיצה מבטלת, כשהתאריך מתדייק';
+function poEstOn(r){ return !!(r && r.eta_port && r.eta_estimate); }
+function poEstBtn(r, id){
+  const on = poEstOn(r);
+  return '<button type="button" class="po-est'+(on?' on':'')+'"'+(id?' id="'+id+'" data-po="'+esc(r.ordname)+'" onclick="poEstCardToggle()"':' data-po-est="'+esc(r.ordname)+'"')
+    + ' aria-pressed="'+(on?'true':'false')+'" title="'+(on?PO_EST_T_ON:PO_EST_T_OFF)+'"'+((id && !r.eta_port)?' disabled':'')+'>'+(on?PO_EST_ON:PO_EST_OFF)+'</button>';
+}
+/* לעורך — כפתור; לצופה — שבב רק כשמסומן (פעולה שאי אפשר לבצע לא מציגים) */
+function poEstChip(r, can){
+  if(can) return poEstBtn(r, '');
+  return poEstOn(r) ? '<span class="po-est on" title="התאריך הוא צפי בלבד, לא מאושר">צפי בלבד</span>' : '';
+}
+function poEstPaint(b, on){
+  if(!b) return;
+  b.classList.toggle('on', !!on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  b.textContent = on ? PO_EST_ON : PO_EST_OFF; b.title = on ? PO_EST_T_ON : PO_EST_T_OFF;
+}
+/* בכרטיס — מקומי עד "שמירה", כמו שאר השדות */
+window.poEstCardToggle = ()=>{
+  const b = $('#po-f-est'), d = $('#po-f-eta'); if(!b || !d || !d.value) return;
+  poEstPaint(b, b.getAttribute('aria-pressed') !== 'true');
+};
+window.poEstCardSync = ()=>{
+  const b = $('#po-f-est'), d = $('#po-f-eta'); if(!b || !d) return;
+  b.disabled = !d.value; if(!d.value) poEstPaint(b, false);
+};
+/* בטבלה — נשמר מיד */
+window.poEstSet = async (on, val)=>{
+  const r = (PO||[]).find(x=>x.ordname===on); if(!r) return;
+  if(!canIE('po')){ toast('אין לך הרשאת עריכה בהזמנות רכש'); return; }
+  if(val && !r.eta_port){ toast('קודם יש להזין תאריך הגעה'); return; }
+  /* 🔴 .select() — RLS שדוחה מחזיר אפס שורות בלי שגיאה (6.191.0) */
+  const { data, error } = await sb.schema('ord').from('purchase_orders')
+    .update({ eta_estimate: !!val, updated_at: new Date().toISOString() }).eq('ordname', on).select('ordname,eta_port,eta_estimate');
+  if(error){ toast('השמירה נכשלה: '+error.message, 'err'); return; }
+  if(!data || !data.length){ toast('השמירה לא נקלטה — אין הרשאת עריכה להזמנות רכש', 'err'); return; }
+  Object.assign(r, data[0]);
+  poBody();
+  const cb = $('#po-f-est'); if(cb && cb.dataset.po === on) poEstPaint(cb, poEstOn(r));
+  toast(poEstOn(r) ? 'סומן: צפי בלבד' : 'הצפי בוטל — התאריך מאושר');
+};
+
 async function poSave(on){
   const r = PO.find(x=>x.ordname===on); if(!r) return;
   if(!poMgr()){ toast('אין לך הרשאת עריכה בהזמנות רכש'); return; }
@@ -10850,6 +10922,8 @@ async function poSave(on){
   const upd = {
     ...(stEl ? { our_status: stEl.value } : {}),
     eta_port: $('#po-f-eta').value || null,
+    /* 6.240.0 — בלי תאריך אין צפי (וגם הטריגר במסד מאפס) */
+    eta_estimate: !!($('#po-f-eta').value && $('#po-f-est') && $('#po-f-est').getAttribute('aria-pressed') === 'true'),
     pi_cost: numOr('#po-f-pi'),
     ci_cost: numOr('#po-f-ci'),
     ci_advance: numOr('#po-f-adv'),
@@ -12141,7 +12215,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'statdoc-2026-10-10a';
+const BUILD_ID = 'etaest-2026-10-11a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====

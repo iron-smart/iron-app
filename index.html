@@ -3269,7 +3269,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.233.0</div>
+      <div class="ver">גרסה 6.234.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3398,7 +3398,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="dashroles-2026-10-10a">גרסה 6.233.0</div>
+    <div class="side-foot" title="podocs3-2026-10-10a">גרסה 6.234.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -10716,9 +10716,9 @@ async function openPo(on){
     + fld('po-f-cont','מספר מכולה', r.container_no)
     + fld('po-f-cust-decl','מספר רשימון', r.customs_declaration_no)
     /* 6.231.0 — החוקיות גלויה בכרטיס (רומן: "את החוקיות תרשום בהערות"); המקור האחד הוא ord.po_doc_apply */
-    + '<div class="span4 po-note po-fill-rule"><span>↻ מתמלאים אוטומטית מהמסמכים שמועלים למטה, ומסמך חדש דורס: <b>עלות PI</b> ← חשבונית עסקה (Proforma) · <b>מקדמה CI</b> ← חשבונית מס מקדמה · <b>מקדמה CI ותשלום גמר</b> ← חשבונית מס גמר. עלות CI — ידני.</span></div>'
+    + '<div class="span4 po-note po-fill-rule"><span>↻ מתמלאים אוטומטית מהמסמכים שמועלים למטה, ומסמך חדש דורס: <b>עלות PI</b> ← חשבונית עסקה (Proforma) · <b>מקדמה CI</b> ← חשבונית מס מקדמה · <b>עלות CI, מקדמה CI ותשלום גמר</b> ← חשבונית מס גמר.</span></div>'
     + fld('po-f-pi',payLbl('עלות PI'), r.pi_cost, 'number', '', poSrcHtml(r,'pi_cost'))
-    + fld('po-f-ci',payLbl('עלות CI'), r.ci_cost, 'number')
+    + fld('po-f-ci',payLbl('עלות CI'), r.ci_cost, 'number', '', poSrcHtml(r,'ci_cost'))   /* 6.234.0 — מחשבונית הגמר */
     + fld('po-f-adv',payLbl('מקדמה CI'), r.ci_advance, 'number', '', poSrcHtml(r,'ci_advance'))
     + fld('po-f-fin',payLbl('תשלום גמר'), r.final_payment, 'number', '', poSrcHtml(r,'final_payment'))
     + fld('po-f-ifn','מספר תיק ייבוא', r.import_file_no, 'text', 'span2')
@@ -10923,8 +10923,9 @@ const poDocSize = n => { n = Number(n)||0; return n >= 1048576 ? (n/1048576).toF
    🔴 החוקיות — מקור אחד בלבד, ord.po_doc_apply במסד (כאן תצוגה):
         עלות PI              ← חשבונית עסקה (Proforma)          · total_amount
         מקדמה CI             ← חשבונית מס - מקדמה (Commercial)  · deposit_amount (ואם אין — amount_due)
-        מקדמה CI + תשלום גמר ← חשבונית מס - גמר (Commercial)    · deposit_amount + balance_amount (ואם אין — amount_due)
-        עלות CI — ידני (לא בהכרעת רומן). מסמך שמוחל **דורס** ערך קיים; המאוחר מנצח. סכום שלא נקרא אינו מוחק דבר.
+        עלות CI + מקדמה CI + תשלום גמר ← חשבונית מס - גמר (Commercial) · total_amount + deposit_amount + balance_amount (ואם אין — amount_due)
+        (עלות CI נוספה ב-6.234.0, רומן: "שגם עלות CI תתמלא מחשבונית הגמר".) מסמך שמוחל **דורס** ערך קיים; המאוחר מנצח.
+        סכום שלא נקרא אינו מוחק דבר.
       הקריאה עצמה: po-doc-extract (Claude, בזהות המשתמש) → ord.po_doc_store_extract → po_doc_apply. שינוי סוג
       בכרטיס (po_doc_set_type) מחיל מחדש מה-extract השמור, בלי קריאה שנייה למודל. מקור כל שדה נשמר ב-
       purchase_orders.doc_fill — זו ההערה "↻ מתוך…" שמתחת לשדה, ו"נערך ידנית מאז" כשהערך כבר אינו מה שהמסמך כתב.
@@ -10959,7 +10960,7 @@ function poDocReadLine(f){
   const x = f && f.extract; if(!x) return '';
   const k = poDocKind(f.doc_type), c = x.currency;
   const parts = k==='deposit' ? [['מקדמה', x.deposit_amount!=null ? x.deposit_amount : x.amount_due]]
-              : k==='final'   ? [['מקדמה', x.deposit_amount], ['גמר', x.balance_amount!=null ? x.balance_amount : x.amount_due]]
+              : k==='final'   ? [['סה"כ', x.total_amount], ['מקדמה', x.deposit_amount], ['גמר', x.balance_amount!=null ? x.balance_amount : x.amount_due]]
               : [['סה"כ', x.total_amount]];
   return parts.filter(p=>p[1]!=null && p[1]!=='').map(p=>p[0]+' '+poDocMoney(p[1], c)).join(' · ');
 }
@@ -11059,8 +11060,8 @@ window.poDocTypeSave = async id => {
 };
 
 /* ── מילוי ההזמנה מהמסמך: השרת החזיר את השורה המעודכנת ── */
-const PO_FILL_LBL = { pi_cost:'עלות PI', ci_advance:'מקדמה CI', final_payment:'תשלום גמר' };
-const PO_FILL_INP = { pi_cost:'po-f-pi', ci_advance:'po-f-adv', final_payment:'po-f-fin' };
+const PO_FILL_LBL = { pi_cost:'עלות PI', ci_cost:'עלות CI', ci_advance:'מקדמה CI', final_payment:'תשלום גמר' };
+const PO_FILL_INP = { pi_cost:'po-f-pi', ci_cost:'po-f-ci', ci_advance:'po-f-adv', final_payment:'po-f-fin' };
 function poDocApplied(on, res){
   const a = res && res.applied; if(!a || !res.po) return '';
   const r = PO.find(x=>x.ordname===on); if(!r) return '';
@@ -12081,7 +12082,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'dashroles-2026-10-10a';
+const BUILD_ID = 'podocs3-2026-10-10a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====

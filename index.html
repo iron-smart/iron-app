@@ -1019,6 +1019,64 @@
   .db-day{ font-size:var(--fs-xs); font-weight:800; color:var(--ink-3); margin:8px 0 0; padding:0 4px }
   .db-day b{ color:var(--navy) }
   .db-empty{ color:var(--ink-3); font-size:var(--fs-sm); padding:6px 4px 8px }
+  /* 6.230.0 — "החורים" (רומן): הכרטיסים היו בגובה התוכן (align-items:start), ולכן
+     כרטיס של שורה אחת ישב ליד כרטיס של חמש — מלבנים לבנים בגדלים שונים. מכאן כל
+     כרטיסי השורה באותו גובה, מצב-ריק ממורכז בתוכו, וכל שורת רשימה באותו גובה. */
+  #dash-secs{ align-items:stretch; grid-auto-flow:row dense }
+  .db-block{ display:flex; flex-direction:column }
+  .db-block > .db-empty{ flex:1; display:flex; align-items:center; justify-content:center; min-height:88px;
+    background:#f8fafc; border-radius:var(--r-md); margin:4px 0 6px; text-align:center }
+  .db-block h3{ min-height:26px }
+  .db-row{ min-height:48px; box-sizing:border-box }   /* 48 ולא 46: 46 הוא ערך המגע של הסולם (dstest) */
+  @media(min-width:760px){ #dash-secs .db-wide{ grid-column:span 2 } }
+  /* הקוקפיט ממלא את רוחב העמוד כמו הכרטיסים מתחתיו: כל קבוצה גדלה לפי מספר האריחים בה */
+  #db-kpis .kgrp{ flex:var(--n,1) 1 calc(var(--n,1) * 128px) }
+  #db-kpis .stats{ display:grid; grid-template-columns:repeat(var(--n,1),minmax(0,1fr)) }
+  #db-kpis .stat{ width:auto }
+  /* יומן הפגישות בלובי (איש מכירות) */
+  .dmc-bar{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:0 0 8px }
+  .dmc-ttl{ font-weight:800; font-size:13px; color:var(--ink-1) }
+  .dmc-bar .grow{ flex:1 }
+  .dmc-seg, .dmc-nav{ display:inline-flex; border:1px solid var(--line); border-radius:var(--r-md); overflow:hidden }
+  .dmc-seg button, .dmc-nav button{ border:none; background:#fff; font-family:inherit; font-size:12px; font-weight:700; color:var(--ink-2); padding:0 10px; height:28px; cursor:pointer }
+  .dmc-seg button + button, .dmc-nav button + button{ border-inline-start:1px solid var(--line) }
+  .dmc-seg button.on{ background:var(--navy); color:#fff }
+  .dmc-wk{ display:grid; gap:6px; flex:1 }
+  .dmc-col{ background:#f8fafc; border-radius:var(--r-md); padding:6px 5px; min-width:0; display:flex; flex-direction:column; gap:4px }
+  .dmc-col.today{ background:#f3effe; box-shadow:inset 0 0 0 1px #d9cdfb }
+  .dmc-dh{ font-size:12px; font-weight:800; color:var(--ink-2); text-align:center; cursor:pointer; padding:2px 0 4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  .dmc-dh small{ font-weight:600; color:var(--ink-3) }
+  .dmc-col.today .dmc-dh{ color:#6d28d9 }
+  .dmc-none{ color:#cbd5e1; text-align:center; font-size:12px; padding:6px 0 }
+  .dmc-ev{ display:flex; flex-direction:column; gap:2px; min-width:0; font-size:12px; padding:5px 7px; border-radius:7px; cursor:pointer;
+    background:#fff; border:1px dashed #cbd5e1; color:var(--ink-3); box-sizing:border-box; overflow:hidden }
+  .dmc-ev .r1{ display:flex; align-items:center; gap:5px; min-width:0 }
+  .dmc-ev .tm{ flex:none; font-weight:800; font-variant-numeric:tabular-nums }
+  .dmc-ev .sj{ min-width:0; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden }
+  .dmc-ev .ow{ margin-inline-start:auto; flex:none; font-size:11px; font-weight:600; background:#eef2f6; border-radius:5px; padding:0 5px; max-width:60%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+  .dmc-ev .me{ flex:none; color:#7c3aed; font-size:12px; line-height:1 }
+  .dmc-ev.mine{ background:#ede7fe; border:1px solid #c4b5fd; border-inline-start:3px solid #7c3aed; color:#2e1065; font-weight:700 }
+  .dmc-ev.done{ opacity:.55 }
+  .dmc-ev:hover{ filter:brightness(.97) }
+  .dmc-day{ display:grid; grid-template-columns:44px minmax(0,1fr); flex:1 }
+  .dmc-hrs div{ height:36px; font-size:11px; color:var(--ink-3); text-align:center; font-variant-numeric:tabular-nums; transform:translateY(-7px) }
+  .dmc-tl{ position:relative; border-inline-start:1px solid var(--line) }
+  .dmc-tl .ln{ position:absolute; inset-inline:0; border-top:1px solid #eef2f6 }
+  .dmc-tl .dmc-ev{ position:absolute; flex-direction:row; align-items:flex-start; gap:8px; padding:6px 8px }
+  .dmc-tl .dmc-ev .r1{ flex-direction:row-reverse; flex:none; order:2 }
+  .dmc-tl .dmc-ev .sj{ flex:1; -webkit-line-clamp:1 }
+  .dmc-ad{ display:flex; flex-wrap:wrap; gap:4px; margin:0 0 6px 44px }
+  .dmc-lg{ display:flex; gap:14px; font-size:var(--fs-xs); color:var(--ink-3); margin-top:8px }
+  .dmc-lg i{ display:inline-block; width:12px; height:10px; border-radius:3px; margin-inline-end:5px; vertical-align:-1px; background:#fff; border:1px dashed #cbd5e1 }
+  .dmc-lg i.mine{ background:#ede7fe; border:1px solid #c4b5fd; border-inline-start:3px solid #7c3aed }
+  /* תהליכי המכירה שלי */
+  .dmd-strip{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; margin:0 0 8px }
+  .dmd-st{ border-radius:var(--r-md); padding:7px 8px; background:#f8fafc; border-top:3px solid var(--c); cursor:pointer; min-width:0 }
+  .dmd-st b{ display:block; font-size:var(--fs-xl); font-weight:800; color:var(--navy); line-height:1.1 }
+  .dmd-st span{ display:block; font-size:11px; color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px }
+  .dmd-st small{ display:block; font-size:11px; font-weight:700; color:var(--ink-3); min-height:14px }
+  .dmd-st.z{ opacity:.45 }
+  .db-row .dmd-pill{ flex:none }
   /* שורת מספרי-הייחוס בראש כרטיס (כספים) */
   .db-fin{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:0 0 6px }
   .db-fin div{ background:#f8fafc; border-radius:var(--r-md); padding:8px 10px; min-width:0 }
@@ -1076,7 +1134,7 @@
   .fun-bar div{ height:100%; background:var(--navy); border-radius:var(--r-xl) }
   .fun-row b{ width:28px; text-align:center; flex:none }
   .fun-a{ width:64px; flex:none; font-size:11px; color:var(--ink-3); text-align:left }
-  @media(max-width:759.98px){ .dash-date{ font-size:var(--fs-xl) } #db-kpis{ gap:12px } .kgrp{ width:100% } #db-kpis .stats{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)) } #db-kpis .stat{ width:auto } #db-kpis .stat .n{ font-size:var(--fs-h) } .db-block{ padding:12px 13px 8px } }
+  @media(max-width:759.98px){ .dash-date{ font-size:var(--fs-xl) } #db-kpis{ gap:12px } .kgrp{ width:100% } #db-kpis .stats{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)) } #db-kpis .stat{ width:auto } #db-kpis .stat .n{ font-size:var(--fs-h) } .db-block{ padding:12px 13px 8px } .dmd-strip{ grid-template-columns:repeat(3,minmax(0,1fr)) } .dmc-col .dmc-ev .ow, .dmc-col .dmc-ev .sj{ display:none } .dmc-col .dmc-ev .r1{ justify-content:center } .dmc-dh small{ display:block } }
   /* שלד טעינה — במקום להציג 0 עד שהנתונים מגיעים (הערת רומן 29/07) */
   .skel{ display:inline-block; border-radius:var(--r-md); background:#e9eef3;
          background-image:linear-gradient(90deg,#e9eef3 25%,#f7fafc 37%,#e9eef3 63%);
@@ -3078,7 +3136,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.229.0</div>
+      <div class="ver">גרסה 6.230.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3207,7 +3265,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="vasusers-2026-10-10a">גרסה 6.229.0</div>
+    <div class="side-foot" title="dashgrid-2026-10-10a">גרסה 6.230.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5991,7 +6049,23 @@ function renderKpiStrip(){
   /* 6.194.0 — המכירות מהגלובלים החיים ולא מ-crm.sales_dash: הפונקציה לא סיננה לפי
      p_scope, ולכן "לידים חדשים 28" היו של כל הצוות גם אצל איש מכירות. הלידים והפולואפים
      נשארים צוותיים (ליד חסר-בעלים הוא של כולם); המשימות — שלי בלבד. */
-  if(canView('dash.sales') && canView('crm')){
+  if(canView('dash.sales') && canView('crm') && dashPersonal()){
+    /* 6.230.0 — לובי אישי (רומן: "להוריד כל מה שכללי ולא של המשתמש"): אין אריחי צוות. */
+    const myL = (LEADS||[]).filter(l=>LB_NOANS.includes(l.status) && lbMine(l));
+    const myNew = myL.filter(l=>l.status==='ליד חדש').length;
+    const myF = (LEADS||[]).filter(l=>l.status==='רלוונטי' && l.sub_status==='פולואפ' && lbMine(l)).length;
+    const myMt = (MEETS||[]).filter(m=>m.meet_date===today && m.status!=='בוטלה' && dmcMine(m)).length;
+    const mine = dashMyTasks(), late = mine.filter(t=>lbDueMark(t.due_at).rowCls==='lb-ovr').length;
+    T.push(kTile('הלידים שלי', myL.length, "lbSetView('mine');gotoTab('leads')", myNew ? kSub(myNew+' ליד חדש', false) : '', 'sales'));
+    T.push(kTile('הפולואפים שלי', myF, "lbSetView('mine');gotoTab('leads')", '', 'sales'));
+    T.push(kTile('המשימות שלי להיום', mine.length, "gotoTab('tasks')", late ? kSub(late+' באיחור', true) : '', 'sales'));
+    T.push(kTile('הפגישות שלי היום', myMt, "gotoTab('meets')", '', 'sales'));
+    if(canView('crm.deals')){
+      const dl = dashMyDeals();
+      T.push(kTile('התהליכים שלי', dl.length, "gotoTab('deals');setDealFilter('mine')", '', 'sales'));
+      T.push(kTile('סכום התהליכים', dl.length ? ilsK(dlSum(dl)) : '₪0', "gotoTab('deals');setDealFilter('mine')", kSub('לפני מע״מ', false), 'sales'));
+    }
+  } else if(canView('dash.sales') && canView('crm')){
     /* 6.195.1 — "פתוח" = כל שלבי חוסר-המענה (LB_NOANS); שלי (lbOwnersOf) ואז צוות.
        שורת-המשנה של הצוות היא "ללא בעלים" — מה שצריך לחלק. */
     const openL = (LEADS||[]).filter(l=>LB_NOANS.includes(l.status));
@@ -6013,7 +6087,7 @@ function renderKpiStrip(){
       late ? kSub(late+' באיחור', true) : '', 'sales'));
   }
   el.innerHTML = KPI_GROUPS.filter(([k])=>G[k].length).map(([k,lbl])=>
-    '<div class="kgrp d-'+k+'"><div class="kg-l">'+lbl+'</div><div class="stats">'+G[k].join('')+'</div></div>').join('');
+    '<div class="kgrp d-'+k+'" style="--n:'+G[k].length+'"><div class="kg-l">'+lbl+'</div><div class="stats">'+G[k].join('')+'</div></div>').join('');
   if(document.getElementById('b1a-n')) b1aRefresh();
 }
 function renderCoordQueue(){
@@ -6477,10 +6551,86 @@ async function renderMyDay(){
   }
   dashAlert('myday','myday',0);
 }
+/* ===== 6.230.0 — הלובי האישי של איש המכירות =====
+   dashPersonal: פרופיל 'sales' (נגזר מהרשאות, כמו dashProfile). מנהלים ממשיכים לראות את תמונת הצוות. */
+const dashPersonal = ()=> dashProfile()==='sales';
+const dashMeId = ()=> (typeof ME!=='undefined' && ME) ? String(ME.id||'') : '';
+/* פגישה "שלי" = אני בעלים או שותף (crm.meeting_owners דרך ownOwnersOf — המפתח ב-OWN_KIND הוא 'meet'), לא owner_id */
+const dmcMine = m => ownOwnersOf('meet', m).map(String).includes(dashMeId());
+/* אותה הגדרה של הצ'יפ "שלי" בבורד העסקאות — ACTIVE_STAGES + dlMine — ולכן אותו מספר */
+const dashMyDeals = ()=> (DEALS||[]).filter(d=>ACTIVE_STAGES.includes(d.stage) && dlMine(d));
+let DMC_V = (()=>{ try{ return localStorage.getItem('iron_dash_mcal_v1')||''; }catch(_e){ return ''; } })();
+/* שבת אינה יום עבודה — בשבת היומן נפתח על השבוע/היום הבא (6 ולא CAL_SATURDAY: הקבוע מוגדר מאוחר יותר בקובץ, וזה רץ בטעינה) */
+const dmcStart = ()=>{ const d = new Date(); return d.getDay()===6 ? new Date(d.getFullYear(), d.getMonth(), d.getDate()+1) : d; };
+let DMC_D = dmcStart();
+const dmcView = ()=> DMC_V || (wideScreen() ? 'week' : 'day');
+window.dmcMode = v=>{ DMC_V = v; try{ localStorage.setItem('iron_dash_mcal_v1', v); }catch(_e){} renderToday(); };
+window.dmcShift = n=>{
+  const step = dmcView()==='week' ? 7 : 1;
+  let d = new Date(DMC_D.getFullYear(), DMC_D.getMonth(), DMC_D.getDate()+n*step);
+  if(d.getDay()===6) d = new Date(d.getFullYear(), d.getMonth(), d.getDate()+(n>0?1:-1));
+  DMC_D = d; renderToday(); };
+window.dmcToday = ()=>{ DMC_D = dmcStart(); renderToday(); };
+window.dmcGoDay = ds=>{ DMC_D = new Date(ds+'T12:00:00'); dmcMode('day'); };
+const dmcOn = ds => (MEETS||[]).filter(m=>m.meet_date===ds && m.status!=='בוטלה').sort((a,b)=>mSortKey(a)-mSortKey(b));
+function dmcChip(m, style){
+  const mine = dmcMine(m), o = LOWN_BY[ownOwnersOf('meet', m)[0]||''], on = o ? String(o.name||'').split(' ')[0] : '';
+  return '<div class="dmc-ev'+(mine?' mine':'')+(mDone(m)?' done':'')+'"'+(style?' style="'+style+'"':'')+' onclick="openMeet(\''+jsq(m.id)+'\')" title="'+
+    esc((mSlot(m)||'ללא שעה')+' · '+(m.subject||''))+(mine?' · שלי':(on?' · '+esc(on):''))+'">'+
+    '<span class="r1">'+(mine ? '<span class="me" aria-label="שלי">★</span>' : '')+'<span class="tm">'+esc(String(mSlot(m)||'').split('-')[0]||'—')+'</span>'+(mine ? '' : '<span class="ow">'+esc(on||'—')+'</span>')+'</span>'+
+    '<span class="sj">'+esc(m.subject||'')+'</span></div>';
+}
+function dmcHtml(){
+  const t = isoD(new Date()), cd = isoD(DMC_D), v = dmcView();
+  let days, title, body;
+  if(v==='week'){
+    const ws = weekStartIso(cd);
+    days = [0,1,2,3,4].map(i=>addDaysIso(ws,i));
+    if(dmcOn(addDaysIso(ws,5)).length) days.push(addDaysIso(ws,5));
+    title = 'שבוע '+fmtD(days[0])+' — '+fmtD(days[days.length-1]);
+    body = '<div class="dmc-wk" style="grid-template-columns:repeat('+days.length+',minmax(0,1fr))">'+days.map(d=>
+      '<div class="dmc-col'+(d===t?' today':'')+'"><div class="dmc-dh" onclick="dmcGoDay(\''+d+'\')">'+esc(dayNameHe(d))+' <small>'+esc(fmtD(d).slice(0,5))+'</small></div>'+
+      (dmcOn(d).map(m=>dmcChip(m)).join('') || '<div class="dmc-none">—</div>')+'</div>').join('')+'</div>';
+  } else {
+    days = [cd];
+    title = dayNameHe(cd)+', '+fmtD(cd);
+    const H0 = 8, H1 = 19, PX = 36, evs = dmcOn(cd), L = mLayout(evs);
+    const top = mi => (Math.min(Math.max(mi, H0*60), H1*60) - H0*60) * PX / 60;
+    body = (L.allday.length ? '<div class="dmc-ad">'+L.allday.map(m=>dmcChip(m)).join('')+'</div>' : '')+
+      '<div class="dmc-day"><div class="dmc-hrs">'+Array.from({length:H1-H0},(_,i)=>'<div>'+String(H0+i).padStart(2,'0')+':00</div>').join('')+'</div>'+
+      '<div class="dmc-tl" style="height:'+((H1-H0)*PX)+'px">'+Array.from({length:H1-H0},(_,i)=>i?'<div class="ln" style="top:'+(i*PX)+'px"></div>':'').join('')+
+      L.place.map(p=>{ const a = top(p.sp.s), b = top(p.sp.e);
+        return dmcChip(p.m, 'top:'+(a+1)+'px;height:'+Math.max(26, b-a-3)+'px;inset-inline-start:calc('+(p.ci*100/L.n)+'% + 3px);width:calc('+(100/L.n)+'% - 6px)'); }).join('')+
+      (!evs.length ? '<div class="db-empty" style="position:absolute;inset:40% 10px auto">אין פגישות ביום זה</div>' : '')+
+      '</div></div>';
+  }
+  const all = [].concat(...days.map(dmcOn)), nMine = all.filter(dmcMine).length;
+  return { cnt: nMine+' שלי'+(all.length-nMine ? ' · '+(all.length-nMine)+' של אחרים' : ''),
+    html: '<div class="dmc-bar"><span class="dmc-ttl">'+esc(title)+'</span><span class="grow"></span>'+
+      '<span class="dmc-seg"><button type="button" class="'+(v==='day'?'on':'')+'" onclick="dmcMode(\'day\')">יומי</button><button type="button" class="'+(v==='week'?'on':'')+'" onclick="dmcMode(\'week\')">שבועי</button></span>'+
+      '<span class="dmc-nav"><button type="button" onclick="dmcShift(-1)" title="הקודם">▸</button><button type="button" onclick="dmcToday()">היום</button><button type="button" onclick="dmcShift(1)" title="הבא">◂</button></span></div>'+
+      body + '<div class="dmc-lg"><span><i class="mine"></i><b style="color:#7c3aed">★</b> הפגישות שלי</span><span><i></i>של אחרים בצוות (שם הבעלים)</span></div>' };
+}
+function renderMyDealsBlock(el){
+  el.classList.add('db-wide');
+  const dl = dashMyDeals(), sum = dlSum(dl), go = "gotoTab('deals');setDealFilter('mine')";
+  if(!dl.length){ el.innerHTML = dbHead('תהליכי המכירה שלי', 0, go, 'לתהליכים')+'<div class="db-empty">אין לך תהליכי מכירה פתוחים</div>'; return; }
+  const strip = '<div class="dmd-strip">'+ACTIVE_STAGES.map(s=>{ const l = dl.filter(d=>d.stage===s);
+    return '<div class="dmd-st'+(l.length?'':' z')+'" style="--c:'+(DEAL_ST_COLORS[s]||'#cbd5e1')+'" onclick="'+go.replace(/"/g,'&quot;')+'" title="'+esc(s)+'"><b>'+l.length+'</b><span>'+esc(s)+'</span><small>'+(l.length?ilsK(dlSum(l)):'')+'</small></div>'; }).join('')+'</div>';
+  const rows = dl.slice().sort((a,b)=>ACTIVE_STAGES.indexOf(b.stage)-ACTIVE_STAGES.indexOf(a.stage) || (+b.amount||0)-(+a.amount||0));
+  const cap = 4;
+  el.innerHTML = dbHead('תהליכי המכירה שלי', dl.length+' · '+ilsK(sum), go, 'לתהליכים') + strip +
+    rows.slice(0,cap).map(d=>dbRow("openDeal('"+jsq(d.id)+"')", esc(d.name||''),
+      [typeof dlCustName==='function' ? dlCustName(d) : '', d.priority_quote_id||''].filter(Boolean).map(esc).join(' · '),
+      '<span class="dmd-pill">'+mdPill(d.stage, DEAL_ST_COLORS, LB_TK)+'</span><span class="v">'+ilsK(+d.amount||0)+'</span>')).join('') +
+    (rows.length>cap ? dbRow(go, 'עוד '+(rows.length-cap)+' תהליכים', '', '', '') : '');
+}
 /* ===== שלב D — בלוקי המכירות (תצוגה על הקיים; הכרעת רומן 16/08/2026) ===== */
 function renderFunnelBlock(){
   const el = $('#db-funnel'); if(!el) return;
   if(!(canView('dash.sales') && canView('crm.deals'))){ el.innerHTML=''; return; }
+  if(dashPersonal()){ renderMyDealsBlock(el); return; }
+  el.classList.remove('db-wide');
   /* 6.194.0 — מ-DEALS ולא מ-crm.sales_dash: שם רשימת השלבים קפואה בקוד (שלב שהוסר
      ב-6.126.0 ושם ישן). כאן STAGES — אותה רשימה של בורד העסקאות, ואינה יכולה לסטות. */
   const open = STAGES.filter(s=>!['הושלם','לא רלוונטי'].includes(s));
@@ -11410,7 +11560,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'vasusers-2026-10-10a';
+const BUILD_ID = 'dashgrid-2026-10-10a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -24288,6 +24438,13 @@ function renderToday(){
   if(!el1 || !el2 || !el3) return;
   if(!(canView('dash.sales') && canView('crm'))){ el1.innerHTML=''; el2.innerHTML=''; el3.innerHTML=''; return; }
   const today = todayStr();
+  if(dashPersonal()){
+    /* 6.230.0 — יומן יומי/שבועי במקום רשימת "הפגישות של היום", שלי מודגש ושל אחרים מעומעם */
+    const M = dmcHtml();
+    el1.classList.add('db-wide');
+    el1.innerHTML = dbHead('יומן הפגישות', M.cnt, "gotoTab('meets')", 'ליומן') + M.html;
+  } else {
+  el1.classList.remove('db-wide');
   /* פגישות היום — של כל הצוות (יומן משותף), ממוינות לפי שעה */
   const tm = (MEETS||[]).filter(m=>m.meet_date===today && m.status!=='בוטלה')
     .sort((a,b)=>String(a.start_time||'').localeCompare(String(b.start_time||'')));
@@ -24297,6 +24454,7 @@ function renderToday(){
         '<span class="pill '+meetStClass(m.status)+'">'+esc(m.status||'')+'</span>', esc(m.start_time||'—')); }).join('')
      || '<div class="db-empty">אין פגישות היום</div>') +
     (tm.length>DB_CAP ? dbRow("gotoTab('meets')", 'עוד '+(tm.length-DB_CAP)+' פגישות', '', '', '') : '');
+  }
   /* המשימות שלי — להיום ובאיחור; מי שאין לו אף משימה פתוחה במערכת אינו רואה כרטיס */
   const mine = dashMyTasks();
   if(!mine.length && !dashOwnsTasks()){ el2.innerHTML=''; }

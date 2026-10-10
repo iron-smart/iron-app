@@ -3038,6 +3038,19 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   .sys-dlg .sheet{ max-width:440px; }
   .sys-dlg .sys-dlg-msg{ white-space:pre-line; font-size:var(--fs-lg); line-height:1.55; color:var(--dark); margin-bottom:6px; overflow-wrap:anywhere; }
   .sys-dlg .btn.del{ background:var(--red); border-color:var(--red); }
+  /* 6.227.0 — התחקות אחר משתמש. הפס בתחתית ולא למעלה — כדי לא להתנגש ב-#verBar/--verbar-h.
+     z-index 45: מתחת למודאלים (50), אחרת בטלפון הוא היה מכסה את כפתורי השמירה הצפים של הכרטיס. */
+  .vas-bar{ position:fixed; inset-inline:0; bottom:0; z-index:45; display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; justify-content:center;
+    padding:8px 16px; background:var(--red); color:#fff; font-size:var(--fs-sm); box-shadow:0 -2px 10px rgba(0,0,0,.18); }
+  .vas-bar .vas-x{ background:#fff; color:var(--red); border:0; border-radius:var(--r-md); padding:0 14px; min-height:var(--ctl-h-sm); font-weight:700; cursor:pointer; font-family:inherit; }
+  body.vas-on{ padding-bottom:52px; }
+  .vas-u{ display:flex; flex-wrap:wrap; gap:8px 12px; align-items:center; padding:10px 4px; border-bottom:1px solid var(--line); }
+  .vas-u .vas-nm{ font-weight:700; min-width:140px; }
+  .vas-u .vas-sub{ color:var(--ink-3); font-size:var(--fs-sm); flex:1; min-width:160px; }
+  .vas-pm{ padding:6px 4px 14px; }
+  .vas-pm details{ border:1px solid var(--line); border-radius:var(--r-md); margin:6px 0; padding:6px 10px; background:#fff; }
+  .vas-pm summary{ cursor:pointer; display:flex; gap:10px; align-items:center; }
+  .vas-pm .vas-k{ display:flex; gap:10px; align-items:center; justify-content:space-between; padding:3px 0 3px 4px; font-size:var(--fs-sm); }
 </style>
 </head>
 <body>
@@ -3065,7 +3078,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.226.1</div>
+      <div class="ver">גרסה 6.227.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3195,7 +3208,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="signflow-2026-10-09a">גרסה 6.226.1</div>
+    <div class="side-foot" title="viewas-2026-10-10a">גרסה 6.227.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3876,7 +3889,13 @@ if(!window.supabase){
 }
 const SB_URL = "https://hjibpfavkjqocjvffsbq.supabase.co";
 const SB_KEY = "sb_publishable_tAnwO6ncZD5QIo1bNFYrhA_qs-YPY1J";
-const sb = supabase.createClient(SB_URL, SB_KEY);
+/* 6.227.0 — התחקות אחר משתמש. לשונית ההתחקות (?vas=1) שומרת את הסשן ב-sessionStorage תחת מפתח משלה:
+   הלקוח הרגיל שומר ב-localStorage, שמשותף לכל הלשוניות — בלי ההפרדה, כניסה כמשתמש אחר הייתה הופכת
+   גם את שאר הלשוניות של רומן לאותו משתמש. detectSessionInUrl כבוי: האסימון מגיע ב-postMessage, לא בכתובת. */
+const VAS = (()=>{ try{ return new URLSearchParams(location.search).get('vas') === '1'; }catch(_){ return false; } })();
+const sb = VAS
+  ? supabase.createClient(SB_URL, SB_KEY, { auth:{ storage: window.sessionStorage, storageKey:'iron-vas', persistSession:true, autoRefreshToken:true, detectSessionInUrl:false } })
+  : supabase.createClient(SB_URL, SB_KEY);
 
 /* ===== 6.0.0 — המערכת אוחדה: מקור האמת להזמנות הוא הפלטפורמה =====
    הפרויקט הישן אוחד לכאן ונמחק (29/07/2026). פריוריטי מסנכרן ישירות
@@ -4183,7 +4202,7 @@ const mdPill = (v, colors, k) => {
 const RMB_KEY = 'iron_remember', TAB_KEY = 'iron_tab_session', ALIVE_KEY = 'iron_alive', OAUTH_KEY = 'iron_oauth_pending';
 /* בסגירת הדפדפן מוחקים את פעימת החיים, אחרת מי שיפתח את הדפדפן תוך 15 שניות
    יירש סשן של משתמש שלא ביקש "השאר אותי מחובר" (תחנה משותפת). */
-window.addEventListener('pagehide', ()=>{ try{ if(localStorage.getItem(RMB_KEY) !== '1') localStorage.removeItem(ALIVE_KEY); }catch(_){} });
+window.addEventListener('pagehide', ()=>{ if(VAS) return; try{ if(localStorage.getItem(RMB_KEY) !== '1') localStorage.removeItem(ALIVE_KEY); }catch(_){} });
 
 /* ===== מדיניות תוקף התחברות (סבב 4ד) =====
    עד כה לא היה זמן תפוגה כלל — סשן Supabase מתחדש מעצמו והמערכת לא ביקשה
@@ -4203,6 +4222,7 @@ document.addEventListener('visibilitychange', function(){ if(!document.hidden) t
 /* ההודעה הפכה לפרמטר ב-6.46.0 כדי שאכיפת הגרסה תשתמש בדיוק באותו מסלול
    ניתוק ולא תיצור לוגיקה מקבילה. ברירת המחדל היא התנהגות תפוגת חוסר-הפעילות. */
 async function forceRelogin(msg){
+  if(VAS){ await vasEnd(msg); return; }
   try{ localStorage.removeItem(ACT_KEY); localStorage.removeItem(ALIVE_KEY); sessionStorage.removeItem(TAB_KEY); }catch(_){}
   try{ await sb.auth.signOut({ scope:'local' }); }catch(_){}
   showLogin(msg || 'פג תוקף ההתחברות עקב חוסר פעילות — התחברו שוב');
@@ -4277,10 +4297,165 @@ window.navLanding = ()=> NAV_LAND_ORDER.find(t=>navCanTab(t)) || null;
 window.canView = k => window.pLevel(k) >= 1;
 window.canEdit = k => window.pLevel(k) >= 2;
 
+/* ===== 6.227.0 — התחקות אחר משתמש (רומן בלבד) =====
+   רומן, 09/10/2026: "אפשרות עבורי בלבד בהגדרות להתחקות אחרי המשתמש שאני בוחר — לראות מה הוא רואה
+   ואילו הרשאות יש לו". הכרעותיו: פעולות מלאות בשמו, ונאמנות מלאה לשרת.
+   🔴 כניסה אמיתית: admin-view-as מחזירה אסימון כניסה חד-פעמי, הלשונית החדשה (?vas=1) מאמתת אותו
+      ומקבלת סשן אמיתי של המשתמש — כל RLS, מיסוך, "שלי", פעמון ופונקציות קצה בדיוק כמו אצלו.
+   🔴 האסימון עובר ב-postMessage עם בדיקת origin ומקור — לא בכתובת (היסטוריה, Referer).
+   ⚠️ השער בלקוח הוא נוחות בלבד. ההגנה היא בשרת: role='admin' פעיל + ord.settings.view_as_allow. */
+function vasAllowed(){
+  if(VAS) return false;
+  if(typeof ME === 'undefined' || !ME || ME.role !== 'admin') return false;
+  const ids = String(osetStr('view_as_allow', '') || '').toLowerCase().split(/[\s,;]+/).filter(Boolean);
+  return ids.includes(String(ME.id || '').toLowerCase());
+}
+window.vasAllowed = vasAllowed;
+
+let VAS_SEL = null;
+function vasHtml(){
+  return `<h2 class="sec" style="margin-top:0">התחקות אחר משתמש</h2>
+    <div class="note">בחרו משתמש כדי לראות אילו הרשאות יש לו, או היכנסו בשמו. הכניסה נפתחת <b>בלשונית חדשה</b> — הלשונית הזאת נשארת שלכם.
+    בלשונית ההתחקות המערכת היא בדיוק מה שהוא רואה, ו<b>כל פעולה שם נרשמת בשמו</b>, כולל הודעות ללקוחות והתראות לעמיתים. תחילת כל התחקות נרשמת ביומן הפעולות.</div>
+    <div id="vasBox" class="tbl-wrap" style="padding:12px">${crmLoading('טוען משתמשים…')}</div>`;
+}
+function vasTargets(){
+  const me = String((ME && ME.id) || '');
+  return ((PM_STATE && PM_STATE.users) || []).filter(u => u && u.active && u.role !== 'admin' && u.role !== 'pending' && u.id !== me);
+}
+const VAS_LVL = { 0:['חסום','p-gray'], 1:['צפייה','p-blue'], 2:['עריכה','p-green'] };
+function vasPill(lv){ const x = VAS_LVL[+lv||0] || VAS_LVL[0]; return `<span class="pill ${x[1]}">${x[0]}</span>`; }
+function vasPermHtml(u){
+  const eff = pmNormalize(u.perms || {}), kids = pmKids();
+  const roots = kids[''] || [];
+  if(!roots.length) return '<div class="empty">קטלוג ההרשאות לא נטען</div>';
+  const rowsOf = (f, depth, out)=>{
+    (kids[f.key] || []).forEach(k=>{
+      out.push(`<div class="vas-k" style="padding-inline-start:${depth*14}px"><span>${esc(k.label)}</span>${vasPill(eff[k.key])}</div>`);
+      rowsOf(k, depth+1, out);
+    });
+    return out;
+  };
+  return roots.map(r=>{
+    const sub = rowsOf(r, 0, []);
+    const head = `<span style="flex:1;font-weight:700">${esc(r.label)}</span>${vasPill(eff[r.key])}`;
+    return sub.length ? `<details><summary>${head}</summary>${sub.join('')}</details>`
+                      : `<details><summary>${head}</summary><div class="vas-k"><span style="color:var(--ink-3)">אין תת-הרשאות</span></div></details>`;
+  }).join('');
+}
+function vasPaint(){
+  const box = $('#vasBox'); if(!box) return;
+  const list = vasTargets();
+  if(!list.length){ box.innerHTML = '<div class="empty">אין משתמשים פעילים להתחקות</div>'; return; }
+  const gname = id => { const g = ((PM_STATE && PM_STATE.groups) || []).find(x => x.id === id); return g ? g.name : ''; };
+  box.innerHTML = list.map(u=>{
+    const nm = u.name || u.email || '';
+    const sub = [u.job_title, gname(u.group_id), u.email].filter(Boolean).map(esc).join(' · ');
+    const open = VAS_SEL === u.id;
+    return `<div class="vas-u"><span class="vas-nm">${esc(nm)}</span><span class="vas-sub">${sub}</span>
+        <button type="button" class="ghost" onclick="vasToggle('${esc(u.id)}')">${open ? 'הסתרת ההרשאות' : 'הרשאות'}</button>
+        <button type="button" class="btn" onclick="vasOpen('${esc(u.id)}')">כניסה כ־${esc(nm)}</button></div>
+      ${open ? `<div class="vas-pm">${vasPermHtml(u)}</div>` : ''}`;
+  }).join('');
+}
+async function vasLoad(){
+  try{ await pmLoad(true); }catch(e){ console.error('vasLoad', e); }
+  vasPaint();
+}
+window.vasToggle = id => { VAS_SEL = (VAS_SEL === id) ? null : id; vasPaint(); };
+window.vasOpen = async id => {
+  if(!vasAllowed()) return;
+  const u = vasTargets().find(x => x.id === id); if(!u) return;
+  const nm = u.name || u.email || '';
+  if(!(await sysConfirm('כניסה כ־' + nm + ' בלשונית חדשה. בלשונית ההיא תראו בדיוק את מה שהוא רואה, וכל פעולה שתעשו שם תירשם בשמו.', { ok:'כניסה' }))) return;
+  /* הלשונית נפתחת לפני הפנייה לשרת — אחרת חוסם החלונות הקופצים בולע אותה */
+  const w = window.open(location.origin + location.pathname + '?vas=1', '_blank');
+  if(!w){ toast('הדפדפן חסם את פתיחת הלשונית — אפשרו חלונות קופצים לאתר ונסו שוב', 'err'); return; }
+  let tokenHash = null, sent = false;
+  const on = ev => {
+    if(ev.source !== w || ev.origin !== location.origin) return;
+    if(!ev.data || ev.data.t !== 'iron-vas-ready') return;
+    if(tokenHash && !sent){ sent = true; w.postMessage({ t:'iron-vas-token', token_hash: tokenHash }, location.origin); window.removeEventListener('message', on); }
+  };
+  window.addEventListener('message', on);
+  setTimeout(()=>window.removeEventListener('message', on), 60000);
+  const { data, error } = await sb.functions.invoke('admin-view-as', { body:{ profile_id: id } });
+  if(error || !data || !data.ok){
+    let msg = (data && data.error) || (error && error.message) || 'שגיאה';
+    /* supabase-js מאפס data על תשובה שאינה 2xx — ההודעה בעברית יושבת בגוף (הלקח של 6.167.0) */
+    try{ if(error && error.context && typeof error.context.json === 'function'){ const j = await error.context.json(); if(j && j.error) msg = j.error; } }catch(_e){}
+    window.removeEventListener('message', on);
+    try{ w.close(); }catch(_e){}
+    toast('ההתחקות נכשלה: ' + msg, 'err');
+    return;
+  }
+  tokenHash = data.token_hash;
+  toast('נפתחה לשונית התחקות — ' + nm);
+};
+
+/* ── לשונית ההתחקות ── */
+function vasAwaitToken(){
+  return new Promise(res=>{
+    let done = false, iv = null;
+    const fin = v => { if(done) return; done = true; clearInterval(iv); window.removeEventListener('message', on); res(v); };
+    const on = ev => {
+      if(ev.origin !== location.origin) return;
+      if(!window.opener || ev.source !== window.opener) return;
+      const d = ev.data || {};
+      if(d.t === 'iron-vas-token' && typeof d.token_hash === 'string' && d.token_hash) fin(d.token_hash);
+    };
+    window.addEventListener('message', on);
+    const ping = ()=>{ try{ if(window.opener) window.opener.postMessage({ t:'iron-vas-ready' }, location.origin); }catch(_e){} };
+    ping(); iv = setInterval(ping, 700);
+    setTimeout(()=>fin(null), 30000);
+  });
+}
+function vasScreen(msg){
+  killSplash();
+  const d = document.createElement('div');
+  d.setAttribute('style', 'position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:18px;direction:rtl;font-family:inherit');
+  const p = document.createElement('div');
+  p.setAttribute('style', 'max-width:460px;text-align:center;line-height:1.8;font-size:var(--fs-lg);color:var(--dark)');
+  p.textContent = msg;
+  d.appendChild(p); document.body.appendChild(d);
+}
+async function bootVas(){
+  BOOT_BUSY = true;
+  try{ document.title = 'התחקות · ' + document.title; }catch(_e){}
+  let { data:{ session } = {} } = await sb.auth.getSession();
+  if(!session){
+    const th = await vasAwaitToken();
+    if(!th){ vasScreen('הכניסה לא התקבלה מהלשונית שפתחה את ההתחקות. סגרו את הלשונית ונסו שוב מההגדרות.'); return; }
+    let r = await sb.auth.verifyOtp({ token_hash: th, type:'magiclink' });
+    if(r.error) r = await sb.auth.verifyOtp({ token_hash: th, type:'email' });
+    if(r.error || !r.data || !r.data.session){ vasScreen('הכניסה כמשתמש נכשלה: ' + ((r.error && r.error.message) || 'לא נוצר סשן')); return; }
+  }
+  await afterLogin();
+}
+function vasBanner(){
+  if(document.getElementById('vasBar')) return;
+  const nm = (ME && (ME.full_name || ME.email)) || '';
+  const b = document.createElement('div');
+  b.id = 'vasBar'; b.className = 'vas-bar'; b.setAttribute('role', 'status');
+  b.innerHTML = `<span><b>מצב התחקות</b> — מחובר כ־${esc(nm)}. כל פעולה נרשמת בשמו.</span><button type="button" class="vas-x" onclick="vasEnd()">יציאה מההתחקות</button>`;
+  document.body.appendChild(b);
+  document.body.classList.add('vas-on');
+  try{ document.title = 'התחקות · ' + nm; }catch(_e){}
+}
+/* scope:'local' — מבטל את הסשן הזה בלבד. global היה מנתק את המשתמש עצמו מכל המכשירים שלו. */
+async function vasEnd(msg){
+  try{ await sb.auth.signOut({ scope:'local' }); }catch(_e){}
+  try{ window.close(); }catch(_e){}
+  /* דפדפן שאינו מאפשר סגירה — מסך סיום במקום מסך התחברות */
+  setTimeout(()=>vasScreen(msg ? ('מצב ההתחקות הסתיים — ' + msg) : 'מצב ההתחקות הסתיים. אפשר לסגור את הלשונית.'), 150);
+}
+window.vasEnd = vasEnd;
+
 async function boot(){
   try{
     /* קישור איפוס סיסמה מגיע עם #...type=recovery — חייב להיבדק לפני בדיקת הסשן,
        אחרת הסשן הזמני שנוצר מהקישור היה מכניס למערכת בלי החלפת סיסמה. */
+    if(VAS){ await bootVas(); return; }
     if(/type=recovery/.test(location.hash || '')){ enterRecoveryMode(); return; }
     const { data:{ session } } = await sb.auth.getSession();
     if(!session){ showLogin(); return; }
@@ -4538,7 +4713,7 @@ async function afterLogin(){
      __loaded מבדיל בין "אין הרשאה" לבין "הטעינה נכשלה": כשל טעינה לא יחסום
      מסכים (אין עדיין אכיפה בצד הלקוח), אך גם לא יעניק דבר בצד השרת. */
   /* 6.24.0 — החלפת סיסמה בכניסה הראשונה */
-  if(prof.must_change_password){ killSplash(); showForcePw(); return; }
+  if(prof.must_change_password && !VAS){ killSplash(); showForcePw(); return; }
   /* 6.24.0 — טעינת ההרשאות עם שלושה ניסיונות; כשל אינו נועל בשקט */
   let permOk=false;
   for(let att=1; att<=3 && !permOk; att++){
@@ -4561,13 +4736,17 @@ async function afterLogin(){
   }catch(e){ console.error('my_perm_group', e); ME.perm_group = null; }
   killSplash();
   /* פעימת חיים — מאפשרת ללשונית חדשה באותו דפדפן להיחשב לאותו סשן (ראו boot) */
+  /* 6.227.0 — בלשונית ההתחקות אין פעימת חיים ואין שעון חוסר-פעילות: אלה מפתחות של רומן ב-localStorage */
+  if(!VAS){
   try{
     localStorage.setItem(ALIVE_KEY, Date.now());
     if(!window.__aliveTimer) window.__aliveTimer = setInterval(()=>{ try{ localStorage.setItem(ALIVE_KEY, Date.now()); }catch(_){} }, 5000);
   }catch(_){}
   touchAct();
   if(!window.__idleTimer) window.__idleTimer = setInterval(()=>{ if(idleMs() > idleLimit()) forceRelogin(); }, 60000);
+  }
   $('#login').classList.add('hidden'); $('#app').classList.remove('hidden');
+  if(VAS) vasBanner();
   /* 6.46.0 — מעקב גרסה. נכשל בשקט אם המודול לא נטען; אינו חוסם את הכניסה. */
   try{ if(window.VER && VER.start) VER.start(); }catch(e){ console.error('VER.start', e); }
   try{ if(window.NF && NF.start) NF.start(); }catch(e){ console.error('NF.start', e); }
@@ -4594,6 +4773,7 @@ async function afterLogin(){
 }
 
 $('#logoutBtn').onclick = async ()=>{
+  if(VAS){ await vasEnd(); return; }
   try{ localStorage.removeItem(RMB_KEY); localStorage.removeItem(ALIVE_KEY); localStorage.removeItem(ACT_KEY); sessionStorage.removeItem(TAB_KEY); }catch(_){}
   try{ await sb.auth.signOut({ scope:'local' }); }catch(_){}
   location.reload();
@@ -11255,7 +11435,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'signflow-2026-10-09a';
+const BUILD_ID = 'viewas-2026-10-10a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -15467,8 +15647,9 @@ window.dlShipCalc = async (dealId)=>{
 function settingsCats(){
   /* 6.24.0 — התפריט נגזר ממפתחות ההרשאה set.*, לא מתפקיד המשתמש.
      ללא אימוג׳ים — רומן 29/07/2026 */
-  const all = [['users','משתמשים והרשאות'],['teams','צוותי לוגיסטיקה'],['texts','טקסטים ומסמכים'],['conn','חיבורים'],['synclog','יומן סנכרון'],['notif','התראות'],['crm','CRM'],['general','כללי']];
-  try{ return all.filter(c=> canView(SET_PERM[c[0]])); }catch(_e){ return []; }
+  const all = [['users','משתמשים והרשאות'],['viewas','התחקות אחר משתמש'],['teams','צוותי לוגיסטיקה'],['texts','טקסטים ומסמכים'],['conn','חיבורים'],['synclog','יומן סנכרון'],['notif','התראות'],['crm','CRM'],['general','כללי']];
+  /* 6.227.0 — 'viewas' אינו מפתח set.*: הוא נגזר מ-vasAllowed (אדמין + view_as_allow), אותו כלל של השרת */
+  try{ return all.filter(c=> c[0]==='viewas' ? vasAllowed() : canView(SET_PERM[c[0]])); }catch(_e){ return []; }
 }
 /* תפריט ההגדרות בסרגל נבנה לפי ההרשאה בפועל — פריטי אדמין אינם מוצגים למי שאינו אדמין */
 window.buildSetSubmenu = ()=>{
@@ -15810,6 +15991,8 @@ function renderSettings(){
     const rest=OSET.filter(s=>!used.has(s.key));
     if(rest.length) gHtml+=`<h2 class="sec">⚙️ אחר</h2>`+rest.map(tbox).join('');
     body = `<h2 class="sec" style="margin-top:0">טקסטים ומסמכים — מקובץ לפי קטגוריה</h2>`+(gHtml||'<div class="empty">אין טקסטים מוגדרים</div>');
+  } else if(SET_VIEW==='viewas' && vasAllowed()){
+    body = vasHtml();
   } else if(SET_VIEW==='notif' && canView('set.notif')){
     body = notifSettingsHtml();
   } else if(SET_VIEW==='crm' && canView('set.crm')){
@@ -15846,6 +16029,7 @@ function renderSettings(){
   if(SET_VIEW==='users' && canView('set.users')) renderUsers();
   if(SET_VIEW==='synclog' && canView('set.synclog')) loadSyncLog();
   if(SET_VIEW==='conn') loadIntegrations();
+  if(SET_VIEW==='viewas' && vasAllowed()) vasLoad();
 }
 /* ===== הגדרות ← התראות (6.96.0) =====
    רומן, 18/08/2026: "משימה שמגיע מועד זמנה, אפשר גם לבקש התראה זמן מסוים
@@ -16755,6 +16939,7 @@ async function loadLeads(){
   try{ reIndexMeetOwners((mown||{}).data); }catch(_e){ console.error('meeting_owners',_e); }
   LEADS = l.data||[]; CUSTS = c.data||[]; TASKS = t.data||[]; DEALS = d.data||[]; MEETS = m.data||[]; CONTS = k.data||[]; PAYS = p.data||[];
   ORDS = o.data||[]; SCALLS = sc.data||[]; OTEAMS = tm.data||[]; SKUS = sk.data||[]; PROTS = pr.data||[]; OSET = st.data||[];
+  if(ME && ME.role==='admin'){ try{ buildSetSubmenu(); }catch(_e){} }
   /* 6.81.0 — אתרי הלקוח נטענים **מחוץ** למערך _q במכוון: הוא מפורק לפי
      מיקום ומקביל ל-LOAD_NAMES, וכל תוספת שם מזיזה את כל האינדקסים.
      136 שורות בסך הכול, ו-fire-and-forget מספיק — הבורר נחוץ רק כשנפתח

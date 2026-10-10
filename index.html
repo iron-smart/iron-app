@@ -1646,6 +1646,10 @@
 /* translateX שלילי הוא שמאלה — כיוון החץ ב-RTL. */
 #dealSheet .dl-tile:hover .dlt-ar, #tkSheet .dl-tile:hover .dlt-ar{ color:var(--navy); transform:translateX(-2px); }
 #dealSheet .dl-tile:focus-visible, #tkSheet .dl-tile:focus-visible{ outline:2px solid var(--navy); outline-offset:1px; }
+/* 6.228.0 — סקשן ההזמנה בכרטיס העסקה: העוטף שקוף לגריד (display:contents — ילדיו הם תאי הגריד,
+   כמו #oe-fupbox בכרטיס ההזמנה), ותא הסטטוס מחזיק שני שבבים בגובה שדה. */
+#dealSheet .dl-ordsec{ display:contents; }
+#dealSheet .dl-ordst{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; min-height:var(--ctl-h-sm); }
 /* ═══ 6.173.0 — תצוגה מקדימה של ההצעה ═══════════════════════════════
    רומן: "מסמך ההצעה עצמה תעשה אפשרות hover שאפשר לראות את כל ההצעה
    בלי באמת להכנס אליה."
@@ -3078,7 +3082,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.227.0</div>
+      <div class="ver">גרסה 6.228.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3150,7 +3154,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
     <nav aria-label="תפריט ראשי">
     <button class="nav-item active" data-tab="today"><span>דשבורד</span></button>
     <!-- CRM — שבעת מסכי ניהול הלקוחות והמכירה תחת קטגוריית אב אחת (רומן 29/07/2026) -->
-    <div class="nav-wrap" data-tabs="tasks,leads,deals,customers,contacts,meets,orders,mkt">
+    <div class="nav-wrap" data-tabs="tasks,leads,deals,customers,contacts,meets,mkt">
       <button class="nav-item" data-tab="tasks" aria-expanded="false">CRM <span class="nav-arrow"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span></button>
       <div class="submenu">
         <button data-tab="tasks"     onclick="gotoTab('tasks')">משימות</button>
@@ -3159,7 +3163,6 @@ tr.lb-on td{ background-color:#eef5fd !important; }
         <button data-tab="customers" onclick="gotoTab('customers')">לקוחות</button>
         <button data-tab="contacts"  onclick="gotoTab('contacts')">אנשי קשר</button>
         <button data-tab="meets"     onclick="gotoTab('meets')">פגישות</button>
-        <button data-tab="orders"    onclick="gotoTab('orders')">הזמנות</button>
         <button data-tab="mkt"       onclick="gotoTab('mkt')">דשבורד שיווק</button>
       </div>
     </div>
@@ -3208,7 +3211,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="viewas-2026-10-10a">גרסה 6.227.0</div>
+    <div class="side-foot" title="dealorder-2026-10-10a">גרסה 6.228.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3375,13 +3378,6 @@ tr.lb-on td{ background-color:#eef5fd !important; }
         <button class="add" id="addTaskBtn" title="משימה חדשה">+ משימה חדשה</button>
       </div>
       <div id="tasks-list"></div>
-    </section>
-
-    <!-- הזמנות — טבלה מלאה בסגנון הלוח הישן (איפיון 8א) -->
-    <section id="tab-orders" class="hidden">
-      <div id="ord-tools"></div>
-      <div class="chips" id="ord-chips"></div>
-      <div id="orders-list"></div>
     </section>
 
     <!-- לוגיסטיקה — לוח שנה, הזמנות ותיאומים וקריאות שירות בתוך אותו מסך (הערה 19) -->
@@ -4271,7 +4267,9 @@ window.pLevel  = k => { const P=window.PERM; if(typeof ME!=='undefined' && ME &&
    חסימה עם "נסה שוב" ו"יציאה"), ולכן אין מצב של נעילה שקטה. אדמין עוקף. */
 window.TAB_PERM = {
   today:'home.today', tasks:'crm.tasks', leads:'crm.leads', deals:'crm.deals',
-  customers:'crm.customers', contacts:'crm.contacts', meets:'crm.meets', orders:'crm.orders',
+  customers:'crm.customers', contacts:'crm.contacts', meets:'crm.meets',
+  /* 6.228.0 — 'orders' ירד (רומן, 10/10/2026): מסך ההזמנות של ה-CRM הוסר; crm.orders וילדיו
+     נשארים כמפתחות של orders_v ושל כרטיס ההזמנה. */
   skus:'sku.cards', docs:'docs', inv:'inv.stock', po:'inv.po', prc:'prc', pays:'acc.pays',
   sup:'acc.sup', sinv:'acc.sinv',
   /* 6.199.0 — דשבורד השיווק. mkt.dash הוא בן של שורש חדש (mkt) ולא של crm: בן של crm היה
@@ -4292,7 +4290,7 @@ window.navCanTab = t=>{
   const k = TAB_PERM[t];
   return k ? canView(k) : true;
 };
-window.NAV_LAND_ORDER = ['today','tasks','leads','deals','customers','contacts','meets','orders','logi','docs','skus','inv','po','pays','sup','sinv','prc','set','mkt'];
+window.NAV_LAND_ORDER = ['today','tasks','leads','deals','customers','contacts','meets','logi','docs','skus','inv','po','pays','sup','sinv','prc','set','mkt'];
 window.navLanding = ()=> NAV_LAND_ORDER.find(t=>navCanTab(t)) || null;
 window.canView = k => window.pLevel(k) >= 1;
 window.canEdit = k => window.pLevel(k) >= 2;
@@ -4783,7 +4781,7 @@ $('#logoutBtn').onclick = async ()=>{
    עד 6.1.0 הניווט התבצע דרך b.click() על כפתור התפריט, ולכן כל מסך היה חייב
    כפתור ראשי משלו בסרגל. משנכנסו שבעת מסכי ה-CRM תחת קטגוריית אב אחת, אין
    לכל מסך כפתור ראשי — ולכן הניווט עבר לפונקציה אחת שאינה תלויה ב-DOM. */
-const NAV_TABS = ['today','leads','deals','meets','customers','contacts','pays','sup','sinv','tasks','orders','logi','skus','inv','po','prc','docs','set','mkt'];
+const NAV_TABS = ['today','leads','deals','meets','customers','contacts','pays','sup','sinv','tasks','logi','skus','inv','po','prc','docs','set','mkt'];
 let CUR_TAB = 'today';
 /* התצוגה הפנימית הנוכחית של כל מסך שיש לו תתי-קטגוריות — לצורך סימון הפריט הפעיל */
 const NAV_VIEW = {
@@ -5480,8 +5478,8 @@ function toast(msg, kind, ms){
 }
 const IE_TABLES = {
   /* הזמנות וקריאות שירות נשמרות דרך הגשר אל המערכת הישנה — היא מקור האמת */
-  ord:   { bridge:'update_order',        schema:'ord', table:'orders',        arr:()=>ORDS,  ent:'הזמנה',        key:o=>o.order_number, rerender:()=>{ renderOrders(); renderLogi(); renderCal(); renderOps(); } },
-  scall: { bridge:'update_service_call', schema:'ord', table:'service_calls', arr:()=>SCALLS,ent:'קריאת שירות',  key:s=>s.call_number,  rerender:()=>{ renderOrders(); renderLogi(); renderCal(); } },
+  ord:   { bridge:'update_order',        schema:'ord', table:'orders',        arr:()=>ORDS,  ent:'הזמנה',        key:o=>o.order_number, rerender:()=>{ dlOrdSecSync(); renderLogi(); renderCal(); renderOps(); } },
+  scall: { bridge:'update_service_call', schema:'ord', table:'service_calls', arr:()=>SCALLS,ent:'קריאת שירות',  key:s=>s.call_number,  rerender:()=>{ dlOrdSecSync(); renderLogi(); renderCal(); } },
   lead:  { schema:'crm', table:'leads',         arr:()=>LEADS, ent:'ליד',          key:l=>l.full_name,    rerender:crmRepaint },
   task:  { schema:'crm', table:'tasks',         arr:()=>TASKS, ent:'משימה',        key:t=>t.name,         rerender:crmRepaint },
   deal:  { schema:'crm', table:'deals',         arr:()=>DEALS, ent:'עסקה',         key:d=>d.name,         rerender:crmRepaint },
@@ -6461,7 +6459,7 @@ window.mdDone = async (id, kind)=>{
   const s = (isOrd ? ORDS : SCALLS).find(x=>String(x.id)===String(id));
   if(s && r.data) Object.assign(s, r.data);
   toast('סומן כבוצע ✓');
-  try{ renderOrders(); renderLogi(); renderCal(); }catch(_e){}
+  try{ dlOrdSecSync(); renderLogi(); renderCal(); }catch(_e){}
   renderMyDay();
 };
 async function renderMyDay(){
@@ -6671,7 +6669,7 @@ function renderLogiScope(){
   const _tip = { sched: _sched.length, all: _all.length };
   box.innerHTML = [['sched','לתיאום'],['ship','משלוחים'],['all','לטיפול'],['open','השלמות'],['ret','החזרות לאיסוף']]
     .concat(etaOk?[['etastale','צפי שעבר']]:[])
-    .concat([['pend','ממתין לתשלום'],['done','הושלמו'],['every','הכל']])
+    .concat([['pend','טיוטא וממתין לתשלום'],['done','הושלמו'],['every','הכל']])
     .map(([k,l])=>{
       const tip = (_tip[k] != null && _tip[k] !== n[k])
         ? ` title="${n[k]} ביקורים · ${_tip[k]} הזמנות — הזמנות שקובצו לביקור משותף מוצגות בשורה אחת"` : '';
@@ -6773,7 +6771,7 @@ async function ordCloseIds(ids){
     ids.forEach(id=>{ const r=ORDS.find(o=>String(o.id)===String(id)); if(r) r.order_status='הושלם'; });
     toast('נסגרו '+upd+' הזמנות ✓');
   }
-  renderLogi(); renderOrders();
+  renderLogi(); dlOrdSecSync();
 }
 window.ordBulkDone = async ()=>{
   const ids=[...LOGI_SEL];
@@ -6794,7 +6792,7 @@ window.ordQuickDone = async (id)=>{
   LOGI_SEL.delete(String(id));
   if(r) await openRefresh(r.order_number);
   toast('ההזמנה נסגרה ✓');
-  renderLogi(); renderOrders();
+  renderLogi(); dlOrdSecSync();
   /* סגירה בודדת עוברת ב-ord.order_patch, ו**סטטוס** הוא אחד מארבעת השדות
      שהוא מפיץ לאחיות בביקור משותף — כך אומר הטקסט שהמשתמש מאשר ב-visJoin.
      בלי המשיכה הזאת האחיות נשארות "בתהליך" על המסך אף שנסגרו בשרת. */
@@ -10832,7 +10830,7 @@ window.uploadMedia = (kind, parentId)=>{
     await loadDocFiles(true);
     if(bad.length) await sysAlert('הועלו '+okN+' קבצים.\nלא הועלו:\n'+bad.join('\n')); else toast('הועלו '+okN+' קבצים ✓');
     try{ renderDocs(); }catch(_e){}
-    if(kind==='call') openScall(parentId); else openOrd(parentId,'sales');
+    if(kind==='call') openScall(parentId); else openOrd(parentId);
   };
   document.body.appendChild(inp);
   inp.click();
@@ -11425,7 +11423,7 @@ window.createProtocol = async (orderId, ctx)=>{
        להציג את הסטטוס הישן עד רענון דף — אותה מחלקה של VIS_GRP. */
     if(data._contact_status) o.contact_status = data._contact_status;
   }
-  renderDocs(); renderOps(); openOrd(orderId, ctx||'sales');
+  renderDocs(); renderOps(); openOrd(orderId, ctx||undefined);
 };
 
 /* ===== מזהה הבנייה (6.85.0) =====
@@ -11435,7 +11433,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'viewas-2026-10-10a';
+const BUILD_ID = 'dealorder-2026-10-10a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -17784,7 +17782,7 @@ function renderAllViews(){
   crmAutoArm();
   /* 6.208.0 — H6: שני המסכים שעברו לכרטיסים במובייל נצבעים מחדש בחציית 760 */
   try{ siPaint(); }catch(_e){} try{ spiPaint(); }catch(_e){}
-  renderStats(); renderToday(); renderLeads(); renderCustomers(); renderTasks(); renderDeals(); renderMeets(); renderConts(); renderPays(); renderOrdersTools(); renderOrders(); renderSkuTools(); renderSkus(); renderLogi(); renderDocs(); renderInvIfLoaded(); renderPrcIfLoaded(); renderDash();
+  renderStats(); renderToday(); renderLeads(); renderCustomers(); renderTasks(); renderDeals(); renderMeets(); renderConts(); renderPays(); dlOrdSecSync(); renderSkuTools(); renderSkus(); renderLogi(); renderDocs(); renderInvIfLoaded(); renderPrcIfLoaded(); renderDash();
 }
 /* עימוד — כפתור "הצג עוד" בכל מסכי הרשימות (הערת רומן 28/07) */
 const PGSTEP=300; const PGL={};
@@ -19225,7 +19223,7 @@ window.openCust = async (id)=>{
   const _co = custOrders(c);
   const _isDone = o => ['הושלם','בוטל'].includes(o.order_status);
   const ordOpen = _co.filter(o=>!_isDone(o)), ordPast = _co.filter(_isDone);
-  const ordRow = o=>`<div class="row" style="cursor:pointer" onclick="goCard(()=>openOrd('${jsq(o.id)}'))"><span class="k">${esc(o.order_number)}${o.scheduled_date?' · '+fmtD(o.scheduled_date):''}</span><span class="v"><span class="pill ${ordStClass(o.order_status)}">${esc(o.order_status||'—')}</span></span></div>`;
+  const ordRow = o=>`<div class="row" style="cursor:pointer" onclick="goCard(()=>openOrd('${jsq(o.id)}'))"><span class="k">${esc(o.order_number)}${o.scheduled_date?' · '+fmtD(o.scheduled_date):''}</span><span class="v">${o.erp_status?`<span class="pill p-violet" title="הסטטוס בפריוריטי — מתעדכן בסנכרון">${PRI_ICO}${esc(o.erp_status)}</span> `:''}<span class="pill ${ordStClass(o.order_status)}">${esc(o.order_status||'—')}</span></span></div>`;
 
   const pid = String(c.priority_id||'').trim(), ph = phoneKey(c.phone);
   const cs = SCALLS.filter(s => (pid && String(s.customer_number||'').trim()===pid) || (ph && phoneKey(s.phone)===ph));
@@ -20001,7 +19999,7 @@ window.finAddNote = async (ord, el) => {
    מאחורי crm.orders.terms ולא acc.pays — כדי שאיש מכירות יזין תנאים
    בלי גישה לסכומים. ord.order_finance_meta מחזיקה רק תנאי והערה. */
 window.ordSetTerm = async (on, code) => {
-  if(!window.canEdit('crm.orders.terms')) return finNoEdit();
+  if(!window.canEdit('crm.orders.terms') && !ordMineOn(on)) return finNoEdit();
   const was = finmWas(on, 'pay_code');
   finmApply(on, { pay_code: code || null });
   await finDbw(()=>sb.schema('ord').from('order_finance_meta')
@@ -20014,8 +20012,10 @@ window.ordSetTerm = async (on, code) => {
   if(code) await finSeedBeats(on, code);
 };
 function ordTermsBlock(o){
-  if(!window.canView('crm.orders.terms')) return '';
-  const m = finmOf(o.order_number), ed = window.canEdit('crm.orders.terms'), on = o.order_number;
+  /* 6.228.0 — "או ההזמנה שלי": הזמנה המקושרת לעסקה שאני בעליה/שותף בה (ordMine — מראה של
+     ord.order_mine שבשרת). השרת אוכף ב-order_finance_v/meta/notes וב-order_beats_set; כאן רק ציור. */
+  if(!window.canView('crm.orders.terms') && !ordMine(o)) return '';
+  const m = finmOf(o.order_number), ed = window.canEdit('crm.orders.terms') || ordMine(o), on = o.order_number;
   const sel = ed
     ? '<select id="oe-payterm" onchange="ordSetTerm(\'' + jsq(o.order_number) + '\', this.value)"><option value="">— בחר —</option>' +
       PTERMS.map(t=>'<option value="' + esc(t.code) + '"' + (String(m.pay_code||'')===t.code?' selected':'') + '>' + esc(t.name) + '</option>').join('') + '</select>'
@@ -20048,7 +20048,7 @@ function ordTermsBlock(o){
         '<option value="n60">שוטף + 60</option><option value="n90">שוטף + 90</option>' +
         '<option value="manual">תאריכים ידניים / צ׳קים</option>' +
       '</select></div>' +
-      '<div><label>&nbsp;</label><button type="button" class="ghost" onclick="ordBuildPlan(\'' + jsq(on) + '\')">בנה לוח פעימות</button></div>'
+      '<div><label>&nbsp;</label><button type="button" class="ghost" onclick="ordBuildPlan(\'' + jsq(on) + '\', this)">בנה לוח פעימות</button></div>'
     : '';
   return '<div class="form-sep">תשלום</div>' +
          '<div><label>תנאי תשלום</label>' + sel + '</div>' +
@@ -20063,7 +20063,7 @@ function ordTermsBlock(o){
 /* שתי הכתיבות עוברות דרך finmApply ולא נוגעות ב-FIN ישירות — FIN ו-FINM_BY
    הם שני מטמונים נפרדים לאותו נתון, וזה הבאג שתוקן ב-6.85.2. */
 window.ordSetMethod = async (on, val) => {
-  if(!window.canEdit('crm.orders.terms')) return finNoEdit();
+  if(!window.canEdit('crm.orders.terms') && !ordMineOn(on)) return finNoEdit();
   const v = String(val||'').trim() || null;
   const was = finmWas(on, 'pay_method');
   if(String(was||'') === String(v||'')) return;
@@ -20072,7 +20072,7 @@ window.ordSetMethod = async (on, val) => {
   const keepInst = payHasInst(v) ? (finmOf(on).pay_installments || null) : null;
   const wasInst  = finmWas(on, 'pay_installments');
   finmApply(on, { pay_method: v, pay_installments: keepInst });
-  const w = $('#oe-payinst-wrap'); if(w) w.classList.toggle('hidden', !payHasInst(v));
+  document.querySelectorAll('#oe-payinst-wrap').forEach(w=> w.classList.toggle('hidden', !payHasInst(v)));   /* 6.228.0 — שני עותקים (עסקה + הזמנה) */
   await finDbw(()=>sb.schema('ord').from('order_finance_meta')
       .upsert({ order_number:on, pay_method:v, pay_installments:keepInst, updated_by:finMe(), updated_at:finNowIso() }, { onConflict:'order_number' }),
     v ? ('אופן החיוב עודכן ל' + v) : 'אופן החיוב נוקה',
@@ -20081,7 +20081,7 @@ window.ordSetMethod = async (on, val) => {
 };
 
 window.ordSetInst = async (on, val) => {
-  if(!window.canEdit('crm.orders.terms')) return finNoEdit();
+  if(!window.canEdit('crm.orders.terms') && !ordMineOn(on)) return finNoEdit();
   /* Number('') הוא 0 ו-isFinite(0) אמת — ולכן ריק היה נשמר כאפס תשלומים.
      trim לפני ההשוואה, ובדיקה מפורשת על ריק. (המלכודת שחזרה שלוש פעמים
      במודול ההתראות, CLAUDE.md פרק 7) */
@@ -20106,10 +20106,13 @@ window.ordSetInst = async (on, val) => {
    הספירה היא מהטבלה הגולמית ord.order_payments, שהפוליסי שלה הוא
    is_approved() ולכן קריאה לכל עובד מאושר — בשונה מה-view.
    (ממצא Fable, 19/08/2026) */
-window.ordBuildPlan = async on => {
-  if(!window.canEdit('crm.orders.terms')) return finNoEdit();
-  const adv = Number(($('#oe-bldadv')||{}).value || 0);
-  const bal = String(($('#oe-bldbal')||{}).value || '');
+window.ordBuildPlan = async (on, btn) => {
+  if(!window.canEdit('crm.orders.terms') && !ordMineOn(on)) return finNoEdit();
+  /* 6.228.0 — הבלוק מצויר גם בכרטיס העסקה; כשכרטיס ההזמנה נפתח ממנו (goCard) שני העותקים
+     ב-DOM ו-$('#oe-bldadv') היה קורא את הבורר של הכרטיס **המוסתר** (מחלקת 6.135.0). */
+  const _g = (btn && btn.closest) ? (btn.closest('.form-grid') || document) : document;
+  const adv = Number((_g.querySelector('#oe-bldadv')||{}).value || 0);
+  const bal = String((_g.querySelector('#oe-bldbal')||{}).value || '');
   if(!bal) return toast('בחר את תנאי היתרה');
   if(bal === 'manual') return toast('תאריכים ידניים וצ׳קים נקבעים בעורך לוח הפעימות, במסך התשלומים');
   const B = PAY_BAL_OPTS[bal];
@@ -21284,6 +21287,7 @@ async function payAutoRefresh(){
     beatsIndex(bts.data || []);
     reIndexAux();
     renderPays();
+    dlOrdSecSync();   /* 6.228.0 */
     PAY_AUTO_AT = Date.now();
     payAutoStamp();
   }catch(_e){ payAutoStamp(); }
@@ -21371,41 +21375,11 @@ function custOrders(c){
   const pid = String(c.priority_id||'').trim(), ph = phoneKey(c.phone);
   return ORDS.filter(o => (pid && String(o.customer_number||'').trim()===pid) || (ph && phoneKey(o.phone)===ph));
 }
-/* ===== מסנני ההזמנות המלאים — כמו בלוח הישן (איפיון 8א) ===== */
-const OF_EMPTY = { q:'', team:'', region:'', status:'', contact:'', dateFrom:'', dateTo:'', odFrom:'', odTo:'', sort:'', col:'', dir:1 };
-let OF = Object.assign({}, OF_EMPTY, { chip:'active' });
-const ACTIVE_ORD = o => !['הושלם','בוטל','מבוטלת'].includes(o.order_status);
-/* פריוריטי מייצר גם מסמכי מלאי פנימיים — למשל "ריקון" על הלקוח הפנימי Goods ("מלאי חופשי"),
-   בלי תאריך, בלי שורות ובלי סכום. אלה אינם הזמנות לקוח ולכן אינם מוצגים במסך ההזמנות. */
-const SYS_CUSTOMERS = ['Goods'];
-const REAL_ORDER = o => !SYS_CUSTOMERS.includes(String(o.customer_number||'').trim());
-const ORDER_SORTS = [['','מס\' הזמנה (חדשה ראשונה)'],['order_date','תאריך הזמנה (חדש ראשון)'],['scheduled','תאריך מתואם (קרוב ראשון)'],['supply_end','תאריך דדליין'],['customer','שם לקוח (א-ב)'],['city','עיר (א-ב)'],['status','סטטוס הזמנה']];
-function renderOrdersTools(){
-  const el=$('#ord-tools'); if(!el) return;
-  el.innerHTML = `<div class="tools-bar">
-    <div class="search"><input id="fQ" placeholder="חיפוש: הזמנה, לקוח, טלפון, עיר…" value="${esc(OF.q)}"></div>
-    <select id="fTeam"><option value="">כל הצוותים</option><option value="__none__" ${OF.team==='__none__'?'selected':''}>לא משויך</option>${OTEAMS.map(t=>`<option ${OF.team===t.name?'selected':''}>${esc(t.name)}</option>`).join('')}</select>
-    <select id="fRegion"><option value="">כל האזורים</option>${REGIONS.map(r=>`<option ${OF.region===r?'selected':''}>${r}</option>`).join('')}</select>
-    <select id="fStatus"><option value="">כל הסטטוסים</option>${ORDER_STATUSES.map(s=>`<option ${OF.status===s?'selected':''}>${s}</option>`).join('')}</select>
-    <select id="fContact"><option value="">יצרנו קשר? — הכל</option>${CONTACT_STATUSES.map(s=>`<option ${OF.contact===s?'selected':''}>${s}</option>`).join('')}</select>
-    <span class="tb-group"><span class="tb-lbl">🧾 תאריך הזמנה:</span>
-    <input type="date" id="fOdFrom" value="${esc(OF.odFrom)}"><span class="tb-lbl">עד</span>
-    <input type="date" id="fOdTo" value="${esc(OF.odTo)}"></span>
-    <span class="tb-group"><span class="tb-lbl">📅 מתואם:</span>
-    <input type="date" id="fDateFrom" value="${esc(OF.dateFrom)}"><span class="tb-lbl">עד</span>
-    <input type="date" id="fDateTo" value="${esc(OF.dateTo)}"></span>
-    <span class="tb-group"><span class="tb-lbl">↕️ מיון:</span>
-    <select id="fSort">${ORDER_SORTS.map(([v,l])=>`<option value="${v}" ${(!OF.col&&OF.sort===v)?'selected':''}>${l}</option>`).join('')}</select></span>
-    <button type="button" class="tb-clear" id="fClear" title="מאפס את כל הסינונים והמיון">✕ ניקוי סינון</button>
-  </div>`;
-  debounceSearch($('#fQ'), ()=>{ OF.q=$('#fQ').value; renderOrders(); });
-  [['fTeam','team'],['fRegion','region'],['fStatus','status'],['fContact','contact'],['fOdFrom','odFrom'],['fOdTo','odTo'],['fDateFrom','dateFrom'],['fDateTo','dateTo']].forEach(([id,k])=>{
-    $('#'+id).addEventListener('change', ()=>{ OF[k]=$('#'+id).value; renderOrders(); });
-  });
-  /* בחירה בתפריט המיון מבטלת מיון-עמודה שנבחר בלחיצה על כותרת, כדי שלא יתנגשו */
-  $('#fSort').addEventListener('change', ()=>{ OF.sort=$('#fSort').value; OF.col=''; renderOrders(); });
-  $('#fClear').addEventListener('click', ()=>{ const c=OF.chip; OF=Object.assign({}, OF_EMPTY, { chip:c }); renderOrdersTools(); renderOrders(); });
-}
+/* 6.228.0 — מסך "הזמנות" של ה-CRM ירד (רומן, 10/10/2026): המסננים (OF_EMPTY · ACTIVE_ORD · REAL_ORDER ·
+   ORDER_SORTS · renderOrdersTools · filteredOrders · ordChips · setOrdFilter · renderOrders) נמחקו.
+   ⚠️ OF **נשאר**: הוא מצב המיון-לפי-עמודה של טבלת הלוגיסטיקה (ordHead קורא OF.col/OF.dir,
+   ordSortBy כותב) — נמדד שזה הצרכן השני שלו, ולא רק המסך שירד. */
+let OF = { col:'', dir:1 };
 /* מיון בלחיצה על כותרת עמודה — לחיצה נוספת הופכת את הכיוון.
    31/07/2026: המאזין הועבר להאצלה ברמת המסמך (data-sk) במקום onclick מוטבע בכותרת,
    כדי שהלחיצה תיתפס גם על חץ המיון ועל תוכן פנימי אחר בכותרת. */
@@ -21417,7 +21391,7 @@ document.addEventListener('click', function(e){
 window.ordSortBy = key => {
   if(OF.col===key) OF.dir = -OF.dir;
   else { OF.col = key; OF.dir = ['order_date','scheduled_date','order_number'].includes(key) ? -1 : 1; }
-  renderOrdersTools(); renderOrders(); renderLogi();
+  renderLogi();
 };
 /* 31/07/2026 — מיון בלחיצה על כותרת עבד רק במסך ההזמנות; בלוח הלוגיסטיקה הכותרות
    נראו זהות אך הרשימה נבנתה בנפרד ובלי מיון. הפונקציה הזו משתפת את אותו מיון. */
@@ -21431,61 +21405,6 @@ window.ordSortList = list => {
   else list.sort(cs);
   return list;
 };
-function filteredOrders(){
-  const t=todayStr(), wk=addDaysIso(t,7);
-  let list=ORDS.filter(REAL_ORDER);
-  if(OF.chip==='active') list=list.filter(ACTIVE_ORD);
-  else if(OF.chip==='nocontact') list=list.filter(o=>ACTIVE_ORD(o)&&o.contact_status==='טרם נוצר קשר');
-  else if(OF.chip==='nosched') list=list.filter(o=>ACTIVE_ORD(o)&&(!o.team||!o.scheduled_date));
-  else if(OF.chip==='protocol') list=list.filter(o=>ACTIVE_ORD(o)&&['נוצר קשר ראשוני לפרוטוקול','פרוטוקול חתום ממתין לתיאום'].includes(o.contact_status));
-  else if(OF.chip==='week') list=list.filter(o=>ACTIVE_ORD(o)&&o.scheduled_date&&o.scheduled_date>=t&&o.scheduled_date<wk);
-  else if(OF.chip==='done') list=list.filter(o=>o.order_status==='הושלם');
-  if(OF.team) list=list.filter(o=> OF.team==='__none__' ? (!o.team && !o.team2) : (o.team===OF.team || o.team2===OF.team));
-  if(OF.region) list=list.filter(o=>o.region===OF.region);
-  if(OF.status) list=list.filter(o=>o.order_status===OF.status);
-  if(OF.contact) list=list.filter(o=>o.contact_status===OF.contact);
-  if(OF.q){ const q=OF.q.toLowerCase(); list=list.filter(o=>[o.order_number,o.customer_name,o.phone,o.city,o.contact_name,o.address,o.customer_address,o.region,o.team,o.team2,o.order_notes].some(v=>v&&String(v).toLowerCase().includes(q))); }
-  if(OF.odFrom) list=list.filter(o=>o.order_date && o.order_date>=OF.odFrom);
-  if(OF.odTo) list=list.filter(o=>o.order_date && o.order_date<=OF.odTo);
-  if(OF.dateFrom) list=list.filter(o=>o.scheduled_date && o.scheduled_date>=OF.dateFrom);
-  if(OF.dateTo) list=list.filter(o=>o.scheduled_date && o.scheduled_date<=OF.dateTo);
-  const cmpStr=(a,b,k,dir)=>{ const va=a[k]||'', vb=b[k]||''; if(!va&&!vb) return 0; if(!va) return 1; if(!vb) return -1; return dir*String(va).localeCompare(String(vb),'he',{numeric:true}); };
-  /* מיון שנבחר בלחיצה על כותרת עמודה גובר על תפריט המיון */
-  if(OF.col){
-    const k=OF.col, d=OF.dir;
-    if(k==='order_status') list.sort((a,b)=>d*(ORDER_STATUSES.indexOf(a.order_status)-ORDER_STATUSES.indexOf(b.order_status)));
-    else if(k==='contact_status') list.sort((a,b)=>d*(CONTACT_STATUSES.indexOf(a.contact_status)-CONTACT_STATUSES.indexOf(b.contact_status)));
-    else if(k==='time_slot') list.sort((a,b)=>d*(TIME_SLOTS.indexOf(a.time_slot)-TIME_SLOTS.indexOf(b.time_slot)));
-    else list.sort((a,b)=>cmpStr(a,b,k,d));
-    return list;
-  }
-  switch(OF.sort){
-    case 'order_date': list.sort((a,b)=>cmpStr(a,b,'order_date',-1)); break;
-    case 'scheduled': list.sort((a,b)=>cmpStr(a,b,'scheduled_date',1)); break;
-    case 'supply_end': list.sort((a,b)=>cmpStr(a,b,'supply_end_date',1)); break;
-    case 'customer': list.sort((a,b)=>cmpStr(a,b,'customer_name',1)); break;
-    case 'city': list.sort((a,b)=>cmpStr(a,b,'city',1)); break;
-    case 'status': list.sort((a,b)=>ORDER_STATUSES.indexOf(a.order_status)-ORDER_STATUSES.indexOf(b.order_status)); break;
-    default: list.sort((a,b)=>String(b.order_number||'').localeCompare(String(a.order_number||'')));
-  }
-  return list;
-}
-function ordChips(){
-  const RO=ORDS.filter(REAL_ORDER), act=RO.filter(ACTIVE_ORD), t=todayStr(), wk=addDaysIso(t,7);
-  const scOpen=SCALLS.filter(s=>!['הושלם','הושלמה','בוטלה','סגורה'].includes(s.status));
-  const chips=[
-    ['active','פעילות',act.length],
-    ['nocontact','טרם נוצר קשר',act.filter(o=>o.contact_status==='טרם נוצר קשר').length],
-    ['nosched','ממתין לשיבוץ',act.filter(o=>!o.team||!o.scheduled_date).length],
-    ['protocol','פרוטוקול',act.filter(o=>['נוצר קשר ראשוני לפרוטוקול','פרוטוקול חתום ממתין לתיאום'].includes(o.contact_status)).length],
-    ['week','השבוע הקרוב',act.filter(o=>o.scheduled_date&&o.scheduled_date>=t&&o.scheduled_date<wk).length],
-    ['done','הושלמו',RO.filter(o=>o.order_status==='הושלם').length],
-    ['calls','קריאות שירות',scOpen.length],
-    ['all','הכל',RO.length],
-  ];
-  $('#ord-chips').innerHTML = chips.map(([k,l,n])=>`<button class="chip ${OF.chip===k?'active':''}" onclick="setOrdFilter('${k}')">${l} <span class="n">${n}</span></button>`).join('');
-}
-window.setOrdFilter = f => { OF.chip=f; renderOrders(); };
 /* תבניות וואטסאפ מההגדרות — תמיכה מלאה ב-{שם} {תאריך} {שעה} {קישור} (תיקון ממצא 19) */
 function waTpl(key,fallback){ const r=OSET.find(x=>x.key===key); return (r&&r.value)||fallback; }
 function waFill(tpl,v){
@@ -21539,7 +21458,7 @@ window.scQuickDone = async (id)=>{
   const s = SCALLS.find(x=>String(x.id)===String(id));
   if(s) Object.assign(s, (res&&res.row)||{ status:'הושלם' });
   toast('הקריאה סומנה כהושלמה ✓');
-  renderOrders(); renderLogi(); renderCal();
+  dlOrdSecSync(); renderLogi(); renderCal();
 };
 function scTable(list){
   if(!list.length) return '<div class="empty">אין קריאות שירות בסינון הזה</div>';
@@ -21827,7 +21746,7 @@ window.saveScall = async (id)=>{
     });
   }
   cardSaved('scall', id, null);
-  renderOrders(); renderLogi(); renderCal();
+  dlOrdSecSync(); renderLogi(); renderCal();
 };
 /* 6.24.6 — פתיחת קריאת שירות חדשה מהמערכת. קריאות שירות אינן מגיעות מפריוריטי,
    ולכן כאן כל השדות פתוחים לעריכה. השמירה עוברת ב-ord.service_call_create
@@ -22122,7 +22041,7 @@ window.saveNewScall = async ()=>{
   if(data && data.id) SCALLS.unshift(data);
   closeCards();
   toast('קריאת שירות נפתחה ✓');
-  renderOrders(); renderLogi(); renderCal();
+  dlOrdSecSync(); renderLogi(); renderCal();
 };
 /* 760 ולא 700: ה-CSS עובר לתצוגת כרטיסים ב-760px, ובפער שביניהם ה-JS בנה
    טבלה בזמן שהעיצוב כבר היה במובייל. שני המספרים חייבים להיות זהים. */
@@ -22264,26 +22183,12 @@ function ordTable(list,opts){
     </tr>`;}).join('');
   return `<div class="tbl-wrap"><table class="tbl"><thead><tr>${ordHead(SEL)}</tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('orders',list.length,'הזמנות')}`;
 }
-function renderOrders(){
-  /* מפת הקיפול שייכת למסך הלוגיסטיקה בלבד. בלי האיפוס הזה הנציג הופיע
-     כאן עם תגית "3 הזמנות" בעוד שלוש השורות מוצגות בנפרד, ולחיצה עליה
-     הפעילה קיפול על טבלה אחרת (ממצא fable 13/08/2026). */
-  window.LOGI_FOLD = {};
-  ordChips();
-  if(OF.chip==='calls'){
-    let list = SCALLS.filter(s=>!['הושלם','הושלמה','בוטלה','סגורה'].includes(s.status));
-    if(OF.q){ const q=OF.q.toLowerCase(); list = SCALLS.filter(s=>[s.call_number,s.customer_name,s.phone,s.city,s.product].some(v=>v&&String(v).toLowerCase().includes(q))); }
-    $('#orders-list').innerHTML = wideScreen() ? scTable(list) : capped(list, scRow, 'אין קריאות שירות בסינון הזה');
-    return;
-  }
-  const list = filteredOrders();
-  $('#orders-list').innerHTML = wideScreen() ? ordTable(list,{ctx:'sales'}) : capped(list, o=>ordRow(o,'sales'), 'אין הזמנות בסינון הזה');
-}
 /* כרטיס הזמנה מלא — כמו במערכת ההזמנות והתיאומים הישנה (הערות 20–21):
    שדות פריוריטי אפורים ונעולים, שדות תפעול לעריכה, פירוט פריטים אמיתי מפריוריטי */
-/* 6.21.0 — הכרטיס מקבל פרופיל תצוגה: 'logi' ממסך ההזמנות והתיאומים, 'sales' ממסך
-   ההזמנות של ה-CRM, ו-null מכל כניסה אחרת (לוח מחוונים, לוח שנה, כרטיס לקוח, חיפוש)
-   שבה אין הקשר מסך. הפרופיל רק מצמצם תצוגה — מה שמותר לערוך נקבע בהרשאה בלבד. */
+/* 6.21.0 — הכרטיס מקבל פרופיל תצוגה: 'logi' ממסך ההזמנות והתיאומים, ו-null מכל כניסה
+   אחרת (לוח מחוונים, לוח שנה, כרטיס לקוח, כרטיס עסקה, חיפוש) שבה אין הקשר מסך.
+   6.228.0: הפרופיל 'sales' ירד יחד עם מסך ההזמנות של ה-CRM (רומן, 10/10/2026).
+   הפרופיל רק מצמצם תצוגה — מה שמותר לערוך נקבע בהרשאה בלבד. */
 /* 6.190.0 — סנכרון הזמנה בודדת (רומן: "מיקי מדווח שלפעמים לא מתרענן").
    שני מסלולים, שניהם explicit: priority-sync v30 (כותרת: סטטוס, מחיר,
    כתובות, לקוח) ו-orders-detail-sync (פירוט השורות והדו-שיח). אחרי שניהם
@@ -22313,7 +22218,7 @@ window.ordSyncOne = async (id, ctx)=>{
   if(row) Object.assign(o, row);
   /* 6.190.1 — גם השורות הפתוחות: "בוצע" מחליט לפי OPEN_BY, והפירוט זה עתה התרענן */
   try{ await openRefresh(o.order_number); }catch(_e){}
-  try{ renderOrders(); renderLogi(); renderCal(); }catch(_e){}
+  try{ dlOrdSecSync(); renderLogi(); renderCal(); }catch(_e){}
   if(document.getElementById('ordSheet') && !document.getElementById('ordModal').classList.contains('hidden')) openOrd(id, ctx||undefined);
   const upd = a.j && a.j.orders_updated, miss = a.j && a.j.explicit_missing && a.j.explicit_missing.length;
   /* 6.190.1 — skipped אינו הצלחה: הסנכרון השעתי מחזיק את הנעילה (5 דקות
@@ -22324,25 +22229,11 @@ window.ordSyncOne = async (id, ctx)=>{
   else if(busy) toast((upd ? 'הכותרת עודכנה; ' : '') + 'פירוט ההזמנה תפוס בסנכרון השעתי — נסו שוב בעוד דקה');
   else toast(upd ? 'ההזמנה עודכנה מפריוריטי ✓' : 'ההזמנה זהה לפריוריטי — אין שינוי');
 };
-/* 6.217.0 — במובייל, בכרטיס שנפתח ממסך המכירות (ctx='sales'), סקשני הלוגיסטיקה (שדות למילוי · תיאום ·
-   אספקה ומחסן · ביקור ההשלמה) יורדים לסוף הגריד: איש המכירות רואה קודם לקוח, תנאי תשלום, דו-שיח ופירוט.
-   הטכנאי (בלי ctx, מ"היום שלי") ומסך הלוגיסטיקה לא נוגעים — אצלם התיאום הוא הסיבה לפתוח את הכרטיס.
-   DOM בלבד אחרי הציור: ids, ORD_CARD_FIELDS ו-snapshot לא זזים. סקשן = form-sep וכל מה שאחריו עד ה-form-sep הבא. */
-const ORD_LOGI_SECS = ['שדות למילוי', 'תיאום', 'אספקה ומחסן', 'מחסן'];
-function ordSalesMobileOrder(grid){
-  if(!grid) return;
-  const move = []; let on = false;
-  for(const el of [...grid.children]){
-    if(el.classList.contains('form-sep')){ const t = (el.textContent || '').trim(); on = ORD_LOGI_SECS.includes(t); }
-    if(on) move.push(el);
-  }
-  move.forEach(el=> grid.appendChild(el));
-}
 window.openOrd = (id, ctx)=>{
   const o = ORDS.find(x=>x.id===id); if(!o) return;
-  ctx = (ctx==='logi' || ctx==='sales') ? ctx : null;
+  ctx = ctx==='logi' ? ctx : null;   /* 6.228.0 — הפרופיל 'sales' ירד עם מסך ההזמנות של ה-CRM */
   const showSales  = ctx !== 'logi';   /* מחיר, אימייל, דו שיח, חשבונית, מסמכים, כרטיס לקוח */
-  const showSupply = ctx !== 'sales';  /* אספקה והערות מחסן */
+  const showSupply = true;             /* אספקה והערות מחסן — 6.228.0: תמיד, הפרופיל 'sales' ירד */
   const cust = CUSTS.find(c=> (c.priority_id && String(c.priority_id).trim()===String(o.customer_number||'').trim()) || (phoneKey(c.phone) && phoneKey(c.phone)===phoneKey(o.phone)) );
   const others = ORDS.filter(x=>x.id!==o.id && x.customer_name && x.customer_name===o.customer_name && !['הושלם','בוטל','מבוטלת'].includes(x.order_status));
   const teamVals = [...new Set([...OTEAMS.filter(t=>t.active!==false).map(t=>t.name), ...uniqVals(ORDS,'team',o.team)])];
@@ -22452,7 +22343,6 @@ window.openOrd = (id, ctx)=>{
   if(bSave) bSave.classList.toggle('hidden', !anyEditable);
   /* 6.190.1 — למי שיש "בוצע" ואין שדות, ההערה "אין לך הרשאת עריכה" סותרת את הכפתור */
   if(bNo)   bNo.classList.toggle('hidden', anyEditable || !!document.getElementById('done-btn-'+id));
-  if(ctx === 'sales' && !wideScreen()) ordSalesMobileOrder($('#ordSheet .form-grid'));
   mountCard('ordModal', ()=>openOrd(id, ctx));
   loadOrderItems(o.order_number);
   loadVisit(o.order_number, o.id, ctx);
@@ -22515,7 +22405,7 @@ async function visRefreshOrders(){
     if(error || !data) return;
     const by = {}; data.forEach(r=>{ by[r.id] = r; });
     ORDS.forEach(o=>{ if(by[o.id]) Object.assign(o, by[o.id]); });
-    try{ renderOrders(); renderLogi(); renderCal(); renderOps(); }catch(_e){}
+    try{ dlOrdSecSync(); renderLogi(); renderCal(); renderOps(); }catch(_e){}
   }catch(_e){}
 }
 async function loadVisit(orderNumber, id, ctx){
@@ -22764,7 +22654,7 @@ window.fupFlag = async (id, val)=>{
      מחדש במקום לנחש כאן, כדי שהשבב, הלוח והכרטיס יראו מצב אחד ויחיד. */
   await openRefresh(o.order_number);
   window.fupBoxPaint(o, val !== false);
-  renderOrders(); renderLogi(); renderCal(); renderOps();
+  dlOrdSecSync(); renderLogi(); renderCal(); renderOps();
 };
 /* ===== חוזה ה-snapshot של כרטיס ההזמנה (6.85.0) =====
    הועבר לכאן מ-saveScall, שבו הוא רץ בפרודקשן מאז 6.82.0.
@@ -22840,7 +22730,7 @@ window.saveOrd = async (id)=>{
   }
   await openRefresh(o.order_number);
   cardSaved('ord', id, null);
-  renderOrders(); renderLogi(); renderCal(); renderOps();
+  dlOrdSecSync(); renderLogi(); renderCal(); renderOps();
   /* אם ההזמנה חברה בביקור משותף, השרת עדכן גם את אחיותיה — והשורות
      המקומיות שלהן מיושנות עד שנמשוך אותן מחדש. */
   visRefreshOrders();
@@ -23136,6 +23026,59 @@ function renderDlFilters(){
    בטבלה ירדה — ולצידו "עודכן מפריוריטי dd.mm.yy" מ-priority_quote_synced_at, שנכתב ב-deal-quote-refresh v8
    רק כשמשהו מפריוריטי השתנה (הסמנטיקה של erp_synced_at). שני צרכנים: openDeal · dlLiveApply.
    ⚠️ תצוגה בלבד — אין כותב במסך; העמודה היא מראה של STATDES. */
+/* ═══ 6.228.0 — סקשן "ההזמנה" ו"תשלום" בכרטיס העסקה (רומן, 10/10/2026) ═══════════════
+   "אין לי צורך במסך הזמנות ב-CRM — איש המכירות צריך לראות את ההזמנה ואת התשלום מתוך העסקה."
+   🔴 הקישור הוא priority_quote_id (ORDERS.CPROFNUM, v32) — לא לקוח: 12 מ-42 ההזמנות המאושרות
+      ב-22/08 היו דו-משמעיות לפי לקוח. נמדד 10/10: 172 הזמנות מקושרות, הצעה אחת (PQ26000421)
+      עם שתי הזמנות (אחת מבוטלת) ⇒ dlOrdOf מעדיף סטטוס מוצג, ואז החדשה.
+   🟢 סקשן "תשלום" = ordTermsBlock(o) **אותה פונקציה** — אותם ids, אותם כותבים (finmApply · FINM_BY),
+      לא עותק. הגריד: 4 תאים (אפס תאים ריקים) — הכרעת רומן על הסקיצה.
+   ⚠️ DL_ORD_SHOW היא רשימת היתר: מיקור חוץ · מיקור הושלם · נסגר-מ.קודמת · מבוטלת מקבלות שורת
+      הסבר ולא סקשן. בלי הזמנה — מדיניות החיוב (רומן): "חיוב רק אחרי פתיחת הזמנה בטיוטא/ממתין לתשלום". */
+const DL_ORD_SHOW = ['מאושרת לקוח','שולמה','שולמה חלקית','פתיחה חוזרת','הושלם','טיוטא','ממתין לתשלום'];
+/* "ההזמנה שלי" — מראה של ord.order_mine שבשרת: הזמנה שמספר ההצעה שלה שייך לעסקה שאני בעליה או
+   שותף בה (dlOwnersOf — crm.deal_owners). השרת הוא שאוכף; זה קובע רק אם לצייר. */
+function ordMineOn(on){
+  const o = (ORDS||[]).find(x=>x.order_number===on), q = o && o.priority_quote_id ? String(o.priority_quote_id).trim() : '';
+  const me = String((typeof ME!=='undefined' && ME && ME.id) || '');
+  if(!q || !me) return false;
+  return (DEALS||[]).some(d => String(d.priority_quote_id||'').trim()===q && dlOwnersOf(d).map(String).includes(me));
+}
+function ordMine(o){ return !!(o && ordMineOn(o.order_number)); }
+function dlOrdOf(d){
+  const q = d && d.priority_quote_id ? String(d.priority_quote_id).trim() : '';
+  if(!q) return null;
+  const all = (ORDS||[]).filter(o => o.priority_quote_id && String(o.priority_quote_id).trim()===q);
+  if(!all.length) return null;
+  all.sort((a,b)=> ((DL_ORD_SHOW.includes(b.erp_status)?1:0) - (DL_ORD_SHOW.includes(a.erp_status)?1:0))
+                || String(b.order_date||'').localeCompare(String(a.order_date||'')));
+  return all[0];
+}
+function dlOrdSecHtml(d){
+  const o = dlOrdOf(d);
+  const sep = '<div class="form-sep">ההזמנה</div>';
+  if(!o) return sep + '<div class="span4"><div class="note" id="dl-ordnone">אין הזמנה בפריוריטי — חיוב (כולל אשראי) נעשה רק אחרי פתיחת הזמנה בטיוטא או ממתין לתשלום.</div></div>';
+  if(!DL_ORD_SHOW.includes(o.erp_status))
+    return sep + '<div class="span4"><div class="note" id="dl-ordhidden">הזמנה ' + esc(o.order_number) + ' בפריוריטי בסטטוס «' + esc(o.erp_status||'—') + '» — אינה מוצגת כאן.</div></div>';
+  return sep +
+    '<div><label>מספר הזמנה</label><a class="dl-tile" id="dl-ordtile" href="#" onclick="event.preventDefault();goCard(()=>openOrd(\'' + jsq(o.id) + '\'))" title="' + esc(o.customer_name||'') + '">' +
+      '<span class="tk-kind">הזמנה</span><span class="dlt-nm" dir="ltr">' + esc(o.order_number) + '</span><span class="dlt-ar">&#8599;</span></a></div>' +
+    '<div><label>סטטוס</label><div class="dl-ordst" id="dl-ordst">' +
+      (o.erp_status ? '<span class="pill p-violet" title="הסטטוס בפריוריטי — מתעדכן בסנכרון">' + PRI_ICO + esc(o.erp_status) + '</span>' : '') +
+      '<span class="pill ' + ordStClass(o.order_status) + '" title="הקטגוריה אצלנו">' + esc(o.order_status||'—') + '</span></div></div>' +
+    '<div><label>אספקה מתואמת</label>' + roIn(o.scheduled_date ? fmtD(o.scheduled_date) + (o.time_slot ? ' ' + o.time_slot : '') : '') + '</div>' +
+    '<div><label>סכום (פריוריטי)</label>' + roIn(o.erp_price != null ? shekel(o.erp_price) : '') + '</div>' +
+    ordTermsBlock(o);
+}
+/* ציור מחדש **במקום** — לא openDeal (מאפס scrollTop, 6.154.0). */
+function dlOrdSecDraw(d){ const el = document.getElementById('dl-ordsec'); if(el && d) el.innerHTML = dlOrdSecHtml(d); }
+/* היורש של renderOrders(): כל מסלול שמשנה הזמנה (ieSave · saveOrd · ordSyncOne · ordCloseIds · payAutoRefresh)
+   קורא לכאן, והסקשן בכרטיס העסקה הפתוח מתעדכן. כרטיס סגור/מוסתר ⇒ אפס עבודה. */
+function dlOrdSecSync(){
+  if(typeof DLIVE_ID === 'undefined' || !DLIVE_ID) return;
+  const m = document.getElementById('dealModal'); if(!m || m.classList.contains('hidden')) return;
+  const d = (DEALS||[]).find(x=>x.id===DLIVE_ID); if(d) dlOrdSecDraw(d);
+}
 function dlPqsPill(d){
   const s = d && d.priority_quote_status ? String(d.priority_quote_status) : '';
   const at = d && d.priority_quote_synced_at ? String(d.priority_quote_synced_at) : '';
@@ -23272,7 +23215,7 @@ debounceSearch($('#meet-q'), renderMeets);
       מיקוד ומאפס את הלשונית. מעדכנים **במקום**: הרצועה והשורה בטבלה.
    ⚠️ ורק כרטיס העסקה: הכרעת רומן. הטבלאות כבר מתרעננות כל שתי דקות. */
 let DLIVE_CH = null, DLIVE_T = null, DLIVE_ID = null;
-const DLIVE_COLS = 'id,stage,quote_status,irrelevant_reason,amount,amount_incl_vat,approved_at,closed_at,send_channel,sign_link,priority_quote_status,priority_quote_synced_at';
+const DLIVE_COLS = 'id,stage,quote_status,irrelevant_reason,amount,amount_incl_vat,approved_at,closed_at,send_channel,sign_link,priority_quote_status,priority_quote_synced_at,priority_quote_id';
 
 window.dlLiveStop = ()=>{
   if(DLIVE_T){ clearInterval(DLIVE_T); DLIVE_T = null; }
@@ -23297,6 +23240,8 @@ window.dlLiveApply = (row)=>{
   /* 6.225.0 — השבב בכותרת מתעדכן במקום (ולא openDeal, שמאפס scrollTop). */
   if(changed.indexOf('priority_quote_status') >= 0 || changed.indexOf('priority_quote_synced_at') >= 0){ const _p = document.getElementById('dl-pqs'); if(_p) _p.innerHTML = dlPqsPill(d); }
   if(changed.indexOf('sign_link') >= 0){ const _l = document.getElementById('dl-signlink'); if(_l) _l.innerHTML = dlSignLinkHtml(d); }
+  /* 6.228.0 — מספר ההצעה או השלב השתנו ⇒ סקשן ההזמנה מתעדכן במקום */
+  if(changed.indexOf('priority_quote_id') >= 0 || changed.indexOf('stage') >= 0) dlOrdSecDraw(d);
   try{ renderDeals(); }catch(_e){}
   toast(changed.indexOf('stage') >= 0
         ? 'העסקה עודכנה: «' + (before||'—') + '» ← «' + (d.stage||'—') + '»'
@@ -23400,6 +23345,8 @@ window.openDeal = async (id)=>{
         <div class="c2-half"><label>תאריך אישור ההצעה</label>${roIn(dt(d.approved_at))}</div>
         <div class="c2-half"><label>תאריך סגירה</label>${roIn(dt(d.closed_at))}</div>
       </div>
+
+      <div id="dl-ordsec" class="dl-ordsec">${dlOrdSecHtml(d)}</div>
 
       <div class="form-sep">משימות ופגישות</div>
       <!-- 🔴 6.158.0 — שני הכפתורים שרומן ביקש ("כמו במסך ליד בדיוק").

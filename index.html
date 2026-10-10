@@ -3082,7 +3082,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.228.0</div>
+      <div class="ver">גרסה 6.228.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3211,7 +3211,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="dealorder-2026-10-10a">גרסה 6.228.0</div>
+    <div class="side-foot" title="vasfix-2026-10-10a">גרסה 6.228.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3889,8 +3889,27 @@ const SB_KEY = "sb_publishable_tAnwO6ncZD5QIo1bNFYrhA_qs-YPY1J";
    הלקוח הרגיל שומר ב-localStorage, שמשותף לכל הלשוניות — בלי ההפרדה, כניסה כמשתמש אחר הייתה הופכת
    גם את שאר הלשוניות של רומן לאותו משתמש. detectSessionInUrl כבוי: האסימון מגיע ב-postMessage, לא בכתובת. */
 const VAS = (()=>{ try{ return new URLSearchParams(location.search).get('vas') === '1'; }catch(_){ return false; } })();
+/* 6.228.1 — מזהה ללשונית ההתחקות: שתי לשוניות עם storageKey אחד חולקות את ה-BroadcastChannel של supabase-js,
+   ויציאה מאחת הייתה נוגעת ב-realtime של השנייה. נשמר ב-sessionStorage ⇒ שורד רענון של אותה לשונית. */
+const VAS_TAB = VAS ? (()=>{ try{ let t = sessionStorage.getItem('iron_vas_tab'); if(!t){ t = Math.random().toString(36).slice(2,10) + Date.now().toString(36); sessionStorage.setItem('iron_vas_tab', t); } return t; }catch(_){ return String(Date.now()); } })() : '';
+/* 6.228.1 — בלשונית ההתחקות localStorage מנותב ל-sessionStorage עם קידומת. המסננים השמורים (iron_*_default_v1 …)
+   יושבים ב-localStorage המשותף, ובלי זה הבורדים של המשתמש היו נפתחים עם המסננים של רומן (מסנן בעלים = רומן
+   מציג את הלידים שלו), וכל שינוי בלשונית היה דורס את של רומן. כאן — התחלה נקייה, ואפס כתיבה למפתחות של רומן. */
+if(VAS){ try{
+  const VLS_P = 'iron_vas_ls:', VLS_S = window.sessionStorage;
+  const vlsKeys = ()=>{ const ks = []; for(let j = 0; j < VLS_S.length; j++){ const k = VLS_S.key(j); if(k && k.indexOf(VLS_P) === 0) ks.push(k.slice(VLS_P.length)); } return ks; };
+  const vls = {
+    getItem: k => VLS_S.getItem(VLS_P + k),
+    setItem: (k, v) => VLS_S.setItem(VLS_P + k, String(v)),
+    removeItem: k => VLS_S.removeItem(VLS_P + k),
+    clear: () => vlsKeys().forEach(k => VLS_S.removeItem(VLS_P + k)),
+    key: i => { const ks = vlsKeys(); return i < ks.length ? ks[i] : null; },
+    get length(){ return vlsKeys().length; }
+  };
+  Object.defineProperty(window, 'localStorage', { configurable:true, get: () => vls });
+}catch(_e){ console.error('vas localStorage', _e); } }
 const sb = VAS
-  ? supabase.createClient(SB_URL, SB_KEY, { auth:{ storage: window.sessionStorage, storageKey:'iron-vas', persistSession:true, autoRefreshToken:true, detectSessionInUrl:false } })
+  ? supabase.createClient(SB_URL, SB_KEY, { auth:{ storage: window.sessionStorage, storageKey:'iron-vas-' + VAS_TAB, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false } })
   : supabase.createClient(SB_URL, SB_KEY);
 
 /* ===== 6.0.0 — המערכת אוחדה: מקור האמת להזמנות הוא הפלטפורמה =====
@@ -11433,7 +11452,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'dealorder-2026-10-10a';
+const BUILD_ID = 'vasfix-2026-10-10a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====

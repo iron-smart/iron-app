@@ -231,6 +231,11 @@ async function init(){
       const d=await r.json();
       if(!r.ok) throw new Error(d.error||'שגיאה');
       let html=d.html;
+      /* 12/10/2026 — רומן: "במחתם זה נראה ככה? תסדר שיראה כמו במסמך חתימה". אותו תיקון תצוגה של
+         qpdfFit (בלי רצועת הכלים והתמונות הממוזערות, ברוחב מלא) גם בצפייה במסמך החתום.
+         ⚠️ שכבת תצוגה בלבד: signed_html במסד (הראיה, doc_sha256) אינו נוגע; הדפסה והורדה —
+            דרך הקישור "לפתיחה בחלון נפרד", שהרגקס אינו תופס (src של iframe בלבד). */
+      html=html.replace(/(<iframe class="qpdf" src="[^"#]*)"/,'$1#toolbar=0&amp;navpanes=0&amp;view=FitH"');
       if(d.hash) html=html.replace('<div class="foot">',
         '<div style="text-align:center;color:#84898f;font-size:.68rem;margin-top:12px;word-break:break-all" dir="ltr"><b>טביעת אצבע דיגיטלית (SHA-256):</b><br>'+d.hash+'</div><div class="foot">');
       document.open(); document.write(html); document.close();

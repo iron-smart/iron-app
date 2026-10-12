@@ -3340,7 +3340,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.241.0</div>
+      <div class="ver">גרסה 6.242.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3469,7 +3469,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="ordquote-2026-10-12a">גרסה 6.241.0</div>
+    <div class="side-foot" title="revfix-2026-10-12a">גרסה 6.242.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -6069,26 +6069,29 @@ const dashStale = ()=>{ const t = isoD(new Date());
   return dashActOrds().filter(o=>o.scheduled_date && o.needs_scheduling!==false && addDaysIso(o.scheduled_date, Math.max(1,+o.days_count||1)-1) < t)
     .sort((a,b)=>String(a.scheduled_date).localeCompare(String(b.scheduled_date))); };
 let LGC_V = (()=>{ try{ return localStorage.getItem('iron_dash_lcal_v1')||''; }catch(_e){ return ''; } })();
-/* ⚠️ לא dmcStart(): הקוד הזה יושב לפני הגדרת dmcStart בקובץ ורץ בטעינה (TDZ — הפיל את כל הסקריפט באב-טיפוס) */
-const lgcStart = ()=>{ const d = new Date(); return d.getDay()===6 ? new Date(d.getFullYear(), d.getMonth(), d.getDate()+1) : d; };
-let LGC_D = lgcStart();
+/* 6.242.0 — היום שבו נפתחים שני יומני הלובי (לוח השבוע כאן, יומן הפגישות למטה): שבת ⇒ ראשון.
+   הצהרת function ולא const arrow — היא מורמת, ולכן אין TDZ למרות ש-LGC_D מאותחל כאן בטעינה.
+   עד כאן היו שני עותקים (lgcStart/dmcStart) בדיוק בגלל ה-TDZ. */
+function calStartDay(){ const d = new Date(); return d.getDay()===6 ? new Date(d.getFullYear(), d.getMonth(), d.getDate()+1) : d; }
+let LGC_D = calStartDay();
 const lgcView = ()=> LGC_V || (wideScreen() ? 'week' : 'day');
 window.lgcMode = v=>{ LGC_V = v; try{ localStorage.setItem('iron_dash_lcal_v1', v); }catch(_e){} renderTodayBlock(); };
 window.lgcShift = n=>{
   let d = new Date(LGC_D.getFullYear(), LGC_D.getMonth(), LGC_D.getDate()+n*(lgcView()==='week'?7:1));
   if(d.getDay()===6) d = new Date(d.getFullYear(), d.getMonth(), d.getDate()+(n>0?1:-1));
   LGC_D = d; renderTodayBlock(); };
-window.lgcToday = ()=>{ LGC_D = lgcStart(); renderTodayBlock(); };
+window.lgcToday = ()=>{ LGC_D = calStartDay(); renderTodayBlock(); };
 window.lgcGoDay = ds=>{ LGC_D = new Date(ds+'T12:00:00'); lgcMode('day'); };
 /* eventsOn = תיאומים בלבד (בלי צפי) — אותה הגדרה שסופרת עומס בלוח. חיפוש הלוח (CAL_Q) אינו חל כאן. */
-function lgcOn(ds){ const q = CAL_Q; CAL_Q = ''; try{ return eventsOn(ds); } finally{ CAL_Q = q; } }
+function lgcOn(ds){ return eventsOn(ds, ''); }
 function lgcChip(e){
-  const o = e.o, tm = e.kind==='svc' ? (o.team||'') : (o.team||'');
+  /* 6.242.0 — גם הצוות הנוסף (6.193.0). היה כאן טרנרי ששני ענפיו זהים, ו-team2 נשמט. */
+  const o = e.o, tm = o.team||'', t2 = (o.team2 && o.team2!==tm) ? o.team2 : '';
   const kind = e.kind==='fup' ? 'השלמה' : e.kind==='svc' ? 'קריאה' : (e.dayTotal>1 ? 'יום '+e.dayIdx+'/'+e.dayTotal : '');
   return '<div class="dmc-ev lg'+(e.kind==='fup'?' fup':e.kind==='svc'?' svc':'')+(evDone(e)?' done':'')+'" style="--tc:'+(tm?teamColor(tm):'#94a3b8')+'" onclick="'+evOpen(e)+'" title="'+
-    esc((o.customer_name||'')+' · '+(o.city||'')+(tm?' · '+tm:''))+'">'+
+    esc((o.customer_name||'')+' · '+(o.city||'')+(tm?' · '+tm:'')+(t2?' + '+t2:''))+'">'+
     '<span class="r1"><span class="tm">'+esc(slotShort(o.time_slot)||'—')+'</span>'+(kind?'<span class="k">'+esc(kind)+'</span>':'')+
-    '<span class="tg">'+esc(tm||'ללא צוות')+'</span></span><span class="sj">'+esc(o.customer_name||'')+(o.city?' · '+esc(o.city):'')+'</span></div>';
+    '<span class="tg">'+esc(tm||'ללא צוות')+(t2?' + '+esc(t2):'')+'</span></span><span class="sj">'+esc(o.customer_name||'')+(o.city?' · '+esc(o.city):'')+'</span></div>';
 }
 function renderTodayBlock(){
   const el = $('#db-today'); if(!el) return;
@@ -6108,11 +6111,14 @@ function renderTodayBlock(){
     days = [cd];
     title = dayNameHe(cd)+', '+fmtD(cd);
     const evs = lgcOn(cd), by = {};
-    evs.forEach(e=>{ const k = e.o.team||'ללא צוות'; (by[k]=by[k]||[]).push(e); });
+    /* 6.242.0 — הזמנה עם צוות נוסף נספרת ומוצגת גם תחתיו (כמו 'עומס צוותים') */
+    evs.forEach(e=>{ const k = e.o.team||'ללא צוות'; (by[k]=by[k]||[]).push(e);
+      if(e.o.team2 && e.o.team2!==e.o.team) (by[e.o.team2]=by[e.o.team2]||[]).push(e); });
     const teams = Object.keys(by).sort((a,b)=>by[b].length-by[a].length);
     body = teams.length ? teams.map(tn=>{ const crew = (typeof TD_MAP!=='undefined' && TD_MAP[cd] && TD_MAP[cd][tn]) ? TD_MAP[cd][tn].map(x=>String(x.full_name||'').split(' ')[0]).join(' · ') : '';
         return '<div class="lgd-team" style="--tc:'+(tn==='ללא צוות'?'#94a3b8':teamColor(tn))+'"><i></i>'+esc(tn)+' <small>'+by[tn].length+(crew?' · '+esc(crew):'')+'</small></div>'+
-          by[tn].map(e=>{ const o=e.o; return dbRow(evOpen(e), esc(o.customer_name||''), esc([o.city||'', e.kind==='fup'?'השלמה':e.kind==='svc'?'קריאת שירות':(e.dayTotal>1?'יום '+e.dayIdx+'/'+e.dayTotal:'')].filter(Boolean).join(' · ')),
+          by[tn].map(e=>{ const o=e.o; return dbRow(evOpen(e), esc(o.customer_name||''), esc([o.city||'', e.kind==='fup'?'השלמה':e.kind==='svc'?'קריאת שירות':(e.dayTotal>1?'יום '+e.dayIdx+'/'+e.dayTotal:''),
+              (o.team2 && o.team2!==o.team) ? (tn===o.team2 ? 'צוות נוסף · עם '+(o.team||'—') : '+ '+o.team2) : ''].filter(Boolean).join(' · ')),
             '', esc(slotShort(o.time_slot)||'—')); }).join(''); }).join('')
       : '<div class="db-empty">אין שיבוצים ביום זה</div>';
   }
@@ -6760,11 +6766,9 @@ function myTeams(ds){
   return out;
 }
 /* אירועי היום שלי: eventsOn הקיים (ריבוי-ימים, השלמות, קיפול) מסונן לצוותים
-   שאני משובץ בהם. CAL_Q מרוקן סביב הקריאה — חיפוש הלוח לא מסנן את היום שלי. */
+   שאני משובץ בהם. חיפוש הלוח (CAL_Q) אינו מסנן את היום שלי — eventsOn(ds, '') (6.242.0). */
 function mdEventsOn(ds){
-  const q = CAL_Q; CAL_Q = '';
-  let evs = [];
-  try{ evs = eventsOn(ds); } finally{ CAL_Q = q; }
+  const evs = eventsOn(ds, '');
   const mine = myTeams(ds);
   /* 6.193.0 — הטכנאי של הצוות הנוסף רואה את ההזמנה כמו זה של הצוות הראשי (רומן) */
   return evs.filter(e=> mine.includes(e.o.team||'') || (!!e.o.team2 && mine.includes(e.o.team2)));
@@ -6862,8 +6866,7 @@ const dmcMine = m => ownOwnersOf('meet', m).map(String).includes(dashMeId());
 const dashMyDeals = ()=> (DEALS||[]).filter(d=>ACTIVE_STAGES.includes(d.stage) && dlMine(d));
 let DMC_V = (()=>{ try{ return localStorage.getItem('iron_dash_mcal_v1')||''; }catch(_e){ return ''; } })();
 /* שבת אינה יום עבודה — בשבת היומן נפתח על השבוע/היום הבא (6 ולא CAL_SATURDAY: הקבוע מוגדר מאוחר יותר בקובץ, וזה רץ בטעינה) */
-const dmcStart = ()=>{ const d = new Date(); return d.getDay()===6 ? new Date(d.getFullYear(), d.getMonth(), d.getDate()+1) : d; };
-let DMC_D = dmcStart();
+let DMC_D = calStartDay();
 const dmcView = ()=> DMC_V || (wideScreen() ? 'week' : 'day');
 window.dmcMode = v=>{ DMC_V = v; try{ localStorage.setItem('iron_dash_mcal_v1', v); }catch(_e){} renderToday(); };
 window.dmcShift = n=>{
@@ -6871,7 +6874,7 @@ window.dmcShift = n=>{
   let d = new Date(DMC_D.getFullYear(), DMC_D.getMonth(), DMC_D.getDate()+n*step);
   if(d.getDay()===6) d = new Date(d.getFullYear(), d.getMonth(), d.getDate()+(n>0?1:-1));
   DMC_D = d; renderToday(); };
-window.dmcToday = ()=>{ DMC_D = dmcStart(); renderToday(); };
+window.dmcToday = ()=>{ DMC_D = calStartDay(); renderToday(); };
 window.dmcGoDay = ds=>{ DMC_D = new Date(ds+'T12:00:00'); dmcMode('day'); };
 const dmcOn = ds => (MEETS||[]).filter(m=>m.meet_date===ds && m.status!=='בוטלה').sort((a,b)=>mSortKey(a)-mSortKey(b));
 function dmcChip(m, style){
@@ -7890,7 +7893,7 @@ function fupEventsOn(ds){
   }
   return out;
 }
-function eventsOn(ds){
+function eventsOn(ds, q = CAL_Q){
   const evs=[];
   for(const o of ORDS){
     if(!o.scheduled_date || ['בוטל','מבוטלת'].includes(o.order_status)) continue;
@@ -7901,7 +7904,8 @@ function eventsOn(ds){
   }
   evs.push(...fupEventsOn(ds));
   for(const c of SCALLS){ if(c.scheduled_date===ds && c.status!=='בוטלה') evs.push({kind:'svc',o:c,ds}); }
-  let out = CAL_Q ? evs.filter(e=>evMatch(e,CAL_Q)) : evs;
+  /* 6.242.0 — q ולא CAL_Q ישירות: הלובי ו"היום שלי" מעבירים '' במקום לרוקן את הגלובל ולשחזר. */
+  let out = q ? evs.filter(e=>evMatch(e,q)) : evs;
   /* ביקור משותף הוא נסיעה אחת, ולכן שבב אחד ליום — בדיוק כפי שכרטיסי
      הצפי כבר מאוחדים ב-etaEventsOn. בלי זה שלוש ההזמנות של בי בטר
      מציגות שלושה שבבים ב-18/08 ומנפחות את עומס היום. */
@@ -11392,7 +11396,9 @@ let DOC_CAT='all';
 const signUrl = t => new URL('sign.html?t='+t, location.href).href;
 const viewUrl = t => new URL('sign.html?view='+t, location.href).href;
 function waLink(phone, text){ let d=phoneNorm(phone); if(!d){ d=digitsOf(phone); if(d.startsWith('0')) d='972'+d.slice(1); } return 'https://wa.me/'+d+'?text='+encodeURIComponent(text); }
-window.copyTxt = async t=>{ try{ await navigator.clipboard.writeText(t); toast('הקישור הועתק ✓'); }catch(_e){ await sysPrompt('העתקה ידנית:', t, { ok:'סגירה' }); } };
+/* 6.242.0 — msg/kind/ms אופציונליים: מי שיש לו מה להוסיף (אזהרת שלב) מעביר כאן, כי ההודעה הזאת
+   מוצגת אחרי ה-await של הלוח ודורסת כל toast שקדם לה. */
+window.copyTxt = async (t, msg, kind, ms)=>{ try{ await navigator.clipboard.writeText(t); toast(msg || 'הקישור הועתק ✓', kind, ms); }catch(_e){ await sysPrompt('העתקה ידנית:', t, { ok:'סגירה' }); } };
 /* 6.22.0 — ארבע קטגוריות המסמכים. כל קטגוריה נשלטת במפתח הרשאה משלה
    docs.quotes / docs.protocols / docs.reports / docs.media. */
 const DOC_CATS = [
@@ -11454,7 +11460,8 @@ window.openDocLink = async (id, mode)=>{
   if(data.stage_note) toast(String(data.stage_note), 'warn', 6000);
   if(data.kind==='sign') dlSignAfterLink(p, url, mode==='wa' ? 'whatsapp' : (mode==='copy' ? 'link' : null));
   if(tab){ tab.location.href = (mode==='wa'&&p&&p.phone) ? waLink(p.phone, waProtocolMsg(p, url)) : url; return; }
-  copyTxt(url);
+  copyTxt(url, data.stage_note ? 'הקישור הועתק ✓ · ' + String(data.stage_note) : null,
+          data.stage_note ? 'warn' : undefined, data.stage_note ? 6000 : undefined);
 };
 /* 6.23.0 — בסיס הסינון של מסך המסמכים מכבד את מפתח ההרשאה של כל קטגוריה.
    מסמך בקטגוריה שאין בה הרשאת צפייה אינו נספר בשבבים ואינו מוצג ברשימה.
@@ -12177,19 +12184,22 @@ window.dlQuoteDoc = async (dealId)=>{
   /* 6.225.2 — יצירה = שליחה. עד כאן המסמך נוצר ושום דבר לא יצא עד שמישהו לחץ "העתקת קישור"
      (נמדד 09/10: 35 שניות בין היצירה לקישור, והסטטוס "טרם נשלח" על מסמך שהוואטסאפ שלו כבר הגיע).
      protocol_link הוא המפיק: ווטסאפ/גם וגם ⇒ 'whatsapp' (וההודעה יוצאת מיד), אחרת 'link'. */
+  /* 6.242.0 — הודעה אחת, בסוף, לפי מה שקרה. toast הוא אלמנט יחיד, וה"נוצר מסמך לחתימה ✓" שישב כאן
+     אחרי בלוק הקישור דרס את מה שהבלוק אמר: גם את האדומה וגם את אזהרת השלב (סקירת הקוד, 12/10/2026). */
+  let fin = ['נוצר מסמך לחתימה · ' + (data.items||0) + ' שורות ✓'];
   if(data.protocol && data.protocol.id){
     const via = /ווטסאפ|וואטסאפ|גם וגם/.test(String(d.send_channel||'')) ? 'whatsapp' : 'link';
     const { data: lk, error: le } = await sb.schema('ord').rpc('protocol_link', { p_id: data.protocol.id, p_via: via });
     if(le || !lk || !lk.token){
-      toast('המסמך נוצר, אבל הפקת הקישור נכשלה — ' + ((le&&le.message)||'ללא פירוט') + '. אפשר ללחוץ "העתקת קישור".', 'err', 6000);
+      fin = ['המסמך נוצר, אבל הפקת הקישור נכשלה — ' + ((le&&le.message)||'ללא פירוט') + '. אפשר ללחוץ "העתקת קישור".', 'err', 6000];
     } else {
-      if(lk.stage_note) toast(String(lk.stage_note), 'warn', 6000);
       dlSignAfterLink(PROTS.find(x=>x.id===data.protocol.id) || data.protocol, signUrl(lk.token), via);
-      toast(via==='whatsapp' ? 'המסמך נוצר והקישור נשלח ללקוח בוואטסאפ ✓' : 'המסמך נוצר והקישור מוכן ✓', 'ok', 4000);
+      const okm = via==='whatsapp' ? 'המסמך נוצר והקישור נשלח ללקוח בוואטסאפ ✓' : 'המסמך נוצר והקישור מוכן ✓';
+      fin = lk.stage_note ? [okm + ' · ' + String(lk.stage_note), 'warn', 8000] : [okm, 'ok', 4000];
     }
   }
   try{ if(typeof renderDocs === 'function') renderDocs(); }catch(_e){}
-  toast('נוצר מסמך לחתימה · ' + (data.items||0) + ' שורות ✓');
+  toast(fin[0], fin[1], fin[2]);
 };
 
 window.createProtocol = async (orderId, ctx)=>{
@@ -12219,7 +12229,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'ordquote-2026-10-12a';
+const BUILD_ID = 'revfix-2026-10-12a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -17137,7 +17147,9 @@ function espSectionHtml(){
 window.espToggle = d => { if(d && d.open && !d.dataset.espLoaded){ d.dataset.espLoaded = '1'; espLoad(); } };
 async function espLoad(){
   const box = document.getElementById('esp-live'); if(!box) return;
-  const { data, error } = await sb.from('erp_status_policy')
+  /* 6.242.0 — סכימת ord במפורש. הלקוח נוצר בלי db.schema ולכן sb.from פונה ל-public, והטבלה קיימת
+     רק ב-ord — המסך הציג תמיד "שליפת מדיניות הקליטה נכשלה" (סקירת הקוד, 12/10/2026). */
+  const { data, error } = await sb.schema('ord').from('erp_status_policy')
     .select('priority_status,ingest,initial_lane,freeze_existing,ingest_min_date,sort_order,notes')
     .order('sort_order');
   if(error){

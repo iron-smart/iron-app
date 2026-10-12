@@ -3370,7 +3370,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.245.0</div>
+      <div class="ver">גרסה 6.247.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3499,7 +3499,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="mtphone-2026-10-12a">גרסה 6.245.0</div>
+    <div class="side-foot" title="teamsauto-2026-10-12a">גרסה 6.247.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3975,7 +3975,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
          שדות היו משאירים שניים ריקים בכל פגישה. -->
     <div class="field" id="lm-detwrap"><label id="lm-detlbl">מיקום</label>
       <input id="lm-loc" placeholder="כתובת מלאה">
-      <input id="lm-url" class="hidden" placeholder="קישור לפגישה המקוונת" dir="ltr">
+      <input id="lm-url" class="hidden" placeholder="ריק — ייווצר קישור Teams אוטומטית" dir="ltr">
       <input id="lm-phone" class="hidden" placeholder="טלפון ליצירת קשר" dir="ltr" oninput="lmRcptPaint()">
     </div>
     <div class="modal-actions">
@@ -12499,7 +12499,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'mtphone-2026-10-12a';
+const BUILD_ID = 'teamsauto-2026-10-12a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -25693,6 +25693,32 @@ let MT_RS_ID = null;
    ולכן מה שמוצג כאן הוא תשובת השרת ולא חישוב מקומי. */
 let MT_SN_ID = null;
 const MT_SN_TPL = { 'פרונטלית':'פגישה פרונטלית', 'טלפונית':'פגישה טלפונית', 'מקוונת':'פגישה מקוונת' };
+/* ═══ 6.247.0 — teamsauto: מקוונת בלי קישור ═════════════════════════════
+   🔴 crm.meeting_send אינה מכניסה וואטסאפ — היא מזמינה פגישת Teams (meeting-invite), ורק כשהקישור
+   נשמר על הפגישה נכנסת שורת הוואטסאפ. הסימן: mtype מקוונת, mlink ריק ו-outbox_id ריק. בלי ההבחנה
+   המסך היה אומר "נכנס לתור השליחה" על הודעה שעוד לא קיימת — ואם יצירת ה-Teams נכשלת, לעולם.
+   ⚠️ הדגימה אינה הערובה: כשל מגיע לפעמון (core.notify) גם אם הלשונית נסגרה. היא רק מקצרת את
+   ההמתנה לתשובה הטובה. 10×3 שניות — יצירת אירוע ב-Graph נמדדה ~6 שניות. */
+const mtTeamsPending = s => !!s && s.mtype === 'מקוונת' && !s.mlink && !s.outbox_id;
+window.mtTeamsWatch = (id, phone)=>{
+  let n = 0;
+  const tick = async ()=>{
+    n++;
+    let link = '';
+    try{
+      const { data } = await sb.schema('crm').from('meetings').select('teams_link').eq('id', id).maybeSingle();
+      link = (data && data.teams_link) || '';
+    }catch(_e){ /* רשת — ננסה שוב בדגימה הבאה */ }
+    if(link){
+      const m = (MEETS||[]).find(x=>x.id===id); if(m) m.teams_link = link;
+      toast('קישור ה-Teams נוצר ✓ · הזימון בוואטסאפ' + (phone ? ' אל ' + phone : '') + ' ובמייל בדרך', 'ok', 7000);
+      return;
+    }
+    if(n < 10) setTimeout(tick, 3000);
+    else toast('קישור ה-Teams עדיין לא התקבל — אם היצירה תיכשל תופיע התראה בפעמון', 'warn', 8000);
+  };
+  setTimeout(tick, 3000);
+};
 window.mtSendOpen = async (id)=>{
   const m = (MEETS||[]).find(x=>x.id===id); if(!m) return;
   MT_SN_ID = id;
@@ -25721,7 +25747,9 @@ window.mtSendOpen = async (id)=>{
     ['נושא', esc(r.subj||'')],
     ['מועד', esc((r.mdate||'') + ' ' + (r.mtime||''))]
   ];
-  if(r.mtype === 'מקוונת') rows.push(['קישור', '<span dir="ltr" style="word-break:break-all">' + esc(r.mlink||'') + '</span>']);
+  if(r.mtype === 'מקוונת') rows.push(['קישור', r.mlink
+    ? '<span dir="ltr" style="word-break:break-all">' + esc(r.mlink) + '</span>'
+    : 'ייווצר אוטומטית ב-Teams — הוואטסאפ יישלח כשהקישור יתקבל']);   /* 6.247.0 */
   $('#mt-sn-body').innerHTML = rows.map(x=>'<div class="row"><span class="k">'+x[0]+'</span><span class="v">'+x[1]+'</span></div>').join('');
 };
 window.mtSendGo = async ()=>{
@@ -25737,7 +25765,8 @@ window.mtSendGo = async ()=>{
     return;
   }
   $('#mtSendModal').classList.add('hidden');
-  toast('הזימון נכנס לתור השליחה ✓');
+  if(mtTeamsPending(r)){ toast('נוצר קישור Teams — הזימון יישלח כשיתקבל', 'ok', 6000); mtTeamsWatch(id, r.phone); }   /* 6.247.0 */
+  else toast('הזימון נכנס לתור השליחה ✓');
 };
 window.mtReschedOpen = (id)=>{
   const m = (MEETS||[]).find(x=>x.id===id); if(!m) return;
@@ -28015,7 +28044,8 @@ $('#lm-save').onclick = async ()=>{
      תיווצר פגישה שאי אפשר לשגר (רומן: "ללא טלפון לא לאפשר בכלל"). השרת בודק שוב. */
   const _rc = lmRcpt();
   if(!_rc || !_rc.phone){ $('#lm-err').textContent='אין טלפון ללקוח — לא ניתן לשמור ולשגר זימון. יש להוסיף טלפון בכרטיס.'; return; }
-  if(_mt==='מקוונת' && !(($('#lm-url').value||'').trim())){ $('#lm-err').textContent='פגישה מקוונת — חסר קישור לפגישה.'; return; }
+  /* 6.247.0 — מקוונת בלי קישור כבר אינה נחסמת: crm.meeting_send יוצרת פגישת Teams (meeting-invite)
+     ושולחת את הוואטסאפ רק אחרי שהקישור התקבל (רומן, 12/10/2026). */
   const _em = (($('#lm-email') && $('#lm-email').value) || '').trim();
   if(_em && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(_em)){ $('#lm-err').textContent='האימייל אינו תקין.'; return; }
   const _btn = $('#lm-save'); _btn.disabled = true;
@@ -28063,7 +28093,12 @@ $('#lm-save').onclick = async ()=>{
     if(sr.error) _sendErr = sr.error.message; else if(!s || s.ok !== true) _sendErr = (s && s.note) || 'אין תשובה מהשרת'; else _sent = s;
   } else _sendErr = 'מזהה הפגישה לא הוחזר';
   $('#lbMeetModal').classList.add('hidden'); LB_MEET_T=null;
-  if(_sent){
+  if(_sent && mtTeamsPending(_sent)){
+    /* 6.247.0 — Teams בדרך; הוואטסאפ ייכנס לתור רק כשהקישור יתקבל. */
+    toast('נקבעה פגישה ✓ · נוצר קישור Teams — הזימון בוואטסאפ אל ' + (_sent.phone||'') + ' יישלח כשהקישור יתקבל' + _emNote
+      + (lmPilotBlocked(_sent.phone) ? ' · ⚠️ מצב פילוט — לא ייצא ללקוח עד פתיחת רשימת ההיתר' : ''), 'ok', 8000);
+    mtTeamsWatch(r.meet_id, _sent.phone);
+  } else if(_sent){
     toast('נקבעה פגישה ✓ · הזימון (' + (_sent.mtype||'') + ') נכנס לתור השליחה אל ' + (_sent.phone||'') + _emNote
       + (lmPilotBlocked(_sent.phone) ? ' · ⚠️ מצב פילוט — לא ייצא ללקוח עד פתיחת רשימת ההיתר' : ''), 'ok', 7000);
   } else {

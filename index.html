@@ -3370,7 +3370,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.250.0</div>
+      <div class="ver">גרסה 6.251.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3499,7 +3499,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="dlive-2026-10-12a">גרסה 6.250.0</div>
+    <div class="side-foot" title="meetfup-2026-10-12b">גרסה 6.251.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -12501,7 +12501,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'dlive-2026-10-12a';
+const BUILD_ID = 'meetfup-2026-10-12b';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -25532,13 +25532,18 @@ function meetDefLoad(){ try{ const r=JSON.parse(localStorage.getItem(MEET_DEF_KE
 function meetDefSave(){ try{ localStorage.setItem(MEET_DEF_KEY, JSON.stringify({v:MEET_MODE,f:MEET_FILTER,x:MT_F})); }catch(_e){} }
 /* 6.198.0 — סינון הפגישות: סוג (mtType, הנגזר) · בעלים (MOWN_OF/owner_id) · סטטוס. נשמר עם ברירת
    המחדל של המסך (x). ערך שנשמר ואינו קיים עוד יורד (הלקח מ-logiInit). */
-let MT_F = { type:'', owner:'', status:'' };
-const MT_F0 = ()=>({ type:'', owner:'', status:'' });
+/* 🔴 6.251.0 — status הוא **מערך** (רב-ברירה), ושאר המפתחות סקלרים. כל קורא: `(MT_F.status||[])`.
+   ברירת המחדל לכל המשתמשים (רומן, 12/10/2026): חדשה · מתוכננת · תואמה. ⚠️ MT_F0 — "ניקוי סינון" —
+   הוא **הכול** (מערך ריק) ולא חזרה לברירת המחדל: אחרת לא הייתה דרך לראות פגישות שהתקיימו. */
+const MT_ST_DEF = ['חדשה','מתוכננת','תואמה'];
+let MT_F = { type:'', owner:'', status:MT_ST_DEF.slice() };
+const MT_F0 = ()=>({ type:'', owner:'', status:[] });
 const mtOwnersOf = m => (m && MOWN_OF[m.id]) || (m && m.owner_id ? [m.owner_id] : []);
 function mtApplyF(list){
+  const _st = (MT_F.status||[]);
   return list.filter(m=>{
     if(MT_F.type   && mtType(m)!==MT_F.type) return false;
-    if(MT_F.status && (m.status||'')!==MT_F.status) return false;
+    if(_st.length && !_st.includes(m.status||'')) return false;
     if(MT_F.owner){
       const os = mtOwnersOf(m).map(String);
       if(MT_F.owner==='__none__' ? os.length : !os.includes(MT_F.owner)) return false;
@@ -25548,7 +25553,14 @@ function mtApplyF(list){
 }
 window.mtFilter = (k,v)=>{ MT_F[k]=v; meetDefSave(); renderMeets(); };
 window.mtFilterClear = ()=>{ MT_F=MT_F0(); meetDefSave(); renderMeets(); };
-function mtFilterActive(){ return !!(MT_F.type||MT_F.owner||MT_F.status); }
+/* 6.251.0 — הדפוס של lbStatusToggle: `d.open=true` אחרי הציור, אחרת ה-<details> נסגר אחרי כל סימון. */
+window.mtStatusToggle = (st,on)=>{
+  const set=new Set(MT_F.status||[]); on?set.add(st):set.delete(st);
+  MT_F.status=MEET_STATUSES.filter(s=>set.has(s));   /* בסדר הקבוע, לא בסדר הלחיצה */
+  meetDefSave(); renderMeets();
+  const d=document.querySelector('#mt-filters .lf-multi'); if(d) d.open=true;
+};
+function mtFilterActive(){ return !!(MT_F.type||MT_F.owner||(MT_F.status||[]).length); }
 function renderMtFilters(){
   const box=document.getElementById('mt-filters'); if(!box) return;
   const wrap=box.closest('details.lf-wrap');
@@ -25562,7 +25574,9 @@ function renderMtFilters(){
   box.innerHTML =
     sel('type','סוג — הכל',MEET_TYPES.map(s=>[s,s]))+
     sel('owner','בעלים — הכל',[['__none__','ללא בעלים']].concat(owners))+
-    sel('status','סטטוס — הכל',MEET_STATUSES.map(s=>[s,s]))+
+    (()=>{ const stSel=(MT_F.status||[]);
+      const items=MEET_STATUSES.map(st=>`<label class="lf-opt"><input type="checkbox" ${stSel.includes(st)?'checked':''} onchange="mtStatusToggle('${jsq(st)}',this.checked)">${mdPill(st,MSTATUS_COLOR,LB_TK)}</label>`).join('');
+      return `<details class="lf-multi ${stSel.length?'lf-on':''}"><summary>${stSel.length?`סטטוס (${stSel.length})`:'סטטוס — הכל'}</summary><div class="lf-menu">${items}</div></details>`; })()+
     (mtFilterActive()?`<button type="button" class="lf-clear" onclick="mtFilterClear()">✕ ניקוי סינון</button>`:'');
 }
 function meetInitDef(){
@@ -25573,7 +25587,13 @@ function meetInitDef(){
   if(d.x && typeof d.x==='object'){
     MT_F = Object.assign(MT_F0(), d.x);
     if(MT_F.type && !MEET_TYPES.includes(MT_F.type)) MT_F.type='';
-    if(MT_F.status && !MEET_STATUSES.includes(MT_F.status)) MT_F.status='';
+    /* 🔴 6.251.0 — הגירה. המצב נשמר אוטומטית מאז 6.157.0, ולכן כמעט לכל משתמש יש status סקלר שמור
+       (לרוב ''). בלי ההגירה ברירת המחדל החדשה לא הייתה חלה על אף אחד (רומן: "לכל המשתמשים").
+       סקלר/חסר ⇒ MT_ST_DEF; מערך = בחירה שנעשתה אחרי 6.251.0 ונשמרת. סטטוס שאינו קיים יורד. */
+    /* ⚠️ נבדק על d.x ולא על MT_F: Object.assign עם MT_F0 ממלא status=[] כשהמפתח חסר — ו"חסר" היה
+       נקרא כ"בחר הכול". נתפס בבדיקה (meetstest, 12/10/2026). */
+    if(!Array.isArray(d.x.status)) MT_F.status = MT_ST_DEF.slice();
+    MT_F.status = MT_F.status.filter(s=>MEET_STATUSES.includes(s));
     if(MT_F.owner && MT_F.owner!=='__none__' && !LOWN_BY[MT_F.owner]) MT_F.owner='';
   }
 }
@@ -25789,7 +25809,7 @@ function mtActs(m){
             + `<button type="button" class="chip" onclick="mtCancel('${jsq(m.id)}')">✕ ביטול הפגישה</button>`)
     + (ol && m.web_link ? `<a class="chip" href="${esc(safeUrl(m.web_link))}" target="_blank" rel="noopener">↗ פתיחה באאוטלוק</a>` : '')
     + `</div>`
-    + (ol && !done ? `<div class="note" style="margin-top:6px">⚠️ הפגישה מגיעה מיומן אאוטלוק. שינוי מועד כאן מתעדכן במערכת ובמשימה, <b>אך לא ביומן עצמו</b> — יש לעדכן גם שם.</div>` : '');
+    + (mtForeignOl(m) && !done ? `<div class="note" style="margin-top:6px">⚠️ הפגישה מגיעה מיומן אאוטלוק. שינוי מועד כאן מתעדכן במערכת ובמשימה, <b>אך לא ביומן עצמו</b> — יש לעדכן גם שם.</div>` : '');
 }
 /* 🔴 6.218.0 — בורר הסטטוס עבר ל-mtStatusSet, בדיוק כמו שתת-הסטטוס של
    הליד עבר ל-lbPipeSet ב-6.153.0. עד כאן שני הבוררים (הטבלה והכרטיס) היו
@@ -25824,7 +25844,8 @@ let MT_CX_ID = null;
 window.mtCancel = (id)=>{
   const m = (MEETS||[]).find(x=>x.id===id); if(!m) return;
   MT_CX_ID = id;
-  $('#mt-cx-note').textContent = 'הפגישה «' + (m.subject||'') + '» תסומן כמבוטלת, והמשימה המקושרת תיסגר.';
+  $('#mt-cx-note').textContent = 'הפגישה «' + (m.subject||'') + '» תסומן כמבוטלת, והמשימה המקושרת תיסגר.'
+    + (m.linked_id ? ' אם לא תישאר משימה פתוחה — תיפתח משימת פולואפ לתיאום מחדש.' : '');   /* 6.251.0 */
   $('#mt-cx-why').value = ''; $('#mt-cx-err').textContent = '';
   $('#mtCancelModal').classList.remove('hidden');
   setTimeout(()=>{ try{ $('#mt-cx-why').focus(); }catch(_e){} }, 30);
@@ -25842,12 +25863,24 @@ $('#mt-cx-go').onclick = async ()=>{
   /* ⚠️ עדכון מקומי ולא loadLeads: 26 שאילתות ו-~12MB על פעולה שנוגעת
      בשורה אחת. הלקח מ-6.153.0. */
   m.status = 'בוטלה';
-  toast((r && r.tasks_closed > 0) ? 'הפגישה בוטלה ✓ · נסגרו ' + r.tasks_closed + ' משימות'
-                                  : 'הפגישה בוטלה ✓');
+  /* 6.251.0 — הפולואפ שהשרת פתח: שם ומועד מהתשובה, לא מחושבים כאן. */
+  toast(((r && r.tasks_closed > 0) ? 'הפגישה בוטלה ✓ · נסגרו ' + r.tasks_closed + ' משימות'
+                                   : 'הפגישה בוטלה ✓')
+    + ((r && r.followup_task) ? ' · נפתחה משימה «' + (r.followup_name||'פולואפ') + '» ל-' + fmtDT(r.followup_due) : ''),
+    'ok', (r && r.followup_task) ? 7000 : undefined);
+  await mtTasksRefresh();
   renderMeets(); if(typeof renderTasks==='function') renderTasks();
   openMeet(id);
 };
 let MT_RS_ID = null;
+/* 6.251.0 — ביטול ודחייה משנים משימות **בשרת** (סגירה, הזזה, פולואפ). שאילתה אחת ולא loadLeads
+   (הלקח מ-6.153.0); כשל רשת אינו מפיל את הפעולה — הרענון האוטומטי ישלים. */
+async function mtTasksRefresh(){
+  try{ const tr = await CRM_Q.tasks(); if(tr && !tr.error && Array.isArray(tr.data)) TASKS = tr.data; }catch(_e){}
+}
+/* 6.251.0 — "לא ביומן" נכון רק לפגישה של **מארגן אחר**. מאז 4.3 (12/10) פגישה ש-sales@ מארגן מתעדכנת
+   ומתבטלת ביומן (meeting-invite), כמו ש-meeting_reschedule כבר מחזירה ב-is_outlook. */
+const mtForeignOl = m => !!m && m.source==='outlook' && String(m.organizer_email||'').toLowerCase()!=='sales@ironfitness.co.il';
 /* ═══ שיגור זימון הפגישה (6.165.0, רומן) ══════════════════════════════
    🔴 שני שלבים, ובכוונה. crm.meeting_send(id, true) הוא **תצוגה מקדימה
    שאינה כותבת**: היא מריצה את כל השערים בשרת ומחזירה את הסוג שנגזר,
@@ -25940,7 +25973,7 @@ window.mtReschedOpen = (id)=>{
   $('#mt-rs-start').value = (m.start_time||'').slice(0,5);
   $('#mt-rs-end').value   = (m.end_time||'').slice(0,5);
   $('#mt-rs-err').textContent = '';
-  $('#mt-rs-note').textContent = m.source==='outlook'
+  $('#mt-rs-note').textContent = mtForeignOl(m)
     ? 'הפגישה מיומן אאוטלוק — השינוי יחול במערכת ובמשימה, ולא ביומן.'
     : 'המשימה המקושרת תוזז יחד עם הפגישה.';
   /* 🔴 classList ולא mountCard: mountCard מסתיר את **כל** המודלים,
@@ -25973,6 +26006,7 @@ $('#mt-rs-save').onclick = async ()=>{
   toast('המועד עודכן ✓'
     + ((r && r.tasks_moved > 0) ? ' · הוזזה ' + r.tasks_moved + ' משימה' : '')
     + ((r && r.is_outlook) ? ' · יש לעדכן גם ביומן אאוטלוק' : ''));
+  await mtTasksRefresh();   /* 6.251.0 — המשימה זזה בשרת (וגם התזכורות שלה התאפסו) */
   renderMeets(); if(typeof renderTasks==='function') renderTasks();
   openMeet(id);
 };

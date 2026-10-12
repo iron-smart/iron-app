@@ -1146,6 +1146,10 @@
   /* 6.190.0 — כפתור סנכרון ההזמנה במעלה הכרטיס. 6.192.0 — בכחול המותג (--navy)
      ולא בכחול זר: #1d4ed8 היה הצבע היחיד בקובץ שאינו מהפלטה (רומן, 03/09/2026) */
   .ord-sync-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:6px 0 2px }
+  /* 6.241.0 — ordquote: ההצעה שממנה נפתחה ההזמנה, ומסמך החתימה שלה */
+  .ord-qbar{ display:flex; align-items:center; gap:var(--sp-2); flex-wrap:wrap; margin:6px 0 2px; font-size:var(--fs-sm); color:var(--ink-2); }
+  .ord-qbar b{ color:var(--ink-1); }
+  .ord-qbar a{ font-weight:600; }
   .ord-sync-btn{ width:auto; background:var(--navy); border-color:var(--navy); color:#fff; font-weight:800; padding:9px 16px }
   .ord-sync-btn:disabled{ opacity:.6 }
   .md-card{ cursor:pointer }
@@ -3336,7 +3340,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.240.0</div>
+      <div class="ver">גרסה 6.241.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3465,7 +3469,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="etaest-2026-10-11a">גרסה 6.240.0</div>
+    <div class="side-foot" title="ordquote-2026-10-12a">גרסה 6.241.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -12215,7 +12219,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'etaest-2026-10-11a';
+const BUILD_ID = 'ordquote-2026-10-12a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -18090,7 +18094,9 @@ const CRM_Q = {
   lown: () => /* שורות הבעלות הראשיות. **לא מיותר מול leads.owner_id**: המראה מחזיקה
          profile_id בלבד, ולעובד לשעבר אין חשבון — 694 לידים היו מוצגים
          כחסרי בעלים. RLS: can_view('crm.leads'). */
-      sb.schema('crm').from('lead_owners').select('lead_id,profile_id,legacy_owner,is_primary').limit(10000)
+      sb.schema('crm').from('lead_owners').select('lead_id,profile_id,legacy_owner,is_primary').limit(10000),
+  /* 6.241.0 — מסמכי החתימה. הגדרה אחת לשני צרכנים: loadLeads ורענון מסך המסמכים (CRM_AUTO_REG). */
+  prots: () => sb.schema('ord').from('protocols_v').select('id,order_id,call_id,deal_id,order_number,customer_name,phone,doc_type,category,status,sent_at,signed_at,signer_name,link_sent_at,link_sent_via,link_sent_by,link_sent_count').order('sent_at',{ascending:false}).limit(10000)
 };
 async function loadLeads(){
   let _q;
@@ -18109,7 +18115,7 @@ async function loadLeads(){
     oldPart('service_calls'),   /* סכימת ord בפלטפורמה — מקור האמת */
     sb.schema('ord').from('teams').select('id,name,color,active,sort_order').order('sort_order',{ascending:true}),
     sb.schema('ord').from('inv_items').select(SKU_LIST_COLS).order('partname',{ascending:true}).limit(10000),
-    sb.schema('ord').from('protocols_v').select('id,order_id,call_id,deal_id,order_number,customer_name,phone,doc_type,category,status,sent_at,signed_at,signer_name,link_sent_at,link_sent_via,link_sent_by,link_sent_count').order('sent_at',{ascending:false}).limit(10000),
+    CRM_Q.prots(),
     sb.schema('ord').from('settings').select('key,value').order('key',{ascending:true}),
     /* ספריית בעלי הלידים — RPC ולא טבלה, כי RLS על core.profiles מחזיר
        למשתמש רגיל את הפרופיל שלו בלבד (ראו lownApply). שגיאה כאן אינה
@@ -18930,7 +18936,12 @@ const CRM_AUTO_REG = [
   { k:'logi', tab:'tab-logi', host:'cal-tools',
     get:()=>oldBoot(true).then(()=>Promise.all([oldPart('orders'), oldPart('service_calls')])),
     put:(r)=>{ ORDS=r[0].data||[]; SCALLS=r[1].data||[]; },
-    draw:()=>{ renderLogi(); try{ if($('#cal-wrap')) renderCal(); }catch(_e){} } }
+    draw:()=>{ renderLogi(); try{ if($('#cal-wrap')) renderCal(); }catch(_e){} } },
+  /* 6.241.0 — מסך המסמכים: חתימה שנעשתה אחרי טעינת הדף לא נראתה עד רענון (רומן, 12/10/2026). */
+  { k:'docs', tab:'tab-docs', host:'doc-chips',
+    get:()=>Promise.all([CRM_Q.prots()]),
+    put:(r)=>{ PROTS=r[0].data||[]; },
+    draw:()=>renderDocs() }
 ];
 
 /* התווית נוצרת עצלה ומוזרקת לסרגל המסך. ⚠️ הציור מחליף innerHTML של
@@ -23445,6 +23456,29 @@ window.ordSyncOne = async (id, ctx)=>{
   else if(busy) toast((upd ? 'הכותרת עודכנה; ' : '') + 'פירוט ההזמנה תפוס בסנכרון השעתי — נסו שוב בעוד דקה');
   else toast(upd ? 'ההזמנה עודכנה מפריוריטי ✓' : 'ההזמנה זהה לפריוריטי — אין שינוי');
 };
+/* 6.241.0 — ordquote: ההצעה שממנה נפתחה ההזמנה (ORDERS.CPROFNUM ⇒ ord.orders.priority_quote_id),
+   קישור לתהליך המכירה ולמסמך החתימה שלה. מחוץ ל-form-grid — כך הגריד של הכרטיס אינו זז.
+   ⚠️ קישור רק כשהעסקה טעונה ב-DEALS: openDeal יוצא בשקט על מזהה שאינו טעון, וקישור מת גרוע
+      ממספר בלי קישור (מי שאין לו crm.deals אינו טוען עסקאות כלל). */
+function ordQuoteBar(o){
+  const q = String((o && o.priority_quote_id) || '').trim();
+  if(!q) return '';
+  const deals = (DEALS||[]).filter(d => String(d.priority_quote_id||'').trim() === q);
+  deals.sort((a,b) => ((a.closed_at?1:0) - (b.closed_at?1:0)) || String(b.created_at||'').localeCompare(String(a.created_at||'')));
+  const d = deals[0] || null;
+  const docs = (PROTS||[]).filter(p => (p.category||'protocols') === 'quotes'
+    && ((d && p.deal_id === d.id) || String(p.order_number||'').trim() === q));
+  const signed = docs.find(p => p.status === 'נחתם' || p.signed_at);
+  const pend = signed ? null : docs.find(p => docPending(p));
+  const qn = d && window.canView('crm.deals')
+    ? '<a href="#" onclick="event.preventDefault();goCard(()=>openDeal(\'' + jsq(d.id) + '\'))" title="פתיחת כרטיס תהליך המכירה">' + esc(q) + ' ↗</a>'
+    : '<b dir="ltr">' + esc(q) + '</b>';
+  let doc = '';
+  if(signed) doc = '<span class="pill p-green">נחתם ' + fmtIso(signed.signed_at) + '</span> <button class="chip" onclick="openDocLink(\'' + jsq(signed.id) + '\',\'open\')">' + ico('doc') + ' צפייה במסמך החתום</button>';
+  else if(pend) doc = '<span class="pill p-yellow" title="נוצר מסמך חתימה להצעה וטרם נחתם">ממתין לחתימה</span>';
+  return '<div class="ord-qbar">' + PRI_ICO + 'הצעה בפריוריטי: ' + qn + (d ? ' · ' + esc(d.stage||'') : '') + (doc ? ' · ' + doc : '') + '</div>';
+}
+
 window.openOrd = (id, ctx)=>{
   const o = ORDS.find(x=>x.id===id); if(!o) return;
   ctx = ctx==='logi' ? ctx : null;   /* 6.228.0 — הפרופיל 'sales' ירד עם מסך ההזמנות של ה-CRM */
@@ -23459,6 +23493,7 @@ window.openOrd = (id, ctx)=>{
   $('#ordSheet').innerHTML = `
     <h3>${esc(o.order_number)} — ${esc(o.customer_name||'')}${o.erp_status?` <span class="pill p-violet" title="הסטטוס בפריוריטי — מתעדכן בסנכרון">${PRI_ICO}פריוריטי: ${esc(o.erp_status)}</span>`:''}${o.erp_synced_at?`<span class="pill" style="font-weight:400" title="התאריך שבו השתנה לאחרונה שדה שמגיע מפריוריטי. הסנכרון עצמו בודק את ההזמנה כל שעה — מועד הבדיקה האחרונה מוצג בראש המסך.">עודכן מפריוריטי ${fmtIso(o.erp_synced_at)}</span>`:''}${window.regressTag?window.regressTag(o):''}${openBadge(o.order_number,1)}${retBadge(o.order_number,1)}</h3>
     ${window.canEdit('logi.orders')?`<div class="ord-sync-row"><button class="btn ord-sync-btn" id="ord-sync-${o.id}" onclick="ordSyncOne('${o.id}','${ctx||''}')">↻ סנכרון הזמנה זו מפריוריטי</button><span class="note" style="margin:0">מושך את הכותרת, הפירוט, הדו-שיח, הערות ההזמנה ופרטי הלקוח של ההזמנה הזו בלבד</span></div>`:''}
+    ${ordQuoteBar(o)}
     <div style="height:10px"></div>
     <div class="form-grid">
       <div class="form-sep">פרטי ההזמנה מפריוריטי</div>

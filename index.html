@@ -3370,7 +3370,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.247.0</div>
+      <div class="ver">גרסה 6.250.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3499,7 +3499,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="teamsauto-2026-10-12a">גרסה 6.247.0</div>
+    <div class="side-foot" title="dlive-2026-10-12a">גרסה 6.250.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -12389,6 +12389,8 @@ window.dlqArm = ()=>{
      ושם ההקשה ממשיכה לפתוח את המסמך — עדיף מפופאובר על מסך צר. */
   if(!el || !el.dataset.deal) return;
   if(!window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
+  /* 6.250.0 — dlLivePaint דורך מחדש כשמסמך הופיע בזמן שהכרטיס פתוח; בלי השער היו נרשמים מאזינים כפולים. */
+  if(el.dataset.armed) return; el.dataset.armed = '1';
   const id = el.dataset.deal;
   el.addEventListener('mouseenter', ()=>{ if(DLQ_T) clearTimeout(DLQ_T);
     DLQ_T = setTimeout(()=>dlqShow(id, el), 250); });
@@ -12499,7 +12501,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'teamsauto-2026-10-12a';
+const BUILD_ID = 'dlive-2026-10-12a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -24612,11 +24614,20 @@ function dlOrdSecSync(){
   const m = document.getElementById('dealModal'); if(!m || m.classList.contains('hidden')) return;
   const d = (DEALS||[]).find(x=>x.id===DLIVE_ID); if(d) dlOrdSecDraw(d);
 }
+/* 6.250.0 — תאריך **ושעה** בשעון ישראל (רומן: "שעה של העדכון מצד שמאל לתאריך"). ב-RTL השעה שאחרי
+   התאריך במחרוזת נופלת משמאלו. ⚠️ לא fmtIso: הוא חותך את ה-ISO כפי שהוא, כלומר ב-UTC — עדכון
+   ב-23:30 שעון ישראל היה מוצג בתאריך של אתמול. */
+function dlAtIL(v){
+  const t = new Date(v); if(!v || isNaN(t.getTime())) return fmtIso(v);
+  const dd = t.toLocaleDateString('he-IL', { timeZone:'Asia/Jerusalem', day:'2-digit', month:'2-digit', year:'2-digit' });
+  const hh = t.toLocaleTimeString('he-IL', { timeZone:'Asia/Jerusalem', hour:'2-digit', minute:'2-digit', hourCycle:'h23' });
+  return esc(dd) + ' ' + esc(hh);
+}
 function dlPqsPill(d){
   const s = d && d.priority_quote_status ? String(d.priority_quote_status) : '';
   const at = d && d.priority_quote_synced_at ? String(d.priority_quote_synced_at) : '';
   return (s ? `<span class="pill p-violet" title="סטטוס ההצעה בפריוריטי — מתעדכן בוובהוק ובמשיכה">${PRI_ICO}פריוריטי: ${esc(s)}</span>` : '')
-       + (at ? `<span class="pill" style="font-weight:400" title="התאריך שבו השתנה לאחרונה שדה שמגיע מפריוריטי (סטטוס ההצעה, מחיר או מסמך). הוובהוק והסוקר בודקים את ההצעה בכל שינוי סטטוס ובכל 15 דקות.">עודכן מפריוריטי ${fmtIso(at)}</span>` : '');
+       + (at ? `<span class="pill" style="font-weight:400" title="התאריך והשעה (שעון ישראל) שבהם השתנה לאחרונה שדה שמגיע מפריוריטי (סטטוס ההצעה, מחיר או מסמך). הוובהוק והסוקר בודקים את ההצעה בכל שינוי סטטוס ובכל 15 דקות.">עודכן מפריוריטי ${dlAtIL(at)}</span>` : '');
 }
 function dealRow(d, nt){
   const cust = d.customer_id ? CUSTS.find(c=>c.id===d.customer_id) : null;
@@ -24747,13 +24758,16 @@ debounceSearch($('#meet-q'), renderMeets);
    ⚠️ **ולא מציירים את הכרטיס מחדש** — openDeal מאפס scrollTop, חוטף
       מיקוד ומאפס את הלשונית. מעדכנים **במקום**: הרצועה והשורה בטבלה.
    ⚠️ ורק כרטיס העסקה: הכרעת רומן. הטבלאות כבר מתרעננות כל שתי דקות. */
-let DLIVE_CH = null, DLIVE_T = null, DLIVE_ID = null;
-const DLIVE_COLS = 'id,stage,quote_status,irrelevant_reason,amount,amount_incl_vat,approved_at,closed_at,send_channel,sign_link,priority_quote_status,priority_quote_synced_at,priority_quote_id';
+let DLIVE_CH = null, DLIVE_T = null, DLIVE_ID = null, DLIVE_CONTACT = null;
+/* 🔴 6.250.0 — בדיוק עמודות הטוען של DEALS (נאכף בבנייה). עד כאן הרשימה הייתה ידנית וחסר בה
+   quote_doc_path — ולכן PDF שנמשך בוובהוק לא הגיע למטמון, וגם פתיחה מחדש של הכרטיס הראתה
+   "טרם נמשך" (נמדד על PQ26001166, 12/10/2026). */
+const DLIVE_COLS = 'id,name,stage,amount,amount_incl_vat,quote_doc_path,quote_status,irrelevant_reason,priority_quote_id,customer_id,contact_id,lead_id,send_channel,sign_link,priority_quote_status,priority_quote_synced_at,approved_at,closed_at,created_at,monday_id';
 
 window.dlLiveStop = ()=>{
   if(DLIVE_T){ clearInterval(DLIVE_T); DLIVE_T = null; }
   if(DLIVE_CH){ try{ sb.removeChannel(DLIVE_CH); }catch(_e){} DLIVE_CH = null; }
-  DLIVE_ID = null;
+  DLIVE_ID = null; DLIVE_CONTACT = null;
 };
 
 /* מחיל שורה טרייה על הכרטיס הפתוח. מחזיר את רשימת השדות שזזו, או null.
@@ -24769,12 +24783,9 @@ window.dlLiveApply = (row)=>{
     if(String(row[k] ?? '') !== String(d[k] ?? '')){ d[k] = row[k]; changed.push(k); }
   });
   if(!changed.length) return null;
-  try{ dlPipeDraw(row.id); }catch(_e){}
-  /* 6.225.0 — השבב בכותרת מתעדכן במקום (ולא openDeal, שמאפס scrollTop). */
-  if(changed.indexOf('priority_quote_status') >= 0 || changed.indexOf('priority_quote_synced_at') >= 0){ const _p = document.getElementById('dl-pqs'); if(_p) _p.innerHTML = dlPqsPill(d); }
-  if(changed.indexOf('sign_link') >= 0){ const _l = document.getElementById('dl-signlink'); if(_l) _l.innerHTML = dlSignLinkHtml(d); }
-  /* 6.228.0 — מספר ההצעה או השלב השתנו ⇒ סקשן ההזמנה מתעדכן במקום */
-  if(changed.indexOf('priority_quote_id') >= 0 || changed.indexOf('stage') >= 0) dlOrdSecDraw(d);
+  /* 6.250.0 — מסמך חדש ⇒ התצוגה המקדימה הישנה ממופתחת לפי העסקה ואסור שתוצג. */
+  if(changed.indexOf('quote_doc_path') >= 0){ try{ delete DLQ_CACHE[d.id]; }catch(_e){} }
+  dlLivePaint(d, changed);
   try{ renderDeals(); }catch(_e){}
   toast(changed.indexOf('stage') >= 0
         ? 'העסקה עודכנה: «' + (before||'—') + '» ← «' + (d.stage||'—') + '»'
@@ -24784,14 +24795,179 @@ window.dlLiveApply = (row)=>{
 
 window.dlLivePoll = async ()=>{
   if(!DLIVE_ID) return null;
+  const id = DLIVE_ID;
   const { data, error } = await sb.schema('crm').from('deals')
-    .select(DLIVE_COLS).eq('id', DLIVE_ID).maybeSingle();
+    .select(DLIVE_COLS).eq('id', id).maybeSingle();
   /* ⚠️ כשל חולף אינו מרעיש ואינו מנקה — המנוי עדיין חי, והתיקתוק הבא
      ינסה שוב. הודעת שגיאה כאן הייתה רועשת בלי שהמשתמש יכול לעשות דבר. */
-  if(error || !data) return null;
-  return dlLiveApply(data);
+  const ch = (error || !data) ? null : dlLiveApply(data);
+  /* 6.250.0 — ומה שאינו בשורת העסקה: משימות, פגישות, חתימה, לקוח/ליד/איש קשר, עדכונים. */
+  try{ await dlLiveRel(id); }catch(_e){}
+  try{ dlUpdRefresh(); }catch(_e){}
+  return ch;
 };
 
+/* ═══ 6.250.0 — כרטיס עסקה חי במלואו ═════════════════════════════════
+   רומן, 12/10/2026: "אני צריך שכל מה שיש בכרטיס הזה יהיה בעדכון חי מיידי".
+   🔴 העמודות נגזרות מהטוענים (נאכף בבנייה) — רשימה ידנית היא בדיוק מה ששכח את quote_doc_path.
+   ⚠️ כל הציורים **במקום** (innerHTML/outerHTML לפי מזהה) ולא openDeal — הוא מאפס scrollTop, חוטף
+      מיקוד ומחזיר ללשונית הראשית. בכרטיס העסקה אין שדה הקלדה מלבד תיבת העדכון, שאינה נוגעת כאן. */
+const DL_TASK_COLS = 'id,name,status,value_tag,category,due_at,closed_at,created_at,linked_type,linked_id,owner_id';
+const DL_MEET_COLS = 'id,subject,status,meet_date,start_time,end_time,meet_type,location,teams_link,linked_type,linked_id,source,organizer_name,attendees,all_day,web_link,owner_id,contact_phone';
+const DL_PROT_COLS = 'id,order_id,call_id,deal_id,order_number,customer_name,phone,doc_type,category,status,sent_at,signed_at,signer_name,link_sent_at,link_sent_via,link_sent_by,link_sent_count';
+const DL_CUST_COLS = 'id,name,phone,email,priority_id,status,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes';
+const DL_LEAD_COLS = 'id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at,position,address,notes,utm_campaign,utm_source,utm_medium,utm_term,landing_page_url,send_whatsapp_catalog,owner_id,updated_at';
+window.dlDatesHtml = (d)=>{
+  const dt = v => v ? fmtIso(v) : '—';   /* 6.206.0 */
+  return `<div class="c2-half"><label>תאריך אישור ההצעה</label>${roIn(dt(d.approved_at))}</div>`
+       + `<div class="c2-half"><label>תאריך סגירה</label>${roIn(dt(d.closed_at))}</div>`;
+};
+/* תאי "פרטי הפנייה והלקוח" — מזהה לכל תא, כדי שיוחלפו אחד-אחד (outerHTML) ולא דרך עוטף:
+   ⚠️ עוטף display:contents היה שובר את .form-grid > div ואת .form-sep:first-child (נמדדו בגיליון).
+   ⚠️ תא ההערה הלוגיסטית קיים תמיד ומוסתר כשאין הערה — אחרת לא היה לו מקום לחזור אליו. */
+window.dlCustCells = (lead, cust, contact)=>{
+  const phone  = (lead && lead.phone) || (cust && cust.phone) || '';
+  const dphone = (contact && contact.phone) || phone;
+  const log = cust && cust.logistics_notes;
+  return [
+    lead ? `<div id="dl-cc-lead"><label>פנייה מקורית</label>
+        <a class="dl-tile" href="#" onclick="event.preventDefault();goCard(()=>openLead('${jsq(lead.id)}'))"
+           title="${esc(lead.full_name||'')}"><span class="tk-kind tk-k-lead">ליד</span><span class="dlt-nm">${esc(lead.full_name||'')}</span><span class="dlt-ar">&#8599;</span></a></div>`
+      : '<div id="dl-cc-lead"><label>פנייה מקורית</label><div class="note" title="הקישור נוצר בהמרת ליד, או במילוי היסטורי.">ללא פנייה מקושרת</div></div>',
+    cust ? `<div id="dl-cc-cust"><label>לקוח</label>
+        <a class="dl-tile" href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(cust.id)}'))"
+           title="${esc(cust.name||'')}"><span class="tk-kind tk-k-customer">לקוח</span><span class="dlt-nm">${esc(cust.name||'כרטיס הלקוח')}</span><span class="dlt-ar">&#8599;</span></a></div>`
+      : '<div id="dl-cc-cust"><label>לקוח</label><div class="note">אינה מקושרת ללקוח.</div></div>',
+    `<div id="dl-cc-co"><label>שם חברה</label>${roIn((lead&&lead.company)||'')}</div>`,
+    `<div id="dl-cc-ct"><label>איש קשר</label>${roIn((contact&&contact.full_name)||'')}</div>`,
+    `<div id="dl-cc-ph"><label>טלפון ${dphone?phBtns(dphone):''}</label>${roIn(dphone||'',{ltr:1})}</div>`,
+    `<div id="dl-cc-ty"><label>סוג לקוח</label>${roIn((cust&&cust.customer_type)||'')}</div>`,
+    `<div id="dl-cc-ad"><label>כתובת</label>${roIn(cust?[cust.address,cust.city].filter(Boolean).join(', '):'')}</div>`,
+    `<div id="dl-cc-em"><label>דוא"ל</label>${roIn((contact&&contact.email)||(cust&&cust.email)||'',{ltr:1})}</div>`,
+    `<div class="span4" id="dl-cc-log"${log?'':' style="display:none"'}>${log?`<div class="note">&#128666; ${esc(log)}</div>`:''}</div>`
+  ];
+};
+window.dlCustCellsDraw = async (d)=>{
+  if(!d || DLIVE_ID !== d.id) return;
+  let contact = null;
+  if(d.contact_id){
+    if(DLIVE_CONTACT && DLIVE_CONTACT.id === d.contact_id) contact = DLIVE_CONTACT;
+    else {
+      const r = await sb.schema('core').from('contacts').select('id,full_name,phone,email').eq('id', d.contact_id).maybeSingle();
+      contact = (r && r.data) || null; DLIVE_CONTACT = contact;
+    }
+  }
+  if(DLIVE_ID !== d.id) return;
+  const x = ctxOf('deal', d.id);
+  dlCustCells(x.lead, x.cust, contact).forEach(h=>{
+    const m = /^<div[^>]*\sid="([^"]+)"/.exec(h);
+    const el = m && document.getElementById(m[1]);
+    if(el) el.outerHTML = h;
+  });
+};
+/* משימות ופגישות של העסקה **ושל הליד** — אותו kin של openDeal. */
+function dlKin(id){
+  const lead = ctxOf('deal', id).lead;
+  const kin = (o)=> (o.linked_type==='deal' && o.linked_id===id) || (lead && o.linked_type==='lead' && o.linked_id===lead.id);
+  const ta = (TASKS||[]).filter(kin), ma = (MEETS||[]).filter(kin);
+  return { tsk: ta.filter(tmOpen), mts: ma.filter(m=>!mDone(m)), hsTsk: ta.filter(tmDone), hsMts: ma.filter(mDone) };
+}
+function dlTmDraw(id){
+  const k = dlKin(id);
+  const b = document.getElementById('dl-tmblock'); if(b) b.innerHTML = lbTmBlock(k.tsk, k.mts, dlTmActs(id));
+  const h = document.getElementById('dl-pn-hist');
+  if(h) h.innerHTML = `<section class="ob-card"><h2 class="sec">היסטוריה (${k.hsTsk.length+k.hsMts.length})</h2>${lbHistBlock(k.hsTsk, k.hsMts)}</section>`;
+}
+/* כל תא בכרטיס, במקום. ⚠️ כל אחד בנפרד ב-try — תא שזורק אינו משאיר את השאר ישנים. */
+function dlLivePaint(d, changed){
+  const id = d.id, ch = k => (changed||[]).indexOf(k) >= 0;
+  const set = (eid, html)=>{ const e = document.getElementById(eid); if(e) e.innerHTML = html; };
+  [ ()=>dlPipeDraw(id),
+    ()=>set('dl-ttl', esc(d.name||'עסקה')),
+    ()=>set('dl-stpill', mdPill(d.stage||'—',DEAL_ST_COLORS,LB_TK)),
+    ()=>set('dl-pqs', dlPqsPill(d)),
+    ()=>set('dl-qcell', dlQCell(d)),
+    ()=>set('dl-amt', dlAmtCell(d)),
+    ()=>set('dl-amtv', dlAmtVCell(d)),
+    ()=>{ const q = document.getElementById('dl-qdoc'); if(!q) return;
+          q.innerHTML = '<label>מסמך ההצעה</label>' + dlQDocBox(d);
+          if((d.quote_doc_path || d.priority_quote_id) && !q.dataset.deal){ q.dataset.deal = id; dlqArm(); } },
+    ()=>dlChanDraw(id),
+    ()=>set('dl-signbox', dlSignBox(d)),
+    ()=>set('dl-signlink', dlSignLinkHtml(d)),
+    ()=>{ const e = document.getElementById('dl-dates'); if(!e) return;
+          e.querySelectorAll('.c2-half').forEach(x=>x.remove()); e.insertAdjacentHTML('beforeend', dlDatesHtml(d)); },
+    ()=>set('dl-ownbox', dlOwnerCellName(d)),
+    ()=>dlOrdSecDraw(d),
+    ()=>{ if(ch('customer_id') || ch('contact_id') || ch('lead_id')){ dlCustCellsDraw(d); dlTmDraw(id); } }
+  ].forEach(f=>{ try{ f(); }catch(_e){} });
+}
+/* מיזוג שורות טריות למטמון גלובלי, **במקום** (המערך עצמו — כל צרכן מחזיק אותו בשם).
+   מחזיר true רק כשמשהו באמת השתנה, ולכן הסקירה אינה מציירת מחדש לחינם. */
+function dlMerge(arr, rows, inScope){
+  if(!Array.isArray(arr) || !Array.isArray(rows)) return false;
+  /* ⚠️ איחוד המפתחות של כל השורות, ושני הצדדים מוטלים עליו — שורה במטמון שנוצרה מקומית (insert)
+     עשויה להחזיק פחות עמודות מהשליפה, והשוואה גולמית הייתה "משתנה" בכל סקירה לנצח. */
+  const cols = [...new Set(rows.flatMap(r => Object.keys(r)))].sort();
+  const proj = r => cols.reduce((o,k)=>{ o[k] = (r[k]===undefined ? null : r[k]); return o; }, {});
+  const sig = a => JSON.stringify(a.map(proj).sort((p,q)=>String(p.id).localeCompare(String(q.id))));
+  const old = arr.filter(inScope);
+  if(sig(old) === sig(rows)) return false;
+  for(let i = arr.length-1; i >= 0; i--) if(inScope(arr[i])) arr.splice(i, 1);
+  rows.forEach(r=>arr.push(r));
+  return true;
+}
+function dlRowSync(arr, res){
+  if(!res || res.error || !res.data || !Array.isArray(arr)) return false;
+  const row = res.data, cur = arr.find(x=>x.id===row.id);
+  if(!cur){ arr.push(row); return true; }
+  const keys = Object.keys(row);
+  if(keys.every(k => JSON.stringify(cur[k] ?? null) === JSON.stringify(row[k] ?? null))) return false;
+  Object.assign(cur, row); return true;
+}
+window.dlLiveRel = async (id)=>{
+  const d = (DEALS||[]).find(x=>x.id===id); if(!d || DLIVE_ID !== id) return false;
+  const ids = [id].concat(d.lead_id ? [d.lead_id] : []);
+  const q = [
+    sb.schema('crm').from('tasks').select(DL_TASK_COLS).in('linked_id', ids),
+    sb.schema('crm').from('meetings').select(DL_MEET_COLS).in('linked_id', ids),
+    sb.schema('ord').from('protocols_v').select(DL_PROT_COLS).eq('deal_id', id),
+    d.customer_id ? sb.schema('core').from('customers').select(DL_CUST_COLS).eq('id', d.customer_id).maybeSingle() : null,
+    d.lead_id ? sb.schema('crm').from('leads').select(DL_LEAD_COLS).eq('id', d.lead_id).maybeSingle() : null,
+    d.contact_id ? sb.schema('core').from('contacts').select('id,full_name,phone,email').eq('id', d.contact_id).maybeSingle() : null
+  ];
+  let r;
+  try{ r = await Promise.all(q.map(x => x || Promise.resolve(null))); }catch(_e){ return false; }
+  if(DLIVE_ID !== id) return false;
+  const ok = x => x && !x.error && x.data;
+  const inIds = o => ids.indexOf(o.linked_id) >= 0;
+  let tm = false, sg = false, cu = false;
+  if(ok(r[0])) tm = dlMerge(TASKS, r[0].data, inIds) || tm;
+  if(ok(r[1])) tm = dlMerge(MEETS, r[1].data, inIds) || tm;
+  if(ok(r[2])) sg = dlMerge(PROTS, r[2].data, p => p.deal_id === id);
+  if(dlRowSync(CUSTS, r[3])) cu = true;
+  if(dlRowSync(LEADS, r[4])) cu = true;
+  if(r[5] && !r[5].error){
+    const ct = r[5].data || null;
+    if(JSON.stringify(ct) !== JSON.stringify(DLIVE_CONTACT)){ DLIVE_CONTACT = ct; cu = true; }
+  }
+  if(tm) try{ dlTmDraw(id); }catch(_e){}
+  if(sg){
+    try{ const e = document.getElementById('dl-signbox'); if(e) e.innerHTML = dlSignBox(d); }catch(_e){}
+    try{ const e = document.getElementById('dl-signlink'); if(e) e.innerHTML = dlSignLinkHtml(d); }catch(_e){}
+    try{ if(typeof renderDocs === 'function') renderDocs(); }catch(_e){}
+  }
+  if(cu) try{ await dlCustCellsDraw(d); }catch(_e){}
+  return tm || sg || cu;
+};
+/* לשונית העדכונים — רק כשכבר נטענה, ולא כשיש בה עריכה פתוחה (ציור מחדש היה מוחק את הטקסט). */
+window.dlUpdRefresh = ()=>{
+  if(!DLIVE_ID) return;
+  const pn = document.getElementById('dl-pn-upd'); if(!pn || !pn.dataset.loaded) return;
+  const box = document.getElementById('dl-updlist'); if(!box) return;
+  if(box.querySelector('textarea, input') || box.contains(document.activeElement)) return;
+  updRun(DLIVE_ID, 'deal', 'dl');
+};
 window.dlLiveStart = (id)=>{
   dlLiveStop();
   DLIVE_ID = id;
@@ -24802,7 +24978,10 @@ window.dlLiveStart = (id)=>{
     DLIVE_CH = sb.channel('deal-' + id)
       .on('postgres_changes',
           { event:'UPDATE', schema:'crm', table:'deals', filter:'id=eq.' + id },
-          p => { try{ dlLiveApply(p.new); }catch(_e){} })
+          p => { try{ dlLiveApply(p.new); }catch(_e){}
+                 /* 6.250.0 — מיד, ולא בסקירה: הוובהוק יוצר את משימת המעקב **לפני** שהוא מקדם את
+                    העסקה, והחתימה מעדכנת את המסמך לפני השלב — ולכן ברגע ששורת העסקה זזה הם כבר שם. */
+                 try{ dlLiveRel(id).then(()=>dlUpdRefresh()).catch(()=>{}); }catch(_e){} })
       .subscribe();
   }catch(_e){ DLIVE_CH = null; }
 };
@@ -24835,27 +25014,13 @@ window.openDeal = async (id)=>{
   const hsTsk=_tskAll.filter(tmDone), hsMts=_mtsAll.filter(mDone);
   const u = lead ? {type:'lead', id:lead.id} : null;
   $('#dealSheet').innerHTML = `
-    <h3>${esc(d.name||'עסקה')} ${mdPill(d.stage||'—',DEAL_ST_COLORS,LB_TK)} <span id="dl-pqs">${dlPqsPill(d)}</span></h3>
+    <h3><span id="dl-ttl">${esc(d.name||'עסקה')}</span> <span id="dl-stpill">${mdPill(d.stage||'—',DEAL_ST_COLORS,LB_TK)}</span> <span id="dl-pqs">${dlPqsPill(d)}</span></h3>
     <div class="lb-pipe" id="dl-pipe" data-deal="${esc(id)}"></div>
     ${ctabsHtml('dl')}
     <div id="dl-pn-main">
     <div class="form-grid">
       <div class="form-sep">פרטי הפנייה והלקוח</div>
-      ${lead?`<div><label>פנייה מקורית</label>
-        <a class="dl-tile" href="#" onclick="event.preventDefault();goCard(()=>openLead('${jsq(lead.id)}'))"
-           title="${esc(lead.full_name||'')}"><span class="tk-kind tk-k-lead">ליד</span><span class="dlt-nm">${esc(lead.full_name||'')}</span><span class="dlt-ar">&#8599;</span></a></div>`
-      :'<div><label>פנייה מקורית</label><div class="note" title="הקישור נוצר בהמרת ליד, או במילוי היסטורי.">ללא פנייה מקושרת</div></div>'}
-      ${cust?`<div><label>לקוח</label>
-        <a class="dl-tile" href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(cust.id)}'))"
-           title="${esc(cust.name||'')}"><span class="tk-kind tk-k-customer">לקוח</span><span class="dlt-nm">${esc(cust.name||'כרטיס הלקוח')}</span><span class="dlt-ar">&#8599;</span></a></div>`
-      :'<div><label>לקוח</label><div class="note">אינה מקושרת ללקוח.</div></div>'}
-      <div><label>שם חברה</label>${roIn((lead&&lead.company)||'')}</div>
-      <div><label>איש קשר</label>${roIn((contact&&contact.full_name)||'')}</div>
-      <div><label>טלפון ${dphone?phBtns(dphone):''}</label>${roIn(dphone||'',{ltr:1})}</div>
-      <div><label>סוג לקוח</label>${roIn((cust&&cust.customer_type)||'')}</div>
-      <div><label>כתובת</label>${roIn(cust?[cust.address,cust.city].filter(Boolean).join(', '):'')}</div>
-      <div><label>דוא"ל</label>${roIn((contact&&contact.email)||(cust&&cust.email)||'',{ltr:1})}</div>
-      ${cust&&cust.logistics_notes?`<div class="span4"><div class="note">&#128666; ${esc(cust.logistics_notes)}</div></div>`:''}
+      ${dlCustCells(lead, cust, contact).join('\n      ')}
 
       <div class="form-sep">פרטי העסקה</div>
       <div id="dl-qcell">${dlQCell(d)}</div>
@@ -24870,13 +25035,12 @@ window.openDeal = async (id)=>{
       <div class="span2"><label>חתימה על ההצעה — מודול איירון</label>
         <div id="dl-signbox">${dlSignBox(d)}</div></div>
       <div><label>לינק לחתימה</label><div id="dl-signlink">${dlSignLinkHtml(d)}</div></div>
-      <div class="cell-2up">
+      <div class="cell-2up" id="dl-dates">
         <!-- ⚠️ התוויות **מלאות**, אחרי מדידה. Fable הציע לקצר ל"אישור
              ההצעה"/"סגירה" בהערכה שהמלאה דורשת ~115px; המדידה בדפדפן
              החזירה **101px בתא של 104px** — כלומר היא נכנסת בשורה אחת.
              רומן לא ביקש לקצר, ולכן אין סיבה. הערכה מול מדידה. -->
-        <div class="c2-half"><label>תאריך אישור ההצעה</label>${roIn(dt(d.approved_at))}</div>
-        <div class="c2-half"><label>תאריך סגירה</label>${roIn(dt(d.closed_at))}</div>
+        ${dlDatesHtml(d)}
       </div>
 
       <div id="dl-ordsec" class="dl-ordsec">${dlOrdSecHtml(d)}</div>
@@ -24904,6 +25068,7 @@ window.openDeal = async (id)=>{
   /* 🔴 אחרי הציור ולא לפניו: dlLiveApply קורא ל-dlPipeDraw, וקריאה
      על כרטיס שטרם צויר הייתה נופלת בשקט ל-catch. */
   try{ dlLiveStart(id); }catch(_e){}
+  DLIVE_CONTACT = contact ? { id: d.contact_id, full_name: contact.full_name ?? null, phone: contact.phone ?? null, email: contact.email ?? null } : null;
   try{ dlqArm(); }catch(_e){}
   mountCard('dealModal', ()=>openDeal(id));
   /* 6.135.0 — תמיד, ולא רק כשיש ליד. 51 עסקאות במסד אין להן לא ליד ולא

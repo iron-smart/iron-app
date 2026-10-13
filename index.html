@@ -2714,6 +2714,22 @@ td.lb-today .lb-dt{ background-color:transparent; }
 .lb-cxrow:hover{ background-color:#f4f7fb; }
 .lb-cxrow b{ font-size:var(--fs-md); }
 .lb-cxrow span{ font-size:var(--fs-xs); color:var(--ink-3); }
+/* 6.252.0 — בחירת לקוח קיים לפני ההמרה (#cvPickModal). מעוגן במזהה המודאל: (1,1,0) גובר על
+   button{} ועל .btn{width:100%} בלי תלות במיקום בגיליון. */
+#cvPickModal .sheet{ max-width:640px; }   /* שלושת הכפתורים בשורה אחת ב-1440 (ב-580 "ביטול" ירד שורה) */
+#cvPickModal .cvp-list{ display:flex; flex-direction:column; gap:7px; margin-top:12px; max-height:50vh; overflow:auto; }
+#cvPickModal .cvp-row{ display:flex; flex-direction:column; align-items:stretch; gap:3px; width:100%; text-align:start;
+  padding:10px 12px; border:1px solid var(--line); border-radius:var(--r-md); background-color:#fff; color:var(--dark); font-size:var(--fs-md); }
+/* ⚠️ :not(.on) — בלעדיו (1,3,0) של הריחוף גובר על (1,2,0) של הבחירה, והשורה הנבחרת מאבדת את הרקע
+   בדיוק כשהעכבר עליה (נמדד ב-custpicktest: rgb(244,247,251) במקום rgb(238,244,249)). */
+#cvPickModal .cvp-row:hover:not(:disabled):not(.on){ background-color:#f4f7fb; }
+#cvPickModal .cvp-row.on{ border-color:var(--navy); background-color:#eef4f9; box-shadow:inset -4px 0 0 var(--navy); }
+#cvPickModal .cvp-row:disabled{ opacity:.55; cursor:not-allowed; }
+#cvPickModal .cvp-main{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+#cvPickModal .cvp-pid{ font-size:var(--fs-xs); font-weight:700; color:var(--navy); background-color:#eef2f5; border-radius:var(--r-pill); padding:1px 8px; }
+#cvPickModal .cvp-st{ font-size:var(--fs-xs); font-weight:600; color:#92400e; background-color:var(--amber-bg); border-radius:var(--r-pill); padding:1px 8px; }
+#cvPickModal .cvp-meta{ font-size:var(--fs-xs); color:var(--ink-3); }
+#cvPickModal .btn:disabled{ opacity:.45; cursor:not-allowed; }
 .lb-cxgo{ cursor:pointer; }
 .lb-cxgo:hover{ filter:brightness(.94); text-decoration:underline; }
 /* ---- שלוש עמודות תת-הסטטוס ---- */
@@ -3370,7 +3386,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.251.0</div>
+      <div class="ver">גרסה 6.252.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3499,7 +3515,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="meetfup-2026-10-12b">גרסה 6.251.0</div>
+    <div class="side-foot" title="custpick-2026-10-13a">גרסה 6.252.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -4015,6 +4031,21 @@ tr.lb-on td{ background-color:#eef5fd !important; }
 <div class="modal hidden" id="lbCxModal">
   <div class="sheet" id="lbCxSheet"></div>
 </div>
+<!-- 6.252.0 — בחירת לקוח קיים לפני פתיחה בפריוריטי. modal-over (כמו #lbUpdReqModal): נפתח **מעל** כרטיס
+     הליד ולא במקומו, ולכן Esc ולחיצת רקע סוגרים אותו בלבד — בלי לאבד את הכרטיס. אין Promise תלוי:
+     סגירה = לא נעשה דבר, וזה בדיוק "ביטול". -->
+<div class="modal modal-over hidden" id="cvPickModal">
+  <div class="sheet">
+    <h3>הליד תואם ללקוח קיים</h3>
+    <div class="note" id="cvp-note"></div>
+    <div class="cvp-list" id="cvp-list" role="radiogroup" aria-label="לקוחות קיימים תואמים"></div>
+    <div class="actions">
+      <button type="button" class="btn green" id="cvp-go" disabled onclick="cvPickGo()">פתיחת הצעת מחיר על הלקוח שנבחר</button>
+      <button type="button" class="ghost" id="cvp-new" onclick="cvPickNew()">＋ לקוח חדש בפריוריטי</button>
+      <button type="button" class="ghost" onclick="document.getElementById('cvPickModal').classList.add('hidden')">ביטול</button>
+    </div>
+  </div>
+</div>
 
 <!-- מודל כרטיס עסקה -->
 <div class="modal hidden" id="dealModal">
@@ -4472,6 +4503,61 @@ window.lbCxPick = (idsJson)=>{
   mountCard('lbCxModal', 'בחירת לקוח');
 };
 window.lbCxGo = (id)=>{ document.getElementById('lbCxModal').classList.add('hidden'); goCard(()=>openCust(id)); };
+/* ═══ 6.252.0 — בחירת לקוח קיים לפני ההמרה ═══════════════════════════════
+   רומן, 12/10/2026: "לאפשר לאיש המכירות לבחור לקוח קיים (ואז נפתחת רק הצעת מחיר עליו) או לקוח חדש".
+   🔴 ההחלטה אם לעצור היא **של השרת** (crm-convert-lead v22 מחזירה need_pick + candidates מתוך
+      crm.lead_customer_candidates — הכלל של lead-intake). כאן רק מציגים ושולחים את הבחירה.
+      lbCx/lbMatch **אינם** משתתפים: הם טלפון-בלבד ו"עמום" אצלם הוא לפי שם — כלל אחר. שני כללים
+      שמחליטים יחד היו מייצרים בדיוק את המחלוקת שהבורר נועד לסגור.
+   ⚠️ לקוח בלי מספר פריוריטי מוצג **נעול**: אין על מה לפתוח הצעה (השרת דוחה אותו גם הוא).
+   ⚠️ "לקוח חדש" עובר אישור — כרטיס כפול בפריוריטי אינו ניתן למחיקה. */
+let CV_PICK = null;   /* { id, btn, sel, n } — הליד, הכפתור שלחצו, הבחירה */
+function cvCnt(n, one, many, none){ n = +n || 0; return !n ? none : (n === 1 ? one : n + ' ' + many); }
+function cvPickOpen(id, btn, cands){
+  const rows = Array.isArray(cands) ? cands : [];
+  const l = (LEADS||[]).find(x=>x.id===id) || {};
+  CV_PICK = { id, btn, sel:'', n:rows.length };
+  const by = (rows[0] && rows[0].matched_by) || 'טלפון';
+  $('#cvPickModal h3').textContent = rows.length > 1 ? 'הליד תואם ל-' + rows.length + ' לקוחות קיימים' : 'הליד תואם ללקוח קיים';
+  $('#cvp-note').innerHTML = 'ל<b>' + esc(l.full_name || 'ליד') + '</b>' + (by === 'מייל' ? ' יש מייל' : ' יש טלפון')
+    + ' שכבר רשום אצל ' + (rows.length > 1 ? rows.length + ' לקוחות' : 'לקוח קיים') + '. '
+    + 'בחירת לקוח קיים תפתח עליו <b>הצעת מחיר בלבד</b> — בלי כרטיס לקוח חדש בפריוריטי.';
+  $('#cvp-list').innerHTML = rows.map(k=>{
+    const ok = !!k.priority_id;
+    const st = [k.status && k.status !== 'פעיל' ? k.status : '', k.is_test ? 'בדיקה' : ''].filter(Boolean)
+      .map(s=>'<span class="cvp-st">' + esc(s) + '</span>').join('');
+    const meta = [k.city || '', cvCnt(k.orders, 'הזמנה אחת', 'הזמנות', 'אין הזמנות'),
+      cvCnt(k.deals, 'עסקה אחת', 'עסקאות', 'אין עסקאות'), k.last_order ? 'הזמנה אחרונה ' + fmtD(k.last_order) : '']
+      .filter(Boolean).map(esc).join(' · ');
+    return '<button type="button" class="cvp-row" role="radio" aria-checked="false" data-id="' + esc(k.id) + '"'
+      + (ok ? ' onclick="cvPickSel(\'' + jsq(k.id) + '\')"' : ' disabled title="אין ללקוח מספר בפריוריטי — אי אפשר לפתוח עליו הצעה"') + '>'
+      + '<span class="cvp-main"><b>' + esc(k.name || 'ללא שם') + '</b>'
+      + '<span class="cvp-pid">' + (ok ? esc(k.priority_id) : 'אין מספר בפריוריטי') + '</span>' + st + '</span>'
+      + '<span class="cvp-meta">' + meta + '</span></button>';
+  }).join('');
+  $('#cvp-go').disabled = true;
+  $('#cvPickModal').classList.remove('hidden');
+}
+window.cvPickSel = (cid)=>{
+  if(!CV_PICK) return;
+  CV_PICK.sel = cid;
+  document.querySelectorAll('#cvp-list .cvp-row').forEach(b=>{
+    const on = b.dataset.id === cid; b.classList.toggle('on', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
+  $('#cvp-go').disabled = !cid;
+};
+window.cvPickGo = ()=>{
+  const s = CV_PICK; if(!s || !s.sel) return;
+  CV_PICK = null; $('#cvPickModal').classList.add('hidden');
+  convertLead(s.id, s.btn, { customer_id:s.sel });
+};
+window.cvPickNew = async ()=>{
+  const s = CV_PICK; if(!s) return;
+  /* ⚠️ CV_PICK !== s / hidden — הבורר נסגר (Esc/רקע) או נפתח מחדש לליד אחר בזמן שהאישור היה פתוח. */
+  if(!(await sysConfirm('ייפתח כרטיס לקוח חדש בפריוריטי, למרות ש' + (s.n > 1 ? '-' + s.n + ' לקוחות קיימים תואמים' : 'לקוח קיים תואם')
+    + ' לטלפון או למייל של הליד. כרטיס כפול אי אפשר למחוק.\nלהמשיך?', { ok:'כן, לקוח חדש', cancel:'חזרה לבחירה' })) || CV_PICK !== s || $('#cvPickModal').classList.contains('hidden')) return;
+  CV_PICK = null; $('#cvPickModal').classList.add('hidden');
+  convertLead(s.id, s.btn, { new_customer:true });
+};
 /* ═══ ההצלבה ההפוכה (6.124.0) ════════════════════════════════════
    `lbCx` עונה "מי הלקוח של הטלפון הזה". כאן השאלה ההפוכה: "אילו לידים
    נושאים את הטלפון הזה". שתי עובדות שונות — ולכן שני מטמונים ולא אחד —
@@ -12501,7 +12587,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'meetfup-2026-10-12b';
+const BUILD_ID = 'custpick-2026-10-13a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -27231,7 +27317,7 @@ window.openLead = (id)=>{
             eq('lead_id') לפני היצירה ומחזירה את ההצעה הקיימת). -->
     ${editable?`<div class="lb-convrow">
       <button class="btn green" style="width:auto" onclick="convertLead('${l.id}', this)">פתח לקוח והצעת מחיר בפריוריטי</button>
-      <span class="note">הפעולה תפתח לקוח זמני והצעה בפריוריטי ובמערכת.</span>
+      <span class="note">הפעולה תפתח לקוח זמני והצעה בפריוריטי ובמערכת. אם הטלפון או המייל כבר רשומים אצל לקוח — תתבקש לבחור.</span>
     </div>`:''}
     <div class="form-grid">
       <div class="form-sep">פרטי הפנייה</div>
@@ -28391,7 +28477,7 @@ window.convGoDeal = async (dealId)=>{
   if(!arr.some(x=>x.id===dealId)) await loadLeads();
   goCard(()=>openDeal(dealId));
 };
-window.convertLead = async (id, btn)=>{
+window.convertLead = async (id, btn, choice)=>{
   /* 🔴 רומן, 29/08/2026: "צריך איזושהי מניעה מללחוץ על הכפתור פעמיים".
      לחיצה כפולה יוצרת **שני לקוחות ושתי הצעות בפריוריטי** — ההחלטה
      בשרת היא לפי lead.customer_id, שנכתב רק בסוף, ולכן שתי קריאות
@@ -28401,10 +28487,18 @@ window.convertLead = async (id, btn)=>{
         עדיין יכולות לייצר כפילות. הכרעה מודעת. */
   if(btn){ if(btn.disabled) return; btn.disabled = true;
            btn.dataset.lbl = btn.textContent; btn.textContent = 'פותח בפריוריטי…'; }
-  busyShow('פותח לקוח והצעת מחיר בפריוריטי…\nזה עשוי לקחת כמה שניות.');
+  busyShow((choice && choice.customer_id ? 'פותח הצעת מחיר בפריוריטי על הלקוח שנבחר…' : 'פותח לקוח והצעת מחיר בפריוריטי…') + '\nזה עשוי לקחת כמה שניות.');
   const res = $('#convResult'); if(res) res.innerHTML='';
+  /* 6.252.0 — רשימת היתר לגוף: רק שני מפתחות הבחירה. */
+  const body = { lead_id:id };
+  if(choice && choice.customer_id) body.customer_id = String(choice.customer_id);
+  else if(choice && choice.new_customer === true) body.new_customer = true;
+  let pick = null;
   try{
-  const { data, error } = await sb.functions.invoke('crm-convert-lead', { body:{ lead_id:id } });
+  const { data, error } = await sb.functions.invoke('crm-convert-lead', { body });
+  /* 6.252.0 — השרת עצר לבחירה: לא נוצר דבר. הבורר נפתח ב-finally, **אחרי** busyHide — אחרת חלון
+     ההמתנה (שאינו נסגר בלחיצת רקע) היה מכסה אותו. */
+  if(data && data.need_pick && Array.isArray(data.candidates) && data.candidates.length){ pick = data.candidates; return; }
   if(error || (data && data.ok===false)){
     if(res) res.innerHTML = `<div class="note" style="color:#c0392b">שגיאה: ${esc((data&&data.error)||error?.message||'לא ידוע')}</div>`; return;
   }
@@ -28412,7 +28506,7 @@ window.convertLead = async (id, btn)=>{
      בונה את הכרטיס מחדש (וזה כל העניין: הרצועה, השבב ותת-הסטטוס
      מתעדכנים), ולכן כל מה שנכתב ל-#convResult היה נמחק. */
   const warn = [data.owner_login_error, data.owner_error].filter(Boolean).join(' · ');
-  CONV_RESULT = { id, html: `<div class="ok-box">✅ הומר בהצלחה!<br>לקוח בפריוריטי: <b>${esc(data.custname||'—')}</b><br>הצעת מחיר: <b>${esc(data.cprofnum||'—')}</b>`
+  CONV_RESULT = { id, html: `<div class="ok-box">✅ הומר בהצלחה!<br>לקוח בפריוריטי: <b>${esc(data.custname||'—')}</b>${data.picked_existing ? ' · לקוח קיים' : ''}<br>הצעת מחיר: <b>${esc(data.cprofnum||'—')}</b>`
     + (data.price_list ? `<br>מחירון: <b>${esc(data.price_list)}</b>` : '')
     + (warn ? `<br><span style="color:#b45309">⚠️ ${esc(warn)}</span>` : '')
     /* ⚠️ מותנה ב-deal_id: השרת מחזיר אותו מאז ומעולם (הלקוח פשוט לא
@@ -28434,6 +28528,7 @@ window.convertLead = async (id, btn)=>{
        מוקדם, ובלעדיו הכפתור היה נשאר מנוטרל לנצח אחרי כשל אחד. */
     busyHide();
     if(btn){ btn.disabled = false; btn.textContent = btn.dataset.lbl || 'פתח לקוח והצעת מחיר בפריוריטי'; }
+    if(pick) cvPickOpen(id, btn, pick);
   }
 };
 

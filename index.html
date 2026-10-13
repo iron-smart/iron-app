@@ -3,6 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- 7.0.0 — התראות לטלפון: בלי manifest, "הוסף למסך הבית" באייפון אינו אפליקציה ו-iOS אינו מאפשר Web Push.
+     הקובץ (וה-sw.js והאייקונים) מפורסם ב-gh-deploy v22 מ-core.app_files. -->
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="איירון">
 <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; object-src 'none'; base-uri 'self'">
 <title>איירון פיטנס — המערכת</title>
 <link rel="icon" type="image/png" sizes="64x64" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAYFBMVEVadojEztQcQVp4kJ6isrwALEf9/f0INE4AAAAAHToAIT64xcwALUjK1NkAK0gAAH+tu8SUp7IAK0UALUkAPz85Wm9qhJRKaXzr7vFYdIaGm6gAAFUAVVUpS2J7k6Hd5OhaS3KlAAAAIHRSTlP///////7//wD////K/0wC//8skQT///////8DA////2RGsRAAAAHuSURBVHja1Zdrd4MgDIbpthhBZF6qbe3a/v9/ObzUAiIW82XLOWrL4X0USCBhaW/f+lK1hDdN1moSpSnrbz9a/rZ6YqhBNgKOaSURIg1lpYUD4JgqiNZrAqiewPRQKthplRYzgn4gaIDEvXqUGpAq3P8FqFJ2lUAweWUKSKZYTQPUTNIAkgHR/hQAY+LABxCASwNvo/AC2jxx7JwUAJl+OM058wBEmXgsA8h97Z1wAeKUxACSxgEgL+MAHUcH8BUHKBeANg7QOgCAjzjAhzuJ6J/FwwqACXSX0RlEUWSFvjqAbvhRZN4BmI6E/G5NEghtwwrrh7BW6f7SW8FkdSoFzr0QLTfT8JVoFIX/Ncg7c3ShcM58A0X+aS9MAIDmnF9Ggj29OYYACPgwOp96AvKL0fRAZ99wv0DczOBtNIFbDnITGN7SUDRO0Nn/Xf1yT0TrjZmwPJFx3N5UkbO1WGiXet+ubK6aBbh79P5t/eWSJsBywI1zYXZJA1DEHSyZC8giT6bJJWdAjnGAp0s+AQsH3P6C0SUnwHnhgNuH6+iSE6BZ1QdO58ElNeAwBVX88d6H4aF3ZRbQB/MDTSgByktIv5FgiPlGyVDw/+RIOwHkRJOc6pKTbXK6Ty44yCUPuegil330wpNe+tKLb1L5/wu2JGB1c28DqgAAAABJRU5ErkJggg==">
@@ -633,6 +637,9 @@
   .nf-head button{ background:none; border:0; color:#2c6e91; font-size:12px; cursor:pointer; font-weight:700; }
   .nf-list{ max-height:56vh; overflow:auto; }
   .nf-item{ padding:9px 13px; border-bottom:1px solid #eef1f4; cursor:pointer; }
+  /* 7.0.0 — שורת ההתראות לטלפון בתחתית הפעמון (פילוט, push_allow בלבד) */
+  .nf-push{ border-top:1px solid #eef1f4; padding:9px 13px; font-size:12px; line-height:1.5; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .nf-push button{ font-size:12px; padding:3px 10px; }
   .nf-item:hover{ background:#f4f7f9; }
   .nf-ttl{ font-size:13px; font-weight:700; }
   .nf-bd{ font-size:12px; color:#5a6b78; margin-top:2px; }
@@ -3361,7 +3368,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.267.0</div>
+      <div class="ver">גרסה 7.0.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3419,6 +3426,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
     <div class="nf-panel hidden" id="nfPanel">
       <div class="nf-head"><span>התראות</span><button id="nfAllBtn" class="hidden" onclick="nfReadAll()">סמן הכל כנקרא</button></div>
       <div class="nf-list" id="nfList"><div class="nf-empty">אין התראות חדשות</div></div>
+      <div class="nf-push hidden" id="nfPush"></div>
     </div>
     <button class="out hidden" id="syncBtn" onclick="syncPriority()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:-2px;margin-inline-end:5px;"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>סנכרון פריוריטי</button>
     <button class="gs-btn" id="gsBtn" onclick="GS.open()" title="חיפוש בכל המערכת — שם, טלפון או אימייל (Ctrl/Cmd + S)" aria-label="חיפוש בכל המערכת">
@@ -3490,7 +3498,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="waproto-2026-10-13a">גרסה 6.267.0</div>
+    <div class="side-foot" title="nfpush-2026-10-13a">גרסה 7.0.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -12558,7 +12566,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'waproto-2026-10-13a';
+const BUILD_ID = 'nfpush-2026-10-13a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -30648,13 +30656,14 @@ boot();
   };
   NF.start = function(){
     NF.poll();
+    NF.openFromUrl();   /* 7.0.0 — הגעה מלחיצה על התראה בטלפון (/?nf=<id>) */
     if(!nfPoll) nfPoll = setInterval(function(){ NF.poll(); }, NF_POLL_MS);
   };
   window.nfToggle = function(){
     var p = document.getElementById('nfPanel');
     if(!p) return;
     p.classList.toggle('hidden');
-    if(!p.classList.contains('hidden')) NF.poll();
+    if(!p.classList.contains('hidden')){ NF.poll(); nfPushRender(); }
   };
   /* 🔴 6.265.0 — רומן: "אני רואה את ההתרעה אבל כשאני לוחץ עליה כלום לא קורה". עד כאן הלחיצה רק
      סימנה נקראה — אף סוג לא נפתח, אף ש-1,018 מתוך 1,020 ההתראות נושאות linked_type/linked_id.
@@ -30689,23 +30698,127 @@ boot();
     if(t === 'meeting') return window.canView('crm.meets')  ? function(){ openMeet(id); } : null;
     return null;
   }
+  /* 7.0.0 — הפתיחה עצמה, משותפת לפעמון ולפתיחה מהטלפון. quiet: רשומה שעוד לא נטענה ⇒ false בלי הודעה
+     (הקורא ממתין ומנסה שוב), במקום "רענן את הדף" באמצע הטעינה הראשונה. */
+  function nfGo(n, quiet){
+    if(!n || !n.linked_type) return true;
+    var fn = nfTarget(n);
+    if(!fn){ toast('אין לך הרשאה לפתוח את הרשומה הזו'); return true; }
+    if(n.linked_type !== 'tasks' && !nfLoaded(n.linked_type, n.linked_id)){
+      if(quiet) return false;
+      toast('הרשומה נוצרה אחרי טעינת המסך — רענן את הדף כדי לפתוח אותה'); return true;
+    }
+    var p = document.getElementById('nfPanel'); if(p) p.classList.add('hidden');
+    window.goCard(fn);
+    return true;
+  }
   window.nfRead = async function(id){
     var n = null;
     nfItems.forEach(function(x){ if(Number(x.id) === Number(id)) n = x; });
     /* אופטימי: מסירים מיד; בכשל רשת ההתראה תחזור בפול הבא */
     nfItems = nfItems.filter(function(x){ return Number(x.id) !== Number(id); });
     nfRender();
-    if(n && n.linked_type){
-      var fn = nfTarget(n);
-      if(!fn) toast('אין לך הרשאה לפתוח את הרשומה הזו');
-      else if(n.linked_type !== 'tasks' && !nfLoaded(n.linked_type, n.linked_id))
-        toast('הרשומה נוצרה אחרי טעינת המסך — רענן את הדף כדי לפתוח אותה');
-      else {
-        var p = document.getElementById('nfPanel'); if(p) p.classList.add('hidden');
-        window.goCard(fn);
-      }
-    }
+    if(n) nfGo(n, false);
     try{ await sb.schema('core').from('notifications').update({read_at: new Date().toISOString()}).eq('id', id); }catch(_e){}
+  };
+  /* ===== 7.0.0 — התראות לטלפון (פילוט: ord.settings.push_allow, רומן בלבד) =====
+     רומן: "כן, תבנה ניסיון עליי בלבד". השליחה כולה בשרת (טריגר על core.notifications ⇒ push-send);
+     כאן רק ההרשמה של המכשיר, והפתיחה של מה שנלחץ בטלפון. */
+  async function nfOpenById(id){
+    id = Number(id); if(!(id > 0)) return;
+    var res = null;
+    try{ res = await sb.schema('core').from('notifications').select('id,kind,title,body,linked_type,linked_id').eq('id', id).maybeSingle(); }catch(_e){}
+    var n = res && res.data; if(!n) return;
+    nfItems = nfItems.filter(function(x){ return Number(x.id) !== id; }); nfRender();
+    try{ await sb.schema('core').from('notifications').update({read_at: new Date().toISOString()}).eq('id', id); }catch(_e){}
+    for(var i = 0; i < 40; i++){
+      if(nfGo(n, true)) return;
+      await new Promise(function(r){ setTimeout(r, 500); });
+    }
+    nfGo(n, false);
+  }
+  NF.openFromUrl = function(){
+    try{
+      var u = new URL(location.href), id = u.searchParams.get('nf'); if(!id) return;
+      u.searchParams.delete('nf');
+      history.replaceState(null, '', u.pathname + u.search + u.hash);
+      nfOpenById(id);
+    }catch(_e){}
+  };
+  if('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', function(ev){
+    var m = ev && ev.data; if(!m || m.t !== 'nf-open') return;
+    try{ var id = new URL(m.url).searchParams.get('nf'); if(id) nfOpenById(id); }catch(_e){}
+  });
+  function nfPushAllowed(){
+    try{ return !!(ME && ME.id) && String(osetStr('push_allow', '') || '').split(/[\s,;]+/).indexOf(String(ME.id)) >= 0; }
+    catch(_e){ return false; }
+  }
+  function nfB64u(s){
+    var b = atob(String(s).replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((String(s).length + 3) % 4));
+    var a = new Uint8Array(b.length); for(var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a;
+  }
+  async function nfPushSub(){
+    try{ var reg = await navigator.serviceWorker.getRegistration('/'); return reg ? await reg.pushManager.getSubscription() : null; }
+    catch(_e){ return null; }
+  }
+  async function nfPushRender(){
+    var box = document.getElementById('nfPush'); if(!box) return;
+    if(!nfPushAllowed()){ box.classList.add('hidden'); box.innerHTML = ''; return; }
+    box.classList.remove('hidden');
+    var ios = /iPhone|iPad|iPod/.test(navigator.userAgent || '');
+    var standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+    if(!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)){
+      box.innerHTML = (ios && !standalone)
+        ? '&#128241; להתראות באייפון: בספארי ← כפתור השיתוף ← "הוסף למסך הבית", ואז לפתוח את איירון מהסמל.'
+        : '&#128241; הדפדפן הזה אינו תומך בהתראות לטלפון.';
+      return;
+    }
+    if(Notification.permission === 'denied'){ box.innerHTML = '&#128241; ההתראות חסומות במכשיר הזה — לאשר בהגדרות המכשיר ← איירון ← התראות.'; return; }
+    var sub = await nfPushSub();
+    box.innerHTML = sub
+      ? '<span>&#128241; התראות פעילות במכשיר הזה</span><button type="button" onclick="nfPushTest()">שלח ניסיון</button><button type="button" onclick="nfPushOff()">כבה</button>'
+      : '<button type="button" onclick="nfPushOn()">&#128241; הפעל התראות בטלפון הזה</button>';
+  }
+  NF.pushRender = nfPushRender;
+  window.nfPushOn = async function(){
+    var key = String(osetStr('push_vapid_public', '') || '').trim();
+    if(!key){ toast('מפתח ההתראות חסר בשרת'); return; }
+    /* ⚠️ הבקשה להרשאה ראשונה, ישר מהלחיצה — ספארי דוחה בקשה שאינה בתגובה ישירה למגע */
+    var perm = 'default';
+    try{ perm = await Notification.requestPermission(); }catch(_e){}
+    if(perm !== 'granted'){ toast('לא אושרו התראות במכשיר הזה'); nfPushRender(); return; }
+    try{
+      var reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+      await navigator.serviceWorker.ready;
+      var sub = await reg.pushManager.getSubscription();
+      if(!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: nfB64u(key) });
+      var j = sub.toJSON();
+      var r = await sb.schema('core').from('push_subscriptions').insert({
+        endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, user_agent: String(navigator.userAgent || '').slice(0, 200) });
+      if(r && r.error && r.error.code !== '23505') throw r.error;   /* 23505 = המכשיר כבר רשום */
+      toast('התראות לטלפון הופעלו ✓ — אפשר לשלוח ניסיון');
+    }catch(e){ console.error('nfPushOn', e); toast('הפעלת ההתראות נכשלה: ' + String((e && e.message) || e)); }
+    nfPushRender();
+  };
+  window.nfPushTest = async function(){
+    try{
+      var r = await sb.schema('core').rpc('push_test');
+      if(r && r.error) throw r.error;
+      toast('נשלחה התראת ניסיון — תגיע לטלפון תוך כמה שניות');
+      NF.poll();
+    }catch(e){ toast('שליחת הניסיון נכשלה: ' + String((e && e.message) || e)); }
+  };
+  window.nfPushOff = async function(){
+    try{
+      var sub = await nfPushSub();
+      if(sub){
+        var ep = sub.endpoint;
+        try{ await sub.unsubscribe(); }catch(_e){}
+        await sb.schema('core').from('push_subscriptions').delete().eq('endpoint', ep);
+      }
+      toast('התראות לטלפון כובו במכשיר הזה');
+    }catch(e){ toast('הכיבוי נכשל: ' + String((e && e.message) || e)); }
+    nfPushRender();
   };
   window.nfReadAll = async function(){
     nfItems = []; nfRender();

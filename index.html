@@ -3386,7 +3386,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.253.0</div>
+      <div class="ver">גרסה 6.254.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3515,7 +3515,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="custscreen-2026-10-13b">גרסה 6.253.0</div>
+    <div class="side-foot" title="noowner-2026-10-13a">גרסה 6.254.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -12587,7 +12587,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'custscreen-2026-10-13b';
+const BUILD_ID = 'noowner-2026-10-13a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -27056,11 +27056,23 @@ function lbLocalApply(id, o){
   crmRepaint();
   openLead(id);
 }
+/* 6.254.0 — שלושת שלבי "ללא מענה" בלבד, לשער הבעלים. ⚠️ לא LB_NOANS הקיים (כולל "ליד חדש" — לובי). */
+const LB_NOANSWER_STEPS = ['ללא מענה','ללא מענה2','ללא מענה3'];
 window.lbPipeSet = async (id, st, sub)=>{
   const l = LEADS.find(x=>x.id===id); if(!l) return;
   if(!window.canEdit('crm.leads')){ toast('אין לך הרשאת עריכה ללידים.'); return; }
   const cur = l.status||'', col0 = lbSubCol(cur);
   if(st===cur && (sub||'')===((col0?l[col0]:'')||'')) return;
+  /* 6.254.0 — ליד בלי בעלים ⇒ אזהרה לפני "ללא מענה" (רומן, 13/10/2026: "מנהל מכירות מקצה בעלים
+     ללידים. הצג התראה"). בלי בעלים אין טלפון של איש מכירות לתבנית, והוואטסאפ נכשל בשרת. */
+  if(st!==cur && LB_NOANSWER_STEPS.indexOf(st)>=0 && !lbOwnersOf(l).length){
+    const go = await sysConfirm('לליד הזה אין בעלים.\n\n'
+      + 'מנהל המכירות צריך להקצות לו בעלים לפני "ללא מענה" — בלי בעלים הודעת הוואטסאפ ללקוח לא תישלח '
+      + '(אין טלפון של איש מכירות להציג בה).\n\nלהעביר ל"' + st + '" בכל זאת?',
+      { ok:'להמשיך בכל זאת', cancel:'ביטול' });
+    /* ביטול: הבורר בטבלה כבר מציג את היעד — מציירים מחדש כדי שיחזור לסטטוס האמיתי. */
+    if(!go){ try{ crmRepaint(); }catch(_e){} try{ lbPipeDraw(id); }catch(_e){} return; }
+  }
   /* עריכות שלא נשמרו: הפעולה טוענת את הכרטיס מחדש ותאבד אותן. */
   if(LEAD_SNAP && LEAD_SNAP.__id===id){
     const dirty = LEAD_CARD_FIELDS.some(([eid])=>{ const el=document.getElementById(eid);

@@ -3391,7 +3391,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.260.0</div>
+      <div class="ver">גרסה 6.262.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3520,7 +3520,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="wadeal-2026-10-13b">גרסה 6.260.0</div>
+    <div class="side-foot" title="waquote-2026-10-13a">גרסה 6.262.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -12304,8 +12304,33 @@ window.dlAmtVCell = (d) =>
 
 window.dlQDocBox = (d) => d.quote_doc_path
   ? '<div class="tk-lnk"><button class="chip" onclick="dlOpenDoc(\'' + jsq(d.quote_doc_path) + '\')">'
-    + esc(String(d.quote_doc_path).split('/').pop()) + ' &#8599;</button></div>'
+    + esc(String(d.quote_doc_path).split('/').pop()) + ' &#8599;</button>'
+    /* 6.262.0 — רומן: "ליד ההצעה מחיר גם כפתור וואטסאפ" (dlQuoteWa, התבנית ב-ord.settings.wa_quote_text) */
+    + '<button class="chip" onclick="dlQuoteWa(\'' + jsq(d.id) + '\')" title="פתיחת השיחה עם איש הקשר, עם הודעת ההצעה (מהדורה '
+    + esc(dlQuoteEd(d)) + ')">' + WA_SVG + ' וואטסאפ</button></div>'
   : roIn('טרם נמשך');
+/* ═══ 6.262.0 — וואטסאפ עם הצעת המחיר (רומן, 13/10/2026) ═══════════════════════════════════════════
+   המהדורה: מספר הקובץ <QN>-<CURVERSION>.pdf (נמדד 134/134). הנמען: מה שהכרטיס מציג — "טלפון איש קשר"
+   ואם אין, "טלפון" — נקרא מה-href של כפתור הוואטסאפ שלהם, כלומר מאותו phDigits; אין גזירה שנייה.
+   ⚠️ WhatsApp Web אינו מקבל קובץ בכתובת — את ה-PDF גוררים לשיחה. */
+const WA_QUOTE_DEF = 'הצעת מחיר מצורפת מהדורה מספר - {מהדורה}';
+const dlQuoteEd = d => { const m = String((d && d.quote_doc_path) || '').match(/-(\d+)\.pdf$/i); return m ? m[1] : ''; };
+window.dlQuoteWa = (id) => {
+  const d = (DEALS||[]).find(x=>x.id===id); if(!d) return;
+  const src = document.querySelector('#dealModal #dl-cc-cph a.ph-btn.wa') || document.querySelector('#dealModal #dl-cc-ph a.ph-btn.wa');
+  const m = src ? String(src.getAttribute('href')||'').match(/wa\.me\/(\d{9,15})/) : null;
+  if(!m){ toast('אין טלפון לאיש הקשר או ללקוח בכרטיס — אין למי לשלוח', 'warn'); return; }
+  /* trim לפני ההשוואה — ערך של רווחים בלבד אינו תבנית (הלקח של osetNum) */
+  const tpl = String(osetStr('wa_quote_text', '') || '').trim() || WA_QUOTE_DEF;
+  const txt = tpl.split('{מהדורה}').join(dlQuoteEd(d)).split('{הצעה}').join(String(d.priority_quote_id || ''));
+  const q = encodeURIComponent(txt);
+  if(waWebOk()){
+    let w = null; try{ w = window.open('', 'iron_wa'); }catch(_e){ w = null; }
+    if(w){ try{ w.opener = null; }catch(_e){}
+      try{ w.location.href = 'https://web.whatsapp.com/send?phone=' + m[1] + '&text=' + q; w.focus(); return; }catch(_e){} }
+  }
+  window.open('https://wa.me/' + m[1] + '?text=' + q, '_blank', 'noopener');
+};
 
 /* 6.237.0 — מתג מקור האמת (ord.settings.crm_source_of_truth, שלב 3.2 של המעבר).
    🔴 אותו תנאי בדיוק של deal-quote-refresh v9: רק 'system' מדויק פותח; כל
@@ -12678,7 +12703,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'wadeal-2026-10-13b';
+const BUILD_ID = 'waquote-2026-10-13a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -17659,6 +17684,8 @@ const CRM_SETTINGS = [
   ['crm_task_name_quote','משימה אחרי שליחת הצעה','{שם} = שם הלקוח.','txt'],
   ['—','פגישות','sep'],
   ['crm_meet_location','מיקום ברירת מחדל לפגישה','חל על פגישה **פרונטלית** בלבד, וכשלא הוקלד מיקום. עד 6.160.0 הערך היה מקודד בסכימה (בלי פסיק) ולא ניתן לשינוי בלי פריסה.','txt'],
+  ['—','וואטסאפ','sep'],
+  ['wa_quote_text','הודעת וואטסאפ עם הצעת המחיר','נפתחת מהכפתור "וואטסאפ" ליד מסמך ההצעה בכרטיס העסקה. {מהדורה} = מספר המהדורה של ה-PDF · {הצעה} = מספר ההצעה בפריוריטי. ריק = "הצעת מחיר מצורפת מהדורה מספר - {מהדורה}".','txt'],
   ['—','סוקר הצעות המחיר בפריוריטי','sep'],
   ['crm_quote_watch_enabled','הסוקר פעיל','"כן" או "לא". רץ כל 15 דקות, 08:00–20:00, לא בשבת.','yn'],
   ['crm_quote_sent_statdes','הסטטוס בפריוריטי שמסמן "נשלחה"','⚠️ הערך הזה לא נמדד מול פריוריטי. הסוקר רושם ביומן הסנכרון את כל ערכי STATDES שהוא רואה — אחרי הריצה הראשונה על הצעה אמיתית אפשר לתקן אותו כאן.','txt'],
@@ -20957,7 +20984,7 @@ window.openCust = async (id)=>{
       <div><label>מספר בפריוריטי</label>${roIn(c.priority_id||'',{ltr:1})}</div>
       <!-- 6.253.0 — "לקוח פעיל?" ירד: הסטטוס כבר בשבב שבכותרת, ועם 'זמני' התשובה כן/לא הייתה חלקית. -->
       <div><label>נפתח בפריוריטי</label>${roIn(cuOpenedTxt(c))}</div>
-      <div><label>טלפון</label>${roIn(c.phone||'',{ltr:1})}</div>
+      <div><label>טלפון ${phBtns(c.phone)}</label>${roIn(c.phone||'',{ltr:1})}</div>
       <div><label>דוא"ל</label>${roIn(c.email||'',{ltr:1})}</div>
       <!-- 🔴 6.170.0 — "גישה למשאית · מעלית · מעלית משא" ירד (רומן:
            "גם מכרטיס הלקוח"). ⚠️ **נמדד ומוצהר:** זה היה אתר התצוגה
@@ -23244,10 +23271,12 @@ const phBtns = p => phOk(p) ? `<span class="ph-group"><a class="ph-btn call" hre
    ⚠️ דסקטופ בלבד — WhatsApp Web אינו עובד בטלפון; שם wa.me פותח את האפליקציה כמו היום.
    ⚠️ לשונית בשם קבוע (iron_wa): כל לחיצה ממחזרת אותה. השם אינו מגיע ללשונית שהמשתמש פתח בעצמו —
       בפעם הראשונה WhatsApp Web ישאל "להשתמש כאן?", ומאז העבודה בלשונית הזו. */
+/* 6.261.0 — רומן: "תעשה את זה גם בכרטיס ליד ולקוח וגם בכרטיס הזמנה". רשימה אחת, שמית. */
+const WA_WEB_CARDS = ['#dealModal', '#leadModal', '#custModal', '#ordModal'].map(s => s + ' a.ph-btn.wa').join(', ');
 const waWebOk = () => { try{ return matchMedia('(pointer:fine)').matches && wideScreen(); }catch(_e){ return false; } };
 const waWebUrl = href => { const m = String(href||'').match(/wa\.me\/(\d{9,15})/); return m ? 'https://web.whatsapp.com/send?phone=' + m[1] : ''; };
 document.addEventListener('click', ev=>{
-  const a = ev.target && ev.target.closest ? ev.target.closest('#dealModal a.ph-btn.wa') : null;
+  const a = ev.target && ev.target.closest ? ev.target.closest(WA_WEB_CARDS) : null;
   if(!a || !waWebOk()) return;
   const url = waWebUrl(a.getAttribute('href'));
   if(!url) return;                                   /* מספר שלא זוהה ⇒ ה-href המקורי (wa.me) */

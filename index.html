@@ -3386,7 +3386,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.255.0</div>
+      <div class="ver">גרסה 6.256.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3515,7 +3515,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="dealcontact-2026-10-13a">גרסה 6.255.0</div>
+    <div class="side-foot" title="ctphone-2026-10-13a">גרסה 6.256.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -12583,7 +12583,9 @@ window.dlQuoteDoc = async (dealId)=>{
       fin = ['המסמך נוצר, אבל הפקת הקישור נכשלה — ' + ((le&&le.message)||'ללא פירוט') + '. אפשר ללחוץ "העתקת קישור".', 'err', 6000];
     } else {
       dlSignAfterLink(PROTS.find(x=>x.id===data.protocol.id) || data.protocol, signUrl(lk.token), via);
-      const okm = via==='whatsapp' ? 'המסמך נוצר והקישור נשלח ללקוח בוואטסאפ ✓' : 'המסמך נוצר והקישור מוכן ✓';
+      /* 6.256.0 — הקישור יוצא לאיש הקשר של העסקה (ord.protocol_create/link), ולכן ההודעה נוקבת בו. */
+      const _ctn = ((CONTS||[]).find(k=>k.id===d.contact_id)||{}).full_name;
+      const okm = via==='whatsapp' ? ('המסמך נוצר והקישור נשלח ללקוח בוואטסאפ' + (_ctn ? ' (' + _ctn + ')' : '') + ' ✓') : 'המסמך נוצר והקישור מוכן ✓';
       fin = lk.stage_note ? [okm + ' · ' + String(lk.stage_note), 'warn', 8000] : [okm, 'ok', 4000];
     }
   }
@@ -12618,7 +12620,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'dealcontact-2026-10-13a';
+const BUILD_ID = 'ctphone-2026-10-13a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -18490,7 +18492,7 @@ const CRM_Q = {
   leads: () => sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at,position,address,notes,utm_campaign,utm_source,utm_medium,utm_term,landing_page_url,send_whatsapp_catalog,owner_id,updated_at,contact_id').order('created_at',{ascending:false}).limit(10000),
   custs: () => sb.schema('core').from('customers').select('id,name,phone,email,priority_id,status,opened_at,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes').order('created_at',{ascending:false}).limit(10000),
   tasks: () => sb.schema('crm').from('tasks').select('id,name,status,value_tag,category,due_at,closed_at,created_at,linked_type,linked_id,owner_id').order('due_at',{ascending:true}).limit(10000),
-  deals: () => sb.schema('crm').from('deals').select('id,name,stage,amount,amount_incl_vat,quote_doc_path,quote_status,irrelevant_reason,priority_quote_id,customer_id,contact_id,lead_id,ship_site,ship_name,ship_address,ship_city,send_channel,sign_link,priority_quote_status,priority_quote_synced_at,approved_at,closed_at,created_at,monday_id').order('created_at',{ascending:false}).limit(10000),
+  deals: () => sb.schema('crm').from('deals').select('id,name,stage,amount,amount_incl_vat,quote_doc_path,quote_status,irrelevant_reason,priority_quote_id,customer_id,contact_id,lead_id,ship_site,ship_name,ship_address,ship_address2,ship_address3,ship_city,send_channel,sign_link,priority_quote_status,priority_quote_synced_at,approved_at,closed_at,created_at,monday_id').order('created_at',{ascending:false}).limit(10000),
   meets: () => sb.schema('crm').from('meetings').select('id,subject,status,meet_date,start_time,end_time,meet_type,location,teams_link,linked_type,linked_id,source,organizer_name,attendees,all_day,web_link,owner_id,contact_phone').order('meet_date',{ascending:false}).limit(10000),
   lown: () => /* שורות הבעלות הראשיות. **לא מיותר מול leads.owner_id**: המראה מחזיקה
          profile_id בלבד, ולעובד לשעבר אין חשבון — 694 לידים היו מוצגים
@@ -24907,7 +24909,7 @@ let DLIVE_CH = null, DLIVE_T = null, DLIVE_ID = null, DLIVE_CONTACT = null;
 /* 🔴 6.250.0 — בדיוק עמודות הטוען של DEALS (נאכף בבנייה). עד כאן הרשימה הייתה ידנית וחסר בה
    quote_doc_path — ולכן PDF שנמשך בוובהוק לא הגיע למטמון, וגם פתיחה מחדש של הכרטיס הראתה
    "טרם נמשך" (נמדד על PQ26001166, 12/10/2026). */
-const DLIVE_COLS = 'id,name,stage,amount,amount_incl_vat,quote_doc_path,quote_status,irrelevant_reason,priority_quote_id,customer_id,contact_id,lead_id,ship_site,ship_name,ship_address,ship_city,send_channel,sign_link,priority_quote_status,priority_quote_synced_at,approved_at,closed_at,created_at,monday_id';
+const DLIVE_COLS = 'id,name,stage,amount,amount_incl_vat,quote_doc_path,quote_status,irrelevant_reason,priority_quote_id,customer_id,contact_id,lead_id,ship_site,ship_name,ship_address,ship_address2,ship_address3,ship_city,send_channel,sign_link,priority_quote_status,priority_quote_synced_at,approved_at,closed_at,created_at,monday_id';
 
 window.dlLiveStop = ()=>{
   if(DLIVE_T){ clearInterval(DLIVE_T); DLIVE_T = null; }
@@ -24976,7 +24978,12 @@ window.dlDatesHtml = (d)=>{
    ⚠️ d הוא פרמטר רביעי ואופציונלי: בלעדיו (קורא ישן) — אין בורר ואין כתובת משלוח, ולא נזרק. */
 window.dlCustCells = (lead, cust, contact, d)=>{
   const phone  = (lead && lead.phone) || (cust && cust.phone) || '';
-  const dphone = (contact && contact.phone) || phone;
+  /* 🔴 6.256.0 — רומן: "טלפון איש קשר שיופיע במשבצת נפרדת". עד כאן "טלפון" העדיף את איש הקשר (6.173.0,
+     אז רומן מנה טלפון אחד); עכשיו שני תאים: "טלפון" = הליד/הלקוח, "טלפון איש קשר" = איש הקשר (נייד ואז
+     משרד — office_phone נשלף מ-CONTS, כי שליפות איש הקשר בכרטיס מחזיקות phone בלבד). */
+  const _cid = (contact && contact.id) || (d && d.contact_id) || null;   /* openDeal שולף איש קשר בלי id */
+  const _ck = _cid ? (CONTS||[]).find(k=>k.id===_cid) : null;
+  const cphone = (contact && contact.phone) || (_ck && (_ck.phone || _ck.office_phone)) || '';
   const log = cust && cust.logistics_notes;
   return [
     lead ? `<div id="dl-cc-lead"><label>פנייה מקורית</label>
@@ -24989,11 +24996,12 @@ window.dlCustCells = (lead, cust, contact, d)=>{
       : '<div id="dl-cc-cust"><label>לקוח</label><div class="note">אינה מקושרת ללקוח.</div></div>',
     `<div id="dl-cc-co"><label>שם חברה</label>${roIn((lead&&lead.company)||'')}</div>`,
     `<div id="dl-cc-ct" title="${esc(ctTag(d))}"><label>איש קשר</label>${d ? ctPickHtml('deal', d.id, cust && cust.id, d.contact_id, contact) : roIn((contact&&contact.full_name)||'')}</div>`,
-    `<div id="dl-cc-ph"><label>טלפון ${dphone?phBtns(dphone):''}</label>${roIn(dphone||'',{ltr:1})}</div>`,
+    `<div id="dl-cc-cph"><label>טלפון איש קשר ${cphone?phBtns(cphone):''}</label>${roIn(cphone,{ltr:1})}</div>`,
+    `<div id="dl-cc-ph"><label>טלפון ${phone?phBtns(phone):''}</label>${roIn(phone,{ltr:1})}</div>`,
     `<div id="dl-cc-ty"><label>סוג לקוח</label>${roIn((cust&&cust.customer_type)||'')}</div>`,
-    `<div id="dl-cc-ad"><label>כתובת חיוב</label>${roIn(cust?[cust.address,cust.city].filter(Boolean).join(', '):'')}</div>`,
     `<div id="dl-cc-em"><label>דוא"ל</label>${roIn((contact&&contact.email)||(cust&&cust.email)||'',{ltr:1})}</div>`,
-    `<div class="span4" id="dl-cc-sh">${dlShipHtml(d)}</div>`,
+    `<div class="span4" id="dl-cc-ad"><label>כתובת חיוב <span class="note" style="font-weight:400">(כרטיס הלקוח)</span></label>${roIn(cust?[cust.address,cust.city].filter(Boolean).join(', '):'')}</div>`,
+    dlShipHtml(d),
     `<div class="span4" id="dl-cc-log"${log?'':' style="display:none"'}>${log?`<div class="note">&#128666; ${esc(log)}</div>`:''}</div>`
   ];
 };
@@ -25002,13 +25010,21 @@ window.dlCustCells = (lead, cust, contact, d)=>{
    🔴 **לקריאה בלבד, ומקור האמת הוא ההצעה** — העמודות נכתבות אך ורק ב-deal-quote-refresh v10
       (וובהוק / סוקר / "משוך מפריוריטי"). אין כאן שדה עריכה, ובכוונה.
    ⚠️ "לא הוגדרה" ≠ "לא נמשכה": 1,586 מתוך 1,804 הצעות אין בהן כתובת משלוח כלל (נמדד 13/10). */
+/* 🔴 6.256.0 — רומן: "תפריד לכמה תאים: כתובת, כתובת - שורה 2, כתובת - שורה 3, עיר — כמו בפריוריטי".
+   ⇒ .addr-row (התבנית הקיימת של כתובות בכרטיסים, card-layout) עם חמישה תאים: שלוש השורות, העיר, ושם
+   המשלוח (CUSTDES) — חמשת השדות של SHIPTO2_SUBFORM. כשאין כתובת — תא אחד מלא עם ההסבר.
+   ⚠️ מחזיר את התא **כולו** (עם המזהה dl-cc-sh) — dlCustCellsDraw מחליף לפי outerHTML, והמחלקה משתנה בין
+      שני המצבים. */
 function dlShipHtml(d){
   const lbl = '<label>כתובת משלוח <span class="note" style="font-weight:400">(מההצעה בפריוריטי)</span></label>';
-  if(!d || !d.priority_quote_id) return lbl + '<div class="note">אין לעסקה הצעה בפריוריטי.</div>';
-  const a = [d.ship_address, d.ship_city].filter(Boolean).join(', ');
-  if(!a && !d.ship_name) return lbl + '<div class="note" title="בהצעה לא הוגדרה כתובת למשלוח — המשלוח לכתובת הלקוח.">לא הוגדרה כתובת משלוח בהצעה.</div>';
-  const v = (d.ship_name ? d.ship_name + (a ? ' — ' : '') : '') + a;
-  return lbl + `<div title="${esc(d.ship_site ? 'אתר ' + d.ship_site : '')}">${roIn(v)}</div>`;
+  const one = inner => `<div class="span4" id="dl-cc-sh">${lbl}${inner}</div>`;
+  if(!d || !d.priority_quote_id) return one('<div class="note">אין לעסקה הצעה בפריוריטי.</div>');
+  if(!d.ship_address && !d.ship_address2 && !d.ship_address3 && !d.ship_city && !d.ship_name)
+    return one('<div class="note" title="בהצעה לא הוגדרה כתובת למשלוח — המשלוח לכתובת הלקוח.">לא הוגדרה כתובת משלוח בהצעה.</div>');
+  const cell = (l, v) => `<div><label>${l}</label>${roIn(v || '')}</div>`;
+  return `<div class="addr-row" id="dl-cc-sh" title="${esc('מההצעה בפריוריטי' + (d.ship_site ? ' · אתר ' + d.ship_site : ''))}">`
+    + cell('כתובת משלוח', d.ship_address) + cell('כתובת - שורה 2', d.ship_address2) + cell('כתובת - שורה 3', d.ship_address3)
+    + cell('עיר', d.ship_city) + cell('שם במשלוח', d.ship_name) + `</div>`;
 }
 /* ═══ 6.255.0 — בורר איש קשר (עסקה וליד) ═══════════════════════════
    רומן: "שתהיה לי אפשרות לבחור את האיש קשר כי נגיד ללקוח זה יש כמה אנשי קשר".
@@ -25023,6 +25039,15 @@ function ctTag(d){
   return d.priority_quote_status === 'טיוטא' ? 'ההצעה בטיוטא — בחירה כאן מתעדכנת גם בהצעה בפריוריטי'
        : 'ההצעה אינה בטיוטא — בחירה כאן נשמרת במערכת בלבד (בפריוריטי לא משנים הצעה שנשלחה)';
 }
+/* 🔴 6.256.0 — רומן: "למה יש נאור פעמיים ולמה יש בר פעמיים? תבדוק בפריוריטי ותיישר קו". נמדד אצל 101414:
+   פריוריטי — 3 אנשי קשר; אצלנו — 6. העודפים הם פריטים כפולים בלוח אנשי הקשר של מאנדיי (monday_id שונה,
+   בלי priority_id), ולכן מחיקה הייתה חוזרת בייבוא של 08:00 עד המעבר. ⇒ כשלפחות לאחד מאנשי הקשר יש
+   priority_id — מוצגים רק אלה, ועוד הנוכחי (אחרת הבורר "היה בוחר" אחר בשקט). לקוח שאין לו איש קשר
+   בפריוריטי בכלל (לקוחות מאנדיי) — מוצגים כולם, אחרת הרשימה ריקה. */
+function ctAligned(list, curId){
+  if(!list.some(k => k.priority_id)) return list;
+  return list.filter(k => k.priority_id || (curId && k.id === curId));
+}
 function ctLabel(k){
   return (k.full_name || 'ללא שם') + ((k.phone || k.office_phone) ? ' · ' + (k.phone || k.office_phone) : '')
     + (k.role ? ' · ' + k.role : '') + (k.priority_id ? '' : ' · לא בפריוריטי');
@@ -25030,7 +25055,7 @@ function ctLabel(k){
 function ctPickHtml(kind, id, custId, curId, cur){
   const ed = kind === 'deal' ? window.canEdit('crm.deals') : window.canEdit('crm.leads');
   if(!custId || !ed) return roIn((cur && cur.full_name) || '');
-  const list = (CONTS||[]).filter(k => k.customer_id === custId)
+  const list = ctAligned((CONTS||[]).filter(k => k.customer_id === custId), curId)
     .sort((a,b)=>String(a.full_name||'').localeCompare(String(b.full_name||''), 'he'));
   if(curId && !list.some(k => k.id === curId)) list.unshift(Object.assign({ id:curId }, cur || {}, { full_name:(cur && cur.full_name) || 'איש הקשר הנוכחי' }));
   const opts = (curId ? '' : '<option value="" selected>— בחירת איש קשר —</option>')
@@ -25169,7 +25194,7 @@ function dlLivePaint(d, changed){
     ()=>dlOrdSecDraw(d),
     ()=>{ if(ch('customer_id') || ch('contact_id') || ch('lead_id')){ dlCustCellsDraw(d); dlTmDraw(id); } },
     /* 6.255.0 — כתובת המשלוח (deal-quote-refresh v10), ותגית "מתעדכן גם בהצעה" לפי סטטוס ההצעה. */
-    ()=>{ if(['ship_site','ship_name','ship_address','ship_city','priority_quote_status','priority_quote_id'].some(ch)) dlCustCellsDraw(d); }
+    ()=>{ if(['ship_site','ship_name','ship_address','ship_address2','ship_address3','ship_city','priority_quote_status','priority_quote_id'].some(ch)) dlCustCellsDraw(d); }
   ].forEach(f=>{ try{ f(); }catch(_e){} });
 }
 /* מיזוג שורות טריות למטמון גלובלי, **במקום** (המערך עצמו — כל צרכן מחזיק אותו בשם).
@@ -25270,11 +25295,7 @@ window.openDeal = async (id)=>{
   /* ⚠️ שליפה עצלה ולא כניסה ב-Promise.all — האינדקסים אינם זזים. */
   const dt = v => v ? fmtIso(v) : '—';   /* 6.206.0 */
   const phone = (lead && lead.phone) || (cust && cust.phone) || '';
-  /* 🔴 6.173.0 — טלפון אחד בכרטיס (רומן מנה אחד), ואיש הקשר קודם.
-     נמדד: 117 עסקאות שבהן טלפון איש הקשר שונה משל הליד/לקוח, ועוד 10
-     שבהן הוא היחיד הקיים. איש הקשר הוא מי שמדברים איתו על העסקה, וזה
-     מיישר את הטלפון לשדה הדוא"ל — שמעדיף אותו מאז ומעולם. */
-  const dphone = (contact && contact.phone) || phone;
+  /* 6.256.0 — "טלפון" ו"טלפון איש קשר" הם שני תאים (רומן), ושניהם מצוירים ב-dlCustCells. */
   /* משימות ופגישות של **העסקה ושל הליד** יחד — רומן: המשימה מלווה את
      איש המכירות "כל הדרך עד לסגירת העסקה", ולכן פיצולן לשני מקומות
      היה מסתיר בדיוק את מה שהוא ביקש לראות. */
@@ -28771,7 +28792,7 @@ window.convertLead = async (id, btn, choice)=>{
 let CV_CONT = null;   /* { id, btn, choice, sel } */
 function cvContOpen(id, btn, r, choice){
   const l = (LEADS||[]).find(x=>x.id===id) || {};
-  const rows = r.contacts || [];
+  const rows = ctAligned(r.contacts || [], null);   /* 6.256.0 — אותו כלל של הבורר */
   const p9 = v => String(v||'').replace(/\D/g,'').slice(-9);
   const hit = rows.find(k => l.phone && (p9(k.phone) === p9(l.phone) || p9(k.office_phone) === p9(l.phone)));
   CV_CONT = { id, btn, choice: Object.assign({}, choice || {}, { customer_id: r.customer_id || (choice && choice.customer_id) }), sel:'' };

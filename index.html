@@ -3386,7 +3386,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.252.0</div>
+      <div class="ver">גרסה 6.253.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3515,7 +3515,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="custpick-2026-10-13a">גרסה 6.252.0</div>
+    <div class="side-foot" title="custscreen-2026-10-13b">גרסה 6.253.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -12587,7 +12587,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'custpick-2026-10-13a';
+const BUILD_ID = 'custscreen-2026-10-13b';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -18457,7 +18457,7 @@ const LOAD_NAMES = ['לידים','לקוחות','משימות','עסקאות','�
       מחדש — כך אין סיכוי שהם ייפרדו בהעתקה. */
 const CRM_Q = {
   leads: () => sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at,position,address,notes,utm_campaign,utm_source,utm_medium,utm_term,landing_page_url,send_whatsapp_catalog,owner_id,updated_at').order('created_at',{ascending:false}).limit(10000),
-  custs: () => sb.schema('core').from('customers').select('id,name,phone,email,priority_id,status,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes').order('created_at',{ascending:false}).limit(10000),
+  custs: () => sb.schema('core').from('customers').select('id,name,phone,email,priority_id,status,opened_at,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes').order('created_at',{ascending:false}).limit(10000),
   tasks: () => sb.schema('crm').from('tasks').select('id,name,status,value_tag,category,due_at,closed_at,created_at,linked_type,linked_id,owner_id').order('due_at',{ascending:true}).limit(10000),
   deals: () => sb.schema('crm').from('deals').select('id,name,stage,amount,amount_incl_vat,quote_doc_path,quote_status,irrelevant_reason,priority_quote_id,customer_id,contact_id,lead_id,send_channel,sign_link,priority_quote_status,priority_quote_synced_at,approved_at,closed_at,created_at,monday_id').order('created_at',{ascending:false}).limit(10000),
   meets: () => sb.schema('crm').from('meetings').select('id,subject,status,meet_date,start_time,end_time,meet_type,location,teams_link,linked_type,linked_id,source,organizer_name,attendees,all_day,web_link,owner_id,contact_phone').order('meet_date',{ascending:false}).limit(10000),
@@ -20673,14 +20673,34 @@ function custRow(c){
 const CU_COLS = [
   ['#','rownum'], ['לקוח','srt'], ["מס' פריוריטי",'srt'], ['טלפון',''],
   /* 6.197.0 — 'פניות' (כמו 'פנייה מקורית' בעסקאות); עמודת הפעולות קיבלה כותרת. */
-  ['עיר / כתובת','srt'], ['פניות','srt'], ['סוג','srt'], ['מחירון','srt'], ['פעיל?','srt'],
+  ['עיר / כתובת','srt'], ['פניות','srt'], ['סוג','srt'], ['מחירון','srt'], ['סטטוס','srt'],
+  /* 6.253.0 — תאריך הפתיחה בפריוריטי (רומן, 13/10/2026). ⚠️ לפני 'פעולות', כדי שכל האינדקסים
+     הקיימים ב-CU_KEY לא יזוזו. */
+  ['נפתח','srt'],
   ['פעולות','ctr']
 ];
-let CU_VIEW = 'active', CU_SORT = [null, 1];
+/* 🔴 861 לקוחות נושאים את התאריך הזה ב-CREATEDDATE — יום הקמת פריוריטי (הייבוא מהמערכת הקודמת),
+   לא יום הפתיחה. הצגתו כתאריך פתיחה הייתה מציגה השערה כעובדה. */
+const CU_PRI_GOLIVE = '2023-03-02';
+function cuOpenedCell(k){
+  if(!k || !k.opened_at) return '<span class="lb-na">·</span>';
+  const d = fmtD(String(k.opened_at).slice(0,10));
+  return String(k.opened_at).slice(0,10)===CU_PRI_GOLIVE
+    ? `<span title="יום הקמת פריוריטי — הלקוח נפתח בתאריך הזה או לפניו">≤ ${d}</span>` : d;
+}
+function cuOpenedTxt(k){
+  if(!k || !k.opened_at) return '';
+  const d = fmtD(String(k.opened_at).slice(0,10));
+  return String(k.opened_at).slice(0,10)===CU_PRI_GOLIVE ? d + ' או קודם (יום הקמת פריוריטי)' : d;
+}
+/* 🔴 6.253.0 — ברירת המחדל 'all' (רומן, 13/10/2026: "שברירת מחדל תמיד יהיה להראות את כולם").
+   השבבים הם ציר הסטטוס: all · active (פעיל) · temp (זמני) · inactive (לא פעיל) · leads. */
+let CU_VIEW = 'all', CU_SORT = [null, 1];
+const CU_VIEW_ST = { active:'פעיל', temp:'זמני', inactive:'לא פעיל' };
 const CU_KEY = {
   1:k=>k.name||'', 2:k=>k.priority_id||'', 4:k=>k.city||'',
   5:k=>{ const n=custLeads(k).length; return n?String(n).padStart(6,'0'):''; },
-  6:k=>k.customer_type||'', 7:k=>k.price_group||'', 8:k=>k.status||''
+  6:k=>k.customer_type||'', 7:k=>k.price_group||'', 8:k=>k.status||'', 9:k=>k.opened_at||''
 };
 window.cuSortBy = i=>{ CU_SORT = (CU_SORT[0]===i) ? [i,-CU_SORT[1]] : [i,1]; renderCustomers(); };
 function cuOrder(list){ return ordBy(list, CU_KEY[CU_SORT[0]]||null, CU_SORT[1],
@@ -20697,9 +20717,16 @@ window.cuDefClear = ()=>{ try{ localStorage.removeItem(CU_DEF_KEY); }catch(_e){}
 function cuInitDef(){
   if(CU_DEF_INIT) return; CU_DEF_INIT = true;
   const d = cuDefLoad(); if(!d) return;
-  if(d.v && ['active','leads','all'].includes(d.v)) CU_VIEW = d.v;
+  if(d.v && ['all','active','temp','inactive','leads'].includes(d.v)) CU_VIEW = d.v;
   if(d.f && typeof d.f==='object'){
     CU_F = Object.assign(CU_F0(), d.f);
+    /* ⚠️ 6.253.0 — בורר הסטטוס ירד מהסרגל. סטטוס שנשמר לפני כן עובר לשבב ומתאפס — אחרת הוא היה
+       מסנן החוצה שורות בלי שאף פקד ייראה מסומן. */
+    if(CU_F.status){
+      const v = Object.keys(CU_VIEW_ST).find(x=>CU_VIEW_ST[x]===CU_F.status);
+      if(v) CU_VIEW = v;
+      CU_F.status = '';
+    }
     /* ערך שאינו קיים עוד יורד — אחרת הוא מסנן החוצה כל שורה בלי שאף בורר ייראה מסומן. */
     const has = f => new Set((CUSTS||[]).map(f).filter(Boolean));
     if(CU_F.status && !has(k=>k.status).has(CU_F.status)) CU_F.status='';
@@ -20715,7 +20742,7 @@ window.cuFilterClear = ()=>{ CU_F=CU_F0(); renderCustomers(); };
 function cuFilterActive(){ return !!(CU_F.status||CU_F.type||CU_F.price||CU_F.city||CU_F.leads); }
 function cuViewList(){
   if(CU_VIEW==='leads') return CUSTS.filter(k=>custLeads(k).length);
-  if(CU_VIEW==='active') return CUSTS.filter(k=>k.status==='פעיל');
+  if(CU_VIEW_ST[CU_VIEW]) return CUSTS.filter(k=>k.status===CU_VIEW_ST[CU_VIEW]);
   return CUSTS;
 }
 function cuApplyF(list){
@@ -20731,12 +20758,12 @@ function cuApplyF(list){
 }
 function cuChips(){
   const el=document.getElementById('cu-chips'); if(!el) return;
-  const act=CUSTS.filter(k=>k.status==='פעיל').length;
   const wl =CUSTS.filter(k=>custLeads(k).length).length;
+  const ch=(v,lbl,n)=>`<button class="chip ${CU_VIEW===v?'active':''}" onclick="cuSetView('${v}')">${lbl} ${n}</button>`;
   el.innerHTML =
-    `<button class="chip ${CU_VIEW==='active'?'active':''}" onclick="cuSetView('active')">פעילים ${act}</button>`+
-    `<button class="chip ${CU_VIEW==='leads'?'active':''}" onclick="cuSetView('leads')">עם פנייה ${wl}</button>`+
-    `<button class="chip ${CU_VIEW==='all'?'active':''}" onclick="cuSetView('all')">הכל ${CUSTS.length}</button>`;
+    ch('all','הכל',CUSTS.length)+
+    Object.keys(CU_VIEW_ST).map(v=>ch(v,CU_VIEW_ST[v],CUSTS.filter(k=>k.status===CU_VIEW_ST[v]).length)).join('')+
+    ch('leads','עם פנייה',wl);
 }
 function renderCuFilters(){
   const box=document.getElementById('cu-filters'); if(!box) return;
@@ -20744,7 +20771,6 @@ function renderCuFilters(){
   const sel=(k,ph,pairs)=>`<select class="lf-sel ${CU_F[k]?'lf-on':''}" onchange="cuFilter('${k}',this.value)"><option value="">${ph}</option>${pairs.map(([v,l])=>opt(v,l,CU_F[k])).join('')}</select>`;
   const uniq=f=>[...new Set(CUSTS.map(f).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),'he'));
   box.innerHTML =
-    sel('status','סטטוס — הכל',uniq(k=>k.status).map(s=>[s,s]))+
     sel('type','סוג לקוח — הכל',uniq(k=>k.customer_type).map(s=>[s,s]))+
     sel('price','מחירון — הכל',uniq(k=>k.price_group).map(s=>[s,s]))+
     sel('city','עיר — הכל',uniq(k=>k.city).map(s=>[s,s]))+
@@ -20777,6 +20803,7 @@ function custTable(list){
     <td>${esc(c.customer_type||'')||'<span class="lb-na">·</span>'}</td>
     <td>${esc(c.price_group||'')||'<span class="lb-na">·</span>'}</td>
     <td><span class="pill ${c.status==='פעיל'?'st-rel':(c.status==='לא פעיל'?'st-no':'st-def')}">${esc(c.status||'—')}</span></td>
+    <td class="nowrap">${cuOpenedCell(c)}</td>
     <td class="cu-act">${cuRowActs(c)}</td>
   </tr>`;}).join('');
   return cuHead()+rows+'</tbody></table></div>'+pgFoot('cust',list.length,'לקוחות');
@@ -20824,7 +20851,8 @@ window.openCust = async (id)=>{
 
   const pid = String(c.priority_id||'').trim(), ph = phoneKey(c.phone);
   const cs = SCALLS.filter(s => (pid && String(s.customer_number||'').trim()===pid) || (ph && phoneKey(s.phone)===ph));
-  const cp = PAYS.filter(p=>p.customer_id===c.id);
+  /* 6.253.0 — סקשן "תשלומים" ירד (רומן, 13/10/2026): הוא הציג את crm.payments — לוח התשלומים של
+     מאנדיי — ונקרא כנתוני פריוריטי. הכספים האמיתיים בכרטיס ההזמנה ובמסך התשלומים. */
   const ss = sitesFor(id);
 
   $('#custSheet').innerHTML = `
@@ -20836,7 +20864,8 @@ window.openCust = async (id)=>{
     <div class="form-grid">
       <div class="form-sep">פרטי הלקוח</div>
       <div><label>מספר בפריוריטי</label>${roIn(c.priority_id||'',{ltr:1})}</div>
-      <div><label>לקוח פעיל?</label>${roIn(c.status==='פעיל'?'כן':(c.status==='לא פעיל'?'לא':(c.status||'')))}</div>
+      <!-- 6.253.0 — "לקוח פעיל?" ירד: הסטטוס כבר בשבב שבכותרת, ועם 'זמני' התשובה כן/לא הייתה חלקית. -->
+      <div><label>נפתח בפריוריטי</label>${roIn(cuOpenedTxt(c))}</div>
       <div><label>טלפון</label>${roIn(c.phone||'',{ltr:1})}</div>
       <div><label>דוא"ל</label>${roIn(c.email||'',{ltr:1})}</div>
       <!-- 🔴 6.170.0 — "גישה למשאית · מעלית · מעלית משא" ירד (רומן:
@@ -20866,12 +20895,11 @@ window.openCust = async (id)=>{
     </section>
 
     <section class="ob-card"><h2 class="sec">עסקאות (${(deals||[]).length})</h2>
-      ${(deals||[]).map(d=>`<div class="row"><span class="k">${esc(d.priority_quote_id||'ללא הצעה')}</span><span class="v">${esc(d.stage)}${d.amount?' · ₪'+Number(d.amount).toLocaleString():''}</span></div>`).join('')||'<div class="empty" style="padding:10px">אין עסקאות</div>'}
+      ${(deals||[]).map(d=>`<div class="row" style="cursor:pointer" onclick="goCard(()=>openDeal('${jsq(d.id)}'))"><span class="k">${esc(d.priority_quote_id||'ללא הצעה')}</span><span class="v">${esc(d.stage)}${d.amount?' · ₪'+Number(d.amount).toLocaleString():''}</span></div>`).join('')||'<div class="empty" style="padding:10px">אין עסקאות</div>'}
     </section>
 
     ${ordOpen.length?`<section class="ob-card"><h2 class="sec">הזמנות פתוחות (${ordOpen.length})</h2>${ordOpen.map(ordRow).join('')}</section>`:''}
     ${cs.length?`<section class="ob-card"><h2 class="sec">קריאות שירות (${cs.length})</h2>${cs.slice(0,15).map(s=>`<div class="row" style="cursor:pointer" onclick="goCard(()=>openScall('${jsq(s.id)}'))"><span class="k">${esc(s.call_number||'')}${s.opened_date?' · '+fmtD(s.opened_date):''}${s.product?' · '+esc(String(s.product).slice(0,26)):''}</span><span class="v"><span class="pill ${scStClass(s.status)}">${esc(s.status||'—')}</span></span></div>`).join('')}</section>`:''}
-    ${cp.length?`<section class="ob-card"><h2 class="sec">תשלומים (${cp.length})</h2>${cp.slice(0,10).map(p=>`<div class="row"><span class="k">${p.due_date?fmtD(p.due_date):'—'}</span><span class="v">${shekel(p.total_amount)} · ${esc(p.status||'')}</span></div>`).join('')}</section>`:''}
 
     <section class="ob-card"><h2 class="sec">אנשי קשר (${(contacts||[]).length})</h2>
       ${(contacts||[]).map(p=>`<div class="row"><span class="k">${esc(p.full_name)}</span><span class="v">${esc(p.phone||p.email||'—')}</span></div>`).join('')||'<div class="empty" style="padding:10px">אין אנשי קשר</div>'}
@@ -24901,7 +24929,7 @@ window.dlLivePoll = async ()=>{
 const DL_TASK_COLS = 'id,name,status,value_tag,category,due_at,closed_at,created_at,linked_type,linked_id,owner_id';
 const DL_MEET_COLS = 'id,subject,status,meet_date,start_time,end_time,meet_type,location,teams_link,linked_type,linked_id,source,organizer_name,attendees,all_day,web_link,owner_id,contact_phone';
 const DL_PROT_COLS = 'id,order_id,call_id,deal_id,order_number,customer_name,phone,doc_type,category,status,sent_at,signed_at,signer_name,link_sent_at,link_sent_via,link_sent_by,link_sent_count';
-const DL_CUST_COLS = 'id,name,phone,email,priority_id,status,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes';
+const DL_CUST_COLS = 'id,name,phone,email,priority_id,status,opened_at,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes';
 const DL_LEAD_COLS = 'id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at,position,address,notes,utm_campaign,utm_source,utm_medium,utm_term,landing_page_url,send_whatsapp_catalog,owner_id,updated_at';
 window.dlDatesHtml = (d)=>{
   const dt = v => v ? fmtIso(v) : '—';   /* 6.206.0 */
@@ -28175,7 +28203,25 @@ window.custMeet = (id)=>{
 window.cuTmActs = (id)=>
   (window.canEdit('crm.meets')
     ? '<button type="button" class="chip" onclick="goCard(()=>custMeet(\'' + jsq(id) + '\'))">＋ פגישה</button>'
+    : '')
+  /* 6.253.0 — ＋ משימה (רומן, 13/10/2026: "תוסיף בפעולות אפשרות לפתוח משימה גם"). */
+  + (window.canEdit('crm.tasks')
+    ? ' <button type="button" class="chip" onclick="goCard(()=>custTask(\'' + jsq(id) + '\'))">＋ משימה</button>'
     : '');
+/* מראה מדויקת של dealTask: tklInit **אחרי** mountCard, והקישור 'customer:' — tklChoose גוזר ממנו
+   את הסיווג 'לקוח', ו-t-save חוזר לכרטיס הלקוח דרך CARD_STACK. */
+window.custTask = (id)=>{
+  const k=(CUSTS||[]).find(x=>x.id===id); if(!k) return;
+  $('#t-name').value=''; $('#t-err').textContent='';
+  $('#t-name').placeholder='משימה על '+(k.name||'');
+  $('#t-time').value='09:00';
+  $('#t-due').value=todayStr();
+  mountCard('taskModal', ()=>$('#taskModal').classList.remove('hidden'));
+  tklInit('t','customer:'+id);
+};
+/* 🔴 6.253.0 — לקוח 'לא פעיל' אינו יכול לקבל הצעת מחיר בפריוריטי (רומן, 13/10/2026). 'זמני' — כן.
+   השער האמיתי בשרת (crm-customer-deal v3, 409); כאן רק לא מציגים פעולה שתיכשל. */
+const cuDealBlocked = c => (c && c.status) === 'לא פעיל';
 
 let CUD_RESULT = null;   /* {id, html} — תוצאת פתיחת התהליך, שורדת ציור מחדש */
 
@@ -28186,6 +28232,8 @@ window.cuDealBox = (c)=>{
   if(!c || !window.canEdit('crm.deals')) return '';
   if(!String(c.priority_id||'').trim())
     return '<div class="note">ללקוח אין מספר בפריוריטי — אי אפשר לפתוח לו הצעת מחיר.</div>';
+  if(cuDealBlocked(c))
+    return '<div class="note">הלקוח לא פעיל בפריוריטי — אי אפשר לפתוח לו תהליך מכירה.</div>';
   return '<button class="btn green" style="width:auto" onclick="custDeal(\'' + jsq(c.id) + '\', this)">＋ יצירת תהליך מכירה</button>'
        + '<span class="note">תיפתח הצעת מחיר בפריוריטי ועסקה חדשה. הלקוח עצמו אינו נפתח מחדש.</span>';
 };
@@ -28194,10 +28242,12 @@ window.cuRowActs = (c)=>{
   const a = [];
   /* ⚠️ event.stopPropagation() בשניהם: כל השורה היא onclick="openCust",
      ובלעדיו כל לחיצה על אייקון הייתה פותחת את הכרטיס במקום לפעול. */
-  if(window.canEdit('crm.deals') && String(c.priority_id||'').trim())
+  if(window.canEdit('crm.deals') && String(c.priority_id||'').trim() && !cuDealBlocked(c))
     a.push('<button type="button" class="cu-ab" title="יצירת תהליך מכירה" onclick="event.stopPropagation();custDeal(\'' + jsq(c.id) + '\', this)">＋ תהליך</button>');
   if(window.canEdit('crm.meets'))
     a.push('<button type="button" class="cu-ab" title="יצירת פגישה" onclick="event.stopPropagation();custMeet(\'' + jsq(c.id) + '\')">＋ פגישה</button>');
+  if(window.canEdit('crm.tasks'))
+    a.push('<button type="button" class="cu-ab" title="יצירת משימה" onclick="event.stopPropagation();custTask(\'' + jsq(c.id) + '\')">＋ משימה</button>');
   return a.join(' ');
 };
 

@@ -3361,7 +3361,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.263.0</div>
+      <div class="ver">גרסה 6.264.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3490,7 +3490,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="dealux-2026-10-13a">גרסה 6.263.0</div>
+    <div class="side-foot" title="waall-2026-10-13a">גרסה 6.264.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -12533,7 +12533,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'dealux-2026-10-13a';
+const BUILD_ID = 'waall-2026-10-13a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -23101,12 +23101,16 @@ const phBtns = p => phOk(p) ? `<span class="ph-group"><a class="ph-btn call" hre
    ⚠️ דסקטופ בלבד — WhatsApp Web אינו עובד בטלפון; שם wa.me פותח את האפליקציה כמו היום.
    ⚠️ לשונית בשם קבוע (iron_wa): כל לחיצה ממחזרת אותה. השם אינו מגיע ללשונית שהמשתמש פתח בעצמו —
       בפעם הראשונה WhatsApp Web ישאל "להשתמש כאן?", ומאז העבודה בלשונית הזו. */
-/* 6.261.0 — רומן: "תעשה את זה גם בכרטיס ליד ולקוח וגם בכרטיס הזמנה". רשימה אחת, שמית. */
-const WA_WEB_CARDS = ['#dealModal', '#leadModal', '#custModal', '#ordModal'].map(s => s + ' a.ph-btn.wa').join(', ');
+/* 🔴 6.264.0 — רומן: "תעשה בכל הכרטיסים הרלוונטיים". הרשימה (6.261.0: עסקה·ליד·לקוח·הזמנה) גדלה בכל בקשה,
+   וכל כרטיס חדש היה נשכח בה — לכן **כל עוגן wa.me/<מספר>** בדף: הכרטיסים (כולל משימה), אייקון היומן, וקישורי
+   התיאום בטבלאות (עם הטקסט שלהם). ⚠️ בחוץ בכוונה: wa.me/?text= בלי מספר (אין שיחה), ו-openDocLink (פותח
+   לשונית לפני ה-await ועשוי לסגור אותה — ניתוב ל-iron_wa היה יכול לסגור את WhatsApp Web). */
+const WA_WEB_ANY = 'a[href*="wa.me/"]';
 const waWebOk = () => { try{ return matchMedia('(pointer:fine)').matches && wideScreen(); }catch(_e){ return false; } };
-const waWebUrl = href => { const m = String(href||'').match(/wa\.me\/(\d{9,15})/); return m ? 'https://web.whatsapp.com/send?phone=' + m[1] : ''; };
+const waWebUrl = href => { const m = String(href||'').match(/wa\.me\/(\d{9,15})\/?(?:\?(?:[^#]*&)?text=([^&#]*))?/);
+  return m ? 'https://web.whatsapp.com/send?phone=' + m[1] + (m[2] ? '&text=' + m[2] : '') : ''; };   /* 6.264.0 — הטקסט עובר כמות שהוא (כבר מקודד) */
 document.addEventListener('click', ev=>{
-  const a = ev.target && ev.target.closest ? ev.target.closest(WA_WEB_CARDS) : null;
+  const a = ev.target && ev.target.closest ? ev.target.closest(WA_WEB_ANY) : null;
   if(!a || !waWebOk()) return;
   const url = waWebUrl(a.getAttribute('href'));
   if(!url) return;                                   /* מספר שלא זוהה ⇒ ה-href המקורי (wa.me) */

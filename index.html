@@ -3361,7 +3361,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.266.1</div>
+      <div class="ver">גרסה 6.267.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3490,7 +3490,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="lblco-2026-10-13a">גרסה 6.266.1</div>
+    <div class="side-foot" title="waproto-2026-10-13a">גרסה 6.267.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -11816,11 +11816,15 @@ window.openDocLink = async (id, mode)=>{
   const p = PROTS.find(x=>x.id===id);
   /* פותחים את הלשונית מיד עם הלחיצה, לפני ההמתנה לשרת. אחרת חוסם החלונות
      הקופצים של הדפדפן יבלע אותה, כי אישור המשתמש פג במהלך ה-await. */
-  const tab = (mode==='open'||mode==='wa') ? window.open('', '_blank') : null;
+  /* 6.267.0 — רומן: "תעשה גם בשליחת פרוטוקול לחתימה". בדסקטופ עם טלפון: לשונית iron_wa (WhatsApp Web),
+     ו**בכשל היא אינה נסגרת** — ייתכן שזו WhatsApp Web שהמשתמש עובד בו (הסיבה שזה נשאר בחוץ ב-6.264.0). */
+  const waWeb = mode==='wa' && !!(p && p.phone) && waWebOk();
+  const tab = waWeb ? window.open('', 'iron_wa') : ((mode==='open'||mode==='wa') ? window.open('', '_blank') : null);
+  if(waWeb && tab){ try{ tab.opener = null; }catch(_e){} }
   const { data, error } = await sb.schema('ord').rpc('protocol_link',
     { p_id:id, p_via: mode==='wa' ? 'whatsapp' : (mode==='copy' ? 'link' : null) });
   if(error || !data || !data.token){
-    if(tab){ try{ tab.close(); }catch(_e){} }
+    if(tab && !waWeb){ try{ tab.close(); }catch(_e){} }
     toast('הפקת הקישור נכשלה — ' + ((error&&error.message)||'אין לך הרשאה למסמך הזה'), 'err');
     return;
   }
@@ -11829,7 +11833,8 @@ window.openDocLink = async (id, mode)=>{
      (ערוץ שליחה חסר). עד כאן ההערה נבלעה והמשתמש חשב שהשלב התקדם. */
   if(data.stage_note) toast(String(data.stage_note), 'warn', 6000);
   if(data.kind==='sign') dlSignAfterLink(p, url, mode==='wa' ? 'whatsapp' : (mode==='copy' ? 'link' : null));
-  if(tab){ tab.location.href = (mode==='wa'&&p&&p.phone) ? waLink(p.phone, waProtocolMsg(p, url)) : url; return; }
+  if(tab){ const _to = (mode==='wa'&&p&&p.phone) ? waLink(p.phone, waProtocolMsg(p, url)) : url;
+           tab.location.href = waWeb ? (waWebUrl(_to) || _to) : _to; return; }
   copyTxt(url, data.stage_note ? 'הקישור הועתק ✓ · ' + String(data.stage_note) : null,
           data.stage_note ? 'warn' : undefined, data.stage_note ? 6000 : undefined);
 };
@@ -12276,8 +12281,9 @@ window.dlQDocBox = (d) => d.quote_doc_path
   ? '<div class="tk-lnk"><button class="chip" onclick="dlOpenDoc(\'' + jsq(d.quote_doc_path) + '\')">'
     + esc(String(d.quote_doc_path).split('/').pop()) + ' &#8599;</button>'
     /* 6.262.0 — רומן: "ליד ההצעה מחיר גם כפתור וואטסאפ" (dlQuoteWa, התבנית ב-ord.settings.wa_quote_text) */
-    + '<button class="chip" onclick="dlQuoteWa(\'' + jsq(d.id) + '\')" title="פתיחת השיחה עם איש הקשר, עם הודעת ההצעה (מהדורה '
-    + esc(dlQuoteEd(d)) + ')">' + WA_SVG + ' וואטסאפ</button></div>'
+    /* 6.267.0 — "הוא ענק … קטן כמו זה שמעל המספרי טלפון": ph-btn wa (ה-SVG מוגבל ל-13px רק שם) */
+    + ' <button type="button" class="ph-btn wa" style="font-family:inherit;cursor:pointer" onclick="dlQuoteWa(\'' + jsq(d.id) + '\')" title="פתיחת השיחה עם איש הקשר, עם הודעת ההצעה וקישור ל-PDF (מהדורה '
+    + esc(dlQuoteEd(d)) + ')">' + WA_SVG + ' וואטסאפ להצעה</button></div>'
   : roIn('טרם נמשך');
 /* ═══ 6.262.0 — וואטסאפ עם הצעת המחיר (רומן, 13/10/2026) ═══════════════════════════════════════════
    המהדורה: מספר הקובץ <QN>-<CURVERSION>.pdf (נמדד 134/134). הנמען: מה שהכרטיס מציג — "טלפון איש קשר"
@@ -12285,21 +12291,40 @@ window.dlQDocBox = (d) => d.quote_doc_path
    ⚠️ WhatsApp Web אינו מקבל קובץ בכתובת — את ה-PDF גוררים לשיחה. */
 const WA_QUOTE_DEF = 'הצעת מחיר מצורפת מהדורה מספר - {מהדורה}';
 const dlQuoteEd = d => { const m = String((d && d.quote_doc_path) || '').match(/-(\d+)\.pdf$/i); return m ? m[1] : ''; };
-window.dlQuoteWa = (id) => {
+/* 🔴 6.267.0 — רומן: "הוא לא מצרף את ההצעת מחיר". WhatsApp Web אינו מקבל קובץ בכתובת, ולכן ההודעה נושאת
+   קישור חתום ל-PDF — 30 יום, כי הלקוח פותח אותו מתי שירצה (dlOpenDoc חותם 5 דקות לצפייה פנימית).
+   {קישור} בתבנית; תבנית בלי {קישור} מקבלת אותו בשורה אחרונה — בלי קישור אין "הצעה מצורפת".
+   ⚠️ הלשונית נפתחת לפני ה-await (חוסם החלונות). iron_wa **אינה נסגרת בכשל** — ייתכן שזו WhatsApp Web
+      שהמשתמש עובד בו; לשונית _blank (טלפון) נסגרת, כמו ב-dlOpenDoc. */
+const WA_QUOTE_LINK_TTL = 60 * 60 * 24 * 30;
+window.dlQuoteWa = async (id) => {
   const d = (DEALS||[]).find(x=>x.id===id); if(!d) return;
   const src = document.querySelector('#dealModal #dl-cc-cph a.ph-btn.wa') || document.querySelector('#dealModal #dl-cc-ph a.ph-btn.wa');
   const m = src ? String(src.getAttribute('href')||'').match(/wa\.me\/(\d{9,15})/) : null;
   if(!m){ toast('אין טלפון לאיש הקשר או ללקוח בכרטיס — אין למי לשלוח', 'warn'); return; }
-  /* trim לפני ההשוואה — ערך של רווחים בלבד אינו תבנית (הלקח של osetNum) */
-  const tpl = String(osetStr('wa_quote_text', '') || '').trim() || WA_QUOTE_DEF;
-  const txt = tpl.split('{מהדורה}').join(dlQuoteEd(d)).split('{הצעה}').join(String(d.priority_quote_id || ''));
-  const q = encodeURIComponent(txt);
-  if(waWebOk()){
-    let w = null; try{ w = window.open('', 'iron_wa'); }catch(_e){ w = null; }
-    if(w){ try{ w.opener = null; }catch(_e){}
-      try{ w.location.href = 'https://web.whatsapp.com/send?phone=' + m[1] + '&text=' + q; w.focus(); return; }catch(_e){} }
+  if(!d.quote_doc_path){ toast('אין עדיין PDF להצעה — אין מה לצרף', 'warn'); return; }
+  const web = waWebOk();
+  let w = null; try{ w = web ? window.open('', 'iron_wa') : window.open('', '_blank'); }catch(_e){ w = null; }
+  if(w){ try{ w.opener = null; }catch(_e){} }
+  let link = '';
+  try{
+    const { data, error } = await sb.storage.from('docs').createSignedUrl(d.quote_doc_path, WA_QUOTE_LINK_TTL);
+    if(!error && data && data.signedUrl) link = data.signedUrl;
+  }catch(_e){ link = ''; }
+  if(!link){
+    if(w && !web){ try{ w.close(); }catch(_e){} }
+    toast('לא ניתן להפיק קישור ל-PDF של ההצעה — ההודעה לא נפתחה', 'err'); return;
   }
-  window.open('https://wa.me/' + m[1] + '?text=' + q, '_blank', 'noopener');
+  /* trim לפני ההשוואה — ערך של רווחים בלבד אינו תבנית (הלקח של osetNum) */
+  let tpl = String(osetStr('wa_quote_text', '') || '').trim() || WA_QUOTE_DEF;
+  /* ⚠️ String.fromCharCode(10) ולא רצף בריחה של שורה חדשה: רצפי בריחה בתוך ה-SQL עלולים להפוך לתו בדרך למסד (פרק 1) */
+  if(tpl.indexOf('{קישור}') < 0) tpl += String.fromCharCode(10) + '{קישור}';
+  const txt = tpl.split('{מהדורה}').join(dlQuoteEd(d)).split('{הצעה}').join(String(d.priority_quote_id || ''))
+                 .split('{קישור}').join(link);
+  const q = encodeURIComponent(txt);
+  const url = web ? 'https://web.whatsapp.com/send?phone=' + m[1] + '&text=' + q : 'https://wa.me/' + m[1] + '?text=' + q;
+  if(w){ try{ w.location.href = url; w.focus(); return; }catch(_e){} }
+  window.open(url, '_blank', 'noopener');
 };
 
 /* 6.237.0 — מתג מקור האמת (ord.settings.crm_source_of_truth, שלב 3.2 של המעבר).
@@ -12533,7 +12558,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'lblco-2026-10-13a';
+const BUILD_ID = 'waproto-2026-10-13a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -17516,7 +17541,7 @@ const CRM_SETTINGS = [
   ['—','פגישות','sep'],
   ['crm_meet_location','מיקום ברירת מחדל לפגישה','חל על פגישה **פרונטלית** בלבד, וכשלא הוקלד מיקום. עד 6.160.0 הערך היה מקודד בסכימה (בלי פסיק) ולא ניתן לשינוי בלי פריסה.','txt'],
   ['—','וואטסאפ','sep'],
-  ['wa_quote_text','הודעת וואטסאפ עם הצעת המחיר','נפתחת מהכפתור "וואטסאפ" ליד מסמך ההצעה בכרטיס העסקה. {מהדורה} = מספר המהדורה של ה-PDF · {הצעה} = מספר ההצעה בפריוריטי. ריק = "הצעת מחיר מצורפת מהדורה מספר - {מהדורה}".','txt'],
+  ['wa_quote_text','הודעת וואטסאפ עם הצעת המחיר','נפתחת מהכפתור "וואטסאפ" ליד מסמך ההצעה בכרטיס העסקה. {מהדורה} = מספר המהדורה של ה-PDF · {הצעה} = מספר ההצעה בפריוריטי · {קישור} = קישור ל-PDF (30 יום; אם לא מופיע — מתווסף בשורה אחרונה). ריק = "הצעת מחיר מצורפת מהדורה מספר - {מהדורה}".','txt'],
   ['—','סוקר הצעות המחיר בפריוריטי','sep'],
   ['crm_quote_watch_enabled','הסוקר פעיל','"כן" או "לא". רץ כל 15 דקות, 08:00–20:00, לא בשבת.','yn'],
   ['crm_quote_sent_statdes','הסטטוס בפריוריטי שמסמן "נשלחה"','⚠️ הערך הזה לא נמדד מול פריוריטי. הסוקר רושם ביומן הסנכרון את כל ערכי STATDES שהוא רואה — אחרי הריצה הראשונה על הצעה אמיתית אפשר לתקן אותו כאן.','txt'],

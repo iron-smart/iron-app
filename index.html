@@ -1621,6 +1621,11 @@
   @media(max-width:1279.98px){ .form-grid .addr-row{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
   @media(max-width:759.98px){ .form-grid .addr-row{ grid-column:span 2; grid-template-columns:repeat(2,minmax(0,1fr)); } }
   @media(max-width:559.98px){ .form-grid .addr-row{ grid-column:span 1; grid-template-columns:1fr; } }
+  /* 6.257.0 — .addr4: כתובת משלוח בכרטיס העסקה, ארבעה תאים על עמודות הגריד שמעליהם (אותו gap של .form-grid,
+     כדי שהקצוות יתיישרו), 2×2 מתחת ל-1280 — ולא 3+1 עם חור. (0,3,0) כדי לגבור על שלוש שורות ה-media שמעל. */
+  .form-grid .addr-row.addr4{ grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+  @media(max-width:1279.98px){ .form-grid .addr-row.addr4{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  @media(max-width:559.98px){ .form-grid .addr-row.addr4{ grid-template-columns:1fr; } }
   /* 6.25.0 — חיוג + וואטסאפ תמיד באותה שורה */
   .ph-group{ display:inline-flex; align-items:center; gap:5px; flex-wrap:nowrap; flex:none; }
   /* 6.25.0 — סידור החלק התחתון של כרטיס ההזמנה */
@@ -3386,7 +3391,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.256.1</div>
+      <div class="ver">גרסה 6.257.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3515,7 +3520,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="stagelbl-2026-10-13a">גרסה 6.256.1</div>
+    <div class="side-foot" title="ctorder-2026-10-13a">גרסה 6.257.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -12624,7 +12629,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'stagelbl-2026-10-13a';
+const BUILD_ID = 'ctorder-2026-10-13a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -24976,9 +24981,11 @@ window.dlDatesHtml = (d)=>{
 /* תאי "פרטי הפנייה והלקוח" — מזהה לכל תא, כדי שיוחלפו אחד-אחד (outerHTML) ולא דרך עוטף:
    ⚠️ עוטף display:contents היה שובר את .form-grid > div ואת .form-sep:first-child (נמדדו בגיליון).
    ⚠️ תא ההערה הלוגיסטית קיים תמיד ומוסתר כשאין הערה — אחרת לא היה לו מקום לחזור אליו. */
-/* 6.255.0 — **הסדר של רומן נשמר** (פנייה · לקוח · חברה · איש קשר / טלפון · סוג · כתובת חיוב · דוא"ל —
-   dealtest מקבע אותו), איש הקשר הפך לבורר במקומו, וכתובת המשלוח מההצעה היא שורה שלישית מלאה (span4)
-   — בלי חור בגריד (card-layout).
+/* 6.255.0 — איש הקשר הפך לבורר, וכתובת המשלוח מההצעה היא שורה מלאה — בלי חור בגריד (card-layout).
+   🔴 6.257.0 — רומן: "סדר שם לקוח, שם חברה, טלפון ואז רק של איש קשר, טלפון איש קשר וכו׳". ⇒ שורה 1 =
+   לקוח · שם חברה · טלפון · פנייה מקורית / שורה 2 = איש קשר · טלפון איש קשר · דוא"ל איש קשר (span2) /
+   שורה 3 = כתובת חיוב (span2) · עיר · סוג לקוח / שורה 4 = כתובת המשלוח. dealtest מקבע את הסדר
+   ו-dealcontacttest את השורות (נמדד).
    ⚠️ d הוא פרמטר רביעי ואופציונלי: בלעדיו (קורא ישן) — אין בורר ואין כתובת משלוח, ולא נזרק. */
 window.dlCustCells = (lead, cust, contact, d)=>{
   const phone  = (lead && lead.phone) || (cust && cust.phone) || '';
@@ -24988,25 +24995,29 @@ window.dlCustCells = (lead, cust, contact, d)=>{
   const _cid = (contact && contact.id) || (d && d.contact_id) || null;   /* openDeal שולף איש קשר בלי id */
   const _ck = _cid ? (CONTS||[]).find(k=>k.id===_cid) : null;
   const cphone = (contact && contact.phone) || (_ck && (_ck.phone || _ck.office_phone)) || '';
-  const log = cust && cust.logistics_notes;
+  const cemail = (contact && contact.email) || (_ck && _ck.email) || '';
   return [
-    lead ? `<div id="dl-cc-lead"><label>פנייה מקורית</label>
-        <a class="dl-tile" href="#" onclick="event.preventDefault();goCard(()=>openLead('${jsq(lead.id)}'))"
-           title="${esc(lead.full_name||'')}"><span class="tk-kind tk-k-lead">ליד</span><span class="dlt-nm">${esc(lead.full_name||'')}</span><span class="dlt-ar">&#8599;</span></a></div>`
-      : '<div id="dl-cc-lead"><label>פנייה מקורית</label><div class="note" title="הקישור נוצר בהמרת ליד, או במילוי היסטורי.">ללא פנייה מקושרת</div></div>',
     cust ? `<div id="dl-cc-cust"><label>לקוח</label>
         <a class="dl-tile" href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(cust.id)}'))"
            title="${esc(cust.name||'')}"><span class="tk-kind tk-k-customer">לקוח</span><span class="dlt-nm">${esc(cust.name||'כרטיס הלקוח')}</span><span class="dlt-ar">&#8599;</span></a></div>`
-      : '<div id="dl-cc-cust"><label>לקוח</label><div class="note">אינה מקושרת ללקוח.</div></div>',
+      : `<div id="dl-cc-cust"><label>לקוח</label>${roIn('אינה מקושרת ללקוח')}</div>`,
     `<div id="dl-cc-co"><label>שם חברה</label>${roIn((lead&&lead.company)||'')}</div>`,
+    `<div id="dl-cc-ph"><label>טלפון ${phone?phBtns(phone):''}</label>${roIn(phone,{ltr:1})}</div>`,
+    lead ? `<div id="dl-cc-lead"><label>פנייה מקורית</label>
+        <a class="dl-tile" href="#" onclick="event.preventDefault();goCard(()=>openLead('${jsq(lead.id)}'))"
+           title="${esc(lead.full_name||'')}"><span class="tk-kind tk-k-lead">ליד</span><span class="dlt-nm">${esc(lead.full_name||'')}</span><span class="dlt-ar">&#8599;</span></a></div>`
+      : `<div id="dl-cc-lead" title="הקישור נוצר בהמרת ליד, או במילוי היסטורי."><label>פנייה מקורית</label>${roIn('ללא פנייה מקושרת')}</div>`,
     `<div id="dl-cc-ct" title="${esc(ctTag(d))}"><label>איש קשר</label>${d ? ctPickHtml('deal', d.id, cust && cust.id, d.contact_id, contact) : roIn((contact&&contact.full_name)||'')}</div>`,
     `<div id="dl-cc-cph"><label>טלפון איש קשר ${cphone?phBtns(cphone):''}</label>${roIn(cphone,{ltr:1})}</div>`,
-    `<div id="dl-cc-ph"><label>טלפון ${phone?phBtns(phone):''}</label>${roIn(phone,{ltr:1})}</div>`,
+    /* 6.257.0 — רומן: "דוא"ל שיהיה דוא"ל רק של האיש קשר". עד כאן נפל לדוא"ל הלקוח, ולכן ליד איש הקשר
+       הופיעה כתובת של מישהו אחר. ריק כשאין — והתווית אומרת של מי. */
+    `<div class="span2" id="dl-cc-em"><label>דוא"ל איש קשר</label>${roIn(cemail,{ltr:1})}</div>`,
+    /* 🔴 6.257.0 — רומן: "גם הכתובת חיוב מאוד ארוכה וכל האיזור פה לא נראה טוב ... להעיף דברים לא נחוצים".
+       ⇒ כתובת (חצי שורה) ועיר בתאים נפרדים, ו"(כרטיס הלקוח)" עבר לריחוף — .note בתוך label צויר כקופסה אפורה. */
+    `<div class="span2" id="dl-cc-ad" title="מכרטיס הלקוח"><label>כתובת חיוב</label>${roIn((cust&&cust.address)||'')}</div>`,
+    `<div id="dl-cc-ac" title="מכרטיס הלקוח"><label>עיר</label>${roIn((cust&&cust.city)||'')}</div>`,
     `<div id="dl-cc-ty"><label>סוג לקוח</label>${roIn((cust&&cust.customer_type)||'')}</div>`,
-    `<div id="dl-cc-em"><label>דוא"ל</label>${roIn((contact&&contact.email)||(cust&&cust.email)||'',{ltr:1})}</div>`,
-    `<div class="span4" id="dl-cc-ad"><label>כתובת חיוב <span class="note" style="font-weight:400">(כרטיס הלקוח)</span></label>${roIn(cust?[cust.address,cust.city].filter(Boolean).join(', '):'')}</div>`,
-    dlShipHtml(d),
-    `<div class="span4" id="dl-cc-log"${log?'':' style="display:none"'}>${log?`<div class="note">&#128666; ${esc(log)}</div>`:''}</div>`
+    dlShipHtml(d)
   ];
 };
 /* ═══ 6.255.0 — כתובת המשלוח מההצעה ═══════════════════════════════
@@ -25020,15 +25031,19 @@ window.dlCustCells = (lead, cust, contact, d)=>{
    ⚠️ מחזיר את התא **כולו** (עם המזהה dl-cc-sh) — dlCustCellsDraw מחליף לפי outerHTML, והמחלקה משתנה בין
       שני המצבים. */
 function dlShipHtml(d){
-  const lbl = '<label>כתובת משלוח <span class="note" style="font-weight:400">(מההצעה בפריוריטי)</span></label>';
-  const one = inner => `<div class="span4" id="dl-cc-sh">${lbl}${inner}</div>`;
-  if(!d || !d.priority_quote_id) return one('<div class="note">אין לעסקה הצעה בפריוריטי.</div>');
-  if(!d.ship_address && !d.ship_address2 && !d.ship_address3 && !d.ship_city && !d.ship_name)
-    return one('<div class="note" title="בהצעה לא הוגדרה כתובת למשלוח — המשלוח לכתובת הלקוח.">לא הוגדרה כתובת משלוח בהצעה.</div>');
+  /* 6.257.0 — המצבים הריקים הם שדה רגיל (roIn) ולא קופסת .note בתוך קופסה; המקור עבר לריחוף. */
+  const one = v => `<div class="span4" id="dl-cc-sh" title="מההצעה בפריוריטי"><label>כתובת משלוח</label>${roIn(v)}</div>`;
+  if(!d || !d.priority_quote_id) return one('אין לעסקה הצעה בפריוריטי');
+  /* 🔴 6.257.0 — רומן: "תוריד את 'שם במשלוח' ... ואת 4 המשבצות תפרוס עד הגבול". ⇒ ארבעה תאים (.addr4) על
+     עמודות הגריד שמעליהם; השם (CUSTDES של כתובת המשלוח) עבר לריחוף. ולכן גם התנאי: שם בלבד, בלי כתובת,
+     הוא "לא הוגדרה" — אחרת ארבעה תאים ריקים. */
+  if(!d.ship_address && !d.ship_address2 && !d.ship_address3 && !d.ship_city)
+    return one('לא הוגדרה בהצעה — המשלוח לכתובת החיוב');
   const cell = (l, v) => `<div><label>${l}</label>${roIn(v || '')}</div>`;
-  return `<div class="addr-row" id="dl-cc-sh" title="${esc('מההצעה בפריוריטי' + (d.ship_site ? ' · אתר ' + d.ship_site : ''))}">`
+  const tip = 'מההצעה בפריוריטי' + (d.ship_name ? ' · ' + d.ship_name : '') + (d.ship_site ? ' · אתר ' + d.ship_site : '');
+  return `<div class="addr-row addr4" id="dl-cc-sh" title="${esc(tip)}">`
     + cell('כתובת משלוח', d.ship_address) + cell('כתובת - שורה 2', d.ship_address2) + cell('כתובת - שורה 3', d.ship_address3)
-    + cell('עיר', d.ship_city) + cell('שם במשלוח', d.ship_name) + `</div>`;
+    + cell('עיר', d.ship_city) + `</div>`;
 }
 /* ═══ 6.255.0 — בורר איש קשר (עסקה וליד) ═══════════════════════════
    רומן: "שתהיה לי אפשרות לבחור את האיש קשר כי נגיד ללקוח זה יש כמה אנשי קשר".
@@ -25052,9 +25067,16 @@ function ctAligned(list, curId){
   if(!list.some(k => k.priority_id)) return list;
   return list.filter(k => k.priority_id || (curId && k.id === curId));
 }
-function ctLabel(k){
-  return (k.full_name || 'ללא שם') + ((k.phone || k.office_phone) ? ' · ' + (k.phone || k.office_phone) : '')
-    + (k.role ? ' · ' + k.role : '') + (k.priority_id ? '' : ' · לא בפריוריטי');
+/* 🔴 6.257.0 — רומן: "שיהיה רק שם איש קשר בלי הטלפון כי הטלפון כעת במשבצת נפרדת". ⇒ השם בלבד.
+   ⚠️ חריג אחד: שם שמופיע פעמיים ברשימה (נמדד: 'נאור רוהקר' ×2 לפני היישור) — רק לשניהם מתווסף הטלפון,
+      אחרת שתי אפשרויות זהות לעין. התפקיד ו"לא בפריוריטי" עברו לריחוף (title) על האפשרות. */
+function ctLabel(k, list){
+  const nm = k.full_name || 'ללא שם', ph = k.phone || k.office_phone;
+  const dup = (list || []).filter(x => (x.full_name || 'ללא שם') === nm).length > 1;
+  return nm + (dup && ph ? ' · ' + ph : '');
+}
+function ctTitle(k){
+  return [k.phone || k.office_phone, k.role, k.priority_id ? '' : 'לא בפריוריטי'].filter(Boolean).join(' · ');
 }
 function ctPickHtml(kind, id, custId, curId, cur){
   const ed = kind === 'deal' ? window.canEdit('crm.deals') : window.canEdit('crm.leads');
@@ -25063,7 +25085,7 @@ function ctPickHtml(kind, id, custId, curId, cur){
     .sort((a,b)=>String(a.full_name||'').localeCompare(String(b.full_name||''), 'he'));
   if(curId && !list.some(k => k.id === curId)) list.unshift(Object.assign({ id:curId }, cur || {}, { full_name:(cur && cur.full_name) || 'איש הקשר הנוכחי' }));
   const opts = (curId ? '' : '<option value="" selected>— בחירת איש קשר —</option>')
-    + list.map(k => `<option value="${esc(k.id)}"${k.id === curId ? ' selected' : ''}>${esc(ctLabel(k))}</option>`).join('')
+    + list.map(k => `<option value="${esc(k.id)}" title="${esc(ctTitle(k))}"${k.id === curId ? ' selected' : ''}>${esc(ctLabel(k, list))}</option>`).join('')
     + '<option value="__new">＋ איש קשר חדש…</option>';
   return `<select id="${kind === 'deal' ? 'dl' : 'lb'}-ct-sel" data-cur="${esc(curId || '')}" onchange="ctPickChange('${kind}','${jsq(id)}',this)">${opts}</select>`;
 }

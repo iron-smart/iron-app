@@ -3391,7 +3391,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.257.0</div>
+      <div class="ver">גרסה 6.259.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3520,7 +3520,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="ctorder-2026-10-13a">גרסה 6.257.0</div>
+    <div class="side-foot" title="mdarch-2026-10-13a">גרסה 6.259.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -11799,8 +11799,12 @@ window.copyTxt = async (t, msg, kind, ms)=>{ try{ await navigator.clipboard.writ
    docs.quotes / docs.protocols / docs.reports / docs.media. */
 const DOC_CATS = [
   ['quotes','הצעות מחיר'], ['protocols','פרוטוקולים'],
-  ['reports','דוחות תקינות'], ['media','תמונות מהשטח']
+  ['reports','דוחות תקינות'], ['media','תמונות מהשטח'],
+  /* 6.259.0 — ארכיון ההצעות החתומות ממאנדיי (רומן, 13/10/2026). docs.monday, קריאה בלבד. */
+  ['monday','הועבר ממאנדיי']
 ];
+/* קטגוריות שמוצגות מ-DOCFILES (ord.doc_files) ולא מ-PROTS — בלי מסנני "ממתין/נחתם". */
+const DOC_FILE_CATS = ['media','monday'];
 const docCatLabel = c => (DOC_CATS.find(x=>x[0]===c) || ['', c||'—'])[1];
 /* 6.128.0 — מצב המסמך, נקודת חנק אחת לשני המסכים שמציגים אותו.
    עד כאן שניהם הציגו את p.status הגולמי, שהוא 'נשלח' כבר מרגע היצירה —
@@ -12136,6 +12140,38 @@ window.deleteMediaFile = async (id)=>{
   }
   try{ renderDocs(); }catch(_e){}
 };
+/* 6.259.0 — כרטיס ארכיון מאנדיי. כל השדות מ-extract (נכתב ב-monday-signed-archive); "פרטים ממאנדיי"
+   מציגים את עמודות העסקה/הלקוח/איש הקשר כפי שהיו במאנדיי, כדי שאפשר יהיה למצוא ולהבין גם בעוד שנים. */
+function mdArchHay(f){
+  const x = f.extract || {};
+  return [x.customer_name, x.customer_name_long, x.quote, x.deal_name, x.contact_name, x.phone, x.email,
+          x.customer_number, x.tax_id, x.owner, x.city, f.file_name].filter(Boolean).join(' ').toLowerCase();
+}
+function mdArchCols(o){
+  const e = Object.entries((o && o.columns) || {});
+  if(!e.length) return '';
+  return '<div class="meta" style="margin-top:4px"><b>'+esc(o.name||'')+'</b></div>'
+    + '<table class="tbl" style="font-size:12px;margin-top:2px"><tbody>'
+    + e.map(([k,v])=>'<tr><td style="white-space:nowrap;color:var(--ink-3)">'+esc(k)+'</td><td>'+esc(v)+'</td></tr>').join('')
+    + '</tbody></table>';
+}
+function mdArchCard(f){
+  const x = f.extract || {};
+  const isPdf = /pdf/i.test(f.mime_type||'') || /\.pdf$/i.test(f.file_name||'');
+  const bits = [x.quote, x.deal_name && x.deal_name!==x.customer_name ? x.deal_name : '', x.signed_at ? 'נחתם '+fmtIso(x.signed_at) : '',
+                x.owner, x.phone, x.customer_number ? 'לקוח '+x.customer_number : '', x.tax_id ? 'ח.פ '+x.tax_id : ''].filter(Boolean);
+  return `<div class="lead" style="cursor:default">
+    <div style="flex:1"><div class="nm">${isPdf?ico('doc'):ico('image')} ${esc(x.customer_name||f.caption||'—')}${x.contact_name && x.contact_name!==x.customer_name ? ' <small style="color:var(--ink-3);font-weight:400">· '+esc(x.contact_name)+'</small>':''}</div>
+    <div class="meta">${bits.map(esc).join(' · ')}</div>
+    <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
+      <button class="chip" onclick="openMediaFile('${f.id}', 300)">${ico('doc')} פתיחת המסמך החתום</button>
+      ${x.deal_id && window.canView('crm.deals') ? `<button class="chip" onclick="openDeal('${esc(x.deal_id)}')">לתהליך המכירה</button>` : ''}
+    </div>
+    <details style="margin-top:6px"><summary class="meta" style="cursor:pointer">פרטים ממאנדיי</summary>
+      ${mdArchCols(x.monday_customer)}${mdArchCols(x.monday_contact)}${mdArchCols(x.monday_deal)}
+    </details></div>
+    <span class="pill st-def">הועבר ממאנדיי</span></div>`;
+}
 function mediaCard(f){
   const isPdf = (f.mime_type||'').indexOf('pdf')>-1 || /\.pdf$/i.test(f.storage_path||'');
   /* 6.144.0 — תמונות שטח נושאות uploaded_at, ולכן אותו כלל בדיוק.
@@ -12151,12 +12187,13 @@ function docChips(){
   const base = vis.filter(p=>DOC_CAT==='all'||(p.category||'protocols')===DOC_CAT);
   const sent=base.filter(docPending), signed=base.filter(p=>p.status==='נחתם');
   const mediaN = (DOCFILES||[]).filter(f=>f.category==='media').length;   /* 6.219.0 — בלי מסמכי הרכש */
+  const mondayN = DOCFILES===null ? '…' : DOCFILES.filter(f=>f.category==='monday').length;
   $('#doc-chips').innerHTML = `
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
       <button class="chip ${DOC_CAT==='all'?'active':''}" onclick="setDocCat('all')">מסמכים לחתימה ${vis.length}</button>
-      ${DOC_CATS.filter(([k])=>window.canView('docs.'+k)).map(([k,lb])=>`<button class="chip ${DOC_CAT===k?'active':''}" onclick="setDocCat('${k}')">${lb} ${k==='media'?mediaN:vis.filter(p=>(p.category||'protocols')===k).length}</button>`).join('')}
+      ${DOC_CATS.filter(([k])=>window.canView('docs.'+k)).map(([k,lb])=>`<button class="chip ${DOC_CAT===k?'active':''}" onclick="setDocCat('${k}')">${lb} ${k==='media'?mediaN:k==='monday'?mondayN:vis.filter(p=>(p.category||'protocols')===k).length}</button>`).join('')}
     </div>
-    ${DOC_CAT==='media'?'':`
+    ${DOC_FILE_CATS.includes(DOC_CAT)?'':`
     <button class="chip ${DOC_FILTER==='sent'?'active':''}" onclick="setDocFilter('sent')">ממתינים לחתימה ${sent.length}</button>
     <button class="chip ${DOC_FILTER==='signed'?'active':''}" onclick="setDocFilter('signed')">נחתמו ${signed.length}</button>
     <button class="chip ${DOC_FILTER==='all'?'active':''}" onclick="setDocFilter('all')">הכל ${base.length}</button>`}`;
@@ -12164,7 +12201,7 @@ function docChips(){
 window.setDocFilter=f=>{DOC_FILTER=f;renderDocs();navMark();};
 window.setDocCat=c=>{
   DOC_CAT=c; renderDocs(); navMark();
-  if(c==='media' && DOCFILES===null && window.canView('docs.media')) loadDocFiles().then(()=>renderDocs());
+  if(DOC_FILE_CATS.includes(c) && DOCFILES===null && window.canView('docs.'+c)) loadDocFiles().then(()=>renderDocs());
 };
 /* 6.144.0 — חותמת ה"חדש" של מסמך. הכרעת רומן: "שניהם — מה שמאוחר
    מביניהם". ⚠️ `sent_at` נכתב **ביצירה** (השם מטעה, תועד ב-6.128.0)
@@ -12196,6 +12233,18 @@ function docRow(p){
 function renderDocs(){
   docChips();
   const q=($('#docSearch').value||'').trim();
+  if(DOC_CAT==='monday'){
+    if(!window.canView('docs.monday')){ $('#docs-list').innerHTML='<div class="empty">אין לך הרשאה לקטגוריה הזו</div>'; return; }
+    if(DOCFILES===null){
+      if(DOCFILES_ERR){ $('#docs-list').innerHTML = docFilesErrHtml(); return; }
+      $('#docs-list').innerHTML=crmLoading(); loadDocFiles().then(()=>renderDocs()); return;
+    }
+    let ml = DOCFILES.filter(f=>f.category==='monday');
+    if(q){ const ql = q.toLowerCase(), qd = q.replace(/\D/g,'');
+      ml = ml.filter(f=>{ const h = mdArchHay(f); return h.includes(ql) || (qd.length>=6 && h.replace(/\D/g,' ').includes(qd)); }); }
+    $('#docs-list').innerHTML = capped(ml, f=>mdArchCard(f), 'אין מסמכים בארכיון');
+    return;
+  }
   if(DOC_CAT==='media'){
     if(!window.canView('docs.media')){ $('#docs-list').innerHTML='<div class="empty">אין לך הרשאה לקטגוריה הזו</div>'; return; }
     if(DOCFILES===null){
@@ -12629,7 +12678,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'ctorder-2026-10-13a';
+const BUILD_ID = 'mdarch-2026-10-13a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -30713,6 +30762,7 @@ boot();
     meeting: { lbl:'פגישות',         pri:8,  ic:'<rect x="3.5" y="5.2" width="17" height="15.3" rx="2"/><path d="M3.5 10h17M8 3.2v4M16 3.2v4"/>' },
     task:    { lbl:'משימות',         pri:9,  ic:'<rect x="3.6" y="4.2" width="16.8" height="16.3" rx="2.4"/><path d="M8.6 12.4l2.4 2.4 4.4-4.9"/>' },
     protocol:{ lbl:'מסמכים',         pri:10, ic:'<path d="M6.2 2.8h7l4.8 4.8v13.6H6.2z"/><path d="M13.2 2.8v4.8H18"/><path d="M9 13.4h6M9 16.8h6"/>' },
+    mdoc:    { lbl:'הועבר ממאנדיי',  pri:10, ic:'<path d="M6.2 2.8h7l4.8 4.8v13.6H6.2z"/><path d="M13.2 2.8v4.8H18"/><path d="M9 15l2 2 4-4.5"/>' },
     po:      { lbl:'הזמנות רכש',     pri:11, ic:'<rect x="5.2" y="4.6" width="13.6" height="15.9" rx="2"/><path d="M9.2 4.6V3.4h5.6v1.2"/><path d="M8.8 10.2h6.4M8.8 13.6h6.4M8.8 17h3.8"/>' },
     sku:     { lbl:'כרטיסי פריט',    pri:12, ic:'<path d="M11.4 3.4H20.4V12l-9 9-8.6-8.6z"/><circle cx="16.8" cy="7.2" r="1.4"/>' }
   };
@@ -30777,6 +30827,8 @@ boot();
       return (cid && window.canView('crm.customers')) ? function(){ openCust(cid); } : null;
     }
     if(t === 'task')     return window.canView('crm.tasks') ? function(){ gotoTab('tasks'); var e=document.getElementById('taskSearch'); if(e){ e.value = gsLast; e.dispatchEvent(new Event('input')); } } : null;
+    /* 6.259.0 — ארכיון מאנדיי: לשונית "הועבר ממאנדיי" מסוננת לאותו חיפוש */
+    if(t === 'mdoc') return window.canView('docs.monday') ? function(){ gotoTab('docs'); window.setDocCat('monday'); var e=document.getElementById('docSearch'); if(e){ e.value = gsLast; e.dispatchEvent(new Event('input')); } } : null;
     if(t === 'protocol') return window.canView('docs') ? function(){ gotoTab('docs'); var e=document.getElementById('docSearch'); if(e){ e.value = gsLast; e.dispatchEvent(new Event('input')); } } : null;
     return null;
   }

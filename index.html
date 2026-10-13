@@ -3386,7 +3386,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 6.256.0</div>
+      <div class="ver">גרסה 6.256.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3515,7 +3515,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="ctphone-2026-10-13a">גרסה 6.256.0</div>
+    <div class="side-foot" title="stagelbl-2026-10-13a">גרסה 6.256.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -4707,11 +4707,15 @@ window.selPaint = (el, pal, k)=>{
   el.className = 'pilled mdc';
   el.style.cssText = selSty(el.value, selPal(pal), k);
 };
+/* 6.256.1 — תווית תצוגה לערך (רומן, 13/10/2026: "תשנה ל'נשלחה הצעה ראשונית' ו'נשלחה הצעה לחתימה'").
+   הערך במסד ובכל השוואה נשאר המלא; רק הטקסט שעל המסך מתקצר. ⚠️ לא להשתמש ב-vLbl בערך שנשמר. */
+const VAL_LABEL = {'נשלחה הצעת מחיר ראשונית':'נשלחה הצעה ראשונית','נשלחה הצעת מחיר לחתימה':'נשלחה הצעה לחתימה'};
+const vLbl = v => VAL_LABEL[v] || v;
 const mdPill = (v, colors, k) => {
   if(!v) return '';
   const bg = (colors && colors[v]) || '';
-  return bg ? `<span class="pill" style="${selSty(v,colors,k)}">${esc(v)}</span>`
-            : `<span class="pill" style="background:#f1f5f9;color:#475569">${esc(v)}</span>`;
+  return bg ? `<span class="pill" style="${selSty(v,colors,k)}" title="${esc(v)}">${esc(vLbl(v))}</span>`
+            : `<span class="pill" style="background:#f1f5f9;color:#475569">${esc(vLbl(v))}</span>`;
 };
 
 /* ===== התחברות — נבנתה מחדש בסבב 4 (28/07/2026) =====
@@ -6140,7 +6144,7 @@ function ieSel(kind,id,field,options,val,opts){
   /* 🔴 6.187.0 — opts.mdK מועבר. עד כה הנפילה הזאת קראה mdPill בלי
      הפרמטר, ולכן **צופה-בלבד ראה גוון אחר מעורך** על אותו ערך. */
   if(!canIE(kind,field)) return opts.mdColors ? mdPill(val,opts.mdColors,opts.mdK) : (STATUS_PILL[val]?`<span class="pill ${STATUS_PILL[val]}">${esc(val)}</span>`:`<span>${esc(val||'—')}</span>`);
-  const list=(opts.allowEmpty?[['',opts.emptyLabel||'—']]:[]).concat([...new Set([...(options||[]), ...(val?[val]:[])])].map(o=>[o,o]));
+  const list=(opts.allowEmpty?[['',opts.emptyLabel||'—']]:[]).concat([...new Set([...(options||[]), ...(val?[val]:[])])].map(o=>[o,vLbl(o)]));
   let cls='inline-edit', style='';
   if(opts.mdColors){ cls+=' mdc';
     /* 6.24.4 — שבב פסטל אחיד · 6.107.0 — mdK אופציונלי · 6.187.0 — selSty.
@@ -7152,7 +7156,7 @@ function renderMyDealsBlock(el){
   const dl = dashMyDeals(), sum = dlSum(dl), go = "gotoTab('deals');setDealFilter('mine')";
   if(!dl.length){ el.innerHTML = dbHead('תהליכי המכירה שלי', 0, go, 'לתהליכים')+'<div class="db-empty">אין לך תהליכי מכירה פתוחים</div>'; return; }
   const strip = '<div class="dmd-strip">'+ACTIVE_STAGES.map(s=>{ const l = dl.filter(d=>d.stage===s);
-    return '<div class="dmd-st'+(l.length?'':' z')+'" style="--c:'+(DEAL_ST_COLORS[s]||'#cbd5e1')+'" onclick="'+go.replace(/"/g,'&quot;')+'" title="'+esc(s)+'"><b>'+l.length+'</b><span>'+esc(s)+'</span><small>'+(l.length?ilsK(dlSum(l)):'')+'</small></div>'; }).join('')+'</div>';
+    return '<div class="dmd-st'+(l.length?'':' z')+'" style="--c:'+(DEAL_ST_COLORS[s]||'#cbd5e1')+'" onclick="'+go.replace(/"/g,'&quot;')+'" title="'+esc(s)+'"><b>'+l.length+'</b><span>'+esc(vLbl(s))+'</span><small>'+(l.length?ilsK(dlSum(l)):'')+'</small></div>'; }).join('')+'</div>';
   const rows = dl.slice().sort((a,b)=>ACTIVE_STAGES.indexOf(b.stage)-ACTIVE_STAGES.indexOf(a.stage) || (+b.amount||0)-(+a.amount||0));
   const cap = 4;
   el.innerHTML = dbHead('תהליכי המכירה שלי', dl.length+' · '+ilsK(sum), go, 'לתהליכים') + strip +
@@ -7194,7 +7198,7 @@ function renderFunnelBlock(){
   const tot = open.reduce((a,s)=>a+by[s].n,0), sum = open.reduce((a,s)=>a+by[s].amount,0);
   const mx = Math.max(1, ...open.map(s=>by[s].n));
   el.innerHTML = dbHead('תהליכי מכירה פתוחים', tot+' · '+ilsK(sum), "gotoTab('deals')", 'לעסקאות')+
-    open.map(s=>'<div class="fun-row" onclick="gotoTab(\'deals\')"><span class="fun-l">'+esc(s)+'</span>'+
+    open.map(s=>'<div class="fun-row" onclick="gotoTab(\'deals\')"><span class="fun-l">'+esc(vLbl(s))+'</span>'+
       '<div class="fun-bar"><div style="width:'+Math.round(by[s].n/mx*100)+'%;background:'+(DEAL_ST_COLORS[s]||'var(--navy)')+'"></div></div>'+
       '<b>'+by[s].n+'</b><span class="fun-a">'+ilsK(by[s].amount)+'</span></div>').join('');
 }
@@ -12620,7 +12624,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'ctphone-2026-10-13a';
+const BUILD_ID = 'stagelbl-2026-10-13a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -24532,7 +24536,7 @@ function dlSelBar(){
     <b>${n} מסומנות</b>
     ${n?`<select id="dl-blk-own"><option value="">העברת בעלות אל…</option>${own}</select>
         <button type="button" class="chip" onclick="dlBulk('owner')">העבר</button>
-        <select id="dl-blk-st"><option value="">שינוי שלב אל…</option>${STAGES.map(s=>`<option>${esc(s)}</option>`).join('')}</select>
+        <select id="dl-blk-st"><option value="">שינוי שלב אל…</option>${STAGES.map(s=>`<option value="${esc(s)}">${esc(vLbl(s))}</option>`).join('')}</select>
         <button type="button" class="chip" onclick="dlBulk('stage')">שנה</button>`
        :'<span class="note">סמנו תהליכי מכירה בטבלה כדי לפעול עליהם.</span>'}
     <button type="button" class="chip lb-selx" onclick="dlBulkToggle()">✕ יציאה ממצב בחירה</button>
@@ -24843,7 +24847,7 @@ function dlTable(list, grouped){
     const grp = list.filter(d=>d.stage===st); if(!grp.length) continue;
     const cc = DEAL_ST_COLORS[st] || '#94a3b8';
     const folded = !_only && DL_FOLD.has(st);
-    body += `<tr class="lb-grp${_only?' lb-grp1':''}" ${_only?'':`onclick="dlFold('${jsq(st)}')"`}><td colspan="${CS}" style="border-inline-start:6px solid ${cc}">${_only?'':`<span class="lb-arr">${folded?'◂':'▾'}</span>`}${esc(st)} <span class="lb-cnt">${grp.length}</span> <span class="lb-cnt">${esc(shekel(dlSum(grp)))}</span></td></tr>`;
+    body += `<tr class="lb-grp${_only?' lb-grp1':''}" ${_only?'':`onclick="dlFold('${jsq(st)}')"`}><td colspan="${CS}" style="border-inline-start:6px solid ${cc}">${_only?'':`<span class="lb-arr">${folded?'◂':'▾'}</span>`}${esc(vLbl(st))} <span class="lb-cnt">${grp.length}</span> <span class="lb-cnt">${esc(shekel(dlSum(grp)))}</span></td></tr>`;
     if(folded) continue;
     const lim = pgLim('deals:'+st), shown = dlOrder(grp,nt).slice(0,lim);
     shown.forEach((d,i)=>{ body += dlRow(d,i+1,nt); });
@@ -25384,7 +25388,7 @@ function dlPipeDraw(id){
                      : `background-color:#fff;border-color:#e2e8f0;color:var(--ink-3)`;
     return `<button type="button" class="lb-pseg${on?' on':''}" style="${stl}"`
       + `${ed?'':' disabled'} title="${esc(st)}"`
-      + ` onclick="dlPipeSet('${jsq(id)}','${jsq(st)}','')">${esc(st)}</button>`;
+      + ` onclick="dlPipeSet('${jsq(id)}','${jsq(st)}','')">${esc(vLbl(st))}</button>`;
   }).join('');
   const opts = dlSubOpts(cur) || [];
   const col  = dlSubCol(cur);
@@ -26761,7 +26765,7 @@ function lbTable(list, grouped){
       const grp=list.filter(l=>l.status===st); if(!grp.length) continue;
       const cc=LEAD_ST_COLORS[st]||'#94a3b8';
       const folded=!_only && LB_FOLD.has(st);
-      body+=`<tr class="lb-grp${_only?' lb-grp1':''}" ${_only?'':`onclick="lbFold('${jsq(st)}')"`}><td colspan="${CS}" style="border-inline-start:6px solid ${cc}">${_only?'':`<span class="lb-arr">${folded?'◂':'▾'}</span>`}${esc(st)} <span class="lb-cnt">${grp.length}</span></td></tr>`;
+      body+=`<tr class="lb-grp${_only?' lb-grp1':''}" ${_only?'':`onclick="lbFold('${jsq(st)}')"`}><td colspan="${CS}" style="border-inline-start:6px solid ${cc}">${_only?'':`<span class="lb-arr">${folded?'◂':'▾'}</span>`}${esc(vLbl(st))} <span class="lb-cnt">${grp.length}</span></td></tr>`;
       if(folded) continue;
       const lim=pgLim('leads:'+st);
       const shown=lbOrder(grp,nt).slice(0,lim);

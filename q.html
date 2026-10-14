@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>הצעת מחיר</title>
+<meta property="og:title" content="הצעת מחיר">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://app.ironfitness.co.il/assets/icon-512.png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta name="twitter:card" content="summary">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="assets/icon-192.png">
+<!--
+  q.html — עמוד הקישור הקצר להצעת מחיר (7.1.0 waquote2, 14/10/2026). נפרס מ-core.app_files.quote_view_html
+  (gh-deploy v23). הקוד יושב ב-#hash ולכן אינו נשלח לשום שרת, ורק הדף מעביר אותו ל-quote-view.
+  ⚠️ כותרת התצוגה המקדימה ב-WhatsApp (og:title) קבועה: GitHub Pages מגיש קובץ סטטי, ו-WhatsApp אינו מריץ JS.
+-->
+<style>
+  :root{ --navy:#0b2a45; --ink:#1f2937; --muted:#64748b; }
+  html,body{ margin:0; height:100%; background:#f4f6f8; font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif; color:var(--ink); }
+  .wrap{ min-height:100%; display:flex; align-items:center; justify-content:center; padding:24px; box-sizing:border-box; }
+  .card{ background:#fff; border-radius:16px; padding:28px 24px; max-width:360px; width:100%; text-align:center; border:1px solid #e5e7eb; }
+  .card img{ width:72px; height:72px; border-radius:16px; }
+  h1{ font-size:20px; margin:16px 0 4px; font-weight:600; }
+  .pq{ color:var(--muted); font-size:14px; min-height:20px; direction:ltr; }
+  .btn{ display:inline-block; margin-top:18px; background:var(--navy); color:#fff; text-decoration:none; padding:12px 22px; border-radius:10px; font-size:15px; font-weight:600; }
+  .msg{ margin-top:14px; font-size:14px; color:var(--muted); }
+  .hidden{ display:none; }
+</style>
+</head>
+<body>
+<div class="wrap"><div class="card">
+  <img src="assets/icon-512.png" alt="איירון פיטנס">
+  <h1>הצעת מחיר</h1>
+  <div class="pq" id="pq"></div>
+  <a class="btn hidden" id="open" href="#" rel="noopener">פתיחת ההצעה</a>
+  <div class="msg" id="msg">טוען את ההצעה…</div>
+</div></div>
+<script>
+(function(){
+  var API = 'https://hjibpfavkjqocjvffsbq.supabase.co/functions/v1/quote-view';
+  var code = String(location.hash || '').replace(/^#/, '');
+  var msg = document.getElementById('msg'), btn = document.getElementById('open'), pq = document.getElementById('pq');
+  if(!/^[A-Za-z0-9]{8}$/.test(code)){ msg.textContent = 'הקישור אינו תקין. אפשר לבקש מנציג המכירות קישור חדש.'; return; }
+  fetch(API + '?c=' + encodeURIComponent(code))
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d || !d.ok || !d.url){ msg.textContent = (d && d.error ? d.error + '. ' : '') + 'אפשר לבקש מנציג המכירות קישור חדש.'; return; }
+      if(d.pq){ pq.textContent = d.pq; document.title = 'הצעת מחיר ' + d.pq; }
+      btn.href = d.url; btn.classList.remove('hidden');
+      msg.textContent = 'ההצעה נפתחת…';
+      setTimeout(function(){ location.href = d.url; }, 400);
+    })
+    .catch(function(){ msg.textContent = 'לא ניתן לטעון את ההצעה כרגע. נסו שוב בעוד רגע.'; });
+})();
+</script>
+</body>
+</html>

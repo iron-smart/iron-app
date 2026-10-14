@@ -231,6 +231,8 @@
   .lf-sel, .lf-multi>summary, .lf-clear, .lf-save, .lf-new{ height:var(--ctl-h-sm); box-sizing:border-box; }
   /* 6.24.10 — חיפוש-השלמה לבחירת לקוח/מוצר והצעת הזמנה מוצלבת */
   .ac-wrap{ position:relative; }
+  /* 7.0.3 — בחלון הקצר של קישור פגישה התפריט בזרימה: absolute בגיליון של ~200px נחתך ב-overflow. */
+  #mtLinkModal .ac-menu{ position:static; box-shadow:none; }
   .ac-menu{ position:absolute; z-index:70; top:100%; inset-inline-start:0; inset-inline-end:0; background:#fff; border:1px solid var(--line); border-radius:var(--r-md); box-shadow:0 10px 28px rgba(6,24,39,.18); max-height:260px; overflow:auto; margin-top:3px; }
   .ac-item{ display:flex; flex-direction:column; align-items:flex-start; gap:1px; width:100%; text-align:start; background:none; border:none; border-bottom:1px solid #f1f5f9; padding:8px 12px; cursor:pointer; font-family:inherit; }
   .ac-item:last-child{ border-bottom:none; }
@@ -3368,7 +3370,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.0.2</div>
+      <div class="ver">גרסה 7.0.3</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3498,7 +3500,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="pushall-2026-10-13a">גרסה 7.0.2</div>
+    <div class="side-foot" title="mtlnk-2026-10-14a">גרסה 7.0.3</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3947,7 +3949,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
          יצירת פגישה חדשה הדבר הראשון שעושים זה בחירה של לקוח או ליד".
          וזה גם מה שמאפשר לשלושת השדות שמתחתיו למלא את עצמם: הנושא
          נגזר מהשם, והטלפון מהישות. -->
-    <div class="field"><label>מקושרת ל־<span class="req">*</span></label>
+    <div class="field ac-wrap"><label>מקושרת ל־<span class="req">*</span></label>
       <div id="lm-lnkchip" class="tkl-box"></div>
       <input id="lm-lnkq" autocomplete="off" placeholder="חיפוש ליד או לקוח…" oninput="tklPick('lm',this.value,'lead,customer')" onfocus="tklPick('lm',this.value,'lead,customer')" onblur="setTimeout(()=>{const b=document.getElementById('lm-lnkres'); if(b) b.hidden=true;},150)">
       <div id="lm-lnkres" class="ac-menu" hidden></div>
@@ -3993,7 +3995,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="sheet">
     <h3>קישור הפגישה</h3>
     <div class="note" id="ml-sub"></div>
-    <div class="field"><label>מקושרת ל־<span class="req">*</span></label>
+    <div class="field ac-wrap"><label>מקושרת ל־<span class="req">*</span></label>
       <div id="ml-lnkchip" class="tkl-box"></div>
       <input id="ml-lnkq" autocomplete="off" placeholder="חיפוש ליד או לקוח…" oninput="tklPick('ml',this.value,'lead,customer')" onfocus="tklPick('ml',this.value,'lead,customer')" onblur="setTimeout(()=>{const b=document.getElementById('ml-lnkres'); if(b) b.hidden=true;},150)">
       <div id="ml-lnkres" class="ac-menu" hidden></div>
@@ -12564,7 +12566,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'pushall-2026-10-13a';
+const BUILD_ID = 'mtlnk-2026-10-14a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====

@@ -1663,6 +1663,9 @@
      "פחות נוכח" — ולכן נראה נעול בדיוק כשצריך היה למלא אותו. מעתה לבן עם
      מסגרת כהה מעט משדה מלא. מקווקו נפסל במכוון (רומן, 6.72.x). */
   .form-grid .is-empty{ background:#fff; border-color:#94a3b8; }
+  /* 🔴 7.2.2 — בורר צבעוני ריק היה בלתי נראה: select.pilled.mdc{color:#fff;border:none} והצבע מגיע רק
+     בסגנון inline כשיש ערך ⇒ ריק = לבן על לבן בלי מסגרת (נמדד: סוג לקוח/מקור הגעה ריקים בכרטיס הליד). */
+  .form-grid select.pilled.mdc.is-empty{ color:var(--ink-3); border:1px dashed #94a3b8; background-color:#fff; }
   /* שבב חלון האספקה — מתחמם ככל שהזמן חולף (רומן, 14/08/2026). */
   .sup-chip{ margin-top:4px; font-size:var(--fs-xs); font-weight:700; line-height:1.5;
              border-radius:var(--r-sm); padding:2px 8px; width:fit-content; border:1px solid transparent; }
@@ -2928,6 +2931,19 @@ td.lb-today .lb-dt{ background-color:transparent; }
 .lb-del{ width:auto; font-size:13px; font-weight:700; padding:9px 16px; border:1px solid #f0bcbc; background-color:#fbe0e0; color:#a92f2f; border-radius:var(--r-md); cursor:pointer; font-family:inherit; }
 .lb-del:hover{ background-color:#f7cfcf; }
 .lb-links{ padding:8px 2px; font-size:13px; }
+/* 🔴 7.2.2 — משבצת אחידה לתאי תצוגה בכרטיסים (רומן: "נעלמו עיצוב המשבצות … תעבור על הכל"). לא רגרסיה: התאים
+   האלה תמיד היו טקסט חשוף, נמדד מ-4600. אותה משבצת של input.ro (#eef1f4, בלי מסגרת, גובה --ctl-h-sm).
+   ⚠️ .tk-lnk עם <select> (סטטוס/סוג בפגישה) **לא** — לבורר יש משבצת משלו, ועטיפה הייתה כפולה.
+   ⚠️ שני כללים ולא :is() אחד: :is() מושך את ספציפיות ה-#id לכל הענפים, והכלל של .lb-lp לא היה גובר. */
+.form-grid > div > .lb-links,
+.form-grid > div > .tk-lnk:not(:has(select)){ display:flex; align-items:center; gap:8px; min-height:var(--ctl-h-sm);
+  box-sizing:border-box; padding:4px 9px; background-color:#eef1f4; border:1px solid transparent;
+  border-radius:var(--r-md); overflow:hidden; }
+#lb-ownbox, #tk-ownbox, #dl-ownbox, #mt-ownbox{ display:flex; align-items:center; gap:8px; min-height:var(--ctl-h-sm);
+  box-sizing:border-box; padding:0 9px; background-color:#eef1f4; border:1px solid transparent;
+  border-radius:var(--r-md); }
+/* הקישור הארוך נשאר בשורה אחת עם שלוש נקודות — flex היה מבטל את text-overflow. */
+.form-grid > div > .lb-links.lb-lp{ display:block; line-height:calc(var(--ctl-h-sm) - 10px); }
 .lb-links.lb-lp{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; direction:ltr; text-align:right; }
 .lb-own{ display:flex; align-items:center; min-height:34px; }
 .lb-grpfoot td{ padding:4px 10px; background:#fafbfc; }
@@ -3384,7 +3400,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.2.1</div>
+      <div class="ver">גרסה 7.2.2</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3517,7 +3533,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="waqlink-2026-10-14a">גרסה 7.2.1</div>
+    <div class="side-foot" title="crmfix2-2026-10-14a">גרסה 7.2.2</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3911,7 +3927,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="sheet">
     <h3 id="lur-h">מה קרה עם הליד?</h3>
     <div class="note" id="lur-note" style="margin-bottom:10px"></div>
-    <div class="field" id="lur-subw" style="display:none"><label for="lur-sub">סיבה <span class="req">*</span></label><select id="lur-sub"></select></div>
+    <div class="field" id="lur-subw" style="display:none"><label>סיבה <span class="req">*</span></label><input type="hidden" id="lur-sub"><div class="lb-psub" id="lur-subchips" role="radiogroup" aria-label="סיבה"></div></div>
     <div class="field"><textarea id="lur-body" rows="4" placeholder="לדוגמה: דיברתי איתו, הוא מחפש מתחם בהרצליה, נחזור אליו בשבוע הבא"></textarea></div>
     <div class="actions">
       <button class="btn green" id="lur-save">שמירת העדכון</button>
@@ -12597,7 +12613,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'waqlink-2026-10-14a';
+const BUILD_ID = 'crmfix2-2026-10-14a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -26927,16 +26943,20 @@ function lbDupHits(nm, ph, em){
    · התאמה יחידה ⇒ התראה. בלי עקיפה, גם לא למנהל. ⚠️ הטופס הידני בלבד — lead-intake (אתר/פייסבוק) אינו
    עובר כאן, בכוונה: חסימה שם הייתה מאבדת לידים. */
 const LB_DUP_CLOSED = ['סירוב','לא רלוונטי'];
+/* 🔴 7.2.2 — הכלל תוקן (רומן, 14/10/2026): "ללקוח לא פעיל תהיה חסימה רק אם מתקיימים שני תנאים לפחות שיש שם
+   זהה+טלפון או שם זהה+אימייל. לכל יתר המקרים הגדרנו שתהיה חסימה אם אחד התנאים מתקיים."
+   ⇒ לקוח פעיל/זמני או ליד פתוח: התאמה **אחת** חוסמת. לקוח 'לא פעיל': רק שם+טלפון / שם+אימייל חוסמים
+   (טלפון+אימייל בלי שם — התראה). ליד סגור: שאלה, כמו ב-7.2.0.
+   ⚠️ נבחר בידיעה: 277 שמות חוזרים בין לקוחות שונים — שם זהה של אדם אחר ייחסם. */
+function lbDupInactiveBlocks(r){ return r.indexOf('שם') >= 0 && r.length >= 2; }
 function lbDupVerdict(h){
   const v = { block:[], ask:[], inactive:[], warn:[] };
   (h.custs||[]).forEach(x=>{
-    if(x.r.length < 2) v.warn.push(x);
-    else if((x.o.status||'') === 'לא פעיל') v.inactive.push(x);
+    if((x.o.status||'') === 'לא פעיל'){ if(lbDupInactiveBlocks(x.r)) v.block.push(x); else v.inactive.push(x); }
     else v.block.push(x);
   });
   (h.leads||[]).forEach(x=>{
-    if(x.r.length < 2) v.warn.push(x);
-    else if(LB_DUP_CLOSED.includes(x.o.status||'')) v.ask.push(x);
+    if(LB_DUP_CLOSED.includes(x.o.status||'')) v.ask.push(x);
     else v.block.push(x);
   });
   return v;
@@ -26968,12 +26988,12 @@ window.lbDupCheck = ()=>{
       + '</div>';
   };
   const msg = v.block.length
-      ? '<b>לא ניתן לפתוח ליד</b> — נמצאה התאמה בשני פרטים לפחות. עבור לכרטיס הקיים, ומשם פתח תהליך מכירה.'
+      ? '<b>לא ניתן לפתוח ליד</b> — הפרטים תואמים ללקוח או לליד קיים. עבור לכרטיס הקיים, ומשם פתח תהליך מכירה.'
     : v.ask.length
       ? 'קיים <b>ליד סגור</b> עם אותם פרטים — בשמירה תישאל אם לפתוח ליד חדש.'
     : v.inactive.length
       ? 'הלקוח התואם <b>לא פעיל</b> — אפשר לפתוח ליד חדש.'
-      : 'נמצאה התאמה חלקית — <b>אפשר להמשיך</b>, זו התראה ולא חסימה.';
+      : 'נמצאה התאמה — <b>אפשר להמשיך</b>, זו התראה ולא חסימה.';
   box.innerHTML = '<div class="lb-dup' + (v.block.length ? ' lb-dup-blk' : '') + '">'
     + '<div class="lb-duph"><span class="lb-dupic">' + (v.block.length ? '&#9940;' : '&#9888;') + '</span>'
     + '<span>' + msg + '</span></div>'
@@ -27419,23 +27439,35 @@ const LUR_PH = {
    רלוונטי פשוט להעביר לחלונית שנפתחת"). LUR_SUB = { cur, after } כשיש בורר: cur — הערך השמור, after —
    הציור המקומי שרץ **אחרי** שהחלונית נסגרה. ⚠️ חובה: data-must חוסם Esc/רקע עד שהסיבה נשמרה. */
 let LUR_SUB = null;
-function lurOpen(t, id, h, note, subOpts, subCur){
+/* 7.2.2 — שבבים במקום <select> (רומן: "לחיץ עם כל האפשרויות בשורה כמו שהיה"). הערך יושב ב-#lur-sub (hidden),
+   ולכן lurSubCommit ושער השמירה לא זזו. הצביעה — אותה נוסחה של הרצועה בכרטיס (tint/onWhite/LB_TK). */
+function lurSubPaint(){
+  const v = $('#lur-sub').value, pal = (LUR_SUB && LUR_SUB.pal) || {};
+  document.querySelectorAll('#lur-subchips button').forEach(b=>{
+    const on = b.dataset.v === v, bg = pal[b.dataset.v] || '#475569';
+    b.classList.toggle('on', on); b.setAttribute('aria-checked', on ? 'true' : 'false');
+    b.style.cssText = on ? 'background-color:'+tint(bg,LB_TK)+';color:'+onWhite(bg)+';border-color:'+tint(bg,LB_TK-.20) : '';
+  });
+}
+window.lurSubPick = (btn)=>{ $('#lur-sub').value = btn.dataset.v || ''; $('#lur-err').textContent = ''; lurSubPaint(); };
+function lurOpen(t, id, h, note, subOpts, subCur, pal){
   UPD_REQ_T = t; LB_UPD_REQ = id;
   $('#lur-h').textContent = h;
   $('#lur-note').textContent = note;
   $('#lur-body').placeholder = LUR_PH[t] || '';
   $('#lur-body').value = ''; $('#lur-err').textContent = '';
-  const m = $('#lbUpdReqModal'), sw = $('#lur-subw'), ss = $('#lur-sub');
-  LUR_SUB = (Array.isArray(subOpts) && subOpts.length) ? { cur: subCur || '', after: null } : null;
+  const m = $('#lbUpdReqModal'), sw = $('#lur-subw'), ss = $('#lur-sub'), sc = $('#lur-subchips');
+  LUR_SUB = (Array.isArray(subOpts) && subOpts.length) ? { cur: subCur || '', after: null, pal: pal || {} } : null;
   if(LUR_SUB){
-    /* ⚠️ ערך קיים שאינו ברשימה נשמר כאפשרות — אחרת הבורר היה נופל לריק ו"מוחק" אותו בשמירה. */
+    /* ⚠️ ערך קיים שאינו ברשימה נשמר כשבב — אחרת הוא היה נעלם ו"נמחק" בשמירה. */
     const all = (subCur && subOpts.indexOf(subCur) < 0) ? subOpts.concat([subCur]) : subOpts;
-    ss.innerHTML = '<option value="">— בחר סיבה —</option>'
-      + all.map(o=>'<option value="'+esc(o)+'"'+(o===subCur?' selected':'')+'>'+esc(o)+'</option>').join('');
+    ss.value = subCur || '';
+    sc.innerHTML = all.map(o=>'<button type="button" role="radio" data-v="'+esc(o)+'" onclick="lurSubPick(this)">'+esc(o)+'</button>').join('');
+    lurSubPaint();
     sw.style.display = ''; m.dataset.must = '1';
-  } else { ss.innerHTML = ''; sw.style.display = 'none'; delete m.dataset.must; }
+  } else { ss.value = ''; sc.innerHTML = ''; sw.style.display = 'none'; delete m.dataset.must; }
   m.classList.remove('hidden');
-  setTimeout(()=>{ try{ ((LUR_SUB && !LUR_SUB.cur) ? ss : $('#lur-body')).focus(); }catch(_e){} }, 30);
+  setTimeout(()=>{ try{ ((LUR_SUB && !LUR_SUB.cur) ? sc.querySelector('button') : $('#lur-body')).focus(); }catch(_e){} }, 30);
 }
 /* כתיבת הסיבה **לפני** העדכון: שמירה שנכשלת משאירה את החלונית פתוחה עם השגיאה, ואין עדכון יתום ביומן. */
 async function lurSubCommit(){
@@ -27469,14 +27501,16 @@ window.lbUpdRequire = (id, st, sub)=>{
   /* 7.2.0 — בסירוב/לא רלוונטי הסיבה נבחרת כאן (ולא בבורר שהקפיץ את החלונית מחדש). */
   const _so = (st==='סירוב' || st==='לא רלוונטי') ? lbSubOpts(st) : null;
   lurOpen('lead', id, 'מה קרה עם הליד?', 'הליד «' + ((l && l.full_name) || '—') + '» עבר ל«'
-    + st + (sub && !_so ? ' · ' + sub : '') + '». ' + (_so ? 'בחר סיבה וכתוב מה קרה.' : 'מה קרה?'), _so, sub || '');
+    + st + (sub && !_so ? ' · ' + sub : '') + '». ' + (_so ? 'בחר סיבה וכתוב מה קרה.' : 'מה קרה?'), _so, sub || '', SUB_COLORS[st] || {});
 };
 /* 6.263.0 (רומן): "כשלוחצים לא רלוונטי קופצת חלונית שניתן לרשום למה לא רלוונטי או דילוג — גם בתהליך מכירה".
    נקרא מ-dlPipeSet בלבד, ורק במעבר **אל** 'לא רלוונטי'. */
 window.dlUpdRequire = (id)=>{
   const d = (DEALS||[]).find(x=>x.id===id);
   lurOpen('deal', id, 'למה תהליך המכירה לא רלוונטי?', 'תהליך המכירה «' + ((d && d.name) || '—')
-    + '» עבר ל«לא רלוונטי». בחר סיבה וכתוב מה קרה.', dlSubOpts('לא רלוונטי'), (d && d.irrelevant_reason) || '');
+    + '» עבר ל«לא רלוונטי». בחר סיבה וכתוב מה קרה.', dlSubOpts('לא רלוונטי'), (d && d.irrelevant_reason) || '',
+    /* אותו צבע לכל הסיבות — כמו ברצועת העסקה (DEAL_ST_COLORS של השלב). */
+    (dlSubOpts('לא רלוונטי') || []).reduce((a,o)=>{ a[o] = DEAL_ST_COLORS['לא רלוונטי'] || '#94a3b8'; return a; }, {}));
 };
 /* נקודת חנק אחת לשני הכפתורים — אחרת רענון הלשונית ייכתב פעמיים
    וייפרד ביום שאחד מהם ישתנה. */

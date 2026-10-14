@@ -831,6 +831,9 @@
   .nav-item.active{ color:#fff; background:rgba(255,255,255,.07); border-inline-start-color:var(--green); font-weight:700; }
   .nav-item:hover{ color:#fff; }
   .side-foot{ color:#84898f; font-size:11px; text-align:center; padding:14px 10px; }
+  .nav-wa{ display:flex; align-items:center; gap:8px; width:100%; text-align:start; background:none; border:none; border-top:1px solid rgba(255,255,255,.08); margin-top:6px; color:#cfd8e3; font-size:14px; font-family:inherit; padding:10px 18px 8px; cursor:pointer; }
+  .nav-wa:hover{ color:#fff; background:rgba(255,255,255,.06); }
+  .nav-wa svg{ width:16px; height:16px; flex:none; }
   .content{ flex:1; min-width:0; }
   /* כל המסכים פרוסים לרוחב מלא עם שוליים אחידים (3vw) */
   .frame-wrap{ height:calc(100vh - 82px); }
@@ -3370,7 +3373,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.0.3</div>
+      <div class="ver">גרסה 7.1.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3492,6 +3495,9 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       <button class="nav-item" data-tab="set" aria-expanded="false">הגדרות <span class="nav-arrow"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span></button>
       <div class="submenu" id="setSubmenu"></div>
     </div>
+    <!-- 7.1.0 — רומן: "כולל כפתור בתפריט". פותח WhatsApp Web בלשונית iron_wa — זו שכל כפתורי הוואטסאפ משתמשים בה.
+         ⚠️ class="nav-wa" ולא nav-item: כל nav-item מקבל בטעינה מטפל של מעבר לשונית. -->
+    <button type="button" class="nav-wa" id="navWa" onclick="waOpenTab()" title="פתיחת WhatsApp Web בלשונית של המערכת — כל כפתורי הוואטסאפ ישלחו אליה">וואטסאפ</button>
     </nav>
     <div class="side-user-row">
       <div class="side-user" onclick="openProfile()" title="אזור אישי" role="button" tabindex="0" aria-label="אזור אישי">
@@ -3500,7 +3506,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="mtlnk-2026-10-14a">גרסה 7.0.3</div>
+    <div class="side-foot" title="waquote2-2026-10-14a">גרסה 7.1.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -12277,7 +12283,10 @@ window.dlQuoteRows = (id) => (PROTS||[])
 const DLQR = {};   /* deal_id -> {busy, txt, cls} */
 
 window.dlQCell = (d) =>
-  "<label>מס' הצעה בפריוריטי</label>" + roIn(d.priority_quote_id || '', {ltr:1}) + dlPullBox(d);
+  "<label>מס' הצעה בפריוריטי"
+  /* 7.1.0 — רומן: "להחזיר את כפתור הוואטסאפ הקטן ליד מספר ההצעת מחיר … 'שליחה בוואטסאפ'". רק כשיש PDF. */
+  + (d.quote_doc_path ? ' <button type="button" class="ph-btn wa" style="font-family:inherit;cursor:pointer" onclick="event.stopPropagation();dlQuoteWa(\'' + jsq(d.id) + '\')" title="שליחת ההצעה ללקוח ב-WhatsApp Web, עם קישור קצר ל-PDF">' + WA_SVG + ' שליחה בוואטסאפ</button>' : '')
+  + "</label>" + roIn(d.priority_quote_id || '', {ltr:1}) + dlPullBox(d);
 
 window.dlAmtCell = (d) =>
   '<label>סכום (לפני מע"מ)</label>' + roIn(d.amount != null ? shekel(d.amount) : '');
@@ -12297,38 +12306,50 @@ window.dlQDocBox = (d) => d.quote_doc_path
    המהדורה: מספר הקובץ <QN>-<CURVERSION>.pdf (נמדד 134/134). הנמען: מה שהכרטיס מציג — "טלפון איש קשר"
    ואם אין, "טלפון" — נקרא מה-href של כפתור הוואטסאפ שלהם, כלומר מאותו phDigits; אין גזירה שנייה.
    ⚠️ WhatsApp Web אינו מקבל קובץ בכתובת — את ה-PDF גוררים לשיחה. */
-const WA_QUOTE_DEF = 'הצעת מחיר מצורפת מהדורה מספר - {מהדורה}';
+const WA_QUOTE_DEF = ['היי {שם},', 'מצ״ב הצעת מחיר{מעודכנת}', '{קישור}', '{נציג}'].join(String.fromCharCode(10));   /* 7.1.0 — הרינדור הסופי של רומן */
 const dlQuoteEd = d => { const m = String((d && d.quote_doc_path) || '').match(/-(\d+)\.pdf$/i); return m ? m[1] : ''; };
-/* 🔴 6.267.0 — רומן: "הוא לא מצרף את ההצעת מחיר". WhatsApp Web אינו מקבל קובץ בכתובת, ולכן ההודעה נושאת
-   קישור חתום ל-PDF — 30 יום, כי הלקוח פותח אותו מתי שירצה (dlOpenDoc חותם 5 דקות לצפייה פנימית).
-   {קישור} בתבנית; תבנית בלי {קישור} מקבלת אותו בשורה אחרונה — בלי קישור אין "הצעה מצורפת".
-   ⚠️ הלשונית נפתחת לפני ה-await (חוסם החלונות). iron_wa **אינה נסגרת בכשל** — ייתכן שזו WhatsApp Web
-      שהמשתמש עובד בו; לשונית _blank (טלפון) נסגרת, כמו ב-dlOpenDoc. */
-const WA_QUOTE_LINK_TTL = 60 * 60 * 24 * 30;
+/* 🔴 7.1.0 — הקישור הקצר: app.ironfitness.co.il/q#<קוד> (crm.quote_link_create ⇒ q.html ⇒ quote-view).
+   עד כאן (6.267.0) ההודעה נשאה כתובת חתומה של Storage — "מחורבשת", עם שם השרת, ופגה אחרי 30 יום. הקוד נוצר
+   בשרת ו-idempotent לפי עסקה+מהדורה: שליחה חוזרת = אותו קישור; מהדורה חדשה = קישור חדש.
+   הנמען — מה שהכרטיס מציג ("טלפון איש קשר" ואם אין, "טלפון"), נקרא מאותו phDigits; השם — של אותו אדם.
+   ⚠️ הלשונית נפתחת לפני ה-await (חוסם החלונות). iron_wa **אינה נסגרת בכשל**; _blank (טלפון) כן. */
 window.dlQuoteWa = async (id) => {
   const d = (DEALS||[]).find(x=>x.id===id); if(!d) return;
-  const src = document.querySelector('#dealModal #dl-cc-cph a.ph-btn.wa') || document.querySelector('#dealModal #dl-cc-ph a.ph-btn.wa');
-  const m = src ? String(src.getAttribute('href')||'').match(/wa\.me\/(\d{9,15})/) : null;
+  const srcC = document.querySelector('#dealModal #dl-cc-cph a.ph-btn.wa');
+  const src = srcC || document.querySelector('#dealModal #dl-cc-ph a.ph-btn.wa');
+  const m = src ? String(src.getAttribute('href')||'').match(/wa[.]me[/]([0-9]{9,15})/) : null;
   if(!m){ toast('אין טלפון לאיש הקשר או ללקוח בכרטיס — אין למי לשלוח', 'warn'); return; }
-  if(!d.quote_doc_path){ toast('אין עדיין PDF להצעה — אין מה לצרף', 'warn'); return; }
+  if(!d.quote_doc_path){ toast('אין עדיין PDF להצעה — אין מה לשלוח', 'warn'); return; }
   const web = waWebOk();
   let w = null; try{ w = web ? window.open('', 'iron_wa') : window.open('', '_blank'); }catch(_e){ w = null; }
   if(w){ try{ w.opener = null; }catch(_e){} }
-  let link = '';
+  let code = '';
   try{
-    const { data, error } = await sb.storage.from('docs').createSignedUrl(d.quote_doc_path, WA_QUOTE_LINK_TTL);
-    if(!error && data && data.signedUrl) link = data.signedUrl;
-  }catch(_e){ link = ''; }
-  if(!link){
+    const { data, error } = await sb.schema('crm').rpc('quote_link_create', { p_deal: id });
+    if(!error && data) code = String(data);
+  }catch(_e){ code = ''; }
+  if(!/^[A-Za-z0-9]{8}$/.test(code)){
     if(w && !web){ try{ w.close(); }catch(_e){} }
-    toast('לא ניתן להפיק קישור ל-PDF של ההצעה — ההודעה לא נפתחה', 'err'); return;
+    toast('לא ניתן להפיק קישור להצעה — ההודעה לא נפתחה', 'err'); return;
   }
+  const link = 'https://app.ironfitness.co.il/q#' + code;
+  /* השם — של מי שהטלפון שלו נבחר: איש הקשר, ואחרת הליד/הלקוח שבתא "טלפון" */
+  const ct = d.contact_id ? (CONTS||[]).find(k=>k.id===d.contact_id) : null;
+  const ld = d.lead_id ? (LEADS||[]).find(l=>l.id===d.lead_id) : null;
+  const cu = d.customer_id ? (CUSTS||[]).find(k=>k.id===d.customer_id) : null;
+  const full = srcC ? ((ct && ct.full_name) || '') : ((ld && ld.full_name) || (cu && cu.name) || '');
+  const first = String(full).trim().split(' ')[0] || '';
+  const ed = Number(dlQuoteEd(d)) || 1;
+  const rep = String((typeof ME !== 'undefined' && ME && ME.full_name) || '').trim();
+  const NL = String.fromCharCode(10);
   /* trim לפני ההשוואה — ערך של רווחים בלבד אינו תבנית (הלקח של osetNum) */
   let tpl = String(osetStr('wa_quote_text', '') || '').trim() || WA_QUOTE_DEF;
-  /* ⚠️ String.fromCharCode(10) ולא רצף בריחה של שורה חדשה: רצפי בריחה בתוך ה-SQL עלולים להפוך לתו בדרך למסד (פרק 1) */
-  if(tpl.indexOf('{קישור}') < 0) tpl += String.fromCharCode(10) + '{קישור}';
-  const txt = tpl.split('{מהדורה}').join(dlQuoteEd(d)).split('{הצעה}').join(String(d.priority_quote_id || ''))
-                 .split('{קישור}').join(link);
+  if(tpl.indexOf('{קישור}') < 0) tpl += NL + '{קישור}';
+  let txt = tpl.split('{שם}').join(first).split('{מעודכנת}').join(ed > 1 ? ' מעודכנת' : '')
+               .split('{קישור}').join(link).split('{נציג}').join(rep)
+               .split('{מהדורה}').join(String(ed)).split('{הצעה}').join(String(d.priority_quote_id || ''));
+  /* שם חסר ⇒ "היי," ולא "היי ,"; שורה שנשארה ריקה (אין {נציג}) יורדת */
+  txt = txt.split(' ,').join(',').split(NL).map(s=>s.trim()).filter(Boolean).join(NL);
   const q = encodeURIComponent(txt);
   const url = web ? 'https://web.whatsapp.com/send?phone=' + m[1] + '&text=' + q : 'https://wa.me/' + m[1] + '?text=' + q;
   if(w){ try{ w.location.href = url; w.focus(); return; }catch(_e){} }
@@ -12566,7 +12587,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'mtlnk-2026-10-14a';
+const BUILD_ID = 'waquote2-2026-10-14a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -17549,7 +17570,7 @@ const CRM_SETTINGS = [
   ['—','פגישות','sep'],
   ['crm_meet_location','מיקום ברירת מחדל לפגישה','חל על פגישה **פרונטלית** בלבד, וכשלא הוקלד מיקום. עד 6.160.0 הערך היה מקודד בסכימה (בלי פסיק) ולא ניתן לשינוי בלי פריסה.','txt'],
   ['—','וואטסאפ','sep'],
-  ['wa_quote_text','הודעת וואטסאפ עם הצעת המחיר','נפתחת מהכפתור "וואטסאפ" ליד מסמך ההצעה בכרטיס העסקה. {מהדורה} = מספר המהדורה של ה-PDF · {הצעה} = מספר ההצעה בפריוריטי · {קישור} = קישור ל-PDF (30 יום; אם לא מופיע — מתווסף בשורה אחרונה). ריק = "הצעת מחיר מצורפת מהדורה מספר - {מהדורה}".','txt'],
+  ['wa_quote_text','הודעת וואטסאפ עם הצעת המחיר','נפתחת מהכפתור "וואטסאפ" ליד מסמך ההצעה בכרטיס העסקה. נשלחת מ"שליחה בוואטסאפ" ליד מספר ההצעה. {שם} = שם פרטי של הנמען · {מעודכנת} = " מעודכנת" ממהדורה 2 · {קישור} = קישור קצר ל-PDF (אם לא מופיע — מתווסף בסוף) · {נציג} = שם השולח · {הצעה} · {מהדורה}. ריק = ברירת המחדל.','area'],
   ['—','סוקר הצעות המחיר בפריוריטי','sep'],
   ['crm_quote_watch_enabled','הסוקר פעיל','"כן" או "לא". רץ כל 15 דקות, 08:00–20:00, לא בשבת.','yn'],
   ['crm_quote_sent_statdes','הסטטוס בפריוריטי שמסמן "נשלחה"','⚠️ הערך הזה לא נמדד מול פריוריטי. הסוקר רושם ביומן הסנכרון את כל ערכי STATDES שהוא רואה — אחרי הריצה הראשונה על הצעה אמיתית אפשר לתקן אותו כאן.','txt'],
@@ -17570,6 +17591,8 @@ function crmSettingsHtml(){
            <option ${val==='כן'?'selected':''}>כן</option><option ${val==='לא'?'selected':''}>לא</option></select>`
       : kind==='num'
       ? `<input id="sv-${i}" type="number" min="0" max="20160" step="15" value="${esc(val)}" ${dis} style="width:130px;${box}">`
+      : kind==='area'
+      ? `<textarea id="sv-${i}" rows="4" ${dis} style="flex:1;min-width:260px;${box};resize:vertical">${esc(val)}</textarea>`   /* 7.1.0 — תבנית רב-שורתית */
       : `<input id="sv-${i}" type="text" value="${esc(val)}" ${dis} style="flex:1;min-width:260px;${box}">`;
     return `<div class="tbl-wrap" style="padding:12px;margin-bottom:10px">
       <b style="font-size:13px">${esc(label)}</b>
@@ -23155,6 +23178,19 @@ document.addEventListener('click', ev=>{
   try{ w.opener = null; }catch(_e){}                 /* לשונית שכבר על web.whatsapp.com — cross-origin, לא נדרש */
   try{ w.location.href = url; w.focus(); }catch(_e){ window.open(url, '_blank', 'noopener'); }
 }, true);
+/* ═══ 7.1.0 — כפתור "וואטסאפ" בתפריט (רומן: "חשוב שישתמש בחלון הפתוח כבר … ולא יפתח כרטיסיה חדשה") ═══
+   דף אינו יכול לכוון ללשונית שהמשתמש פתח בעצמו — ולכן הכפתור **הוא** הדרך לפתוח את הלשונית: iron_wa. מכאן כל
+   "וואטסאפ" במערכת מגיע אליה. לשונית iron_wa שכבר על WhatsApp (cross-origin ⇒ location זורק) **אינה נטענת מחדש**,
+   רק מקבלת פוקוס; לשונית חדשה (about:blank) מנווטת ל-web.whatsapp.com. בטלפון — wa.me פותח את האפליקציה. */
+window.waOpenTab = ()=>{
+  if(!waWebOk()){ window.open('https://wa.me/', '_blank', 'noopener'); return; }
+  let w = null; try{ w = window.open('', 'iron_wa'); }catch(_e){ w = null; }
+  if(!w){ window.open('https://web.whatsapp.com/', '_blank', 'noopener'); return; }
+  let blank = false; try{ blank = String(w.location.href) === 'about:blank'; }catch(_e){ blank = false; }
+  if(blank){ try{ w.opener = null; }catch(_e){} try{ w.location.href = 'https://web.whatsapp.com/'; }catch(_e){} }
+  try{ w.focus(); }catch(_e){}
+};
+(function(){ const b = document.getElementById('navWa'); if(b && b.firstChild && b.firstChild.nodeType === 3) b.insertAdjacentHTML('afterbegin', WA_SVG); })();
 const evPh = p => phOk(p)
   ? `<span class="ev-ph"><a href="${telUrl(p)}" dir="ltr" onclick="event.stopPropagation()" title="חיוג אל ${esc(p)}">📞 ${esc(p)}</a><a class="wa-ico" target="_blank" rel="noopener" href="${waUrl(p)}" onclick="event.stopPropagation()" title="וואטסאפ עם ${esc(p)}">${WA_SVG}</a></span>`
   : `<span dir="ltr">📞 ${esc(p||'')}</span>`;

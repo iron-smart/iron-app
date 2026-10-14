@@ -3400,7 +3400,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.2.2</div>
+      <div class="ver">גרסה 7.3.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3533,7 +3533,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="crmfix2-2026-10-14a">גרסה 7.2.2</div>
+    <div class="side-foot" title="waext-2026-10-14a">גרסה 7.3.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -11857,7 +11857,8 @@ window.openDocLink = async (id, mode)=>{
   /* 6.267.0 — רומן: "תעשה גם בשליחת פרוטוקול לחתימה". בדסקטופ עם טלפון: לשונית iron_wa (WhatsApp Web),
      ו**בכשל היא אינה נסגרת** — ייתכן שזו WhatsApp Web שהמשתמש עובד בו (הסיבה שזה נשאר בחוץ ב-6.264.0). */
   const waWeb = mode==='wa' && !!(p && p.phone) && waWebOk();
-  const tab = waWeb ? window.open('', 'iron_wa') : ((mode==='open'||mode==='wa') ? window.open('', '_blank') : null);
+  const ext = waWeb && waExt();   /* 7.3.0 — עם התוסף אין לשונית מראש */
+  const tab = ext ? null : (waWeb ? window.open('', 'iron_wa') : ((mode==='open'||mode==='wa') ? window.open('', '_blank') : null));
   if(waWeb && tab){ try{ tab.opener = null; }catch(_e){} }
   const { data, error } = await sb.schema('ord').rpc('protocol_link',
     { p_id:id, p_via: mode==='wa' ? 'whatsapp' : (mode==='copy' ? 'link' : null) });
@@ -11871,6 +11872,7 @@ window.openDocLink = async (id, mode)=>{
      (ערוץ שליחה חסר). עד כאן ההערה נבלעה והמשתמש חשב שהשלב התקדם. */
   if(data.stage_note) toast(String(data.stage_note), 'warn', 6000);
   if(data.kind==='sign') dlSignAfterLink(p, url, mode==='wa' ? 'whatsapp' : (mode==='copy' ? 'link' : null));
+  if(ext){ const _te = waLink(p.phone, waProtocolMsg(p, url)); if(waExtGo(waWebUrl(_te) || _te)) return; }
   if(tab){ const _to = (mode==='wa'&&p&&p.phone) ? waLink(p.phone, waProtocolMsg(p, url)) : url;
            tab.location.href = waWeb ? (waWebUrl(_to) || _to) : _to; return; }
   copyTxt(url, data.stage_note ? 'הקישור הועתק ✓ · ' + String(data.stage_note) : null,
@@ -12343,7 +12345,8 @@ window.dlQuoteWa = async (id) => {
   if(!m){ toast('אין טלפון לאיש הקשר או ללקוח בכרטיס — אין למי לשלוח', 'warn'); return; }
   if(!d.quote_doc_path){ toast('אין עדיין PDF להצעה — אין מה לשלוח', 'warn'); return; }
   const web = waWebOk();
-  let w = null; try{ w = web ? window.open('', 'iron_wa') : window.open('', '_blank'); }catch(_e){ w = null; }
+  const ext = web && waExt();   /* 7.3.0 — עם התוסף אין לשונית מראש: הוא פותח (או ממחזר) בעצמו */
+  let w = null; if(!ext){ try{ w = web ? window.open('', 'iron_wa') : window.open('', '_blank'); }catch(_e){ w = null; } }
   if(w){ try{ w.opener = null; }catch(_e){} }
   let code = '';
   try{
@@ -12378,6 +12381,7 @@ window.dlQuoteWa = async (id) => {
   txt = txt.split(' ,').join(',').split(NL).map(s=>s.trim()).filter(Boolean).join(NL);
   const q = encodeURIComponent(txt);
   const url = web ? 'https://web.whatsapp.com/send?phone=' + m[1] + '&text=' + q : 'https://wa.me/' + m[1] + '?text=' + q;
+  if(ext && waExtGo(url)) return;
   if(w){ try{ w.location.href = url; w.focus(); return; }catch(_e){} }
   window.open(url, '_blank', 'noopener');
 };
@@ -12613,7 +12617,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'crmfix2-2026-10-14a';
+const BUILD_ID = 'waext-2026-10-14a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -23200,6 +23204,12 @@ const phBtns = p => phOk(p) ? `<span class="ph-group"><a class="ph-btn call" hre
    התיאום בטבלאות (עם הטקסט שלהם). ⚠️ בחוץ בכוונה: wa.me/?text= בלי מספר (אין שיחה), ו-openDocLink (פותח
    לשונית לפני ה-await ועשוי לסגור אותה — ניתוב ל-iron_wa היה יכול לסגור את WhatsApp Web). */
 const WA_WEB_ANY = 'a[href*="wa.me/"]';
+/* ═══ 7.3.0 — תוסף הכרום של איירון (תוסף-כרום-וואטסאפ/). רומן: "זה פותח כל פעם כרטיסיה חדשה … ולא בודק האם יש
+   כרטיסיה עם whatsapp web פתוח". 🔴 iron_wa לא יכלה לעבוד: web.whatsapp.com שולח Cross-Origin-Opener-Policy, והכרום
+   מנתק את הלשונית ומוחק את שמה. תוסף רואה לשוניות; דף לא. התוסף מסמן data-iron-wa-ext על <html>, ומכאן כל פתיחה
+   של WhatsApp Web עוברת דרכו (postMessage), והוא מעביר ללשונית הקיימת. בלי התוסף — ההתנהגות הקודמת, בלי שינוי. */
+function waExt(){ try{ return !!document.documentElement.getAttribute('data-iron-wa-ext') && waWebOk(); }catch(_e){ return false; } }
+function waExtGo(url){ try{ window.postMessage({ type:'iron-wa-open', url:String(url) }, location.origin); return true; }catch(_e){ return false; } }
 const waWebOk = () => { try{ return matchMedia('(pointer:fine)').matches && wideScreen(); }catch(_e){ return false; } };
 const waWebUrl = href => { const m = String(href||'').match(/wa\.me\/(\d{9,15})\/?(?:\?(?:[^#]*&)?text=([^&#]*))?/);
   return m ? 'https://web.whatsapp.com/send?phone=' + m[1] + (m[2] ? '&text=' + m[2] : '') : ''; };   /* 6.264.0 — הטקסט עובר כמות שהוא (כבר מקודד) */
@@ -23208,6 +23218,7 @@ document.addEventListener('click', ev=>{
   if(!a || !waWebOk()) return;
   const url = waWebUrl(a.getAttribute('href'));
   if(!url) return;                                   /* מספר שלא זוהה ⇒ ה-href המקורי (wa.me) */
+  if(waExt() && waExtGo(url)){ ev.preventDefault(); ev.stopPropagation(); return; }   /* 7.3.0 — לשונית קיימת */
   let w = null;
   try{ w = window.open('', 'iron_wa'); }catch(_e){ w = null; }
   if(!w) return;                                     /* חוסם חלונות קופצים ⇒ ה-href המקורי, לא "כלום" */
@@ -23221,6 +23232,7 @@ document.addEventListener('click', ev=>{
    רק מקבלת פוקוס; לשונית חדשה (about:blank) מנווטת ל-web.whatsapp.com. בטלפון — wa.me פותח את האפליקציה. */
 window.waOpenTab = ()=>{
   if(!waWebOk()){ window.open('https://wa.me/', '_blank', 'noopener'); return; }
+  if(waExt() && waExtGo('https://web.whatsapp.com/')) return;   /* 7.3.0 — מעבר ללשונית הקיימת, בלי טעינה מחדש */
   let w = null; try{ w = window.open('', 'iron_wa'); }catch(_e){ w = null; }
   if(!w){ window.open('https://web.whatsapp.com/', '_blank', 'noopener'); return; }
   let blank = false; try{ blank = String(w.location.href) === 'about:blank'; }catch(_e){ blank = false; }

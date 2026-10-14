@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>קביעת פגישה · איירון פיטנס</title>
+<meta name="description" content="קובעים שיחת ייעוץ או פגישה באולם התצוגה של איירון פיטנס. ללא עלות וללא התחייבות.">
+<meta property="og:title" content="קביעת פגישה · איירון פיטנס">
+<meta property="og:description" content="שיחת ייעוץ בטלפון או ביקור באולם התצוגה. בוחרים מועד ומקבלים אישור בוואטסאפ.">
+<meta property="og:image" content="https://app.ironfitness.co.il/assets/og.png">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/assets/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap">
+<!-- book.html v1 — booking1 שלב 5 (14/10/2026). דף ציבורי: קביעה (3 שלבים) + ניהול קביעה (?m=<token>).
+     מדבר רק עם Edge Function `booking` (verify_jwt:false, CORS ל-app/ironfitness). אין כאן סודות.
+     אירועי המרה ל-dataLayer של GTM-TD8PPDM (אותו קונטיינר של האתר): booking_view · booking_type ·
+     booking_slot · booking_submit · booking_complete · booking_error · booking_manage_view ·
+     booking_cancel · booking_reschedule. -->
+<script>
+window.dataLayer = window.dataLayer || [];
+(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-TD8PPDM');
+</script>
+<style>
+:root{--ink:#0B0B0B;--ink2:#33383D;--ink3:#4A5056;--ink4:#6B7178;--navy:#001928;--navy2:#002D48;--line:#D9DCDF;--line2:#C4C9CE;--field:#A9AFB5;--bg:#F4F5F6;--green:#2E6B54;--green2:#58A184;--greenbg:#E3F1EA;--red:#A4262C;--redbg:#FBEAEA;--amberbg:#FFF6E0;--amber:#7A5300}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg)}
+body{font-family:Heebo,'Segoe UI',Arial,sans-serif;color:var(--ink);font-size:17px;line-height:1.5;-webkit-text-size-adjust:100%}
+a{color:var(--navy2)}a:hover{color:var(--navy)}
+button,input,textarea{font-family:inherit;font-size:inherit}
+button{cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #6FA3C7;outline-offset:2px}
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+header.top{background:#fff;border-bottom:1px solid var(--line)}
+header.top .wrap{height:72px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+header.top svg.logo{height:28px;width:auto;display:block}
+.toplinks{display:flex;align-items:center;gap:20px;font-size:16px}
+.toplinks a{text-decoration:none;display:flex;align-items:center;gap:6px;min-height:44px}
+.toplinks .tel{font-weight:700}
+.toplinks .back{color:var(--ink3)}
+.hero{background:var(--navy);color:#fff}
+.hero .wrap{padding:36px 24px 32px}
+.hero h1{margin:0;font-size:40px;line-height:1.15;font-weight:800;letter-spacing:-.5px}
+.hero p{margin:8px 0 0;font-size:19px;color:#C9D3DA}
+.steps{list-style:none;margin:28px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px 32px;font-size:16px}
+.steps li{display:flex;align-items:center;gap:10px;color:#8FA3B2}
+.steps .dot{width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;border:1px solid #5B7385;color:#8FA3B2}
+.steps li.on{color:#fff;font-weight:700}.steps li.on .dot{background:#fff;color:var(--navy);border-color:#fff}
+.steps li.done{color:#fff}.steps li.done .dot{background:var(--green2);border-color:var(--green2);color:#fff}
+main.wrap{padding-top:32px;padding-bottom:56px;display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start}
+.panel{flex:999 1 600px;min-width:0;background:#fff;border:1px solid var(--line);padding:32px}
+aside{flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:16px}
+h2{margin:0 0 4px;font-size:26px;font-weight:800}
+.sub{margin:0 0 24px;color:var(--ink3)}
+.types{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.tcard{text-align:right;display:block;width:100%;background:#fff;padding:22px;font-size:17px;color:var(--ink);line-height:1.5;border:1px solid var(--line2)}
+.tcard[aria-pressed="true"]{border:2px solid var(--navy);background:#F3F6F8;padding:21px}
+.tcard .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.tcard .ico{width:48px;height:48px;background:#E8EEF2;color:var(--navy2);display:flex;align-items:center;justify-content:center}
+.tcard .tag{font-size:14px;font-weight:700;color:var(--navy2);border:1px solid var(--navy2);padding:2px 10px}
+.tcard .tt{font-size:22px;font-weight:800;margin-top:16px}
+.tcard .td{color:var(--ink3);margin-top:6px}
+.tcard .sel{margin-top:14px;font-size:15px;font-weight:700;color:var(--green)}
+.actions{margin-top:28px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.btn{height:52px;padding:0 28px;border:0;font-size:18px;font-weight:700;background:var(--navy);color:#fff;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.btn:hover{background:#0A2B40;color:#fff}
+.btn[disabled]{background:#E3E6E8;color:var(--ink4);cursor:not-allowed}
+.btn2{height:52px;padding:0 20px;background:#fff;color:var(--navy2);border:1px solid var(--line2);font-size:17px;display:inline-flex;align-items:center;gap:8px;text-decoration:none}
+.btn2:hover{border-color:var(--navy2)}
+.btn3{height:48px;padding:0 18px;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--navy2);color:var(--navy2);background:#fff;text-decoration:none;font-weight:700;font-size:16px}
+.linkbtn{background:none;border:0;padding:0;color:var(--navy2);text-decoration:underline;font-size:16px;min-height:44px}
+.dangerbtn{height:52px;padding:0 24px;border:1px solid var(--red);background:#fff;color:var(--red);font-weight:700;font-size:17px}
+.dangerbtn.solid{background:var(--red);color:#fff}
+.cal{display:flex;flex-wrap:wrap;gap:32px;margin-top:20px}
+.cal .month{flex:1 1 320px;min-width:0}
+.cal .times{flex:1 1 260px;min-width:0}
+.mhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.mhead .mt{font-size:20px;font-weight:800}
+.navb{width:44px;height:44px;border:1px solid var(--navy2);background:#fff;color:var(--navy2);display:flex;align-items:center;justify-content:center}
+.navb[disabled]{border-color:var(--line);color:#A0A6AC;cursor:default}
+.dow,.grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.dow{text-align:center;font-size:14px;color:var(--ink4);margin-bottom:4px}
+.grid .off{height:48px;display:flex;align-items:center;justify-content:center;color:#B4B9BE;font-size:16px}
+.grid button{height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:17px;font-weight:700;border:1px solid var(--line);background:#fff;color:var(--navy2);padding:0}
+.grid button i{width:5px;height:5px;border-radius:50%;background:var(--green2)}
+.grid button[aria-pressed="true"]{border:0;background:var(--navy);color:#fff}
+.grid button[aria-pressed="true"] i{background:#fff}
+.legend{display:flex;gap:8px 16px;margin-top:12px;font-size:14px;color:var(--ink3);flex-wrap:wrap}
+.legend .g{display:flex;align-items:center;gap:6px}.legend .g i{width:6px;height:6px;background:var(--green2);border-radius:50%}
+.empty{border:1px dashed var(--line2);padding:32px 20px;text-align:center;color:var(--ink3)}
+.daytitle{font-size:18px;font-weight:800;margin-bottom:4px}
+.dayhint{font-size:15px;color:var(--ink3);margin-bottom:16px}
+.grp{font-size:14px;font-weight:700;color:var(--ink3);margin:0 0 8px}
+.grp+.slots{margin-bottom:16px}
+.slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.slots button{height:46px;font-size:17px;font-weight:700;border:1px solid var(--navy2);background:#fff;color:var(--navy2)}
+.slots button[aria-pressed="true"]{border:0;background:var(--navy);color:#fff}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px 20px}
+.fl{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:16px}
+.fl .opt{font-weight:400;color:var(--ink4)}
+.fl input,.fl textarea{border:1px solid var(--field);padding:0 14px;font-size:17px;font-weight:400;background:#fff;color:var(--ink);border-radius:0}
+.fl input{height:50px}
+.fl textarea{padding:12px 14px;resize:vertical;min-height:90px}
+.fl input[dir="ltr"]{text-align:right}
+.fl.bad input,.fl.bad textarea{border:2px solid var(--red)}
+.fl .err{font-weight:400;font-size:14px;color:var(--red)}
+fieldset{border:0;padding:0;margin:24px 0 0}
+legend{font-weight:700;font-size:16px;padding:0;margin-bottom:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{height:44px;padding:0 16px;font-size:16px;border:1px solid var(--field);background:#fff;color:var(--ink2)}
+.chips button[aria-pressed="true"]{border:2px solid var(--navy);background:#F3F6F8;color:var(--navy);font-weight:700;padding:0 15px}
+.consent{display:flex;align-items:flex-start;gap:10px;margin-top:18px;font-size:15px;color:var(--ink2)}
+.consent input{width:22px;height:22px;margin:1px 0 0;accent-color:var(--navy2);flex:none}
+.consent.bad{color:var(--red)}
+.hp{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+.msg{padding:14px 16px;margin:0 0 20px;font-size:16px;line-height:1.55}
+.msg.err{background:var(--redbg);color:var(--red);border:1px solid #EBC4C6}
+.msg.warn{background:var(--amberbg);color:var(--amber);border:1px solid #F0DCA8}
+.msg.ok{background:var(--greenbg);color:var(--green);border:1px solid #BFDCCB}
+.okmark{width:56px;height:56px;background:var(--greenbg);color:var(--green);display:flex;align-items:center;justify-content:center}
+.done h2{margin:12px 0 0;font-size:30px}
+.done .when{margin:4px 0 0;color:var(--ink2);font-size:19px;font-weight:500}
+.done .body{margin:4px 0 0;color:var(--ink3)}
+.btnrow{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px;align-items:center}
+.facts{margin-top:28px;padding-top:20px;border-top:1px solid #E3E6E8;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;font-size:15px;color:var(--ink2)}
+.facts b{display:block}.facts span{color:var(--ink3)}
+.sum{background:#fff;border:1px solid var(--line);border-top:4px solid var(--navy);padding:24px}
+.sum .k{font-size:14px;font-weight:700;color:var(--ink3);letter-spacing:.3px}
+.sum .t{font-size:22px;font-weight:800;margin-top:8px}
+.sum dl{margin:16px 0 0;display:grid;grid-template-columns:auto 1fr;gap:10px 16px;font-size:16px}
+.sum dt{color:var(--ink3)}.sum dd{margin:0;font-weight:700}
+.sum .none{margin:12px 0 0;color:var(--ink4)}
+.perks{list-style:none;margin:0;padding:0 4px;display:flex;flex-direction:column;gap:12px;font-size:15px;color:var(--ink2)}
+.perks li{display:flex;gap:10px;align-items:flex-start}.perks svg{flex:none;margin-top:2px}
+.spin{display:inline-block;width:18px;height:18px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.loading{padding:40px 0;text-align:center;color:var(--ink3);display:flex;align-items:center;justify-content:center;gap:10px}
+.bk{border:1px solid var(--line);padding:18px 20px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:center}
+.bk .bt{font-size:20px;font-weight:800}.bk .bw{color:var(--ink2);margin-top:2px}
+.pill{display:inline-block;font-size:14px;font-weight:700;padding:4px 12px}
+.pill.ok{background:var(--greenbg);color:var(--green)}.pill.no{background:#EEF0F2;color:var(--ink3)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+footer{max-width:1200px;margin:0 auto;padding:0 24px 40px;font-size:14px;color:var(--ink4)}
+@media (max-width:760px){
+  .wrap{padding:0 16px}
+  header.top .wrap{height:60px}
+  header.top svg.logo{height:22px}
+  .toplinks .back{display:none}
+  .toplinks .tel span{display:none}
+  .hero .wrap{padding:24px 16px 20px}
+  .hero h1{font-size:28px}
+  .hero p{font-size:17px}
+  .steps{margin-top:18px;gap:6px 18px;font-size:15px}
+  .steps .dot{width:26px;height:26px}
+  main.wrap{padding-top:16px;padding-bottom:32px;gap:16px}
+  .panel{padding:20px 16px}
+  h2{font-size:22px}
+  .cal{gap:24px}
+  .actions.stick{position:sticky;bottom:0;background:#fff;margin:24px -16px -20px;padding:12px 16px 16px;border-top:1px solid var(--line);z-index:5}
+  .actions.stick .btn{flex:1;padding:0 12px;font-size:17px;white-space:nowrap}
+  .actions.stick .btn2{padding:0 16px}
+  .grid,.dow{gap:2px}
+  .done h2{font-size:26px}
+}
+</style>
+</head>
+<body>
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TD8PPDM" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="top">
+  <div class="wrap">
+    <a href="https://ironfitness.co.il" aria-label="איירון פיטנס — לאתר">
+      <svg class="logo" role="img" aria-label="IRON FITNESS" viewBox="0 0 316.6 84.5" xmlns="http://www.w3.org/2000/svg"><g fill="#001928"><path fill-rule="evenodd" d="M23.1,1.4c0-0.8-0.6-1.4-1.4-1.4H1.4C0.6,0,0,0.6,0,1.4v61c0,0.8,0.6,1.4,1.4,1.4h20.3c0.8,0,1.4-0.6,1.4-1.4 V1.4z"/><path fill-rule="evenodd" d="M253.6,30.8c9.2,6.8,44.3,32.8,44.3,32.8c0.2,0.2,0.5,0.3,0.8,0.3h16.4c0.8,0,1.4-0.6,1.4-1.4v-61 c0-0.8-0.6-1.4-1.4-1.4h-20.3c-0.8,0-1.4,0.6-1.4,1.4v31.8L249,0.3c-0.2-0.2-0.5-0.3-0.8-0.3H232c-0.8,0-1.4,0.6-1.4,1.4v61 c0,0.8,0.6,1.4,1.4,1.4h20.3c0.8,0,1.4-0.6,1.4-1.4L253.6,30.8L253.6,30.8z"/><path fill-rule="evenodd" d="M43.8,0.1H33.7c-0.8,0-1.4,0.6-1.4,1.4v61c0,0.8,0.6,1.4,1.4,1.4H54c0.8,0,1.4-0.6,1.4-1.4V43.9h20.1l20.1,19.6 c0.3,0.2,0.6,0.4,1,0.4h26.2c0.6,0,1.1-0.3,1.3-0.9c0.2-0.5,0.1-1.1-0.3-1.5l-18.1-17.6h0.7c6.7,0,12.2-5.4,12.2-12.2V12.2 c0-6.7-5.4-12.2-12.2-12.2H44.5C44.2,0,44,0.1,43.8,0.1L43.8,0.1z M96,19.4v5.1H55.4v-5.1H96z"/><path fill-rule="evenodd" d="M171.9,0v18.9h-21.6v26h21.6v18.9H140c-6.7,0-12.2-5.4-12.2-12.2V12.2C127.8,5.5,133.2,0,140,0 C140,0,171.9,0,171.9,0z M176.9,0h32.4c6.7,0,12.2,5.4,12.2,12.2v39.5c0,6.7-5.4,12.2-12.2,12.2h-32.4V45h22V19h-22V0z"/><path d="M9,75.2v-2.5H0v11.5h3.2v-3.9h5.1v-2.5H3.2v-2.5L9,75.2L9,75.2z"/><rect x="51.6" y="72.7" width="3.2" height="11.5"/><path d="M100.6,84.2h3.2v-8.9h3.5v-2.6H97v2.6h3.5L100.6,84.2L100.6,84.2z"/><path d="M157.3,72.7v6.1l-5.1-6.1h-2.7v11.5h3.2v-6.1l5.1,6.1h2.7V72.7H157.3z"/><path d="M207,81.7v-2.1h5.1v-2.4H207v-1.9h5.8v-2.5h-9v11.5h9.2v-2.5L207,81.7L207,81.7z"/><path d="M259.9,84.4c3.4,0,5.1-1.7,5.1-3.7c0-4.2-6.5-2.9-6.5-4.7c0-0.6,0.5-1,1.9-1c1,0,2.1,0.3,3.2,0.9l1-2.4 c-1.1-0.7-2.7-1-4.2-1c-3.4,0-5.1,1.7-5.1,3.7c0,4.3,6.5,2.9,6.5,4.8c0,0.6-0.5,0.9-1.9,0.9c-1.3,0-2.8-0.5-3.8-1.1l-1.1,2.4 C256.1,83.9,258,84.4,259.9,84.4z"/><path d="M311.5,84.4c3.4,0,5.1-1.7,5.1-3.7c0-4.2-6.5-2.9-6.5-4.7c0-0.6,0.5-1,1.9-1c1,0,2.1,0.3,3.2,0.9l1-2.4 c-1.1-0.7-2.7-1-4.2-1c-3.4,0-5.1,1.7-5.1,3.7c0,4.3,6.5,2.9,6.5,4.8c0,0.6-0.5,0.9-1.9,0.9c-1.3,0-2.8-0.5-3.8-1.1l-1.1,2.4 C307.8,83.9,309.6,84.4,311.5,84.4z"/></g></svg>
+    </a>
+    <nav class="toplinks" aria-label="יצירת קשר">
+      <a class="tel" href="tel:0747779988" aria-label="התקשרו אלינו 074-7779988"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5-2.5l5 2v4a2 2 0 0 1-2 2a16 16 0 0 1-15-15a2 2 0 0 1 2-2"/></svg><span>074-7779988</span></a>
+      <a class="back" href="https://ironfitness.co.il">חזרה לאתר</a>
+    </nav>
+  </div>
+</header>
+<section class="hero">
+  <div class="wrap">
+    <h1 id="h1">קביעת פגישה עם צוות איירון</h1>
+    <p id="lead">שיחה קצרה בטלפון או ביקור באולם התצוגה. בוחרים מועד, ואנחנו מאשרים מיד בוואטסאפ.</p>
+    <ol class="steps" id="steps" aria-label="שלבי הקביעה">
+      <li data-s="1"><span class="dot">1</span><span>סוג פגישה</span></li>
+      <li data-s="2"><span class="dot">2</span><span>מועד</span></li>
+      <li data-s="3"><span class="dot">3</span><span>פרטים</span></li>
+    </ol>
+  </div>
+</section>
+<main class="wrap">
+  <section class="panel" id="panel" aria-live="polite"><div class="loading"><span class="spin" aria-hidden="true"></span>טוען…</div></section>
+  <aside id="aside"></aside>
+</main>
+<footer>איירון פיטנס · קומבה 32, חדרה · 074-7779988 · <a href="https://ironfitness.co.il/privacy-policy/">מדיניות הפרטיות</a></footer>
+
+<script>
+(function () {
+  'use strict';
+  var API = 'https://hjibpfavkjqocjvffsbq.supabase.co/functions/v1/booking';
+  var PHONE = '074-7779988', PHONE_TEL = 'tel:0747779988';
+  var PLANS = ['חדר כושר ביתי', 'סטודיו או מכון', 'חדר כושר בבניין או ארגון', 'שדרוג חדר קיים'];
+  var DAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+  var DSHORT = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
+  var MONTHS = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+  var ICO_PHONE = '<svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5-2.5l5 2v4a2 2 0 0 1-2 2a16 16 0 0 1-15-15a2 2 0 0 1 2-2"/></svg>';
+  var ICO_PIN = '<svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>';
+  var ICO_OK = '<svg aria-hidden="true" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5l9-10"/></svg>';
+  var ICO_CHECK = '<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2E6B54" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5l9-10"/></svg>';
+  var ICO_PREV = '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6l-6 6"/></svg>';
+  var ICO_NEXT = '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6l6 6"/></svg>';
+
+  var $ = function (id) { return document.getElementById(id); };
+  function h(v) { return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+  function track(ev, extra) { try { var o = { event: ev }; for (var k in (extra || {})) o[k] = extra[k]; window.dataLayer.push(o); } catch (e) { /* בלי מעקב */ } }
+  function store(k, v) { try { if (v === undefined) return window.sessionStorage.getItem(k); window.sessionStorage.setItem(k, v); } catch (e) { return null; } return null; }
+
+  // ── תאריכים: מחרוזות YYYY-MM-DD בשעון ישראל (מגיעות מהשרת) — בלי Date מקומי ──
+  function dObj(ds) { return new Date(ds + 'T12:00:00Z'); }
+  function dow(ds) { return dObj(ds).getUTCDay(); }
+  function dLong(ds) { var d = dObj(ds); return 'יום ' + DAYS[d.getUTCDay()] + ', ' + d.getUTCDate() + ' ב' + MONTHS[d.getUTCMonth()]; }
+  function dShort(ds) { var d = dObj(ds); return DSHORT[d.getUTCDay()] + ' ' + d.getUTCDate() + '.' + (d.getUTCMonth() + 1); }
+  function ymd(y, m, d) { return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0'); }
+
+  // ── פרמטרים ──
+  var qs = new URLSearchParams(location.search);
+  var hashM = (location.hash.match(/m=([0-9a-f]{64})/) || [])[1];
+  var token = (qs.get('m') || hashM || '').toLowerCase();
+  if (!/^[0-9a-f]{64}$/.test(token)) token = '';
+  var UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+  var utm = {};
+  try { utm = JSON.parse(store('ifb_utm') || '{}') || {}; } catch (e) { utm = {}; }
+  var gotUtm = false;
+  UTM_KEYS.forEach(function (k) { var v = qs.get(k); if (v) { if (!gotUtm) { utm = {}; gotUtm = true; } utm[k] = v.slice(0, 200); } });
+  if (gotUtm) store('ifb_utm', JSON.stringify(utm));
+  var srcPage = store('ifb_ref') || document.referrer || '';
+  if (document.referrer && !store('ifb_ref')) store('ifb_ref', document.referrer);
+
+  var S = {
+    mode: token ? 'manage' : 'book', step: 1, cfg: null, type: null, days: null, dur: 0, month: null,
+    day: null, slot: null, plan: null, busy: false, msg: null, errs: {}, done: null, degraded: false,
+    f: { name: '', phone: '', email: '', city: '', notes: '', consent: false, website: '' },
+    mg: null, mgView: 'info', confirmCancel: false
+  };
+  var pre = qs.get('type');
+  if (pre === 'consult' || pre === 'showroom') S.type = pre;
+
+  function api(params, body) {
+    var url = API + '?' + new URLSearchParams(params).toString();
+    var opt = body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : { method: 'GET' };
+    return fetch(url, opt).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) { j = j || {}; j._status = r.status; return j; });
+    }, function () { return { ok: false, _status: 0, error: 'network' }; });
+  }
+
+  function typeName(t) { return t === 'showroom' ? 'פגישה באולם התצוגה' : 'שיחת ייעוץ'; }
+  function typeDur(t) { return t === 'showroom' ? (S.cfg ? S.cfg.showroom_min : 30) : (S.cfg ? S.cfg.consult_min : 15); }
+  function where(t) { return t === 'showroom' ? ((S.cfg && S.cfg.address) || 'אולם התצוגה') : 'שיחה טלפונית'; }
+
+  // ═════════════ ציור ═════════════
+  function paintSteps() {
+    var el = $('steps');
+    if (S.mode !== 'book') { el.style.display = 'none'; return; }
+    el.style.display = '';
+    var st = S.done ? 4 : S.step;
+    Array.prototype.forEach.call(el.children, function (li) {
+      var n = +li.getAttribute('data-s');
+      li.className = st === n ? 'on' : (st > n ? 'done' : '');
+      if (st === n) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
+    });
+  }
+  function msgHtml() {
+    if (!S.msg) return '';
+    return '<div class="msg ' + h(S.msg.k) + '" role="' + (S.msg.k === 'err' ? 'alert' : 'status') + '">' + S.msg.html + '</div>';
+  }
+  function fallbackHtml(title) {
+    return '<h2>' + h(title || 'לא הצלחנו לטעון את היומן כרגע') + '</h2>' +
+      '<p class="sub">אפשר לקבוע איתנו ישירות בטלפון, ונשמח לחזור אליכם.</p>' +
+      '<div class="btnrow"><a class="btn" href="' + PHONE_TEL + '">' + ICO_PHONE + ' ' + PHONE + '</a>' +
+      '<a class="btn2" href="https://ironfitness.co.il">חזרה לאתר</a></div>';
+  }
+
+  function stepType() {
+    var card = function (t, ico, tag, title, desc) {
+      var on = S.type === t;
+      return '<button type="button" class="tcard" data-act="type" data-v="' + t + '" aria-pressed="' + on + '">' +
+        '<div class="row"><span class="ico">' + ico + '</span><span class="tag">' + h(tag) + '</span></div>' +
+        '<div class="tt">' + h(title) + '</div><div class="td">' + h(desc) + '</div>' +
+        (on ? '<div class="sel">✓ נבחר</div>' : '') + '</button>';
+    };
+    return msgHtml() + '<h2>איך נוח לכם להתחיל?</h2><p class="sub">שתי האפשרויות ללא עלות וללא התחייבות.</p>' +
+      '<div class="types">' +
+      card('consult', ICO_PHONE, typeDur('consult') + ' דקות · טלפון', 'שיחת ייעוץ', 'פותחים חדר כושר, סטודיו או מתחם חדש? משדרגים חדר קיים, או מקימים חדר אימונים בבית? יועץ יתקשר אליכם בשעה שבחרתם.') +
+      card('showroom', ICO_PIN, typeDur('showroom') + ' דקות · באולם', 'פגישה באולם התצוגה', 'מגיעים לראות ולהתנסות במכשירים, ובונים יחד עם יועץ את התכנון לחדר שלכם.') +
+      '</div><div class="actions stick"><button type="button" class="btn" data-act="to2"' + (S.type ? '' : ' disabled') + '>המשך לבחירת מועד</button></div>';
+  }
+
+  function calHtml(days, t) {
+    if (!days) return '<div class="loading"><span class="spin" aria-hidden="true"></span>בודקים מועדים פנויים…</div>';
+    var avail = {}, closed = {}, first = null, last = days.length ? days[days.length - 1].date : null;
+    days.forEach(function (d) { if (d.slots && d.slots.length) { avail[d.date] = d.slots; if (!first) first = d.date; } else if (d.closed) closed[d.date] = d.closed; });
+    if (!first) {
+      return '<div class="empty" style="margin-top:20px">אין כרגע מועדים פנויים ב-' + (S.cfg ? S.cfg.horizon_days : 10) + ' הימים הקרובים.<br>' +
+        'התקשרו אלינו ונמצא מועד: <a href="' + PHONE_TEL + '">' + PHONE + '</a></div>';
+    }
+    var startM = days[0].date.slice(0, 7), endM = last.slice(0, 7);
+    if (!S.month || S.month < startM || S.month > endM) S.month = first.slice(0, 7);
+    var y = +S.month.slice(0, 4), m = +S.month.slice(5, 7) - 1;
+    var firstDow = new Date(Date.UTC(y, m, 1, 12)).getUTCDay();
+    var nDays = new Date(Date.UTC(y, m + 1, 0, 12)).getUTCDate();
+    var cells = '';
+    for (var i = 0; i < firstDow; i++) cells += '<div class="off" aria-hidden="true"></div>';
+    for (var d = 1; d <= nDays; d++) {
+      var ds = ymd(y, m, d);
+      if (avail[ds]) {
+        var sel = S.day === ds;
+        cells += '<button type="button" data-act="day" data-v="' + ds + '" aria-pressed="' + sel + '" aria-label="' + h(dLong(ds) + ' · ' + avail[ds].length + ' שעות פנויות') + '">' + d + '<i aria-hidden="true"></i></button>';
+      } else {
+        cells += '<div class="off"' + (closed[ds] ? ' title="' + h(closed[ds]) + '"' : '') + '>' + d + '</div>';
+      }
+    }
+    var prevOk = S.month > startM, nextOk = S.month < endM;
+    var times;
+    if (!S.day || !avail[S.day]) {
+      times = '<div class="empty">בחרו יום בלוח כדי לראות את השעות הפנויות</div>';
+    } else {
+      var am = [], pm = [];
+      avail[S.day].forEach(function (s) {
+        var b = '<button type="button" data-act="slot" data-v="' + s + '" aria-pressed="' + (S.slot === s) + '">' + s + '</button>';
+        (parseInt(s, 10) < 12 ? am : pm).push(b);
+      });
+      times = '<div class="daytitle">' + h(dLong(S.day)) + '</div>' +
+        '<div class="dayhint">' + (t === 'showroom' ? 'פגישה של ' + typeDur(t) + ' דקות. השעה המוצגת היא שעת ההגעה.' : 'שיחה של ' + typeDur(t) + ' דקות. היועץ מתקשר אליכם.') + '</div>' +
+        (am.length ? '<div class="grp">בוקר</div><div class="slots">' + am.join('') + '</div>' : '') +
+        (pm.length ? '<div class="grp">אחר הצהריים</div><div class="slots">' + pm.join('') + '</div>' : '');
+    }
+    return '<div class="cal"><div class="month">' +
+      '<div class="mhead"><button type="button" class="navb" data-act="mprev" aria-label="החודש הקודם"' + (prevOk ? '' : ' disabled') + '>' + ICO_PREV + '</button>' +
+      '<div class="mt">' + MONTHS[m] + ' ' + y + '</div>' +
+      '<button type="button" class="navb" data-act="mnext" aria-label="החודש הבא"' + (nextOk ? '' : ' disabled') + '>' + ICO_NEXT + '</button></div>' +
+      '<div class="dow" aria-hidden="true">' + DSHORT.map(function (x) { return '<div>' + x + '</div>'; }).join('') + '</div>' +
+      '<div class="grid">' + cells + '</div>' +
+      '<div class="legend"><span class="g"><i aria-hidden="true"></i>יש שעות פנויות</span><span>קובעים ' + legendNotice() + '</span></div>' +
+      '</div><div class="times">' + times + '</div></div>';
+  }
+  function legendNotice() {
+    var hz = S.cfg ? S.cfg.horizon_days : 10;
+    return 'עד ' + hz + ' ימים מראש · שישי, שבת וחגים סגורים';
+  }
+
+  function stepWhen() {
+    if (S.degraded) return fallbackHtml('לא הצלחנו לטעון את היומן כרגע');
+    return msgHtml() + '<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap"><h2>בחרו יום ושעה</h2><span style="font-size:15px;color:var(--ink3)">שעון ישראל</span></div>' +
+      calHtml(S.days, S.type) +
+      '<div class="actions stick"><button type="button" class="btn" data-act="to3"' + (S.slot ? '' : ' disabled') + '>המשך להשארת פרטים</button>' +
+      '<button type="button" class="btn2" data-act="to1">חזרה</button></div>';
+  }
+
+  function field(id, label, type, extra, opt) {
+    var bad = S.errs[id];
+    return '<label class="fl' + (bad ? ' bad' : '') + '" for="f_' + id + '"><span>' + h(label) + (opt ? ' <span class="opt">(לא חובה)</span>' : '') + '</span>' +
+      '<input id="f_' + id + '" name="' + id + '" type="' + type + '" value="' + h(S.f[id]) + '" ' + extra + (bad ? ' aria-invalid="true" aria-describedby="e_' + id + '"' : '') + '>' +
+      (bad ? '<span class="err" id="e_' + id + '">' + h(bad) + '</span>' : '') + '</label>';
+  }
+  function stepDetails() {
+    var cta = S.type === 'showroom' ? 'קביעת הפגישה' : 'קביעת השיחה';
+    return msgHtml() + '<h2>כמה פרטים ונסגור</h2><p class="sub">האישור נשלח בוואטסאפ לנייד שתזינו.</p>' +
+      '<form id="frm" novalidate><div class="form">' +
+      field('name', 'שם מלא', 'text', 'autocomplete="name" maxlength="80" required') +
+      field('phone', 'טלפון נייד', 'tel', 'autocomplete="tel" inputmode="tel" dir="ltr" maxlength="20" placeholder="050-0000000" required') +
+      field('email', 'אימייל', 'email', 'autocomplete="email" dir="ltr" maxlength="120" placeholder="name@example.com"', true) +
+      field('city', 'עיר', 'text', 'autocomplete="address-level2" maxlength="60"', true) +
+      '</div>' +
+      '<fieldset><legend>מה אתם מתכננים?</legend><div class="chips">' +
+      PLANS.map(function (p) { return '<button type="button" data-act="plan" data-v="' + h(p) + '" aria-pressed="' + (S.plan === p) + '">' + h(p) + '</button>'; }).join('') +
+      '</div></fieldset>' +
+      '<label class="fl" for="f_notes" style="margin-top:20px"><span>משהו שחשוב לנו לדעת? <span class="opt">(לא חובה)</span></span>' +
+      '<textarea id="f_notes" name="notes" rows="3" maxlength="500" placeholder="גודל החדר, מכשירים שמעניינים אתכם, לוח זמנים">' + h(S.f.notes) + '</textarea></label>' +
+      '<div class="hp" aria-hidden="true"><label>אתר<input name="website" tabindex="-1" autocomplete="off" value=""></label></div>' +
+      '<label class="consent' + (S.errs.consent ? ' bad' : '') + '"><input type="checkbox" id="f_consent" name="consent"' + (S.f.consent ? ' checked' : '') + (S.errs.consent ? ' aria-invalid="true"' : '') + '>' +
+      '<span>אני מאשר/ת לאיירון פיטנס להשתמש בפרטים שמסרתי כדי לתאם את הפגישה וליצור איתי קשר לגביה, בהתאם ל<a href="https://ironfitness.co.il/privacy-policy/" target="_blank" rel="noopener">מדיניות הפרטיות</a>. מסירת הפרטים היא מרצון.</span></label>' +
+      '<div class="actions stick"><button type="submit" class="btn"' + (S.busy ? ' disabled' : '') + '>' + (S.busy ? '<span class="spin" aria-hidden="true"></span> קובעים…' : h(cta)) + '</button>' +
+      '<button type="button" class="btn2" data-act="to2"' + (S.busy ? ' disabled' : '') + '>חזרה</button></div></form>';
+  }
+
+  function icsHref(b, title) {
+    var s = b.date.replace(/-/g, '') + 'T' + b.time.replace(':', '') + '00';
+    var e = b.date.replace(/-/g, '') + 'T' + b.end.replace(':', '') + '00';
+    var loc = b.type === 'showroom' ? (b.address || 'קומבה 32, חדרה') : 'שיחה טלפונית';
+    var ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//IRON FITNESS//booking//HE', 'BEGIN:VEVENT',
+      'UID:' + s + '-' + Math.random().toString(36).slice(2) + '@ironfitness.co.il',
+      'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z',
+      'DTSTART;TZID=Asia/Jerusalem:' + s, 'DTEND;TZID=Asia/Jerusalem:' + e,
+      'SUMMARY:' + title, 'LOCATION:' + loc, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+    return 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+  }
+  function gcalHref(b, title) {
+    var s = b.date.replace(/-/g, '') + 'T' + b.time.replace(':', '') + '00';
+    var e = b.date.replace(/-/g, '') + 'T' + b.end.replace(':', '') + '00';
+    var p = new URLSearchParams({ action: 'TEMPLATE', text: title, dates: s + '/' + e, ctz: 'Asia/Jerusalem',
+      location: b.type === 'showroom' ? (b.address || 'קומבה 32, חדרה') : 'שיחה טלפונית' });
+    return 'https://calendar.google.com/calendar/render?' + p.toString();
+  }
+  function manageUrl(tok) { return location.origin + '/book?m=' + tok; }
+
+  function doneHtml() {
+    var b = S.done, sh = b.type === 'showroom';
+    var title = (sh ? 'פגישה באולם התצוגה' : 'שיחת ייעוץ') + ' · איירון פיטנס';
+    var addr = b.address || (S.cfg && S.cfg.address) || 'קומבה 32, חדרה';
+    return '<div class="done"><span class="okmark">' + ICO_OK + '</span>' +
+      '<h2 tabindex="-1" id="doneh">' + (sh ? 'הפגישה נקבעה' : 'השיחה נקבעה') + '</h2>' +
+      '<p class="when">' + h(dLong(b.date)) + ' · ' + h(b.time) + '</p>' +
+      '<p class="body">' + (sh ? 'מחכים לכם באולם התצוגה, ' + h(addr) + '.' : 'יועץ של איירון יתקשר אליכם לנייד שהזנתם בשעה שבחרתם.') + '</p></div>' +
+      '<div class="btnrow"><a class="btn3" href="' + icsHref({ date: b.date, time: b.time, end: b.end, type: b.type, address: addr }, title) + '" download="iron-fitness.ics">הוספה ליומן</a>' +
+      '<a class="btn3" href="' + h(gcalHref({ date: b.date, time: b.time, end: b.end, type: b.type, address: addr }, title)) + '" target="_blank" rel="noopener">Google Calendar</a>' +
+      (sh ? '<a class="btn3" href="https://waze.com/ul?q=' + encodeURIComponent(addr) + '&navigate=yes" target="_blank" rel="noopener">ניווט ב-Waze</a>' : '') +
+      (b.token ? '<a class="linkbtn" href="' + h(manageUrl(b.token)) + '">שינוי מועד או ביטול</a>' : '') + '</div>' +
+      (b.token ? '<p class="sub" style="margin:14px 0 0;font-size:15px">שמרו את הקישור לשינוי או ביטול: <a href="' + h(manageUrl(b.token)) + '" style="word-break:break-all">' + h(manageUrl(b.token)) + '</a></p>' : '') +
+      '<div class="facts"><div><b>אישור בוואטסאפ</b><span>נשלח עכשיו לנייד שהזנתם</span></div>' +
+      '<div><b>תזכורת</b><span>יום לפני, וביום הפגישה</span></div>' +
+      '<div><b>שאלות?</b><span><a href="' + PHONE_TEL + '">' + PHONE + '</a></span></div></div>';
+  }
+
+  function asideHtml() {
+    if (S.mode !== 'book') return '';
+    var t = S.type;
+    var box = '<div class="sum"><div class="k">הפגישה שלכם</div>' +
+      (t ? '<div class="t">' + h(typeName(t)) + '</div><dl>' +
+        '<dt>משך</dt><dd>' + typeDur(t) + ' דקות</dd>' +
+        '<dt>איפה</dt><dd>' + h(where(t)) + '</dd>' +
+        '<dt>יום</dt><dd>' + (S.day ? h(dLong(S.day)) : '—') + '</dd>' +
+        '<dt>שעה</dt><dd>' + (S.slot ? h(S.slot) : '—') + '</dd></dl>'
+        : '<p class="none">עוד לא בחרתם סוג פגישה.</p>') + '</div>';
+    return box + '<ul class="perks"><li>' + ICO_CHECK + 'ללא עלות וללא התחייבות</li><li>' + ICO_CHECK + 'אישור ותזכורת בוואטסאפ</li><li>' + ICO_CHECK + 'אפשר לשנות או לבטל בקישור, בלי להתקשר</li></ul>';
+  }
+
+  // ── ניהול קביעה ──
+  function manageHtml() {
+    var g = S.mg;
+    if (!g) return '<div class="loading"><span class="spin" aria-hidden="true"></span>טוען את הפגישה…</div>';
+    if (g.notFound) return '<h2>הקישור אינו תקין</h2><p class="sub">ייתכן שהקישור הועתק חלקית. אפשר לקבוע פגישה חדשה או להתקשר אלינו.</p>' +
+      '<div class="btnrow"><a class="btn" href="/book">קביעת פגישה</a><a class="btn2" href="' + PHONE_TEL + '">' + PHONE + '</a></div>';
+    if (g.error) return fallbackHtml('לא הצלחנו לטעון את הפגישה כרגע');
+    var b = g.booking, sh = b.type === 'showroom';
+    S.cfg = S.cfg || { consult_min: b.type === 'consult' ? b.duration : 15, showroom_min: sh ? b.duration : 30, horizon_days: 10, address: b.address };
+    var pill = b.status === 'active' ? '<span class="pill ok">נקבעה</span>' : b.status === 'cancelled' ? '<span class="pill no">בוטלה</span>' : '<span class="pill no">המועד עבר</span>';
+    var card = '<div class="bk"><div><div class="bt">' + h(typeName(b.type)) + '</div><div class="bw">' + h(dLong(b.date)) + ' · ' + h(b.time) + '–' + h(b.end) +
+      (sh && b.address ? ' · ' + h(b.address) : '') + '</div></div>' + pill + '</div>';
+    if (b.status === 'cancelled') {
+      return msgHtml() + '<h2>הפגישה בוטלה</h2><p class="sub">אם תרצו, אפשר לקבוע מועד חדש בכל עת.</p>' + card +
+        '<div class="btnrow"><a class="btn" href="/book?type=' + h(b.type) + '">קביעת מועד חדש</a></div>';
+    }
+    if (b.status === 'past') {
+      return '<h2>מועד הפגישה כבר עבר</h2><p class="sub">לקביעת פגישה נוספת:</p>' + card +
+        '<div class="btnrow"><a class="btn" href="/book">קביעת פגישה</a><a class="btn2" href="' + PHONE_TEL + '">' + PHONE + '</a></div>';
+    }
+    if (S.mgView === 'move') {
+      if (g.degraded) return fallbackHtml('לא ניתן לשנות מועד אונליין כרגע');
+      return msgHtml() + '<h2>בחירת מועד חדש</h2><p class="sub">המועד הנוכחי: ' + h(dLong(b.date)) + ' · ' + h(b.time) + '</p>' +
+        calHtml(g.days, b.type) +
+        '<div class="actions stick"><button type="button" class="btn" data-act="domove"' + (S.slot && !S.busy ? '' : ' disabled') + '>' +
+        (S.busy ? '<span class="spin" aria-hidden="true"></span> מעדכנים…' : 'עדכון המועד') + '</button>' +
+        '<button type="button" class="btn2" data-act="mginfo"' + (S.busy ? ' disabled' : '') + '>חזרה</button></div>';
+    }
+    return msgHtml() + '<h2>הפגישה שלכם</h2><p class="sub">אפשר לשנות מועד או לבטל כאן, בלי להתקשר.</p>' + card +
+      (S.confirmCancel
+        ? '<div class="msg warn" style="margin-top:20px" role="alert">לבטל את ' + (sh ? 'הפגישה' : 'השיחה') + '? אפשר לקבוע מחדש בכל עת.</div>' +
+          '<div class="btnrow" style="margin-top:0"><button type="button" class="dangerbtn solid" data-act="docancel"' + (S.busy ? ' disabled' : '') + '>' +
+          (S.busy ? '<span class="spin" aria-hidden="true"></span> מבטלים…' : 'כן, לבטל') + '</button><button type="button" class="btn2" data-act="nocancel"' + (S.busy ? ' disabled' : '') + '>לא, להשאיר</button></div>'
+        : '<div class="btnrow"><button type="button" class="btn" data-act="mgmove">שינוי מועד</button><button type="button" class="dangerbtn" data-act="askcancel">ביטול ' + (sh ? 'הפגישה' : 'השיחה') + '</button></div>') +
+      (sh && b.address ? '<div class="btnrow"><a class="btn3" href="https://waze.com/ul?q=' + encodeURIComponent(b.address) + '&navigate=yes" target="_blank" rel="noopener">ניווט ב-Waze</a></div>' : '') +
+      '<div class="facts"><div><b>שאלות?</b><span><a href="' + PHONE_TEL + '">' + PHONE + '</a></span></div></div>';
+  }
+
+  function render(focusId) {
+    paintSteps();
+    var p = $('panel'), html;
+    if (S.mode === 'manage') {
+      $('h1').textContent = 'ניהול הפגישה שלכם';
+      $('lead').textContent = 'שינוי מועד או ביטול, בלי להתקשר.';
+      html = manageHtml();
+    } else if (S.cfg && S.cfg.enabled === false) {
+      html = '<h2>קביעת פגישות אונליין תיפתח בקרוב</h2><p class="sub">בינתיים נשמח לקבוע איתכם בטלפון.</p>' +
+        '<div class="btnrow"><a class="btn" href="' + PHONE_TEL + '">' + ICO_PHONE + ' ' + PHONE + '</a><a class="btn2" href="https://ironfitness.co.il">חזרה לאתר</a></div>';
+    } else if (!S.cfg) {
+      html = S.degraded ? fallbackHtml() : '<div class="loading"><span class="spin" aria-hidden="true"></span>טוען…</div>';
+    } else if (S.done) html = doneHtml();
+    else if (S.step === 1) html = stepType();
+    else if (S.step === 2) html = stepWhen();
+    else html = stepDetails();
+    p.innerHTML = html;
+    $('aside').innerHTML = S.done ? '' : asideHtml();
+    $('aside').style.display = (S.mode === 'book' && !S.done && S.cfg && S.cfg.enabled !== false) ? '' : 'none';
+    if (focusId) { var f = $(focusId); if (f) { try { f.focus({ preventScroll: false }); } catch (e) { f.focus(); } } }
+  }
+  function scrollTop() { var y = $('panel').getBoundingClientRect().top + window.pageYOffset - 12; if (window.pageYOffset > y) window.scrollTo({ top: y, behavior: 'smooth' }); }
+
+  // ═════════════ נתונים ═════════════
+  function loadSlots() {
+    S.days = null; S.degraded = false; render();
+    api({ action: 'slots', type: S.type }).then(function (j) {
+      if (j.enabled === false) { S.cfg.enabled = false; render(); return; }
+      if (!j.ok || j.degraded) { S.degraded = true; track('booking_error', { booking_type: S.type, reason: j.degraded ? 'degraded' : 'slots_' + j._status }); render(); return; }
+      S.days = j.days || []; S.dur = j.duration;
+      if (S.day && !S.days.some(function (d) { return d.date === S.day && d.slots.indexOf(S.slot) >= 0; })) S.slot = null;
+      render();
+    });
+  }
+  function readForm() {
+    var fm = $('frm'); if (!fm) return;
+    S.f.name = fm.name.value.trim(); S.f.phone = fm.phone.value.trim(); S.f.email = fm.email.value.trim();
+    S.f.city = fm.city.value.trim(); S.f.notes = fm.notes.value.trim(); S.f.consent = fm.consent.checked;
+    S.f.website = fm.website.value;
+  }
+  function phoneOk(p) {
+    var d = String(p).replace(/[^0-9]/g, '');
+    if (d.indexOf('972') === 0) d = '0' + d.slice(3);
+    return /^05[0-9]{8}$/.test(d) || /^0[2-9][0-9]{7}$/.test(d) || /^07[0-9]{8}$/.test(d);
+  }
+  function validate() {
+    var e = {};
+    if (S.f.name.length < 2) e.name = 'נא למלא שם מלא';
+    if (!phoneOk(S.f.phone)) e.phone = 'נא למלא מספר טלפון תקין';
+    if (S.f.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(S.f.email)) e.email = 'כתובת האימייל אינה תקינה';
+    if (!S.f.consent) e.consent = 'נדרש אישור';
+    return e;
+  }
+  function submit() {
+    readForm();
+    S.errs = validate(); S.msg = null;
+    if (Object.keys(S.errs).length) {
+      S.msg = { k: 'err', html: 'נא להשלים: ' + h(Object.keys(S.errs).map(function (k) { return { name: 'שם', phone: 'טלפון', email: 'אימייל', consent: 'אישור יצירת קשר' }[k]; }).join(' · ')) };
+      render(S.errs.name ? 'f_name' : S.errs.phone ? 'f_phone' : S.errs.email ? 'f_email' : 'f_consent'); return;
+    }
+    S.busy = true; render();
+    track('booking_submit', { booking_type: S.type });
+    var body = { action: 'book', type: S.type, date: S.day, time: S.slot, full_name: S.f.name, phone: S.f.phone,
+      email: S.f.email || undefined, city: S.f.city || undefined, notes: S.f.notes || undefined, plan: S.plan || undefined,
+      consent: S.f.consent === true, website: S.f.website || undefined, page: (srcPage || location.href).slice(0, 500) };
+    UTM_KEYS.forEach(function (k) { if (utm[k]) body[k] = utm[k]; });
+    api({ action: 'book' }, body).then(function (j) {
+      S.busy = false;
+      if (j.ok && j.booked) {
+        S.done = { type: S.type, date: j.date || S.day, time: j.time || S.slot, end: j.end || '', address: j.address || '', token: j.manage_token || '' };
+        if (!S.done.end) { var mm = +S.done.time.slice(0, 2) * 60 + +S.done.time.slice(3) + typeDur(S.type); S.done.end = String(Math.floor(mm / 60)).padStart(2, '0') + ':' + String(mm % 60).padStart(2, '0'); }
+        track('booking_complete', { booking_type: S.type, booking_date: S.done.date, booking_time: S.done.time });
+        render('doneh'); scrollTop(); return;
+      }
+      var err = j.error;
+      track('booking_error', { booking_type: S.type, reason: String(err || j._status) });
+      if (err === 'invalid' && j.fields) {
+        var map = { full_name: 'name', phone: 'phone', email: 'email', consent: 'consent' };
+        j.fields.forEach(function (f) { if (map[f]) S.errs[map[f]] = 'נא לבדוק את השדה'; });
+        if (j.fields.indexOf('slot') >= 0) { S.step = 2; S.slot = null; S.msg = { k: 'err', html: 'המועד שבחרתם אינו תקין. בחרו מועד מחדש.' }; loadSlots(); return; }
+        S.msg = { k: 'err', html: 'נא לבדוק את השדות המסומנים.' }; render(); return;
+      }
+      if (err === 'taken') {
+        S.step = 2; S.slot = null; S.days = j.days || null;
+        S.msg = { k: 'warn', html: 'המועד שבחרתם נתפס הרגע. בחרו מועד אחר — הלוח עודכן.' };
+        if (!S.days) loadSlots(); else render(); scrollTop(); return;
+      }
+      if (err === 'exists') {
+        var ex = j.existing || {};
+        S.msg = { k: 'warn', html: 'כבר קבעתם איתנו' + (ex.date ? ' ל' + h(dLong(ex.date)) + ' בשעה ' + h(ex.time) : '') + '. לשינוי מועד או ביטול, השתמשו בקישור שנשלח אליכם בוואטסאפ, או התקשרו: <a href="' + PHONE_TEL + '">' + PHONE + '</a>.' };
+        render(); scrollTop(); return;
+      }
+      if (err === 'rate_limited') { S.msg = { k: 'err', html: 'היו יותר מדי ניסיונות. נסו שוב בעוד שעה, או התקשרו: <a href="' + PHONE_TEL + '">' + PHONE + '</a>.' }; render(); return; }
+      S.msg = { k: 'err', html: 'לא הצלחנו לקבוע אונליין כרגע. התקשרו אלינו ונקבע יחד: <a href="' + PHONE_TEL + '">' + PHONE + '</a>.' };
+      render(); scrollTop();
+    });
+  }
+
+  function loadManage() {
+    api({ action: 'manage', m: token }).then(function (j) {
+      if (j._status === 404) S.mg = { notFound: true };
+      else if (!j.ok || !j.booking) S.mg = { error: true };
+      else S.mg = { booking: j.booking, days: j.days || [], degraded: !!j.degraded };
+      if (S.mg.booking) track('booking_manage_view', { booking_type: S.mg.booking.type, booking_status: S.mg.booking.status });
+      render();
+    });
+  }
+  function doCancel() {
+    S.busy = true; S.msg = null; render();
+    api({ action: 'cancel' }, { action: 'cancel', m: token }).then(function (j) {
+      S.busy = false; S.confirmCancel = false;
+      if (j.ok || j.result === 'already') {
+        S.mg.booking = j.booking || S.mg.booking; S.mg.booking.status = 'cancelled';
+        S.msg = { k: 'ok', html: 'הביטול נקלט. תודה שעדכנתם.' };
+        track('booking_cancel', { booking_type: S.mg.booking.type });
+      } else if (j.result === 'past') { S.mg.booking.status = 'past'; }
+      else S.msg = { k: 'err', html: 'לא הצלחנו לבטל כרגע. התקשרו אלינו: <a href="' + PHONE_TEL + '">' + PHONE + '</a>.' };
+      render();
+    });
+  }
+  function doMove() {
+    if (!S.slot) return;
+    S.busy = true; S.msg = null; render();
+    var old = S.mg.booking;
+    api({ action: 'reschedule' }, { action: 'reschedule', m: token, date: S.day, time: S.slot }).then(function (j) {
+      S.busy = false;
+      if (j.ok) {
+        S.mg.booking = j.booking || S.mg.booking; S.mgView = 'info'; S.day = null; S.slot = null;
+        S.msg = { k: 'ok', html: 'המועד עודכן ל' + h(dLong(S.mg.booking.date)) + ' בשעה ' + h(S.mg.booking.time) + '. אישור חדש נשלח בוואטסאפ.' };
+        track('booking_reschedule', { booking_type: old.type, booking_date: S.mg.booking.date, booking_time: S.mg.booking.time });
+        loadManage(); render(); scrollTop(); return;
+      }
+      if (j.error === 'taken') { S.slot = null; if (j.days) S.mg.days = j.days; S.msg = { k: 'warn', html: 'המועד נתפס הרגע. בחרו מועד אחר — הלוח עודכן.' }; render(); return; }
+      if (j.error === 'cancelled' || j.error === 'past') { S.mgView = 'info'; loadManage(); return; }
+      S.msg = { k: 'err', html: 'לא הצלחנו לעדכן כרגע. התקשרו אלינו: <a href="' + PHONE_TEL + '">' + PHONE + '</a>.' };
+      render();
+    });
+  }
+
+  // ═════════════ אירועים ═════════════
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-act]'); if (!b || b.disabled) return;
+    var a = b.getAttribute('data-act'), v = b.getAttribute('data-v');
+    if (a === 'type') { if (S.type !== v) { S.type = v; S.day = null; S.slot = null; S.days = null; } S.msg = null; track('booking_type', { booking_type: v }); render(); }
+    else if (a === 'to2') { if (!S.type) return; readForm(); S.step = 2; S.msg = null; if (!S.days) loadSlots(); else render(); scrollTop(); }
+    else if (a === 'to1') { S.step = 1; S.msg = null; render(); scrollTop(); }
+    else if (a === 'to3') { if (!S.slot) return; S.step = 3; S.msg = null; render('f_name'); scrollTop(); }
+    else if (a === 'day') { S.day = v; S.slot = null; render(); }
+    else if (a === 'slot') { S.slot = v; track('booking_slot', { booking_type: S.type || (S.mg && S.mg.booking.type), booking_date: S.day, booking_time: v }); render(); }
+    else if (a === 'mprev' || a === 'mnext') {
+      var y = +S.month.slice(0, 4), m = +S.month.slice(5, 7) - 1 + (a === 'mnext' ? 1 : -1);
+      if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; }
+      S.month = y + '-' + String(m + 1).padStart(2, '0'); render();
+    }
+    else if (a === 'plan') { readForm(); S.plan = S.plan === v ? null : v; render(); }
+    else if (a === 'mgmove') { S.mgView = 'move'; S.day = null; S.slot = null; S.month = null; S.msg = null; render(); }
+    else if (a === 'mginfo') { S.mgView = 'info'; S.msg = null; render(); }
+    else if (a === 'askcancel') { S.confirmCancel = true; S.msg = null; render(); }
+    else if (a === 'nocancel') { S.confirmCancel = false; render(); }
+    else if (a === 'docancel') doCancel();
+    else if (a === 'domove') doMove();
+  });
+  document.addEventListener('submit', function (ev) { if (ev.target.id === 'frm') { ev.preventDefault(); if (!S.busy) submit(); } });
+  document.addEventListener('input', function (ev) {
+    var n = ev.target.name; if (n && S.errs[n]) { delete S.errs[n]; var l = ev.target.closest('.fl'); if (l) l.classList.remove('bad'); }
+  });
+
+  // ═════════════ התחלה ═════════════
+  if (S.mode === 'manage') { render(); loadManage(); }
+  else {
+    render();
+    api({ action: 'config' }).then(function (j) {
+      if (!j.ok) { S.degraded = true; render(); return; }
+      S.cfg = { enabled: j.enabled !== false, consult_min: j.consult_min || 15, showroom_min: j.showroom_min || 30, horizon_days: j.horizon_days || 10, address: j.address || '' };
+      track('booking_view', { booking_enabled: S.cfg.enabled, booking_type: S.type || undefined });
+      if (S.cfg.enabled && S.type) { S.step = 2; loadSlots(); } else render();
+    });
+  }
+})();
+</script>
+</body>
+</html>

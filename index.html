@@ -2607,6 +2607,7 @@ td.lb-today .lb-dt{ background-color:transparent; }
 /* ---- התראת כפילות בטופס "ליד חדש" (6.148.0) ----
    רומן: "התראה בפתיחת ליד חדש תעצב יפה". קופסה אחת, כותרת שמסבירה
    שזו התראה ולא חסימה, ושורות לחיצות שכל אחת אומרת **לפי מה** הותאמה. */
+.lb-dup.lb-dup-blk{ border-color:#f1b0a8; background-color:#fdecea; }
 .lb-dup{ border:1px solid #fde3b8; background:#fffaf0; border-radius:var(--r-lg);
   padding:10px 12px; margin-top:8px; }
 .lb-duph{ display:flex; gap:8px; align-items:flex-start; font-size:var(--fs-sm);
@@ -2950,6 +2951,16 @@ td.lb-today .lb-dt{ background-color:transparent; }
 .lb-tmw{ display:flex; align-items:center; gap:6px; margin-bottom:6px; }
 .lb-tmw > .lb-tmi{ margin-bottom:0; }
 .lb-tmw > .lb-dt{ flex:0 0 auto; }
+/* 7.2.0 — תווית המועד. ⚠️ הקלט השקוף חייב לגבור על `.form-grid input:not([type=checkbox]):not([type=radio])`
+   (0,3,1) שקובע לו גובה ורוחב 100% — לכן (0,4,1) כאן, ולא רק .lb-tmdt. */
+.lb-tmdue-w{ position:relative; flex:0 0 auto; display:inline-flex; }
+.lb-tmw .lb-tmdue{ display:inline-flex; align-items:center; gap:4px; white-space:nowrap; cursor:pointer;
+  color:var(--ink-2); font-family:inherit; line-height:1.4; }
+.lb-tmw .lb-tmdue:hover{ border-color:var(--navy); }
+.lb-tmw .lb-tmdue.lb-ov{ color:#c0392b; font-weight:700; }
+.lb-tmw .lb-tmdue.lb-today{ color:#b45309; font-weight:700; }
+.lb-tmw .lb-tmdue-w > input[type=datetime-local].lb-tmdt{ position:absolute; inset:0; width:100%; height:100%;
+  min-height:0; opacity:0; pointer-events:none; border:0; padding:0; margin:0; }
 .lb-tmi{ display:flex; align-items:center; gap:9px; width:100%;
   background:#fff; border:1px solid var(--line); border-radius:var(--r-md);
   padding:8px 11px; margin-bottom:6px; cursor:pointer; text-align:start;
@@ -3373,7 +3384,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.1.0</div>
+      <div class="ver">גרסה 7.2.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3506,7 +3517,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="waquote2-2026-10-14a">גרסה 7.1.0</div>
+    <div class="side-foot" title="crmfix-2026-10-14a">גרסה 7.2.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3900,6 +3911,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="sheet">
     <h3 id="lur-h">מה קרה עם הליד?</h3>
     <div class="note" id="lur-note" style="margin-bottom:10px"></div>
+    <div class="field" id="lur-subw" style="display:none"><label for="lur-sub">סיבה <span class="req">*</span></label><select id="lur-sub"></select></div>
     <div class="field"><textarea id="lur-body" rows="4" placeholder="לדוגמה: דיברתי איתו, הוא מחפש מתחם בהרצליה, נחזור אליו בשבוע הבא"></textarea></div>
     <div class="actions">
       <button class="btn green" id="lur-save">שמירת העדכון</button>
@@ -4032,7 +4044,6 @@ tr.lb-on td{ background-color:#eef5fd !important; }
     <div class="cvp-list" id="cvp-list" role="radiogroup" aria-label="לקוחות קיימים תואמים"></div>
     <div class="actions">
       <button type="button" class="btn green" id="cvp-go" disabled onclick="cvPickGo()">פתיחת הצעת מחיר על הלקוח שנבחר</button>
-      <button type="button" class="ghost" id="cvp-new" onclick="cvPickNew()">＋ לקוח חדש בפריוריטי</button>
       <button type="button" class="ghost" onclick="document.getElementById('cvPickModal').classList.add('hidden')">ביטול</button>
     </div>
   </div>
@@ -4543,7 +4554,7 @@ function cvPickOpen(id, btn, cands){
   $('#cvPickModal h3').textContent = rows.length > 1 ? 'הליד תואם ל-' + rows.length + ' לקוחות קיימים' : 'הליד תואם ללקוח קיים';
   $('#cvp-note').innerHTML = 'ל<b>' + esc(l.full_name || 'ליד') + '</b>' + (by === 'מייל' ? ' יש מייל' : ' יש טלפון')
     + ' שכבר רשום אצל ' + (rows.length > 1 ? rows.length + ' לקוחות' : 'לקוח קיים') + '. '
-    + 'בחירת לקוח קיים תפתח עליו <b>הצעת מחיר בלבד</b> — בלי כרטיס לקוח חדש בפריוריטי.';
+    + 'בחירת לקוח קיים תפתח עליו <b>הצעת מחיר בלבד</b>. פתיחת לקוח חדש על אותם פרטים אינה אפשרית.';
   $('#cvp-list').innerHTML = rows.map(k=>{
     const ok = !!k.priority_id;
     const st = [k.status && k.status !== 'פעיל' ? k.status : '', k.is_test ? 'בדיקה' : ''].filter(Boolean)
@@ -4572,14 +4583,8 @@ window.cvPickGo = ()=>{
   CV_PICK = null; $('#cvPickModal').classList.add('hidden');
   convertLead(s.id, s.btn, { customer_id:s.sel });
 };
-window.cvPickNew = async ()=>{
-  const s = CV_PICK; if(!s) return;
-  /* ⚠️ CV_PICK !== s / hidden — הבורר נסגר (Esc/רקע) או נפתח מחדש לליד אחר בזמן שהאישור היה פתוח. */
-  if(!(await sysConfirm('ייפתח כרטיס לקוח חדש בפריוריטי, למרות ש' + (s.n > 1 ? '-' + s.n + ' לקוחות קיימים תואמים' : 'לקוח קיים תואם')
-    + ' לטלפון או למייל של הליד. כרטיס כפול אי אפשר למחוק.\nלהמשיך?', { ok:'כן, לקוח חדש', cancel:'חזרה לבחירה' })) || CV_PICK !== s || $('#cvPickModal').classList.contains('hidden')) return;
-  CV_PICK = null; $('#cvPickModal').classList.add('hidden');
-  convertLead(s.id, s.btn, { new_customer:true });
-};
+/* 🔴 7.2.0 — "לקוח חדש" ירד (רומן, 14/10/2026: "להסיר לגמרי"). השרת (crm-convert-lead v24) אוכף זאת גם
+   הוא: בקשת "לקוח חדש" נדחית כשיש מועמד פעיל עם מספר פריוריטי, ולקוחות 'לא פעיל' אינם מועמדים כלל. */
 /* ═══ ההצלבה ההפוכה (6.124.0) ════════════════════════════════════
    `lbCx` עונה "מי הלקוח של הטלפון הזה". כאן השאלה ההפוכה: "אילו לידים
    נושאים את הטלפון הזה". שתי עובדות שונות — ולכן שני מטמונים ולא אחד —
@@ -5672,7 +5677,8 @@ document.addEventListener('click', e=>{
   /* 🔴 6.168.0 — חלון המתנה אינו נסגר בלחיצת רקע, וגם אינו נופל
      ל-closeCards() שמתחתיו: הוא מגן על קריאה שעדיין באוויר. */
   if(document.querySelector('.modal-busy:not(.hidden)')) return;
-  if(e.target.classList.contains('modal-over')){ e.target.classList.add('hidden'); return; }
+  /* 7.2.0 — חלונית-חובה (data-must: סיבה שטרם נשמרה) אינה נסגרת ברקע. */
+  if(e.target.classList.contains('modal-over')){ if(!e.target.dataset.must) e.target.classList.add('hidden'); return; }
   closeCards();
 });
 /* 🔴 6.152.0 — סגירת בוררי הסינון הרב-בחירתיים בלחיצה בחוץ (רומן).
@@ -5709,7 +5715,7 @@ document.addEventListener('keydown', function(e){
        את הכרטיס ומשאיר את המודאל העליון תלוי באוויר. אותה התנגשות של
        6.119.0 ו-6.130.0, בפעם השלישית. */
     const _ov = document.querySelector('.modal.modal-over:not(.hidden)');
-    if(_ov){ e.preventDefault(); _ov.classList.add('hidden'); return; }
+    if(_ov){ e.preventDefault(); if(!_ov.dataset.must) _ov.classList.add('hidden'); return; }
     /* 🔴 6.130.0 — שער אח לבורר הישות המקושרת, אותה התנגשות של 6.119.0
        בצורה שנייה. תפריט .ac-menu גלוי בתוך מודל פתוח הוא מצב שבו Esc
        אמור לסגור **את התפריט בלבד**; בלי השער _openModal() אמת,
@@ -12587,7 +12593,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'waquote2-2026-10-14a';
+const BUILD_ID = 'crmfix-2026-10-14a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -19643,6 +19649,15 @@ window.lbTaskDue = async (el)=>{
   if(error){ toast('שגיאה בשמירה: '+error.message); renderLeads(); return; }
   const t = (TASKS||[]).find(x=>x.id===id); if(t) t.due_at = iso;
   toast('נשמר ✓');
+  /* 7.2.0 — התווית בכל כרטיס פתוח (תהליך מכירה · לקוח · משימה) מתעדכנת במקומה; lbTmRedraw שלמטה
+     מצייר מחדש רק את כרטיס הליד. */
+  document.querySelectorAll('button.lb-tmdue').forEach(b=>{
+    if(b.dataset.task !== id) return;
+    const m = lbDueMark(iso, false);
+    b.className = 'lb-dt lb-tmdue' + (m.cls ? ' '+m.cls : '');
+    b.innerHTML = m.ico + '<span class="lb-tmdue-t">' + esc(lbDueShort(iso)) + '</span>';
+    const i = b.parentNode && b.parentNode.querySelector('input.lb-tmdt'); if(i) i.value = lbDtLocal(iso);
+  });
   /* 🔴 6.154.0 — הבלוק בכרטיס נצבע מחדש **במקומו**. עד כאן צוירה
      הטבלה שמאחור בלבד, ולכן תווית "המשימה הבאה" נשארה על הפריט הישן
      כשהמיון השתנה — והמשתמש עורך בדיוק מהכרטיס. */
@@ -20008,6 +20023,8 @@ function tkFoldSet(){
 }
 window.tkFold = k=>{ const f=tkFoldSet(); if(f.has(k)) f.delete(k); else f.add(k); renderTasks(); };
 window.tkSetView = v=>{ TK_VIEW=v; renderTasks(); };
+/* 7.2.0 — "ראשי" = כל המשימות בלי שום סינון (רומן). tkInitDef קודם — אותו לקח של dlGoMine. */
+window.tkGoMain = ()=>{ tkInitDef(); TK_F = TK_F0(); tkSetView('main'); };
 function tkOpen(){ return (TASKS||[]).filter(t=>t.status!=='הושלם'); }
 /* 🔴 6.185.0 יצרה את crm.task_owners, ו"שלי" נשאר על owner_id שהוא **מראה**
    של הבעלים הראשי בלבד — כלומר שותף אינו רואה את המשימה ב"שלי" ואינו נספר
@@ -20019,6 +20036,7 @@ function tkOpen(){ return (TASKS||[]).filter(t=>t.status!=='הושלם'); }
    ⚠️ הנפילה אחורה ל-owner_id יושבת בתוך ownOwnersOf ואינה משוכפלת כאן. */
 const tkMine = t => ownOwnersOf('task', t).map(String).includes(String((typeof ME!=='undefined' && ME && ME.id) || ''));
 function tkViewList(){
+  if(TK_VIEW==='main') return (TASKS||[]).slice();   /* 7.2.0 — "ראשי": פתוחות וסגורות, כל הבעלים */
   if(TK_VIEW==='done') return (TASKS||[]).filter(t=>t.status==='הושלם');
   const o = tkOpen();
   return TK_VIEW==='mine' ? o.filter(tkMine) : o;
@@ -20031,6 +20049,7 @@ function tkChips(){
     `<button class="chip ${TK_VIEW==='mine'?'active':''}" onclick="tkSetView('mine')">שלי ${mine}</button>`+
     `<button class="chip ${TK_VIEW==='open'?'active':''}" onclick="tkSetView('open')">כל הפתוחות ${o.length}</button>`+
     `<button class="chip ${TK_VIEW==='done'?'active':''}" onclick="tkSetView('done')">הושלמו ${done}</button>`+
+    `<button class="chip ${TK_VIEW==='main'?'active':''}" onclick="tkGoMain()">ראשי ${(TASKS||[]).length}</button>`+
     (window.canEdit('crm.tasks')?`<button class="chip chip-mode ${TK_BULK?'active':''}" onclick="tkBulkToggle()">${TK_BULK?'✕ סיום בחירה':'☑︎ בחירה מרובה'}</button>`:'');
 }
 /* ---- הישות המקושרת ---- */
@@ -20269,10 +20288,8 @@ function tkCats(){ return [...new Set(['ליד','לקוח','תהליך מכיר�
    מסנן החוצה כל שורה בלי שאף תיבה תיראה מסומנת (הלקח מ-logiInit). */
 function tkInitDef(){
   if(TK_DEF_INIT) return; TK_DEF_INIT = true;
-  const _c = osetStr('tasks_default_view', '');
-  if(['mine','open','done'].includes(_c)) TK_VIEW = _c;
+  /* 🔴 7.2.0 — נפתח תמיד ב"שלי" (רומן); tasks_default_view והתצוגה השמורה (v) אינן קובעות עוד. */
   const d = tkDefLoad(); if(!d) return;
-  if(d.v && ['mine','open','done'].includes(d.v)) TK_VIEW = d.v;
   if(d.f && typeof d.f==='object'){
     TK_F = Object.assign(TK_F0(), d.f);
     if(!Array.isArray(TK_F.status)) TK_F.status = TK_F.status ? [TK_F.status] : [];
@@ -24502,7 +24519,7 @@ function dealChips(){
   el.innerHTML =
     `<button class="chip ${DEAL_FILTER==='mine'?'active':''}" onclick="setDealFilter('mine')">שלי ${mine.length} <small>· ${shekel(dlSum(mine))}</small></button>`+
     `<button class="chip ${DEAL_FILTER==='active'?'active':''}" onclick="setDealFilter('active')">פעילות ${act.length} <small>· ${shekel(dlSum(act))}</small></button>`+
-    `<button class="chip ${DEAL_FILTER==='all'?'active':''}" onclick="setDealFilter('all')">הכל ${DEALS.length} <small>· ${shekel(dlSum(DEALS))}</small></button>`+
+    `<button class="chip ${DEAL_FILTER==='all'?'active':''}" onclick="dlGoMain()">ראשי ${DEALS.length} <small>· ${shekel(dlSum(DEALS))}</small></button>`+
     (pend ? `<button class="chip ${DEAL_FILTER==='pending'?'active':''}" onclick="setDealFilter('pending')" title="הזמנה מאושרת בפריוריטי שיש ללקוח שלה יותר מעסקה פתוחה אחת — המערכת אינה מנחשת איזו לקדם">⚠️ ממתינות לשיוך ${pend}</button>` : '')
     + (window.canEdit('crm.deals')?`<button class="chip chip-mode ${DL_BULK?'active':''}" onclick="dlBulkToggle()">${DL_BULK?'✕ סיום בחירה':'☑︎ בחירה מרובה'}</button>`:'');
 }
@@ -24592,6 +24609,8 @@ window.setDealFilter = f => { DEAL_FILTER = f; renderDeals(); };
    🔴 בלי ניקוי מסנן השלבים האריח היה אומר N והמסך מציג פחות. dlInitDef קודם — אחרת ברירת מחדל שמורה
       שנטענת ב-renderDeals הראשון הייתה דורסת את הניקוי. */
 window.dlGoMine = ()=>{ dlInitDef(); DL_F.stage = []; setDealFilter('mine'); };
+/* 7.2.0 — "ראשי" (היה "הכל") = כל התהליכים, בלי שום סינון — גם לא ברירת מחדל שמורה (רומן). */
+window.dlGoMain = ()=>{ dlInitDef(); DL_F = DL_F0(); setDealFilter('all'); };
 /* 🔴 6.156.0 — "פנייה מקורית" ירדה (רומן), "נוצר" נוספה **בסוף**,
    והסכום קיבל את שמו המלא. ⚠️ בסוף ולא באמצע — בדיוק כמו 6.147.0
    בטבלת הלידים: תוספת באמצע מזיזה כל אינדקס שאחריה. */
@@ -24667,7 +24686,7 @@ window.dlDefClear = ()=>{ try{ localStorage.removeItem(DL_DEF_KEY); }catch(_e){}
 function dlInitDef(){
   if(DL_DEF_INIT) return; DL_DEF_INIT = true;
   const d = dlDefLoad(); if(!d) return;
-  if(d.v && ['active','all','mine'].includes(d.v)) DEAL_FILTER = d.v;
+  /* 🔴 7.2.0 — נפתח תמיד ב"שלי" (רומן); התצוגה השמורה (v) אינה קובעת עוד, המסננים (f) כן. */
   if(d.f && typeof d.f==='object'){
     DL_F = Object.assign(DL_F0(), d.f);
     if(!Array.isArray(DL_F.stage)) DL_F.stage = DL_F.stage ? [DL_F.stage] : [];
@@ -25529,11 +25548,14 @@ window.dlPipeSet = async (id, stage, sub)=>{
   if(stage === 'לא רלוונטי' && expect !== 'לא רלוונטי') dlUpdRequire(id);
 };
 /* ===== פגישות ===== */
-let MEET_FILTER = 'week';
+let MEET_FILTER = 'mine';   /* 7.2.0 — כל המסכים נפתחים ב"שלי" (רומן) */
 const meetStClass = s => s==='התקיימה'?'st-rel' : (['בוטלה','לא התקיימה','נדחתה'].includes(s)?'st-no' : 'st-new');
 const todayStr = () => { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
 function meetFilterList(){
   const t = todayStr();
+  /* 7.2.0 — "שלי": הפגישות שלי (בעלים או שותף, mtOwnersOf) מהיום והלאה; בלי תאריך — בסוף. */
+  if(MEET_FILTER==='mine') return MEETS.filter(m=>mtMine(m) && (!m.meet_date || m.meet_date>=t))
+    .sort((a,b)=>(a.meet_date||'9999').localeCompare(b.meet_date||'9999'));
   if(MEET_FILTER==='today') return MEETS.filter(m=>m.meet_date===t);
   if(MEET_FILTER==='week') return MEETS.filter(mtWeekIn).sort((a,b)=>(a.meet_date||'').localeCompare(b.meet_date||''));
   if(MEET_FILTER==='future') return MEETS.filter(m=>m.meet_date>=t).sort((a,b)=>(a.meet_date||'').localeCompare(b.meet_date||''));
@@ -25543,16 +25565,18 @@ function meetChips(){
   const t = todayStr();
   /* ⚠️ המונה נגזר מ-mtWeekIn ולא מביטוי משלו — שני מימושים של אותו
      כלל נפרדים בשקט ביום שאחד מהם ישתנה. */
-  const cnt = { today: MEETS.filter(m=>m.meet_date===t).length,
+  const cnt = { mine: MEETS.filter(m=>mtMine(m) && (!m.meet_date || m.meet_date>=t)).length,
+                today: MEETS.filter(m=>m.meet_date===t).length,
                 week: MEETS.filter(mtWeekIn).length,
                 future: MEETS.filter(m=>m.meet_date>=t).length };
   $('#meet-chips').innerHTML = `
     <button class="chip chip-mode ${MEET_MODE==='cal'?'active':''}" onclick="setMeetMode('cal')">יומן</button>
     <button class="chip chip-mode ${MEET_MODE==='list'?'active':''}" onclick="setMeetMode('list')">רשימה</button>` + (MEET_MODE==='cal' ? '' : `
+    <button class="chip ${MEET_FILTER==='mine'?'active':''}" onclick="setMeetFilter('mine')">שלי ${cnt.mine}</button>
     <button class="chip ${MEET_FILTER==='today'?'active':''}" onclick="setMeetFilter('today')">היום ${cnt.today}</button>
     <button class="chip ${MEET_FILTER==='week'?'active':''}" onclick="setMeetFilter('week')">השבוע ${cnt.week}</button>
     <button class="chip ${MEET_FILTER==='future'?'active':''}" onclick="setMeetFilter('future')">עתידיות ${cnt.future}</button>
-    <button class="chip ${MEET_FILTER==='all'?'active':''}" onclick="setMeetFilter('all')">הכל ${MEETS.length}</button>`);
+    <button class="chip ${MEET_FILTER==='all'?'active':''}" onclick="mtGoMain()">ראשי ${MEETS.length}</button>`);
 }
 window.setMeetFilter = f => { MEET_FILTER = f; meetDefSave(); renderMeets(); };
 function linkedName(m){
@@ -25849,7 +25873,7 @@ function meetTable(list){
 /* 🔴 6.157.0 — רומן: "רשימה זו תצוגת ברירת מחדל". */
 let MEET_MODE='list', MCAL_VIEW='month', MCAL_D=new Date(), MCAL_Q='';
 const MEET_DEF_KEY = 'iron_meets_default_v1';
-const MEET_MODES = ['cal','list'], MEET_FILTERS = ['today','week','future','all'];
+const MEET_MODES = ['cal','list'], MEET_FILTERS = ['mine','today','week','future','all'];
 let MEET_DEF_INIT = false;
 /* ⚠️ נרמול חובה: ערך שנשמר ואינו קיים עוד היה משאיר את המסך במצב
    שאינו מצויר כלל — הלקח מ-logiInit. ומכאן גם שהמצב נשמר אוטומטית
@@ -25865,6 +25889,9 @@ const MT_ST_DEF = ['חדשה','מתוכננת','תואמה'];
 let MT_F = { type:'', owner:'', status:MT_ST_DEF.slice() };
 const MT_F0 = ()=>({ type:'', owner:'', status:[] });
 const mtOwnersOf = m => (m && MOWN_OF[m.id]) || (m && m.owner_id ? [m.owner_id] : []);
+const mtMine = m => mtOwnersOf(m).map(String).includes(String((typeof ME!=='undefined' && ME && ME.id) || ''));
+/* 7.2.0 — "ראשי" (היה "הכל") = כל הפגישות בלי שום סינון, כולל סטטוס (רומן). */
+window.mtGoMain = ()=>{ meetInitDef(); MT_F = MT_F0(); setMeetFilter('all'); };
 function mtApplyF(list){
   const _st = (MT_F.status||[]);
   return list.filter(m=>{
@@ -25909,7 +25936,7 @@ function meetInitDef(){
   if(MEET_DEF_INIT) return; MEET_DEF_INIT = true;
   const d = meetDefLoad(); if(!d) return;
   if(MEET_MODES.includes(d.v)) MEET_MODE = d.v;
-  if(MEET_FILTERS.includes(d.f)) MEET_FILTER = d.f;
+  /* 🔴 7.2.0 — נפתח תמיד ב"שלי" (רומן); f השמור (נשמר אוטומטית בכל לחיצה) אינו קובע עוד. */
   if(d.x && typeof d.x==='object'){
     MT_F = Object.assign(MT_F0(), d.x);
     if(MT_F.type && !MEET_TYPES.includes(MT_F.type)) MT_F.type='';
@@ -26443,7 +26470,7 @@ const LB_ACTIVE = ['ליד חדש','ללא מענה','ללא מענה2','ללא 
    לעולם לא owner_id (מראה). */
 const LB_NOANS = LB_ACTIVE.filter(s=>s!=='רלוונטי');
 const lbMine = l => lbOwnersOf(l).map(String).includes(String((typeof ME!=='undefined' && ME && ME.id) || ''));
-let LB_VIEW = 'active';   /* mine | active | main */
+let LB_VIEW = 'mine';   /* 7.2.0 — כל המסכים נפתחים ב"שלי" (רומן) */   /* mine | active | main */
 const LB_FOLD = new Set();
 function lbMe(){ return (typeof ME!=='undefined' && ME) ? ME.id : null; }
 /* המשימה הפתוחה והפגישה הקרובה לכל ליד — התחליף לעמודות ה"מראה" של מאנדיי
@@ -26502,6 +26529,9 @@ function lbViewList(){
   return LEADS;
 }
 window.lbSetView = v=>{ LB_VIEW=v; if(v==='trash') lbTrashLoad(); else renderLeads(); };
+/* 7.2.0 — "ראשי" = הכול, בלי שום סינון — גם לא ברירת מחדל שמורה (רומן). lbInitDef קודם, אחרת ברירת
+   מחדל שנטענת בציור הראשון הייתה דורסת את הניקוי (הלקח מ-dlGoMine). */
+window.lbGoMain = ()=>{ lbInitDef(); LB_F = LB_F0(); lbSetView('main'); };
 window.lbFold = st=>{ if(LB_FOLD.has(st)) LB_FOLD.delete(st); else LB_FOLD.add(st); renderLeads(); };
 function lbChips(){
   const el=document.getElementById('lb-chips'); if(!el) return;
@@ -26510,7 +26540,7 @@ function lbChips(){
   el.innerHTML = `
     <button class="chip ${LB_VIEW==='mine'?'active':''}" onclick="lbSetView('mine')">שלי בתהליך ${mine}</button>
     <button class="chip ${LB_VIEW==='active'?'active':''}" onclick="lbSetView('active')">כל הלידים בתהליך ${act}</button>
-    <button class="chip ${LB_VIEW==='main'?'active':''}" onclick="lbSetView('main')">ראשי ${LEADS.length}</button>
+    <button class="chip ${LB_VIEW==='main'?'active':''}" onclick="lbGoMain()">ראשי ${LEADS.length}</button>
     <button class="chip ${LB_VIEW==='trash'?'active':''}" onclick="lbSetView('trash')">נמחקו</button>
     ${window.canEdit('crm.leads')?`<button class="chip chip-mode ${LB_BULK?'active':''}" onclick="lbBulkToggle()">${LB_BULK?'✕ סיום בחירה':'☑︎ בחירה מרובה'}</button>`:''}`;
 }
@@ -26888,11 +26918,31 @@ function lbDupHits(nm, ph, em){
   return { custs: (p9||e||n) ? pick(CUSTS||[]) : [],
            leads: (p9||e||n) ? pick(LEADS||[]) : [] };
 }
+/* 🔴 7.2.0 — חסימה (רומן, 14/10/2026): "שתהיה גם חסימה … רק כשיש לפחות שתי התאמות" (שם · טלפון ·
+   אימייל). ליד פתוח ⇒ חסימה · ליד סגור ⇒ שאלה בשמירה · לקוח 'לא פעיל' ⇒ רק התראה ("הלקוח הישן לא פעיל")
+   · התאמה יחידה ⇒ התראה. בלי עקיפה, גם לא למנהל. ⚠️ הטופס הידני בלבד — lead-intake (אתר/פייסבוק) אינו
+   עובר כאן, בכוונה: חסימה שם הייתה מאבדת לידים. */
+const LB_DUP_CLOSED = ['סירוב','לא רלוונטי'];
+function lbDupVerdict(h){
+  const v = { block:[], ask:[], inactive:[], warn:[] };
+  (h.custs||[]).forEach(x=>{
+    if(x.r.length < 2) v.warn.push(x);
+    else if((x.o.status||'') === 'לא פעיל') v.inactive.push(x);
+    else v.block.push(x);
+  });
+  (h.leads||[]).forEach(x=>{
+    if(x.r.length < 2) v.warn.push(x);
+    else if(LB_DUP_CLOSED.includes(x.o.status||'')) v.ask.push(x);
+    else v.block.push(x);
+  });
+  return v;
+}
 window.lbDupCheck = ()=>{
   const box=document.getElementById('a-dup'); if(!box) return;
   const nm=($('#a-name').value||'').trim(), ph=($('#a-phone').value||'').trim(),
         em=($('#a-email').value||'').trim();
-  const h = lbDupHits(nm, ph, em);
+  const h = lbDupHits(nm, ph, em), v = lbDupVerdict(h);
+  const sv = document.getElementById('a-save'); if(sv) sv.disabled = v.block.length > 0;
   if(!h.custs.length && !h.leads.length){ box.innerHTML=''; return; }
   const MAX = 3;
   /* בלי template literals מקוננים — הדפוס של lbTmBlock. */
@@ -26913,9 +26963,16 @@ window.lbDupCheck = ()=>{
       + (arr.length>MAX ? '<div class="lb-dupm">ועוד ' + (arr.length-MAX) + '</div>' : '')
       + '</div>';
   };
-  box.innerHTML = '<div class="lb-dup">'
-    + '<div class="lb-duph"><span class="lb-dupic">&#9888;</span>'
-    + '<span>נמצאה התאמה קיימת — <b>אפשר להמשיך</b>, זו התראה ולא חסימה.</span></div>'
+  const msg = v.block.length
+      ? '<b>לא ניתן לפתוח ליד</b> — נמצאה התאמה בשני פרטים לפחות. עבור לכרטיס הקיים, ומשם פתח תהליך מכירה.'
+    : v.ask.length
+      ? 'קיים <b>ליד סגור</b> עם אותם פרטים — בשמירה תישאל אם לפתוח ליד חדש.'
+    : v.inactive.length
+      ? 'הלקוח התואם <b>לא פעיל</b> — אפשר לפתוח ליד חדש.'
+      : 'נמצאה התאמה חלקית — <b>אפשר להמשיך</b>, זו התראה ולא חסימה.';
+  box.innerHTML = '<div class="lb-dup' + (v.block.length ? ' lb-dup-blk' : '') + '">'
+    + '<div class="lb-duph"><span class="lb-dupic">' + (v.block.length ? '&#9940;' : '&#9888;') + '</span>'
+    + '<span>' + msg + '</span></div>'
     + grp('לקוח קיים', h.custs, 'dupGoCust')
     + grp('ליד קיים',  h.leads, 'dupGoLead')
     + '</div>';
@@ -26934,6 +26991,7 @@ $('#addBtn').onclick = ()=>{
     + esc((LOWN_BY[lbMe()]||{}).name || (ME&&ME.full_name) || 'אתה')
     + '</b> — וגם המשימה שתיפתח לו אוטומטית.</span>';
   $('#a-err').textContent=''; const d=document.getElementById('a-dup'); if(d) d.innerHTML='';
+  const _sv=document.getElementById('a-save'); if(_sv) _sv.disabled=false;
   /* 🔴 ציור מחדש ולא ניקוי ערכים: הבוררים נשענים על osetStr, ומשתמש
      שעדכן את רשימות ההגדרות היה ממשיך לראות את הישנות עד רענון דף. */
   const _qw = document.getElementById('a-qwrap'); if(_qw) _qw.innerHTML = lbQHtml('a');
@@ -26944,6 +27002,16 @@ $('#a-save').onclick = async ()=>{
   const miss = [['a-name','שם מלא'],['a-phone','טלפון'],['a-source','מקור הגעה'],['a-type','סוג לקוח']]
                  .filter(([k])=>!g(k)).map(([,lb])=>lb);
   if(miss.length){ $('#a-err').textContent='חסרים שדות חובה: '+miss.join(' · ')+'.'; return; }
+  /* 🔴 7.2.0 — שער הכפילות נבדק שוב בשמירה: הכפתור המנוטרל אינו שער (מקלדת, הדבקה בלי input). */
+  const _dv = lbDupVerdict(lbDupHits(g('a-name'), g('a-phone'), g('a-email')));
+  if(_dv.block.length){
+    $('#a-err').textContent = 'לא ניתן לפתוח את הליד — הוא תואם ל' + (_dv.block[0].o.full_name ? 'ליד' : 'לקוח')
+      + ' «' + (_dv.block[0].o.full_name || _dv.block[0].o.name || '') + '» לפי ' + _dv.block[0].r.join(' + ') + '.';
+    lbDupCheck(); return;
+  }
+  if(_dv.ask.length && !(await sysConfirm('קיים ליד סגור עם אותם פרטים: «'
+      + (_dv.ask[0].o.full_name || '') + '» (' + (_dv.ask[0].o.status || '') + ').\n\nלפתוח ליד חדש בכל זאת?',
+      { ok:'פתיחת ליד חדש', cancel:'ביטול' }))) return;
   const wa = g('a-wacat');
   /* 🔴 `data` **מפורק**. עד 6.100.0 היה כאן `const { error } = ...` בלבד,
      והשורה שמתחת השתמשה ב-data שאינו מוגדר: הקריאה זרקה, ה-try בלע,
@@ -27324,7 +27392,9 @@ window.lbPipeSet = async (id, st, sub)=>{
   }
   toast('השלב עודכן ✓');
   lbLocalApply(id, { status: st, sub: sub || null, closedTasks: (r.tasks_closed||0) > 0 });
-  lbUpdRequire(id, st, sub || '');
+  /* 🔴 7.2.0 — רומן: "כאשר לוחצים על התת סטטוס שוב נפתחת אותה חלונית". רק מעבר **אל** הסטטוס מקפיץ;
+     ב'רלוונטי' כן — 'הפניה לאתר'/'תואמה פגישה' הם האירוע עצמו. */
+  if(st !== cur || st === 'רלוונטי') lbUpdRequire(id, st, sub || '');
 };
 /* ═══ מודאל העדכון החובה (6.153.0, רומן) ═══════════════════════════
    חמישה מעברים בלבד. `רלוונטי·הצעת מחיר` — התת-סטטוס הגדול ביותר,
@@ -27341,27 +27411,68 @@ let LB_UPD_REQ = null, UPD_REQ_T = 'lead';
 const LUR_PH = {
   lead: 'לדוגמה: דיברתי איתו, הוא מחפש מתחם בהרצליה, נחזור אליו בשבוע הבא',
   deal: 'לדוגמה: הלקוח בחר ספק אחר · המחיר מעל התקציב · הפרויקט נדחה' };
-function lurOpen(t, id, h, note){
+/* 🔴 7.2.0 — הסיבה (תת-הסטטוס) עברה לחלונית (רומן, 14/10/2026: "את התת סטטוסים של הסירוב או של לא
+   רלוונטי פשוט להעביר לחלונית שנפתחת"). LUR_SUB = { cur, after } כשיש בורר: cur — הערך השמור, after —
+   הציור המקומי שרץ **אחרי** שהחלונית נסגרה. ⚠️ חובה: data-must חוסם Esc/רקע עד שהסיבה נשמרה. */
+let LUR_SUB = null;
+function lurOpen(t, id, h, note, subOpts, subCur){
   UPD_REQ_T = t; LB_UPD_REQ = id;
   $('#lur-h').textContent = h;
   $('#lur-note').textContent = note;
   $('#lur-body').placeholder = LUR_PH[t] || '';
   $('#lur-body').value = ''; $('#lur-err').textContent = '';
-  $('#lbUpdReqModal').classList.remove('hidden');
-  setTimeout(()=>{ try{ $('#lur-body').focus(); }catch(_e){} }, 30);
+  const m = $('#lbUpdReqModal'), sw = $('#lur-subw'), ss = $('#lur-sub');
+  LUR_SUB = (Array.isArray(subOpts) && subOpts.length) ? { cur: subCur || '', after: null } : null;
+  if(LUR_SUB){
+    /* ⚠️ ערך קיים שאינו ברשימה נשמר כאפשרות — אחרת הבורר היה נופל לריק ו"מוחק" אותו בשמירה. */
+    const all = (subCur && subOpts.indexOf(subCur) < 0) ? subOpts.concat([subCur]) : subOpts;
+    ss.innerHTML = '<option value="">— בחר סיבה —</option>'
+      + all.map(o=>'<option value="'+esc(o)+'"'+(o===subCur?' selected':'')+'>'+esc(o)+'</option>').join('');
+    sw.style.display = ''; m.dataset.must = '1';
+  } else { ss.innerHTML = ''; sw.style.display = 'none'; delete m.dataset.must; }
+  m.classList.remove('hidden');
+  setTimeout(()=>{ try{ ((LUR_SUB && !LUR_SUB.cur) ? ss : $('#lur-body')).focus(); }catch(_e){} }, 30);
+}
+/* כתיבת הסיבה **לפני** העדכון: שמירה שנכשלת משאירה את החלונית פתוחה עם השגיאה, ואין עדכון יתום ביומן. */
+async function lurSubCommit(){
+  if(!LUR_SUB) return { ok:true, sub:'' };
+  const sub = ($('#lur-sub').value || '').trim();
+  if(!sub){ $('#lur-err').textContent = 'יש לבחור סיבה.'; return { ok:false }; }
+  if(sub === LUR_SUB.cur) return { ok:true, sub };
+  const id = LB_UPD_REQ;
+  if(UPD_REQ_T === 'deal'){
+    /* p_expect = 'לא רלוונטי': אם העסקה זזה בינתיים — 40001, ולא דריסה. */
+    const { error } = await sb.schema('crm').rpc('deal_stage_set',
+      { p_deal:id, p_stage:'לא רלוונטי', p_sub:sub, p_expect:'לא רלוונטי' });
+    if(error){ $('#lur-err').textContent = 'שמירת הסיבה נכשלה — ' + error.message; return { ok:false }; }
+    const d = (DEALS||[]).find(x=>x.id===id); if(d) d.irrelevant_reason = sub;
+    LUR_SUB.after = ()=>{ try{ dlPipeDraw(id); }catch(_e){} try{ renderDeals(); }catch(_e){} };
+  } else {
+    const l = (LEADS||[]).find(x=>x.id===id), st = (l && l.status) || '';
+    const { data, error } = await sb.schema('crm').rpc('lead_set_status', { p_lead:id, p_status:st, p_sub:sub });
+    if(error){ $('#lur-err').textContent = 'שמירת הסיבה נכשלה — ' + error.message; return { ok:false }; }
+    const r = Array.isArray(data) ? data[0] : data;
+    if(!r || r.ok !== true){ $('#lur-err').textContent = (r && r.note) || 'שמירת הסיבה נכשלה'; return { ok:false }; }
+    LUR_SUB.after = ()=>lbLocalApply(id, { status: st, sub: sub });
+  }
+  /* הסיבה נשמרה ⇒ החלונית כבר אינה "חובה": כשל בכתיבת העדכון לא ינעל את המשתמש בתוכה. */
+  LUR_SUB.cur = sub; delete $('#lbUpdReqModal').dataset.must;
+  return { ok:true, sub };
 }
 window.lbUpdRequire = (id, st, sub)=>{
   if(!lbUpdNeeded(st, sub||'')) return;
   const l = (LEADS||[]).find(x=>x.id===id);
+  /* 7.2.0 — בסירוב/לא רלוונטי הסיבה נבחרת כאן (ולא בבורר שהקפיץ את החלונית מחדש). */
+  const _so = (st==='סירוב' || st==='לא רלוונטי') ? lbSubOpts(st) : null;
   lurOpen('lead', id, 'מה קרה עם הליד?', 'הליד «' + ((l && l.full_name) || '—') + '» עבר ל«'
-    + st + (sub ? ' · ' + sub : '') + '». מה קרה?');
+    + st + (sub && !_so ? ' · ' + sub : '') + '». ' + (_so ? 'בחר סיבה וכתוב מה קרה.' : 'מה קרה?'), _so, sub || '');
 };
 /* 6.263.0 (רומן): "כשלוחצים לא רלוונטי קופצת חלונית שניתן לרשום למה לא רלוונטי או דילוג — גם בתהליך מכירה".
    נקרא מ-dlPipeSet בלבד, ורק במעבר **אל** 'לא רלוונטי'. */
 window.dlUpdRequire = (id)=>{
   const d = (DEALS||[]).find(x=>x.id===id);
   lurOpen('deal', id, 'למה תהליך המכירה לא רלוונטי?', 'תהליך המכירה «' + ((d && d.name) || '—')
-    + '» עבר ל«לא רלוונטי». למה?');
+    + '» עבר ל«לא רלוונטי». בחר סיבה וכתוב מה קרה.', dlSubOpts('לא רלוונטי'), (d && d.irrelevant_reason) || '');
 };
 /* נקודת חנק אחת לשני הכפתורים — אחרת רענון הלשונית ייכתב פעמיים
    וייפרד ביום שאחד מהם ישתנה. */
@@ -27371,6 +27482,7 @@ async function lurWrite(kind, body){
     actor_id: ME.id, linked_type: UPD_REQ_T, linked_id: id, kind: kind, body: body });
   if(error){ $('#lur-err').textContent = 'השמירה נכשלה — ' + error.message; return false; }
   $('#lbUpdReqModal').classList.add('hidden'); LB_UPD_REQ = null;
+  LUR_SUB = null; delete $('#lbUpdReqModal').dataset.must;
   /* אם לשונית העדכונים כבר נטענה בכרטיס הפתוח — לרענן אותה, אחרת
      המשתמש כתב עדכון ואינו רואה אותו. */
   const _p = UPD_REQ_T === 'deal' ? 'dl' : 'lb';
@@ -27380,17 +27492,23 @@ async function lurWrite(kind, body){
 }
 $('#lur-save').onclick = async ()=>{
   const b = ($('#lur-body').value || '').trim();
+  if(LUR_SUB && !$('#lur-sub').value){ $('#lur-err').textContent = 'יש לבחור סיבה.'; return; }
   if(!b){ $('#lur-err').textContent = 'אין מה לשמור — כתוב עדכון או לחץ דילוג.'; return; }
-  if(await lurWrite('עדכון', b)) toast('העדכון נשמר ✓');
+  const s = await lurSubCommit(); if(!s.ok) return;
+  const after = LUR_SUB && LUR_SUB.after;
+  if(await lurWrite('עדכון', (s.sub ? 'סיבה: ' + s.sub + '\n' : '') + b)){ toast('העדכון נשמר ✓'); if(after) after(); }
 };
 /* 🔴 הדילוג **נרשם**. בלי זה "העדכון נדרש" הוא הבטחה בלי מדידה, ואי
    אפשר לדעת אם היא מתקיימת. kind נפרד כדי שלא יתערבב בעדכונים
    אמיתיים ברשימה. */
 $('#lur-skip').onclick = async ()=>{
+  /* 7.2.0 — "דילוג" מדלג על הטקסט בלבד; הסיבה עדיין חובה (רומן). */
+  const s = await lurSubCommit(); if(!s.ok) return;
+  const after = LUR_SUB && LUR_SUB.after;
   const isDeal = UPD_REQ_T === 'deal';
   const x = (isDeal ? (DEALS||[]) : (LEADS||[])).find(y=>y.id===LB_UPD_REQ);
-  await lurWrite('דילוג עדכון', 'דילג על כתיבת עדכון במעבר ל«'
-    + ((x && (isDeal ? x.stage : x.status)) || '—') + '»');
+  if(await lurWrite('דילוג עדכון', 'דילג על כתיבת עדכון במעבר ל«'
+    + ((x && (isDeal ? x.stage : x.status)) || '—') + (s.sub ? ' · ' + s.sub : '') + '»') && after) after();
 };
 function lbSnapshot(id){
   const snap={ __id:id };
@@ -27430,6 +27548,28 @@ function mFut(m){
   return new Date(m.meet_date+'T00:00') >= t0;
 }
 const tmDtT = v => v ? esc(new Date(v).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})) : 'ללא מועד';
+/* 7.2.0 — מועד קצר וקריא לתווית בבלוק המשימות. ⚠️ ההפרש בימים לפי חצות מקומית ו-Math.round —
+   יום של מעבר שעון הוא 23/25 שעות, וחלוקה פשוטה הייתה קוראת ל"מחר" "היום". */
+function lbDueShort(iso){
+  if(!iso) return 'ללא מועד';
+  const d = new Date(iso); if(isNaN(d.getTime())) return 'ללא מועד';
+  const p = n=>String(n).padStart(2,'0'), hm = p(d.getHours())+':'+p(d.getMinutes());
+  const now = new Date(), day = x=>new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diff = Math.round((day(d) - day(now)) / 86400000);
+  if(diff === 0)  return 'היום '+hm;
+  if(diff === 1)  return 'מחר '+hm;
+  if(diff === -1) return 'אתמול '+hm;
+  const wd = ['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'][d.getDay()];
+  return wd+' '+p(d.getDate())+'.'+p(d.getMonth()+1)
+    + (d.getFullYear() !== now.getFullYear() ? '.'+String(d.getFullYear()).slice(2) : '')+' · '+hm;
+}
+/* הלחיצה על התווית פותחת את בורר הקלט השקוף שמתחתיה. ⚠️ showPicker דורש מחווה של המשתמש — יש כאן;
+   ובדפדפן בלעדיו נופלים ל-focus+click, שפותחים את הבורר ברוב הדפדפנים. */
+window.lbTmDuePick = (btn)=>{
+  const inp = btn && btn.parentNode && btn.parentNode.querySelector('input.lb-tmdt'); if(!inp) return;
+  try{ if(typeof inp.showPicker === 'function'){ inp.showPicker(); return; } }catch(_e){}
+  try{ inp.focus(); inp.click(); }catch(_e){}
+};
 const tmDtM = v => v ? esc(new Date(v+'T00:00').toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit'})) : 'ללא תאריך';
 /* ═══ סיכום הפתוחות (6.143.0, נכתב מחדש ב-6.145.0) ═══════════════════
    רומן, 26/08/2026: "אני לא רואה בכלל סטטוסים."
@@ -27482,10 +27622,15 @@ function lbTmBlock(tasks, meets, addBtns){
     const _canT = window.canEdit('crm.tasks');
     h += ts.map(function(t,i){
       const d = lbDueMark(t.due_at, t.status==='הושלם');
+      /* 🔴 7.2.0 — תווית ולא קלט גלוי (רומן: "התאריך פה לא מובן"). נמדד: .inline-edit מגביל ל-132px,
+         ובתוך .form-grid הגופן והריפוד גדלים ⇒ ב-RTL נחתך **היום** ("08.2026, 10:40"). הקלט נשאר —
+         שקוף, מתחת לתווית — כדי ש-lbTaskDue (גם מהטבלה) לא ישתנה; הלחיצה פותחת את הבורר שלו. */
       const dt = _canT
-        ? '<input type="datetime-local" class="inline-edit lb-dt lb-tmdt" title="עריכת מועד המשימה"'
-          + ' data-task="'+jsq(t.id)+'" value="'+esc(lbDtLocal(t.due_at))+'"'
-          + ' onclick="event.stopPropagation()" onchange="lbTaskDue(this)">'
+        ? '<span class="lb-tmdue-w"><button type="button" class="lb-dt lb-tmdue'+(d.cls?' '+d.cls:'')+'"'
+          + ' data-task="'+jsq(t.id)+'" title="עריכת מועד המשימה" onclick="event.stopPropagation();lbTmDuePick(this)">'
+          + d.ico+'<span class="lb-tmdue-t">'+esc(lbDueShort(t.due_at))+'</span></button>'
+          + '<input type="datetime-local" class="lb-tmdt" tabindex="-1" aria-hidden="true"'
+          + ' data-task="'+jsq(t.id)+'" value="'+esc(lbDtLocal(t.due_at))+'" onchange="lbTaskDue(this)"></span>'
         : '<span class="k'+(d.cls?' '+d.cls:'')+'">'+d.ico+tmDtT(t.due_at)+'</span>';
       return '<div class="lb-tmw">'
         + '<button type="button" class="lb-tmi" onclick="goCard(()=>openTask(\''+jsq(t.id)+'\'))">'
@@ -27738,10 +27883,9 @@ function lbInitDef(){
   /* 🔴 OSET הוא **מערך** של {key,value} ולא אובייקט — OSET['key'] מחזיר
      תמיד undefined. זה בדיוק הבאג שהפיל את הלובי ב-6.95.0, והוא נתפס
      כאן בבדיקה. osetStr הוא המקבילה הטקסטואלית ל-osetNum הקיימת. */
-  const _c = osetStr('leads_default_view', '');
-  if(['mine','active','main'].includes(_c)) LB_VIEW = _c;
+  /* 🔴 7.2.0 — התצוגה הפותחת היא תמיד "שלי" (רומן, 14/10/2026: "כל המסכים נפתחים לאחר רענון ב'שלי'").
+     leads_default_view והתצוגה השמורה (v) אינן קובעות אותה עוד; המסננים השמורים (f) כן חלים. */
   const d = lbDefLoad(); if(!d) return;
-  if(d.v && ['mine','active','main'].includes(d.v)) LB_VIEW = d.v;
   if(d.f && typeof d.f==='object'){
     LB_F = Object.assign(LB_F0(), d.f);
     /* נרמול הסטטוסים: ברירת מחדל שנשמרה לפני 6.104.0 אין בה `status` כלל,
@@ -28790,10 +28934,9 @@ window.convertLead = async (id, btn, choice)=>{
            btn.dataset.lbl = btn.textContent; btn.textContent = 'פותח בפריוריטי…'; }
   busyShow((choice && choice.customer_id ? 'פותח הצעת מחיר בפריוריטי על הלקוח שנבחר…' : 'פותח לקוח והצעת מחיר בפריוריטי…') + '\nזה עשוי לקחת כמה שניות.');
   const res = $('#convResult'); if(res) res.innerHTML='';
-  /* 6.252.0 — רשימת היתר לגוף: רק שני מפתחות הבחירה. */
+  /* 6.252.0 — רשימת היתר לגוף. 7.2.0 — new_customer ירד עם "לקוח חדש" (והשרת v24 אינו מכבד אותו עוד). */
   const body = { lead_id:id };
   if(choice && choice.customer_id) body.customer_id = String(choice.customer_id);
-  else if(choice && choice.new_customer === true) body.new_customer = true;
   /* 6.255.0 — בחירת איש הקשר (v23), לצד בחירת הלקוח ולא במקומה: בלקוח שנבחר זה עתה השרת
      מריץ את שער איש הקשר **לפני** הקישור, ולכן הבחירה הראשונה חייבת להישלח שוב יחד איתו. */
   if(choice && choice.contact_id) body.contact_id = String(choice.contact_id);

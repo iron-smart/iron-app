@@ -3400,7 +3400,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.4.0</div>
+      <div class="ver">גרסה 7.5.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3533,7 +3533,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="booking1-2026-10-14a">גרסה 7.4.0</div>
+    <div class="side-foot" title="booking2-2026-10-14a">גרסה 7.5.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -12617,7 +12617,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'booking1-2026-10-14a';
+const BUILD_ID = 'booking2-2026-10-14a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -17665,7 +17665,7 @@ function bookInner(){
       <div class="form-grid">
         <div class="form-sep">מצב והיומן</div>
         <div><label>הדף באתר פעיל</label><select id="bk-en" ${dis} style="${fld}" onchange="bookSet('enabled',this.value==='כן')"><option ${S.enabled?'selected':''}>כן</option><option ${S.enabled?'':'selected'}>לא</option></select>
-          <div class="sup-chip ${S.enabled?'sup-ok':'sup-none'}">${S.enabled?'לקוחות יכולים לקבוע':'סגור — הדף מציג "נחזור אליכם"'}</div></div>
+          <div class="sup-chip ${S.enabled?'sup-ok':'sup-none'}">${S.enabled?'לקוחות יכולים לקבוע':'סגור — הדף מציג "תיפתח בקרוב" וטלפון'}</div></div>
         <div style="grid-column:span 2"><label>יומן המכירות</label><input id="bk-cal" dir="ltr" ${dis} value="${esc(S.calendar)}" style="${fld};text-align:right" oninput="bookSet('calendar',this.value)"></div>
         <div><label>אירוע "פנוי" ביומן חוסם?</label><select ${dis} style="${fld}" onchange="bookSet('free',this.value==='כן')"><option ${S.free?'selected':''}>כן</option><option ${S.free?'':'selected'}>לא</option></select></div>
         <div class="form-sep">ימים ושעות</div>
@@ -17699,8 +17699,68 @@ function bookSettingsHtml(){
   if(!BOOK_ST || !BOOK_DIRTY) bookLoad();
   return `<h2 class="sec" style="margin-top:0">תיאום פגישות מהאתר</h2>
     <div class="note" style="margin-bottom:12px">מחליף את Calendly. כל שינוי כאן חל <b>מיד ובלי פריסה</b> — השרת קורא את ההגדרות בכל בקשה מהאתר. קביעה נכנסת כליד במקור "קביעת פגישה באתר".</div>
-    <div id="bookBox">${bookInner()}</div>`;
+    <div class="tbl-wrap" style="padding:10px 14px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center">
+      <b style="color:var(--navy)">קישור הדף לאתר</b>
+      <a href="${BOOK_URL}" target="_blank" rel="noopener" dir="ltr">${BOOK_URL.replace('https://','')}</a>
+      <button type="button" class="chip" onclick="bookCopy('')">העתקה</button>
+      <span style="color:var(--ink-3)">ישירות לשיחת ייעוץ</span><button type="button" class="chip" onclick="bookCopy('?type=consult')">העתקה</button>
+      <span style="color:var(--ink-3)">ישירות לאולם</span><button type="button" class="chip" onclick="bookCopy('?type=showroom')">העתקה</button>
+    </div>
+    <div id="bookBox">${bookInner()}</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:22px">
+      <h2 class="sec" style="margin:0">פגישות שנקבעו מהאתר</h2>
+      <button type="button" class="chip" onclick="bookListLoad(true)">רענון</button>
+    </div>
+    <div id="bookList">${crmLoading('טוען פגישות…')}</div>
+    ${(setTimeout(()=>bookListLoad(false), 0), '')}`;
 }
+/* ── 7.5.0 (booking2) — הקישור לדף ורשימת הקביעות מהאתר ── */
+const BOOK_URL = 'https://app.ironfitness.co.il/book';
+let BOOK_LIST = null, BOOK_LIST_AT = 0;
+window.bookCopy = q=>{
+  const u = BOOK_URL + (q || '');
+  try{ navigator.clipboard.writeText(u).then(()=>toast('הקישור הועתק ✓'), ()=>toast(u)); }catch(_e){ toast(u); }
+};
+function bookTypeOf(m){
+  const cats = Array.isArray(m.categories) ? m.categories : [];
+  return (cats.indexOf('פגישה באולם') >= 0 || m.meet_type === 'פרונטלית') ? 'פגישה באולם' : 'שיחת ייעוץ';
+}
+function bookListHtml(){
+  const rows = BOOK_LIST || [];
+  if(!rows.length) return '<div class="note">עדיין אין פגישות שנקבעו מהאתר ב-30 הימים האחרונים.</div>';
+  const d0 = new Date(), today = d0.getFullYear() + '-' + String(d0.getMonth()+1).padStart(2,'0') + '-' + String(d0.getDate()).padStart(2,'0');
+  const up = rows.filter(m=>String(m.meet_date) >= today), past = rows.filter(m=>String(m.meet_date) < today).reverse();
+  const tr = m=>{
+    const l = (LEADS||[]).find(x=>x.id===m.linked_id);
+    const nm = l ? l.full_name : (m.subject || 'ליד');
+    const own = m.owner_id ? ((LOWN_BY[m.owner_id]||{}).name || '—') : '<span style="color:var(--ink-3)">טרם שויך</span>';
+    const st = (m.is_cancelled || m.status==='בוטלה') ? 'בוטלה' : (m.status || '—');
+    const at = m.created_at ? new Date(m.created_at).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+    return `<tr><td>${tmDtM(m.meet_date)} · ${esc(String(m.start_time||'').slice(0,5))}</td><td>${esc(bookTypeOf(m))}</td>
+      <td>${m.linked_type==='lead' && m.linked_id ? `<a href="#lead=${esc(m.linked_id)}">${esc(nm)}</a>` : esc(nm)}</td>
+      <td>${own}</td><td>${mdPill(st,MSTATUS_COLOR,LB_TK)}</td><td>${esc(at)}</td></tr>`;
+  };
+  const tbl = (list, title)=> list.length ? `<div style="font-weight:700;color:var(--navy);margin:10px 0 6px">${title} (${list.length})</div>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>מועד</th><th>סוג</th><th>ליד</th><th>נציג</th><th>סטטוס</th><th>נקבעה</th></tr></thead>
+    <tbody>${list.map(tr).join('')}</tbody></table></div>` : '';
+  return tbl(up, 'קרובות') + tbl(past, '30 הימים האחרונים') || '<div class="note">אין פגישות להצגה.</div>';
+}
+window.bookListLoad = async force=>{
+  if(!document.getElementById('bookList')) return;
+  if(!force && BOOK_LIST && Date.now() - BOOK_LIST_AT < 60000){ document.getElementById('bookList').innerHTML = bookListHtml(); return; }
+  const since = new Date(Date.now() - 30*864e5).toISOString().slice(0,10);
+  let data = null, error = null;
+  try{
+    ({ data, error } = await sb.schema('crm').from('meetings')
+      .select('id,subject,meet_date,start_time,status,is_cancelled,meet_type,categories,linked_type,linked_id,owner_id,created_at')
+      .eq('source','site').eq('is_test',false).gte('meet_date', since)
+      .order('meet_date',{ascending:true}).order('start_time',{ascending:true}).limit(300));
+  }catch(e){ error = { message: String((e && e.message) || e) }; }
+  const box = document.getElementById('bookList'); if(!box) return;
+  if(error){ box.innerHTML = '<div class="note">טעינת הרשימה נכשלה: ' + esc(error.message) + '</div>'; return; }
+  BOOK_LIST = data || []; BOOK_LIST_AT = Date.now();
+  box.innerHTML = bookListHtml();
+};
 function bookRedraw(){ const b = document.getElementById('bookBox'); if(b) b.innerHTML = bookInner(); }
 function bookMark(){ BOOK_DIRTY = true; const e = document.getElementById('bk-dirty'); if(e) e.style.display = ''; }
 window.bookSet = (k,v)=>{ if(!BOOK_ST) return; BOOK_ST[k] = v; bookMark(); if(k==='consult' || k==='enabled') bookRedraw(); };
@@ -17754,8 +17814,10 @@ window.bookSave = async ()=>{
   const missing = Object.keys(want).filter(k=>bookVal(k) === null);
   if(!changed.length){ toast(missing.length ? 'אין מה לשמור — חלק מהמפתחות חסרים במסד' : 'אין שינויים'); return; }
   for(const k of changed){
-    const { error } = await sb.schema('ord').from('settings').update({ value: want[k] }).eq('key', k);
+    const { data: upd, error } = await sb.schema('ord').from('settings').update({ value: want[k] }).eq('key', k).select('key');
     if(error){ toast('השמירה נעצרה ב-' + k + ': ' + error.message); return; }
+    /* 7.5.0 — עדכון שנחסם ב-RLS אינו error אלא 0 שורות. בלי הבדיקה הזאת המסך הציג "נשמר ✓" על כלום. */
+    if(!upd || !upd.length){ toast('השמירה נעצרה ב-' + k + ': העדכון לא נקלט במסד (הרשאה?)'); return; }
     const s = OSET.find(x=>x && x.key===k); if(s) s.value = want[k];
   }
   BOOK_DIRTY = false; bookLoad(); bookRedraw();
@@ -31569,6 +31631,26 @@ boot();
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ deepSku(); });
   else deepSku();
   window.addEventListener('hashchange', function(){ deepSku(4); });
+  /* --- 6. קישור עמוק #lead=<uuid> — פותח את כרטיס הליד (7.5.0, booking2). המקור: האירוע ביומן sales@ של קביעה
+     מהאתר (meeting-invite v5). ממתין לכניסה ולטעינת הלידים — עד 10 דקות, כדי שקישור שנפתח לפני הכניסה לא ילך לאיבוד. --- */
+  function deepLead(tries){
+    var m = String(location.hash || '').match(/[#&]lead=([0-9a-fA-F-]{36})/);
+    if(!m) return;
+    tries = (tries == null) ? 2400 : tries;
+    var me = null, n = 0;
+    try{ me = ME; n = (LEADS && LEADS.length) || 0; }catch(e){}
+    var noPerm = !!me && typeof window.canView === 'function' && !window.canView('crm.leads');
+    if(!noPerm && (!me || !n)){ if(tries > 0) setTimeout(function(){ deepLead(tries - 1); }, 250); return; }
+    var id = m[1].toLowerCase();
+    try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){}
+    if(noPerm){ toast('אין לך הרשאה לצפות בלידים'); return; }
+    if(!LEADS.some(function(l){ return String(l.id).toLowerCase() === id; })){ toast('הליד לא נמצא — ייתכן שנמחק'); return; }
+    if(typeof gotoTab === 'function'){ try{ gotoTab('leads'); }catch(e){} }
+    window.openLead(id);
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ deepLead(); });
+  else deepLead();
+  window.addEventListener('hashchange', function(){ deepLead(40); });
 })();
 </script>
 </body>

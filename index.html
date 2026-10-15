@@ -2638,6 +2638,9 @@ td.lb-today .lb-dt{ background-color:transparent; }
 .lb-dupi-why{ font-size:11px; color:var(--ink-3); margin-inline-start:auto; }
 .lb-dupi-go{ color:var(--ink-3); font-size:12px; }
 .lb-dupm{ font-size:var(--fs-xs); color:var(--ink-3); padding-inline-start:2px; }
+/* 7.8.2 — טלפון שאינו ישראלי תקין: נשמר כספרות בלבד, עם אזהרה (רומן: "לאפשר עם אזהרה"). */
+.ph-warn{ margin-top:4px; font-size:var(--fs-xs); line-height:1.4; color:#92400e; background-color:var(--amber-bg);
+  border-radius:var(--r-md); padding:3px 8px; }
 /* השורה שנכתבה על הכרטיס שאתה בו — תגית עדינה יותר (6.148.0). */
 .lbu-src.lbu-self{ opacity:.62; font-weight:600; }
 /* ---- לשוניות בתוך כרטיס (6.136.0) ----
@@ -3409,7 +3412,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.8.1</div>
+      <div class="ver">גרסה 7.8.2</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3540,7 +3543,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="nowabtn-2026-10-15a">גרסה 7.8.1</div>
+    <div class="side-foot" title="phclean-2026-10-15a">גרסה 7.8.2</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3882,7 +3885,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
     <div class="form-grid">
       <div class="form-sep">מי הליד</div>
       <div class="span2"><label>שם מלא<span class="req">*</span> <span style="font-weight:400;color:var(--ink-3)">(השם המלא הוא איש הקשר)</span></label><input id="a-name" oninput="lbDupCheck()"></div>
-      <div><label>טלפון<span class="req">*</span></label><input id="a-phone" type="tel" dir="ltr" oninput="lbDupCheck()"></div>
+      <div><label>טלפון<span class="req">*</span></label><input id="a-phone" type="tel" dir="ltr" oninput="phPasteFix(event,this,'a-phwarn');lbDupCheck()" onchange="phFieldFix(this,'a-phwarn');lbDupCheck()"><div class="ph-warn hidden" id="a-phwarn"></div></div>
       <div><label>אימייל</label><input id="a-email" type="email" dir="ltr" oninput="lbDupCheck()"></div>
       <div class="span4" id="a-dup"></div>
       <div><label>סוג לקוח<span class="req">*</span></label><select id="a-type"></select></div>
@@ -12643,7 +12646,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'nowabtn-2026-10-15a';
+const BUILD_ID = 'phclean-2026-10-15a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -23277,6 +23280,30 @@ function phoneTail(s){ const d = phoneDigits(s); return d ? d.slice(-9) : null; 
    תשע הספרות האחרונות. כך שני כתיבים של אותו מספר תמיד נפגשים. */
 function phoneKey(s){ return phoneNorm(s) || phoneTail(s); }
 window.phoneNorm = phoneNorm; window.phoneTail = phoneTail; window.phoneKey = phoneKey;
+/* 🔴 7.8.2 — הטלפון שנשמר בליד (רומן, 15/10/2026: "תמיד יהיה רק שמירה נקיה של טלפון 10 ו-9 ספרות … בלי - בלי +
+   בלי 972 … חייב להתחיל בספרה 0"). **לא מנרמל שני:** "ישראלי תקין" הוא מה ש-phoneNorm מחזיר כ-972 + 8–9 ספרות,
+   וכאן רק ההמרה לצורה המקומית. שאינו ישראלי (חו"ל, 1-700, אורך שגוי) ⇒ ספרות בלבד, בלי 00 מוביל, והמסך מזהיר. */
+function phoneLocal(s){ const n = phoneNorm(s); return (n && /^972[0-9]{8,9}$/.test(n)) ? '0' + n.slice(3) : null; }
+function phoneClean(s){
+  if(String(s == null ? '' : s).trim() === '') return '';
+  const il = phoneLocal(s); if(il) return il;
+  let d = digitsOf(String(s).replace(PH_CTRL, '')); if(d.startsWith('00')) d = d.slice(2);
+  return d;
+}
+function phWarn(el, warnId){
+  const w = document.getElementById(warnId); if(!w || !el) return;
+  const v = String(el.value || '').trim(), bad = v !== '' && !phoneLocal(v);
+  w.textContent = bad ? 'זה אינו מספר ישראלי תקין (9–10 ספרות שמתחילות ב-0) — יישמר כספרות בלבד.' : '';
+  w.classList.toggle('hidden', !bad);
+}
+/* ניקוי השדה עצמו — כך שמה שרואים הוא מה שיישמר. ⚠️ לא בציור: רק בפעולת משתמש (הדבקה / change). */
+window.phFieldFix = (el, warnId)=>{ if(!el) return; const c = phoneClean(el.value); if(c !== el.value) el.value = c; phWarn(el, warnId); };
+window.phPasteFix = (ev, el, warnId)=>{
+  const t = ev && ev.inputType;
+  if(t === 'insertFromPaste' || t === 'insertFromDrop') window.phFieldFix(el, warnId);
+  else { const w = document.getElementById(warnId); if(w && !w.classList.contains('hidden') && phoneLocal(el.value)) phWarn(el, warnId); }
+};
+window.phoneClean = phoneClean; window.phoneLocal = phoneLocal;
 const ordStClass = s => s==='הושלם' ? 'st-rel' : (['בוטל','מבוטלת'].includes(s) ? 'st-no' : (s==='הזמנה חדשה' ? 'st-new' : 'st-def'));
 const fmtD = d => d ? new Date(d+'T00:00').toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '';
 /* 6.205.0 — תאריך ISO גולמי (ספקים/חשבוניות) בפורמט של כל שאר המסכים; ערך שאינו ISO מוצג כמות שהוא, מוברח. */
@@ -27265,6 +27292,7 @@ $('#addBtn').onclick = ()=>{
     + esc((LOWN_BY[lbMe()]||{}).name || (ME&&ME.full_name) || 'אתה')
     + '</b> — וגם המשימה שתיפתח לו אוטומטית.</span>';
   $('#a-err').textContent=''; const d=document.getElementById('a-dup'); if(d) d.innerHTML='';
+  { const _pw=document.getElementById('a-phwarn'); if(_pw){ _pw.textContent=''; _pw.classList.add('hidden'); } }
   const _sv=document.getElementById('a-save'); if(_sv) _sv.disabled=false;
   /* 🔴 ציור מחדש ולא ניקוי ערכים: הבוררים נשענים על osetStr, ומשתמש
      שעדכן את רשימות ההגדרות היה ממשיך לראות את הישנות עד רענון דף. */
@@ -27273,6 +27301,8 @@ $('#addBtn').onclick = ()=>{
 $('#a-save').onclick = async ()=>{
   const g = id => (document.getElementById(id) ? document.getElementById(id).value : '').trim();
   /* ההודעה מונה את השדות החסרים בשמם, ולא "יש למלא שדות" (שפת הכרטיסים) */
+  /* 7.8.2 — הטלפון מנוקה **לפני** בדיקת החובה: "abc" נשאר ריק ונספר כחסר, ומה שבשדה הוא מה שנשמר. */
+  window.phFieldFix(document.getElementById('a-phone'), 'a-phwarn');
   const miss = [['a-name','שם מלא'],['a-phone','טלפון'],['a-source','מקור הגעה'],['a-type','סוג לקוח']]
                  .filter(([k])=>!g(k)).map(([,lb])=>lb);
   if(miss.length){ $('#a-err').textContent='חסרים שדות חובה: '+miss.join(' · ')+'.'; return; }
@@ -28046,7 +28076,7 @@ window.openLead = (id)=>{
     <div class="form-grid">
       <div class="form-sep">פרטי הפנייה</div>
       <div title="השם המלא הוא איש הקשר"><label>שם מלא<span class="req">*</span> <span style="font-weight:400;color:var(--ink-3)">(איש הקשר)</span></label><input id="lb-name" value="${esc(l.full_name||'')}"></div>
-      <div><label>טלפון ${phBtns(l.phone)}</label><input id="lb-phone" value="${esc(l.phone||'')}" dir="ltr"></div>
+      <div><label>טלפון ${phBtns(l.phone)}</label><input id="lb-phone" value="${esc(l.phone||'')}" dir="ltr" oninput="phPasteFix(event,this,'lb-phwarn')" onchange="phFieldFix(this,'lb-phwarn')"><div class="ph-warn hidden" id="lb-phwarn"></div></div>
       <div><label>אימייל</label><input id="lb-email" value="${esc(l.email||'')}" dir="ltr"></div>
       <div title="כשיש שם לקוח / חברה — השם המלא חובה (הוא איש הקשר)"><label>שם לקוח / חברה</label><input id="lb-company" value="${esc(l.company||'')}"></div>
       <div><label>תפקיד</label><input id="lb-position" value="${esc(l.position||'')}"></div>
@@ -28118,6 +28148,8 @@ window.saveLead = async (id)=>{
     if(was===undefined) return;              /* לא היה בציור — לא נוגעים */
     const now=String(el.value ?? '');
     if(now===was) return;                    /* לא נגעו בו */
+    /* 7.8.2 — טלפון שנערך נשמר נקי (גם אם נשמר בלי לצאת מהשדה, כש-change עוד לא ירה). */
+    if(col==='phone'){ const _c = phoneClean(now); el.value = _c; if(_c !== was) upd.phone = _c === '' ? null : _c; return; }
     if(col==='__wacat'){ upd.send_whatsapp_catalog = now===''?null:(now==='כן'); return; }
     upd[col]= now===''?null:now;
   });

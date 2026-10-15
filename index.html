@@ -638,7 +638,12 @@
   .nf-head{ display:flex; align-items:center; justify-content:space-between; padding:9px 13px; border-bottom:1px solid #e3e8ee; font-weight:800; font-size:13px; }
   .nf-head button{ background:none; border:0; color:#2c6e91; font-size:12px; cursor:pointer; font-weight:700; }
   .nf-list{ max-height:56vh; overflow:auto; }
-  .nf-item{ padding:9px 13px; border-bottom:1px solid #eef1f4; cursor:pointer; }
+  .nf-item{ padding:9px 13px; border-bottom:1px solid #eef1f4; cursor:pointer; display:flex; align-items:flex-start; gap:8px; }
+  /* 7.6.0 — ✓ "נקראה" לכל התראה (רומן: "לכל התראה בקטן בנפרד אפשרות לסמן נקראה או V") */
+  .nf-main{ flex:1 1 auto; min-width:0; }
+  .nf-ok{ flex:none; width:26px; height:26px; margin-top:1px; padding:0; border-radius:50%; border:1px solid #cfd8df; background:#fff; color:#6b7c88; font-size:13px; font-weight:800; line-height:24px; text-align:center; cursor:pointer; }
+  .nf-ok:hover{ background:#e8f6ee; border-color:#1e8e5a; color:#1e8e5a; }
+  .nf-ok:focus-visible{ outline:2px solid #2c6e91; outline-offset:1px; }
   /* 7.0.0 — שורת ההתראות לטלפון בתחתית הפעמון (פילוט, push_allow בלבד) */
   .nf-push{ border-top:1px solid #eef1f4; padding:9px 13px; font-size:12px; line-height:1.5; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
   .nf-push button{ font-size:12px; padding:3px 10px; }
@@ -3400,7 +3405,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.5.0</div>
+      <div class="ver">גרסה 7.6.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3533,7 +3538,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="booking2-2026-10-14a">גרסה 7.5.0</div>
+    <div class="side-foot" title="nfmark-2026-10-15a">גרסה 7.6.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -12617,7 +12622,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'booking2-2026-10-14a';
+const BUILD_ID = 'nfmark-2026-10-15a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -31082,10 +31087,12 @@ boot();
     if(all) all.classList.toggle('hidden', !nfItems.length);
     l.innerHTML = nfItems.length
       ? nfItems.map(function(n){
-          return '<div class="nf-item" onclick="nfRead(' + Number(n.id) + ')">' +
+          var id = Number(n.id);
+          return '<div class="nf-item" onclick="nfRead(' + id + ')"><div class="nf-main">' +
                  '<div class="nf-ttl">' + esc(n.title || '') + '</div>' +
                  (n.body ? '<div class="nf-bd">' + esc(n.body) + '</div>' : '') +
-                 '<div class="nf-tm">' + esc(nfFmt(n.created_at)) + '</div></div>';
+                 '<div class="nf-tm">' + esc(nfFmt(n.created_at)) + '</div></div>' +
+                 '<button type="button" class="nf-ok" title="סמן כנקראה" aria-label="סמן כנקראה" onclick="event.stopPropagation(); nfMark(' + id + ')">&#10003;</button></div>';
         }).join('')
       : '<div class="nf-empty">אין התראות חדשות</div>';
   }
@@ -31271,6 +31278,12 @@ boot();
       toast('התראות לטלפון כובו במכשיר הזה');
     }catch(e){ toast('הכיבוי נכשל: ' + String((e && e.message) || e)); }
     nfPushRender();
+  };
+  /* 7.6.0 — ✓: "נקראה" בלי לפתוח. אופטימי כמו nfRead; בכשל רשת ההתראה תחזור בפול הבא */
+  window.nfMark = async function(id){
+    nfItems = nfItems.filter(function(x){ return Number(x.id) !== Number(id); });
+    nfRender();
+    try{ await sb.schema('core').from('notifications').update({read_at: new Date().toISOString()}).eq('id', id); }catch(_e){}
   };
   window.nfReadAll = async function(){
     nfItems = []; nfRender();

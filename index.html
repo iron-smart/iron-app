@@ -3412,7 +3412,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.8.2</div>
+      <div class="ver">גרסה 7.9.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3543,7 +3543,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="phclean-2026-10-15a">גרסה 7.8.2</div>
+    <div class="side-foot" title="relsub-2026-10-15a">גרסה 7.9.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -3944,6 +3944,16 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       <button class="ghost" id="lur-skip">דילוג</button>
     </div>
     <div class="err" id="lur-err"></div>
+  </div>
+</div>
+<!-- 7.9.0 — relsub: "רלוונטי" רק עם תת-סטטוס (רומן: "איך אני מחייב אותם לבחור תת סטטוס כשהם לוחצים רלוונטי").
+     data-must קבוע — Esc/רקע אינם סוגרים; "ביטול" מצייר מחדש והסטטוס לא משתנה. -->
+<div class="modal modal-over hidden" id="lbRelModal" data-must="1">
+  <div class="sheet">
+    <h3>רלוונטי — באיזה שלב?</h3>
+    <div class="note" id="lrel-note" style="margin-bottom:10px"></div>
+    <div class="field"><label>תת-סטטוס <span class="req">*</span></label><div class="lb-psub" id="lrel-chips" role="radiogroup" aria-label="תת-סטטוס"></div></div>
+    <div class="actions"><button type="button" class="ghost" id="lrel-cancel">ביטול</button></div>
   </div>
 </div>
 <!-- 6.169.0 — איפוס סיסמה. החליף prompt() של הדפדפן, שאותו כרום בולע
@@ -12646,7 +12656,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'phclean-2026-10-15a';
+const BUILD_ID = 'relsub-2026-10-15a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -27068,6 +27078,13 @@ window.lbBulk = async (op)=>{
     const names = ids.slice(0,8).map(nameOf).join(' · ') + (ids.length>8?` ועוד ${ids.length-8}`:'');
     if(!(await sysConfirm(`למחוק ${ids.length} לידים?\n\n${names}\n\nהמחיקה רכה וניתנת לשחזור מתצוגת "נמחקו".`, { danger:true, ok:'מחיקה' }))) return;
   }
+  /* 7.9.0 — relsub: גם שינוי מרוכז ל"רלוונטי" מחייב תת-סטטוס. בלי "פולואפ" — הוא דורש מועד לכל ליד (leadFup). */
+  let bulkSub = null;
+  if(op==='status' && val==='רלוונטי'){
+    bulkSub = await lrelAsk('שינוי מרוכז של ' + ids.length + ' לידים ל«רלוונטי». בחר תת-סטטוס (פולואפ — מהכרטיס של כל ליד, עם מועד).',
+      SUB_RELEVANT.filter(o=>o!=='פולואפ'));
+    if(!bulkSub) return;
+  }
   if(op==='status'){
     const CH = ['ליד חדש','ללא מענה','ללא מענה2','ללא מענה3'];
     if(CH.indexOf(val)>=0 && !(await sysConfirm(`שינוי מרוכז ל־«${val}» **אינו** שולח הודעת "אין מענה" ואינו מסובב משימות.\nלשרשרת המלאה — שנו את השלב ברצועה שבכרטיס הליד.\n\nלהמשיך על ${ids.length} לידים?`))) return;
@@ -27083,7 +27100,7 @@ window.lbBulk = async (op)=>{
       let e = null, d = null;
       if(op==='owner')        ({ error:e } = await sb.schema('crm').rpc('lead_set_owner',{ p_lead:id, p_owner: lbOwnUuid(val) }));
       else if(op==='partner') ({ error:e } = await sb.schema('crm').rpc('lead_add_partner',{ p_lead:id, p_owner: lbOwnUuid(val) }));
-      else if(op==='status')  { ({ data:d, error:e } = await sb.schema('crm').rpc('lead_set_status',{ p_lead:id, p_status:val, p_sub:null }));
+      else if(op==='status')  { ({ data:d, error:e } = await sb.schema('crm').rpc('lead_set_status',{ p_lead:id, p_status:val, p_sub:bulkSub }));
                                 const r0 = Array.isArray(d)?d[0]:d; if(!e && (!r0 || r0.ok!==true)) e = { message:(r0&&r0.note)||'לא נמצא' }; }
       else                    { ({ data:d, error:e } = await sb.schema('crm').rpc('lead_delete',{ p_lead:id, p_with_tasks:true }));
                                 const r0 = Array.isArray(d)?d[0]:d; if(!e && r0 && r0.deleted===false) e = { message:'כבר מחוק' }; }
@@ -27666,6 +27683,14 @@ window.lbPipeSet = async (id, st, sub)=>{
   const l = LEADS.find(x=>x.id===id); if(!l) return;
   if(!window.canEdit('crm.leads')){ toast('אין לך הרשאת עריכה ללידים.'); return; }
   const cur = l.status||'', col0 = lbSubCol(cur);
+  /* 🔴 7.9.0 — relsub: "רלוונטי" בלי תת-סטטוס אינו נכתב לעולם מכאן (רומן: "איך אני מחייב אותם לבחור תת
+     סטטוס"). השער לפני ה-early return: לחיצה על "רלוונטי" כשהוא כבר הנוכחי שלחה p_sub=null ו**מחקה** את
+     התת-סטטוס, וכך גם לחיצה חוזרת על שבב פעיל. ביטול ⇒ ציור מחדש (הבורר בטבלה כבר מציג את היעד). */
+  if(st==='רלוונטי' && !sub){
+    const pick = await lrelAsk('הליד «' + (l.full_name || '—') + '» עובר ל«רלוונטי». בחר תת-סטטוס — בלי בחירה הסטטוס לא ישתנה.', SUB_RELEVANT);
+    if(!pick){ try{ crmRepaint(); }catch(_e){} try{ lbPipeDraw(id); }catch(_e){} return; }
+    return window.lbPipeSet(id, st, pick);
+  }
   if(st===cur && (sub||'')===((col0?l[col0]:'')||'')) return;
   /* 6.254.0 — ליד בלי בעלים ⇒ אזהרה לפני "ללא מענה" (רומן, 13/10/2026: "מנהל מכירות מקצה בעלים
      ללידים. הצג התראה"). בלי בעלים אין טלפון של איש מכירות לתבנית, והוואטסאפ נכשל בשרת. */
@@ -27848,6 +27873,26 @@ $('#lur-skip').onclick = async ()=>{
   if(await lurWrite('דילוג עדכון', 'דילג על כתיבת עדכון במעבר ל«'
     + ((x && (isDeal ? x.stage : x.status)) || '—') + (s.sub ? ' · ' + s.sub : '') + '»') && after) after();
 };
+/* ===== 7.9.0 — relsub: בחירת תת-סטטוס לפני "רלוונטי" ===== */
+let LREL_DONE = null;
+function lrelAsk(note, opts){
+  /* חלונית קודמת שלא נסגרה (לחיצה כפולה) — נסגרת כביטול, כדי שאף Promise לא יישאר תלוי */
+  if(LREL_DONE) LREL_DONE(null);
+  return new Promise(res=>{
+    const m = $('#lbRelModal'), box = $('#lrel-chips');
+    $('#lrel-note').textContent = note;
+    box.innerHTML = opts.map(o=>{
+      const bg = SUB_RELEVANT_COLORS[o] || '#475569';
+      return '<button type="button" role="radio" aria-checked="false" data-v="' + esc(o) + '" style="background-color:'
+        + tint(bg,LB_TK) + ';color:' + onWhite(bg) + ';border-color:' + tint(bg,LB_TK-.20) + '">' + esc(o) + '</button>';
+    }).join('');
+    LREL_DONE = v=>{ LREL_DONE = null; m.classList.add('hidden'); res(v || null); };
+    box.querySelectorAll('button').forEach(b=>{ b.onclick = ()=>{ if(LREL_DONE) LREL_DONE(b.dataset.v); }; });
+    m.classList.remove('hidden');
+    setTimeout(()=>{ try{ box.querySelector('button').focus(); }catch(_e){} }, 30);
+  });
+}
+$('#lrel-cancel').onclick = ()=>{ if(LREL_DONE) LREL_DONE(null); };
 function lbSnapshot(id){
   const snap={ __id:id };
   LEAD_CARD_FIELDS.forEach(([elId])=>{ const el=document.getElementById(elId); if(el) snap[elId]=String(el.value ?? ''); });

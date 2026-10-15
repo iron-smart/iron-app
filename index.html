@@ -3412,7 +3412,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.7.0</div>
+      <div class="ver">גרסה 7.8.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3545,7 +3545,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="nfpop-2026-10-15a">גרסה 7.7.0</div>
+    <div class="side-foot" title="dupov-2026-10-15a">גרסה 7.8.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -4072,6 +4072,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
     <div class="cvp-list" id="cvp-list" role="radiogroup" aria-label="לקוחות קיימים תואמים"></div>
     <div class="actions">
       <button type="button" class="btn green" id="cvp-go" disabled onclick="cvPickGo()">פתיחת הצעת מחיר על הלקוח שנבחר</button>
+      <button type="button" class="ghost hidden" id="cvp-new" onclick="cvPickNew()">＋ לקוח חדש בפריוריטי (התרת כפילות)</button>
       <button type="button" class="ghost" onclick="document.getElementById('cvPickModal').classList.add('hidden')">ביטול</button>
     </div>
   </div>
@@ -4574,15 +4575,20 @@ window.lbCxGo = (id)=>{ document.getElementById('lbCxModal').classList.add('hidd
    ⚠️ "לקוח חדש" עובר אישור — כרטיס כפול בפריוריטי אינו ניתן למחיקה. */
 let CV_PICK = null;   /* { id, btn, sel, n } — הליד, הכפתור שלחצו, הבחירה */
 function cvCnt(n, one, many, none){ n = +n || 0; return !n ? none : (n === 1 ? one : n + ' ' + many); }
-function cvPickOpen(id, btn, cands){
+function cvPickOpen(id, btn, cands, canOv){
   const rows = Array.isArray(cands) ? cands : [];
   const l = (LEADS||[]).find(x=>x.id===id) || {};
-  CV_PICK = { id, btn, sel:'', n:rows.length };
+  /* 7.8.0 — canOv מגיע מהשרת (can_override ב-need_pick, crm-convert-lead v25), לא ממפת ההרשאות בלקוח. */
+  CV_PICK = { id, btn, sel:'', n:rows.length, ov: canOv === true };
   const by = (rows[0] && rows[0].matched_by) || 'טלפון';
   $('#cvPickModal h3').textContent = rows.length > 1 ? 'הליד תואם ל-' + rows.length + ' לקוחות קיימים' : 'הליד תואם ללקוח קיים';
   $('#cvp-note').innerHTML = 'ל<b>' + esc(l.full_name || 'ליד') + '</b>' + (by === 'מייל' ? ' יש מייל' : ' יש טלפון')
     + ' שכבר רשום אצל ' + (rows.length > 1 ? rows.length + ' לקוחות' : 'לקוח קיים') + '. '
-    + 'בחירת לקוח קיים תפתח עליו <b>הצעת מחיר בלבד</b>. פתיחת לקוח חדש על אותם פרטים אינה אפשרית.';
+    + 'בחירת לקוח קיים תפתח עליו <b>הצעת מחיר בלבד</b>. '
+    + (canOv === true
+      ? 'יש לך <b>הרשאה להתיר</b> פתיחת לקוח חדש בכל זאת — למשל כשאותו איש קשר קונה בשם חברה אחרת. הלקוח ייפתח בשם «'
+        + esc(String(l.company || '').trim() || l.full_name || '') + '».'
+      : 'פתיחת לקוח חדש על אותם פרטים אינה אפשרית.');
   $('#cvp-list').innerHTML = rows.map(k=>{
     const ok = !!k.priority_id;
     const st = [k.status && k.status !== 'פעיל' ? k.status : '', k.is_test ? 'בדיקה' : ''].filter(Boolean)
@@ -4597,6 +4603,7 @@ function cvPickOpen(id, btn, cands){
       + '<span class="cvp-meta">' + meta + '</span></button>';
   }).join('');
   $('#cvp-go').disabled = true;
+  $('#cvp-new').classList.toggle('hidden', canOv !== true);
   $('#cvPickModal').classList.remove('hidden');
 }
 window.cvPickSel = (cid)=>{
@@ -4610,6 +4617,18 @@ window.cvPickGo = ()=>{
   const s = CV_PICK; if(!s || !s.sel) return;
   CV_PICK = null; $('#cvPickModal').classList.add('hidden');
   convertLead(s.id, s.btn, { customer_id:s.sel });
+};
+/* 🔴 7.8.0 — "לקוח חדש" חזר, בהרשאה בלבד (crm.leads.dupoverride). השרת בודק שוב — הכפתור אינו השער. */
+window.cvPickNew = async ()=>{
+  const s = CV_PICK; if(!s || !s.ov) return;
+  const l = (LEADS||[]).find(x=>x.id===s.id) || {};
+  const nm = String(l.company || '').trim() || l.full_name || '';
+  /* ⚠️ CV_PICK !== s / hidden — הבורר נסגר או נפתח לליד אחר בזמן שהאישור היה פתוח. */
+  if(!(await sysConfirm('ייפתח בפריוריטי לקוח חדש «' + nm + '», למרות ש' + (s.n > 1 ? '-' + s.n + ' לקוחות קיימים תואמים' : 'לקוח קיים תואם')
+      + ' לטלפון או למייל של הליד. כרטיס בפריוריטי אי אפשר למחוק.\n\nלהמשיך?', { ok:'כן, לקוח חדש', cancel:'חזרה לבחירה' }))
+      || CV_PICK !== s || $('#cvPickModal').classList.contains('hidden')) return;
+  CV_PICK = null; $('#cvPickModal').classList.add('hidden');
+  convertLead(s.id, s.btn, { new_customer:true });
 };
 /* 🔴 7.2.0 — "לקוח חדש" ירד (רומן, 14/10/2026: "להסיר לגמרי"). השרת (crm-convert-lead v24) אוכף זאת גם
    הוא: בקשת "לקוח חדש" נדחית כשיש מועמד פעיל עם מספר פריוריטי, ולקוחות 'לא פעיל' אינם מועמדים כלל. */
@@ -12629,7 +12648,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'nfpop-2026-10-15a';
+const BUILD_ID = 'dupov-2026-10-15a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -27191,6 +27210,10 @@ const LB_DUP_CLOSED = ['סירוב','לא רלוונטי'];
    (טלפון+אימייל בלי שם — התראה). ליד סגור: שאלה, כמו ב-7.2.0.
    ⚠️ נבחר בידיעה: 277 שמות חוזרים בין לקוחות שונים — שם זהה של אדם אחר ייחסם. */
 function lbDupInactiveBlocks(r){ return r.indexOf('שם') >= 0 && r.length >= 2; }
+/* 🔴 7.8.0 — התרת החסימה, בהרשאה (רומן, 15/10/2026: "רק לי ולבן קויפמן תתיר את החסימה … הגדרה במסך
+   הרשאות"). מפתח crm.leads.dupoverride ברמת "עריכה". הכלל עצמו (lbDupVerdict) לא זז — ההתרה היא שכבה
+   מעליו, כך שמי שאין לו הרשאה רואה בדיוק את 7.2.2. ⚠️ אדמין תמיד 2 (pLevel), כמו core.feature_level בשרת. */
+function lbDupCanOverride(){ return window.canEdit('crm.leads.dupoverride'); }
 function lbDupVerdict(h){
   const v = { block:[], ask:[], inactive:[], warn:[] };
   (h.custs||[]).forEach(x=>{
@@ -27208,7 +27231,8 @@ window.lbDupCheck = ()=>{
   const nm=($('#a-name').value||'').trim(), ph=($('#a-phone').value||'').trim(),
         em=($('#a-email').value||'').trim();
   const h = lbDupHits(nm, ph, em), v = lbDupVerdict(h);
-  const sv = document.getElementById('a-save'); if(sv) sv.disabled = v.block.length > 0;
+  const _ov = v.block.length > 0 && lbDupCanOverride();   /* 7.8.0 — השמירה פתוחה, האישור בשמירה */
+  const sv = document.getElementById('a-save'); if(sv) sv.disabled = v.block.length > 0 && !_ov;
   if(!h.custs.length && !h.leads.length){ box.innerHTML=''; return; }
   const MAX = 3;
   /* בלי template literals מקוננים — הדפוס של lbTmBlock. */
@@ -27229,7 +27253,9 @@ window.lbDupCheck = ()=>{
       + (arr.length>MAX ? '<div class="lb-dupm">ועוד ' + (arr.length-MAX) + '</div>' : '')
       + '</div>';
   };
-  const msg = v.block.length
+  const msg = _ov
+      ? '<b>הפרטים תואמים ללקוח או לליד קיים.</b> יש לך הרשאה להתיר את החסימה — בשמירה תתבקש לאשר, וההתרה תירשם בליד. (למשל: אותו איש קשר קונה בשם חברה אחרת.)'
+    : v.block.length
       ? '<b>לא ניתן לפתוח ליד</b> — הפרטים תואמים ללקוח או לליד קיים. עבור לכרטיס הקיים, ומשם פתח תהליך מכירה.'
     : v.ask.length
       ? 'קיים <b>ליד סגור</b> עם אותם פרטים — בשמירה תישאל אם לפתוח ליד חדש.'
@@ -27270,12 +27296,25 @@ $('#a-save').onclick = async ()=>{
   if(miss.length){ $('#a-err').textContent='חסרים שדות חובה: '+miss.join(' · ')+'.'; return; }
   /* 🔴 7.2.0 — שער הכפילות נבדק שוב בשמירה: הכפתור המנוטרל אינו שער (מקלדת, הדבקה בלי input). */
   const _dv = lbDupVerdict(lbDupHits(g('a-name'), g('a-phone'), g('a-email')));
-  if(_dv.block.length){
+  /* 7.8.0 — _dupOv: תיאור ההתאמות שהותרו, נכתב כעדכון בליד אחרי שנוצר. null = לא הייתה התרה. */
+  let _dupOv = null;
+  if(_dv.block.length && !lbDupCanOverride()){
     $('#a-err').textContent = 'לא ניתן לפתוח את הליד — הוא תואם ל' + (_dv.block[0].o.full_name ? 'ליד' : 'לקוח')
       + ' «' + (_dv.block[0].o.full_name || _dv.block[0].o.name || '') + '» לפי ' + _dv.block[0].r.join(' + ') + '.';
     lbDupCheck(); return;
   }
-  if(_dv.ask.length && !(await sysConfirm('קיים ליד סגור עם אותם פרטים: «'
+  if(_dv.block.length){
+    const _b0 = _dv.block[0];
+    if(!(await sysConfirm('הפרטים תואמים ל' + (_b0.o.full_name ? 'ליד' : 'לקוח') + ' «'
+        + (_b0.o.full_name || _b0.o.name || '') + '» לפי ' + _b0.r.join(' + ')
+        + (_dv.block.length > 1 ? ' (ועוד ' + (_dv.block.length - 1) + ')' : '') + '.'
+        + '\n\nלפתוח ליד חדש בכל זאת? ההתרה תירשם בליד.',
+        { ok:'פתיחה בהתרת חסימה', cancel:'ביטול' }))) return;
+    _dupOv = _dv.block.map(x=>(x.o.full_name ? 'ליד' : 'לקוח') + ' «' + (x.o.full_name || x.o.name || '') + '» לפי '
+      + x.r.join(' + ')).join(' · ');
+  }
+  /* ⚠️ !_dupOv — מי שכבר אישר התרה אינו נשאל שוב על ליד סגור באותה שמירה. */
+  if(_dv.ask.length && !_dupOv && !(await sysConfirm('קיים ליד סגור עם אותם פרטים: «'
       + (_dv.ask[0].o.full_name || '') + '» (' + (_dv.ask[0].o.status || '') + ').\n\nלפתוח ליד חדש בכל זאת?',
       { ok:'פתיחת ליד חדש', cancel:'ביטול' }))) return;
   const wa = g('a-wacat');
@@ -27296,6 +27335,13 @@ $('#a-save').onclick = async ()=>{
   if(data && data.id){
     const { error:oe } = await sb.schema('crm').rpc('lead_set_owner',{ p_lead:data.id, p_owner:ME.id });
     if(oe) toast('הליד נוצר, אך שיוך הבעלות נכשל — '+oe.message);
+    /* 7.8.0 — ההתרה מתועדת בליד עצמו (actor_id = ME, נאכף בפוליסי activities_actor_is_self). */
+    if(_dupOv){
+      const { error:de } = await sb.schema('crm').from('activities').insert({
+        actor_id: ME.id, linked_type:'lead', linked_id: data.id, kind:'עדכון',
+        body: 'נפתח בהתרת חסימת כפילות — תואם ל: ' + _dupOv, details: { dup_override: true } });
+      if(de) toast('הליד נוצר, אך תיעוד ההתרה נכשל — ' + de.message);
+    }
     /* 🔴 6.164.0 — a-notes ירד, ו-q_notes בתוך התשאול ירש את השם
        "מידע על הליד" (רומן: "זה בעצם אותו דבר, אין צורך בכפילות").
        ⇒ הטופס כותב מעכשיו **עדכון אחד ולא שניים**.
@@ -29217,16 +29263,17 @@ window.convertLead = async (id, btn, choice)=>{
   /* 6.252.0 — רשימת היתר לגוף. 7.2.0 — new_customer ירד עם "לקוח חדש" (והשרת v24 אינו מכבד אותו עוד). */
   const body = { lead_id:id };
   if(choice && choice.customer_id) body.customer_id = String(choice.customer_id);
+  else if(choice && choice.new_customer === true) body.new_customer = true;   /* 7.8.0 — v25 מכבד רק בהרשאה */
   /* 6.255.0 — בחירת איש הקשר (v23), לצד בחירת הלקוח ולא במקומה: בלקוח שנבחר זה עתה השרת
      מריץ את שער איש הקשר **לפני** הקישור, ולכן הבחירה הראשונה חייבת להישלח שוב יחד איתו. */
   if(choice && choice.contact_id) body.contact_id = String(choice.contact_id);
   else if(choice && choice.new_contact === true) body.new_contact = true;
-  let pick = null, needCt = null;
+  let pick = null, pickOv = false, needCt = null;
   try{
   const { data, error } = await sb.functions.invoke('crm-convert-lead', { body });
   /* 6.252.0 — השרת עצר לבחירה: לא נוצר דבר. הבורר נפתח ב-finally, **אחרי** busyHide — אחרת חלון
      ההמתנה (שאינו נסגר בלחיצת רקע) היה מכסה אותו. */
-  if(data && data.need_pick && Array.isArray(data.candidates) && data.candidates.length){ pick = data.candidates; return; }
+  if(data && data.need_pick && Array.isArray(data.candidates) && data.candidates.length){ pick = data.candidates; pickOv = data.can_override === true; return; }
   if(data && data.need_contact && Array.isArray(data.contacts) && data.contacts.length){ needCt = data; return; }
   if(error || (data && data.ok===false)){
     if(res) res.innerHTML = `<div class="note" style="color:#c0392b">שגיאה: ${esc((data&&data.error)||error?.message||'לא ידוע')}</div>`; return;
@@ -29257,7 +29304,7 @@ window.convertLead = async (id, btn, choice)=>{
        מוקדם, ובלעדיו הכפתור היה נשאר מנוטרל לנצח אחרי כשל אחד. */
     busyHide();
     if(btn){ btn.disabled = false; btn.textContent = btn.dataset.lbl || 'פתח לקוח והצעת מחיר בפריוריטי'; }
-    if(pick) cvPickOpen(id, btn, pick);
+    if(pick) cvPickOpen(id, btn, pick, pickOv);
     if(needCt) cvContOpen(id, btn, needCt, choice);
   }
 };

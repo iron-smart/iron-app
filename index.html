@@ -3417,7 +3417,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.10.1</div>
+      <div class="ver">גרסה 7.10.2</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3548,7 +3548,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="donefb-2026-10-16a">גרסה 7.10.1</div>
+    <div class="side-foot" title="qforce-2026-10-16a">גרסה 7.10.2</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -12855,7 +12855,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'donefb-2026-10-16a';
+const BUILD_ID = 'qforce-2026-10-16a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -29280,16 +29280,20 @@ function cudPaint(id){
   if(el && CUD_RESULT && CUD_RESULT.id === id) el.innerHTML = CUD_RESULT.html;
 }
 
-window.custDeal = async (id, btn)=>{
+window.custDeal = async (id, btn, force)=>{
   /* מניעת לחיצה כפולה בדפוס convertLead. ⚠️ והיא **אינה** ההגנה
      היחידה: crm-customer-deal מחזירה עסקה שנפתחה בשתי הדקות האחרונות
-     במקום ליצור שנייה, כי שתי לשוניות עוקפות ניטרול כפתור (6.168.0). */
+     במקום ליצור שנייה, כי שתי לשוניות עוקפות ניטרול כפתור (6.168.0).
+     7.10.2 — force=true עוקף את חלון השרת, ונשלח רק מהכפתור שבתוך
+     תוצאת החסימה. רומן (16/10/2026): "אני צריך לפתוח עוד 2 ... והוא
+     מגביל אותי". ⚠️ force נשלח רק כשהוא true — גוף הקריאה הרגילה נשאר
+     {customer_id} בדיוק, ולחיצה כפולה רגילה עדיין נתפסת בשרת. */
   if(btn){ if(btn.disabled) return; btn.disabled = true;
            btn.dataset.lbl = btn.textContent; btn.textContent = 'פותח…'; }
   busyShow('פותח הצעת מחיר ועסקה בפריוריטי…\nזה עשוי לקחת כמה שניות.');
   try{
     let data = null, error = null;
-    try { ({ data, error } = await sb.functions.invoke('crm-customer-deal', { body:{ customer_id: id } })); }
+    try { ({ data, error } = await sb.functions.invoke('crm-customer-deal', { body: force === true ? { customer_id: id, force: true } : { customer_id: id } })); }
     catch(e){ error = e; }
     if(error || (data && data.ok === false)){
       /* 🔴 חילוץ מגוף התשובה. convertLead מציג את error.message הגנרי,
@@ -29312,6 +29316,7 @@ window.custDeal = async (id, btn)=>{
       + (data.created ? '✅ נפתח תהליך מכירה!' : 'ℹ️ ' + esc(data.note || 'התהליך כבר קיים'))
       + '<br>הצעת מחיר: <b>' + esc(data.cprofnum || '—') + '</b> '
       + '<button type="button" class="chip" onclick="goCard(()=>openDeal(\'' + jsq(String(data.deal_id||'')) + '\'))">פתיחת כרטיס העסקה</button>'
+      + (data.created ? '' : ' <button type="button" class="chip" onclick="custDeal(\'' + jsq(id) + '\', this, true)">＋ פתח הצעה נוספת בכל זאת</button>')
       + (warn ? '<br><span style="color:#b45309">⚠️ ' + esc(warn) + '</span>' : '')
       + '</div>' };
     /* ⚠️ loadLeads ואז openCust — העסקה החדשה חייבת להיכנס ל-DEALS

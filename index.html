@@ -3417,7 +3417,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.10.3</div>
+      <div class="ver">גרסה 7.11.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3548,7 +3548,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="bookset-2026-10-16a">גרסה 7.10.3</div>
+    <div class="side-foot" title="dealsend-2026-10-16a">גרסה 7.11.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -6061,7 +6061,7 @@ window.ieSave = async (el, desc)=>{
   const val = el.value===''?null:el.value;
   const patch={ [field]:val };
   if(kind==='task' && field==='status' && val==='הושלם') patch.closed_at=new Date().toISOString();
-  if(kind==='deal' && field==='stage' && ['הושלם','לא רלוונטי'].includes(val)) patch.closed_at=new Date().toISOString();
+  if(kind==='deal' && field==='stage' && ['הזמנה','לא רלוונטי'].includes(val)) patch.closed_at=new Date().toISOString();
   let error, row = null;
   if(cfg.bridge){
     const r = await oldCall(cfg.bridge, { id, patch });
@@ -7282,7 +7282,7 @@ function renderFunnelBlock(){
   el.classList.remove('db-wide');
   /* 6.194.0 — מ-DEALS ולא מ-crm.sales_dash: שם רשימת השלבים קפואה בקוד (שלב שהוסר
      ב-6.126.0 ושם ישן). כאן STAGES — אותה רשימה של בורד העסקאות, ואינה יכולה לסטות. */
-  const open = STAGES.filter(s=>!['הושלם','לא רלוונטי'].includes(s));
+  const open = ACTIVE_STAGES.slice();   /* 7.11.0 — 'הזמנה' היא הסוף, לא "פתוח" */
   const by = {}; open.forEach(s=>by[s]={n:0,amount:0});
   (DEALS||[]).forEach(d=>{ const b=by[d.stage]; if(b){ b.n++; b.amount += (+d.amount||0); } });
   const tot = open.reduce((a,s)=>a+by[s].n,0), sum = open.reduce((a,s)=>a+by[s].amount,0);
@@ -12855,7 +12855,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'bookset-2026-10-16a';
+const BUILD_ID = 'dealsend-2026-10-16a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -19003,7 +19003,13 @@ const CRM_Q = {
          כחסרי בעלים. RLS: can_view('crm.leads'). */
       sb.schema('crm').from('lead_owners').select('lead_id,profile_id,legacy_owner,is_primary').limit(10000),
   /* 6.241.0 — מסמכי החתימה. הגדרה אחת לשני צרכנים: loadLeads ורענון מסך המסמכים (CRM_AUTO_REG). */
-  prots: () => sb.schema('ord').from('protocols_v').select('id,order_id,call_id,deal_id,order_number,customer_name,phone,doc_type,category,status,sent_at,signed_at,signer_name,link_sent_at,link_sent_via,link_sent_by,link_sent_count,expires_at').order('sent_at',{ascending:false}).limit(10000)
+  prots: () => sb.schema('ord').from('protocols_v').select('id,order_id,call_id,deal_id,order_number,customer_name,phone,doc_type,category,status,sent_at,signed_at,signer_name,link_sent_at,link_sent_via,link_sent_by,link_sent_count,expires_at').order('sent_at',{ascending:false}).limit(10000),
+  /* 7.11.0 — הבעלות ברענון האוטומטי (רומן, 16/10/2026: "צריך עדכון מהיר יותר למסך תהליכי מכירה").
+     עד כאן נטענה ב-loadLeads בלבד, ולכן תהליך שנפתח אחרי הכניסה הוצג בלי בעלים ומחוץ ל"שלי"
+     (נמדד: PQ26001194 ב-15:06 — במסד רומן ראשי, במסך עיגול ריק). אותן שאילתות בדיוק של loadLeads. */
+  down: () => sb.schema('crm').from('deal_owners').select('deal_id,profile_id,is_primary').limit(10000),
+  town: () => sb.schema('crm').from('task_owners').select('task_id,profile_id,is_primary').limit(20000),
+  mown: () => sb.schema('crm').from('meeting_owners').select('meeting_id,profile_id,is_primary').limit(10000)
 };
 async function loadLeads(){
   let _q;
@@ -19096,7 +19102,8 @@ async function loadLeads(){
    ⚠️ **רק הטאב הגלוי מתרענן** — אחרת שישה מסכים היו מושכים במקביל.
    ⚠️ ותיקתוק כל 20ש עם משיכה כל שתי דקות: כניסה למסך מרעננת מיד, בלי
       לפנות לשרת שלוש פעמים בדקה. */
-const CRM_AUTO_EVERY = 120000, CRM_AUTO_TICK = 20000;
+/* 7.11.0 — התיקתוק 20→10ש׳; רשומה יכולה לקבוע every משלה (העסקאות: 30ש׳). */
+const CRM_AUTO_EVERY = 120000, CRM_AUTO_TICK = 10000;
 let CRM_AUTO_T = null, CRM_AUTO_BUSY = false;
 const CRM_AUTO_AT = {}, CRM_AUTO_WAS = {};
 
@@ -19823,20 +19830,21 @@ const CRM_AUTO_REG = [
     put:(r)=>{ LEADS=r[0].data||[]; lownOfApply((r[1]||{}).data); TASKS=r[2].data||[]; },
     draw:()=>renderLeads() },
   { k:'tasks', tab:'tab-tasks', host:'tk-chips',
-    get:()=>Promise.all([CRM_Q.tasks(), CRM_Q.leads()]),
-    put:(r)=>{ TASKS=r[0].data||[]; LEADS=r[1].data||[]; },
+    get:()=>Promise.all([CRM_Q.tasks(), CRM_Q.leads(), CRM_Q.town()]),
+    put:(r)=>{ TASKS=r[0].data||[]; LEADS=r[1].data||[]; reIndexTaskOwners((r[2]||{}).data); },
     draw:()=>renderTasks() },
   { k:'deals', tab:'tab-deals', host:'deal-chips',
-    get:()=>Promise.all([CRM_Q.deals(), CRM_Q.leads()]),
-    put:(r)=>{ DEALS=r[0].data||[]; LEADS=r[1].data||[]; },
+    every: 30000,   /* 7.11.0 — וובהוק מפריוריטי פותח תהליך תוך שניות; שתי דקות היו נראות כ"לא נפתח" */
+    get:()=>Promise.all([CRM_Q.deals(), CRM_Q.leads(), CRM_Q.down()]),
+    put:(r)=>{ DEALS=r[0].data||[]; LEADS=r[1].data||[]; reIndexDealOwners((r[2]||{}).data); },
     draw:()=>renderDeals() },
   { k:'custs', tab:'tab-customers', host:'cu-chips',
     get:()=>Promise.all([CRM_Q.custs(), CRM_Q.leads()]),
     put:(r)=>{ CUSTS=r[0].data||[]; LEADS=r[1].data||[]; },
     draw:()=>renderCustomers() },
   { k:'meets', tab:'tab-meets', host:'meet-chips',
-    get:()=>Promise.all([CRM_Q.meets(), CRM_Q.leads()]),
-    put:(r)=>{ MEETS=r[0].data||[]; LEADS=r[1].data||[]; },
+    get:()=>Promise.all([CRM_Q.meets(), CRM_Q.leads(), CRM_Q.mown()]),
+    put:(r)=>{ MEETS=r[0].data||[]; LEADS=r[1].data||[]; reIndexMeetOwners((r[2]||{}).data); },
     draw:()=>renderMeets() },
   /* ⚠️ הלוגיסטיקה עוברת בגשר ולא ב-supabase: oldBoot(true) מרענן את
      המטמון המשותף, ואז שני החלקים נקראים ממנו. */
@@ -19909,7 +19917,7 @@ function crmAutoTick(){
   const entered = !CRM_AUTO_WAS[e.k];
   CRM_AUTO_WAS[e.k] = true;
   if(crmAutoHeld()){ crmAutoStamp(e, 'held'); return; }
-  if(entered || Date.now() - (CRM_AUTO_AT[e.k] || 0) >= CRM_AUTO_EVERY) crmAutoRefresh(e);
+  if(entered || Date.now() - (CRM_AUTO_AT[e.k] || 0) >= (e.every || CRM_AUTO_EVERY)) crmAutoRefresh(e);
 }
 
 function crmAutoArm(){
@@ -20596,7 +20604,7 @@ function tkChips(){
 /* 🔴 6.187.0 — העסקה של ליד, כשיש יותר מאחת. נמדד: **185 לידים
    מחזיקים 546 עסקאות**, ולכן "העסקה של הליד" אינה מוגדרת מאליה.
    הכרעת רומן: **הפתוחה האחרונה**, ואם אין פתוחה — האחרונה שנוצרה. */
-const DEAL_DONE = ['הושלם','לא רלוונטי'];
+const DEAL_DONE = ['הזמנה','לא רלוונטי'];   /* 7.11.0 — 'הזמנה' היא הסוף */
 function dealOfLead(leadId){
   if(!leadId) return null;
   const all = (DEALS||[]).filter(d=>d.lead_id===leadId);
@@ -25050,15 +25058,19 @@ window.saveOrd = async (id)=>{
      'מאושרת לקוח'. ראו crm.deals_advance_from_orders.
    ⚠️ ACTIVE_STAGES נשאר slice(0,5) — עדיין חמישה שלבי תהליך, ושני
       הסופיים בסוף. הסדר הזה הוא **חוזה**: הרצועה מציירת לפי אינדקס. */
-const STAGES = ['תהליך חדש','נשלחה הצעת מחיר ראשונית','נשלחה הצעת מחיר לחתימה','אושרה ע״י לקוח','הזמנה','הושלם','לא רלוונטי'];
-const ACTIVE_STAGES = STAGES.slice(0,5);
+/* 🔴 7.11.0 — 'הושלם' התאחד ל'הזמנה' (רומן, 16/10/2026: "אופציה א׳" — "בפועל תהליך המכירה נגמר כאשר
+   הלקוח אישר ושילם ועבר להזמנה"). 'הזמנה' היא הסוף, ולכן ACTIVE_STAGES = ארבעת השלבים הפתוחים.
+   ⚠️ בשרת: 775 העסקאות אוחדו, deal_stage_set ממפה 'הושלם'→'הזמנה' (לשונית ישנה), וטריגר
+   aa_deal_stage_merge עושה אותו דבר בכתיבה ישירה לטבלה. */
+const STAGES = ['תהליך חדש','נשלחה הצעת מחיר ראשונית','נשלחה הצעת מחיר לחתימה','אושרה ע״י לקוח','הזמנה','לא רלוונטי'];
+const ACTIVE_STAGES = STAGES.slice(0,4);
 /* 6.263.0 (רומן): "ברירת מחדל — תהליכי «שלי» לכל אחד, עם מסנן חדש · נשלחה ראשונית · נשלחה לחתימה · אושרה".
    ⚠️ ברירת מחדל ששמר המשתמש (dlDefSave) עדיין גוברת ב-dlInitDef — היא בחירה מפורשת שלו. */
 let DEAL_FILTER = 'mine';
 const shekel = n => '₪' + Math.round(Number(n||0)).toLocaleString('he-IL');
-const stageClass = s => s==='הושלם' ? 'st-rel' : (s==='לא רלוונטי' ? 'st-no' : (s==='תהליך חדש' ? 'st-new' : 'st-def'));
+const stageClass = s => s==='הזמנה' ? 'st-rel' : (s==='לא רלוונטי' ? 'st-no' : (s==='תהליך חדש' ? 'st-new' : 'st-def'));
 /* צבעי שלבי עסקה — כמו במאנדיי (הערה 18) */
-const DEAL_ST_COLORS = {'תהליך חדש':'#ffcb00','נשלחה הצעת מחיר ראשונית':'#cab641','נשלחה הצעת מחיר לחתימה':'#579bfc','אושרה ע״י לקוח':'#4eccc6','הזמנה':'#00a9a5','הושלם':'#037f4c','לא רלוונטי':'#bb3354'};
+const DEAL_ST_COLORS = {'תהליך חדש':'#ffcb00','נשלחה הצעת מחיר ראשונית':'#cab641','נשלחה הצעת מחיר לחתימה':'#579bfc','אושרה ע״י לקוח':'#4eccc6','הזמנה':'#00a9a5','לא רלוונטי':'#bb3354'};   /* 7.11.0 — 'הושלם' התאחד ל'הזמנה' */
 
 /* ═══ בורד תהליכי המכירה (6.123.0) ══════════════════════════════
    הצ'יפים הפכו ל**תצוגות** (פעילות / הכל), והצ'יפ-לכל-שלב ירד — כי
@@ -25394,9 +25406,13 @@ function dlAtIL(v){
   return esc(dd) + ' ' + esc(hh);
 }
 function dlPqsPill(d){
+  /* 7.11.0 — בשלב 'הזמנה' מה שמעניין הוא ההזמנה ולא ההצעה (רומן: "תשלב אופציה ג׳"). dlOrdOf — אותה
+     בחירה של סקשן ההזמנה בכרטיס. אין הזמנה טעונה (הרשאה/סנכרון) ⇒ נופלים לסטטוס ההצעה כמקודם. */
+  const _o = (d && d.stage === 'הזמנה') ? dlOrdOf(d) : null;
   const s = d && d.priority_quote_status ? String(d.priority_quote_status) : '';
   const at = d && d.priority_quote_synced_at ? String(d.priority_quote_synced_at) : '';
-  return (s ? `<span class="pill p-violet" title="סטטוס ההצעה בפריוריטי — מתעדכן בוובהוק ובמשיכה">${PRI_ICO}פריוריטי: ${esc(s)}</span>` : '')
+  return (_o ? `<span class="pill p-violet" id="dl-ordpill" title="ההזמנה בפריוריטי — מתעדכנת בוובהוק ובסנכרון">${PRI_ICO}הזמנה ${esc(_o.order_number)} · ${esc(_o.erp_status||'—')}</span>`
+       : s ? `<span class="pill p-violet" title="סטטוס ההצעה בפריוריטי — מתעדכן בוובהוק ובמשיכה">${PRI_ICO}פריוריטי: ${esc(s)}</span>` : '')
        + (at ? `<span class="pill" style="font-weight:400" title="התאריך והשעה (שעון ישראל) שבהם השתנה לאחרונה שדה שמגיע מפריוריטי (סטטוס ההצעה, מחיר או מסמך). הוובהוק והסוקר בודקים את ההצעה בכל שינוי סטטוס ובכל 15 דקות.">עודכן מפריוריטי ${dlAtIL(at)}</span>` : '');
 }
 function dealRow(d, nt){
@@ -26117,7 +26133,7 @@ window.dlPipeSet = async (id, stage, sub)=>{
   d.stage = stage;
   d.quote_status      = dlSubCol(stage)==='quote_status'      ? (sub||null) : null;
   d.irrelevant_reason = dlSubCol(stage)==='irrelevant_reason' ? (sub||null) : null;
-  if(['הושלם','לא רלוונטי'].includes(stage) && !d.closed_at) d.closed_at = new Date().toISOString();
+  if(['הזמנה','לא רלוונטי'].includes(stage) && !d.closed_at) d.closed_at = new Date().toISOString();
   if(['אושרה ע״י לקוח','הזמנה'].includes(stage) && !d.approved_at) d.approved_at = new Date().toISOString();
   if(r && r.tasks_closed > 0){
     (TASKS||[]).forEach(t=>{
@@ -28048,6 +28064,9 @@ const LUR_PH = {
    רלוונטי פשוט להעביר לחלונית שנפתחת"). LUR_SUB = { cur, after } כשיש בורר: cur — הערך השמור, after —
    הציור המקומי שרץ **אחרי** שהחלונית נסגרה. ⚠️ חובה: data-must חוסם Esc/רקע עד שהסיבה נשמרה. */
 let LUR_SUB = null;
+/* 7.11.0 — מעבר ל'לא רלוונטי' שממתין לשמירת החלונית (dlCancelAsk). { id, from }: from = השלב שצויר,
+   כ-p_expect. מאופס בכל lurOpen, כך שחלונית רגילה לעולם אינה יורשת אותו. */
+let LUR_PEND = null;
 /* 7.2.2 — שבבים במקום <select> (רומן: "לחיץ עם כל האפשרויות בשורה כמו שהיה"). הערך יושב ב-#lur-sub (hidden),
    ולכן lurSubCommit ושער השמירה לא זזו. הצביעה — אותה נוסחה של הרצועה בכרטיס (tint/onWhite/LB_TK). */
 function lurSubPaint(){
@@ -28060,7 +28079,7 @@ function lurSubPaint(){
 }
 window.lurSubPick = (btn)=>{ $('#lur-sub').value = btn.dataset.v || ''; $('#lur-err').textContent = ''; lurSubPaint(); };
 function lurOpen(t, id, h, note, subOpts, subCur, pal){
-  UPD_REQ_T = t; LB_UPD_REQ = id;
+  UPD_REQ_T = t; LB_UPD_REQ = id; LUR_PEND = null;
   $('#lur-h').textContent = h;
   $('#lur-note').textContent = note;
   $('#lur-body').placeholder = LUR_PH[t] || '';
@@ -28080,6 +28099,23 @@ function lurOpen(t, id, h, note, subOpts, subCur, pal){
 }
 /* כתיבת הסיבה **לפני** העדכון: שמירה שנכשלת משאירה את החלונית פתוחה עם השגיאה, ואין עדכון יתום ביומן. */
 async function lurSubCommit(){
+  /* 7.11.0 — השלב זז רק כאן, בשמירה/דילוג, ולא בלחיצה על ההתראה. */
+  if(LUR_PEND){
+    const p = LUR_PEND;
+    const sub = LUR_SUB ? ($('#lur-sub').value || '').trim() : '';
+    if(LUR_SUB && !sub){ $('#lur-err').textContent = 'יש לבחור סיבה.'; return { ok:false }; }
+    const { error } = await sb.schema('crm').rpc('deal_stage_set',
+      { p_deal:p.id, p_stage:'לא רלוונטי', p_sub: sub || null, p_expect: p.from });
+    if(error){ $('#lur-err').textContent = 'המעבר ל«לא רלוונטי» נכשל — ' + error.message; return { ok:false }; }
+    LUR_PEND = null;
+    const d = (DEALS||[]).find(x=>x.id===p.id);
+    if(d){ d.stage = 'לא רלוונטי'; d.irrelevant_reason = sub || null; d.quote_status = null;
+           if(!d.closed_at) d.closed_at = new Date().toISOString(); }
+    if(LUR_SUB){ LUR_SUB.cur = sub;
+      LUR_SUB.after = ()=>{ try{ dlPipeDraw(p.id); }catch(_e){} try{ renderDeals(); renderStats(); }catch(_e){} }; }
+    delete $('#lbUpdReqModal').dataset.must;
+    return { ok:true, sub };
+  }
   if(!LUR_SUB) return { ok:true, sub:'' };
   const sub = ($('#lur-sub').value || '').trim();
   if(!sub){ $('#lur-err').textContent = 'יש לבחור סיבה.'; return { ok:false }; }
@@ -28156,6 +28192,24 @@ $('#lur-skip').onclick = async ()=>{
   const x = (isDeal ? (DEALS||[]) : (LEADS||[])).find(y=>y.id===LB_UPD_REQ);
   if(await lurWrite('דילוג עדכון', 'דילג על כתיבת עדכון במעבר ל«'
     + ((x && (isDeal ? x.stage : x.status)) || '—') + (s.sub ? ' · ' + s.sub : '') + '»') && after) after();
+};
+/* ===== 7.11.0 — ביטול בפריוריטי ⇒ "למה לא רלוונטי?" =====
+   רומן (16/10/2026): "אמור היה להגיע אלי התרעה שאני מציין את הסיבה לביטול ואז זה יעביר ללא רלוונטי".
+   נקרא מלחיצה על התראת quote_cancelled/order_cancelled (nfTarget). הסיבה מסומנת מראש; השלב זז רק בשמירה
+   (lurSubCommit · LUR_PEND), ולכן סגירת החלונית בלי שמירה אינה משנה דבר — בכוונה אין data-must. */
+window.dlCancelAsk = (id, kind)=>{
+  const d = (DEALS||[]).find(x=>x.id===id);
+  if(!d || d.stage === 'לא רלוונטי' || !window.canEdit('crm.deals')) return;
+  const what = kind === 'order_cancelled' ? 'ההזמנה' : 'ההצעה';
+  const reason = what + ' בוטלה בפריוריטי';
+  const opts = dlSubOpts('לא רלוונטי') || [];
+  const bg = DEAL_ST_COLORS['לא רלוונטי'] || '#94a3b8';
+  lurOpen('deal', id, 'למה תהליך המכירה לא רלוונטי?', what + ' של «' + (d.name || '—')
+    + '» בוטלה בפריוריטי. אשר את הסיבה, כתוב מה קרה ושמור — התהליך יעבור ל«לא רלוונטי».',
+    opts, reason, opts.concat([reason]).reduce((a,o)=>{ a[o] = bg; return a; }, {}));
+  LUR_PEND = { id: id, from: d.stage || null };
+  /* lurOpen מסמן "חובה" כשיש סיבות — כאן עוד לא קרה כלום, ולכן Esc/רקע = ביטול. */
+  delete $('#lbUpdReqModal').dataset.must;
 };
 /* ===== 7.9.0 — relsub: בחירת תת-סטטוס לפני "רלוונטי" ===== */
 let LREL_DONE = null;
@@ -31579,7 +31633,10 @@ boot();
     if(!id) return null;
     if(t === 'task')    return window.canView('crm.tasks')  ? function(){ openTask(id); } : null;
     if(t === 'lead')    return window.canView('crm.leads')  ? function(){ openLead(id); } : null;
-    if(t === 'deal')    return window.canView('crm.deals')  ? function(){ openDeal(id); } : null;
+    /* 7.11.0 — ביטול בפריוריטי: הכרטיס, ומעליו "למה לא רלוונטי?" עם הסיבה (dlCancelAsk). */
+    if(t === 'deal')    return window.canView('crm.deals')  ? function(){ openDeal(id);
+                             if(n.kind === 'quote_cancelled' || n.kind === 'order_cancelled')
+                               setTimeout(function(){ try{ window.dlCancelAsk(id, n.kind); }catch(_e){} }, 250); } : null;
     /* כמו בחיפוש: משתמש לוגיסטיקה בלבד מקבל את ההזמנה בהקשר לוגיסטי */
     if(t === 'order')   return window.canView('crm.orders') ? function(){ openOrd(id); }
                              : (window.canView('logi.orders') ? function(){ openOrd(id, 'logi'); } : null);
@@ -31720,7 +31777,7 @@ boot();
   var NF_POP_MS = 8000;
   function nfPopKinds(){
     var v = '';
-    try{ v = String(osetStr('nf_popup_kinds', 'quote_ready,quote_failed') || ''); }catch(_e){}
+    try{ v = String(osetStr('nf_popup_kinds', 'quote_ready,quote_failed,quote_cancelled,order_cancelled') || ''); }catch(_e){}
     return v.split(/[\s,;]+/).filter(Boolean);
   }
   function nfPopKey(){ return 'iron_nf_pop_last_' + String((ME && ME.id) || ''); }

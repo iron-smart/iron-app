@@ -3417,7 +3417,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.10.0</div>
+      <div class="ver">גרסה 7.10.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3548,7 +3548,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="field-2026-10-16a">גרסה 7.10.0</div>
+    <div class="side-foot" title="donefb-2026-10-16a">גרסה 7.10.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -12855,7 +12855,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'field-2026-10-16a';
+const BUILD_ID = 'donefb-2026-10-16a';
 window.BUILD_ID = BUILD_ID;
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
@@ -20195,6 +20195,10 @@ window.setTaskStatus = async (id, status)=>{
   if(error){ toast('עדכון הסטטוס נכשל — '+error.message); renderTasks(); return; }
   const t=TASKS.find(x=>x.id===id); if(t) Object.assign(t,patch);
   renderTasks(); renderToday(); renderStats();
+  /* 🔴 7.10.1 — המשוב של doneTask (7.9.2) גם כאן (רומן: "להכיל את השינוי הזה על כל המערכת"): עד כאן הצלחה הייתה
+     שקטה לגמרי, ובלוק המשימות בכרטיס הליד נשאר על המצב הקודם. */
+  toast(status==='הושלם' ? 'המשימה סומנה כבוצעה ✓' : 'הסטטוס עודכן ✓');
+  try{ if(t && t.linked_type==='lead' && typeof lbTmRedraw==='function') lbTmRedraw(t.linked_id); }catch(_e){}
 };
 function myOpenTodayTasks(){
   const eod = new Date(); eod.setHours(23,59,59,999);
@@ -20502,6 +20506,8 @@ window.tkBulk = async (op)=>{
     ? `בוצעו ${ok} מתוך ${ids.length}. נכשלו: ${bad.slice(0,6).join(' | ')}${bad.length>6?` ועוד ${bad.length-6}`:''}`
     : `בוצעו ${ok} מתוך ${ids.length}.`;
   if(rep) rep.textContent = TK_REP;
+  /* 7.10.1 — הדוח גם כטוסט: שורת הבחירה עלולה להיות מחוץ למסך. toast() מסווג לבד — "נכשלו" אדום, "בוצעו" ירוק. */
+  toast(TK_REP);
   /* נשארים במצב בחירה גם בהצלחה: הדוח הוא התוצר, ויציאה אוטומטית
      הייתה מוחקת אותו מהמסך ברגע שהוא נכתב. הבחירה מתנקה, המצב לא. */
   TK_SEL.clear();
@@ -21053,6 +21059,11 @@ window.saveTask = async (id)=>{
   t.updated_at = new Date().toISOString();   /* קירוב לתצוגה — השרת חותם בטריגר */
   tkSnapshot(id);
   cardSaved('task', id, esc(t.name||'משימה') + ' ' + mdPill(t.status||'—',TASK_ST_COLORS,LB_TK));
+  /* 7.10.1 — הכרטיס נשאר פתוח אחרי שמירה (6.168.0), ולכן "בוצע ✓" של משימה שכבר נסגרה יורד ממנו. */
+  if(upd.status==='הושלם'){
+    const _db = [...document.querySelectorAll('#tkModal button')].find(b=>/doneTask\(/.test(b.getAttribute('onclick')||''));
+    if(_db) _db.remove();
+  }
   crmRepaint();
 };
 /* 🔴 6.148.0 — נקודת חנק אחת לציור מחדש אחרי שמירה. רומן, 28/08/2026:

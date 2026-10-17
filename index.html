@@ -3528,7 +3528,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.15.2</div>
+      <div class="ver">גרסה 7.15.3</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3659,7 +3659,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="bookreq-2026-10-17a">גרסה 7.15.2</div>
+    <div class="side-foot" title="mktintentfix-2026-10-17a">גרסה 7.15.3</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -12972,7 +12972,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'bookreq-2026-10-17a';
+const BUILD_ID = 'mktintentfix-2026-10-17a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -19822,7 +19822,7 @@ function mktIntentHtml(D){
     rows.map(r=>{ const n=+r.leads||0;
       return '<tr><td>'+esc(r.intent)+'</td><td class="num">'+mktN(n)+'</td>'+
         '<td><div class="fun-row" style="cursor:default;padding:0"><div class="fun-bar"><div style="width:'+Math.round(n/mx*100)+'%"></div></div><span class="fun-a" style="width:auto">'+mktPct(ans?n/ans:null)+'</span></div></td>'+
-        '<td class="num">'+mktN(r.qualified)+'</td><td class="num">'+mktN(r.won_n)+'</td><td class="num">'+mktPct(n?(+r.won_n||0)/n:null)+'</td><td class="num">'+mktTM(r.revenue)+'</td></tr>'; }).join('')+
+        '<td class="num">'+mktN(r.qualified)+'</td><td class="num">'+mktN(r.won_n)+'</td><td class="num">'+mktPct(n?(+r.won_n||0)/n:null)+'</td><td class="num">'+mktM(r.revenue)+'</td></tr>'; }).join('')+
     '</tbody></table></div>';
   return h+'<div class="mkt-note">נאסף מ-'+esc(since)+' · התשובה האחרונה של כל ליד · "נסגרו" = לידים שיש להם עסקה שנסגרה · "המרה" = נסגרו מתוך הלידים בשורה'+
     (tot>ans ? ' · '+mktN(tot-ans)+' לידים בטווח בלי תשובה אינם בטבלה' : '')+'</div>';
@@ -19832,7 +19832,7 @@ async function mktPaintIntent(){
   if(!canView('mkt.dash')) return;
   const key=JSON.stringify(mktPayload());
   if(MKT_IN.key===key && MKT_IN.data){ el.innerHTML=MKT_IN_HEAD+mktIntentHtml(MKT_IN.data); return; }
-  el.innerHTML=MKT_IN_HEAD+'<div class="empty">טוען…</div>';
+  el.innerHTML=MKT_IN_HEAD+crmLoading();   /* 7.15.3 — מצב טעינה כמו בכל המערכת (dstest) */
   if(MKT_IN.busy){ MKT_IN.again=true; return; }
   MKT_IN.busy=true;
   const put=h=>{ const e=document.getElementById('mkt-intent'); if(e) e.innerHTML=MKT_IN_HEAD+h; };

@@ -350,6 +350,7 @@ function renderProtocol(d){
     <button type="button" class="btn-clear" id="clear1">ניקוי חתימה</button>
     <div class="agree"><input type="checkbox" id="auth"><span id="auth-txt">${esc(d.authorized||DEF_AUTH)}</span></div>
     <div class="agree"><input type="checkbox" id="agree"><span id="agree-txt">${esc(d.agree||DEF_AGREE)}</span></div>
+    ${d.payterms_agree?`<div class="agree"><input type="checkbox" id="payt"><span id="payt-txt">${esc(d.payterms_agree)}</span></div>`:''}
     <button class="btn-send" id="sendBtn" disabled>${esc(btnTxt)}</button>
     <div id="err" style="color:#a92f2f;font-weight:700;font-size:.85rem;margin-top:8px"></div>
   </div>
@@ -358,20 +359,23 @@ function renderProtocol(d){
   qpdfMobile();
   const pad=makePad('pad1','hint1','clear1',check);
   const agree=document.getElementById('agree'), auth=document.getElementById('auth'), sendBtn=document.getElementById('sendBtn');
+  /* 17/10/2026 — תנאי התשלום (sign v24). התיבה קיימת רק כשהשרת שלח payterms_agree, כלומר
+     רק בהצעה שתנאיה נצרבו; הצעות ישנות נחתמות כמו קודם. השרת אוכף גם הוא. */
+  const payt=document.getElementById('payt');
   const nameEl=document.getElementById('signerName');
   /* שם מלא נאכף גם כאן וגם בשרת. אכיפה בצד הלקוח בלבד אינה אכיפה —
      POST ישיר עוקף אותה, וזה בדיוק מה שקרה עם סימון ההצהרה. */
   const nameOk=()=>{ const v=(nameEl.value||'').replace(/\s+/g,' ').trim();
     return v.length>=4 && v.split(' ').length>=2; };
-  function check(){ sendBtn.disabled=!(pad.hasInk()&&agree.checked&&auth.checked&&nameOk()); }
-  agree.onchange=check; auth.onchange=check; nameEl.addEventListener('input',check);
+  function check(){ sendBtn.disabled=!(pad.hasInk()&&agree.checked&&auth.checked&&(!payt||payt.checked)&&nameOk()); }
+  agree.onchange=check; auth.onchange=check; if(payt) payt.onchange=check; nameEl.addEventListener('input',check);
   sendBtn.onclick=async()=>{
     const sig=pad.dataURL();
     if(!sig){ document.getElementById('err').textContent='נראה שלא נחתמה חתימה — אנא חתמו על הלוח לפני השליחה.'; return; }
     sendBtn.disabled=true; sendBtn.textContent='שולח...';
     try{
       const r=await fetch(API,{method:'POST',headers:{'content-type':'application/json'},
-        body:JSON.stringify({token,signer_name:document.getElementById('signerName').value.trim(),signature:sig,agreed:document.getElementById('agree').checked,authorized:document.getElementById('auth').checked,agree_text:(document.getElementById('agree-txt')||{}).textContent||''})});
+        body:JSON.stringify({token,signer_name:document.getElementById('signerName').value.trim(),signature:sig,agreed:document.getElementById('agree').checked,authorized:document.getElementById('auth').checked,agree_text:(document.getElementById('agree-txt')||{}).textContent||'',payterms_agreed:payt?payt.checked:undefined,payterms_text:payt?((document.getElementById('payt-txt')||{}).textContent||''):undefined})});
       const dd=await r.json();
       if(!r.ok||!dd.ok) throw new Error(dd.error||'שגיאה');
       show(isQ

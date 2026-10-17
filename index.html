@@ -3065,20 +3065,111 @@ td.lb-today .lb-dt{ background-color:transparent; }
 .dl-payrow select{ max-width:280px; }
 .dl-paybeats{ margin-top:6px; font-size:12px; color:var(--ink-2); }
 .dl-paybeats b{ color:var(--ink-1); font-weight:700; }
-/* 7.14.0 payplan — חלוקה + שורת תשלום לכל פעימה */
-.dl-pp-top{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
-.dl-pp-top .dl-pp-h{ font-size:12px; color:var(--ink-3); }
-.dl-pp-rows{ margin-top:8px; display:flex; flex-direction:column; gap:6px; }
-.dl-pp-row{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:6px 8px; border:1px solid var(--line); border-radius:var(--r-md); background:#fff; }
-.dl-pp-what{ min-width:210px; font-size:13px; }
-.dl-pp-what b{ color:var(--ink-1); }
-.dl-pp-row select{ max-width:170px; }
-.dl-pp-row input.dl-pp-pct{ width:64px; }
-.dl-pp-row input.dl-pp-days{ width:64px; }
-.dl-pp-link{ font-size:12px; margin-top:2px; width:100%; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
-.dl-pp-link code{ direction:ltr; font-size:11px; background:#f1f5f9; padding:2px 6px; border-radius:var(--r-sm); word-break:break-all; }
-.dl-pp-sum{ font-size:12px; color:var(--ink-3); }
-.dl-pp-sum.bad{ color:#c0392b; font-weight:700; }
+/* ===== 7.15.0 dealui — "פרטי העסקה" (רומן, 17/10/2026: "מינימליסטי, נקי, היררכיה ברורה, whitespace במקום מסגרות").
+   הכול תחת #dl-deal: מזהה (1,x,x) גובר על כללי .form-grid (0,2,x) — גם על ה-!important של input.ro — בלי לגעת בשאר הכרטיסים. */
+#dl-deal{ display:flex; flex-direction:column; gap:var(--sp-4); }
+#dl-deal label, #dl-deal .dd-k{ display:block; font-size:var(--fs-xs); font-weight:600; color:var(--ink-3); margin:0 0 4px; letter-spacing:0; }
+#dl-deal .req{ color:var(--red); margin-inline-start:2px; }
+#dl-deal .dd-sum{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:var(--sp-3) var(--sp-5); align-items:start; }
+#dl-deal input.ro{ background:transparent !important; border:0 !important; padding:0 !important; min-height:0 !important; height:auto; box-shadow:none !important;
+  font-size:var(--fs-lg); font-weight:700; color:var(--ink-1) !important; width:100%; cursor:default; font-variant-numeric:tabular-nums; }
+#dl-deal #dl-amtv input.ro{ font-size:var(--fs-xl); font-weight:800; color:var(--navy) !important; }
+#dl-deal .dd-acts{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-top:6px; }
+#dl-deal .dd-acts .tk-lnk{ display:contents; }
+#dl-deal .dd-acts .chip, #dl-deal .dd-acts .ph-btn{ min-height:24px; padding:2px 10px; font-size:var(--fs-xs); border-radius:var(--r-pill); }
+#dl-deal .dd-acts .note{ font-size:var(--fs-xs); margin:0; flex-basis:100%; }
+#dl-deal #dl-ownbox{ display:inline-flex; background:transparent; padding:0; min-height:var(--ctl-h-sm); }
+#dl-deal #dl-ownbox .lb-owc{ display:inline-flex; width:auto; min-height:0; padding:2px 8px 2px 2px; background:transparent; border-radius:var(--r-pill); }
+#dl-deal #dl-ownbox .lb-owc-go:hover{ background:#f1f5f9; }
+#dl-deal .dd-two{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--sp-3) var(--sp-5); align-items:start;
+  padding-top:var(--sp-4); border-top:1px solid var(--line); }
+#dl-deal .dd-file{ display:flex; align-items:center; gap:var(--sp-2); min-height:var(--ctl-h-sm); }
+#dl-deal .dd-pdf{ font-size:10px; font-weight:800; letter-spacing:.04em; color:#b42318; background:#fef3f2; border-radius:4px; padding:3px 5px; }
+#dl-deal .dd-file .chip{ border:0; background:transparent; padding:0; min-height:0; color:var(--navy); font-weight:600; font-size:var(--fs-md); cursor:pointer; }
+#dl-deal .dd-file .chip:hover{ text-decoration:underline; }
+#dl-deal .dd-seg{ display:inline-flex; border:1px solid var(--line); border-radius:var(--r-md); overflow:hidden; background:#fff; }
+#dl-deal .dd-seg button{ border:0; border-inline-start:1px solid var(--line); background:#fff; color:var(--ink-2); font:inherit; font-size:var(--fs-sm);
+  font-weight:600; padding:0 18px; min-height:var(--ctl-h-sm); cursor:pointer; transition:background-color .12s, color .12s; }
+#dl-deal .dd-seg button:first-child{ border-inline-start:0; }
+#dl-deal .dd-seg button:hover:not(:disabled):not(.on){ background:#f8fafc; color:var(--ink-1); }
+#dl-deal .dd-seg button.on{ background:var(--navy); color:#fff; }
+#dl-deal .dd-seg button:disabled{ cursor:default; }
+#dl-deal .dd-seg button:disabled:not(.on){ color:var(--ink-3); }
+#dl-deal .dd-seg button:focus-visible, #dl-deal .dd-btn:focus-visible, #dl-deal .dd-add:focus-visible, #dl-deal .dd-icon:focus-visible,
+#dl-deal .dd-lnk:focus-visible{ outline:none; box-shadow:var(--sh-focus); }
+#dl-deal .dd-note{ font-size:var(--fs-xs); color:var(--ink-3); margin-top:6px; }
+#dl-deal .dd-note.warn{ color:#b45309; }
+#dl-deal .dd-pay{ padding-top:var(--sp-4); border-top:1px solid var(--line); }
+#dl-deal .dd-pay-h{ display:flex; flex-wrap:wrap; align-items:center; gap:var(--sp-2) var(--sp-3); }
+#dl-deal .dd-pay-h .dd-t{ font-size:var(--fs-md); font-weight:800; color:var(--ink-1); }
+#dl-deal .dd-help{ flex-basis:100%; font-size:var(--fs-xs); color:var(--ink-3); }
+#dl-deal select, #dl-deal input.dl-pp-pct, #dl-deal input.dl-pp-days{ min-height:var(--ctl-h-sm); padding:3px 8px; font:inherit; font-size:var(--fs-sm);
+  border:1px solid var(--line); border-radius:var(--r-sm); background:#fff; color:var(--ink-1); box-sizing:border-box; }
+#dl-deal select:focus, #dl-deal input.dl-pp-pct:focus, #dl-deal input.dl-pp-days:focus{ outline:none; border-color:var(--navy); box-shadow:var(--sh-focus); }
+#dl-deal select:disabled, #dl-deal input:disabled{ background:#f8fafc; color:var(--ink-3); }
+#dl-deal #dl-paysplit{ width:auto; min-width:260px; flex:0 0 auto; font-weight:600; }
+#dl-deal .dd-sched{ margin-top:var(--sp-3); }
+#dl-deal .dd-pr{ display:grid; grid-template-columns:112px 84px 128px minmax(215px,1.4fr) minmax(130px,1fr) minmax(120px,1fr) 124px;
+  align-items:center; gap:var(--sp-2) var(--sp-3); padding:10px 2px; border-bottom:1px solid #eef2f6; }
+#dl-deal .dd-pr:first-child{ border-top:1px solid #eef2f6; }
+#dl-deal .dd-pr-n{ display:flex; align-items:center; gap:8px; font-size:var(--fs-sm); font-weight:600; color:var(--ink-2); min-width:0; }
+#dl-deal .dd-idx{ width:20px; height:20px; border-radius:50%; background:#eef2f6; color:var(--ink-2); font-size:11px; font-weight:700;
+  display:inline-grid; place-items:center; flex:none; }
+#dl-deal .dd-pr-pct, #dl-deal .dd-pr-amt{ font-size:var(--fs-lg); font-weight:800; color:var(--ink-1); font-variant-numeric:tabular-nums; white-space:nowrap; }
+#dl-deal .dd-pr-pct{ display:flex; align-items:center; gap:3px; }
+#dl-deal .dd-pr-pct input.dl-pp-pct{ width:60px; text-align:center; font-weight:700; }
+#dl-deal .dd-pr-when{ display:flex; align-items:center; gap:6px; flex-wrap:nowrap; font-size:var(--fs-sm); color:var(--ink-2); white-space:nowrap; }
+#dl-deal .dd-pr-when select{ flex:1 1 auto; min-width:0; width:auto; }
+#dl-deal .dd-pr-when input.dl-pp-days{ width:56px; text-align:center; }
+#dl-deal .dd-pr select{ width:100%; }
+#dl-deal .dd-pr select.need{ border-color:var(--warn); background:var(--amber-bg); }
+#dl-deal .dd-pr-act{ display:flex; align-items:center; justify-content:flex-end; gap:2px; }
+#dl-deal .dd-lnk{ display:inline-flex; align-items:center; gap:4px; border:0; background:transparent; color:var(--navy); font:inherit; font-size:var(--fs-sm);
+  font-weight:600; padding:4px 8px; border-radius:var(--r-sm); cursor:pointer; text-decoration:none; white-space:nowrap; }
+#dl-deal .dd-lnk:hover{ background:#f1f5f9; }
+#dl-deal .dd-lnk .ico{ width:15px; height:15px; }
+#dl-deal .dd-icon{ border:0; background:transparent; color:var(--ink-3); width:28px; height:28px; border-radius:var(--r-sm); cursor:pointer; font:inherit; font-size:14px; }
+#dl-deal .dd-icon:hover{ background:var(--red-bg); color:var(--red); }
+#dl-deal .dl-pp-link{ grid-column:1/-1; display:flex; flex-wrap:wrap; align-items:center; gap:var(--sp-2); padding:8px 10px; margin-top:2px;
+  background:#f8fafc; border-radius:var(--r-md); font-size:var(--fs-xs); color:var(--ink-2); }
+#dl-deal .dl-pp-link code{ direction:ltr; font-size:11px; color:var(--ink-1); word-break:break-all; flex:1 1 240px; }
+#dl-deal .dl-pp-link .dd-warn{ flex-basis:100%; color:#b45309; }
+#dl-deal .dd-empty{ font-size:var(--fs-sm); color:var(--ink-3); padding:var(--sp-3) 0 0; }
+#dl-deal .dd-pay-f{ display:flex; flex-wrap:wrap; align-items:center; gap:var(--sp-2) var(--sp-3); margin-top:var(--sp-3); }
+#dl-deal .dd-add{ border:1px dashed #cbd5e1; background:transparent; color:var(--navy); font:inherit; font-size:var(--fs-sm); font-weight:600;
+  padding:0 12px; min-height:var(--ctl-h-sm); border-radius:var(--r-md); cursor:pointer; }
+#dl-deal .dd-add:hover{ background:#f8fafc; border-color:var(--navy); }
+#dl-deal .dl-pp-sum{ font-size:var(--fs-xs); font-weight:700; padding:3px 10px; border-radius:var(--r-pill); background:#ecfdf3; color:#067647; }
+#dl-deal .dl-pp-sum.bad{ background:var(--red-bg); color:var(--red); }
+#dl-deal .dd-total{ margin-inline-start:auto; font-size:var(--fs-sm); color:var(--ink-3); }
+#dl-deal .dd-total b{ font-size:var(--fs-lg); font-weight:800; color:var(--ink-1); font-variant-numeric:tabular-nums; margin-inline-start:4px; }
+#dl-deal .dd-btn{ background:#fff; border:1px solid var(--line); color:var(--navy); font:inherit; font-size:var(--fs-sm); font-weight:600;
+  padding:0 14px; min-height:var(--ctl-h-sm); border-radius:var(--r-md); cursor:pointer; }
+#dl-deal .dd-btn:hover:not(:disabled){ background:#f8fafc; border-color:#cbd5e1; }
+#dl-deal .dd-btn:disabled{ opacity:.5; cursor:not-allowed; }
+#dl-deal .dd-bar{ display:flex; flex-wrap:wrap; align-items:center; gap:var(--sp-3) var(--sp-5); padding-top:var(--sp-4); border-top:1px solid var(--line); }
+#dl-deal .dd-bar .tk-lnk{ display:flex; flex-wrap:wrap; align-items:center; gap:var(--sp-2); }
+#dl-deal .dd-bar .btn{ width:auto; min-height:var(--ctl-h-md); padding:0 22px; font-size:var(--fs-md); }
+#dl-deal .dd-bar .chip{ border-radius:var(--r-md); }
+#dl-deal .dd-bar .note{ margin:0; }
+#dl-deal .dd-meta{ margin-inline-start:auto; display:flex; flex-wrap:wrap; align-items:center; gap:var(--sp-2) var(--sp-5); font-size:var(--fs-sm); color:var(--ink-2); }
+#dl-deal .dd-meta .dd-inl{ display:flex; align-items:center; gap:6px; }
+#dl-deal .dd-meta label{ margin:0; white-space:nowrap; }
+#dl-deal .dd-meta .tk-lnk{ display:flex; align-items:center; gap:6px; }
+#dl-deal .dd-meta .note{ margin:0; padding:0; background:transparent; border:0; font-size:var(--fs-sm); color:var(--ink-3); }
+#dl-deal .dd-dates{ display:flex; flex-direction:row; align-items:center; gap:var(--sp-4); }
+#dl-deal .dd-dates .c2-half{ display:flex; flex-direction:row; align-items:baseline; gap:6px; }
+#dl-deal .dd-dates input.ro{ font-size:var(--fs-sm); font-weight:600; width:9ch; }
+@media(max-width:759.98px){
+  #dl-deal .dd-sum{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+  #dl-deal .dd-two{ grid-template-columns:1fr; }
+  #dl-deal .dd-pr{ grid-template-columns:1fr 1fr; }
+  #dl-deal .dd-pr-n, #dl-deal .dd-pr-when{ grid-column:1/-1; }
+  #dl-deal .dd-pr-act{ justify-content:flex-start; }
+  #dl-deal .dd-bar .btn{ width:100%; }
+  #dl-deal .dd-meta{ margin-inline-start:0; }
+  #dl-deal #dl-paysplit{ min-width:0; width:100%; }
+}
 /* ---- דחיסת כרטיס הליד (6.108.0, רומן: "יותר דחוס וקומפקטי") ---- */
 #leadSheet .form-grid, #tkSheet .form-grid{ gap:9px 12px; }
 #leadSheet .form-sep, #tkSheet .form-sep{ margin-top:var(--sp-3); padding-bottom:var(--sp-1); }
@@ -3287,6 +3378,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   td.lb-ck input, th.lb-ck input{ width:22px; height:22px; }
 }
 /* ===== 6.199.0 — דשבורד שיווק ===== */
+  #tab-mkt .mkt-intent-tbl td .fun-bar{ min-width:90px }
 #tab-mkt .mkt-bar{ display:block; margin-bottom:6px; }   /* 6.207.0 — הילדים (.toolbar + details.lf-wrap) מסדרים את עצמם */
 #tab-mkt .mkt-tools{ flex-wrap:wrap; margin-bottom:8px; }
 #tab-mkt .mkt-tools .lf-sel{ width:auto; flex:none; height:var(--ctl-h-md); }
@@ -3436,7 +3528,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.14.1</div>
+      <div class="ver">גרסה 7.15.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3567,7 +3659,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="bookq-2026-10-17a">גרסה 7.14.1</div>
+    <div class="side-foot" title="mktintent-2026-10-17a">גרסה 7.15.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -12563,25 +12655,26 @@ window.dlQuoteRows = (id) => (PROTS||[])
       לקדם שלב בעצמו בשום מסלול. */
 const DLQR = {};   /* deal_id -> {busy, txt, cls} */
 
+/* 7.15.0 — סיכום העסקה: label מעל ערך, בלי קופסה (input.ro נשאר — הקוראים קוראים value — ומוצג כטקסט ב-#dl-deal).
+   וואטסאפ (7.1.0, רק כשיש PDF) ו"משוך מפריוריטי" — פעולות קטנות מתחת למספר, לא בתוך התווית. */
 window.dlQCell = (d) =>
-  "<label>מס' הצעה בפריוריטי"
-  /* 7.1.0 — רומן: "להחזיר את כפתור הוואטסאפ הקטן ליד מספר ההצעת מחיר … 'שליחה בוואטסאפ'". רק כשיש PDF. */
-  + (d.quote_doc_path ? ' <button type="button" class="ph-btn wa" style="font-family:inherit;cursor:pointer" onclick="event.stopPropagation();dlQuoteWa(\'' + jsq(d.id) + '\')" title="שליחת ההצעה ללקוח ב-WhatsApp Web, עם קישור קצר ל-PDF">' + WA_SVG + ' שליחה בוואטסאפ</button>' : '')
-  + "</label>" + roIn(d.priority_quote_id || '', {ltr:1}) + dlPullBox(d);
+  `<label>מס' הצעה בפריוריטי</label>` + roIn(d.priority_quote_id || '', {ltr:1})
+  + `<div class="dd-acts">`
+  + (d.quote_doc_path ? `<button type="button" class="ph-btn wa" style="font-family:inherit;cursor:pointer" onclick="event.stopPropagation();dlQuoteWa('${jsq(d.id)}')" title="שליחת ההצעה ללקוח ב-WhatsApp Web, עם קישור קצר ל-PDF">${WA_SVG} שליחה בוואטסאפ</button>` : '')
+  + dlPullBox(d) + `</div>`;
 
 window.dlAmtCell = (d) =>
-  '<label>סכום (לפני מע"מ)</label>' + roIn(d.amount != null ? shekel(d.amount) : '');
+  `<label>סכום (לפני מע"מ)</label>` + roIn(d.amount != null ? shekel(d.amount) : '');
 
 window.dlAmtVCell = (d) =>
-  '<label>סכום (כולל מע"מ)' + (d.amount_incl_vat != null ? '' : ' · מחושב') + '</label>'
+  `<label>סכום (כולל מע"מ)${d.amount_incl_vat != null ? '' : ' · מחושב'}</label>`
   + roIn(d.amount_incl_vat != null ? shekel(d.amount_incl_vat)
         : (d.amount != null ? shekel(Number(d.amount) * VAT_RATE) : ''));
 
+/* 7.15.0 — קובץ: תג PDF + שם לחיץ (פותח), במקום צ'יפ בתוך קופסה. */
 window.dlQDocBox = (d) => d.quote_doc_path
-  ? '<div class="tk-lnk"><button class="chip" onclick="dlOpenDoc(\'' + jsq(d.quote_doc_path) + '\')">'
-    + esc(String(d.quote_doc_path).split('/').pop()) + ' &#8599;</button></div>'
-    /* 7.0.1 — רומן: "תבטל את כפתור הוואטסאפ שליד ההצעה כרגע" — ההודעה נשאה קישור חתום ארוך ולא קובץ.
-       dlQuoteWa והתבנית wa_quote_text נשארים רדומים עד ההכרעה: הורדה+גרירה או קישור קצר בדומיין שלנו. */
+  ? `<div class="tk-lnk dd-file"><span class="dd-pdf">PDF</span><button type="button" class="chip" onclick="dlOpenDoc('${jsq(d.quote_doc_path)}')">`
+    + esc(String(d.quote_doc_path).split('/').pop()) + ` &#8599;</button></div>`
   : roIn('טרם נמשך');
 /* ═══ 6.262.0 — וואטסאפ עם הצעת המחיר (רומן, 13/10/2026) ═══════════════════════════════════════════
    המהדורה: מספר הקובץ <QN>-<CURVERSION>.pdf (נמדד 134/134). הנמען: מה שהכרטיס מציג — "טלפון איש קשר"
@@ -12783,8 +12876,8 @@ window.dlSignBox = (d)=>{
   const shipBtn = `<button type="button" class="chip" onclick="dlShipCalc('${jsq(d.id)}')">חשב משלוח והתקנה</button>`;
   if(!window.canEdit('docs.' + DL_QCAT))
     return `<div class="tk-lnk">${shipBtn}</div><div class="note">אין לך הרשאת עריכה בקטגוריית ההצעות.</div>`;
-  return `<div class="tk-lnk"><button type="button" class="btn" onclick="dlQuoteDoc('${jsq(d.id)}')">✎ צור מסמך לחתימה</button> ${shipBtn}`
-       + ` <span class="lb-mut">הצעה ${esc(d.priority_quote_id)}</span></div>`;
+  /* 7.15.0 — Primary יחיד בסרגל הפעולות; מספר ההצעה כבר בסיכום ולכן ירד מכאן. */
+  return `<div class="tk-lnk"><button type="button" class="btn" onclick="dlQuoteDoc('${jsq(d.id)}')">✎ צור מסמך לחתימה</button> ${shipBtn}</div>`;
 };
 
 /* 6.263.0 — מודול התצוגה המקדימה בריחוף (6.173.0/6.174.0) ירד כולו (רומן: "תבטל את ה-hover — זה סתם מעצבן").
@@ -12879,7 +12972,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'bookq-2026-10-17a';
+const BUILD_ID = 'mktintent-2026-10-17a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -19404,7 +19497,7 @@ async function mktLoad(force){
     if(r.error){ mktStatus('טעינת הדשבורד נכשלה: '+(r.error.message||'')); return; }
     if(r.data==null){ mktStatus('אין הרשאה לדשבורד השיווק'); return; }
     MKT_D=r.data; MKT_AT=Date.now(); MKT_LAST=key; ok=true;
-    MKT_PV.key='';   /* נתונים חדשים מהשרת ⇒ גם הניתוח הדינמי נטען מחדש (ולא ממטמון שנבנה על התשובה הקודמת) */
+    MKT_PV.key=''; MKT_IN.key='';   /* נתונים חדשים מהשרת ⇒ גם הניתוח הדינמי נטען מחדש (ולא ממטמון שנבנה על התשובה הקודמת) */
     mktPaintBar(); mktPaint();
   }catch(e){ mktStatus('טעינת הדשבורד נכשלה: '+String(e)); }
   finally{
@@ -19634,6 +19727,7 @@ function mktPaint(){
     '<div class="mkt-card" id="mkt-trend"></div>'+
     '<div class="mkt-grid2"><div class="mkt-card" id="mkt-funnel"></div><div class="mkt-card" id="mkt-response"></div></div>'+
     '<div class="mkt-card" id="mkt-sources"></div>'+
+    '<div class="mkt-card" id="mkt-intent"></div>'+
     '<div class="mkt-card" id="mkt-campaigns"></div>'+
     '<div class="mkt-card" id="mkt-pivot"></div>'+
     '<div class="mkt-card" id="mkt-lost"></div>'+
@@ -19641,7 +19735,7 @@ function mktPaint(){
     '<div class="mkt-card" id="mkt-quality"></div>'+
     '<div class="mkt-card" id="mkt-spend"></div>';
   body.innerHTML=h;
-  mktPaintTrend(); mktPaintFunnel(); mktPaintResponse(); mktPaintTables(); mktPaintPivot(); mktPaintLost(); mktPaintQuality(); mktPaintSpend();
+  mktPaintTrend(); mktPaintFunnel(); mktPaintResponse(); mktPaintTables(); mktPaintIntent(); mktPaintPivot(); mktPaintLost(); mktPaintQuality(); mktPaintSpend();
 }
 function mktPaintFunnel(){
   const el=document.getElementById('mkt-funnel'); if(!el||!MKT_D) return;
@@ -19710,6 +19804,46 @@ function mktPaintQuality(){
     t('lost_no_date','לידים אבודים בלי תאריך','','quality:lost_no_date')+
     t('no_contact_stamp','לידים שטופלו בלי חותמת זמן','נמדד מ-'+fmtD((MKT_D.response||{}).measured_from||''),'quality:no_contact_stamp')+
     '</div>';
+}
+/* 7.15.1 mktintent — רומן: "תוסיף פילוח במה מתעניינים בדשבורד השיווק". התשובה האחרונה ל"במה מתעניין?"
+   (crm.activities details.q.q_intent — מדף הקביעה באתר ומהנציגים) על אותם מסננים: crm.mkt_intent(p) מעל mkt_leads(p).
+   טעינה עצלה ומטמון לפי ה-payload, כמו MKT_PV. בלי drill — mkt_drill אינו מכיר את המימד. */
+let MKT_IN = { key:'', data:null, busy:false, again:false };
+const MKT_IN_HEAD = '<h3>במה מתעניינים <small>התשובה לשאלה "במה מתעניין?" — מדף הקביעה באתר ומהתשאול של הנציגים · לידים שנוצרו בטווח, באותם מסננים</small></h3>';
+function mktIntentHtml(D){
+  const tot=+D.total||0, ans=+D.answered||0, rows=D.rows||[], sd=D.since ? new Date(D.since) : null, since=(sd && !isNaN(sd)) ? fmtD(mktIso(sd)) : '';   /* since הוא timestamp, ו-fmtD מקבל תאריך בלבד */
+  if(!ans) return '<div class="db-empty">אין עדיין תשובות בטווח ובסינון'+(tot?' ('+mktN(tot)+' לידים)':'')+'. '+
+    (since ? 'השאלה נאספת מ-'+esc(since)+' — ' : 'השאלה נאספת ')+'בדף הקביעה באתר (חובה) ובתשאול הליד במערכת. לידים מלפני כן לא נשאלו, והתשובה שלהם אינה מנוחשת.</div>';
+  const mx=Math.max(1,...rows.map(r=>+r.leads||0));
+  let h='<div class="db-fin"><div><b>'+mktN(ans)+'</b><small>לידים ענו</small></div>'+
+    '<div><b>'+mktPct(tot?ans/tot:null)+'</b><small>מתוך '+mktN(tot)+' לידים בטווח</small></div>'+
+    '<div><b>'+mktN(rows.length)+'</b><small>תשובות שונות</small></div></div>';
+  h+='<div class="tbl-wrap"><table class="tbl mkt-intent-tbl"><thead><tr><th>תשובה</th><th class="num">לידים</th><th>% מהעונים</th><th class="num">רלוונטיים</th><th class="num">נסגרו</th><th class="num">המרה</th><th class="num">הכנסות</th></tr></thead><tbody>'+
+    rows.map(r=>{ const n=+r.leads||0;
+      return '<tr><td>'+esc(r.intent)+'</td><td class="num">'+mktN(n)+'</td>'+
+        '<td><div class="fun-row" style="cursor:default;padding:0"><div class="fun-bar"><div style="width:'+Math.round(n/mx*100)+'%"></div></div><span class="fun-a" style="width:auto">'+mktPct(ans?n/ans:null)+'</span></div></td>'+
+        '<td class="num">'+mktN(r.qualified)+'</td><td class="num">'+mktN(r.won_n)+'</td><td class="num">'+mktPct(n?(+r.won_n||0)/n:null)+'</td><td class="num">'+mktTM(r.revenue)+'</td></tr>'; }).join('')+
+    '</tbody></table></div>';
+  return h+'<div class="mkt-note">נאסף מ-'+esc(since)+' · התשובה האחרונה של כל ליד · "נסגרו" = לידים שיש להם עסקה שנסגרה · "המרה" = נסגרו מתוך הלידים בשורה'+
+    (tot>ans ? ' · '+mktN(tot-ans)+' לידים בטווח בלי תשובה אינם בטבלה' : '')+'</div>';
+}
+async function mktPaintIntent(){
+  const el=document.getElementById('mkt-intent'); if(!el||!MKT_D) return;
+  if(!canView('mkt.dash')) return;
+  const key=JSON.stringify(mktPayload());
+  if(MKT_IN.key===key && MKT_IN.data){ el.innerHTML=MKT_IN_HEAD+mktIntentHtml(MKT_IN.data); return; }
+  el.innerHTML=MKT_IN_HEAD+'<div class="empty">טוען…</div>';
+  if(MKT_IN.busy){ MKT_IN.again=true; return; }
+  MKT_IN.busy=true;
+  const put=h=>{ const e=document.getElementById('mkt-intent'); if(e) e.innerHTML=MKT_IN_HEAD+h; };
+  try{
+    const r=await sb.schema('crm').rpc('mkt_intent', { p:mktPayload() });
+    if(r.error){ put('<div class="empty">'+esc('טעינת הפילוח נכשלה: '+(r.error.message||''))+'</div>'); return; }
+    if(r.data==null){ put('<div class="empty">אין הרשאה</div>'); return; }
+    MKT_IN.key=key; MKT_IN.data=r.data;
+    if(JSON.stringify(mktPayload())===key) put(mktIntentHtml(r.data));
+  }catch(e){ put('<div class="empty">'+esc('טעינת הפילוח נכשלה: '+String(e))+'</div>'); }
+  finally{ MKT_IN.busy=false; if(MKT_IN.again){ MKT_IN.again=false; mktPaintIntent(); } }
 }
 /* ── ניתוח דינמי (6.202.0) — mkt_pivot(p, row, col): הגדרה אחת בשרת, כאן רק בחירה וציור ── */
 let MKT_PV = { key:'', data:null, busy:false, again:false, sorted:false };
@@ -26070,26 +26204,27 @@ window.openDeal = async (id)=>{
       ${dlCustCells(lead, cust, contact, d).join('\n      ')}
 
       <div class="form-sep">פרטי העסקה</div>
-      <div id="dl-qcell">${dlQCell(d)}</div>
-      <div id="dl-amt">${dlAmtCell(d)}</div>
-      <div id="dl-amtv">${dlAmtVCell(d)}</div>
-      <div><label>בעלים ושותפים</label>
-        <div id="dl-ownbox">${dlOwnerCellName(d)}</div></div>
-      <div class="span2" id="dl-qdoc"><label>מסמך ההצעה</label>
-        ${dlQDocBox(d)}</div>
-      <div class="span2"><label>לאן לשלוח את ההצעה<span class="req">*</span></label>
-        <div id="dl-chanbox"></div></div>
-      <div class="span4" id="dl-paycell"><label>תנאי תשלום<span class="req">*</span></label>
-        <div id="dl-paybox"></div></div>
-      <div class="span2"><label>חתימה על ההצעה — מודול איירון</label>
-        <div id="dl-signbox">${dlSignBox(d)}</div></div>
-      <div><label>לינק לחתימה</label><div id="dl-signlink">${dlSignLinkHtml(d)}</div></div>
-      <div class="cell-2up" id="dl-dates">
-        <!-- ⚠️ התוויות **מלאות**, אחרי מדידה. Fable הציע לקצר ל"אישור
-             ההצעה"/"סגירה" בהערכה שהמלאה דורשת ~115px; המדידה בדפדפן
-             החזירה **101px בתא של 104px** — כלומר היא נכנסת בשורה אחת.
-             רומן לא ביקש לקצר, ולכן אין סיבה. הערכה מול מדידה. -->
-        ${dlDatesHtml(d)}
+      <!-- 7.15.0 dealui — מקטע אחד לפי סדר העבודה: סיכום → מסמך + שליחה → לוח תשלומים → פעולה (רומן, 17/10/2026).
+           המזהים לא זזו: dlLivePaint · dlPull · dlSignAfterLink מציירים אותם אחד-אחד. -->
+      <div class="span4" id="dl-deal">
+        <div class="dd-sum">
+          <div id="dl-qcell">${dlQCell(d)}</div>
+          <div id="dl-amt">${dlAmtCell(d)}</div>
+          <div id="dl-amtv">${dlAmtVCell(d)}</div>
+          <div><label>בעלים ושותפים</label><div id="dl-ownbox">${dlOwnerCellName(d)}</div></div>
+        </div>
+        <div class="dd-two">
+          <div id="dl-qdoc"><label>מסמך ההצעה</label>${dlQDocBox(d)}</div>
+          <div><label>שליחת ההצעה<span class="req">*</span></label><div id="dl-chanbox"></div></div>
+        </div>
+        <div class="dd-pay" id="dl-paycell"><div id="dl-paybox"></div></div>
+        <div class="dd-bar">
+          <div id="dl-signbox">${dlSignBox(d)}</div>
+          <div class="dd-meta">
+            <div class="dd-inl"><label>לינק לחתימה</label><div id="dl-signlink">${dlSignLinkHtml(d)}</div></div>
+            <div class="cell-2up dd-dates" id="dl-dates">${dlDatesHtml(d)}</div>
+          </div>
+        </div>
       </div>
 
       <div id="dl-ordsec" class="dl-ordsec">${dlOrdSecHtml(d)}</div>
@@ -26177,13 +26312,13 @@ function dlChanDraw(id){
   /* ⚠️ ערך קיים שאינו ברשימה מוצג בכל זאת — אותו כלל של תת-הסטטוס
      ברצועה. הסתרתו הייתה נראית כאילו לא נבחר דבר. */
   const all = now && DEAL_CHANNELS.indexOf(now)<0 ? DEAL_CHANNELS.concat([now]) : DEAL_CHANNELS;
-  box.innerHTML = `<div class="lb-psub">` + all.map(o=>{
-      const on = o===now, bg = DEAL_CH_COLORS[o] || '#94a3b8';
-      const stl = on ? `background-color:${tint(bg,LB_TK)};color:${onWhite(bg)};border-color:${tint(bg,LB_TK-.20)}` : '';
-      return `<button type="button" style="${stl}"${ed?'':' disabled'}`
+  /* 7.15.0 — Segmented Control אחד במקום שלושה צ'יפים צבעוניים (רומן: "מעט מאוד צבע"). לחיצה על הנבחר מנקה. */
+  box.innerHTML = `<div class="dd-seg" role="group" aria-label="שליחת ההצעה">` + all.map(o=>{
+      const on = o===now;
+      return `<button type="button" class="${on?'on':''}" aria-pressed="${on?'true':'false'}"${ed?'':' disabled'}`
         + ` onclick="dlSetChan('${jsq(id)}','${jsq(on?'':o)}')">${esc(o)}</button>`;
     }).join('') + `</div>`
-    + (now ? '' : `<div class="lb-psub-x">חובה לפני מעבר ל«נשלחה הצעת מחיר לחתימה».</div>`);
+    + (now ? '' : `<div class="dd-note">חובה לפני מעבר ל«נשלחה הצעת מחיר לחתימה».</div>`);
 }
 /* ⚠️ RPC ולא UPDATE ישיר, אף שהעמודה אינה מראה: שער הרשאה אחד,
    ולידציה אחת, ושורת יומן — ואי אפשר לכתוב ערך שאינו ברשימה. */
@@ -26247,59 +26382,71 @@ function dlPayDraw(id){
   const sp = window.canEdit('crm.deals.payterms');
   const can = window.canEdit('crm.deals');
   const ed = can && (sp || DEAL_PAY_LOCKED.indexOf(d.stage||'') < 0);
-  const S = dlPpState(d), cus = S.term === '__custom';
+  const S = dlPpState(d), cus = S.term === '__custom', dis = ed ? '' : ' disabled';
   const offer = (PTERMS||[]).filter(t=> t.deal_offer || t.code===S.term);
-  const sel = `<select id="dl-paysplit"${ed?'':' disabled'} onchange="dlPpSplit('${jsq(id)}',this.value)">`
-    + `<option value="">— חלוקת התשלום —</option>`
+  const sel = `<select id="dl-paysplit" aria-label="חלוקת התשלום"${dis} onchange="dlPpSplit('${jsq(id)}',this.value)">`
+    + `<option value="">בחרו חלוקה…</option>`
     + offer.map(t=>`<option value="${esc(t.code)}"${t.code===S.term?' selected':''}>${esc(t.name)}</option>`).join('')
     + ((sp || cus) ? `<option value="__custom"${cus?' selected':''}${sp?'':' disabled'}>חלוקה מותאמת…${sp?'':' 🔒'}</option>` : '')
     + `</select>`;
   const tot = d.amount_incl_vat != null ? Number(d.amount_incl_vat) : null;
   const am = tot != null ? dlPpAmounts(S.beats, tot) : [];
-  const f2 = x => '₪' + Number(x).toLocaleString('he-IL', { minimumFractionDigits:0, maximumFractionDigits:2 });
+  /* סכום עגול ⇒ בלי אגורות; אחרת תמיד שתי ספרות (13,651.50 ולא 13,651.5). */
+  const f2 = x => '₪' + Number(x).toLocaleString('he-IL', { minimumFractionDigits: Number.isInteger(Number(x)) ? 0 : 2, maximumFractionDigits:2 });
   const saved = !S.dirty && Array.isArray(d.pay_plan) && d.pay_plan.length;
+  /* 7.15.0 — שורה לכל תשלום, בלי מסגרת: # ושם · % · סכום (שני הבולטים) · מועד · אמצעי · פרטים · פעולות. */
   const rows = S.beats.map((b, i)=>{
-    const dis = ed ? '' : ' disabled';
-    const meth = `<select class="dl-pp-m" data-i="${i}"${dis} onchange="dlPpSet('${jsq(id)}',${i},{method:this.value})">`
-      + `<option value="">— אמצעי —</option>`
+    const meth = `<select class="dl-pp-m${(S.dirty && !b.method) ? ' need' : ''}" aria-label="אמצעי תשלום ${i+1}"${dis} onchange="dlPpSet('${jsq(id)}',${i},{method:this.value})">`
+      + `<option value="">אמצעי תשלום…</option>`
       + DEAL_PAY_METHODS.map(o=>{ const lock = o==='שוטף' && !sp && b.method!==o;
           return `<option value="${esc(o)}"${o===b.method?' selected':''}${lock?' disabled':''}>${esc(o)}${lock?' 🔒':''}</option>`; }).join('')
       + `</select>`;
-    const inst = b.method==='אשראי'
-      ? `<select class="dl-pp-n"${dis} onchange="dlPpSet('${jsq(id)}',${i},{installments:+this.value})">`
-        + Array.from({length:12},(_,k)=>k+1).map(k=>`<option value="${k}"${k===(+b.installments||1)?' selected':''}>${k===1?'תשלום אחד':k+' תשלומים'}</option>`).join('') + `</select>` : '';
-    const net = b.method==='שוטף'
-      ? `<select class="dl-pp-net"${dis} onchange="dlPpSet('${jsq(id)}',${i},{net_days:+this.value})">`
-        + DEAL_PAY_NET.map(k=>`<option value="${k}"${k===(+b.net_days||0)?' selected':''}>${k?'שוטף + '+k:'שוטף'}</option>`).join('') + `</select>` : '';
-    /* מותאמת: אחוז + מועד + ימים, ומחיקת שורה. בחלוקה קבועה אלה נעולים — הם של הטבלה. */
-    const custom = cus ? `<input class="dl-pp-pct" type="number" min="0.01" max="100" step="0.01" value="${esc(String(b.pct))}"${dis} onchange="dlPpSet('${jsq(id)}',${i},{pct:+this.value},1)">%`
-      + (b.method==='שוטף' ? '' : `<select class="dl-pp-a"${dis} onchange="dlPpSet('${jsq(id)}',${i},{anchor:this.value},1)">`
+    const more = b.method==='אשראי'
+      ? `<select class="dl-pp-n" aria-label="מספר תשלומים"${dis} onchange="dlPpSet('${jsq(id)}',${i},{installments:+this.value})">`
+        + Array.from({length:12},(_,k)=>k+1).map(k=>`<option value="${k}"${k===(+b.installments||1)?' selected':''}>${k===1?'תשלום אחד':k+' תשלומים'}</option>`).join('') + `</select>`
+      : b.method==='שוטף'
+      ? `<select class="dl-pp-net" aria-label="ימי שוטף"${dis} onchange="dlPpSet('${jsq(id)}',${i},{net_days:+this.value})">`
+        + DEAL_PAY_NET.map(k=>`<option value="${k}"${k===(+b.net_days||0)?' selected':''}>${k?'שוטף + '+k:'שוטף'}</option>`).join('') + `</select>`
+      : '';
+    const pct = cus
+      ? `<input class="dl-pp-pct" type="number" min="0.01" max="100" step="0.01" aria-label="אחוז"${dis} value="${esc(String(b.pct))}" onchange="dlPpSet('${jsq(id)}',${i},{pct:+this.value},1)">%`
+      : `${esc(String(b.pct))}%`;
+    const when = (cus && b.method!=='שוטף')
+      ? `<select class="dl-pp-a" aria-label="מועד"${dis} onchange="dlPpSet('${jsq(id)}',${i},{anchor:this.value},1)">`
          + DEAL_PAY_ANCH.map(([v,l])=>`<option value="${v}"${v===b.anchor?' selected':''}>${esc(l)}</option>`).join('') + `</select>`
-         + `<input class="dl-pp-days" type="number" min="0" max="365" value="${esc(String(b.offset_days||0))}"${dis} title="ימים" onchange="dlPpSet('${jsq(id)}',${i},{offset_days:+this.value},1)"> ימים`)
-      + (ed && S.beats.length > 1 ? ` <button type="button" class="ghost sm" onclick="dlPpDel('${jsq(id)}',${i})" title="הסרת התשלום">✕</button>` : '') : '';
-    const k = id + ':' + (i+1), L = DL_PL[k];
-    const link = (saved && b.method==='אשראי')
-      ? `<button type="button" class="ghost sm" onclick="dlPayLink('${jsq(id)}',${i+1})">${ico('link')} קישור תשלום</button>` : '';
+         + `<input class="dl-pp-days" type="number" min="0" max="365" aria-label="ימים"${dis} value="${esc(String(b.offset_days||0))}" title="ימים אחרי המועד" onchange="dlPpSet('${jsq(id)}',${i},{offset_days:+this.value},1)"> ימים`
+      : esc(dlPpWhen(b));
+    const L = DL_PL[id + ':' + (i+1)];
+    const act = ((saved && b.method==='אשראי') ? `<button type="button" class="dd-lnk" onclick="dlPayLink('${jsq(id)}',${i+1})" title="קישור לתשלום באשראי">${ico('link')} קישור תשלום</button>` : '')
+      + ((cus && ed && S.beats.length > 1) ? `<button type="button" class="dd-icon" onclick="dlPpDel('${jsq(id)}',${i})" title="הסרת התשלום" aria-label="הסרת התשלום">✕</button>` : '');
     const lk = L ? `<div class="dl-pp-link"><code>${esc(L.url)}</code>`
-      + `<button type="button" class="ghost sm" onclick="copyTxt('${jsq(L.url)}','קישור התשלום הועתק ✓')">העתקה</button>`
-      + (L.wa ? `<a class="ghost sm" href="${esc(L.wa)}" target="_blank" rel="noopener">וואטסאפ</a>` : '')
-      + (L.ready ? '' : `<span class="lb-psub-x">⚠️ המסוף בטרנזילה טרם הוגדר — הקישור ייפתח ללקוח ברגע שיוגדר.</span>`) + `</div>` : '';
-    return `<div class="dl-pp-row"><div class="dl-pp-what"><b>${esc(dlPpLabel(S.beats, i))}${S.beats.length>1?' '+esc(String(b.pct))+'%':''}</b>`
-      + ` · ${esc(dlPpWhen(b))}${am.length?` · <b>${esc(f2(am[i]))}</b>`:''}</div>${custom}${meth}${inst}${net}${link}${lk}</div>`;
+      + `<button type="button" class="dd-btn" onclick="copyTxt('${jsq(L.url)}','קישור התשלום הועתק ✓')">העתקה</button>`
+      + (L.wa ? `<a class="dd-btn" style="display:inline-flex;align-items:center;text-decoration:none" href="${esc(L.wa)}" target="_blank" rel="noopener">וואטסאפ</a>` : '')
+      + (L.ready ? '' : `<span class="dd-warn">המסוף בטרנזילה טרם הוגדר — הקישור ייפתח ללקוח ברגע שיוגדר.</span>`) + `</div>` : '';
+    return `<div class="dd-pr dl-pp-row">`
+      + `<div class="dd-pr-n"><span class="dd-idx">${i+1}</span><span>${esc(dlPpLabel(S.beats, i))}</span></div>`
+      + `<div class="dd-pr-pct">${pct}</div>`
+      + `<div class="dd-pr-amt">${am.length ? esc(f2(am[i])) : '—'}</div>`
+      + `<div class="dd-pr-when">${when}</div>`
+      + `<div class="dd-pr-m">${meth}</div><div class="dd-pr-x">${more}</div>`
+      + `<div class="dd-pr-act">${act}</div>${lk}</div>`;
   }).join('');
-  const sum = S.beats.reduce((a,b)=>a+Number(b.pct||0), 0);
-  const cusBar = cus ? `<div class="dl-pp-top" style="margin-top:6px">`
-    + (ed && S.beats.length < 6 ? `<button type="button" class="ghost sm" onclick="dlPpAdd('${jsq(id)}')">＋ תשלום</button>` : '')
-    + `<span class="dl-pp-sum${Math.abs(sum-100)>0.001?' bad':''}">סה"כ ${esc(String(Math.round(sum*100)/100))}%</span>`
-    + (ed && S.dirty ? `<button type="button" class="primary sm" onclick="dlPpSave('${jsq(id)}')">שמירת החלוקה</button>` : '')
-    + `</div>` : '';
+  const sum = Math.round(S.beats.reduce((a,b)=>a+Number(b.pct||0), 0)*100)/100;
+  const off = Math.abs(sum-100) > 0.001;
+  const foot = S.beats.length ? `<div class="dd-pay-f">`
+      + ((cus && ed && S.beats.length < 6) ? `<button type="button" class="dd-add" onclick="dlPpAdd('${jsq(id)}')">＋ הוסף תשלום</button>` : '')
+      + `<span class="dl-pp-sum${off?' bad':''}">סה"כ ${esc(String(sum))}%${off ? (sum < 100 ? ' · חסרים ' + esc(String(Math.round((100-sum)*100)/100)) + '%' : ' · עודף ' + esc(String(Math.round((sum-100)*100)/100)) + '%') : ' ✓'}</span>`
+      + ((cus && ed && S.dirty) ? `<button type="button" class="dd-btn"${off?' disabled title="סכום האחוזים חייב להיות 100"':''} onclick="dlPpSave('${jsq(id)}')">שמירת החלוקה</button>` : '')
+      + (tot != null ? `<span class="dd-total">סה"כ לתשלום (כולל מע"מ)<b>${esc(f2(tot))}</b></span>` : '')
+      + `</div>` : '';
   const miss = !(Array.isArray(d.pay_plan) && d.pay_plan.length);
-  box.innerHTML = `<div class="dl-pp-top">${sel}<span class="dl-pp-h">חלוקת התשלום — פנימי, לא בפריוריטי · אמצעי לכל תשלום — מתורגם לתנאי התשלום בפריוריטי</span></div>`
-    + (S.beats.length ? `<div class="dl-pp-rows">${rows}</div>` : '') + cusBar
-    + (tot != null && S.beats.length ? `<div class="dl-paybeats">סה"כ לתשלום (כולל מע"מ): <b>${esc(f2(tot))}</b></div>` : '')
-    + (S.dirty && !cus && S.beats.some(b=>!b.method) ? `<div class="lb-psub-x">בחרו אמצעי לכל תשלום — החלוקה תישמר מעצמה.</div>` : '')
-    + (miss ? `<div class="lb-psub-x">חובה לפני מעבר ל«נשלחה הצעת מחיר לחתימה».</div>` : '')
-    + ((can && !ed) ? `<div class="lb-psub-x">הלקוח כבר אישר — שינוי דורש הרשאת «תנאי תשלום מיוחדים».</div>` : '');
+  box.innerHTML = `<div class="dd-pay-h"><span class="dd-t">תנאי תשלום<span class="req">*</span></span>${sel}`
+    + `<span class="dd-help">חלוקת התשלום — פנימי, לא בפריוריטי · אמצעי לכל תשלום — מתורגם לתנאי התשלום בפריוריטי</span></div>`
+    + (S.beats.length ? `<div class="dd-sched">${rows}</div>` : `<div class="dd-empty">בחרו חלוקה כדי להגדיר את לוח התשלומים.</div>`)
+    + foot
+    + (S.dirty && !cus && S.beats.some(b=>!b.method) ? `<div class="dd-note warn">בחרו אמצעי לכל תשלום — החלוקה תישמר מעצמה.</div>` : '')
+    + (miss ? `<div class="dd-note">חובה לפני מעבר ל«נשלחה הצעת מחיר לחתימה».</div>` : '')
+    + ((can && !ed) ? `<div class="dd-note">הלקוח כבר אישר — שינוי דורש הרשאת «תנאי תשלום מיוחדים».</div>` : '');
 }
 window.dlPpSplit = (id, code)=>{
   const d = (DEALS||[]).find(x=>x.id===id); if(!d) return;

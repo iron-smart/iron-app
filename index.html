@@ -3417,7 +3417,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.11.0</div>
+      <div class="ver">גרסה 7.12.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3548,7 +3548,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="dealsend-2026-10-16a">גרסה 7.11.0</div>
+    <div class="side-foot" title="booktx2-2026-10-17a">גרסה 7.12.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -12855,8 +12855,25 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'dealsend-2026-10-16a';
+const BUILD_ID = 'booktx2-2026-10-17a';
 window.BUILD_ID = BUILD_ID;
+/* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
+   אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
+   שפורסמה, ובלי השומר הבודק היה רואה פס "גרסה חדשה" ומתנתק אחרי שעה), ופס קבוע
+   שמזכיר שהנתונים אמיתיים. */
+const IS_NEXT = location.hostname === 'iron-smart.github.io' && location.pathname.indexOf('/iron-app-next') === 0;
+if(IS_NEXT){
+  document.title = '[בדיקה] ' + document.title;
+  var nextBar = function(){
+    var b = document.createElement('div');
+    b.setAttribute('role', 'status');
+    b.textContent = 'סביבת בדיקה · הנתונים אמיתיים · שמירה כאן משנה את המערכת';
+    b.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:2147483647;background:#9a3412;color:#fff;text-align:center;font:600 13px system-ui,sans-serif;padding:4px 8px;pointer-events:none';
+    document.body.appendChild(b);
+  };
+  if(document.body) nextBar(); else document.addEventListener('DOMContentLoaded', nextBar);
+}
+
 
 /* ===== תמחור ומחירונים — פורט מלא של אפליקציית v13 (החלטת רומן 06/08/2026) =====
    מחליף את מודול התמחור הקודם במלואו. המנוע, המסכים וההתנהגות זהים לקובץ ה-HTML
@@ -17858,8 +17875,10 @@ const BOOK_DAY_LN = ['ראשון','שני','שלישי','רביעי','חמישי
 const BOOK_KEYS = ['book_enabled','book_calendar','book_days','book_hours','book_showroom_min','book_buffer_min',
   'book_daily_max','book_consult_min','book_consult_ranges','book_notice_hours','book_horizon_days','book_free_blocks','book_blocked_dates',
   'book_max_slots','book_consult_step','book_texts'];   /* 7.10.3 bookset */
-/* 7.10.3 — טקסטי הדף: [מפתח, תווית, ברירת מחדל]. '—' = כותרת קבוצה. ברירות המחדל זהות ל-TX ב-book.html. */
-const BOOK_TXT = [["—", "כותרות ואמון", ""], ["aside.title", "כותרת ראשית", "בואו נתכנן את חדר הכושר שלכם"], ["aside.lead", "כותרת משנה", "ייעוץ אישי של מומחה איירון — בטלפון או באולם התצוגה בחדרה. ללא עלות."], ["assure.1", "שורת אמון 1", "ללא עלות וללא התחייבות"], ["assure.2", "שורת אמון 2", "יועץ מקצועי, לא נציג מכירות"], ["assure.3", "שורת אמון 3", "תכנון מותאם: מידות, ציוד, תקציב"], ["proof", "שורת הוכחה (מוצגת רק אם מולאה — לכתוב רק מה שנכון)", ""], ["—", "שלב 1 — סוג הפגישה", ""], ["step1.title", "כותרת השלב", "איך תרצו להיפגש?"], ["step1.sub", "תת-כותרת", "שתי הדרכים ללא עלות. בחרו את מה שנוח לכם."], ["step1.foot", "שורה תחתונה", "אפשר לשנות או לבטל בקישור שתקבלו בוואטסאפ."], ["consult.name", "שיחת ייעוץ — שם", "שיחת ייעוץ"], ["consult.desc", "שיחת ייעוץ — תיאור", "יועץ מתקשר אליכם, שומע מה אתם מתכננים וממליץ על הדרך."], ["consult.where", "שיחת ייעוץ — איפה", "שיחה טלפונית — אנחנו מתקשרים"], ["showroom.name", "פגישה באולם — שם", "פגישה באולם התצוגה"], ["showroom.desc", "פגישה באולם — תיאור", "רואים ומנסים את הציוד, ובונים יחד את התכנון לחדר."], ["—", "שלב 2 — בחירת מועד", ""], ["step2.title", "כותרת השלב", "בחירת מועד"], ["step2.scarcity", "שורה ליד \"בחרו יום\" ({max} = מספר המועדים)", "פגישות פרטיות בתיאום מראש · עד {max} מועדים ביום"], ["step2.note.showroom", "הערה מתחת לשעות — אולם ({min} = דקות)", "פגישה פרטית של {min} דקות עם יועץ — רק אתם · השעה היא שעת ההגעה"], ["step2.note.consult", "הערה מתחת לשעות — ייעוץ ({min} = דקות)", "שיחה של {min} דקות · היועץ מתקשר אליכם"], ["step2.cta", "כפתור המשך ({date} = יום ושעה)", "לשריין את {date}"], ["—", "שלב 3 — הפרטים", ""], ["step3.title", "כותרת השלב", "הפרטים שלכם"], ["step3.more", "\"פרטים נוספים\"", "פרטים נוספים (לא חובה — עוזר לנו להתכונן)"], ["step3.plans", "אפשרויות \"מה אתם מתכננים\" (מופרדות ב-|)", "חדר כושר ביתי | סטודיו או מכון | חדר כושר בבניין או ארגון | שדרוג חדר קיים"], ["step3.notes.label", "שדה ההערות — כותרת", "משהו שחשוב לנו לדעת?"], ["step3.notes.placeholder", "שדה ההערות — דוגמה בתוך השדה", "גודל החדר, מכשירים שמעניינים אתכם, לוח זמנים"], ["step3.consent", "אישור יצירת קשר (קישור למדיניות הפרטיות מתווסף לבד)", "אפשר ליצור איתי קשר לתיאום הפגישה"], ["cta.showroom", "כפתור שליחה — אולם", "שריון הפגישה"], ["cta.consult", "כפתור שליחה — ייעוץ", "שריון השיחה"], ["—", "מסך האישור", ""], ["done.title.showroom", "כותרת — אולם ({name} = שם פרטי)", "{name}, הפגישה נקבעה"], ["done.title.consult", "כותרת — ייעוץ ({name} = שם פרטי)", "{name}, השיחה נקבעה"], ["done.sub", "תת-כותרת", "שלחנו אישור בוואטסאפ, ונזכיר לכם יום לפני וביום הפגישה."], ["done.prepare.showroom", "\"איך להתכונן\" — אולם", "מומלץ להביא מידות של החדר ותמונה — נתכנן יחד על המקום."], ["done.prepare.consult", "\"איך להתכונן\" — ייעוץ", "ודאו שהנייד זמין בשעה שנבחרה — היועץ יתקשר אליכם."], ["done.whatsapp", "\"אישור בוואטסאפ\"", "נשלח לנייד שהזנתם. לא הגיע תוך דקה? התקשרו אלינו"], ["—", "מסכי מצב", ""], ["empty.noSlots.title", "אין מועדים — כותרת", "אין כרגע מועדים פנויים"], ["empty.noSlots.text", "אין מועדים — טקסט", "כל המועדים בימים הקרובים תפוסים. נשמח לתאם איתכם בטלפון."], ["empty.disabled.title", "הדף כבוי — כותרת", "קביעת פגישות אונליין תיפתח בקרוב"], ["empty.disabled.text", "הדף כבוי — טקסט", "בינתיים נשמח לתאם איתכם בטלפון."], ["manage.lead", "מסך ניהול הפגישה — תת-כותרת", "שינוי מועד או ביטול, בלי להתקשר."]];
+/* 7.12.0 booktx2 — טקסטי הדף: [מפתח, תווית, ברירת מחדל]; ['—', כותרת קבוצה, '1' = פתוחה]. נוצר מ-book_texts.py —
+   אותה רשימה שבונה את TX ב-book.html v2.4 (book4test + book5test אוכפות). */
+const BOOK_TXT = [["—", "כותרות ואמון", "1"], ["aside.eyebrow", "שורה מעל הכותרת", "איירון פיטנס"], ["aside.title", "כותרת ראשית", "בואו נתכנן את חדר הכושר שלכם"], ["aside.lead", "כותרת משנה", "ייעוץ אישי של מומחה איירון — בטלפון או באולם התצוגה בחדרה. ללא עלות."], ["assure.1", "שורת אמון 1", "ללא עלות וללא התחייבות"], ["assure.2", "שורת אמון 2", "יועץ מקצועי, לא נציג מכירות"], ["assure.3", "שורת אמון 3", "תכנון מותאם: מידות, ציוד, תקציב"], ["proof", "שורת הוכחה (מוצגת רק אם מולאה — לכתוב רק מה שנכון)", ""], ["—", "שלב 1 — סוג הפגישה", "1"], ["step.counter", "מונה השלבים ({n} = מספר השלב)", "שלב {n} מתוך 3"], ["step1.title", "כותרת השלב", "איך תרצו להיפגש?"], ["step1.sub", "תת-כותרת", "שתי הדרכים ללא עלות. בחרו את מה שנוח לכם."], ["consult.name", "שיחת ייעוץ — שם", "שיחת ייעוץ"], ["consult.desc", "שיחת ייעוץ — תיאור", "יועץ מתקשר אליכם, שומע מה אתם מתכננים וממליץ על הדרך."], ["consult.where", "שיחת ייעוץ — איפה (בסיכום)", "שיחה טלפונית — אנחנו מתקשרים"], ["showroom.name", "פגישה באולם — שם", "פגישה באולם התצוגה"], ["showroom.desc", "פגישה באולם — תיאור", "רואים ומנסים את הציוד, ובונים יחד את התכנון לחדר."], ["step1.foot", "שורה תחתונה", "אפשר לשנות או לבטל בקישור שתקבלו בוואטסאפ."], ["—", "שלב 2 — בחירת מועד", "1"], ["step2.title", "כותרת השלב", "בחירת מועד"], ["step2.pickDay", "כותרת רצועת הימים", "בחרו יום"], ["step2.scarcity", "שורה ליד \"בחרו יום\" ({max} = מספר המועדים)", "פגישות פרטיות בתיאום מראש · עד {max} מועדים ביום"], ["step2.morning", "כותרת שעות הבוקר", "בוקר"], ["step2.afternoon", "כותרת שעות אחר הצהריים", "אחר הצהריים"], ["step2.note.showroom", "הערה מתחת לשעות — אולם ({min} = דקות)", "פגישה פרטית של {min} דקות עם יועץ — רק אתם · השעה היא שעת ההגעה"], ["step2.note.consult", "הערה מתחת לשעות — ייעוץ ({min} = דקות)", "שיחה של {min} דקות · היועץ מתקשר אליכם"], ["step2.pickTime", "כפתור לפני שנבחרה שעה", "בחרו שעה"], ["step2.cta", "כפתור המשך ({date} = יום ושעה)", "לשריין את {date}"], ["—", "שלב 3 — הפרטים", "1"], ["step3.title", "כותרת השלב", "הפרטים שלכם"], ["f.name", "תווית — שם", "שם מלא"], ["f.phone", "תווית — טלפון", "טלפון נייד"], ["step3.more", "\"פרטים נוספים\"", "פרטים נוספים (לא חובה — עוזר לנו להתכונן)"], ["f.email", "תווית — אימייל", "אימייל"], ["f.city", "תווית — עיר", "עיר"], ["f.optional", "סימון שדה רשות", "(לא חובה)"], ["step3.plans.label", "כותרת \"מה אתם מתכננים\"", "מה אתם מתכננים?"], ["step3.plans", "אפשרויות \"מה אתם מתכננים\" (מופרדות ב-|)", "חדר כושר ביתי | סטודיו או מכון | חדר כושר בבניין או ארגון | שדרוג חדר קיים"], ["step3.notes.label", "שדה ההערות — כותרת", "משהו שחשוב לנו לדעת?"], ["step3.notes.placeholder", "שדה ההערות — דוגמה בתוך השדה", "גודל החדר, מכשירים שמעניינים אתכם, לוח זמנים"], ["step3.consent", "אישור יצירת קשר (קישור למדיניות הפרטיות מתווסף לבד)", "אפשר ליצור איתי קשר לתיאום הפגישה"], ["cta.showroom", "כפתור שליחה — אולם", "שריון הפגישה"], ["cta.consult", "כפתור שליחה — ייעוץ", "שריון השיחה"], ["step3.busy", "כפתור בזמן שליחה", "משריינים…"], ["—", "מסך האישור", "1"], ["done.title.showroom", "כותרת — אולם ({name} = שם פרטי)", "{name}, הפגישה נקבעה"], ["done.title.consult", "כותרת — ייעוץ ({name} = שם פרטי)", "{name}, השיחה נקבעה"], ["done.sub", "תת-כותרת", "שלחנו אישור בוואטסאפ, ונזכיר לכם יום לפני וביום הפגישה."], ["when.what", "תווית \"מה\"", "מה"], ["when.when", "תווית \"מתי\"", "מתי"], ["when.where", "תווית \"איפה\"", "איפה"], ["when.consult", "\"איפה\" בשיחת ייעוץ", "נתקשר אליכם לנייד שהזנתם"], ["done.prepare.title", "כותרת \"איך להתכונן\"", "איך להתכונן"], ["done.prepare.showroom", "\"איך להתכונן\" — אולם", "מומלץ להביא מידות של החדר ותמונה — נתכנן יחד על המקום."], ["done.prepare.consult", "\"איך להתכונן\" — ייעוץ", "ודאו שהנייד זמין בשעה שנבחרה — היועץ יתקשר אליכם."], ["done.addCal", "כפתור הוספה ליומן", "הוספה ליומן"], ["done.calFile", "הוספה ליומן — קובץ", "Apple / Outlook (קובץ יומן)"], ["cal.title", "שם האירוע ביומן של הלקוח ({type} = סוג הפגישה)", "{type} · איירון פיטנס"], ["done.waze", "כפתור ניווט", "ניווט ב-Waze"], ["done.manage", "שורת הקישור האישי", "צריכים לשנות? יש לכם קישור אישי לשינוי מועד או ביטול."], ["done.copy", "כפתור העתקה", "העתקת קישור"], ["done.copied", "אחרי העתקה", "הועתק ✓"], ["done.whatsapp.title", "כותרת \"אישור בוואטסאפ\"", "אישור בוואטסאפ"], ["done.whatsapp", "טקסט \"אישור בוואטסאפ\"", "נשלח לנייד שהזנתם. לא הגיע תוך דקה? התקשרו אלינו"], ["done.reminder.title", "כותרת \"תזכורת\"", "תזכורת"], ["done.reminder", "טקסט \"תזכורת\"", "יום לפני, וביום הפגישה"], ["questions", "כותרת \"שאלות?\"", "שאלות?"], ["—", "כללי — כותרת, תחתית, טלפון ושיתוף", "1"], ["meta.title", "כותרת הלשונית ותוצאת גוגל", "קביעת פגישה · איירון פיטנס"], ["meta.description", "תיאור לגוגל", "קובעים שיחת ייעוץ או פגישה באולם התצוגה של איירון פיטנס. ללא עלות וללא התחייבות."], ["meta.og.title", "כותרת בשיתוף (וואטסאפ / פייסבוק)", "קביעת פגישה · איירון פיטנס"], ["meta.og.description", "תיאור בשיתוף (וואטסאפ / פייסבוק)", "שיחת ייעוץ בטלפון או ביקור באולם התצוגה. בוחרים מועד ומקבלים אישור בוואטסאפ."], ["phone", "מספר הטלפון שמוצג בדף", "074-7779988"], ["top.back", "\"חזרה לאתר\"", "חזרה לאתר"], ["foot.brand", "תחתית — שם (לפני הכתובת)", "איירון פיטנס"], ["foot.privacy", "תחתית — קישור הפרטיות", "מדיניות הפרטיות"], ["sum.showroom", "שורת סיכום במובייל — אולם", "אולם התצוגה"], ["sum.consult", "שורת סיכום במובייל — ייעוץ", "בטלפון"], ["unit.minutes", "יחידת הזמן (\"15 דקות\")", "דקות"], ["change", "כפתור \"שינוי\" ליד בחירה", "שינוי"], ["cal.location.consult", "מיקום ביומן הלקוח — שיחת ייעוץ", "שיחה טלפונית"], ["—", "מסך ניהול הפגישה (שינוי וביטול)", ""], ["manage.asideTitle", "כותרת הצד", "הפגישה שלכם"], ["manage.lead", "תת-כותרת הצד", "שינוי מועד או ביטול, בלי להתקשר."], ["manage.t.showroom", "כותרת — אולם", "הפגישה שלכם באולם"], ["manage.t.consult", "כותרת — ייעוץ", "שיחת הייעוץ שלכם"], ["manage.t.cancelled", "כותרת — בוטלה", "הפגישה בוטלה"], ["manage.t.past", "כותרת — עברה", "מועד הפגישה עבר"], ["pill.active", "תגית — נקבעה", "נקבעה"], ["pill.cancelled", "תגית — בוטלה", "בוטלה"], ["pill.past", "תגית — עברה", "המועד עבר"], ["manage.move", "כפתור שינוי מועד", "שינוי מועד"], ["manage.nav", "כפתור ניווט", "ניווט"], ["manage.cancel.showroom", "כפתור ביטול — אולם", "ביטול הפגישה"], ["manage.cancel.consult", "כפתור ביטול — ייעוץ", "ביטול השיחה"], ["manage.rebook", "אחרי ביטול — כפתור", "קביעת מועד חדש"], ["manage.another", "אחרי שעבר — כפתור", "קביעת פגישה נוספת"], ["manage.call", "שורת \"שאלות?\"", "אפשר תמיד להתקשר:"], ["move.title", "שינוי מועד — כותרת", "בחירת מועד חדש"], ["move.current", "שינוי מועד — \"המועד הנוכחי\"", "המועד הנוכחי:"], ["move.cta", "שינוי מועד — כפתור ({date} = יום ושעה)", "עדכון ל{date}"], ["move.busy", "שינוי מועד — בזמן שליחה", "מעדכנים…"], ["move.back", "שינוי מועד — כפתור חזרה", "ביטול"], ["move.ok", "שינוי מועד — הצלחה", "המועד עודכן. שלחנו אישור חדש בוואטסאפ."], ["dlg.title.showroom", "חלון ביטול — כותרת אולם", "לבטל את הפגישה?"], ["dlg.title.consult", "חלון ביטול — כותרת ייעוץ", "לבטל את השיחה?"], ["dlg.text", "חלון ביטול — טקסט (אחרי המועד)", "אפשר לקבוע מחדש בכל עת."], ["dlg.yes", "חלון ביטול — אישור", "כן, לבטל"], ["dlg.no", "חלון ביטול — חזרה", "לא, להשאיר"], ["dlg.busy", "חלון ביטול — בזמן שליחה", "מבטלים…"], ["cancel.ok", "ביטול — הצלחה", "הביטול נקלט. תודה שעדכנתם."], ["—", "מסכי מצב והודעות שגיאה", ""], ["empty.noSlots.title", "אין מועדים — כותרת", "אין כרגע מועדים פנויים"], ["empty.noSlots.text", "אין מועדים — טקסט", "כל המועדים בימים הקרובים תפוסים. נשמח לתאם איתכם בטלפון."], ["empty.disabled.title", "הדף כבוי — כותרת", "קביעת פגישות אונליין תיפתח בקרוב"], ["empty.disabled.text", "הדף כבוי — טקסט", "בינתיים נשמח לתאם איתכם בטלפון."], ["degraded.title", "היומן לא נטען — כותרת", "לא הצלחנו לטעון את היומן"], ["degraded.text", "היומן לא נטען — טקסט", "אפשר לתאם איתנו ישירות בטלפון, ונשמח לחזור אליכם."], ["link.bad.title", "קישור ניהול לא תקין — כותרת", "הקישור אינו תקין"], ["link.bad.text", "קישור ניהול לא תקין — טקסט", "ייתכן שהקישור הועתק חלקית. אפשר לקבוע פגישה חדשה או להתקשר אלינו."], ["link.bad.book", "קישור ניהול לא תקין — כפתור", "קביעת פגישה"], ["link.err.title", "הפגישה לא נטענה — כותרת", "לא הצלחנו לטעון את הפגישה"], ["link.err.text", "הפגישה לא נטענה — טקסט", "נסו שוב בעוד רגע, או התקשרו אלינו."], ["move.offline.title", "שינוי מועד לא זמין — כותרת", "לא ניתן לשנות מועד אונליין כרגע"], ["move.offline.text", "שינוי מועד לא זמין — טקסט", "התקשרו אלינו ונמצא מועד חדש יחד."], ["err.name", "שדה שם", "נא למלא שם מלא"], ["err.phone", "שדה טלפון", "נא למלא מספר נייד תקין, למשל 050-1234567"], ["err.email", "שדה אימייל", "כתובת האימייל אינה תקינה"], ["err.consent.long", "אישור יצירת קשר — הודעה מתחת לתיבה", "כדי לקבוע, יש לאשר את יצירת הקשר"], ["err.field", "שדה שהשרת דחה", "נא לבדוק את השדה"], ["err.fields", "הודעה כללית על שדות", "נא לבדוק את השדות המסומנים."], ["err.slot", "מועד לא תקין", "המועד שבחרתם אינו תקין. בחרו מועד מחדש."], ["err.taken", "המועד נתפס", "המועד שבחרתם נתפס הרגע. בחרו מועד אחר — הרשימה עודכנה."], ["err.exists", "כבר יש קביעה ({date} = \" ל<יום> בשעה <שעה>\")", "כבר קבעתם איתנו{date}. לשינוי או ביטול — בקישור שקיבלתם בוואטסאפ, או בטלפון"], ["err.rate", "יותר מדי ניסיונות (הטלפון מתווסף בסוף)", "היו יותר מדי ניסיונות. נסו שוב בעוד שעה, או התקשרו"], ["err.book", "הקביעה נכשלה (הטלפון מתווסף בסוף)", "לא הצלחנו לקבוע אונליין כרגע. התקשרו ונקבע יחד:"], ["err.cancel", "הביטול נכשל (הטלפון מתווסף בסוף)", "לא הצלחנו לבטל כרגע. התקשרו אלינו:"], ["err.move", "שינוי המועד נכשל (הטלפון מתווסף בסוף)", "לא הצלחנו לעדכן כרגע. התקשרו אלינו:"], ["err.moveTaken", "שינוי מועד — המועד נתפס", "המועד נתפס הרגע. בחרו מועד אחר — הרשימה עודכנה."]];
+const BOOK_META_KEYS = ["meta.title", "meta.description", "meta.og.title", "meta.og.description"];
 let BOOK_ST = null, BOOK_DIRTY = false;
 function bookVal(k){ const s = OSET.find(x=>x && x.key===k); return s ? String(s.value == null ? '' : s.value) : null; }
 function bookTimeOk(t){ return /^([01][0-9]|2[0-3]):[0-5][0-9]$/.test(String(t||'')); }
@@ -17945,28 +17964,74 @@ function bookInner(){
     ${ed?`<div style="display:flex;gap:10px;align-items:center"><button type="button" class="btn" style="width:auto" onclick="bookSave()">שמירה</button>
       <span id="bk-dirty" class="note" style="margin:0;${BOOK_DIRTY?'':'display:none'}">יש שינויים שלא נשמרו</span></div>`:''}`;
 }
-/* 7.10.3 — טקסטים בדף: שדה ריק = ברירת המחדל (מוצגת כ-placeholder). נפתח בלחיצה כדי לא להעמיס את המסך. */
+/* 7.12.0 booktx2 — כל טקסטי הדף בקבוצות לפי מסך (השיווקיות פתוחות), חיפוש, ותצוגה מקדימה.
+   שדה ריק = ברירת המחדל (מוצגת כ-placeholder). נשמרות רק דריסות אמיתיות (bookTxSerialize). */
 function bookTxtHtml(S, ed, fld){
   const dis = ed ? '' : 'disabled', n = Object.keys(S.tx).filter(k=>String(S.tx[k]||'').trim()).length;
-  const rows = BOOK_TXT.map(([k,label,def])=>{
-    if(k==='—') return `<div class="form-sep">${esc(label)}</div>`;
+  const groups = []; let g = null;
+  BOOK_TXT.forEach(r=>{ if(r[0]==='—'){ g = { title:r[1], open:r[2]==='1', rows:[] }; groups.push(g); } else if(g) g.rows.push(r); });
+  const row = ([k,label,def])=>{
     const v = String(S.tx[k] == null ? '' : S.tx[k]), long = def.length > 48 || k==='proof';
     const inp = long
-      ? `<textarea ${dis} rows="2" maxlength="400" placeholder="${esc(def)}" style="${fld};min-height:54px;resize:vertical" oninput="bookTx('${k}',this.value)">${esc(v)}</textarea>`
-      : `<input ${dis} maxlength="400" placeholder="${esc(def)}" value="${esc(v)}" style="${fld}" oninput="bookTx('${k}',this.value)">`;
-    return `<div style="grid-column:span 2"><label>${esc(label)}${v.trim()?' <span class="sup-chip sup-warm" style="display:inline-block;margin:0 6px 0 0">שונה</span>':''}</label>${inp}
+      ? `<textarea ${dis} rows="2" maxlength="400" aria-label="${esc(label)}" placeholder="${esc(def)}" style="${fld};min-height:54px;resize:vertical" oninput="bookTx('${k}',this.value)">${esc(v)}</textarea>`
+      : `<input ${dis} maxlength="400" aria-label="${esc(label)}" placeholder="${esc(def)}" value="${esc(v)}" style="${fld}" oninput="bookTx('${k}',this.value)">`;
+    return `<div class="bk-tx" data-s="${esc((label + ' ' + def).toLowerCase())}" style="grid-column:span 2"><label>${esc(label)}${v.trim()?' <span class="sup-chip sup-warm" style="display:inline-block;margin:0 6px 0 0">שונה</span>':''}</label>${inp}
       ${ed && v.trim() ? `<button type="button" class="chip" style="margin-top:4px" onclick="bookTxReset('${k}')">חזרה לברירת המחדל</button>` : ''}</div>`;
+  };
+  const gh = groups.map((x,i)=>{
+    const ch = x.rows.filter(([k])=>String(S.tx[k]||'').trim()).length;
+    const open = BOOK_TXT_G[i] != null ? BOOK_TXT_G[i] : x.open;
+    return `<details class="bk-txg" data-g="${i}" ${open?'open':''} ontoggle="BOOK_TXT_G[${i}]=this.open" style="border-top:1px solid var(--line);padding:8px 0">
+      <summary style="cursor:pointer;font-weight:600;color:var(--navy)">${esc(x.title)} <span style="font-weight:400;color:var(--ink-3)">· ${x.rows.length} טקסטים${ch ? ' · ' + ch + ' שונו' : ''}</span></summary>
+      <div class="form-grid" style="margin-top:8px">${x.rows.map(row).join('')}</div></details>`;
   }).join('');
   return `<details class="tbl-wrap" style="padding:10px 14px;margin-bottom:12px" ${BOOK_TXT_OPEN?'open':''} ontoggle="BOOK_TXT_OPEN=this.open">
-    <summary style="cursor:pointer;font-weight:700;color:var(--navy)">טקסטים בדף הקביעה <span style="font-weight:400;color:var(--ink-3)">${n ? '(' + n + ' שונו)' : '(כולם בברירת המחדל)'}</span></summary>
-    <div class="note" style="margin:10px 0">שדה ריק = הטקסט שמופיע באפור. מצייני מקום: <code>{name}</code> שם פרטי · <code>{min}</code> דקות · <code>{date}</code> יום ושעה · <code>{max}</code> מספר המועדים. טקסט בלבד, בלי HTML.</div>
-    <div class="form-grid">${rows}</div></details>`;
+    <summary style="cursor:pointer;font-weight:700;color:var(--navy)">טקסטים בדף הקביעה <span style="font-weight:400;color:var(--ink-3)">${n ? '(' + n + ' שונו מתוך ' + (BOOK_TXT.length - groups.length) + ')' : '(כולם בברירת המחדל)'}</span></summary>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0">
+      <input type="search" id="bk-txq" placeholder="חיפוש טקסט — למשל: כפתור, וואטסאפ, ביטול…" aria-label="חיפוש טקסט בדף הקביעה" value="${esc(BOOK_TXT_Q)}" oninput="bookTxFilter(this.value)" style="${fld};flex:1;min-width:220px">
+      <button type="button" class="btn" style="width:auto" onclick="bookPreview()">תצוגה מקדימה</button>
+    </div>
+    <div class="note" style="margin:0 0 10px">שדה ריק = הטקסט שמופיע באפור. מצייני מקום: <code>{name}</code> שם פרטי · <code>{min}</code> דקות · <code>{date}</code> יום ושעה · <code>{max}</code> מספר המועדים · <code>{n}</code> מספר השלב · <code>{type}</code> סוג הפגישה. טקסט בלבד, בלי HTML.
+      <b>תצוגה מקדימה</b> פותחת את הדף עם הטקסטים שעל המסך — עוד לפני שמירה — ומתעדכנת תוך כדי הקלדה. הכותרת והתיאור לגוגל ולשיתוף בוואטסאפ מתעדכנים בשמירה (עד כ-2 דקות).</div>
+    <div id="bk-txgs">${gh}</div><div id="bk-txnone" class="note" style="display:none">לא נמצא טקסט מתאים.</div></details>`;
 }
-let BOOK_TXT_OPEN = false;
-window.bookTx = (k,v)=>{ if(!BOOK_ST) return; BOOK_ST.tx[k] = v; bookMark(); };
-window.bookTxReset = k=>{ if(!BOOK_ST) return; delete BOOK_ST.tx[k]; bookMark(); bookRedraw(); };
+let BOOK_TXT_OPEN = false, BOOK_TXT_Q = '', BOOK_TXT_G = {};
+/* חיפוש — מסנן שורות וקבוצות במקום, בלי ציור מחדש (הפוקוס נשאר בשדה) */
+window.bookTxFilter = q=>{
+  BOOK_TXT_Q = String(q || ''); const s = BOOK_TXT_Q.trim().toLowerCase(); let any = 0;
+  document.querySelectorAll('#bk-txgs .bk-txg').forEach(gd=>{
+    let hit = 0;
+    gd.querySelectorAll('.bk-tx').forEach(r=>{
+      const f = r.querySelector('input,textarea'), val = f ? String(f.value || '').toLowerCase() : '';
+      const ok = !s || (r.dataset.s || '').indexOf(s) >= 0 || val.indexOf(s) >= 0;
+      r.style.display = ok ? '' : 'none'; if(ok) hit++;
+    });
+    gd.style.display = hit ? '' : 'none'; if(s && hit && !gd.open) gd.open = true; any += hit;
+  });
+  const nn = document.getElementById('bk-txnone'); if(nn) nn.style.display = any ? 'none' : '';
+};
+/* תצוגה מקדימה — חלון book…/?preview=1; ההודעות נשלחות רק ל-origin של BOOK_URL ורק לחלון שנפתח כאן */
+let BOOK_PV = null, BOOK_PV_T = 0;
+function bookPvMsg(){
+  const tx = {}; Object.keys(BOOK_ST.tx || {}).forEach(k=>{ const v = String(BOOK_ST.tx[k] || '').trim(); if(v) tx[k] = v.slice(0, 400); });
+  return { type:'iron-book-preview', texts: tx, max_slots: +BOOK_ST.maxs || 4, consult_step: +BOOK_ST.cstep || 30 };
+}
+function bookPvPush(){ if(!BOOK_PV || BOOK_PV.closed || !BOOK_ST) return; try{ BOOK_PV.postMessage(bookPvMsg(), new URL(BOOK_URL).origin); }catch(_e){} }
+function bookPvSoon(){ clearTimeout(BOOK_PV_T); BOOK_PV_T = setTimeout(bookPvPush, 200); }
+window.bookPreview = ()=>{
+  if(!BOOK_ST) bookLoad();
+  BOOK_PV = window.open(BOOK_URL + '?preview=1', 'iron-book-preview');
+  if(!BOOK_PV) toast('הדפדפן חסם את החלון — אפשרו חלונות קופצים לאתר המערכת'); else bookPvSoon();
+};
+window.addEventListener('message', e=>{
+  if(!BOOK_PV || e.source !== BOOK_PV || e.origin !== new URL(BOOK_URL).origin) return;
+  if(e.data && e.data.type === 'iron-book-preview-ready') bookPvPush();
+});
+window.bookTx = (k,v)=>{ if(!BOOK_ST) return; BOOK_ST.tx[k] = v; bookMark(); bookPvSoon(); };
+window.bookTxReset = k=>{ if(!BOOK_ST) return; delete BOOK_ST.tx[k]; bookMark(); bookRedraw(); bookPvSoon(); };
 function bookSettingsHtml(){
   if(!BOOK_ST || !BOOK_DIRTY) bookLoad();
+  BOOK_TXT_Q = '';   /* 7.12.0 — מסך חדש = בלי חיפוש ישן */
   return `<h2 class="sec" style="margin-top:0">תיאום פגישות מהאתר</h2>
     <div class="note" style="margin-bottom:12px">מחליף את Calendly. כל שינוי כאן חל <b>מיד ובלי פריסה</b> — השרת קורא את ההגדרות בכל בקשה מהאתר. קביעה נכנסת כליד במקור "קביעת פגישה באתר".</div>
     <div class="tbl-wrap" style="padding:10px 14px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center">
@@ -18031,9 +18096,9 @@ window.bookListLoad = async force=>{
   BOOK_LIST = data || []; BOOK_LIST_AT = Date.now();
   box.innerHTML = bookListHtml();
 };
-function bookRedraw(){ const b = document.getElementById('bookBox'); if(b) b.innerHTML = bookInner(); }
+function bookRedraw(){ const b = document.getElementById('bookBox'); if(b) b.innerHTML = bookInner(); if(BOOK_TXT_Q) bookTxFilter(BOOK_TXT_Q); }
 function bookMark(){ BOOK_DIRTY = true; const e = document.getElementById('bk-dirty'); if(e) e.style.display = ''; }
-window.bookSet = (k,v)=>{ if(!BOOK_ST) return; BOOK_ST[k] = v; bookMark(); if(k==='consult' || k==='enabled') bookRedraw(); };
+window.bookSet = (k,v)=>{ if(!BOOK_ST) return; BOOK_ST[k] = v; bookMark(); if(k==='consult' || k==='enabled') bookRedraw(); if(k==='maxs' || k==='cstep') bookPvSoon(); };
 window.bookDay = d=>{ if(!BOOK_ST || !canEdit('set.crm')) return; if(BOOK_ST.days.has(d)) BOOK_ST.days.delete(d); else BOOK_ST.days.add(d); bookMark(); bookRedraw(); };
 window.bookRgOpen = d=>{ BOOK_ST.add = d; bookRedraw(); };
 window.bookRgCancel = ()=>{ BOOK_ST.add = null; bookRedraw(); };
@@ -18081,6 +18146,8 @@ function bookErrors(S){
   if(!int(S.horizon,1,60)) e.push('טווח קדימה (1–60)');
   if(!int(S.dmax,0,10)) e.push('מקסימום פגישות ביום (0–10)');
   if(!int(S.maxs,1,12)) e.push('מועדים שמוצגים ביום (1–12)');
+  const ph = String((S.tx || {}).phone || '').trim();   /* 7.12.0 — אותו תנאי כמו phone() בדף */
+  if(ph && !/^[0-9+][0-9\- ]{6,18}$/.test(ph)) e.push('הטלפון בדף (ספרות ומקפים בלבד)');
   if([15,20,30,60].indexOf(+S.cstep) < 0) e.push('שיחה מתחילה כל');
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(S.calendar||'').trim())) e.push('יומן המכירות');
   return e;
@@ -18093,6 +18160,7 @@ window.bookSave = async ()=>{
   const changed = Object.keys(want).filter(k=>bookVal(k) !== null && bookVal(k) !== want[k]);
   const missing = Object.keys(want).filter(k=>bookVal(k) === null);
   if(!changed.length){ toast(missing.length ? 'אין מה לשמור — חלק מהמפתחות חסרים במסד' : 'אין שינויים'); return; }
+  const oldTx = bookVal('book_texts');   /* 7.12.0 — להשוואת הכותרת/התיאור לשיתוף */
   for(const k of changed){
     const { data: upd, error } = await sb.schema('ord').from('settings').update({ value: want[k] }).eq('key', k).select('key');
     if(error){ toast('השמירה נעצרה ב-' + k + ': ' + error.message); return; }
@@ -18101,7 +18169,15 @@ window.bookSave = async ()=>{
     const s = OSET.find(x=>x && x.key===k); if(s) s.value = want[k];
   }
   BOOK_DIRTY = false; bookLoad(); bookRedraw();
-  toast('נשמר ✓ — ' + changed.length + ' הגדרות');
+  let metaNote = '';
+  if(changed.indexOf('book_texts') >= 0){
+    const pick = j=>{ try{ const o = JSON.parse(j || '{}'); return BOOK_META_KEYS.map(k=>String(o[k] || '')).join('\n'); }catch(_e){ return ''; } };
+    if(pick(oldTx) !== pick(want.book_texts)){
+      const { data: pm, error: pe } = await sb.schema('crm').rpc('book_publish_meta');
+      metaNote = (pe || !pm || !pm.ok) ? ' · הכותרת לשיתוף לא עודכנה: ' + (pe ? pe.message : ((pm && pm.error) || '')) : ' · הכותרת לגוגל ולשיתוף תתעדכן תוך כ-2 דקות';
+    }
+  }
+  toast('נשמר ✓ — ' + changed.length + ' הגדרות' + metaNote);
 };
 function crmSettingsHtml(){
   const ed = canEdit('set.crm');
@@ -31454,6 +31530,7 @@ boot();
   VER.clear = VER.arrived;
 
   VER.check = async function(){
+    if(IS_NEXT) return;
     if(verBusy || verOut) return;
     verBusy = true;
     try{

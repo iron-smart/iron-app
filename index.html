@@ -3060,6 +3060,25 @@ td.lb-today .lb-dt{ background-color:transparent; }
 .lb-psub button{ font-size:var(--fs-xs); font-weight:700; padding:3px 10px; border-radius:var(--r-pill);
   border:1px solid var(--line); background-color:#fff; color:var(--ink-2); cursor:pointer; font-family:inherit; }
 .lb-psub button:disabled{ cursor:default; }
+/* 7.13.0 dealpay — בלוק תנאי התשלום בכרטיס העסקה */
+.dl-payrow{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+.dl-payrow select{ max-width:280px; }
+.dl-paybeats{ margin-top:6px; font-size:12px; color:var(--ink-2); }
+.dl-paybeats b{ color:var(--ink-1); font-weight:700; }
+/* 7.14.0 payplan — חלוקה + שורת תשלום לכל פעימה */
+.dl-pp-top{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.dl-pp-top .dl-pp-h{ font-size:12px; color:var(--ink-3); }
+.dl-pp-rows{ margin-top:8px; display:flex; flex-direction:column; gap:6px; }
+.dl-pp-row{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:6px 8px; border:1px solid var(--line); border-radius:var(--r-md); background:#fff; }
+.dl-pp-what{ min-width:210px; font-size:13px; }
+.dl-pp-what b{ color:var(--ink-1); }
+.dl-pp-row select{ max-width:170px; }
+.dl-pp-row input.dl-pp-pct{ width:64px; }
+.dl-pp-row input.dl-pp-days{ width:64px; }
+.dl-pp-link{ font-size:12px; margin-top:2px; width:100%; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.dl-pp-link code{ direction:ltr; font-size:11px; background:#f1f5f9; padding:2px 6px; border-radius:var(--r-sm); word-break:break-all; }
+.dl-pp-sum{ font-size:12px; color:var(--ink-3); }
+.dl-pp-sum.bad{ color:#c0392b; font-weight:700; }
 /* ---- דחיסת כרטיס הליד (6.108.0, רומן: "יותר דחוס וקומפקטי") ---- */
 #leadSheet .form-grid, #tkSheet .form-grid{ gap:9px 12px; }
 #leadSheet .form-sep, #tkSheet .form-sep{ margin-top:var(--sp-3); padding-bottom:var(--sp-1); }
@@ -3417,7 +3436,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.12.0</div>
+      <div class="ver">גרסה 7.14.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3548,7 +3567,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="booktx2-2026-10-17a">גרסה 7.12.0</div>
+    <div class="side-foot" title="bookq-2026-10-17a">גרסה 7.14.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -12775,6 +12794,11 @@ window.dlQuoteDoc = async (dealId)=>{
   /* 6.196.0 — toast ולא alert: שני המצבים כבר מוצגים inline ב-dlSignBox (הכפתור אינו מצויר). */
   if(!window.canEdit('docs.' + DL_QCAT)){ toast('אין לך הרשאת עריכה בקטגוריית ההצעות.'); return; }
   if(!d.priority_quote_id){ toast('לעסקה אין מספר הצעה בפריוריטי — אין ממה להפיק מסמך.'); return; }
+  /* 7.13.0 — התנאים נצרבים במסמך (deal-quote-doc v3), ולכן בלעדיהם אין מה לשלוח. השרת אוכף באותו מתג;
+     כאן רק חוסכים את הפנייה לפריוריטי ואת האישור. */
+  if(osetStr('crm_payterms_required', 'לא') === 'כן' && !(Array.isArray(d.pay_plan) && d.pay_plan.length)){
+    toast('יש להגדיר «תנאי תשלום» בכרטיס התהליך לפני הפקת מסמך לחתימה', 'err', 5000); return;
+  }
   /* ⚠️ האישור אומר במפורש שהמסמך מצטט תמונה ואינו מתעדכן. זו התכונה
      שהופכת אותו לראיה (הלקח של sign גרסה 12), והמשתמש צריך לדעת שהיא
      נלקחת עכשיו. */
@@ -12855,7 +12879,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'booktx2-2026-10-17a';
+const BUILD_ID = 'bookq-2026-10-17a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -17877,7 +17901,7 @@ const BOOK_KEYS = ['book_enabled','book_calendar','book_days','book_hours','book
   'book_max_slots','book_consult_step','book_texts'];   /* 7.10.3 bookset */
 /* 7.12.0 booktx2 — טקסטי הדף: [מפתח, תווית, ברירת מחדל]; ['—', כותרת קבוצה, '1' = פתוחה]. נוצר מ-book_texts.py —
    אותה רשימה שבונה את TX ב-book.html v2.4 (book4test + book5test אוכפות). */
-const BOOK_TXT = [["—", "כותרות ואמון", "1"], ["aside.eyebrow", "שורה מעל הכותרת", "איירון פיטנס"], ["aside.title", "כותרת ראשית", "בואו נתכנן את חדר הכושר שלכם"], ["aside.lead", "כותרת משנה", "ייעוץ אישי של מומחה איירון — בטלפון או באולם התצוגה בחדרה. ללא עלות."], ["assure.1", "שורת אמון 1", "ללא עלות וללא התחייבות"], ["assure.2", "שורת אמון 2", "יועץ מקצועי, לא נציג מכירות"], ["assure.3", "שורת אמון 3", "תכנון מותאם: מידות, ציוד, תקציב"], ["proof", "שורת הוכחה (מוצגת רק אם מולאה — לכתוב רק מה שנכון)", ""], ["—", "שלב 1 — סוג הפגישה", "1"], ["step.counter", "מונה השלבים ({n} = מספר השלב)", "שלב {n} מתוך 3"], ["step1.title", "כותרת השלב", "איך תרצו להיפגש?"], ["step1.sub", "תת-כותרת", "שתי הדרכים ללא עלות. בחרו את מה שנוח לכם."], ["consult.name", "שיחת ייעוץ — שם", "שיחת ייעוץ"], ["consult.desc", "שיחת ייעוץ — תיאור", "יועץ מתקשר אליכם, שומע מה אתם מתכננים וממליץ על הדרך."], ["consult.where", "שיחת ייעוץ — איפה (בסיכום)", "שיחה טלפונית — אנחנו מתקשרים"], ["showroom.name", "פגישה באולם — שם", "פגישה באולם התצוגה"], ["showroom.desc", "פגישה באולם — תיאור", "רואים ומנסים את הציוד, ובונים יחד את התכנון לחדר."], ["step1.foot", "שורה תחתונה", "אפשר לשנות או לבטל בקישור שתקבלו בוואטסאפ."], ["—", "שלב 2 — בחירת מועד", "1"], ["step2.title", "כותרת השלב", "בחירת מועד"], ["step2.pickDay", "כותרת רצועת הימים", "בחרו יום"], ["step2.scarcity", "שורה ליד \"בחרו יום\" ({max} = מספר המועדים)", "פגישות פרטיות בתיאום מראש · עד {max} מועדים ביום"], ["step2.morning", "כותרת שעות הבוקר", "בוקר"], ["step2.afternoon", "כותרת שעות אחר הצהריים", "אחר הצהריים"], ["step2.note.showroom", "הערה מתחת לשעות — אולם ({min} = דקות)", "פגישה פרטית של {min} דקות עם יועץ — רק אתם · השעה היא שעת ההגעה"], ["step2.note.consult", "הערה מתחת לשעות — ייעוץ ({min} = דקות)", "שיחה של {min} דקות · היועץ מתקשר אליכם"], ["step2.pickTime", "כפתור לפני שנבחרה שעה", "בחרו שעה"], ["step2.cta", "כפתור המשך ({date} = יום ושעה)", "לשריין את {date}"], ["—", "שלב 3 — הפרטים", "1"], ["step3.title", "כותרת השלב", "הפרטים שלכם"], ["f.name", "תווית — שם", "שם מלא"], ["f.phone", "תווית — טלפון", "טלפון נייד"], ["step3.more", "\"פרטים נוספים\"", "פרטים נוספים (לא חובה — עוזר לנו להתכונן)"], ["f.email", "תווית — אימייל", "אימייל"], ["f.city", "תווית — עיר", "עיר"], ["f.optional", "סימון שדה רשות", "(לא חובה)"], ["step3.plans.label", "כותרת \"מה אתם מתכננים\"", "מה אתם מתכננים?"], ["step3.plans", "אפשרויות \"מה אתם מתכננים\" (מופרדות ב-|)", "חדר כושר ביתי | סטודיו או מכון | חדר כושר בבניין או ארגון | שדרוג חדר קיים"], ["step3.notes.label", "שדה ההערות — כותרת", "משהו שחשוב לנו לדעת?"], ["step3.notes.placeholder", "שדה ההערות — דוגמה בתוך השדה", "גודל החדר, מכשירים שמעניינים אתכם, לוח זמנים"], ["step3.consent", "אישור יצירת קשר (קישור למדיניות הפרטיות מתווסף לבד)", "אפשר ליצור איתי קשר לתיאום הפגישה"], ["cta.showroom", "כפתור שליחה — אולם", "שריון הפגישה"], ["cta.consult", "כפתור שליחה — ייעוץ", "שריון השיחה"], ["step3.busy", "כפתור בזמן שליחה", "משריינים…"], ["—", "מסך האישור", "1"], ["done.title.showroom", "כותרת — אולם ({name} = שם פרטי)", "{name}, הפגישה נקבעה"], ["done.title.consult", "כותרת — ייעוץ ({name} = שם פרטי)", "{name}, השיחה נקבעה"], ["done.sub", "תת-כותרת", "שלחנו אישור בוואטסאפ, ונזכיר לכם יום לפני וביום הפגישה."], ["when.what", "תווית \"מה\"", "מה"], ["when.when", "תווית \"מתי\"", "מתי"], ["when.where", "תווית \"איפה\"", "איפה"], ["when.consult", "\"איפה\" בשיחת ייעוץ", "נתקשר אליכם לנייד שהזנתם"], ["done.prepare.title", "כותרת \"איך להתכונן\"", "איך להתכונן"], ["done.prepare.showroom", "\"איך להתכונן\" — אולם", "מומלץ להביא מידות של החדר ותמונה — נתכנן יחד על המקום."], ["done.prepare.consult", "\"איך להתכונן\" — ייעוץ", "ודאו שהנייד זמין בשעה שנבחרה — היועץ יתקשר אליכם."], ["done.addCal", "כפתור הוספה ליומן", "הוספה ליומן"], ["done.calFile", "הוספה ליומן — קובץ", "Apple / Outlook (קובץ יומן)"], ["cal.title", "שם האירוע ביומן של הלקוח ({type} = סוג הפגישה)", "{type} · איירון פיטנס"], ["done.waze", "כפתור ניווט", "ניווט ב-Waze"], ["done.manage", "שורת הקישור האישי", "צריכים לשנות? יש לכם קישור אישי לשינוי מועד או ביטול."], ["done.copy", "כפתור העתקה", "העתקת קישור"], ["done.copied", "אחרי העתקה", "הועתק ✓"], ["done.whatsapp.title", "כותרת \"אישור בוואטסאפ\"", "אישור בוואטסאפ"], ["done.whatsapp", "טקסט \"אישור בוואטסאפ\"", "נשלח לנייד שהזנתם. לא הגיע תוך דקה? התקשרו אלינו"], ["done.reminder.title", "כותרת \"תזכורת\"", "תזכורת"], ["done.reminder", "טקסט \"תזכורת\"", "יום לפני, וביום הפגישה"], ["questions", "כותרת \"שאלות?\"", "שאלות?"], ["—", "כללי — כותרת, תחתית, טלפון ושיתוף", "1"], ["meta.title", "כותרת הלשונית ותוצאת גוגל", "קביעת פגישה · איירון פיטנס"], ["meta.description", "תיאור לגוגל", "קובעים שיחת ייעוץ או פגישה באולם התצוגה של איירון פיטנס. ללא עלות וללא התחייבות."], ["meta.og.title", "כותרת בשיתוף (וואטסאפ / פייסבוק)", "קביעת פגישה · איירון פיטנס"], ["meta.og.description", "תיאור בשיתוף (וואטסאפ / פייסבוק)", "שיחת ייעוץ בטלפון או ביקור באולם התצוגה. בוחרים מועד ומקבלים אישור בוואטסאפ."], ["phone", "מספר הטלפון שמוצג בדף", "074-7779988"], ["top.back", "\"חזרה לאתר\"", "חזרה לאתר"], ["foot.brand", "תחתית — שם (לפני הכתובת)", "איירון פיטנס"], ["foot.privacy", "תחתית — קישור הפרטיות", "מדיניות הפרטיות"], ["sum.showroom", "שורת סיכום במובייל — אולם", "אולם התצוגה"], ["sum.consult", "שורת סיכום במובייל — ייעוץ", "בטלפון"], ["unit.minutes", "יחידת הזמן (\"15 דקות\")", "דקות"], ["change", "כפתור \"שינוי\" ליד בחירה", "שינוי"], ["cal.location.consult", "מיקום ביומן הלקוח — שיחת ייעוץ", "שיחה טלפונית"], ["—", "מסך ניהול הפגישה (שינוי וביטול)", ""], ["manage.asideTitle", "כותרת הצד", "הפגישה שלכם"], ["manage.lead", "תת-כותרת הצד", "שינוי מועד או ביטול, בלי להתקשר."], ["manage.t.showroom", "כותרת — אולם", "הפגישה שלכם באולם"], ["manage.t.consult", "כותרת — ייעוץ", "שיחת הייעוץ שלכם"], ["manage.t.cancelled", "כותרת — בוטלה", "הפגישה בוטלה"], ["manage.t.past", "כותרת — עברה", "מועד הפגישה עבר"], ["pill.active", "תגית — נקבעה", "נקבעה"], ["pill.cancelled", "תגית — בוטלה", "בוטלה"], ["pill.past", "תגית — עברה", "המועד עבר"], ["manage.move", "כפתור שינוי מועד", "שינוי מועד"], ["manage.nav", "כפתור ניווט", "ניווט"], ["manage.cancel.showroom", "כפתור ביטול — אולם", "ביטול הפגישה"], ["manage.cancel.consult", "כפתור ביטול — ייעוץ", "ביטול השיחה"], ["manage.rebook", "אחרי ביטול — כפתור", "קביעת מועד חדש"], ["manage.another", "אחרי שעבר — כפתור", "קביעת פגישה נוספת"], ["manage.call", "שורת \"שאלות?\"", "אפשר תמיד להתקשר:"], ["move.title", "שינוי מועד — כותרת", "בחירת מועד חדש"], ["move.current", "שינוי מועד — \"המועד הנוכחי\"", "המועד הנוכחי:"], ["move.cta", "שינוי מועד — כפתור ({date} = יום ושעה)", "עדכון ל{date}"], ["move.busy", "שינוי מועד — בזמן שליחה", "מעדכנים…"], ["move.back", "שינוי מועד — כפתור חזרה", "ביטול"], ["move.ok", "שינוי מועד — הצלחה", "המועד עודכן. שלחנו אישור חדש בוואטסאפ."], ["dlg.title.showroom", "חלון ביטול — כותרת אולם", "לבטל את הפגישה?"], ["dlg.title.consult", "חלון ביטול — כותרת ייעוץ", "לבטל את השיחה?"], ["dlg.text", "חלון ביטול — טקסט (אחרי המועד)", "אפשר לקבוע מחדש בכל עת."], ["dlg.yes", "חלון ביטול — אישור", "כן, לבטל"], ["dlg.no", "חלון ביטול — חזרה", "לא, להשאיר"], ["dlg.busy", "חלון ביטול — בזמן שליחה", "מבטלים…"], ["cancel.ok", "ביטול — הצלחה", "הביטול נקלט. תודה שעדכנתם."], ["—", "מסכי מצב והודעות שגיאה", ""], ["empty.noSlots.title", "אין מועדים — כותרת", "אין כרגע מועדים פנויים"], ["empty.noSlots.text", "אין מועדים — טקסט", "כל המועדים בימים הקרובים תפוסים. נשמח לתאם איתכם בטלפון."], ["empty.disabled.title", "הדף כבוי — כותרת", "קביעת פגישות אונליין תיפתח בקרוב"], ["empty.disabled.text", "הדף כבוי — טקסט", "בינתיים נשמח לתאם איתכם בטלפון."], ["degraded.title", "היומן לא נטען — כותרת", "לא הצלחנו לטעון את היומן"], ["degraded.text", "היומן לא נטען — טקסט", "אפשר לתאם איתנו ישירות בטלפון, ונשמח לחזור אליכם."], ["link.bad.title", "קישור ניהול לא תקין — כותרת", "הקישור אינו תקין"], ["link.bad.text", "קישור ניהול לא תקין — טקסט", "ייתכן שהקישור הועתק חלקית. אפשר לקבוע פגישה חדשה או להתקשר אלינו."], ["link.bad.book", "קישור ניהול לא תקין — כפתור", "קביעת פגישה"], ["link.err.title", "הפגישה לא נטענה — כותרת", "לא הצלחנו לטעון את הפגישה"], ["link.err.text", "הפגישה לא נטענה — טקסט", "נסו שוב בעוד רגע, או התקשרו אלינו."], ["move.offline.title", "שינוי מועד לא זמין — כותרת", "לא ניתן לשנות מועד אונליין כרגע"], ["move.offline.text", "שינוי מועד לא זמין — טקסט", "התקשרו אלינו ונמצא מועד חדש יחד."], ["err.name", "שדה שם", "נא למלא שם מלא"], ["err.phone", "שדה טלפון", "נא למלא מספר נייד תקין, למשל 050-1234567"], ["err.email", "שדה אימייל", "כתובת האימייל אינה תקינה"], ["err.consent.long", "אישור יצירת קשר — הודעה מתחת לתיבה", "כדי לקבוע, יש לאשר את יצירת הקשר"], ["err.field", "שדה שהשרת דחה", "נא לבדוק את השדה"], ["err.fields", "הודעה כללית על שדות", "נא לבדוק את השדות המסומנים."], ["err.slot", "מועד לא תקין", "המועד שבחרתם אינו תקין. בחרו מועד מחדש."], ["err.taken", "המועד נתפס", "המועד שבחרתם נתפס הרגע. בחרו מועד אחר — הרשימה עודכנה."], ["err.exists", "כבר יש קביעה ({date} = \" ל<יום> בשעה <שעה>\")", "כבר קבעתם איתנו{date}. לשינוי או ביטול — בקישור שקיבלתם בוואטסאפ, או בטלפון"], ["err.rate", "יותר מדי ניסיונות (הטלפון מתווסף בסוף)", "היו יותר מדי ניסיונות. נסו שוב בעוד שעה, או התקשרו"], ["err.book", "הקביעה נכשלה (הטלפון מתווסף בסוף)", "לא הצלחנו לקבוע אונליין כרגע. התקשרו ונקבע יחד:"], ["err.cancel", "הביטול נכשל (הטלפון מתווסף בסוף)", "לא הצלחנו לבטל כרגע. התקשרו אלינו:"], ["err.move", "שינוי המועד נכשל (הטלפון מתווסף בסוף)", "לא הצלחנו לעדכן כרגע. התקשרו אלינו:"], ["err.moveTaken", "שינוי מועד — המועד נתפס", "המועד נתפס הרגע. בחרו מועד אחר — הרשימה עודכנה."]];
+const BOOK_TXT = [["—", "כותרות ואמון", "1"], ["aside.eyebrow", "שורה מעל הכותרת", "איירון פיטנס"], ["aside.title", "כותרת ראשית", "בואו נתכנן את חדר הכושר שלכם"], ["aside.lead", "כותרת משנה", "ייעוץ אישי של מומחה איירון — בטלפון או באולם התצוגה בחדרה. ללא עלות."], ["assure.1", "שורת אמון 1", "ללא עלות וללא התחייבות"], ["assure.2", "שורת אמון 2", "יועץ מקצועי, לא נציג מכירות"], ["assure.3", "שורת אמון 3", "תכנון מותאם: מידות, ציוד, תקציב"], ["proof", "שורת הוכחה (מוצגת רק אם מולאה — לכתוב רק מה שנכון)", ""], ["—", "שלב 1 — סוג הפגישה", "1"], ["step.counter", "מונה השלבים ({n} = מספר השלב)", "שלב {n} מתוך 3"], ["step1.title", "כותרת השלב", "איך תרצו להיפגש?"], ["step1.sub", "תת-כותרת", "שתי הדרכים ללא עלות. בחרו את מה שנוח לכם."], ["consult.name", "שיחת ייעוץ — שם", "שיחת ייעוץ"], ["consult.desc", "שיחת ייעוץ — תיאור", "יועץ מתקשר אליכם, שומע מה אתם מתכננים וממליץ על הדרך."], ["consult.where", "שיחת ייעוץ — איפה (בסיכום)", "שיחה טלפונית — אנחנו מתקשרים"], ["showroom.name", "פגישה באולם — שם", "פגישה באולם התצוגה"], ["showroom.desc", "פגישה באולם — תיאור", "רואים ומנסים את הציוד, ובונים יחד את התכנון לחדר."], ["step1.foot", "שורה תחתונה", "אפשר לשנות או לבטל בקישור שתקבלו בוואטסאפ."], ["—", "שלב 2 — בחירת מועד", "1"], ["step2.title", "כותרת השלב", "בחירת מועד"], ["step2.pickDay", "כותרת רצועת הימים", "בחרו יום"], ["step2.scarcity", "שורה ליד \"בחרו יום\" ({max} = מספר המועדים)", "פגישות פרטיות בתיאום מראש · עד {max} מועדים ביום"], ["step2.morning", "כותרת שעות הבוקר", "בוקר"], ["step2.afternoon", "כותרת שעות אחר הצהריים", "אחר הצהריים"], ["step2.note.showroom", "הערה מתחת לשעות — אולם ({min} = דקות)", "פגישה פרטית של {min} דקות עם יועץ — רק אתם · השעה היא שעת ההגעה"], ["step2.note.consult", "הערה מתחת לשעות — ייעוץ ({min} = דקות)", "שיחה של {min} דקות · היועץ מתקשר אליכם"], ["step2.pickTime", "כפתור לפני שנבחרה שעה", "בחרו שעה"], ["step2.cta", "כפתור המשך ({date} = יום ושעה)", "לשריין את {date}"], ["—", "שלב 3 — הפרטים", "1"], ["step3.title", "כותרת השלב", "הפרטים שלכם"], ["q.intent.label", "שאלה — במה מתעניינים (חובה)", "במה אתם מתעניינים?"], ["q.intent.new", "תשובה — פתיחת מתחם חדש", "פתיחת מתחם כושר חדש"], ["q.intent.upgrade", "תשובה — שדרוג מתחם", "שדרוג מתחם כושר קיים"], ["q.intent.product", "תשובה — מוצר", "מתעניינים במוצר"], ["q.product.label", "שאלת המשך — מוצר", "באיזה מוצר?"], ["q.product.placeholder", "שאלת המשך — מוצר (דוגמה בתוך השדה)", "למשל: הליכון, כלוב סקוואט, סט משקולות"], ["q.more.label", "שאלת המשך — מתחם חדש / שדרוג", "ספרו לנו בכמה מילים"], ["q.more.placeholder", "שאלת המשך — מתחם (דוגמה בתוך השדה)", "גודל המקום, למי הוא מיועד, מה חשוב לכם"], ["f.name", "תווית — שם", "שם מלא"], ["f.phone", "תווית — טלפון", "טלפון נייד"], ["step3.more", "\"פרטים נוספים\"", "פרטים נוספים (לא חובה — עוזר לנו להתכונן)"], ["f.email", "תווית — אימייל", "אימייל"], ["f.city", "תווית — עיר", "עיר"], ["f.optional", "סימון שדה רשות", "(לא חובה)"], ["step3.consent", "אישור יצירת קשר (קישור למדיניות הפרטיות מתווסף לבד)", "אפשר ליצור איתי קשר לתיאום הפגישה"], ["cta.showroom", "כפתור שליחה — אולם", "שריון הפגישה"], ["cta.consult", "כפתור שליחה — ייעוץ", "שריון השיחה"], ["step3.busy", "כפתור בזמן שליחה", "משריינים…"], ["—", "מסך האישור", "1"], ["done.title.showroom", "כותרת — אולם ({name} = שם פרטי)", "{name}, הפגישה נקבעה"], ["done.title.consult", "כותרת — ייעוץ ({name} = שם פרטי)", "{name}, השיחה נקבעה"], ["done.sub", "תת-כותרת", "שלחנו אישור בוואטסאפ, ונזכיר לכם יום לפני וביום הפגישה."], ["when.what", "תווית \"מה\"", "מה"], ["when.when", "תווית \"מתי\"", "מתי"], ["when.where", "תווית \"איפה\"", "איפה"], ["when.consult", "\"איפה\" בשיחת ייעוץ", "נתקשר אליכם לנייד שהזנתם"], ["done.prepare.title", "כותרת \"איך להתכונן\"", "איך להתכונן"], ["done.prepare.showroom", "\"איך להתכונן\" — אולם", "מומלץ להביא מידות של החדר ותמונה — נתכנן יחד על המקום."], ["done.prepare.consult", "\"איך להתכונן\" — ייעוץ", "ודאו שהנייד זמין בשעה שנבחרה — היועץ יתקשר אליכם."], ["done.addCal", "כפתור הוספה ליומן", "הוספה ליומן"], ["done.calFile", "הוספה ליומן — קובץ", "Apple / Outlook (קובץ יומן)"], ["cal.title", "שם האירוע ביומן של הלקוח ({type} = סוג הפגישה)", "{type} · איירון פיטנס"], ["done.waze", "כפתור ניווט", "ניווט ב-Waze"], ["done.manage", "שורת הקישור האישי", "צריכים לשנות? יש לכם קישור אישי לשינוי מועד או ביטול."], ["done.copy", "כפתור העתקה", "העתקת קישור"], ["done.copied", "אחרי העתקה", "הועתק ✓"], ["done.whatsapp.title", "כותרת \"אישור בוואטסאפ\"", "אישור בוואטסאפ"], ["done.whatsapp", "טקסט \"אישור בוואטסאפ\"", "נשלח לנייד שהזנתם. לא הגיע תוך דקה? התקשרו אלינו"], ["done.reminder.title", "כותרת \"תזכורת\"", "תזכורת"], ["done.reminder", "טקסט \"תזכורת\"", "יום לפני, וביום הפגישה"], ["questions", "כותרת \"שאלות?\"", "שאלות?"], ["—", "כללי — כותרת, תחתית, טלפון ושיתוף", "1"], ["meta.title", "כותרת הלשונית ותוצאת גוגל", "קביעת פגישה · איירון פיטנס"], ["meta.description", "תיאור לגוגל", "קובעים שיחת ייעוץ או פגישה באולם התצוגה של איירון פיטנס. ללא עלות וללא התחייבות."], ["meta.og.title", "כותרת בשיתוף (וואטסאפ / פייסבוק)", "קביעת פגישה · איירון פיטנס"], ["meta.og.description", "תיאור בשיתוף (וואטסאפ / פייסבוק)", "שיחת ייעוץ בטלפון או ביקור באולם התצוגה. בוחרים מועד ומקבלים אישור בוואטסאפ."], ["phone", "מספר הטלפון שמוצג בדף", "074-7779988"], ["top.back", "\"חזרה לאתר\"", "חזרה לאתר"], ["foot.brand", "תחתית — שם (לפני הכתובת)", "איירון פיטנס"], ["foot.privacy", "תחתית — קישור הפרטיות", "מדיניות הפרטיות"], ["sum.showroom", "שורת סיכום במובייל — אולם", "אולם התצוגה"], ["sum.consult", "שורת סיכום במובייל — ייעוץ", "בטלפון"], ["unit.minutes", "יחידת הזמן (\"15 דקות\")", "דקות"], ["change", "כפתור \"שינוי\" ליד בחירה", "שינוי"], ["cal.location.consult", "מיקום ביומן הלקוח — שיחת ייעוץ", "שיחה טלפונית"], ["—", "מסך ניהול הפגישה (שינוי וביטול)", ""], ["manage.asideTitle", "כותרת הצד", "הפגישה שלכם"], ["manage.lead", "תת-כותרת הצד", "שינוי מועד או ביטול, בלי להתקשר."], ["manage.t.showroom", "כותרת — אולם", "הפגישה שלכם באולם"], ["manage.t.consult", "כותרת — ייעוץ", "שיחת הייעוץ שלכם"], ["manage.t.cancelled", "כותרת — בוטלה", "הפגישה בוטלה"], ["manage.t.past", "כותרת — עברה", "מועד הפגישה עבר"], ["pill.active", "תגית — נקבעה", "נקבעה"], ["pill.cancelled", "תגית — בוטלה", "בוטלה"], ["pill.past", "תגית — עברה", "המועד עבר"], ["manage.move", "כפתור שינוי מועד", "שינוי מועד"], ["manage.nav", "כפתור ניווט", "ניווט"], ["manage.cancel.showroom", "כפתור ביטול — אולם", "ביטול הפגישה"], ["manage.cancel.consult", "כפתור ביטול — ייעוץ", "ביטול השיחה"], ["manage.rebook", "אחרי ביטול — כפתור", "קביעת מועד חדש"], ["manage.another", "אחרי שעבר — כפתור", "קביעת פגישה נוספת"], ["manage.call", "שורת \"שאלות?\"", "אפשר תמיד להתקשר:"], ["move.title", "שינוי מועד — כותרת", "בחירת מועד חדש"], ["move.current", "שינוי מועד — \"המועד הנוכחי\"", "המועד הנוכחי:"], ["move.cta", "שינוי מועד — כפתור ({date} = יום ושעה)", "עדכון ל{date}"], ["move.busy", "שינוי מועד — בזמן שליחה", "מעדכנים…"], ["move.back", "שינוי מועד — כפתור חזרה", "ביטול"], ["move.ok", "שינוי מועד — הצלחה", "המועד עודכן. שלחנו אישור חדש בוואטסאפ."], ["dlg.title.showroom", "חלון ביטול — כותרת אולם", "לבטל את הפגישה?"], ["dlg.title.consult", "חלון ביטול — כותרת ייעוץ", "לבטל את השיחה?"], ["dlg.text", "חלון ביטול — טקסט (אחרי המועד)", "אפשר לקבוע מחדש בכל עת."], ["dlg.yes", "חלון ביטול — אישור", "כן, לבטל"], ["dlg.no", "חלון ביטול — חזרה", "לא, להשאיר"], ["dlg.busy", "חלון ביטול — בזמן שליחה", "מבטלים…"], ["cancel.ok", "ביטול — הצלחה", "הביטול נקלט. תודה שעדכנתם."], ["—", "מסכי מצב והודעות שגיאה", ""], ["empty.noSlots.title", "אין מועדים — כותרת", "אין כרגע מועדים פנויים"], ["empty.noSlots.text", "אין מועדים — טקסט", "כל המועדים בימים הקרובים תפוסים. נשמח לתאם איתכם בטלפון."], ["empty.disabled.title", "הדף כבוי — כותרת", "קביעת פגישות אונליין תיפתח בקרוב"], ["empty.disabled.text", "הדף כבוי — טקסט", "בינתיים נשמח לתאם איתכם בטלפון."], ["degraded.title", "היומן לא נטען — כותרת", "לא הצלחנו לטעון את היומן"], ["degraded.text", "היומן לא נטען — טקסט", "אפשר לתאם איתנו ישירות בטלפון, ונשמח לחזור אליכם."], ["link.bad.title", "קישור ניהול לא תקין — כותרת", "הקישור אינו תקין"], ["link.bad.text", "קישור ניהול לא תקין — טקסט", "ייתכן שהקישור הועתק חלקית. אפשר לקבוע פגישה חדשה או להתקשר אלינו."], ["link.bad.book", "קישור ניהול לא תקין — כפתור", "קביעת פגישה"], ["link.err.title", "הפגישה לא נטענה — כותרת", "לא הצלחנו לטעון את הפגישה"], ["link.err.text", "הפגישה לא נטענה — טקסט", "נסו שוב בעוד רגע, או התקשרו אלינו."], ["move.offline.title", "שינוי מועד לא זמין — כותרת", "לא ניתן לשנות מועד אונליין כרגע"], ["move.offline.text", "שינוי מועד לא זמין — טקסט", "התקשרו אלינו ונמצא מועד חדש יחד."], ["err.intent", "לא נבחר במה מתעניינים", "נא לבחור במה אתם מתעניינים"], ["err.name", "שדה שם", "נא למלא שם מלא"], ["err.phone", "שדה טלפון", "נא למלא מספר נייד תקין, למשל 050-1234567"], ["err.email.req", "שדה אימייל — ריק", "נא למלא כתובת אימייל"], ["err.email", "שדה אימייל", "כתובת האימייל אינה תקינה"], ["err.consent.long", "אישור יצירת קשר — הודעה מתחת לתיבה", "כדי לקבוע, יש לאשר את יצירת הקשר"], ["err.field", "שדה שהשרת דחה", "נא לבדוק את השדה"], ["err.fields", "הודעה כללית על שדות", "נא לבדוק את השדות המסומנים."], ["err.slot", "מועד לא תקין", "המועד שבחרתם אינו תקין. בחרו מועד מחדש."], ["err.taken", "המועד נתפס", "המועד שבחרתם נתפס הרגע. בחרו מועד אחר — הרשימה עודכנה."], ["err.exists", "כבר יש קביעה ({date} = \" ל<יום> בשעה <שעה>\")", "כבר קבעתם איתנו{date}. לשינוי או ביטול — בקישור שקיבלתם בוואטסאפ, או בטלפון"], ["err.rate", "יותר מדי ניסיונות (הטלפון מתווסף בסוף)", "היו יותר מדי ניסיונות. נסו שוב בעוד שעה, או התקשרו"], ["err.book", "הקביעה נכשלה (הטלפון מתווסף בסוף)", "לא הצלחנו לקבוע אונליין כרגע. התקשרו ונקבע יחד:"], ["err.cancel", "הביטול נכשל (הטלפון מתווסף בסוף)", "לא הצלחנו לבטל כרגע. התקשרו אלינו:"], ["err.move", "שינוי המועד נכשל (הטלפון מתווסף בסוף)", "לא הצלחנו לעדכן כרגע. התקשרו אלינו:"], ["err.moveTaken", "שינוי מועד — המועד נתפס", "המועד נתפס הרגע. בחרו מועד אחר — הרשימה עודכנה."]];
 const BOOK_META_KEYS = ["meta.title", "meta.description", "meta.og.title", "meta.og.description"];
 let BOOK_ST = null, BOOK_DIRTY = false;
 function bookVal(k){ const s = OSET.find(x=>x && x.key===k); return s ? String(s.value == null ? '' : s.value) : null; }
@@ -19072,7 +19096,7 @@ const CRM_Q = {
   leads: () => sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at,position,address,notes,utm_campaign,utm_source,utm_medium,utm_term,landing_page_url,send_whatsapp_catalog,owner_id,updated_at,contact_id').order('created_at',{ascending:false}).limit(10000),
   custs: () => sb.schema('core').from('customers').select('id,name,phone,email,priority_id,status,opened_at,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes').order('created_at',{ascending:false}).limit(10000),
   tasks: () => sb.schema('crm').from('tasks').select('id,name,status,value_tag,category,due_at,closed_at,created_at,linked_type,linked_id,owner_id').order('due_at',{ascending:true}).limit(10000),
-  deals: () => sb.schema('crm').from('deals').select('id,name,stage,amount,amount_incl_vat,quote_doc_path,quote_status,irrelevant_reason,priority_quote_id,customer_id,contact_id,lead_id,ship_site,ship_name,ship_address,ship_address2,ship_address3,ship_city,send_channel,sign_link,priority_quote_status,priority_quote_synced_at,approved_at,closed_at,created_at,monday_id').order('created_at',{ascending:false}).limit(10000),
+  deals: () => sb.schema('crm').from('deals').select('id,name,stage,amount,amount_incl_vat,quote_doc_path,quote_status,irrelevant_reason,priority_quote_id,customer_id,contact_id,lead_id,ship_site,ship_name,ship_address,ship_address2,ship_address3,ship_city,send_channel,sign_link,priority_quote_status,priority_quote_synced_at,approved_at,closed_at,created_at,monday_id,pay_method,pay_installments,pay_term,pay_plan').order('created_at',{ascending:false}).limit(10000),
   meets: () => sb.schema('crm').from('meetings').select('id,subject,status,meet_date,start_time,end_time,meet_type,location,teams_link,linked_type,linked_id,source,organizer_name,attendees,all_day,web_link,owner_id,contact_phone').order('meet_date',{ascending:false}).limit(10000),
   lown: () => /* שורות הבעלות הראשיות. **לא מיותר מול leads.owner_id**: המראה מחזיקה
          profile_id בלבד, ולעובד לשעבר אין חשבון — 694 לידים היו מוצגים
@@ -25624,7 +25648,7 @@ let DLIVE_CH = null, DLIVE_T = null, DLIVE_ID = null, DLIVE_CONTACT = null;
 /* 🔴 6.250.0 — בדיוק עמודות הטוען של DEALS (נאכף בבנייה). עד כאן הרשימה הייתה ידנית וחסר בה
    quote_doc_path — ולכן PDF שנמשך בוובהוק לא הגיע למטמון, וגם פתיחה מחדש של הכרטיס הראתה
    "טרם נמשך" (נמדד על PQ26001166, 12/10/2026). */
-const DLIVE_COLS = 'id,name,stage,amount,amount_incl_vat,quote_doc_path,quote_status,irrelevant_reason,priority_quote_id,customer_id,contact_id,lead_id,ship_site,ship_name,ship_address,ship_address2,ship_address3,ship_city,send_channel,sign_link,priority_quote_status,priority_quote_synced_at,approved_at,closed_at,created_at,monday_id';
+const DLIVE_COLS = 'id,name,stage,amount,amount_incl_vat,quote_doc_path,quote_status,irrelevant_reason,priority_quote_id,customer_id,contact_id,lead_id,ship_site,ship_name,ship_address,ship_address2,ship_address3,ship_city,send_channel,sign_link,priority_quote_status,priority_quote_synced_at,approved_at,closed_at,created_at,monday_id,pay_method,pay_installments,pay_term,pay_plan';
 
 window.dlLiveStop = ()=>{
   if(DLIVE_T){ clearInterval(DLIVE_T); DLIVE_T = null; }
@@ -25642,7 +25666,9 @@ window.dlLiveApply = (row)=>{
   DLIVE_COLS.split(',').forEach(k=>{
     if(k === 'id') return;
     if(row[k] === undefined) return;
-    if(String(row[k] ?? '') !== String(d[k] ?? '')){ d[k] = row[k]; changed.push(k); }
+    /* 7.14.0 — pay_plan הוא jsonb: String(obj) הוא תמיד "[object Object]", ושינוי בו לא היה מזוהה לעולם. */
+    const _sv = v => (v && typeof v === 'object') ? JSON.stringify(v) : String(v ?? '');
+    if(_sv(row[k]) !== _sv(d[k])){ d[k] = row[k]; changed.push(k); }
   });
   if(!changed.length) return null;
   dlLivePaint(d, changed);
@@ -25915,6 +25941,7 @@ function dlLivePaint(d, changed){
     ()=>{ const q = document.getElementById('dl-qdoc'); if(!q) return;
           q.innerHTML = '<label>מסמך ההצעה</label>' + dlQDocBox(d); },
     ()=>dlChanDraw(id),
+    ()=>dlPayDraw(id),
     ()=>set('dl-signbox', dlSignBox(d)),
     ()=>set('dl-signlink', dlSignLinkHtml(d)),
     ()=>{ const e = document.getElementById('dl-dates'); if(!e) return;
@@ -26052,6 +26079,8 @@ window.openDeal = async (id)=>{
         ${dlQDocBox(d)}</div>
       <div class="span2"><label>לאן לשלוח את ההצעה<span class="req">*</span></label>
         <div id="dl-chanbox"></div></div>
+      <div class="span4" id="dl-paycell"><label>תנאי תשלום<span class="req">*</span></label>
+        <div id="dl-paybox"></div></div>
       <div class="span2"><label>חתימה על ההצעה — מודול איירון</label>
         <div id="dl-signbox">${dlSignBox(d)}</div></div>
       <div><label>לינק לחתימה</label><div id="dl-signlink">${dlSignLinkHtml(d)}</div></div>
@@ -26084,7 +26113,7 @@ window.openDeal = async (id)=>{
     </section>
     </div>
 `;
-  dlPipeDraw(id); dlChanDraw(id);
+  dlPipeDraw(id); dlChanDraw(id); dlPayDraw(id);
   /* 🔴 אחרי הציור ולא לפניו: dlLiveApply קורא ל-dlPipeDraw, וקריאה
      על כרטיס שטרם צויר הייתה נופלת בשקט ל-catch. */
   try{ dlLiveStart(id); }catch(_e){}
@@ -26168,6 +26197,191 @@ window.dlSetChan = async (id, ch)=>{
   if(d) d.send_channel = (r && r.channel) || null;
   dlChanDraw(id); renderDeals();
   toast(ch ? 'ערוץ השליחה נשמר ✓' : 'ערוץ השליחה נוקה ✓');
+};
+/* ===== תנאי תשלום בכרטיס התהליך (7.13.0 dealpay ⇒ 7.14.0 payplan) =====
+   רומן, 17/10/2026: "מקדמה ואחוזים אין בתנאי תשלום בפריוריטי — שווה להפריד" · "תאפשר גם בחירה מרובה, מקדמה 50% באשראי
+   והיתר בהעברה" · "אחוזים אחרים ועד 6 פעימות רק לבעלי הרשאה".
+   ⇒ שתי שכבות:
+     **חלוקת התשלום** — שלנו בלבד (ord.payment_terms עם deal_offer: מיידי · 50/50 · 70/30), או "חלוקה מותאמת" (pay_term
+       NULL, בהרשאה crm.deals.payterms, עד 6 תשלומים, אחוזים ומועדים חופשיים). מזינה את אריחי הגבייה של מעיין.
+     **אמצעי לכל תשלום** — זה מה שמתורגם ל"תנאי התשלום" (PAYCODE) בפריוריטי: אשראי 1–12 (A1–A12) · העברה (09) · שקים (SH)
+       · הוראת קבע · מזומן (08) · שוטף +0/30/60/90 (01/03/05/07, בהרשאה).
+   🔴 השרת הוא השער (crm.deal_set_payplan): אחוזים ומועדים של חלוקה קבועה נלקחים מהטבלה ולא מכאן; שוטף/מותאמת/אחרי אישור —
+      רק בהרשאה. כאן רק מסתירים מה שממילא יידחה, ומסבירים 🔒 במקום להעלים.
+   🔴 טיוטה (DL_PP) ולא שמירה בכל לחיצה: חלוקה בת שני תשלומים בלי אמצעי לשני היא מצב שהשרת דוחה בצדק. לכן הטיוטה נשמרת
+      **מעצמה** ברגע שהיא שלמה (חלוקה קבועה), ובכפתור (מותאמת — אחוזים מוקלדים). */
+const DEAL_PAY_METHODS = ['אשראי','העברה בנקאית','שקים','הוראת קבע','מזומן','שוטף'];
+const DEAL_PAY_LOCKED = ['אושרה ע״י לקוח','הזמנה','לא רלוונטי'];
+const DEAL_PAY_NET = [0, 30, 60, 90];
+const DEAL_PAY_ANCH = [['order','עם אישור ההצעה'],['delivery','לפני / אחרי אספקה'],['install','בהתקנה']];
+const DL_PP = {};                     /* id ⇒ { term, beats:[{pct,anchor,offset_days,method,installments,net_days}], dirty } */
+const DL_PL = {};                     /* `${id}:${seq}` ⇒ { url, amount, installments, ready } — קישור תשלום שהופק */
+function dlPpWhen(b){
+  const d = Math.max(0, Math.round(Number(b.offset_days||0)));
+  if(b.method==='שוטף' || b.anchor==='invoice') return d ? 'שוטף + ' + d + ' מהחשבונית' : 'שוטף';
+  if(b.anchor==='order')    return d ? d + ' ימים מאישור ההצעה' : 'עם אישור ההצעה';
+  if(b.anchor==='delivery') return d ? d + ' ימים לאחר האספקה' : 'לפני אספקה';
+  if(b.anchor==='install')  return d ? d + ' ימים לאחר ההתקנה' : 'בהתקנה';
+  return '';
+}
+function dlPpLabel(beats, i){
+  const b = beats[i];
+  return beats.length===1 ? 'תשלום מלא' : (i===0 && b.anchor==='order' ? 'מקדמה' : (i===beats.length-1 ? 'יתרה' : 'תשלום ' + (i+1)));
+}
+/* ⚠️ אותו עיגול כמו deal-quote-doc v4 ו-pay-link: הפעימה האחרונה סוגרת את ההפרש — מה שמוצג כאן הוא מה שהלקוח יראה ויחויב. */
+function dlPpAmounts(beats, tot){
+  let acc = 0;
+  return beats.map((b, i)=>{ if(i < beats.length-1){ const a = Math.round(tot*Number(b.pct||0))/100; acc += a; return a; }
+                            return Math.round((tot-acc)*100)/100; });
+}
+function dlPpFromDeal(d){
+  const plan = Array.isArray(d.pay_plan) ? d.pay_plan : [];
+  return { term: plan.length ? (d.pay_term || '__custom') : '', dirty:false,
+           beats: plan.map(b=>({ pct:Number(b.pct), anchor:b.anchor, offset_days:Number(b.offset_days||0), method:b.method||'',
+                                  installments: b.installments||null, net_days: b.net_days!=null ? Number(b.net_days) : null })) };
+}
+function dlPpState(d){ const s = DL_PP[d.id]; return (s && s.dirty) ? s : (DL_PP[d.id] = dlPpFromDeal(d)); }
+function dlPayDraw(id){
+  const box = document.getElementById('dl-paybox'); if(!box) return;
+  const d = (DEALS||[]).find(x=>x.id===id); if(!d) return;
+  const sp = window.canEdit('crm.deals.payterms');
+  const can = window.canEdit('crm.deals');
+  const ed = can && (sp || DEAL_PAY_LOCKED.indexOf(d.stage||'') < 0);
+  const S = dlPpState(d), cus = S.term === '__custom';
+  const offer = (PTERMS||[]).filter(t=> t.deal_offer || t.code===S.term);
+  const sel = `<select id="dl-paysplit"${ed?'':' disabled'} onchange="dlPpSplit('${jsq(id)}',this.value)">`
+    + `<option value="">— חלוקת התשלום —</option>`
+    + offer.map(t=>`<option value="${esc(t.code)}"${t.code===S.term?' selected':''}>${esc(t.name)}</option>`).join('')
+    + ((sp || cus) ? `<option value="__custom"${cus?' selected':''}${sp?'':' disabled'}>חלוקה מותאמת…${sp?'':' 🔒'}</option>` : '')
+    + `</select>`;
+  const tot = d.amount_incl_vat != null ? Number(d.amount_incl_vat) : null;
+  const am = tot != null ? dlPpAmounts(S.beats, tot) : [];
+  const f2 = x => '₪' + Number(x).toLocaleString('he-IL', { minimumFractionDigits:0, maximumFractionDigits:2 });
+  const saved = !S.dirty && Array.isArray(d.pay_plan) && d.pay_plan.length;
+  const rows = S.beats.map((b, i)=>{
+    const dis = ed ? '' : ' disabled';
+    const meth = `<select class="dl-pp-m" data-i="${i}"${dis} onchange="dlPpSet('${jsq(id)}',${i},{method:this.value})">`
+      + `<option value="">— אמצעי —</option>`
+      + DEAL_PAY_METHODS.map(o=>{ const lock = o==='שוטף' && !sp && b.method!==o;
+          return `<option value="${esc(o)}"${o===b.method?' selected':''}${lock?' disabled':''}>${esc(o)}${lock?' 🔒':''}</option>`; }).join('')
+      + `</select>`;
+    const inst = b.method==='אשראי'
+      ? `<select class="dl-pp-n"${dis} onchange="dlPpSet('${jsq(id)}',${i},{installments:+this.value})">`
+        + Array.from({length:12},(_,k)=>k+1).map(k=>`<option value="${k}"${k===(+b.installments||1)?' selected':''}>${k===1?'תשלום אחד':k+' תשלומים'}</option>`).join('') + `</select>` : '';
+    const net = b.method==='שוטף'
+      ? `<select class="dl-pp-net"${dis} onchange="dlPpSet('${jsq(id)}',${i},{net_days:+this.value})">`
+        + DEAL_PAY_NET.map(k=>`<option value="${k}"${k===(+b.net_days||0)?' selected':''}>${k?'שוטף + '+k:'שוטף'}</option>`).join('') + `</select>` : '';
+    /* מותאמת: אחוז + מועד + ימים, ומחיקת שורה. בחלוקה קבועה אלה נעולים — הם של הטבלה. */
+    const custom = cus ? `<input class="dl-pp-pct" type="number" min="0.01" max="100" step="0.01" value="${esc(String(b.pct))}"${dis} onchange="dlPpSet('${jsq(id)}',${i},{pct:+this.value},1)">%`
+      + (b.method==='שוטף' ? '' : `<select class="dl-pp-a"${dis} onchange="dlPpSet('${jsq(id)}',${i},{anchor:this.value},1)">`
+         + DEAL_PAY_ANCH.map(([v,l])=>`<option value="${v}"${v===b.anchor?' selected':''}>${esc(l)}</option>`).join('') + `</select>`
+         + `<input class="dl-pp-days" type="number" min="0" max="365" value="${esc(String(b.offset_days||0))}"${dis} title="ימים" onchange="dlPpSet('${jsq(id)}',${i},{offset_days:+this.value},1)"> ימים`)
+      + (ed && S.beats.length > 1 ? ` <button type="button" class="ghost sm" onclick="dlPpDel('${jsq(id)}',${i})" title="הסרת התשלום">✕</button>` : '') : '';
+    const k = id + ':' + (i+1), L = DL_PL[k];
+    const link = (saved && b.method==='אשראי')
+      ? `<button type="button" class="ghost sm" onclick="dlPayLink('${jsq(id)}',${i+1})">${ico('link')} קישור תשלום</button>` : '';
+    const lk = L ? `<div class="dl-pp-link"><code>${esc(L.url)}</code>`
+      + `<button type="button" class="ghost sm" onclick="copyTxt('${jsq(L.url)}','קישור התשלום הועתק ✓')">העתקה</button>`
+      + (L.wa ? `<a class="ghost sm" href="${esc(L.wa)}" target="_blank" rel="noopener">וואטסאפ</a>` : '')
+      + (L.ready ? '' : `<span class="lb-psub-x">⚠️ המסוף בטרנזילה טרם הוגדר — הקישור ייפתח ללקוח ברגע שיוגדר.</span>`) + `</div>` : '';
+    return `<div class="dl-pp-row"><div class="dl-pp-what"><b>${esc(dlPpLabel(S.beats, i))}${S.beats.length>1?' '+esc(String(b.pct))+'%':''}</b>`
+      + ` · ${esc(dlPpWhen(b))}${am.length?` · <b>${esc(f2(am[i]))}</b>`:''}</div>${custom}${meth}${inst}${net}${link}${lk}</div>`;
+  }).join('');
+  const sum = S.beats.reduce((a,b)=>a+Number(b.pct||0), 0);
+  const cusBar = cus ? `<div class="dl-pp-top" style="margin-top:6px">`
+    + (ed && S.beats.length < 6 ? `<button type="button" class="ghost sm" onclick="dlPpAdd('${jsq(id)}')">＋ תשלום</button>` : '')
+    + `<span class="dl-pp-sum${Math.abs(sum-100)>0.001?' bad':''}">סה"כ ${esc(String(Math.round(sum*100)/100))}%</span>`
+    + (ed && S.dirty ? `<button type="button" class="primary sm" onclick="dlPpSave('${jsq(id)}')">שמירת החלוקה</button>` : '')
+    + `</div>` : '';
+  const miss = !(Array.isArray(d.pay_plan) && d.pay_plan.length);
+  box.innerHTML = `<div class="dl-pp-top">${sel}<span class="dl-pp-h">חלוקת התשלום — פנימי, לא בפריוריטי · אמצעי לכל תשלום — מתורגם לתנאי התשלום בפריוריטי</span></div>`
+    + (S.beats.length ? `<div class="dl-pp-rows">${rows}</div>` : '') + cusBar
+    + (tot != null && S.beats.length ? `<div class="dl-paybeats">סה"כ לתשלום (כולל מע"מ): <b>${esc(f2(tot))}</b></div>` : '')
+    + (S.dirty && !cus && S.beats.some(b=>!b.method) ? `<div class="lb-psub-x">בחרו אמצעי לכל תשלום — החלוקה תישמר מעצמה.</div>` : '')
+    + (miss ? `<div class="lb-psub-x">חובה לפני מעבר ל«נשלחה הצעת מחיר לחתימה».</div>` : '')
+    + ((can && !ed) ? `<div class="lb-psub-x">הלקוח כבר אישר — שינוי דורש הרשאת «תנאי תשלום מיוחדים».</div>` : '');
+}
+window.dlPpSplit = (id, code)=>{
+  const d = (DEALS||[]).find(x=>x.id===id); if(!d) return;
+  const prev = dlPpState(d).beats;
+  const m0 = (prev.find(b=>b.method)||{}).method || '';
+  if(!code){ DL_PP[id] = { term:'', beats:[], dirty:true }; return dlPpSave(id); }      /* ניקוי */
+  if(code === '__custom'){
+    const beats = prev.length ? prev.map(b=>Object.assign({}, b))
+                              : [{pct:50, anchor:'order', offset_days:0, method:m0}, {pct:50, anchor:'delivery', offset_days:0, method:m0}];
+    DL_PP[id] = { term:'__custom', beats, dirty:true }; return dlPayDraw(id);
+  }
+  const t = (PTERMS||[]).find(x=>x.code===code); if(!t) return;
+  /* האמצעים הקודמים נשמרים לפי מיקום — מעבר מ-50/50 ל-70/30 אינו מוחק את מה שכבר נבחר. */
+  const beats = (Array.isArray(t.beats)?t.beats:[]).map((b, i)=>{ const p = prev[i] || {};
+    return { pct:Number(b.pct), anchor:b.anchor, offset_days:Number(b.offset_days||0), method: p.method || m0,
+             installments: p.installments || null, net_days: p.net_days!=null ? p.net_days : null }; });
+  DL_PP[id] = { term:code, beats, dirty:true };
+  dlPpMaybeSave(id);
+};
+window.dlPpSet = (id, i, patch, noAuto)=>{
+  const d = (DEALS||[]).find(x=>x.id===id); if(!d) return;
+  const S = dlPpState(d); const b = S.beats[i]; if(!b) return;
+  Object.assign(b, patch); S.dirty = true;
+  if(patch.method !== undefined){ if(b.method!=='אשראי') b.installments = null; else b.installments = b.installments || 1;
+                                  if(b.method!=='שוטף') b.net_days = null; else b.net_days = b.net_days || 0; }
+  if(noAuto || S.term === '__custom') return dlPayDraw(id);
+  dlPpMaybeSave(id);
+};
+window.dlPpAdd = id=>{ const d=(DEALS||[]).find(x=>x.id===id); if(!d) return; const S=dlPpState(d);
+  if(S.beats.length>=6) return; S.beats.push({pct:0, anchor:'delivery', offset_days:0, method:(S.beats[0]||{}).method||''}); S.dirty=true; dlPayDraw(id); };
+window.dlPpDel = (id, i)=>{ const d=(DEALS||[]).find(x=>x.id===id); if(!d) return; const S=dlPpState(d);
+  if(S.beats.length<=1) return; S.beats.splice(i,1); S.dirty=true; dlPayDraw(id); };
+function dlPpMaybeSave(id){
+  const S = DL_PP[id];
+  if(S && S.term && S.term!=='__custom' && S.beats.length && S.beats.every(b=>b.method)) return dlPpSave(id);
+  dlPayDraw(id);
+}
+/* ⚠️ RPC ולא UPDATE ישיר: שער הרשאה אחד, ולידציה אחת, שורת יומן. נשלח המצב המלא; בחלוקה קבועה השרת מתעלם מאחוזים. */
+window.dlPpSave = async id=>{
+  if(!window.canEdit('crm.deals')){ toast('אין הרשאת עריכה'); return; }
+  const d = (DEALS||[]).find(x=>x.id===id); if(!d) return;
+  const S = DL_PP[id] || dlPpFromDeal(d);
+  const cus = S.term === '__custom';
+  const plan = S.beats.map(b=>{ const o = { method:b.method };
+    if(b.method==='אשראי') o.installments = +b.installments || 1;
+    if(b.method==='שוטף') o.net_days = +b.net_days || 0;
+    if(cus){ o.pct = Number(b.pct); o.anchor = b.anchor; o.offset_days = +b.offset_days || 0; }
+    return o; });
+  const { data, error } = await sb.schema('crm').rpc('deal_set_payplan',
+    { p_deal: id, p_term: (S.term && !cus) ? S.term : null, p_plan: plan });
+  if(error){ toast('השמירה נכשלה — ' + error.message, 'err', 6000); dlPayDraw(id); return; }
+  d.pay_term = data && data.pay_term || null; d.pay_plan = data && data.pay_plan || null;
+  d.pay_method = (d.pay_plan && d.pay_plan[0] && d.pay_plan[0].method) || null;
+  DL_PP[id] = dlPpFromDeal(d);
+  Object.keys(DL_PL).forEach(k=>{ if(k.indexOf(id+':')===0) delete DL_PL[k]; });   /* קישורים ישנים — לסכום ישן */
+  dlPayDraw(id);
+  toast(d.pay_plan ? 'תנאי התשלום נשמרו ✓' : 'תנאי התשלום נוקו ✓');
+};
+/* 🔗 קישור תשלום (pay-link): הסכום נקבע בשרת — מהמסמך החתום אם יש, אחרת מהתוכנית. הדפדפן שולח רק עסקה ומספר תשלום. */
+window.dlPayLink = async (id, seq)=>{
+  const d = (DEALS||[]).find(x=>x.id===id); if(!d) return;
+  let data = null, error = null;
+  try{ ({ data, error } = await sb.functions.invoke('pay-link', { body:{ deal_id:id, seq } })); }catch(e){ error = e; }
+  if(error || !data || data.ok !== true){
+    let msg = (data && data.error) || '';
+    if(!msg && error && error.context && typeof error.context.json === 'function'){ try{ const j = await error.context.json(); msg = (j && j.error) || ''; }catch(_e){} }
+    toast('הפקת הקישור נכשלה — ' + (msg || (error && error.message) || 'שגיאה'), 'err', 6000); return;
+  }
+  const ct = (CONTS||[]).find(k=>k.id===d.contact_id) || {};
+  const cu = (CUSTS||[]).find(k=>k.id===d.customer_id) || {};
+  const ph = ct.phone || cu.phone || '';
+  const first = String(ct.full_name || cu.name || '').trim().split(' ')[0] || '';
+  const f2 = x => '₪' + Number(x).toLocaleString('he-IL', { minimumFractionDigits:0, maximumFractionDigits:2 });
+  /* ⚠️ ירידת שורה כ-fromCharCode ולא כרצף בריחה: ה-SQL של הפריסה עובר תעתיק, ורצף לוכסן-n היה עלול להפוך לתו בדרך (CLAUDE.md, כלל 3). */
+  const NL = String.fromCharCode(10);
+  const txt = 'שלום' + (first ? ' ' + first : '') + ', מצורף קישור לתשלום ' + (seq===1 ? 'המקדמה' : 'תשלום ' + seq)
+    + ' בסך ' + f2(data.amount) + (data.installments > 1 ? ' (עד ' + data.installments + ' תשלומים)' : '')
+    + (data.quote ? ' עבור הצעה ' + data.quote : '') + ':' + NL + data.url + NL + 'תודה, איירון פיטנס';
+  DL_PL[id + ':' + seq] = { url:data.url, amount:data.amount, installments:data.installments, ready:!!data.ready,
+                            wa: ph ? waLink(ph, txt) : '' };
+  dlPayDraw(id);
+  if(!data.ready) toast('הקישור נוצר, אבל המסוף בטרנזילה טרם הוגדר', 'warn', 5000);
 };
 /* 🔴 נקודת החנק היחידה לשינוי שלב. כותבת **רק** את העמודות שהשלב
    מחייב, ומנקה את תת-הסטטוס שאינו שייך לו — אחרת ערך ישן נשאר
@@ -27800,6 +28014,9 @@ window.lqSave = async ()=>{
       customer_type · source · send_whatsapp_catalog). זה תנאי: כתיבה
       לאחת מהן הייתה נדרסת למחרת ב-09:00. */
 const LEAD_Q = [
+  /* 7.14.1 bookq — רומן: "חסר לי מידע על הליד שקובע את הפגישה". אותה שאלה בדף הקביעה (חובה שם);
+     booking v9 כותב עדכון בצורה זהה (details.q.q_intent) ⇒ סטטיסטיקה אחת לאתר ולנציגים. */
+  ['q_intent',         'במה מתעניין?',           'sel', 'crm_q_intent', 'בקביעה מהאתר — הלקוח עונה בעצמו'],
   /* 🔴 6.164.0 — ארבע שאלות פתוחות הפכו לרשימות סגורות (רומן). הרשימות
      עצמן ב-ord.settings ולא כאן, ולכן רומן משנה אותן בלי פריסה.
      ⚠️ בורר בלי מפתח הגדרות = רשימה ריקה שקטה; יש שער שאוכף שלכל 'sel'

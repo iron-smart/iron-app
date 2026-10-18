@@ -64,6 +64,12 @@ textarea{width:100%;border:1px solid #c0c5c9;border-radius:9px;padding:10px 12px
 .ok-wrap{max-width:520px;margin:60px auto;text-align:center;padding:0 16px}
 .ok-card{background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(6,24,39,.1);padding:34px 24px}
 .ok-card .v{font-size:3rem}
+/* גרסה 26 של sign (18/10/2026) — תשלום המקדמה באשראי מיד אחרי החתימה: iframe של pay-go ⇒ טרנזילה. */
+.paybox{margin-top:22px;text-align:right;border-top:1px solid #e0e2e4;padding-top:18px}
+.paybox h2{text-align:center}
+.paybox .payamt{text-align:center;font-size:1.5rem;font-weight:800;color:#002d48;margin:4px 0 10px}
+.payfr{width:100%;height:640px;border:1px solid #dfe3e6;border-radius:12px;background:#fff;display:block}
+.paybox .qpdf-nt{text-align:center}
 .photos{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
 .photos img{width:120px;height:120px;object-fit:cover;border-radius:10px;border:1px solid #e0e2e4}
 .workbox{background:#f4f8f6;border:1px solid #d5e5dc;border-radius:10px;padding:12px 14px;font-size:.9rem;white-space:pre-wrap}
@@ -222,6 +228,19 @@ const DEF_AGREE="קראתי את הנחיות ההכנה, הבנתי אותן, �
 const DEF_AUTH="אני מצהיר שאני מורשה/ת לחתום בשם הלקוח.";
 
 function show(html){ document.getElementById('app').innerHTML='<div class="ok-wrap"><div class="ok-card">'+html+'</div></div>'; }
+/* sign v26 — תשלום המקדמה בדף (רומן, 18/10/2026: "גם בדף החתימה תוסיף את ה-iframe של טרנזילה אחרי החתימה").
+   השרת מחזיר pay רק כשהתשלום הראשון בתמונה הוא באשראי ויש מסוף; בלי pay הדף נראה כמו קודם. ה-iframe טוען את pay-go
+   (handshake בזמן הפתיחה) שמפנה לטופס המאובטח של טרנזילה; הכתובת מגיעה מהשרת שלנו בלבד. */
+function payBlock(p){
+  if(!p||!p.url||!/^https:[/][/]hjibpfavkjqocjvffsbq[.]supabase[.]co[/]functions[/]v1[/]pay-go[?]t=[A-Za-z0-9_-]{16,40}$/.test(String(p.url))) return '';
+  const amt='₪'+Number(p.amount||0).toLocaleString('he-IL',{minimumFractionDigits:Number.isInteger(Number(p.amount))?0:2,maximumFractionDigits:2});
+  const n=Number(p.installments||1)||1;
+  return '<div class="paybox"><h2>תשלום המקדמה באשראי</h2>'
+    +'<p style="font-size:.9rem;color:#4c5560;text-align:center;margin:0">לסיום התהליך אפשר לשלם כעת את התשלום הראשון'+(p.quote?' עבור הצעה <b dir="ltr">'+esc(p.quote)+'</b>':'')+(n>1?' — עד '+n+' תשלומים':'')+'.</p>'
+    +'<div class="payamt">'+esc(amt)+'</div>'
+    +'<iframe class="payfr" src="'+esc(p.url)+'" title="תשלום מאובטח — טרנזילה" allow="payment"></iframe>'
+    +'<p class="qpdf-nt">הטופס אינו מוצג? <a href="'+esc(p.url)+'" target="_blank" rel="noopener">לפתיחת התשלום בחלון נפרד</a></p></div>';
+}
 
 init();
 async function init(){
@@ -246,7 +265,7 @@ async function init(){
     const d=await r.json();
     if(!r.ok) throw new Error(d.error||'שגיאה');
     if(d.status==='נחתם'){
-      show('<h2 style="margin:10px 0 6px">המסמך הזה כבר נחתם</h2><p style="font-size:.9rem;color:#4c5560">תודה רבה!</p>');
+      show('<h2 style="margin:10px 0 6px">המסמך הזה כבר נחתם</h2><p style="font-size:.9rem;color:#4c5560">תודה רבה!</p>'+payBlock(d.pay));
       return;
     }
     /* סימן מים — הסמל מגיע מהשרת (core.app_files.wm_png_b64) ואינו מוטמע
@@ -379,7 +398,7 @@ function renderProtocol(d){
       const dd=await r.json();
       if(!r.ok||!dd.ok) throw new Error(dd.error||'שגיאה');
       show(isQ
-        ? '<h2 style="margin:10px 0 6px">ההצעה אושרה ונחתמה!</h2><p style="font-size:.9rem;color:#4c5560">קיבלנו את אישורכם. נציג מטעמינו יצור קשר להמשך התהליך.<br><br>תודה רבה,<br>צוות איירון פיטנס</p>'
+        ? '<h2 style="margin:10px 0 6px">ההצעה אושרה ונחתמה!</h2><p style="font-size:.9rem;color:#4c5560">קיבלנו את אישורכם. נציג מטעמינו יצור קשר להמשך התהליך.<br><br>תודה רבה,<br>צוות איירון פיטנס</p>'+payBlock(dd.pay)
         : '<h2 style="margin:10px 0 6px">הפרוטוקול נחתם בהצלחה!</h2><p style="font-size:.9rem;color:#4c5560">נציג מטעמינו יצור קשר לתיאום מועד ההתקנה לאחר שישובץ בלוח השיבוצים שלנו.<br><br>תודה רבה,<br>צוות איירון פיטנס</p>');
     }catch(e){ document.getElementById('err').textContent='השליחה נכשלה: '+e.message+' — נסו שוב'; sendBtn.disabled=false; sendBtn.textContent=btnTxt; }
   };

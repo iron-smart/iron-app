@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>תשלום — איירון פיטנס</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0b2a45">
+<link rel="icon" href="https://app.ironfitness.co.il/assets/icon-192.png">
+<!--
+  pay.html v1 — דפי התשלום ללקוח (18/10/2026, 7.25.0 paylog). נפרס מ-core.app_files.pay_view_html (gh-deploy v28).
+  🔴 למה דף סטטי ולא HTML מהפונקציה: שער Supabase מחליף **כל** תשובת text/html מפונקציית קצה ב-text/plain עם
+     CSP sandbox (נמדד 18/10/2026 בחמש וריאציות — html-probe). לכן pay-go אינה מגישה HTML: היא מפנה לכאן
+     (?t=<טוקן>&s=<מצב>) ומחזירה את נתוני הדף ב-JSON (?t=&json=1&s=). הדף מצייר: לוגו, כותרת, הודעה, לקוח, הצעה,
+     תשלום, סכום, פירוט תשלומי האשראי, וכפתורים (ניסיון נוסף · וואטסאפ לנציג).
+  רומן: "להפוך ליותר יפה את הדף הזה" + "פירוט מה הסכום … 50 ש״ח תשלום 1 ותשלום 2 עוד 50 ש״ח".
+  ⚠️ הדף אינו מחליט דבר: המצב מגיע מהשרת (הסטטוס במסד), והטוקן הוא הרשאת הצפייה — כמו q.html.
+  ℹ️ עובד גם בתוך ה-iframe של דף החתימה (sign v26): אחרי תשלום טרנזילה מפנה את ה-iframe ל-pay-go r=ok ⇒ לכאן.
+-->
+<style>
+  :root{ --navy:#0b2a45; --navy2:#123a5c; --ink:#0b1620; --soft:#4c5560; --mute:#84898f; }
+  *{ box-sizing:border-box; } html,body{ margin:0; min-height:100%; }
+  body{ background:var(--navy); background-image:radial-gradient(1200px 600px at 50% 0%, var(--navy2), var(--navy) 70%); color:var(--ink);
+        font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif; -webkit-font-smoothing:antialiased; }
+  .wrap{ max-width:480px; margin:0 auto; padding:26px 16px 36px; }
+  .logo{ display:block; width:min(210px,56vw); height:auto; margin:4px auto 18px; opacity:.96; }
+  .card{ background:#fff; border-radius:16px; box-shadow:0 12px 34px rgba(0,0,0,.28); padding:26px 22px 22px; }
+  .ico{ width:58px; height:58px; border-radius:50%; display:grid; place-items:center; margin:0 auto 12px; font-size:28px; font-weight:800; }
+  .ok .ico{ background:#e6f4ec; color:#1d7a46; } .bad .ico{ background:#fdecec; color:#b42318; } .wait .ico{ background:#fff4df; color:#9a6700; } .info .ico{ background:#eaf1f8; color:var(--navy); }
+  h1{ font-size:1.22rem; margin:0 0 6px; color:var(--navy); text-align:center; line-height:1.35; }
+  p.lead{ margin:0 0 16px; color:var(--soft); text-align:center; line-height:1.55; font-size:.95rem; }
+  .facts{ display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; background:#f5f7f9; border-radius:12px; padding:12px 14px; font-size:.9rem; }
+  .facts .lbl{ display:block; font-size:.72rem; color:var(--mute); margin-bottom:2px; } .facts b{ color:var(--navy); }
+  .facts .amt{ grid-column:1/-1; text-align:center; padding-top:6px; border-top:1px solid #e3e6e9; } .facts .amt b{ font-size:1.65rem; letter-spacing:.2px; }
+  .inst{ margin-top:10px; font-size:.88rem; color:var(--soft); background:#fff; border:1px solid #e3e6e9; border-radius:12px; padding:8px 14px; }
+  .inst-h{ font-weight:700; color:var(--navy); padding:4px 0 6px; }
+  .inst div:not(.inst-h){ display:flex; justify-content:space-between; padding:4px 0; border-top:1px dashed #e3e6e9; }
+  .btns{ display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; justify-content:center; }
+  a.b{ display:inline-flex; align-items:center; gap:8px; text-decoration:none; border-radius:11px; padding:11px 18px; font-weight:700; font-size:.95rem; }
+  a.b.p{ background:var(--navy); color:#fff; } a.b.wa{ background:#25d366; color:#fff; } a.b.g{ background:#eef1f4; color:var(--navy); }
+  .foot{ color:rgba(255,255,255,.72); font-size:.8rem; margin-top:18px; text-align:center; } .foot a{ color:#fff; text-decoration:none; }
+  .spin{ width:18px; height:18px; border-radius:50%; border:2px solid rgba(11,42,69,.2); border-top-color:var(--navy); animation:r .8s linear infinite; margin:0 auto; }
+  @keyframes r{ to{ transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <img class="logo" src="https://app.ironfitness.co.il/assets/logo-white.png" alt="IRON FITNESS">
+  <div class="card info" id="card"><div class="spin"></div><p class="lead" style="margin-top:12px">טוען…</p></div>
+  <div class="foot">איירון פיטנס בע״מ · טלפון <a href="tel:0747779988" dir="ltr">074-7779988</a></div>
+</div>
+<script>
+(function(){
+  var API = 'https://hjibpfavkjqocjvffsbq.supabase.co/functions/v1/pay-go';
+  var ICONS = { ok:'✓', bad:'✕', wait:'⏳', info:'ℹ' };
+  var esc = function(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; }); };
+  var ils = function(n){ n = Number(n || 0); return '₪' + n.toLocaleString('he-IL', { minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 }); };
+  var card = document.getElementById('card');
+  function show(o){
+    var kind = ({ok:1,bad:1,wait:1,info:1})[o.kind] ? o.kind : 'info';
+    var f = o.facts || null, cells = '';
+    if(f){
+      var seqLbl = f.seq === 1 ? 'מקדמה / תשלום 1' : (f.seq ? 'תשלום ' + f.seq : '');
+      if(f.cust) cells += '<div><span class="lbl">לקוח</span><b>' + esc(f.cust) + '</b></div>';
+      if(f.quote) cells += '<div><span class="lbl">הצעת מחיר</span><b dir="ltr">' + esc(f.quote) + '</b></div>';
+      if(seqLbl) cells += '<div><span class="lbl">תשלום</span><b>' + esc(seqLbl) + '</b></div>';
+      if(f.installments > 1) cells += '<div><span class="lbl">פריסה</span><b>' + esc(String(f.installments)) + ' תשלומים</b></div>';
+      var amt = f.paid != null ? f.paid : f.amount;
+      if(f.amount != null) cells += '<div class="amt"><span class="lbl">' + (f.paid != null ? 'הסכום ששולם' : 'סכום לתשלום') + '</span><b>' + esc(ils(amt)) + '</b></div>';
+    }
+    var inst = '';
+    if(f && f.amount != null && f.installments > 1 && Array.isArray(f.inst_rows)){
+      inst = '<div class="inst"><div class="inst-h">' + esc(String(f.installments)) + ' תשלומים באשראי</div>'
+        + f.inst_rows.map(function(a, i){ return '<div><span>תשלום ' + (i + 1) + '</span><b>' + esc(ils(a)) + '</b></div>'; }).join('') + '</div>';
+    }
+    var btns = (o.btns || []).filter(function(b){ return b && /^https:[/][/]/.test(String(b.href || '')); }).map(function(b){
+      var cls = ({p:1,wa:1,g:1})[b.cls] ? b.cls : 'g';
+      return '<a class="b ' + cls + '" href="' + esc(b.href) + '"' + (cls === 'wa' ? ' target="_blank" rel="noopener"' : '') + '>' + esc(b.label) + '</a>'; }).join('');
+    card.className = 'card ' + kind;
+    card.innerHTML = '<div class="ico">' + ICONS[kind] + '</div><h1>' + esc(o.title) + '</h1><p class="lead">' + esc(o.msg) + '</p>'
+      + (cells ? '<div class="facts">' + cells + '</div>' : '') + inst + (btns ? '<div class="btns">' + btns + '</div>' : '');
+    if(o.title) document.title = o.title + ' — איירון פיטנס';
+  }
+  var q = new URLSearchParams(location.search);
+  var t = String(q.get('t') || ''), s = String(q.get('s') || '');
+  if(!/^[A-Za-z0-9_-]{16,40}$/.test(t)){ show({ kind:'bad', title:'הקישור אינו תקף', msg:'אפשר לבקש מנציג המכירות קישור חדש.' }); return; }
+  fetch(API + '?t=' + encodeURIComponent(t) + '&json=1&s=' + encodeURIComponent(s))
+    .then(function(r){ return r.json(); })
+    .then(function(d){ if(!d || !d.title) throw new Error('bad'); show(d); })
+    .catch(function(){ show({ kind:'wait', title:'לא ניתן לטעון את פרטי התשלום כרגע', msg:'נסו שוב בעוד רגע, או פנו אלינו.',
+      btns:[{ href: API + '?t=' + encodeURIComponent(t), label:'ניסיון נוסף', cls:'p' }] }); });
+})();
+</script>
+</body>
+</html>

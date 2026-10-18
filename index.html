@@ -3719,7 +3719,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.23.0</div>
+      <div class="ver">גרסה 7.24.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3850,7 +3850,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="inline-2026-10-18a">גרסה 7.23.0</div>
+    <div class="side-foot" title="unapprove-2026-10-18a">גרסה 7.24.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -13176,7 +13176,8 @@ window.dlSignLinkHtml = (d)=>{
 window.dlSignBox = (d)=>{
   if(!d) return '';
   const rows   = window.dlQuoteRows(d.id);
-  const signed = rows.find(p => p.status==='נחתם' || p.signed_at);
+  /* 7.24.0 — מסמך שבוטל (ביטול אישור) נושא signed_at ואינו "חתום" */
+  const signed = rows.find(p => p.status!=='בוטל' && (p.status==='נחתם' || p.signed_at));
   const live   = rows.find(docPending);
   const row    = signed || live;
   if(row){
@@ -13191,6 +13192,7 @@ window.dlSignBox = (d)=>{
           : (may
               ? ` <button type="button" class="chip" onclick="openDocLink('${jsq(row.id)}','copy')">⧉ העתקת קישור</button>`
               : ` <span class="lb-mut">אין לך הרשאה להפיק קישור בקטגוריה הזו</span>`))
+      + dlUnapproveChip(d, !!signed)
       + `</div>`;
   }
   /* 🔴 פעולה שאי אפשר לבצע — לא מציגים. עסקה בלי מספר הצעה בפריוריטי
@@ -13212,6 +13214,49 @@ window.dlSignBox = (d)=>{
   return `<div class="tk-lnk"><button type="button" class="${dlOrdOpenShow(d) ? 'chip' : 'btn'}" onclick="dlQuoteDoc('${jsq(d.id)}')">✎ צור מסמך לחתימה</button> ${shipBtn}</div>`;
 };
 
+/* ===== 7.24.0 — ביטול אישור / ביטול שליחה =====
+   רומן (18/10/2026): "כאשר עסקה נחתמה אבל הלקוח אחרי זה רוצה לבטל משהו מכל סיבה שהיא אני צריך אפשרות ביטול שליחה".
+   השבב מופיע רק בשני השלבים שיש מה לבטל בהם, ורק בהרשאת crm.deals.payterms (רומן/בן/נח) — המסד אוכף את אותו שער.
+   השמירה עוברת ב-deal-unapprove: crm.deal_unapprove (מסמכים ⇒ 'בוטל', השלב חוזר, יומן, פעמון) ואז UNAPPROVECPROF
+   בפריוריטי (PATCH חזרה ל'נשלחה' חסום שם — נמדד 18/10). */
+function dlUnapproveChip(d, signed){
+  if(!d || ['אושרה ע״י לקוח','נשלחה הצעת מחיר לחתימה'].indexOf(d.stage||'') < 0) return '';
+  if(!window.canEdit('crm.deals.payterms')) return '';
+  return ` <button type="button" class="chip dl-unapp" onclick="dlUnapprove('${jsq(d.id)}')" title="${signed
+    ? 'ביטול אישור ההצעה — המסמך החתום נשמר לתיעוד, העסקה חוזרת לשלב ההצעה וההצעה בפריוריטי חוזרת ל«נשלחה»'
+    : 'ביטול השליחה לחתימה — קישור החתימה מתבטל והעסקה חוזרת לשלב ההצעה'}">✕ ${signed ? 'ביטול אישור' : 'ביטול שליחה'}</button>`;
+}
+window.dlUnapprove = (id)=>{
+  const d = (DEALS||[]).find(x=>x.id===id); if(!d) return;
+  if(!window.canEdit('crm.deals.payterms')){ toast('ביטול אישור — בהרשאת «תנאי תשלום מיוחדים» בלבד'); return; }
+  const signed = d.stage === 'אושרה ע״י לקוח';
+  lurOpen('deal', id, signed ? 'ביטול אישור ההצעה' : 'ביטול השליחה לחתימה',
+    (signed ? 'ההצעה «' + (d.name || '—') + '» אושרה. הביטול מחזיר את העסקה לשלב «נשלחה הצעת מחיר ראשונית», מסמן את המסמך החתום «בוטל» (הקובץ נשמר) ומחזיר את ההצעה בפריוריטי ל«נשלחה».'
+            : 'קישור החתימה של «' + (d.name || '—') + '» יבוטל והעסקה תחזור לשלב «נשלחה הצעת מחיר ראשונית».')
+    + ' הסיבה חובה — היא נרשמת ביומן ונשלחת לבעלים ולמנהל המכירות.', null, '', null);
+  $('#lur-body').placeholder = 'למה מבטלים? לדוגמה: הלקוח ביקש לשנות פריטים · נחתם בטעות · המחיר השתנה';
+  /* lurOpen מאפס את LUR_CUSTOM — לכן ההצבה אחריו. Esc/רקע = ביטול בלי שינוי (אין data-must). */
+  LUR_CUSTOM = async (reason)=>{
+    let data = null, error = null;
+    try{ ({ data, error } = await sb.functions.invoke('deal-unapprove', { body:{ deal_id:id, reason } })); }catch(e){ error = e; }
+    if(error || !data || data.ok !== true){
+      let msg = (data && data.error) || '';
+      if(!msg && error && error.context && typeof error.context.json === 'function'){ try{ const j = await error.context.json(); msg = (j && j.error) || ''; }catch(_e){} }
+      $('#lur-err').textContent = 'הביטול נכשל — ' + (msg || (error && error.message) || 'שגיאה'); return false;
+    }
+    d.stage = data.new_stage || 'נשלחה הצעת מחיר ראשונית'; d.approved_at = null; d.sign_link = null; d.quote_status = null; d.closed_at = null;
+    (PROTS||[]).forEach(p=>{ if(p.deal_id===id && (p.category||'protocols')==='quotes' && (p.status==='נחתם' || p.status==='נשלח')) p.status = 'בוטל'; });
+    try{ dlPipeDraw(id); dlOrdSecDraw(d); }catch(_e){}
+    try{ const e1 = document.getElementById('dl-signlink'); if(e1) e1.innerHTML = dlSignLinkHtml(d);
+         const e2 = document.getElementById('dl-dates'); if(e2) e2.innerHTML = dlDatesHtml(d);
+         dlPayDraw(id); }catch(_e){}
+    try{ renderDeals(); renderStats(); }catch(_e){}
+    const pr = data.priority || {};
+    if(pr.attempted && !pr.reverted) toast('הביטול נרשם אצלנו, אבל ההצעה בפריוריטי נשארה «' + (pr.statdes || 'אושרה') + '» — להחזיר שם ידנית. ' + (pr.error || ''), 'warn', 12000);
+    else toast(signed ? 'אישור ההצעה בוטל ✓' : 'השליחה לחתימה בוטלה ✓');
+    return true;
+  };
+};
 /* 6.263.0 — מודול התצוגה המקדימה בריחוף (6.173.0/6.174.0) ירד כולו (רומן: "תבטל את ה-hover — זה סתם מעצבן").
    הלחיצה על המסמך (dlOpenDoc) לא זזה. מצב preview:true של deal-quote-doc נשאר בשרת בלי קורא. */
 window.dlQuoteDoc = async (dealId)=>{
@@ -13304,7 +13349,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'inline-2026-10-18a';
+const BUILD_ID = 'unapprove-2026-10-18a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -25342,7 +25387,7 @@ function ordQuoteBar(o){
   const d = deals[0] || null;
   const docs = (PROTS||[]).filter(p => (p.category||'protocols') === 'quotes'
     && ((d && p.deal_id === d.id) || String(p.order_number||'').trim() === q));
-  const signed = docs.find(p => p.status === 'נחתם' || p.signed_at);
+  const signed = docs.find(p => p.status !== 'בוטל' && (p.status === 'נחתם' || p.signed_at));   /* 7.24.0 */
   const pend = signed ? null : docs.find(p => docPending(p));
   const qn = d && window.canView('crm.deals')
     ? '<a href="#" onclick="event.preventDefault();goCard(()=>openDeal(\'' + jsq(d.id) + '\'))" title="פתיחת כרטיס תהליך המכירה">' + esc(q) + ' ↗</a>'
@@ -29474,6 +29519,8 @@ let LUR_SUB = null;
 /* 7.11.0 — מעבר ל'לא רלוונטי' שממתין לשמירת החלונית (dlCancelAsk). { id, from }: from = השלב שצויר,
    כ-p_expect. מאופס בכל lurOpen, כך שחלונית רגילה לעולם אינה יורשת אותו. */
 let LUR_PEND = null;
+/* 7.24.0 — מחויבות מותאמת: async (body) ⇒ true סוגר את החלונית. lurOpen מאפס; "דילוג" חסום בזמן שהיא מוצבת. */
+let LUR_CUSTOM = null;
 /* 7.2.2 — שבבים במקום <select> (רומן: "לחיץ עם כל האפשרויות בשורה כמו שהיה"). הערך יושב ב-#lur-sub (hidden),
    ולכן lurSubCommit ושער השמירה לא זזו. הצביעה — אותה נוסחה של הרצועה בכרטיס (tint/onWhite/LB_TK). */
 function lurSubPaint(){
@@ -29486,7 +29533,7 @@ function lurSubPaint(){
 }
 window.lurSubPick = (btn)=>{ $('#lur-sub').value = btn.dataset.v || ''; $('#lur-err').textContent = ''; lurSubPaint(); };
 function lurOpen(t, id, h, note, subOpts, subCur, pal){
-  UPD_REQ_T = t; LB_UPD_REQ = id; LUR_PEND = null;
+  UPD_REQ_T = t; LB_UPD_REQ = id; LUR_PEND = null; LUR_CUSTOM = null;
   $('#lur-h').textContent = h;
   $('#lur-note').textContent = note;
   $('#lur-body').placeholder = LUR_PH[t] || '';
@@ -29584,6 +29631,12 @@ $('#lur-save').onclick = async ()=>{
   const b = ($('#lur-body').value || '').trim();
   if(LUR_SUB && !$('#lur-sub').value){ $('#lur-err').textContent = 'יש לבחור סיבה.'; return; }
   if(!b){ $('#lur-err').textContent = 'אין מה לשמור — כתוב עדכון או לחץ דילוג.'; return; }
+  /* 7.24.0 — מחויבות מותאמת (ביטול אישור): השמירה היא הפעולה עצמה, לא שורת עדכון. */
+  if(LUR_CUSTOM){
+    const fn = LUR_CUSTOM; const okc = await fn(b);
+    if(okc){ LUR_CUSTOM = null; $('#lbUpdReqModal').classList.add('hidden'); LB_UPD_REQ = null; LUR_SUB = null; delete $('#lbUpdReqModal').dataset.must; }
+    return;
+  }
   const s = await lurSubCommit(); if(!s.ok) return;
   const after = LUR_SUB && LUR_SUB.after;
   if(await lurWrite('עדכון', (s.sub ? 'סיבה: ' + s.sub + '\n' : '') + b)){ toast('העדכון נשמר ✓'); if(after) after(); }
@@ -29592,6 +29645,7 @@ $('#lur-save').onclick = async ()=>{
    אפשר לדעת אם היא מתקיימת. kind נפרד כדי שלא יתערבב בעדכונים
    אמיתיים ברשימה. */
 $('#lur-skip').onclick = async ()=>{
+  if(LUR_CUSTOM){ $('#lur-err').textContent = 'יש לכתוב סיבה לביטול.'; return; }   /* 7.24.0 */
   /* 7.2.0 — "דילוג" מדלג על הטקסט בלבד; הסיבה עדיין חובה (רומן). */
   const s = await lurSubCommit(); if(!s.ok) return;
   const after = LUR_SUB && LUR_SUB.after;

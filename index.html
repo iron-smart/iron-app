@@ -3865,7 +3865,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.28.1</div>
+      <div class="ver">גרסה 7.30.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3997,7 +3997,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="dealux2-2026-10-19a">גרסה 7.28.1</div>
+    <div class="side-foot" title="nodoc-2026-10-20a">גרסה 7.30.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -13522,7 +13522,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'dealux2-2026-10-19a';
+const BUILD_ID = 'nodoc-2026-10-20a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -27988,7 +27988,13 @@ function dlOoDraw(){
       : b.need==='ref'
         /* 7.18.0 — קובץ אסמכתא (רומן: "מספר האסמכתא אין צורך"). הכפתור מוצג/מתויג ב-dlOoFilesDraw. */
         ? `<div class="oo-refwrap"><button type="button" class="chip oo-up" id="oo-up-${esc(String(b.seq))}" onclick="dlOoPick(${Number(b.seq)})">העלאת קובץ אסמכתא</button>`
-          + `<div class="oo-files" id="oo-files-${esc(String(b.seq))}">${dlOoFilesHtml(b.seq)}</div></div>`
+          + `<div class="oo-files" id="oo-files-${esc(String(b.seq))}">${dlOoFilesHtml(b.seq)}</div>`
+          /* 7.30.0 — בלי אסמכתא, למי שמורשה (רומן, 20/10/2026). השרת בודק שוב את ההרשאה ואת הסיבה. */
+          + (window.canEdit('crm.deals.nodoc')
+              ? `<label class="oo-ck oo-nd"><input type="checkbox" id="oo-nd-${esc(String(b.seq))}"${cur.waived?' checked':''} onchange="dlOoNoDoc(${Number(b.seq)},this.checked)"> בלי אסמכתא</label>`
+                + `<input type="text" class="oo-ref oo-ndr${cur.waived?'':' hidden'}" id="oo-ndr-${esc(String(b.seq))}" maxlength="300" placeholder="סיבה — חובה" aria-label="סיבה לפתיחה בלי אסמכתא" value="${esc(cur.reason||'')}" oninput="dlOoEv(${Number(b.seq)},{reason:this.value})">`
+              : '')
+          + `</div>`
       : `<span class="oo-mut">${b.method==='שוטף' ? 'לפי תנאי השוטף' : 'ייגבה בהמשך'}</span>`;
     return `<div class="oo-row${b.need?' oo-need':''}">`
       + `<div class="oo-n"><span class="oo-idx">${esc(String(b.seq))}</span>${esc(b.label||'')}</div>`
@@ -28004,7 +28010,7 @@ function dlOoDraw(){
   (pv.blockers||[]).forEach(t=>info.push(`<div class="oo-info bad">${esc(t)}</div>`));
   box.innerHTML = `<div class="oo-head"><span>הצעה <b dir="ltr">${esc(pv.quote||'')}</b></span>`
       + (pv.total!=null ? `<span>סה"כ כולל מע"מ <b>${esc(DL_OO_F2(pv.total))}</b></span>` : '') + `</div>`
-    + `<div class="oo-sub">לפני פתיחת ההזמנה: לסמן שהתשלום התקבל (אשראי / מזומן / שקים), או להעלות קובץ אסמכתא (העברה בנקאית / הוראת קבע).</div>`
+    + `<div class="oo-sub">לפני פתיחת ההזמנה: לסמן שהתשלום התקבל (אשראי / מזומן / שקים), או להעלות קובץ אסמכתא (העברה בנקאית / הוראת קבע)${window.canEdit('crm.deals.nodoc') ? ' — או לסמן «בלי אסמכתא» ולכתוב למה' : ''}.</div>`
     + `<div class="oo-sched">${rows}</div>`
     + `<div class="oo-facts">`
       + `<div><span class="oo-k">תנאי התשלום בהזמנה${beats.length > 1 ? ' (לפי היתרה)' : ''}</span><span class="oo-v" id="oo-pc">${pc}</span></div>`
@@ -28014,6 +28020,13 @@ function dlOoDraw(){
   beats.forEach(b=>{ if(b.need==='ref') dlOoFilesDraw(b.seq); });
   dlOoGate();
 }
+/* 7.30.0 — "בלי אסמכתא": שדה הסיבה מופיע עם הסימון ונעלם בלעדיו; הערך נשמר ב-DL_OO.ev כמו "התקבל". */
+window.dlOoNoDoc = (seq, on)=>{
+  if(!DL_OO || DL_OO.busy) return;
+  dlOoEv(seq, { waived: !!on });
+  const r = document.getElementById('oo-ndr-' + seq);
+  if(r){ r.classList.toggle('hidden', !on); if(on){ try{ r.focus(); }catch(_e){} } }
+};
 window.dlOoEv = (seq, patch)=>{
   if(!DL_OO || DL_OO.busy) return;
   DL_OO.ev[seq] = Object.assign({}, DL_OO.ev[seq] || {}, patch);
@@ -28024,7 +28037,8 @@ function dlOoReady(){
   const beats = (pv.plan && pv.plan.beats) || []; if(!beats.length) return false;
   /* 7.18.0 — אסמכתא = לפחות קובץ אחד לתשלום (ולא מספר). בזמן העלאה (DL_OO.up) הכפתור נעול. */
   return beats.every(b=>{ const v = DL_OO.ev[b.seq] || {};
-    return !b.need || (b.need==='received' ? v.received === true : dlOoDocsOf(b.seq).length > 0); });
+    return !b.need || (b.need==='received' ? v.received === true
+      : (dlOoDocsOf(b.seq).length > 0 || (v.waived === true && String(v.reason||'').trim() !== ''))); });
 }
 function dlOoGate(){ const b = document.getElementById('oo-go'); if(b) b.disabled = !dlOoReady() || !!(DL_OO && DL_OO.busy); }
 function dlOoBusy(on){
@@ -28175,8 +28189,12 @@ window.dlOrdOpenGo = async ()=>{
   if(!DL_OO || DL_OO.busy || !dlOoReady()) return;
   const tok = DL_OO, id = tok.id, beats = (tok.pv.plan && tok.pv.plan.beats) || [];
   /* רק מה שהשרת ביקש (need), בצורה שהשער מכיר. האימות עצמו — ב-crm.deal_order_open_claim. */
-  const evidence = beats.filter(b=>b.need).map(b=> b.need==='received'
-    ? { seq:b.seq, received:true } : { seq:b.seq, docs: dlOoDocsOf(b.seq).map(f=>f.id) });
+  /* 7.30.0 — קובץ קודם לסימון: מי שהעלה וגם סימן, שולח את הקובץ. */
+  const evidence = beats.filter(b=>b.need).map(b=>{
+    if(b.need==='received') return { seq:b.seq, received:true };
+    const docs = dlOoDocsOf(b.seq).map(f=>f.id), v = tok.ev[b.seq] || {};
+    return (!docs.length && v.waived === true) ? { seq:b.seq, waived:true, reason:String(v.reason||'').trim() } : { seq:b.seq, docs };
+  });
   const msg = document.getElementById('oo-msg');
   dlOoBusy(true);
   if(msg){ msg.className = 'oo-msg busy'; msg.textContent = 'שולח לפריוריטי…'; }
@@ -29793,6 +29811,7 @@ window.lqOpen = (id)=>{
 window.lqSave = async ()=>{
   const id = LQ_LEAD; if(!id) return;
   if(!lbQCollect('lq')){ document.getElementById('lq-err').textContent='לא מולאה אף שאלה.'; return; }
+  if(!(await lbOwnAsk(id))) return;   /* 7.29.0 */
   if(!await lbQPost(id, 'lq')) return;
   toast('התשאול נשמר כעדכון ✓');
   /* חזרה לכרטיס הליד — הפותח רץ מחדש, ולכן רשימת העדכונים נטענת
@@ -31179,6 +31198,36 @@ async function updFetch(ids, withSys){
            error: (out.length ? null : (err || null)),
            partial: !!(err && out.length), timedOut: timedOut };
 }
+/* ═══ 7.29.0 — לקיחת בעלות לפני עדכון (רומן, 20/10/2026) ═══════════════════════════════════════
+   "ליד שאין לו שום היסטוריה של בעלות ושום נגיעה של איש מכירות אחר — אם הוא מתכנן לכתוב עדכון בלי לקחת
+   בעלות, להציג התראה באמצע המסך שהוא צריך תחילה לקחת בעלות" · "כן עם כפתור קח בעלות והמשך".
+   המקרה: שם טוב עדן — ניב תיעד שני עדכונים ולא לקח, והליד נשאר בלי בעלים.
+   true = להמשיך לשמור · false = המשתמש ביטל, או שהלקיחה נכשלה (lbSetOwner כבר הציגה למה).
+   ⚠️ מי שמחלק לידים (crm.leads.assign) פטור — הערה של מנהל אינה לקיחה (הכרעת רומן, אפשרות א׳).
+   ⚠️ fail-open: שאילתת היומן שנכשלה אינה חוסמת עדכון. */
+async function lbOwnAsk(leadId){
+  const me = lbMe();
+  try{
+    if(!leadId || !me) return true;
+    const l = (LEADS||[]).find(x=>x.id===leadId); if(!l) return true;
+    if(lbOwnersOf(l).length) return true;
+    if(window.canEdit('crm.leads.assign')) return true;
+    if(!(LOWN||[]).some(o=>o.assignable && o.owner_key===me)) return true;
+    /* "היסטוריה של בעלות" או "נגיעה של איש מכירות אחר" — שורה אחת מספיקה. actor_id.neq אינו תופס null,
+       ולכן שורות מערכת ('ליד נקלט', שינוי סטטוס מהיומן) אינן נחשבות נגיעה. */
+    const { data, error } = await sb.schema('crm').from('activities').select('id')
+      .eq('linked_type','lead').eq('linked_id', leadId)
+      .or('kind.eq.בעלות,actor_id.neq.' + me).limit(1);
+    if(error || (data||[]).length) return true;
+  }catch(_e){ return true; }
+  const go = await sysConfirm('לליד הזה אין עדיין בעלים.\nלפני שכותבים עליו עדכון צריך לקחת עליו בעלות.',
+                              { ok:'קח בעלות והמשך', cancel:'ביטול' });
+  if(!go) return false;
+  const _k0 = LBOWN_K; LBOWN_K = 'lead';
+  try{ await window.lbSetOwner(leadId, me, true); } finally { LBOWN_K = _k0; }
+  return ((LOWN_OF[leadId]||[])[0] === me);
+}
+window.lbOwnAsk = lbOwnAsk;
 /* יומן העדכונים — הוספה.
    ⚠️ actor_id נשלח מהלקוח **אבל אינו נסמך עליו**: policy רסטריקטיבית
    (activities_actor_is_self) דוחה ב-42501 כל שורה שבה actor_id אינו
@@ -31189,6 +31238,7 @@ window.lbAddUpdate = async (id, type, pfx)=>{
   const body = (el.value||'').trim();
   if(!body){ toast('אין מה להוסיף'); return; }
   const _t = type || 'lead';
+  if(_t === 'lead' && !(await lbOwnAsk(id))) return;   /* 7.29.0 — הטקסט נשאר בשדה */
   const { error } = await sb.schema('crm').from('activities').insert({
     actor_id: ME.id, linked_type:_t, linked_id: id, kind:'עדכון', body: body });
   if(error){ toast('שמירת העדכון נכשלה — '+error.message); return; }

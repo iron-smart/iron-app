@@ -3863,6 +3863,78 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   body.vas-on{ padding-bottom:52px; }
   /* 6.229.0 — כפתור ההתחקות בשורת המשתמש. display של הכפתור גובר על [hidden] של הדפדפן ⇒ כלל מפורש */
   .vas-go[hidden]{ display:none !important; }
+  /* ===== 7.33.0 — mobqa: סבב Mobile QA (רומן, 23/10/2026). כל כלל כאן נמדד לפני/אחרי — mobqatest.py ===== */
+  /* 1. "הפרופיל שלי": התוכן גבוה מהגיליון בטלפון (986 מול 736) ו-overflow:hidden בלע את שדות הסיסמה */
+  #profModal .sheet{ overflow-x:hidden; overflow-y:auto; }
+  /* 8. שורת הפעולות הדביקה נעצרה מעל ה-padding של הגיליון ⇒ התוכן נראה מתחתיה. היסט שלילי בגודל ה-padding */
+  .modal .sheet{ --sheet-pb:var(--sp-4h); }
+  #leadModal .sheet{ --sheet-pb:calc(14px); }
+  #profModal .sheet{ --sheet-pb:0px; }
+  /* 7.33.1 — A1: בלי margin-bottom שלילי. הוא משך את <div class="err"> שאחרי השורה אל מתחתיה (10px מתוך 18 מוסתרים).
+     bottom השלילי לבדו מצמיד את השורה לקצה בזמן גלילה; בסוף הגלילה ה-err גלוי מתחתיה. */
+  .modal .sheet > .modal-actions{ bottom:calc(-1 * var(--sheet-pb)); padding-bottom:calc(var(--sp-3) + var(--sheet-pb)); }
+  /* 6. הכפתור הצף כפול לכפתור בכותרת (#sideToggle) ויושב על התוכן */
+  @media(max-width:1024px){ body.side-closed #sideOpenTab{ display:none; } }
+  /* 9. יעדי מגע (מגע = ≤1024, ההגדרה של 6.208.0) */
+  @media(max-width:1024px){
+    #leadModal .card-x{ position:relative; }
+    #leadModal .card-x::after{ content:''; position:absolute; inset:calc(-1 * var(--sp-2)); }   /* נשאר 24 בעין, 40 ללחיצה */
+    .ph-btn{ position:relative; }
+    /* 7.33.1 — A2: לא כלפי מטה — שם יושב שדה הטלפון (2px מתחת), ונגיעה בראשו פתחה חיוג/וואטסאפ */
+    .ph-btn::after{ content:''; position:absolute; inset:calc(-1 * var(--sp-2)) calc(-1 * var(--sp-0h)) 0; }
+    .dmc-seg button, .dmc-nav button{ height:var(--ctl-h-md); min-width:var(--ctl-h-md); }
+    .pchip-x{ min-width:var(--ctl-h-sm); min-height:var(--ctl-h-sm); }
+  }
+  /* 7.33.1 — A4: ה-padding הנייד של הגיליון (18px+env) חל מתחת ל-560; בין 560 ל-759 הוא --sp-4h כמו בדסקטופ */
+  @media(max-width:559.98px){
+    .modal .sheet{ --sheet-pb:calc(18px + env(safe-area-inset-bottom)); }
+    #leadModal .sheet{ --sheet-pb:calc(14px); }
+    #profModal .sheet{ --sheet-pb:0px; }
+  }
+  @media(max-width:759.98px){
+    /* 7. הכותרת: סנכרון = סמל, ושלושת הכפתורים 40×40 — שם המסך מקבל את המקום */
+    #syncBtn{ font-size:0; width:var(--ctl-h-touch-sm); height:var(--ctl-h-touch-sm); padding:0; flex:none;
+              display:inline-flex; align-items:center; justify-content:center; }
+    #syncBtn.hidden{ display:none; }
+    #syncBtn svg{ width:18px !important; height:18px !important; margin:0 !important; vertical-align:0 !important; }
+    #syncBtn:disabled svg{ animation:mq-spin 1s linear infinite; }
+    .topnav .gs-btn, .topnav .nf-btn{ width:var(--ctl-h-touch-sm); height:var(--ctl-h-touch-sm); }
+    .lead .acts select.inline-edit{ min-height:var(--ctl-h-md); }
+    /* 3. span שכתוב inline יוצר עמודות מרומזות בגריד הצר */
+    .form-grid > [style*="grid-column:span"], .form-grid > [style*="grid-column: span"]{ grid-column:1 / -1 !important; }
+    /* 4. מסמכים: קבוצת הצ'יפים בשורה משלה */
+    #doc-chips{ flex-wrap:wrap; }
+    #doc-chips > div{ flex:1 0 100%; }
+    /* 10. רשימות: שורת המטא עד 3 שורות */
+    #deals-list .lead .meta, #contacts-list .lead .meta{ display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; overflow:hidden; overflow-wrap:anywhere; }
+    /* 5. קישורי תשלום — כרטיס לשורה */
+    .payl-tbl thead{ display:none; }
+    .payl-tbl, .payl-tbl tbody{ display:block; width:100%; }
+    .payl-tbl tr{ display:grid; grid-template-columns:minmax(0,1fr) auto; gap:var(--sp-1) var(--sp-3); padding:var(--sp-3); border-bottom:1px solid var(--line); }
+    .payl-tbl td{ display:block; padding:0; border:none; text-align:start; white-space:normal; min-width:0; }
+    .payl-tbl td:nth-child(1){ grid-column:1; grid-row:1; }
+    .payl-tbl td:nth-child(5){ grid-column:2; grid-row:1; justify-self:end; text-align:end; }
+    .payl-tbl td:nth-child(2){ grid-column:1; grid-row:2; }
+    .payl-tbl td:nth-child(4){ grid-column:2; grid-row:2 / span 2; justify-self:end; text-align:end; }
+    .payl-tbl td:nth-child(3){ grid-column:1; grid-row:3; }
+    .payl-tbl td:nth-child(n+6){ grid-column:1 / -1; font-size:var(--fs-sm); color:var(--ink-2); }
+    .payl-tbl td[data-l]::before{ content:attr(data-l) ': '; color:var(--ink-3); font-weight:600; }
+    .payl-tbl td[dir="ltr"]{ direction:rtl; }   /* התווית בעברית מימין; מספר ההצעה (PQ…) נשאר רצף LTR מעצמו */
+    .payl-tbl td:nth-child(8):not(.payl-has), .payl-tbl td:nth-child(9):empty{ display:none; }
+    .payl-tbl td:nth-child(9) .chip{ min-height:var(--ctl-h-touch-sm); }
+    #payl-list .tbl-wrap{ overflow:visible; background-image:none; }
+    /* 13. הודעת toast: right:50% מגביל אותה לחצי מסך ⇒ 187px ב-375, שגיאה ארוכה = 6 שורות. ברוחב המסך */
+    #toast{ right:var(--sp-4); left:var(--sp-4); transform:none; text-align:center; border-radius:var(--r-lg); }
+    /* 7.33.1 — A6: ברוחב מלא בתחתית הוא ישב בדיוק על "שמירה/בוצע" ⇒ בראש המסך */
+    #toast{ top:calc(env(safe-area-inset-top) + var(--sp-3)); bottom:auto; }
+    /* 7.33.1 — A7: כפתור היצירה בסרגל התכווץ מתחת לטקסט שלו ב-320 (הטקסט גלש, העמוד נגלל 5/33px) */
+    .toolbar > .add{ flex:none; }
+    .toolbar > input{ min-width:0; }
+    /* 14. כרטיס המק"ט: max-width של calc(100vw - 48px) השאיר 24px מכל צד בטלפון (272px ב-320) */
+    #skuModal .sheet{ max-width:100%; }
+  }
+  @keyframes mq-spin{ to{ transform:rotate(360deg); } }
+  @media (prefers-reduced-motion:reduce){ #syncBtn:disabled svg{ animation:none; } }
 </style>
 </head>
 <body>
@@ -3890,7 +3962,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.32.1</div>
+      <div class="ver">גרסה 7.34.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -3950,7 +4022,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       <div class="nf-list" id="nfList"><div class="nf-empty">אין התראות חדשות</div></div>
       <div class="nf-push hidden" id="nfPush"></div>
     </div>
-    <button class="out hidden" id="syncBtn" onclick="syncPriority()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:-2px;margin-inline-end:var(--sp-1);"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>סנכרון פריוריטי</button>
+    <button class="out hidden" id="syncBtn" onclick="syncPriority()" title="סנכרון פריוריטי"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:-2px;margin-inline-end:var(--sp-1);"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>סנכרון פריוריטי</button>
     <button class="gs-btn" id="gsBtn" onclick="GS.open()" title="חיפוש בכל המערכת — שם, טלפון או אימייל (Ctrl/Cmd + S)" aria-label="חיפוש בכל המערכת">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:17px;height:17px"><circle cx="11" cy="11" r="7"/><path d="M20.5 20.5l-4-4"/></svg>
     </button>
@@ -4022,7 +4094,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="tkmob-2026-10-23a">גרסה 7.32.1</div>
+    <div class="side-foot" title="mobqa3-2026-10-23c">גרסה 7.34.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -8331,8 +8403,49 @@ window.calEtaToggle = on => {
 };
 let CAL_D = new Date();
 const isoD = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-let CAL_VIEW='month';
+/* 7.33.0 — mobqa: בטלפון החודשי (min-width:660) והשבועי מציגים 2–3 ימים עם גלילה אופקית; היומי נכנס במסך.
+   רק ברירת המחדל — המעבר לחודשי/שבועי נשאר. */
+let CAL_VIEW = (window.matchMedia && matchMedia('(max-width:759.98px)').matches) ? 'day' : 'month';
 window.calMode = v=>{ CAL_VIEW=v; renderCal(); };
+/* ===== 7.33.0 — mobqa: חלון צף של <details> נשאר בתוך המסך =====
+   נמדד: מקרא התשלומים, "⋯" ו"עמודות" בתמחור יצאו מהמסך (65→407 ב-390, 953→1833 ב-1024, 1325→1555 ב-1440).
+   כל אחד מעוגן לקצה ה-summary שלו, ומיקום ה-summary משתנה עם שבירת הסרגל — אין CSS אחד שנכון לכולם.
+   נקודת חנק אחת: בכל פתיחה מודדים כל ילד absolute/fixed ומזיזים אותו (translate) אל בין 8px לקצוות.
+   toggle אינו מבעבע — ולכן capture על document. translate ולא transform: לא דורס transform קיים. */
+(function(){
+  const M = 8;
+  function clampPops(d){
+    for(const p of d.children){
+      if(p.tagName === 'SUMMARY') continue;
+      const pos = getComputedStyle(p).position;
+      if(pos !== 'absolute' && pos !== 'fixed') continue;
+      p.style.translate = ''; p.style.maxWidth = '';
+      if(!d.open) continue;
+      /* 7.33.1 — A3: החלון הגולש כבר גלל את הדף אופקית (נמדד ב-320: scrollX -71) ⇒ מודדים בקואורדינטות מסמך */
+      const W = document.documentElement.clientWidth, sx = window.scrollX || 0;
+      let r = p.getBoundingClientRect();
+      if(!r.width) continue;
+      if(r.width > W - 2*M){ p.style.maxWidth = (W - 2*M) + 'px'; r = p.getBoundingClientRect(); }
+      const L = r.left + sx, R = r.right + sx;
+      let dx = 0;
+      if(R > W - M) dx = (W - M) - R;
+      if(L + dx < M) dx = M - L;
+      if(Math.abs(dx) >= 1) p.style.translate = Math.round(dx) + 'px 0';
+      if(window.scrollX) window.scrollTo(0, window.scrollY);
+    }
+  }
+  window.clampPops = clampPops;
+  document.addEventListener('toggle', e => { const d = e.target; if(d && d.tagName === 'DETAILS'){ try{ clampPops(d); }catch(_e){} } }, true);
+  window.addEventListener('resize', () => { document.querySelectorAll('details[open]').forEach(d => { try{ clampPops(d); }catch(_e){} }); });
+  /* 12. iOS מגדיל את הדף בפוקוס על שדה שגופנו מתחת ל-16px. maximum-scale=1 מבטל רק את ההגדלה האוטומטית —
+     ב-iOS 10+ הצביטה להגדלה נשארת. אנדרואיד אינו מגדיל אוטומטית, ושם maximum-scale היה חוסם צביטה ⇒ iOS בלבד. */
+  try{
+    const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const vp = document.querySelector('meta[name="viewport"]');
+    if(ios && vp && !/maximum-scale/.test(vp.content)) vp.content += ', maximum-scale=1';
+  }catch(_e){}
+})();
+
 window.calShift = n=>{
   if(CAL_VIEW==='month') CAL_D = new Date(CAL_D.getFullYear(), CAL_D.getMonth()+n, 1);
   else CAL_D = new Date(CAL_D.getFullYear(), CAL_D.getMonth(), CAL_D.getDate()+n*(CAL_VIEW==='week'?7:1));
@@ -13575,7 +13688,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'tkmob-2026-10-23a';
+const BUILD_ID = 'mobqa3-2026-10-23c';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -27863,13 +27976,13 @@ function paylRow(l){
   const ovr = l.override_at ? 'הופק ללא חתימה' + (paylWho(l.override_by) ? ' · באישור ' + esc(paylWho(l.override_by)) : '') : '';
   return `<tr>
     <td><a href="#" onclick="event.preventDefault();openDeal('${jsq(l.deal_id)}')" title="פתיחת כרטיס העסקה">${esc(d.name || '—')}</a>${cu ? `<div class="meta">${esc(cu.name)}</div>` : ''}</td>
-    <td dir="ltr">${esc(d.priority_quote_id || '—')}</td>
-    <td>${l.seq===1 ? 'מקדמה / 1' : esc(String(l.seq))}</td>
+    <td dir="ltr" data-l="הצעה">${esc(d.priority_quote_id || '—')}</td>
+    <td data-l="תשלום">${l.seq===1 ? 'מקדמה / 1' : esc(String(l.seq))}</td>
     <td><b>${esc(f2(l.amount))}</b>${l.installments > 1 ? `<div class="meta">${esc(String(l.installments))} תשלומים</div>` : ''}</td>
     <td><span class="pill ${st.cls}">${esc(st.label)}</span>${ovr ? `<div class="meta">${ovr}</div>` : ''}</td>
-    <td>${esc(fmtDT(l.created_at))}<div class="meta">${paylWho(l.created_by) ? esc(paylWho(l.created_by)) : 'דף החתימה'}</div></td>
-    <td>${sent}${opened ? `<div class="meta">${opened}</div>` : ''}</td>
-    <td>${paid || canc || '—'}</td>
+    <td data-l="נוצר">${esc(fmtDT(l.created_at))}<div class="meta">${paylWho(l.created_by) ? esc(paylWho(l.created_by)) : 'דף החתימה'}</div></td>
+    <td data-l="נשלח">${sent}${opened ? `<div class="meta">${opened}</div>` : ''}</td>
+    <td${paid || canc ? ' class="payl-has"' : ''}>${paid || canc || '—'}</td>
     <td>${paylOpen(l) && window.canEdit('crm.deals') ? `<button type="button" class="chip" onclick="payLinkCancel('${jsq(l.id)}')">✕ ביטול</button>` : ''}</td>
   </tr>`;
 }
@@ -31904,6 +32017,8 @@ window.convertLead = async (id, btn, choice)=>{
      ההמתנה (שאינו נסגר בלחיצת רקע) היה מכסה אותו. */
   if(data && data.need_pick && Array.isArray(data.candidates) && data.candidates.length){ pick = data.candidates; pickOv = data.can_override === true; return; }
   if(data && data.need_contact && Array.isArray(data.contacts) && data.contacts.length){ needCt = data; return; }
+  /* 7.33.0 — שם באנגלית (crm-convert-lead v26): לא נוצר דבר. התיבה במקום, בלי מודל — #convResult אינו מוסתר ע"י busyHide. */
+  if(data && data.need_latin){ if(res) res.innerHTML = cvLatinBox(id, data); return; }
   if(error || (data && data.ok===false)){
     if(res) res.innerHTML = `<div class="note" style="color:var(--red)">שגיאה: ${esc((data&&data.error)||error?.message||'לא ידוע')}</div>`; return;
   }
@@ -31936,6 +32051,34 @@ window.convertLead = async (id, btn, choice)=>{
     if(pick) cvPickOpen(id, btn, pick, pickOv);
     if(needCt) cvContOpen(id, btn, needCt, choice);
   }
+};
+/* ═══ 7.33.0 (7.33.1: נוסח ההודעה — רומן) — ליד עם שם באנגלית ═══════════════════════════════════════
+   רומן, 23/10/2026: "לא רוצה שאנשי מכירות יפתחו תהליכי מכירה על לידים שמגיעים בשם באנגלית" ·
+   "רק אם הליד חייב להיות באנגלית ואין אופציה בעברית — חייב אישור מנהל".
+   🔴 ההחלטה של השרת (crm-convert-lead v26, need_latin). can_approve מגיע מהתשובה ולא ממפת
+      ההרשאות בלקוח — אותו דפוס של can_override. ההרשאה: crm.leads.latinok במסך ההרשאות.
+   ⚠️ תיקון השם לעברית ושמירה ⇒ ההמרה עוברת בלי אישור. */
+function cvLatinBox(id, d){
+  const act = d.can_approve
+    ? `<button type="button" class="chip" onclick="cvLatinApprove('${jsq(id)}',this)">✓ אישור מנהל — להמשיך עם השם באנגלית</button>`
+    : `<button type="button" class="chip" onclick="cvLatinRequest('${jsq(id)}',this)">בקשת אישור מנהל</button>`;
+  return `<div class="note" style="color:var(--warn-ink)">⚠️ השם <b dir="ltr">${esc(d.full_name||'')}</b> באנגלית. נא לתקן את שם הליד לעברית, לשמור וללחוץ שוב.<br>אם השם חייב להישאר באנגלית — נדרש אישור מנהל. לא נוצר דבר בפריוריטי.<div class="okb-act">${act}</div></div>`;
+}
+window.cvLatinRequest = async (id, btn)=>{
+  if(btn){ if(btn.disabled) return; btn.disabled = true; }
+  const { data, error } = await sb.schema('crm').rpc('lead_latin_request', { p_lead: id });
+  if(error){ if(btn) btn.disabled = false; toast('שליחת הבקשה נכשלה — ' + error.message, 'err'); return; }
+  const sent = !!(data && data.sent);
+  if(btn) btn.textContent = sent ? '✓ הבקשה נשלחה למנהל' : '✓ נרשם';
+  toast(sent ? 'הבקשה נשלחה — תקבל התראה כשהמנהל יאשר' : ((data && data.note) || 'נרשם'), 'ok', 6000);
+};
+window.cvLatinApprove = async (id, btn)=>{
+  if(btn){ if(btn.disabled) return; btn.disabled = true; }
+  const { data, error } = await sb.schema('crm').rpc('lead_latin_approve', { p_lead: id });
+  if(error){ if(btn) btn.disabled = false; toast('האישור נכשל — ' + error.message, 'err'); return; }
+  const l = (LEADS||[]).find(x=>x.id===id); if(l) l.latin_ok_at = new Date().toISOString();
+  const res = $('#convResult');
+  if(res) res.innerHTML = `<div class="ok-box">✓ ${esc((data && data.note) || 'אושר')}. אפשר להמיר את הליד, ובעל הליד קיבל התראה.</div>`;
 };
 /* ═══ 6.255.0 — בחירת איש קשר בהמרה ללקוח קיים ═══════════════════════
    רומן: "אם יש כמה אנשי קשר והלקוח קיים תבקש לבחור גם איש קשר או ליצור איש קשר חדש".

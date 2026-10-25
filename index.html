@@ -3107,6 +3107,20 @@ td.lb-today .lb-dt{ background-color:transparent; }
 .lbu-add textarea{ flex:1; font-family:inherit; font-size:var(--fs-md); line-height:1.45;
   resize:vertical; min-height:52px; }
 .lbu-list{ margin-top:var(--sp-2h); border-top:1px solid var(--line-soft); }
+     /* 7.35.0 — השיחה בוואטסאפ בכרטיס הליד. נכנס = התחלה (ימין ב-RTL), יוצא = סוף. */
+     .wa-head{ display:flex; align-items:center; gap:var(--sp-2); flex-wrap:wrap; margin:var(--sp-2) 0 var(--sp-2h); }
+     .wa-head .note{ margin:0; flex:1; }
+     .wa-thread{ display:flex; flex-direction:column; gap:var(--sp-1h); padding:var(--sp-2h); background:var(--bg-subtle); border:1px solid var(--line-soft); border-radius:var(--r-lg); max-height:60vh; overflow:auto; }
+     .wa-msg{ max-width:78%; padding:var(--sp-1h) var(--sp-2h); border-radius:var(--r-lg); border:1px solid var(--line-soft); background:#fff; }
+     .wa-in{ align-self:flex-start; }
+     .wa-out{ align-self:flex-end; background:var(--bg-muted); }
+     .wa-body{ white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.5; }
+     .wa-att{ display:block; margin-top:var(--sp-1); }
+     .wa-meta{ display:flex; gap:var(--sp-2); flex-wrap:wrap; margin-top:var(--sp-1); font-size:var(--fs-xs); color:var(--ink-3); }
+     .wa-st-failed{ color:var(--red); font-weight:700; }
+     .wa-st-read{ color:var(--ok); }
+     .wa-empty{ padding:var(--sp-3); background:var(--bg-subtle); border-radius:var(--r-md); }
+     @media (max-width:759.98px){ .wa-msg{ max-width:92%; } }
 /* 🔴 6.150.0 — רומן: "שהתוויות ותאריך העדכון תמיד יהיה בעמודה מסודרת
    ותמיד כל העדכונים יהיה מסודרים ברור וקו אחיד."
    flex מיישר **בתוך** שורה ולא **בין** שורות: רוחב התגית משתנה משורה
@@ -3962,7 +3976,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.34.0</div>
+      <div class="ver">גרסה 7.35.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4094,7 +4108,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="mobqa3-2026-10-23c">גרסה 7.34.0</div>
+    <div class="side-foot" title="wachat-2026-10-24a">גרסה 7.35.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -13688,7 +13702,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'mobqa3-2026-10-23c';
+const BUILD_ID = 'wachat-2026-10-24a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -18585,6 +18599,7 @@ const ST_REG = [
   ['strategic_customers','adv','adv','לקוחות אסטרטגיים','מערך JSON.','json',{ltr:1}],
   ['wa_allow','adv','adv','וואטסאפ — רשימת היתר (פילוט)','רק מספרים ברשימה מקבלים הודעות. ריק = אף הודעה אינה נשלחת.','list',{danger:'שינוי ברשימת ההיתר קובע מי מקבל הודעות וואטסאפ אמיתיות. לשמור?'}],
   ['wa_channel_id','adv','adv','וואטסאפ — ערוץ Heyy','','txt',{ltr:1}],
+  ['heyy_tenant_id','adv','adv','וואטסאפ — מזהה החשבון ב-Heyy (tenantId)','הוובהוק heyy-hook דוחה אירוע ממזהה אחר. ריק = כל מזהה מתקבל — למלא מהאירוע הראשון ביומן הוובהוקים.','txt',{ltr:1}],
   ['wa_templates','adv','adv','וואטסאפ — מיפוי תבניות Heyy','JSON: מפתח ⇐ מזהה תבנית. מפתח חסר נכשל בקול בשליחה.','json',{ltr:1}],
   ['wa_quote_link_base','adv','adv','וואטסאפ — בסיס הקישור להצעה','רק https://q.ironfitness.co.il/ או https://app.ironfitness.co.il/q# — כל ערך אחר נופל לברירת המחדל.','txt',{ltr:1}],
   ['mail_allow','adv','adv','מייל — רשימת היתר (פילוט)','','list',{ltr:1,danger:'שינוי ברשימת ההיתר קובע מי מקבל מיילים אמיתיים. לשמור?'}],
@@ -21685,10 +21700,15 @@ function ctxOf(type, id){
       מוחק שדות מה-DOM — ו-saveLead/saveTask קוראים getElementById, כך
       ששדה חסר נשמט מה-patch **בשקט**. */
 const CTABS = [['main','פרטים'],['upd','עדכונים'],['hist','היסטוריה']];
+/* 7.35.0 — לשוניות נוספות לפי קידומת הכרטיס. רק כרטיס הליד ('lb') מקבל "וואטסאפ" — לשאר הכרטיסים
+   אין שיחת Heyy (רומן, 24/10/2026: "אופציה 2 בלשונית נפרדת בכרטיס ליד").
+   🔴 שלושת הצרכנים (ctabsHtml · ctabGo · ctabKeys) קוראים ctabList(pfx) ולא CTABS — נאכף בבנייה. */
+const CTABS_X = { lb: [['wa','וואטסאפ']] };
+function ctabList(pfx){ return CTABS.concat(CTABS_X[pfx] || []); }
 let CTAB_CUR = 'main';
 function ctabsHtml(pfx){
   return '<div class="ctabs" role="tablist" aria-label="לשוניות הכרטיס" onkeydown="ctabKeys(event,\''+pfx+'\')">'
-    + CTABS.map(function(e){ var k=e[0], lbl=e[1], on=(k==='main');
+    + ctabList(pfx).map(function(e){ var k=e[0], lbl=e[1], on=(k==='main');
         return '<button type="button" class="ctab'+(on?' on':'')+'" role="tab"'
           + ' id="'+pfx+'-tb-'+k+'" aria-controls="'+pfx+'-pn-'+k+'"'
           + ' aria-selected="'+(on?'true':'false')+'" tabindex="'+(on?'0':'-1')+'"'
@@ -21697,7 +21717,7 @@ function ctabsHtml(pfx){
 }
 window.ctabGo = (pfx, k)=>{
   CTAB_CUR = k;
-  CTABS.forEach(function(e){
+  ctabList(pfx).forEach(function(e){
     const x = e[0];
     const pn = document.getElementById(pfx+'-pn-'+x);
     if(pn) pn.classList.toggle('hidden', x!==k);
@@ -21709,6 +21729,7 @@ window.ctabGo = (pfx, k)=>{
   /* 🔴 טעינה עצלה בכניסה הראשונה ללשונית. זה בדיוק מה שהאקורדיון קנה
      לפני 6.135.0, וירידתו הייתה מחזירה את העלות לכל פתיחת כרטיס. */
   if(k==='upd') updArm(pfx);
+  if(k==='wa') waArm(pfx);   /* 7.35.0 — השיחה בוואטסאפ, אותה טעינה עצלה */
 };
 /* דריכת לשונית העדכונים: מזהה ויעד נשמרים על הפאנל, והטעינה נדחית.
    ⚠️ מתאפס בכל פתיחת כרטיס — dataset.loaded יורד, אחרת כרטיס שני של
@@ -21722,7 +21743,7 @@ window.ctabArm = (pfx, id, type)=>{
 window.ctabKeys = (ev, pfx)=>{
   const k = ev.key;
   if(k!=='ArrowRight' && k!=='ArrowLeft' && k!=='Home' && k!=='End') return;
-  const ks = CTABS.map(function(e){ return e[0]; });
+  const ks = ctabList(pfx).map(function(e){ return e[0]; });
   const i = ks.indexOf(CTAB_CUR); let j = i;
   /* המסך RTL: חץ שמאלה מתקדם ברשימה וחץ ימינה חוזר. */
   if(k==='ArrowLeft')  j = (i+1) % ks.length;
@@ -30729,6 +30750,86 @@ function lbHistBlock(tasks, meets){
     }).join('');
   return h;
 }
+/* ═══ 7.35.0 — wachat: השיחה בוואטסאפ (Heyy) בכרטיס הליד — לשונית "וואטסאפ", קריאה בלבד ═══════════
+   רומן, 24/10/2026: "לא צריך לדבר עם הלקוח דרך המערכת שלנו, אלא לראות את השיחה או קישור לשיחה" ·
+   "אופציה 2 בלשונית נפרדת בכרטיס ליד".
+   המקור: crm.wa_messages — נכתבת רק מהוובהוק heyy-hook (message.received / sent / updated). הקריאה דרך
+   crm.lead_wa_thread — RPC עם שער can_view('crm.leads'); ההתאמה לליד לפי 9 הספרות האחרונות של הטלפון
+   ולפי מזהה השיחה שבשדה whatsapp (1,193 לידים ממאנדיי מחזיקים https://app.heyy.io/inbox/<chat>).
+   🔴 טעינה עצלה — רק בכניסה ללשונית, כמו "עדכונים" (updArm): פתיחת כרטיס אינה שואלת את השרת.
+   ⚠️ הפאנל מצויר מחדש ב-openLead (innerHTML) ולכן dataset.loaded יורד בכל פתיחה — אין "כרטיס שני מציג
+      את השיחה של הראשון". ותשובה שחזרה אחרי שהכרטיס עבר לליד אחר נזרקת (השוואת האלמנט והמזהה).
+   ⚠️ מזהה שיחה נכנס ל-href רק אם הוא uuid — ובכל זאת דרך esc(safeUrl(…)), כמו כל href במערכת (xsstest). */
+const HEYY_INBOX = 'https://app.heyy.io/inbox/';
+const WA_ST  = { pending:'ממתין', sent:'נשלח', delivered:'נמסר', read:'נקרא', failed:'נכשל', scheduled:'מתוזמן', deleted:'נמחק', none:'' };
+const WA_SRC = { inbox:'נציג', automation:'אוטומציה', api:'המערכת', campaign:'קמפיין', ai_agent:'סוכן AI', vendor:'וואטסאפ', system:'מערכת' };
+const WA_UUID = /^[0-9a-fA-F-]{36}$/;
+function lbWaChatOf(l){ const m = String(l && l.whatsapp || '').match(/inbox\/([0-9a-fA-F-]{36})/); return m ? m[1] : ''; }
+function waErrTxt(errs){
+  const e = Array.isArray(errs) && errs[0]; if(!e) return '';
+  return String((e.vendorError && e.vendorError.message) || e.message || e.messageKey || '');
+}
+function waMsgHtml(m){
+  const inb = m.sender === 'inbound';
+  const stKey = String(m.status || '');
+  const st = inb ? '' : (WA_ST[stKey] !== undefined ? WA_ST[stKey] : stKey);
+  const who = inb ? (m.contact_name || 'הלקוח') : (WA_SRC[m.source_type] || 'איירון');
+  const err = (stKey === 'failed') ? waErrTxt(m.errors) : '';
+  const att = (Array.isArray(m.attachments) ? m.attachments : []).map(function(a){
+    const f = (a && a.file) || {}; const nm = f.name || (a && a.type) || 'קובץ';
+    const u = esc(safeUrl(f.url || ''));
+    return u ? '<a class="wa-att" href="' + u + '" target="_blank" rel="noopener">קובץ: ' + esc(nm) + ' ↗</a>'
+             : '<span class="wa-att">קובץ: ' + esc(nm) + '</span>';
+  }).join('');
+  const body = String(m.body || '');
+  return '<div class="wa-msg ' + (inb ? 'wa-in' : 'wa-out') + '" data-id="' + esc(m.id) + '">'
+    + '<div class="wa-body">' + esc(body || (att ? '' : '(ללא טקסט)')) + att + '</div>'
+    + '<div class="wa-meta"><span>' + esc(who) + '</span><span dir="ltr">' + esc(fmtDT(m.msg_ts)) + '</span>'
+    + (st ? '<span class="wa-st wa-st-' + esc(stKey) + '">' + esc(st) + (err ? ' · ' + esc(err) : '') + '</span>' : '')
+    + '</div></div>';
+}
+function waThreadHtml(rows, chat, p){
+  const link = WA_UUID.test(chat)
+    ? '<a class="chip wa-open" href="' + esc(safeUrl(HEYY_INBOX + chat)) + '" target="_blank" rel="noopener">פתיחת השיחה ב-Heyy ↗</a>' : '';
+  const head = '<div class="wa-head">' + link
+    + '<span class="note">' + (rows.length ? esc(String(rows.length)) + ' הודעות' : '') + '</span>'
+    + '<button type="button" class="chip" onclick="waRetry(\'' + p + '\')">רענון</button></div>';
+  if(!rows.length) return head + '<div class="note wa-empty">אין עדיין הודעות וואטסאפ לליד הזה. השיחות נאספות מ-Heyy מרגע חיבור הוובהוק; הודעות שנשלחו לפני כן אינן נטענות לאחור.</div>';
+  return head + '<div class="wa-thread">' + rows.map(waMsgHtml).join('') + '</div>';
+}
+function waArm(pfx){
+  const p = pfx || 'lb';
+  const pn = document.getElementById(p + '-pn-wa'); if(!pn) return;
+  if(pn.dataset.loaded) return;
+  pn.dataset.loaded = '1';
+  waRun(pn, p);
+}
+window.waRetry = p=>{
+  const pn = document.getElementById((p||'lb') + '-pn-wa'); if(!pn) return;
+  delete pn.dataset.loaded; pn.innerHTML = crmLoading();
+  waArm(p || 'lb');
+};
+async function waRun(pn, p){
+  const id = pn.dataset.lead;
+  pn.innerHTML = crmLoading();
+  let rows = [], err = null;
+  try{
+    const r = await sb.schema('crm').rpc('lead_wa_thread', { p_lead: id });
+    if(r && r.error) err = r.error; else rows = (r && Array.isArray(r.data)) ? r.data : [];
+  }catch(e){ err = e; }
+  /* תשובה ישנה אינה דורסת: הכרטיס אולי כבר צויר מחדש על ליד אחר */
+  const cur = document.getElementById(p + '-pn-wa');
+  if(!cur || cur !== pn || cur.dataset.lead !== id) return;
+  if(err){
+    delete pn.dataset.loaded;
+    pn.innerHTML = '<div class="err">טעינת השיחה נכשלה — ' + esc((err && err.message) || String(err)) + '</div>'
+      + '<div class="wa-head"><button type="button" class="chip" onclick="waRetry(\'' + p + '\')">נסה שוב</button></div>';
+    return;
+  }
+  const last = rows.slice().reverse().find(function(m){ return WA_UUID.test(String(m.chat_id || '')); });
+  const chat = (last && last.chat_id) || pn.dataset.wchat || '';
+  pn.innerHTML = waThreadHtml(rows, chat, p);
+}
 window.openLead = (id)=>{
   const l = LEADS.find(x=>x.id===id); if(!l) return;
   /* ⚠️ תוצאת המרה שייכת לליד שבו היא נעשתה. בלי האיפוס היא הייתה
@@ -30798,6 +30899,9 @@ window.openLead = (id)=>{
       <div class="lbu-bar" id="lb-updbar"></div>
       <div class="lbu-list" id="lb-updlist">${crmLoading()}</div>
     </div>
+    <!-- 7.35.0 — השיחה בוואטסאפ (Heyy): נטענת רק בכניסה ללשונית (waArm). data-wchat = מזהה השיחה מהשדה whatsapp,
+         כדי שליד ממאנדיי יקבל קישור ל-Heyy גם לפני שהגיעה הודעה דרך הוובהוק. -->
+    <div id="lb-pn-wa" class="hidden" data-lead="${esc(l.id)}" data-wchat="${esc(lbWaChatOf(l))}">${crmLoading()}</div>
     <div class="modal-actions">
       ${editable?`<button class="btn btnw" onclick="saveLead('${l.id}')">שמירה</button>
       <button type="button" class="lb-del" onclick="lbDelete('${l.id}')">מחיקת ליד</button>`:'<div class="note">אין לך הרשאת עריכה ללידים.</div>'}

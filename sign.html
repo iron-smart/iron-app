@@ -68,7 +68,7 @@ textarea{width:100%;border:1px solid #c0c5c9;border-radius:9px;padding:10px 12px
 .paybox{margin-top:22px;text-align:right;border-top:1px solid #e0e2e4;padding-top:18px}
 .paybox h2{text-align:center}
 .paybox .payamt{text-align:center;font-size:1.5rem;font-weight:800;color:#002d48;margin:4px 0 10px}
-.payfr{width:100%;height:640px;border:1px solid #dfe3e6;border-radius:12px;background:#fff;display:block}
+.payfr{width:100%;height:760px;border:1px solid #dfe3e6;border-radius:12px;background:#fff;display:block}
 .paybox .qpdf-nt{text-align:center}
 .photos{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
 .photos img{width:120px;height:120px;object-fit:cover;border-radius:10px;border:1px solid #e0e2e4}
@@ -231,6 +231,16 @@ function show(html){ document.getElementById('app').innerHTML='<div class="ok-wr
 /* sign v26 — תשלום המקדמה בדף (רומן, 18/10/2026: "גם בדף החתימה תוסיף את ה-iframe של טרנזילה אחרי החתימה").
    השרת מחזיר pay רק כשהתשלום הראשון בתמונה הוא באשראי ויש מסוף; בלי pay הדף נראה כמו קודם. ה-iframe טוען את pay-go
    (handshake בזמן הפתיחה) שמפנה לטופס המאובטח של טרנזילה; הכתובת מגיעה מהשרת שלנו בלבד. */
+/* 25/10/2026 (pay-go v8 · pay.html v2 · פריטים 20+22): ה-iframe טוען את **דף התשלום שלנו** ולא את pay-go ישירות.
+   עד כאן ה-handshake של טרנזילה (20 דקות) התחיל ברגע החתימה, ולקוח שהקליד כרטיס אחרי 20 דקות נדחה בלי אזהרה
+   (rc 930, נמדד 23–26 דקות אחרי הפתיחה). pay.html פותח את הטופס רק בלחיצה, מזהיר בדקה 15, מכסה בדקה 18 עם
+   "רענון", ושואל את השרת כל דקה (שולם / הוחלף). הוא שולח לכאן את גובהו (iron_pay_h) כדי שהמסגרת תתאים.
+   ⚠️ p.url נשאר כתובת pay-go (החוזה עם sign לא השתנה); הטוקן נשלף ממנה. */
+function payPage(url,qs){ const m=/[?]t=([A-Za-z0-9_-]{16,40})$/.exec(String(url)); return m?'https://app.ironfitness.co.il/pay.html?t='+m[1]+'&'+qs:''; }
+addEventListener('message',e=>{
+  if(e.origin!=='https://app.ironfitness.co.il'||!e.data||!(Number(e.data.iron_pay_h)>0)) return;
+  const f=document.getElementById('payfr'); if(f) f.style.height=Math.min(1600,Math.max(320,Number(e.data.iron_pay_h)+8))+'px';
+});
 function payBlock(p){
   if(!p||!p.url||!/^https:[/][/]hjibpfavkjqocjvffsbq[.]supabase[.]co[/]functions[/]v1[/]pay-go[?]t=[A-Za-z0-9_-]{16,40}$/.test(String(p.url))) return '';
   const amt='₪'+Number(p.amount||0).toLocaleString('he-IL',{minimumFractionDigits:Number.isInteger(Number(p.amount))?0:2,maximumFractionDigits:2});
@@ -238,8 +248,8 @@ function payBlock(p){
   return '<div class="paybox"><h2>תשלום המקדמה באשראי</h2>'
     +'<p style="font-size:.9rem;color:#4c5560;text-align:center;margin:0">לסיום התהליך אפשר לשלם כעת את התשלום הראשון'+(p.quote?' עבור הצעה <b dir="ltr">'+esc(p.quote)+'</b>':'')+(n>1?' — עד '+n+' תשלומים':'')+'.</p>'
     +'<div class="payamt">'+esc(amt)+'</div>'
-    +'<iframe class="payfr" src="'+esc(p.url)+'" title="תשלום מאובטח — טרנזילה" allow="payment"></iframe>'
-    +'<p class="qpdf-nt">הטופס אינו מוצג? <a href="'+esc(p.url)+'" target="_blank" rel="noopener">לפתיחת התשלום בחלון נפרד</a></p></div>';
+    +'<iframe class="payfr" id="payfr" src="'+esc(payPage(p.url,'embed=1'))+'" title="תשלום מאובטח — טרנזילה" allow="payment"></iframe>'
+    +'<p class="qpdf-nt">הטופס אינו מוצג? <a href="'+esc(payPage(p.url,'s=pay'))+'" target="_blank" rel="noopener">לפתיחת התשלום בחלון נפרד</a></p></div>';
 }
 
 init();

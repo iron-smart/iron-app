@@ -8,14 +8,31 @@
 <meta name="theme-color" content="#0b2a45">
 <link rel="icon" href="https://app.ironfitness.co.il/assets/icon-192.png">
 <!--
-  pay.html v1 — דפי התשלום ללקוח (18/10/2026, 7.25.0 paylog). נפרס מ-core.app_files.pay_view_html (gh-deploy v28).
-  🔴 למה דף סטטי ולא HTML מהפונקציה: שער Supabase מחליף **כל** תשובת text/html מפונקציית קצה ב-text/plain עם
-     CSP sandbox (נמדד 18/10/2026 בחמש וריאציות — html-probe). לכן pay-go אינה מגישה HTML: היא מפנה לכאן
-     (?t=<טוקן>&s=<מצב>) ומחזירה את נתוני הדף ב-JSON (?t=&json=1&s=). הדף מצייר: לוגו, כותרת, הודעה, לקוח, הצעה,
-     תשלום, סכום, פירוט תשלומי האשראי, וכפתורים (ניסיון נוסף · וואטסאפ לנציג).
-  רומן: "להפוך ליותר יפה את הדף הזה" + "פירוט מה הסכום … 50 ש״ח תשלום 1 ותשלום 2 עוד 50 ש״ח".
+  pay.html v3 — דף התשלום ללקוח (26/10/2026). נפרס מ-core.app_files.pay_view_html (gh-deploy v28).
+  v3 (26/10/2026, רומן: "תתקן גם את maxpay"): **מספר התשלומים נבחר כאן, לפני הטופס של טרנזילה.**
+     🔴 עם maxpay הטופס של טרנזילה מחלק בעצמו ובשקלים שלמים (paymentscalc): ₪1 ב-2 תשלומים ⇒ תשלום שני 0 ⇒ "System Error",
+        ו-₪12,500.50 ב-3 חויב 4,168.50 + 4,166 + 4,166 בעוד הדף הציג חלוקה באגורות. לפי התיעוד שולחים או maxpay או
+        npay+fpay+spay — ואז אין בחירה בטופס. לכן: בורר "מספר תשלומים" (1..installments של הקישור, ברירת המחדל = המקסימום
+        שסוכם בהצעה), תצוגה מקדימה של החלוקה (splitRows — אותה נוסחה של splitInst ב-pay-go v9: התשלומים הנוספים שווים
+        באגורות, הראשון סופג את העיגול), וה-iframe נפתח עם pay-go?go=1&inst=K. שינוי הבחירה כשהטופס כבר פתוח ⇒ טופס חדש
+        (handshake חדש ו-DCdisable חדש). אחרי תשלום הפירוט מגיע מהשרת לפי מה שטרנזילה חייבה בפועל.
+     ⚠️ ברירת המחדל היא המקסימום (הכרעה 26/10; קבוע אחד ב-showPay). קישור ל-תשלום אחד ⇒ אין בורר.
+  v1 (18/10/2026, 7.25.0 paylog): דפי מצב בלבד — שולם / נכשל / בוטל; הטופס של טרנזילה נפתח ישירות מ-pay-go (handshake בלחיצה).
+  v2 (25/10/2026, פריטים 20+22 ברשימת הבאגים): הטופס של טרנזילה נטען **בתוך הדף הזה**, ולכן יש לנו שעון.
+     רומן: "אני רוצה קישור שאני שולח שיהיה תקף גם לכמה שעות או אפילו לפחות יום" · "איך אפשר שכשעוברים 20 דקות זה מתריע ללקוח".
+     🔴 נמדד 25/10: ה-handshake של טרנזילה נשמר 20 דקות; טופס שנפתח ונשלח אחרי 20 דקות נדחה (rc 930) בלי שום אזהרה —
+        טופס עם thtk בן 22 דקות עדיין נטען כרגיל. מאז 18/10 אפס תשלומי לקוחות אמיתיים דרך קישור.
+     · s=pay: הסכום + כפתור "לתשלום באשראי". הלחיצה טוענת iframe של pay-go?go=1 (handshake) ⇒ טרנזילה — השעון מתחיל כאן.
+     · דקה 15: שורת אזהרה עם ספירה לאחור. דקה 18: כיסוי על הטופס + "רענון וחזרה לתשלום" (iframe חדש ⇒ handshake טרי).
+       הזמן נמדד בהשוואת שעות (Date.now), לא בספירת טיקים — דפדפנים מקפיאים טיימרים ברקע; חזרה למסך אחרי שעה מציגה
+       מיד את הכפתור (visibilitychange ⇒ tick).
+     · כל דקה הדף שואל את pay-go?json=1 על מצב הקישור: 'שולם' ⇒ דף האישור · הוחלף (replaced_by) ⇒ כיסוי "תנאי התשלום
+       עודכנו" ⇒ הטופס של הקישור החדש · 'בוטל' בלי אח ⇒ "הקישור בוטל".
+     · אחרי תשלום טרנזילה מפנה את ה-iframe שלה ל-pay-go r=ok ⇒ לכאן (מקונן). העותק הפנימי שולח postMessage {iron_pay}
+       להורה (אותו origin), וההורה עובר לדף האישור במקום להשאיר אישור בתוך מסגרת של 640px.
+     · embed=1 (בתוך sign.html): בלי לוגו ושוליים; הדף שולח להורה את גובהו ({iron_pay_h}) כדי שה-iframe בדף החתימה יתאים.
   ⚠️ הדף אינו מחליט דבר: המצב מגיע מהשרת (הסטטוס במסד), והטוקן הוא הרשאת הצפייה — כמו q.html.
-  ℹ️ עובד גם בתוך ה-iframe של דף החתימה (sign v26): אחרי תשלום טרנזילה מפנה את ה-iframe ל-pay-go r=ok ⇒ לכאן.
+  ⚠️ בלי רצפי בריחה במקור (CLAUDE.md, כלל 3).
 -->
 <style>
   :root{ --navy:#0b2a45; --navy2:#123a5c; --ink:#0b1620; --soft:#4c5560; --mute:#84898f; }
@@ -26,7 +43,7 @@
   .logo{ display:block; width:min(210px,56vw); height:auto; margin:4px auto 18px; opacity:.96; }
   .card{ background:#fff; border-radius:16px; box-shadow:0 12px 34px rgba(0,0,0,.28); padding:26px 22px 22px; }
   .ico{ width:58px; height:58px; border-radius:50%; display:grid; place-items:center; margin:0 auto 12px; font-size:28px; font-weight:800; }
-  .ok .ico{ background:#e6f4ec; color:#1d7a46; } .bad .ico{ background:#fdecec; color:#b42318; } .wait .ico{ background:#fff4df; color:#9a6700; } .info .ico{ background:#eaf1f8; color:var(--navy); }
+  .ok .ico{ background:#e6f4ec; color:#1d7a46; } .bad .ico{ background:#fdecec; color:#b42318; } .wait .ico{ background:#fff4df; color:#9a6700; } .info .ico,.pay .ico,.replaced .ico{ background:#eaf1f8; color:var(--navy); }
   h1{ font-size:1.22rem; margin:0 0 6px; color:var(--navy); text-align:center; line-height:1.35; }
   p.lead{ margin:0 0 16px; color:var(--soft); text-align:center; line-height:1.55; font-size:.95rem; }
   .facts{ display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; background:#f5f7f9; border-radius:12px; padding:12px 14px; font-size:.9rem; }
@@ -35,12 +52,34 @@
   .inst{ margin-top:10px; font-size:.88rem; color:var(--soft); background:#fff; border:1px solid #e3e6e9; border-radius:12px; padding:8px 14px; }
   .inst-h{ font-weight:700; color:var(--navy); padding:4px 0 6px; }
   .inst div:not(.inst-h){ display:flex; justify-content:space-between; padding:4px 0; border-top:1px dashed #e3e6e9; }
+  /* v3 — בורר מספר התשלומים, לפני הטופס */
+  .instsel{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:12px; background:#f5f7f9; border-radius:12px; padding:10px 14px; font-size:.9rem; }
+  .instsel label{ color:var(--soft); font-weight:700; }
+  .instsel select{ font:inherit; font-weight:700; color:var(--navy); background:#fff; border:1px solid #dfe3e6; border-radius:10px; padding:8px 10px; min-width:150px; }
+  .instsel select:disabled{ color:var(--soft); background:#f5f7f9; }
+  .hint{ font-size:.8rem; color:var(--mute); text-align:center; margin-top:6px; } .hint[hidden]{ display:none; }
   .btns{ display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; justify-content:center; }
-  a.b{ display:inline-flex; align-items:center; gap:8px; text-decoration:none; border-radius:11px; padding:11px 18px; font-weight:700; font-size:.95rem; }
-  a.b.p{ background:var(--navy); color:#fff; } a.b.wa{ background:#25d366; color:#fff; } a.b.g{ background:#eef1f4; color:var(--navy); }
+  a.b,button.b{ display:inline-flex; align-items:center; gap:8px; text-decoration:none; border-radius:11px; padding:11px 18px; font-weight:700; font-size:.95rem; border:0; cursor:pointer; font-family:inherit; }
+  .b.p{ background:var(--navy); color:#fff; } .b.wa{ background:#25d366; color:#fff; } .b.g{ background:#eef1f4; color:var(--navy); }
+  .b.p.big{ width:100%; justify-content:center; padding:14px 18px; font-size:1.02rem; }
   .foot{ color:rgba(255,255,255,.72); font-size:.8rem; margin-top:18px; text-align:center; } .foot a{ color:#fff; text-decoration:none; }
   .spin{ width:18px; height:18px; border-radius:50%; border:2px solid rgba(11,42,69,.2); border-top-color:var(--navy); animation:r .8s linear infinite; margin:0 auto; }
   @keyframes r{ to{ transform:rotate(360deg); } }
+  /* v2 — הטופס בתוך הדף, האזהרה והכיסוי */
+  .warn{ display:none; background:#fff4df; color:#9a6700; border:1px solid #f3dfae; border-radius:10px; padding:9px 12px; font-size:.86rem; line-height:1.45; margin:12px 0 0; text-align:center; }
+  .warn.on{ display:block; }
+  .frwrap{ position:relative; margin-top:12px; }
+  .frwrap[hidden]{ display:none; }
+  .payfr{ width:100%; height:660px; border:1px solid #dfe3e6; border-radius:12px; background:#fff; display:block; }
+  .cover{ display:none; position:absolute; inset:0; background:rgba(255,255,255,.94); border-radius:12px; align-items:center; justify-content:center; padding:18px; text-align:center; }
+  .cover.on{ display:flex; }
+  .cover .box{ background:#fff; border:1px solid #dfe3e6; border-radius:14px; padding:18px 16px; max-width:340px; width:100%; box-shadow:0 8px 24px rgba(0,0,0,.08); }
+  .cover .box h2{ font-size:1.05rem; margin:6px 0 4px; color:var(--navy); }
+  .cover .box p{ font-size:.88rem; color:var(--soft); margin:0 0 12px; line-height:1.45; }
+  .since{ font-size:.78rem; color:var(--mute); text-align:center; margin:8px 0 0; }
+  .fallback{ font-size:.82rem; color:var(--mute); text-align:center; margin:10px 0 0; } .fallback a{ color:var(--navy); }
+  body.embed{ background:#fff; } body.embed .logo, body.embed .foot{ display:none; }
+  body.embed .wrap{ padding:0; max-width:none; } body.embed .card{ box-shadow:none; border-radius:0; padding:6px 2px 8px; }
 </style>
 </head>
 <body>
@@ -52,41 +91,189 @@
 <script>
 (function(){
   var API = 'https://hjibpfavkjqocjvffsbq.supabase.co/functions/v1/pay-go';
-  var ICONS = { ok:'✓', bad:'✕', wait:'⏳', info:'ℹ' };
+  var WARN_MIN = 15, EXP_MIN = 18, TICK_MS = 15000, POLL_MS = 60000;   /* טרנזילה: 20 דקות. 18 משאיר שתי דקות לשליחה שכבר התחילה. */
+  var ICONS = { ok:'✓', bad:'✕', wait:'⏳', info:'ℹ', pay:'₪', replaced:'↻' };
   var esc = function(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; }); };
   var ils = function(n){ n = Number(n || 0); return '₪' + n.toLocaleString('he-IL', { minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 }); };
+  /* v3 — אותה חלוקה כמו splitInst ב-pay-go v9: באגורות שלמות, התשלומים הנוספים שווים, הראשון סופג את העיגול. שינוי שם = שינוי כאן. */
+  var splitRows = function(amount, k){
+    var a = Math.round(Number(amount) * 100), n = Math.max(1, Math.floor(Number(k) || 1));
+    if(n === 1 || a < n) return [a / 100];
+    var sp = Math.floor(a / n), fp = a - sp * (n - 1), rows = [fp / 100];
+    for(var i = 1; i < n; i++) rows.push(sp / 100);
+    return rows;
+  };
+  var instK = 0;   /* מספר התשלומים שנבחר (0 = טרם נקבע) */
+  var instHtml = function(amount, k){
+    var rows = splitRows(amount, k);
+    if(rows.length < 2) return '';
+    return '<div class="inst" id="instPrev"><div class="inst-h">' + rows.length + ' תשלומים באשראי</div>'
+      + rows.map(function(a, i){ return '<div><span>תשלום ' + (i + 1) + '</span><b>' + esc(ils(a)) + '</b></div>'; }).join('') + '</div>';
+  };
   var card = document.getElementById('card');
-  function show(o){
-    var kind = ({ok:1,bad:1,wait:1,info:1})[o.kind] ? o.kind : 'info';
+  var q = new URLSearchParams(location.search);
+  var t = String(q.get('t') || ''), s = String(q.get('s') || ''), embed = q.get('embed') === '1';
+  if(embed) document.body.className += ' embed';
+  var inFrame = false; try { inFrame = window.parent !== window; } catch(_e){ inFrame = true; }
+  var cur = null, hsAt = 0, tickT = null, pollT = null, formOpen = false;
+  var pageUrl = function(tok, st){ return location.origin + location.pathname + '?t=' + encodeURIComponent(tok) + '&s=' + encodeURIComponent(st) + (embed ? '&embed=1' : ''); };
+  var postUp = function(msg){ if(!inFrame) return; try { window.parent.postMessage(msg, location.origin); } catch(_e){} };
+  var sendHeight = function(){ postUp({ iron_pay_h: document.documentElement.scrollHeight }); };
+
+  function factsHtml(o, noInst){
     var f = o.facts || null, cells = '';
     if(f){
       var seqLbl = f.seq === 1 ? 'מקדמה / תשלום 1' : (f.seq ? 'תשלום ' + f.seq : '');
       if(f.cust) cells += '<div><span class="lbl">לקוח</span><b>' + esc(f.cust) + '</b></div>';
       if(f.quote) cells += '<div><span class="lbl">הצעת מחיר</span><b dir="ltr">' + esc(f.quote) + '</b></div>';
       if(seqLbl) cells += '<div><span class="lbl">תשלום</span><b>' + esc(seqLbl) + '</b></div>';
-      if(f.installments > 1) cells += '<div><span class="lbl">פריסה</span><b>' + esc(String(f.installments)) + ' תשלומים</b></div>';
+      if(f.installments > 1) cells += '<div><span class="lbl">פריסה</span><b>עד ' + esc(String(f.installments)) + ' תשלומים</b></div>';
       var amt = f.paid != null ? f.paid : f.amount;
       if(f.amount != null) cells += '<div class="amt"><span class="lbl">' + (f.paid != null ? 'הסכום ששולם' : 'סכום לתשלום') + '</span><b>' + esc(ils(amt)) + '</b></div>';
     }
     var inst = '';
-    if(f && f.amount != null && f.installments > 1 && Array.isArray(f.inst_rows)){
+    if(!noInst && f && f.amount != null && f.installments > 1 && Array.isArray(f.inst_rows)){
       inst = '<div class="inst"><div class="inst-h">' + esc(String(f.installments)) + ' תשלומים באשראי</div>'
         + f.inst_rows.map(function(a, i){ return '<div><span>תשלום ' + (i + 1) + '</span><b>' + esc(ils(a)) + '</b></div>'; }).join('') + '</div>';
     }
-    var btns = (o.btns || []).filter(function(b){ return b && /^https:[/][/]/.test(String(b.href || '')); }).map(function(b){
+    return (cells ? '<div class="facts">' + cells + '</div>' : '') + inst;
+  }
+  function btnsHtml(o){
+    return (o.btns || []).filter(function(b){ return b && /^https:[/][/]/.test(String(b.href || '')); }).map(function(b){
       var cls = ({p:1,wa:1,g:1})[b.cls] ? b.cls : 'g';
       return '<a class="b ' + cls + '" href="' + esc(b.href) + '"' + (cls === 'wa' ? ' target="_blank" rel="noopener"' : '') + '>' + esc(b.label) + '</a>'; }).join('');
-    card.className = 'card ' + kind;
-    card.innerHTML = '<div class="ico">' + ICONS[kind] + '</div><h1>' + esc(o.title) + '</h1><p class="lead">' + esc(o.msg) + '</p>'
-      + (cells ? '<div class="facts">' + cells + '</div>' : '') + inst + (btns ? '<div class="btns">' + btns + '</div>' : '');
-    if(o.title) document.title = o.title + ' — איירון פיטנס';
   }
-  var q = new URLSearchParams(location.search);
-  var t = String(q.get('t') || ''), s = String(q.get('s') || '');
+  function head(o, kind){ return '<div class="ico">' + ICONS[kind] + '</div><h1>' + esc(o.title) + '</h1><p class="lead">' + esc(o.msg) + '</p>'; }
+
+  /* דפי המצב (שולם · נכשל · בוטל · באישור) — כמו v1. בתוך מסגרת: מודיעים להורה כדי שיעבור לדף המלא. */
+  function show(o){
+    var kind = ({ok:1,bad:1,wait:1,info:1})[o.kind] ? o.kind : 'info';
+    var btns = btnsHtml(o);
+    card.className = 'card ' + kind;
+    card.innerHTML = head(o, kind) + factsHtml(o) + (btns ? '<div class="btns">' + btns + '</div>' : '');
+    if(o.title) document.title = o.title + ' — איירון פיטנס';
+    stopTimers();
+    if(kind === 'ok' || kind === 'bad' || kind === 'wait') postUp({ iron_pay: { t: t, s: s || kind } });
+    sendHeight();
+  }
+
+  /* v2 — קישור פעיל: הסכום, כפתור, ורק אחרי הלחיצה הטופס (והשעון). */
+  function showPay(o){
+    cur = o; formOpen = false;
+    var f = o.facts || {}, max = Math.max(1, Math.floor(Number(f.installments) || 1));
+    if(!(instK >= 1 && instK <= max)) instK = max;   /* ברירת המחדל: הפריסה שסוכמה בהצעה; הלקוח יכול לבחור פחות */
+    var sel = '';
+    if(max > 1){
+      sel = '<div class="instsel"><label for="instSel">מספר תשלומים</label><select id="instSel">';
+      for(var i = 1; i <= max; i++) sel += '<option value="' + i + '"' + (i === instK ? ' selected' : '') + '>' + (i === 1 ? 'תשלום אחד' : i + ' תשלומים') + '</option>';
+      sel += '</select></div><div class="hint" id="instHint" hidden>לשינוי מספר התשלומים אחרי שהטופס נפתח — רעננו את הדף לפני הקלדת הכרטיס.</div>';
+    }
+    card.className = 'card pay';
+    card.innerHTML = head(o, 'pay') + factsHtml(o, true) + sel + '<div id="instBox">' + (max > 1 ? instHtml(f.amount, instK) : '') + '</div>'
+      + '<div class="btns"><button type="button" class="b p big" id="goBtn">לתשלום באשראי</button></div>'
+      + '<div class="warn" id="warn" role="status"></div>'
+      + '<div class="frwrap" id="frwrap" hidden></div>'
+      + '<div class="since" id="since"></div>'
+      + (btnsHtml(o) ? '<div class="btns">' + btnsHtml(o) + '</div>' : '');
+    document.title = (o.title || 'תשלום') + ' — איירון פיטנס';
+    document.getElementById('goBtn').addEventListener('click', openForm);
+    var selEl = document.getElementById('instSel');
+    if(selEl) selEl.addEventListener('change', function(){
+      instK = Math.max(1, Math.min(max, parseInt(this.value, 10) || 1));
+      document.getElementById('instBox').innerHTML = instHtml(f.amount, instK);   /* רק לפני פתיחת הטופס — אחריה הבורר נעול */
+      sendHeight();
+    });
+    startPoll();
+    sendHeight();
+  }
+  /* v3 — כתובת ה-go עם מספר התשלומים שנבחר. pay-go v9 חותך לטווח 1..installments; בלי inst הוא היה חוזר ל-maxpay. */
+  function goUrl(){ return cur.go + '&inst=' + (instK >= 1 ? instK : 1); }
+  function openForm(){
+    if(!cur || !cur.go || !/^https:[/][/]hjibpfavkjqocjvffsbq[.]supabase[.]co[/]functions[/]v1[/]pay-go[?]t=[A-Za-z0-9_-]{16,40}&go=1$/.test(String(cur.go))) return;
+    var wrap = document.getElementById('frwrap'), btn = document.getElementById('goBtn');
+    wrap.hidden = false;
+    wrap.innerHTML = '<iframe class="payfr" id="payfr" allow="payment" title="תשלום מאובטח — טרנזילה" src="' + esc(goUrl() + '&n=' + Date.now()) + '"></iframe>'
+      + '<div class="cover" id="cover"></div>'
+      + '<p class="fallback">הטופס אינו מוצג? <a id="popout" href="' + esc(goUrl()) + '" target="_blank" rel="noopener">לפתיחת התשלום בחלון נפרד</a></p>';
+    if(btn) btn.style.display = 'none';
+    var se = document.getElementById('instSel'), hint = document.getElementById('instHint');
+    if(se) se.disabled = true;      /* הטופס נפתח עם הפריסה הזו; שינוי עכשיו = DCdisable חדש = סיכון חיוב כפול */
+    if(hint) hint.hidden = false;
+    hsAt = Date.now(); formOpen = true;
+    setWarn(''); setCover(null);
+    if(tickT) clearInterval(tickT);
+    tickT = setInterval(tick, TICK_MS);
+    tick();
+    try { wrap.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch(_e){}
+    sendHeight();
+  }
+  function setWarn(txt){ var w = document.getElementById('warn'); if(!w) return; w.textContent = txt || ''; w.className = 'warn' + (txt ? ' on' : ''); }
+  function setCover(kind, tok){
+    var c = document.getElementById('cover'); if(!c) return;
+    if(!kind){ c.className = 'cover'; c.innerHTML = ''; return; }
+    var html;
+    if(kind === 'replaced'){
+      html = '<div class="box"><div class="ico" style="background:#eaf1f8;color:#0b2a45">↻</div><h2>תנאי התשלום עודכנו</h2>'
+        + '<p>נציג המכירות עדכן את תנאי התשלום. הטופס הזה אינו בתוקף — המשיכו לטופס המעודכן.</p>'
+        + '<button type="button" class="b p" id="coverBtn">לטופס המעודכן</button></div>';
+    } else {
+      html = '<div class="box"><div class="ico" style="background:#fff4df;color:#9a6700">⏳</div><h2>הטופס פג תוקף</h2>'
+        + '<p>הטופס היה פתוח יותר מ-' + EXP_MIN + ' דקות. רעננו אותו לפני שתזינו את פרטי הכרטיס — זה לוקח שנייה.<br><b>אם כבר לחצתם "שלם" והאימות מול הבנק בעיצומו — המתינו לאישור ואל תשלמו שוב.</b></p>'
+        + '<button type="button" class="b p" id="coverBtn">רענון וחזרה לתשלום</button></div>';
+    }
+    c.innerHTML = html; c.className = 'cover on';
+    document.getElementById('coverBtn').addEventListener('click', function(){
+      if(kind === 'replaced') location.replace(pageUrl(tok, 'pay')); else openForm();
+    });
+    setWarn('');
+  }
+  /* השעון: השוואת שעות, לא ספירת טיקים. */
+  function tick(){
+    if(!formOpen || !hsAt) return;
+    var m = (Date.now() - hsAt) / 60000;
+    var sinceEl = document.getElementById('since');
+    if(sinceEl) sinceEl.textContent = m < 1 ? 'הטופס נפתח עכשיו' : 'הטופס נפתח לפני ' + Math.floor(m) + ' דקות';
+    var cv = document.getElementById('cover');
+    if(cv && cv.className.indexOf('on') >= 0) return;          /* כיסוי קיים (פג / הוחלף) — לא נוגעים */
+    if(m >= EXP_MIN){ setCover('expired'); formOpen = false; }
+    else if(m >= WARN_MIN){ setWarn('הטופס יתרענן בעוד ' + Math.max(1, Math.ceil(EXP_MIN - m)) + ' דקות. אם התחלתם להקליד — סיימו עכשיו.'); }
+    else setWarn('');
+    sendHeight();
+  }
+  /* הסטטוס מהשרת כל דקה: שולם ⇒ אישור · הוחלף ⇒ הטופס החדש · בוטל ⇒ הודעה. */
+  function poll(){
+    fetch(API + '?t=' + encodeURIComponent(t) + '&json=1&s=pay', { cache: 'no-store' })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(!d || !d.title) return;
+        if(d.status === 'שולם'){ location.replace(pageUrl(t, 'ok')); return; }
+        if(d.kind === 'replaced' && d.replaced_by){
+          if(formOpen || document.getElementById('cover')){ setCover('replaced', d.replaced_by); formOpen = false; }
+          else location.replace(pageUrl(d.replaced_by, 'pay'));
+          return;
+        }
+        if(d.status === 'בוטל' || d.kind === 'bad') show(d);
+      }).catch(function(){});
+  }
+  function startPoll(){ if(pollT) clearInterval(pollT); pollT = setInterval(poll, POLL_MS); }
+  function stopTimers(){ if(tickT) clearInterval(tickT); if(pollT) clearInterval(pollT); tickT = pollT = null; formOpen = false; }
+  document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible'){ tick(); if(pollT) poll(); } });
+  window.addEventListener('message', function(e){
+    if(e.origin !== location.origin || !e.data) return;
+    var m = e.data.iron_pay;
+    if(m && m.t === t && typeof m.s === 'string' && /^[a-z]{2,12}$/.test(m.s)) location.replace(pageUrl(t, m.s));
+  });
+  window.addEventListener('resize', sendHeight);
+
   if(!/^[A-Za-z0-9_-]{16,40}$/.test(t)){ show({ kind:'bad', title:'הקישור אינו תקף', msg:'אפשר לבקש מנציג המכירות קישור חדש.' }); return; }
-  fetch(API + '?t=' + encodeURIComponent(t) + '&json=1&s=' + encodeURIComponent(s))
+  fetch(API + '?t=' + encodeURIComponent(t) + '&json=1&s=' + encodeURIComponent(s), { cache: 'no-store' })
     .then(function(r){ return r.json(); })
-    .then(function(d){ if(!d || !d.title) throw new Error('bad'); show(d); })
+    .then(function(d){
+      if(!d || !d.title) throw new Error('bad');
+      if(d.kind === 'pay' && d.go) showPay(d);
+      else if(d.kind === 'replaced' && d.replaced_by) location.replace(pageUrl(d.replaced_by, 'pay'));
+      else show(d);
+    })
     .catch(function(){ show({ kind:'wait', title:'לא ניתן לטעון את פרטי התשלום כרגע', msg:'נסו שוב בעוד רגע, או פנו אלינו.',
       btns:[{ href: API + '?t=' + encodeURIComponent(t), label:'ניסיון נוסף', cls:'p' }] }); });
 })();

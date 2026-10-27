@@ -3107,20 +3107,46 @@ td.lb-today .lb-dt{ background-color:transparent; }
 .lbu-add textarea{ flex:1; font-family:inherit; font-size:var(--fs-md); line-height:1.45;
   resize:vertical; min-height:52px; }
 .lbu-list{ margin-top:var(--sp-2h); border-top:1px solid var(--line-soft); }
-     /* 7.35.0 — השיחה בוואטסאפ בכרטיס הליד. נכנס = התחלה (ימין ב-RTL), יוצא = סוף. */
+     /* 7.35.0 — השיחה בוואטסאפ בכרטיס הליד. 7.37.0 — בסגנון וואטסאפ: רקע שיחה, בועות שלנו ירוקות משמאל (RTL)
+        והלקוח לבנות מימין, זנב בבועה הראשונה ברצף. צבעי וואטסאפ גולמיים בכוונה — הם הזיהוי, לא טוקן של המערכת. */
      .wa-head{ display:flex; align-items:center; gap:var(--sp-2); flex-wrap:wrap; margin:var(--sp-2) 0 var(--sp-2h); }
-     .wa-head .note{ margin:0; flex:1; }
-     .wa-thread{ display:flex; flex-direction:column; gap:var(--sp-1h); padding:var(--sp-2h); background:var(--bg-subtle); border:1px solid var(--line-soft); border-radius:var(--r-lg); max-height:60vh; overflow:auto; }
-     .wa-msg{ max-width:78%; padding:var(--sp-1h) var(--sp-2h); border-radius:var(--r-lg); border:1px solid var(--line-soft); background:#fff; }
+     .wa-sum{ font-size:var(--fs-sm); color:var(--ink-3); }
+     .wa-wait{ font-size:var(--fs-xs); font-weight:700; color:var(--warn-ink); background:var(--amber-bg); border-radius:var(--r-pill); padding:var(--sp-0h) var(--sp-2); }
+     .wa-head-act{ display:flex; gap:var(--sp-1h); margin-inline-start:auto; }
+     .wa-thread{ display:flex; flex-direction:column; gap:var(--sp-0h); padding:var(--sp-3); background-color:#efeae2; border:1px solid var(--line-soft); border-radius:var(--r-lg); max-height:60vh; min-height:220px; overflow:auto; }
+     .wa-thread-empty{ align-items:center; justify-content:center; min-height:160px; }
+     .wa-day{ flex:none; align-self:center; margin:var(--sp-2) 0 var(--sp-1); }
+     .wa-day span{ display:inline-block; font-size:var(--fs-xs); color:var(--ink-2); background:#fff; border-radius:var(--r-md); padding:var(--sp-0h) var(--sp-2h); box-shadow:0 1px 0.5px rgba(11,20,26,.13); }
+     /* 🔴 flex:none — עם overflow:hidden ה-min-height:auto של פריט flex מתאפס, ובעמודה עם max-height הבועות נדחסות
+        ונחתכות במקום שהשרשור יגלול. נתפס ב-wachattest (390px: scrollHeight == clientHeight). */
+     .wa-msg{ flex:none; position:relative; overflow:hidden; max-width:75%; min-width:96px; margin-top:var(--sp-1h); padding:var(--sp-1h) var(--sp-2h) var(--sp-1); border-radius:var(--r-md); background:#fff; box-shadow:0 1px 0.5px rgba(11,20,26,.13); }
+     .wa-msg.wa-cont{ margin-top:0; }
      .wa-in{ align-self:flex-start; }
-     .wa-out{ align-self:flex-end; background:var(--bg-muted); }
-     .wa-body{ white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.5; }
-     .wa-att{ display:block; margin-top:var(--sp-1); }
-     .wa-meta{ display:flex; gap:var(--sp-2); flex-wrap:wrap; margin-top:var(--sp-1); font-size:var(--fs-xs); color:var(--ink-3); }
-     .wa-st-failed{ color:var(--red); font-weight:700; }
-     .wa-st-read{ color:var(--ok); }
-     .wa-empty{ padding:var(--sp-3); background:var(--bg-subtle); border-radius:var(--r-md); }
-     @media (max-width:759.98px){ .wa-msg{ max-width:92%; } }
+     .wa-out{ align-self:flex-end; background:#d9fdd3; }
+     .wa-in:not(.wa-cont){ border-start-start-radius:0; }
+     .wa-out:not(.wa-cont){ border-start-end-radius:0; }
+     .wa-out.wa-failed{ background:#fff; box-shadow:0 0 0 1px var(--red), 0 1px 0.5px rgba(11,20,26,.13); }
+     .wa-who{ font-size:var(--fs-xs); font-weight:700; color:var(--navy); margin-bottom:var(--sp-0h); }
+     .wa-who-inbox{ color:var(--ok); }
+     .wa-who-api{ color:var(--ink-2); }
+     .wa-body{ white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.5; font-size:var(--fs-md); color:var(--ink-1); }
+     .wa-del{ font-style:italic; color:var(--ink-3); }
+     .wa-list{ margin-top:var(--sp-1); font-size:var(--fs-xs); color:var(--ink-2); }
+     .wa-meta{ display:flex; justify-content:flex-end; align-items:center; gap:var(--sp-1); margin-top:var(--sp-0h); font-size:var(--fs-2xs); color:var(--ink-3); }
+     .wa-tick{ font-weight:700; letter-spacing:-0.2em; }
+     .wa-tick-read{ color:#53bdeb; }
+     .wa-tick-fail{ color:var(--red); letter-spacing:0; }
+     .wa-btns{ margin:var(--sp-1h) calc(-1 * var(--sp-2h)) calc(-1 * var(--sp-1)); border-top:1px solid rgba(11,20,26,.1); }
+     .wa-btn{ text-align:center; padding:var(--sp-1h) var(--sp-2); font-size:var(--fs-sm); font-weight:600; color:#027eb5; }
+     .wa-btn + .wa-btn{ border-top:1px solid rgba(11,20,26,.1); }
+     .wa-img{ display:block; margin-bottom:var(--sp-1); }
+     .wa-img img{ display:block; width:240px; max-width:100%; height:180px; object-fit:cover; border-radius:var(--r-md); }
+     .wa-att{ display:block; margin-bottom:var(--sp-1); }
+     .wa-file{ font-size:var(--fs-sm); padding:var(--sp-1h) var(--sp-2); background:rgba(11,20,26,.05); border-radius:var(--r-md); color:var(--ink-1); text-decoration:none; }
+     .wa-file-k{ font-weight:700; margin-inline-end:var(--sp-1h); }
+     .wa-err{ margin:var(--sp-1h) calc(-1 * var(--sp-2h)) calc(-1 * var(--sp-1)); padding:var(--sp-1h) var(--sp-2h); font-size:var(--fs-xs); color:var(--red); background:var(--red-bg); }
+     .wa-empty{ font-size:var(--fs-sm); color:var(--ink-2); text-align:center; background:rgba(255,255,255,.85); border-radius:var(--r-md); padding:var(--sp-3); max-width:420px; }
+     @media (max-width:759.98px){ .wa-msg{ max-width:88%; } .wa-head-act{ margin-inline-start:0; } }
 /* 🔴 6.150.0 — רומן: "שהתוויות ותאריך העדכון תמיד יהיה בעמודה מסודרת
    ותמיד כל העדכונים יהיה מסודרים ברור וקו אחיד."
    flex מיישר **בתוך** שורה ולא **בין** שורות: רוחב התגית משתנה משורה
@@ -3976,7 +4002,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.36.0</div>
+      <div class="ver">גרסה 7.37.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4108,7 +4134,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="unsend-2026-10-26a">גרסה 7.36.0</div>
+    <div class="side-foot" title="wachat2-2026-10-27a">גרסה 7.37.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -13714,7 +13740,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'unsend-2026-10-26a';
+const BUILD_ID = 'wachat2-2026-10-27a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -30771,43 +30797,132 @@ function lbHistBlock(tasks, meets){
    🔴 טעינה עצלה — רק בכניסה ללשונית, כמו "עדכונים" (updArm): פתיחת כרטיס אינה שואלת את השרת.
    ⚠️ הפאנל מצויר מחדש ב-openLead (innerHTML) ולכן dataset.loaded יורד בכל פתיחה — אין "כרטיס שני מציג
       את השיחה של הראשון". ותשובה שחזרה אחרי שהכרטיס עבר לליד אחר נזרקת (השוואת האלמנט והמזהה).
-   ⚠️ מזהה שיחה נכנס ל-href רק אם הוא uuid — ובכל זאת דרך esc(safeUrl(…)), כמו כל href במערכת (xsstest). */
+   ⚠️ מזהה שיחה נכנס ל-href רק אם הוא uuid — ובכל זאת דרך esc+safeUrl, כמו כל href במערכת (xsstest).
+   ═══ 7.37.0 — wachat2: בסגנון וואטסאפ (רומן, 27/10/2026: "זה הכל עובד. איך אפשר לייפות את זה בכרטיס הליד") ═══
+   · מפריד יום ("היום" · "אתמול" · "יום שבת, 24.10.26"), ובבועה השעה בלבד.
+   · רצף של אותו צד — ובצד שלנו גם אותו מקור — בתוך WA_GROUP_MS מתקבץ: בלי זנב ובלי תווית חוזרת.
+   · מסירה כסימני וי (✓ נשלח · ✓✓ נמסר · ✓✓ כחול נקרא · ! נכשל); הטקסט בריחוף ובקורא מסך.
+   · כשל — שורה אדומה בעברית לפי WA_ERR (נמדד 27/10: 131047 ×7 — חלון 24 השעות נסגר · 131049 ×1), והמקור של מטא בריחוף.
+   · כפתורי התבנית (type='button': quick_reply · url · list_title) — כפתורים בתחתית הבועה. עד כאן הם צוירו
+     כ"קובץ: button". אפשרויות list_section — שורה אחת. נמדד 27/10: 48 כפתורים · 2 רשימות · 4 תמונות · 2 מסמכים.
+   · תמונה בתוך הבועה. 🔴 הקישור של Heyy חתום (X-Amz-Signature) ופג — onerror מחליף את התמונה בהודעה, אחרת
+     נשאר ריבוע שבור. גובה קבוע (180px) כדי שהגלילה לתחתית לא תזוז כשהתמונות נטענות.
+   · השרשור נפתח בהודעה האחרונה, כמו בוואטסאפ — ובגובה שנשאר בכרטיס (waFit). 🔴 נמדד: הכרטיס min(640px,78vh),
+     השרשור מתחיל 198px מראשו (288 בטלפון) ושורת הפעולות הדביקה 79/124. גובה קבוע של 60vh יצר גלילה כפולה:
+     השרשור נגלל לתחתית, והכרטיס עצמו הסתיר אותה מתחת לשורת הפעולות — כלומר רואים דווקא את ההודעות הישנות.
+   · ההודעה האחרונה של הלקוח ⇒ שבב "ממתין לתשובה".
+   · הסיכום ב-.wa-sum ולא ב-.note — ל-.note רקע אפור גלובלי, וזה היה הפס סביב "2 הודעות". */
 const HEYY_INBOX = 'https://app.heyy.io/inbox/';
 const WA_ST  = { pending:'ממתין', sent:'נשלח', delivered:'נמסר', read:'נקרא', failed:'נכשל', scheduled:'מתוזמן', deleted:'נמחק', none:'' };
 const WA_SRC = { inbox:'נציג', automation:'אוטומציה', api:'המערכת', campaign:'קמפיין', ai_agent:'סוכן AI', vendor:'וואטסאפ', system:'מערכת' };
 const WA_UUID = /^[0-9a-fA-F-]{36}$/;
+const WA_GROUP_MS = 5 * 60 * 1000;
+const WA_ERR = {
+  whatsapp_reengagement_message_required: 'לא נשלחה: עברו יותר מ-24 שעות מההודעה האחרונה של הלקוח. מחוץ לחלון הזה וואטסאפ מאפשרת רק תבנית מאושרת.',
+  whatsapp_chose_not_to_deliver: 'לא נמסרה: מטא עצרה אותה כדי להגביל הודעות שיווקיות לאותו לקוח.'
+};
+const WA_ERR_CODE = { '131047':'whatsapp_reengagement_message_required', '131049':'whatsapp_chose_not_to_deliver' };
 function lbWaChatOf(l){ const m = String(l && l.whatsapp || '').match(/inbox\/([0-9a-fA-F-]{36})/); return m ? m[1] : ''; }
-function waErrTxt(errs){
-  const e = Array.isArray(errs) && errs[0]; if(!e) return '';
-  return String((e.vendorError && e.vendorError.message) || e.message || e.messageKey || '');
+function waErrInfo(errs){
+  const e = Array.isArray(errs) && errs[0];
+  if(!e) return { he:'לא נשלחה.', raw:'' };
+  const raw = String((e.vendorError && e.vendorError.message) || e.message || e.messageKey || '');
+  const key = (e.messageKey && WA_ERR[e.messageKey]) ? e.messageKey : (WA_ERR_CODE[String((e.vendorError && e.vendorError.code) || '')] || '');
+  return { he: WA_ERR[key] || ('לא נשלחה' + (raw ? ': ' + raw : '.')), raw: raw };
 }
-function waMsgHtml(m){
-  const inb = m.sender === 'inbound';
-  const stKey = String(m.status || '');
-  const st = inb ? '' : (WA_ST[stKey] !== undefined ? WA_ST[stKey] : stKey);
-  const who = inb ? (m.contact_name || 'הלקוח') : (WA_SRC[m.source_type] || 'איירון');
-  const err = (stKey === 'failed') ? waErrTxt(m.errors) : '';
-  const att = (Array.isArray(m.attachments) ? m.attachments : []).map(function(a){
-    const f = (a && a.file) || {}; const nm = f.name || (a && a.type) || 'קובץ';
+function waDay(ts){ const d = new Date(ts); return isNaN(d) ? '' : d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+function waDayLbl(ts){
+  const d = new Date(ts); if(isNaN(d)) return '';
+  const t = new Date(), y = new Date(t.getFullYear(), t.getMonth(), t.getDate() - 1);
+  if(waDay(d) === waDay(t)) return 'היום';
+  if(waDay(d) === waDay(y)) return 'אתמול';
+  return d.toLocaleDateString('he-IL', { weekday:'long', day:'2-digit', month:'2-digit', year:'2-digit' });
+}
+function waTime(ts){ const d = new Date(ts); return isNaN(d) ? '' : d.toLocaleTimeString('he-IL', { hour:'2-digit', minute:'2-digit' }); }
+function waTicks(st){
+  if(st === 'read')      return '<span class="wa-tick wa-tick-read" title="נקרא" aria-label="נקרא">✓✓</span>';
+  if(st === 'delivered') return '<span class="wa-tick" title="נמסר" aria-label="נמסר">✓✓</span>';
+  if(st === 'sent')      return '<span class="wa-tick" title="נשלח" aria-label="נשלח">✓</span>';
+  if(st === 'failed')    return '<span class="wa-tick wa-tick-fail" title="נכשל" aria-label="נכשל">!</span>';
+  const t = WA_ST[st];
+  return t ? '<span class="wa-tick-txt">' + esc(t) + '</span>' : '';
+}
+function waKB(n){ const k = Math.round((+n || 0) / 1024); return k > 0 ? k + 'KB' : ''; }
+/* מחזיר שלושה חלקים, כל אחד במקומו בבועה: מדיה (מעל הטקסט) · רשימה (מתחת) · כפתורים (בתחתית). */
+function waAttHtml(atts){
+  const media = [], lists = [], btns = [];
+  (Array.isArray(atts) ? atts : []).forEach(function(a){
+    if(!a) return;
+    if(a.type === 'button'){
+      const bt = a.buttonType || '';
+      btns.push('<div class="wa-btn">' + esc((bt === 'list_title' ? '☰ ' : '') + (a.text || '') + (bt === 'url' ? ' ↗' : '')) + '</div>');
+      return;
+    }
+    if(a.type === 'list_section'){
+      const rows = (Array.isArray(a.rows) ? a.rows : []).map(function(r){ return r && r.title ? String(r.title) : ''; }).filter(Boolean);
+      if(rows.length) lists.push('<div class="wa-list">' + esc((a.title ? a.title : 'אפשרויות') + ': ' + rows.join(' · ')) + '</div>');
+      return;
+    }
+    const f = a.file || {}; const nm = f.name || a.type || 'קובץ';
     const u = esc(safeUrl(f.url || ''));
-    return u ? '<a class="wa-att" href="' + u + '" target="_blank" rel="noopener">קובץ: ' + esc(nm) + ' ↗</a>'
-             : '<span class="wa-att">קובץ: ' + esc(nm) + '</span>';
-  }).join('');
+    if(a.type === 'image' && u){
+      media.push('<a class="wa-img" href="' + u + '" target="_blank" rel="noopener"><img src="' + u + '" alt="תמונה" loading="lazy" onerror="waImgErr(this)"></a>');
+      return;
+    }
+    const kind = { document:'מסמך', image:'תמונה', audio:'הקלטה', video:'וידאו' }[a.type] || 'קובץ';
+    const sz = waKB(f.size);
+    const inner = '<span class="wa-file-k">' + esc(kind) + '</span>' + esc(nm) + (sz ? ' · ' + esc(sz) : '');
+    media.push(u ? '<a class="wa-att wa-file" href="' + u + '" target="_blank" rel="noopener">' + inner + ' ↗</a>'
+                 : '<span class="wa-att wa-file">' + inner + '</span>');
+  });
+  return { media: media.join(''), lists: lists.join(''), btns: btns.length ? '<div class="wa-btns">' + btns.join('') + '</div>' : '' };
+}
+/* קישור Heyy חתום ופג ⇒ במקום ריבוע שבור, הודעה. */
+window.waImgErr = img => {
+  const a = img && img.parentNode; if(!a || !a.parentNode) return;
+  const s = document.createElement('span'); s.className = 'wa-att wa-file wa-img-gone';
+  s.textContent = 'התמונה אינה זמינה עוד כאן — פתחו את השיחה ב-Heyy';
+  a.parentNode.replaceChild(s, a);
+};
+function waMsgHtml(m, cont){
+  const inb = m.sender === 'inbound';
+  const st = String(m.status || '');
+  const failed = !inb && st === 'failed';
+  const who = inb ? '' : (WA_SRC[m.source_type] || 'איירון');
+  const at = waAttHtml(m.attachments);
   const body = String(m.body || '');
-  return '<div class="wa-msg ' + (inb ? 'wa-in' : 'wa-out') + '" data-id="' + esc(m.id) + '">'
-    + '<div class="wa-body">' + esc(body || (att ? '' : '(ללא טקסט)')) + att + '</div>'
-    + '<div class="wa-meta"><span>' + esc(who) + '</span><span dir="ltr">' + esc(fmtDT(m.msg_ts)) + '</span>'
-    + (st ? '<span class="wa-st wa-st-' + esc(stKey) + '">' + esc(st) + (err ? ' · ' + esc(err) : '') + '</span>' : '')
-    + '</div></div>';
+  const err = failed ? waErrInfo(m.errors) : null;
+  const txt = st === 'deleted' ? '<div class="wa-body wa-del">ההודעה נמחקה</div>'
+            : body ? '<div class="wa-body">' + esc(body) + '</div>'
+            : (at.media || at.lists || at.btns) ? '' : '<div class="wa-body wa-del">(ללא טקסט)</div>';
+  return '<div class="wa-msg ' + (inb ? 'wa-in' : 'wa-out') + (cont ? ' wa-cont' : '') + (failed ? ' wa-failed' : '') + '" data-id="' + esc(m.id) + '">'
+    + (who && !cont ? '<div class="wa-who wa-who-' + esc(m.source_type || 'x') + '">' + esc(who) + '</div>' : '')
+    + at.media + txt + at.lists
+    + '<div class="wa-meta"><span dir="ltr">' + esc(waTime(m.msg_ts)) + '</span>' + (inb ? '' : waTicks(st)) + '</div>'
+    + at.btns
+    + (err ? '<div class="wa-err" title="' + esc(err.raw) + '">' + esc(err.he) + '</div>' : '')
+    + '</div>';
 }
 function waThreadHtml(rows, chat, p){
   const link = WA_UUID.test(chat)
     ? '<a class="chip wa-open" href="' + esc(safeUrl(HEYY_INBOX + chat)) + '" target="_blank" rel="noopener">פתיחת השיחה ב-Heyy ↗</a>' : '';
-  const head = '<div class="wa-head">' + link
-    + '<span class="note">' + (rows.length ? esc(String(rows.length)) + ' הודעות' : '') + '</span>'
-    + '<button type="button" class="chip" onclick="waRetry(\'' + p + '\')">רענון</button></div>';
-  if(!rows.length) return head + '<div class="note wa-empty">אין עדיין הודעות וואטסאפ לליד הזה. השיחות נאספות מ-Heyy מרגע חיבור הוובהוק; הודעות שנשלחו לפני כן אינן נטענות לאחור.</div>';
-  return head + '<div class="wa-thread">' + rows.map(waMsgHtml).join('') + '</div>';
+  const last = rows.length ? rows[rows.length - 1] : null;
+  const sum = !last ? '' : (rows.length === 1 ? 'הודעה אחת' : rows.length + ' הודעות') + ' · אחרונה ' + waDayLbl(last.msg_ts) + ' ' + waTime(last.msg_ts);
+  const head = '<div class="wa-head"><span class="wa-sum">' + esc(sum) + '</span>'
+    + (last && last.sender === 'inbound' ? '<span class="wa-wait">ממתין לתשובה</span>' : '')
+    + '<span class="wa-head-act">' + link + '<button type="button" class="chip" onclick="waRetry(\'' + p + '\')">רענון</button></span></div>';
+  if(!rows.length) return head + '<div class="wa-thread wa-thread-empty"><div class="wa-empty">אין עדיין הודעות וואטסאפ לליד הזה. השיחות נאספות מ-Heyy מרגע חיבור הוובהוק; הודעות שנשלחו לפני כן אינן נטענות לאחור.</div></div>';
+  let h = '', day = '', prev = null;
+  rows.forEach(function(m){
+    const d = waDay(m.msg_ts);
+    if(d !== day){ day = d; prev = null; h += '<div class="wa-day"><span>' + esc(waDayLbl(m.msg_ts)) + '</span></div>'; }
+    const side = m.sender === 'inbound' ? 'in' : 'out';
+    const cont = !!prev && prev.side === side && (side === 'in' || prev.src === m.source_type)
+              && (new Date(m.msg_ts) - new Date(prev.ts)) < WA_GROUP_MS;
+    h += waMsgHtml(m, cont);
+    prev = { side: side, ts: m.msg_ts, src: m.source_type };
+  });
+  return head + '<div class="wa-thread" role="log" aria-label="שיחת וואטסאפ">' + h + '</div>';
 }
 function waArm(pfx){
   const p = pfx || 'lb';
@@ -30841,7 +30956,29 @@ async function waRun(pn, p){
   const last = rows.slice().reverse().find(function(m){ return WA_UUID.test(String(m.chat_id || '')); });
   const chat = (last && last.chat_id) || pn.dataset.wchat || '';
   pn.innerHTML = waThreadHtml(rows, chat, p);
+  waFit(pn);
 }
+/* 7.37.0 — השרשור ממלא את מה שנשאר בכרטיס, ונפתח בהודעה האחרונה. רצפה 220px: במסך נמוך מאוד הכרטיס יגלול,
+   אבל השרשור לא יהפוך לפס. ה-60vh שב-CSS נשאר רק כשאין .sheet מעל (כרטיס שהורכב במקום אחר). */
+function waFit(pn){
+  const th = pn && pn.querySelector('.wa-thread'); if(!th) return;
+  const sh = pn.closest('.sheet');
+  if(sh && sh.clientHeight){
+    const act = sh.querySelector('.modal-actions');
+    const top = th.getBoundingClientRect().top - sh.getBoundingClientRect().top + sh.scrollTop;
+    th.style.maxHeight = Math.max(220, Math.round(sh.clientHeight - top - (act ? act.offsetHeight : 0) - 16)) + 'px';
+    /* מעבר שני, נמדד ולא מנוחש: מה שמתחת לשרשור (שוליים, שורת השגיאה, הריפוד) — נמדד 42px ב-1440 ו-50 בטלפון.
+       מקטינים בדיוק בגלישה שנשארה, כמו בשאר הלשוניות (0). */
+    const over = sh.scrollHeight - sh.clientHeight;
+    if(over > 0) th.style.maxHeight = Math.max(220, parseFloat(th.style.maxHeight) - over) + 'px';
+  }
+  if(th) th.scrollTop = th.scrollHeight;
+}
+let WA_FIT_T = 0;
+window.addEventListener('resize', ()=>{
+  clearTimeout(WA_FIT_T);
+  WA_FIT_T = setTimeout(()=>{ const pn = document.getElementById('lb-pn-wa'); if(pn && !pn.classList.contains('hidden')) waFit(pn); }, 150);
+});
 window.openLead = (id)=>{
   const l = LEADS.find(x=>x.id===id); if(!l) return;
   /* ⚠️ תוצאת המרה שייכת לליד שבו היא נעשתה. בלי האיפוס היא הייתה

@@ -1716,6 +1716,10 @@
   .form-grid .span4{ grid-column:span 4; }
   @media(max-width:759.98px){ .form-grid{ grid-template-columns:repeat(2,1fr); } .form-grid .span3,.form-grid .span4{ grid-column:span 2; } }
   @media(max-width:559.98px){ .form-grid{ grid-template-columns:1fr; } .form-grid .span2,.form-grid .span3,.form-grid .span4{ grid-column:span 1; } }
+  /* 7.37.2 — predeliv: "הערות גבייה" בבלוק התשלום משלים את שורת שדות התשלום — 2 תאים, או 1 כשמספר התשלומים מוצג */
+  .form-grid .pay-note{ grid-column:span 2; }
+  .form-grid #oe-payinst-wrap:not(.hidden) ~ .pay-note{ grid-column:span 1; }
+  @media(max-width:559.98px){ .form-grid .pay-note, .form-grid #oe-payinst-wrap:not(.hidden) ~ .pay-note{ grid-column:span 1; } }
   .form-grid > div{ display:flex; flex-direction:column; justify-content:flex-start; min-width:0; position:relative; }
   .form-grid .td-hint{ margin:var(--sp-0h) 0 0; font-size:var(--fs-xs); line-height:1.35; }
   .src-tag{ display:inline-flex !important; width:fit-content; max-width:100%; vertical-align:middle; }
@@ -3365,6 +3369,9 @@ td.lb-today .lb-dt{ background-color:transparent; }
 #dl-deal .dd-pay-h{ display:flex; flex-wrap:wrap; align-items:center; gap:var(--sp-2) var(--sp-3); }
 #dl-deal .dd-pay-h .dd-t{ font-size:var(--fs-lg); font-weight:800; color:var(--ink-1); }
 #dl-deal .dd-pay-h #dl-paysplit{ margin-inline-start:auto; }
+/* 7.37.2 — predeliv: "מיידי | חלוקה" ולידו בורר החלוקה — יחידה אחת בקצה השורה */
+#dl-deal .dd-pay-h .dl-pp-pick{ display:inline-flex; flex-wrap:wrap; align-items:center; gap:var(--sp-2); margin-inline-start:auto; }
+#dl-deal .dd-pay-h .dl-pp-pick #dl-paysplit{ margin-inline-start:0; }
 #dl-deal .dd-pay-h .dd-hn{ margin-inline-end:calc(-1 * var(--sp-1)); }
 #dl-deal .dd-help{ flex-basis:100%; font-size:var(--fs-xs); color:var(--ink-3); }
 #dl-deal select, #dl-deal input.dl-pp-pct, #dl-deal input.dl-pp-amt, #dl-deal input.dl-pp-days{ min-height:var(--ctl-h-sm); padding:3px 8px; font:inherit; font-size:var(--fs-sm);
@@ -4002,7 +4009,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.37.1</div>
+      <div class="ver">גרסה 7.37.2</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4134,7 +4141,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="dealpush-2026-10-30a">גרסה 7.37.1</div>
+    <div class="side-foot" title="predeliv-2026-10-30b">גרסה 7.37.2</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -13805,7 +13812,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'dealpush-2026-10-30a';
+const BUILD_ID = 'predeliv-2026-10-30b';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -19487,6 +19494,8 @@ const NF_KINDS = [
   ['pay_link_failed','תשלומים','קישור תשלום לא נפתח','הלקוח פתח קישור ודף התשלום לא עלה','מי שהפיק את הקישור','sales'],
   ['pay_link_mismatch','תשלומים','תשלום בסכום לא תואם','הסכום שחויב שונה מהקישור','מי שהפיק את הקישור','sales'],
   ['pay_link_twice','תשלומים','חיוב כפול אפשרי','שני תשלומים על אותו קישור','מי שהפיק את הקישור','sales'],
+  /* 7.37.2 — predeliv: ord.predelivery_pay_tick (cron predelivery-pay-15m). קהל 'acc' = acc.pays עריכה (core.nf_audience). */
+  ['pay_predelivery','תשלומים','דרישת תשלום לפני אספקה','שני ימי עבודה לפני האספקה המתואמת (או הצפי), כשהתשלום שלפני האספקה טרם שולם','הנהלת חשבונות ובעלי העסקה','acc'],
   ['order_done','לוגיסטיקה','הזמנה סומנה «בוצע»','טכנאי או לוגיסטיקה סגרו הזמנה','צוות הלוגיסטיקה, חוץ ממי שסגר','logi'],
   ['scall_done','לוגיסטיקה','קריאת שירות בוצעה','טכנאי סגר קריאת שירות','צוות הלוגיסטיקה, חוץ ממי שסגר','logi'],
   ['hook_silent','מערכת','וובהוקים מפריוריטי שותקים','שעות עבודה בלי אף וובהוק','מנהל המערכת','admin'],
@@ -20493,7 +20502,7 @@ async function loadLeads(){
        לאדמיניסטרטור בלבד (הגדרות ← יומן סנכרון). */
     sb.schema('ord').rpc('sync_status'),
     sb.schema('ord').from('order_finance_v').select('*').order('order_date',{ascending:false}).limit(10000),
-    sb.schema('ord').from('payment_terms').select('*').eq('active',true).order('sort_order',{ascending:true}),
+    sb.schema('ord').from('payment_terms').select('*').order('sort_order',{ascending:true}),   /* 7.37.2 — גם לא-פעילות: השם בטבלה; הבוררים — ptActive */
     sb.schema('ord').from('order_open_items_v').select('*').limit(10000),
     sb.schema('ord').from('order_finance_meta').select('order_number,pay_code,pay_method,pay_installments,fin_close,fin_close_by,fin_close_at,fin_close_note,fin_credit_amt').limit(10000),
     sb.schema('ord').from('pending_returns_v').select('*').limit(5000),
@@ -23111,12 +23120,6 @@ const PAY_METHODS = ['העברה בנקאית','אשראי','הוראת קבע',
 /* רק לשניים האלה יש מספר תשלומים. אשראי והוראת קבע הם **פעימה אחת בלוח**
    שנפרסת בתזרים — הכסף מובטח במועד החיוב, אבל נכנס לאורך חודשים. */
 const PAY_INST_METHODS = ['אשראי','הוראת קבע'];
-const PAY_BAL_OPTS = {
-  del: { label:'לאחר אספקה',      anchor:'delivery', days:0  },
-  n30: { label:'שוטף מהחשבונית',  anchor:'invoice',  days:30 },
-  n60: { label:'שוטף מהחשבונית',  anchor:'invoice',  days:60 },
-  n90: { label:'שוטף מהחשבונית',  anchor:'invoice',  days:90 }
-};
 const payHasInst = v => PAY_INST_METHODS.indexOf(String(v||'')) >= 0;
 /* סגירה ידנית — הצהרה של המשתמש ולא חישוב. נקראת מ-finmOf כי היא יושבת
    ב-order_finance_meta; FIN מגיע מ-order_finance_v ואינו מכיל אותה. */
@@ -23345,6 +23348,8 @@ const finIsOpen = f => finLive(f) && !finMasked(f) && finNum(f.balance) > 1 && !
 const finSurplus = f => Math.max(0, -finNum(f.balance),
   finNum(f.received) + finNum(f.offset_in) - finNum(f.offset_out) - finNum(f.billed) - finNum(f.credit_real));
 function finTermName(code){ const t = PTERMS.find(x=>x.code===code); return t ? t.name : ''; }
+/* 7.37.2 — predeliv: תבנית שהוסתרה (active=false) לא מוצעת יותר, אבל ההזמנות שכבר נושאות אותה ממשיכות להציג את שמה. */
+function ptActive(cur){ return PTERMS.filter(t => t.active !== false || (cur && t.code === cur)); }
 /* סכום הקבלות שאינן משויכות להזמנה — נמדד לפי לקוח ולא לפי הזמנה, ולכן
    נספר פעם אחת לכל לקוח ולא פעם לכל שורה שלו. */
 function finUnlinked(list){
@@ -23456,7 +23461,7 @@ function payBulkBar(){
   if(!n) return;
   bar.innerHTML = '<span>נבחרו <b>' + n + '</b> הזמנות</span>' +
     '<select id="payBulkTerm"><option value="">— תנאי תשלום —</option>' +
-    PTERMS.map(t => '<option value="' + esc(t.code) + '">' + esc(t.name) + '</option>').join('') +
+    ptActive().map(t => '<option value="' + esc(t.code) + '">' + esc(t.name) + '</option>').join('') +
     '</select>' +
     '<button type="button" class="btn" onclick="payBulkApply()">החל על הנבחרות</button>' +
     '<button type="button" class="tb-clear" onclick="paySelClear()">ניקוי בחירה</button>';
@@ -23751,10 +23756,12 @@ function ordTermsBlock(o){
   /* 6.228.0 — "או ההזמנה שלי": הזמנה המקושרת לעסקה שאני בעליה/שותף בה (ordMine — מראה של
      ord.order_mine שבשרת). השרת אוכף ב-order_finance_v/meta/notes וב-order_beats_set; כאן רק ציור. */
   if(!window.canView('crm.orders.terms') && !ordMine(o)) return '';
-  const m = finmOf(o.order_number), ed = window.canEdit('crm.orders.terms') || ordMine(o), on = o.order_number;
+  /* 7.37.2 — predeliv (רומן, על SO26001950 של ניב: "איך היה לו אפשרות לבחור אחוז מקדמה?"): איש המכירות **רואה** את התשלום של
+     ההזמנה שלו (ordMine) אבל אינו עורך אותו — התנאים נקבעים בעסקה ונזרעים להזמנה בפתיחתה (crm.deal_order_seed_claim). */
+  const m = finmOf(o.order_number), ed = window.canEdit('crm.orders.terms'), on = o.order_number;
   const sel = ed
     ? '<select id="oe-payterm" onchange="ordSetTerm(\'' + jsq(o.order_number) + '\', this.value)"><option value="">— בחר —</option>' +
-      PTERMS.map(t=>'<option value="' + esc(t.code) + '"' + (String(m.pay_code||'')===t.code?' selected':'') + '>' + esc(t.name) + '</option>').join('') + '</select>'
+      ptActive(m.pay_code).map(t=>'<option value="' + esc(t.code) + '"' + (String(m.pay_code||'')===t.code?' selected':'') + '>' + esc(t.name) + '</option>').join('') + '</select>'
     : '<input value="' + esc(finTermName(m.pay_code) || '') + '" readonly class="ro" placeholder="—">';
   /* 🔴 6.220.0 — שדה "הערת גבייה" ירד. הערות הגבייה הן יומן שנצבר
      (ord.order_finance_notes), ושדה שדורס את אותו נתון היה **כותב שני עם
@@ -23772,26 +23779,11 @@ function ordTermsBlock(o){
     ? '<input id="oe-payinst" type="number" min="1" max="36" step="1" value="' + esc(m.pay_installments||'') +
       '" placeholder="מס\' תשלומים" onchange="ordSetInst(\'' + jsq(on) + '\', this.value)">'
     : '<input value="' + esc(m.pay_installments||'') + '" readonly class="ro" placeholder="—">';
-  /* הבונה — התשובה ל"ידני אבל מהיר". במקום 12 שורות קטלוג (מקדמה ×
-     שוטף), שני בוררים שמרכיבים את הלוח. "תאריכים ידניים" מפנה לעורך
-     הפעימות, שהוא המסלול של הצ'קים (עוגן fixed + תאריך לכל צ'ק). */
-  const bld = ed
-    ? '<div><label>בונה — מקדמה</label><select id="oe-bldadv">' +
-        ['0','20','30','40','50'].map(p=>'<option value="' + p + '">' + (p==='0'?'ללא מקדמה':p + '%') + '</option>').join('') +
-      '</select></div>' +
-      '<div><label>היתרה</label><select id="oe-bldbal"><option value="">— בחר —</option>' +
-        '<option value="del">לאחר אספקה</option><option value="n30">שוטף + 30</option>' +
-        '<option value="n60">שוטף + 60</option><option value="n90">שוטף + 90</option>' +
-        '<option value="manual">תאריכים ידניים / צ׳קים</option>' +
-      '</select></div>' +
-      '<div><label>&nbsp;</label><button type="button" class="ghost" onclick="ordBuildPlan(\'' + jsq(on) + '\', this)">בנה לוח פעימות</button></div>'
-    : '';
   return '<div class="form-sep">תשלום</div>' +
          '<div><label>תנאי תשלום</label>' + sel + '</div>' +
          '<div><label>אופן חיוב</label>' + meth + '</div>' +
          '<div id="oe-payinst-wrap"' + (payHasInst(m.pay_method) ? '' : ' class="hidden"') + '><label>מספר תשלומים</label>' + inst + '</div>' +
-         bld +
-         '<div class="span3"><label>הערות גבייה</label>' +
+         '<div class="pay-note"><label>הערות גבייה</label>' +   /* 7.37.2 — משלים את השורה (CSS .pay-note) */
            '<div class="note">יומן ההערות — מי כתב ומתי — מנוהל בכרטיס התשלום, בלוח התשלומים.</div></div>';
 }
 
@@ -23834,40 +23826,6 @@ window.ordSetInst = async (on, val) => {
   try{ renderPays(); }catch(_e){}
 };
 
-/* 🔴 ord.order_beats_set פותחת ב-delete בלי שום שער "כבר קיים לוח".
-   והמשתמש שהבונה נועד לו — עורך crm.orders.terms בלי acc.pays — **אינו
-   יכול לראות שקיים לוח**, כי ord.order_beats_v חסומה ב-can_view('acc.pays')
-   וכרטיס ההזמנה אינו מציג פעימות. כלומר בלי השער הזה זה UI שמוחק נתונים
-   שהמוחק אינו רשאי לראות: לוח צ'קים עם תאריכים היה נמחק בלי אזהרה.
-   הספירה היא מהטבלה הגולמית ord.order_payments, שהפוליסי שלה הוא
-   is_approved() ולכן קריאה לכל עובד מאושר — בשונה מה-view.
-   (ממצא Fable, 19/08/2026) */
-window.ordBuildPlan = async (on, btn) => {
-  if(!window.canEdit('crm.orders.terms') && !ordMineOn(on)) return finNoEdit();
-  /* 6.228.0 — הבלוק מצויר גם בכרטיס העסקה; כשכרטיס ההזמנה נפתח ממנו (goCard) שני העותקים
-     ב-DOM ו-$('#oe-bldadv') היה קורא את הבורר של הכרטיס **המוסתר** (מחלקת 6.135.0). */
-  const _g = (btn && btn.closest) ? (btn.closest('.form-grid') || document) : document;
-  const adv = Number((_g.querySelector('#oe-bldadv')||{}).value || 0);
-  const bal = String((_g.querySelector('#oe-bldbal')||{}).value || '');
-  if(!bal) return toast('בחר את תנאי היתרה');
-  if(bal === 'manual') return toast('תאריכים ידניים וצ׳קים נקבעים בעורך לוח הפעימות, במסך התשלומים');
-  const B = PAY_BAL_OPTS[bal];
-  if(!B) return toast('תנאי יתרה לא מוכר');
-  try{
-    const { data, error } = await sb.schema('ord').from('order_payments')
-      .select('seq').eq('order_number', on).limit(1);
-    if(error) throw error;
-    if(data && data.length) return toast('כבר קיים לוח פעימות להזמנה — לשינוי במסך התשלומים');
-  }catch(e){ return toast('לא ניתן לבדוק אם קיים לוח: ' + (e && e.message ? e.message : e)); }
-  const beats = [];
-  if(adv > 0) beats.push({ label:'מקדמה', pct:adv, anchor:'order', offset_days:0, amount:null, due_date:null });
-  beats.push({ label:B.label, pct:100-adv, anchor:B.anchor, offset_days:B.days, amount:null, due_date:null });
-  const ok = await finDbw(()=>sb.schema('ord').rpc('order_beats_set', { p_order:on, p_beats:beats }),
-    adv > 0 ? ('נבנה לוח: מקדמה ' + adv + '% ויתרה') : 'נבנה לוח פעימה אחת');
-  if(!ok) return;
-  await finRefreshRow(on);
-  try{ renderPays(); }catch(_e){}
-};
 function finCell(f){
   const masked  = finMasked(f);
   const ordered = masked ? null : finNum(f.ordered);
@@ -24274,7 +24232,7 @@ window.payOpen = on => {
    שוטף 60 לאחר אספקה" מגדיר אותה לכולם, ובכרטיס ההזמנה היא תופיע ברשימת
    התבניות. עדיין אפשר לבנות לוח חד־פעמי בכרטיס בלי לשמור תבנית. */
 let PT_ROWS = [], PT_EDIT = null;
-const PT_ANCHORS = [['order','אישור ההזמנה'],['delivery','אספקה / התקנה'],['invoice','חשבונית']];
+const PT_ANCHORS = [['order','אישור ההזמנה'],['delivery','לפני אספקה'],['invoice','שוטף מהחשבונית']];   /* 7.37.2 — predeliv */
 window.ptOpen = () => {
   if(!canView('acc.pays') && !canView('crm.orders.terms')) return finNoEdit();
   PT_EDIT = null; PT_ROWS = [];
@@ -24317,7 +24275,7 @@ window.ptNew = () => {
   if(!canEdit('acc.pays')) return finNoEdit();
   PT_EDIT = { code:'', name:'', active:true, sort_order:100, isNew:true };
   PT_ROWS = [{ label:'מקדמה', pct:50, anchor:'order', offset_days:0 },
-             { label:'לאחר אספקה', pct:50, anchor:'delivery', offset_days:0 }];
+             { label:'לפני אספקה', pct:50, anchor:'delivery', offset_days:0 }];
   ptRender();
 };
 window.ptEdit = code => {
@@ -24325,7 +24283,7 @@ window.ptEdit = code => {
   const t = PTERMS.find(x=>x.code===code); if(!t) return;
   PT_EDIT = { code:t.code, name:t.name, active:t.active !== false, sort_order:t.sort_order || 100, isNew:false };
   PT_ROWS = (Array.isArray(t.beats) && t.beats.length ? t.beats : [{pct:100,label:'תשלום מלא',anchor:'order',offset_days:0}])
-    .map(b=>({ label:b.label || 'לאחר אספקה', pct:Number(b.pct)||0,
+    .map(b=>({ label:b.label || 'לפני אספקה', pct:Number(b.pct)||0,
       anchor: b.anchor === 'install' ? 'delivery' : (b.anchor || 'order'),
       offset_days: Number(b.offset_days)||0 }));
   ptRender();
@@ -24333,13 +24291,14 @@ window.ptEdit = code => {
 window.ptSetCount = n => {
   n = Math.max(1, Math.min(12, Number(n)||1));
   const cur = PT_ROWS.slice(0, n);
-  while(cur.length < n) cur.push({ label: cur.length===0 ? 'מקדמה' : 'לאחר אספקה',
+  while(cur.length < n) cur.push({ label: cur.length===0 ? 'מקדמה' : 'לפני אספקה',
     pct:0, anchor: cur.length===0 ? 'order' : 'delivery', offset_days:0 });
   PT_ROWS = cur; ptForm();
 };
 window.ptSet = (i, k, v) => {
   if(!PT_ROWS[i]) return;
   PT_ROWS[i][k] = (k === 'pct' || k === 'offset_days') ? (v === '' ? 0 : Number(v)) : v;
+  if(k === 'anchor' && v === 'delivery') PT_ROWS[i].offset_days = 0;   /* "לפני אספקה" — בלי ימים */
   ptForm();
 };
 window.ptField = (k, v) => { if(PT_EDIT) PT_EDIT[k] = (k === 'active') ? !!v : v; };
@@ -24365,7 +24324,8 @@ function ptForm(){
         '<td><select onchange="ptSet(' + i + ',\'label\',this.value)">' + beLabelOpts(r.label) + '</select></td>' +
         '<td><input type="number" min="0" max="100" step="0.5" value="' + esc(String(r.pct)) + '" onchange="ptSet(' + i + ',\'pct\',this.value)"></td>' +
         '<td><select onchange="ptSet(' + i + ',\'anchor\',this.value)">' + opt(PT_ANCHORS, r.anchor) + '</select></td>' +
-        '<td><input type="number" min="0" step="1" value="' + esc(String(r.offset_days||0)) + '" onchange="ptSet(' + i + ',\'offset_days\',this.value)"></td>' +
+        '<td>' + (r.anchor === 'delivery' ? '<span class="fin-muted">—</span>' :
+          '<input type="number" min="0" step="1" value="' + esc(String(r.offset_days||0)) + '" onchange="ptSet(' + i + ',\'offset_days\',this.value)">') + '</td>' +
       '</tr>').join('') + '</tbody></table>' +
       '<div class="be-sum ' + (Math.abs(ptSum()-100) < 0.01 ? 'ok' : 'bad') + '">סה"כ ' +
         (Math.round(ptSum()*100)/100) + '%' + (Math.abs(ptSum()-100) < 0.01 ? ' ✓' : ' — חייב להיות 100%') + '</div>' +
@@ -24391,7 +24351,7 @@ window.ptSave = async () => {
   if(err) err.textContent = '';
   const row = { code: code, name: name, kind: 'beats', active: !!PT_EDIT.active,
     sort_order: Number(PT_EDIT.sort_order) || 100,
-    beats: PT_ROWS.map(r=>({ pct: Number(r.pct)||0, label: r.label || 'לאחר אספקה',
+    beats: PT_ROWS.map(r=>({ pct: Number(r.pct)||0, label: r.label || 'לפני אספקה',
       anchor: r.anchor || 'order', offset_days: Number(r.offset_days)||0 })),
     updated_by: finMe(), updated_at: finNowIso() };
   const ok = await finDbw(()=>sb.schema('ord').from('payment_terms').upsert(row, { onConflict:'code' }),
@@ -24414,7 +24374,7 @@ window.ptDelete = async () => {
 async function ptReload(){
   try{
     const { data, error } = await sb.schema('ord').from('payment_terms').select('*')
-      .eq('active', true).order('sort_order', { ascending:true });
+      .order('sort_order', { ascending:true });
     if(error) throw error;
     PTERMS = data || [];
     const tf = $('#payTermFilter');
@@ -24573,12 +24533,34 @@ window.ledUnlink = async (kind, docNo) => {
    פעימות, כמה אחוז כל אחת, ומאיזה אירוע היא נספרת. הפעימה האחרונה יכולה
    להיות מזומן (ביום האספקה) או שוטף מהחשבונית, וזה בדיוק ההבדל בין
    "50% מקדמה ו-50% באספקה" ל"50% מקדמה ו-50% שוטף 60". */
-const BEAT_ANCHORS = [['order','אישור ההזמנה'],['delivery','אספקה / התקנה'],
-                      ['invoice','חשבונית'],['fixed','תאריך קבוע']];
+/* 7.37.2 — predeliv (רומן): "יש לאיש מכירות את האפשרות של 'לפני אספקה' בלבד. ולכן גם רצוי שלמעיין בתשלומים יהיה רק את זה".
+   עוגן האספקה = "לפני אספקה" בלבד, בלי ימים: המועד = שני ימי עבודה לפני השיבוץ/הצפי (ord.order_beats_v). תשלום אחרי האספקה
+   = שוטף מהחשבונית, או תאריך קבוע. עד כאן אותו נתון (delivery/0) נשא גם "לאחר אספקה". */
+const BEAT_ANCHORS = [['order','אישור ההזמנה'],['delivery','לפני אספקה'],
+                      ['invoice','שוטף מהחשבונית'],['fixed','תאריך קבוע']];
+/* אותם שמות של העסקה (DEAL_PAY_METHODS) — הפעימות שנזרעות מהעסקה נושאות אותם. */
+const BEAT_METHODS = ['אשראי','העברה בנקאית','שקים','הוראת קבע','מזומן','שוטף'];
+function beMethodOpts(cur){
+  const list = BEAT_METHODS.slice(), v = String(cur||'');
+  if(v && list.indexOf(v) < 0) list.push(v);
+  return '<option value="">—</option>' + list.map(x=>'<option value="'+esc(x)+'"'+(x===v?' selected':'')+'>'+esc(x)+'</option>').join('');
+}
+/* התיאור נגזר מהמיקום, מהמועד ומהאמצעי — "יתרה · לפני אספקה · העברה בנקאית", כמו בזריעה מהעסקה. שורה שנטענה (auto:false)
+   שומרת את התיאור שלה (למשל "תשלום מלא · חלק 1" של פיצול, או "אסמכתא בקובץ") עד ששינו לה מועד, ימים או אמצעי. */
+function beAutoLabel(i){
+  const r = BE_ROWS[i], n = BE_ROWS.length; if(!r) return '';
+  const base = n === 1 ? 'תשלום מלא' : (i === 0 && r.anchor === 'order' ? 'מקדמה' : (i === n-1 ? 'יתרה' : 'תשלום ' + (i+1)));
+  const d = Number(r.offset_days) || 0;
+  const when = r.anchor === 'delivery' ? 'לפני אספקה'
+             : r.anchor === 'invoice' ? 'שוטף מהחשבונית' + (d ? ' + ' + d : '')
+             : (r.anchor === 'order' && d) ? d + ' ימים מאישור ההזמנה' : '';
+  return [base, when, r.method || ''].filter(Boolean).join(' · ');
+}
+function beLabels(){ BE_ROWS.forEach((r,i)=>{ if(r.auto !== false) r.label = beAutoLabel(i); }); }
 /* תיאור הפעימה נבחר מרשימה סגורה ולא מוקלד. שני אנשים שכותבים "מקדמה"
    ו"מקדמה " יוצרים שני מונחים שאי אפשר לסכם עליהם, ולכן ההקלדה ירדה.
    ערך שנשמר בעבר ואינו ברשימה מתווסף אליה בטעינה כדי שלא ייעלם. */
-const BEAT_LABELS = ['מקדמה','לפני אספקה','לאחר אספקה','שוטף מהחשבונית','בהתקנה'];
+const BEAT_LABELS = ['מקדמה','לפני אספקה','יתרה','שוטף מהחשבונית'];   /* 7.37.2 — בעורך התבניות; בלי "לאחר אספקה" ו"בהתקנה" */
 function beLabelOpts(cur){
   const list = BEAT_LABELS.slice();
   const v = String(cur||'');
@@ -24588,8 +24570,7 @@ function beLabelOpts(cur){
 let BE_ROWS = [], BE_ORD = null;
 function beDefault(n){
   const out = [];
-  for(let i=0;i<n;i++) out.push({ label: i===0 ? 'מקדמה' : (i===n-1 ? 'לאחר אספקה' : 'לפני אספקה'),
-    pct: 0, anchor: i===0 ? 'order' : 'delivery', offset_days: 0, due_date: '' });
+  for(let i=0;i<n;i++) out.push({ label: '', pct: 0, anchor: i===0 ? 'order' : 'delivery', offset_days: 0, due_date: '' });   /* התיאור — beLabels */
   const base = Math.floor(100/n);
   out.forEach((r,i)=>{ r.pct = i === n-1 ? 100 - base*(n-1) : base; });
   return out;
@@ -24597,7 +24578,7 @@ function beDefault(n){
 window.beSetCount = n => {
   n = Math.max(1, Math.min(12, Number(n)||1));
   const cur = BE_ROWS.slice(0, n);
-  while(cur.length < n) cur.push({ label: cur.length===0 ? 'מקדמה' : 'לאחר אספקה', pct:0, amount:0,
+  while(cur.length < n) cur.push({ label: '', pct:0, amount:0,
     anchor: cur.length===0 ? 'order' : 'delivery', offset_days:0, due_date:'' });
   BE_ROWS = cur;
   /* שינוי מספר הפעימות מפזר מחדש שווה בשווה, אחרת נשארים עם סכום שאינו
@@ -24615,10 +24596,10 @@ window.bePreset = code => {
   if(!code) return;
   const t = PTERMS.find(x=>x.code===code); if(!t || !Array.isArray(t.beats)) return;
   const ptot = beTot();
-  BE_ROWS = t.beats.map((b,i)=>({ label: b.label || 'לאחר אספקה', pct: Number(b.pct)||0,
+  BE_ROWS = t.beats.map((b,i)=>({ label: '', pct: Number(b.pct)||0,
     amount: ptot ? Math.round(ptot * (Number(b.pct)||0) / 100) : null,
     anchor: b.anchor === 'install' ? 'delivery' : (b.anchor || 'order'),
-    offset_days: Number(b.offset_days)||0, due_date:'', locked:false }));
+    offset_days: (b.anchor === 'install' || b.anchor === 'delivery') ? 0 : (Number(b.offset_days)||0), due_date:'', locked:false }));
   beRender();
 };
 /* הסכום של פעימה: מה שהוקלד אם הוקלד, אחרת נגזר מהאחוז. */
@@ -24676,22 +24657,26 @@ window.beSet = (i, k, v) => {
     beBalance();
   } else if(k === 'offset_days'){
     BE_ROWS[i].offset_days = v === '' ? 0 : Number(v);
+    BE_ROWS[i].auto = true;
   } else {
     BE_ROWS[i][k] = v;
+    if(k === 'anchor' && v === 'delivery') BE_ROWS[i].offset_days = 0;   /* "לפני אספקה" — בלי ימים */
+    if(k === 'anchor' || k === 'method') BE_ROWS[i].auto = true;
   }
-  if(k === 'anchor' || k === 'pct' || k === 'amount') beRender();
+  if(k === 'anchor' || k === 'pct' || k === 'amount' || k === 'method' || k === 'offset_days') beRender();
 };
 function beSum(){ return BE_ROWS.reduce((s,r)=>s + (Number(r.pct)||0), 0); }
 function beRender(){
   const box = $('#beBody'); if(!box) return;
+  beLabels();
   const f = FIN.find(x=>x.order_number===BE_ORD) || {};
   const tot = finNum(f.ordered);
   const opt = (list, cur) => list.map(o=>'<option value="'+esc(o[0])+'"'+(String(cur)===o[0]?' selected':'')+'>'+esc(o[1])+'</option>').join('');
   box.innerHTML =
-    '<table class="be"><thead><tr><th style="width:26%">תיאור</th><th style="width:12%">אחוז</th>' +
-    '<th style="width:16%">סכום</th><th style="width:22%">נספר מ־</th><th style="width:12%">ימים</th><th style="width:16%">תאריך</th></tr></thead><tbody>' +
+    '<table class="be"><thead><tr><th style="width:24%">תיאור</th><th style="width:10%">אחוז</th>' +
+    '<th style="width:13%">סכום</th><th style="width:17%">מועד</th><th style="width:8%">ימים</th><th style="width:14%">אמצעי</th><th style="width:14%">תאריך</th></tr></thead><tbody>' +
     BE_ROWS.map((r,i)=>'<tr>' +
-      '<td><select onchange="beSet(' + i + ',\'label\',this.value)">' + beLabelOpts(r.label) + '</select></td>' +
+      '<td class="be-lbl">' + esc(r.label||'') + '</td>' +
       '<td><input class="pct' + (r.locked ? ' be-lk' : '') + '" type="number" min="0" max="100" step="0.01" value="' + esc(String(Math.round((Number(r.pct)||0)*100)/100)) + '" onchange="beSet(' + i + ',\'pct\',this.value)"></td>' +
       /* אחוז וסכום הם שני צדדים של אותו מספר, ולכן שניהם ניתנים להקלדה.
          הסכום הוא הקובע בשמירה כשכל הפעימות נושאות סכום — 33.33% מ-266,019
@@ -24702,11 +24687,12 @@ function beRender(){
         ' value="' + esc(String(beAmt(r, tot))) +
         '" onchange="beSet(' + i + ',\'amount\',this.value)">' : '<span class="fin-muted">—</span>') + '</td>' +
       '<td><select onchange="beSet(' + i + ',\'anchor\',this.value)">' + opt(BEAT_ANCHORS, r.anchor) + '</select></td>' +
-      '<td>' + (r.anchor === 'fixed' ? '<span class="fin-muted">—</span>' :
+      '<td>' + ((r.anchor === 'fixed' || r.anchor === 'delivery') ? '<span class="fin-muted">—</span>' :
         '<input type="number" min="0" step="1" value="' + esc(String(r.offset_days||0)) + '" onchange="beSet(' + i + ',\'offset_days\',this.value)">') + '</td>' +
+      '<td><select class="be-m" onchange="beSet(' + i + ',\'method\',this.value)">' + beMethodOpts(r.method) + '</select></td>' +
       '<td>' + (r.anchor === 'fixed' ?
         '<input type="date" value="' + esc(r.due_date||'') + '" onchange="beSet(' + i + ',\'due_date\',this.value)">' :
-        '<span class="fin-muted">לפי האירוע</span>') + '</td>' +
+        '<span class="fin-muted">' + (r.anchor === 'delivery' ? 'יומיים עבודה לפני האספקה' : 'לפי האירוע') + '</span>') + '</td>' +
     '</tr>').join('') + '</tbody></table>' +
     /* הבדיקה היא על השקלים ולא על האחוזים: שלוש פעימות של 33.33% לעולם
        לא יסתכמו ל-100 אבל הסכומים כן מסתכמים למחיר ההזמנה, וזה מה שחשוב. */
@@ -24730,7 +24716,7 @@ window.beOpen = on => {
           [1,2,3,4,5,6].map(n=>'<option value="'+n+'">'+n+'</option>').join('') + '</select>' +
         '<label>טעינה מתבנית</label>' +
         '<select id="bePreset" onchange="bePreset(this.value)"><option value="">— בחר —</option>' +
-          PTERMS.map(t=>'<option value="'+esc(t.code)+'">'+esc(t.name)+'</option>').join('') + '</select>' +
+          ptActive().map(t=>'<option value="'+esc(t.code)+'">'+esc(t.name)+'</option>').join('') + '</select>' +
       '</div>' +
       '<div id="beBody"></div>' +
       '<div class="modal-actions" style="margin-top:var(--sp-2h)">' +
@@ -24755,10 +24741,14 @@ window.beSave = async () => {
   if(!beT && Math.abs(beSum()-100) >= 0.01){ toast('סכום האחוזים חייב להיות 100%'); return; }
   const bad = BE_ROWS.find(r=>r.anchor === 'fixed' && !r.due_date);
   if(bad){ toast('פעימה בתאריך קבוע חייבת תאריך'); return; }
+  beLabels();
   const payload = BE_ROWS.map(r=>({ label:r.label||null, pct:Number(r.pct)||0,
     amount: beT ? beAmt(r, beT) : null, anchor:r.anchor,
-    offset_days: r.anchor==='fixed' ? 0 : (Number(r.offset_days)||0),
-    due_date: r.anchor==='fixed' ? (r.due_date||null) : null }));
+    offset_days: (r.anchor==='fixed' || r.anchor==='delivery') ? 0 : (Number(r.offset_days)||0),
+    due_date: r.anchor==='fixed' ? (r.due_date||null) : null,
+    /* 7.37.2 — predeliv: האמצעי והקוד של כל פעימה נשלחים. עד כאן לא נשלחו, ו-order_beats_write (delete+insert) מחק בכל שמירה
+       בעורך את האמצעי שהגיע מהעסקה. */
+    method: r.method || null, term_code: r.term_code || null }));
   const ok = await finDbw(()=>sb.schema('ord').rpc('order_beats_set', { p_order: BE_ORD, p_beats: payload }),
     'לוח הפעימות נשמר');
   if(!ok) return;
@@ -24777,15 +24767,19 @@ async function payLoadBeats(on){
   } else { box.classList.remove('beats-closed'); }
   try{
     const { data, error } = await sb.schema('ord').from('order_beats_v')
-      .select('seq,notes,amount,anchor,offset_days,due_date,due_is_final,due_eff,due_proj,due_show,due_is_est,due_src,is_paid,covered,beat_state').eq('order_number', on).order('seq');
+      .select('seq,notes,amount,anchor,offset_days,due_date,due_is_final,due_eff,due_proj,due_show,due_is_est,due_src,is_paid,covered,beat_state,method,term_code').eq('order_number', on).order('seq');
     if(error) throw error;
     if(!box.isConnected) return;
     const rows = data || [];
     const tot = finNum((FIN.find(x=>x.order_number===on)||{}).ordered);
-    BE_ROWS = rows.length ? rows.map(r=>({ label: r.notes||'', amount: Math.round(finNum(r.amount)),
+    /* 7.37.2 — predeliv: "לאחר אספקה" ישן (delivery + ימים) נטען כתאריך קבוע באותו מועד, כדי ששמירה חוזרת לא תהפוך אותו ל"לפני
+       אספקה". האמצעי והקוד נטענים כדי שיישמרו; התיאור נשמר (auto:false) עד ששינו לשורה מועד או אמצעי. */
+    BE_ROWS = rows.length ? rows.map(r=>{ const _late = !r.due_is_final && r.anchor==='delivery' && Number(r.offset_days) > 0;
+      return { label: r.notes||'', auto:false, method: r.method||'', term_code: r.term_code||null, amount: Math.round(finNum(r.amount)),
       pct: tot ? Math.round(finNum(r.amount)/tot*10000)/100 : 0,
-      anchor: r.due_is_final ? 'fixed' : (r.anchor==='install' ? 'delivery' : (r.anchor||'order')),
-      offset_days: Number(r.offset_days)||0, due_date: r.due_is_final ? (r.due_date||'') : '' })) : beDefault(2);
+      anchor: (r.due_is_final || _late) ? 'fixed' : (r.anchor==='install' ? 'delivery' : (r.anchor||'order')),
+      offset_days: _late ? 0 : (Number(r.offset_days)||0),
+      due_date: r.due_is_final ? (r.due_date||'') : (_late ? (r.due_show || r.due_eff || '') : '') }; }) : beDefault(2);
     if(!rows.length){ box.innerHTML = '<div class="items-empty">אין לוח פעימות. אפשר לבנות אותו כאן, או לבחור תנאי תשלום בטבלה.</div>'; return; }
     /* פעימה בלי תאריך ובלי צפי אינה שאלה תיאורטית: היא חור בתזרים. מפנים
        למקום היחיד שסוגר אותו — צפי האספקה בכרטיס ההזמנה. */
@@ -24889,7 +24883,7 @@ function payTable(list){
     const c = finCell(f);
     const termSel = ed
       ? '<select class="fin-term" onchange="finSetTerm(\'' + jsq(f.order_number) + '\', this.value)"><option value="">— בחר —</option>' +
-        PTERMS.map(t=>'<option value="' + esc(t.code) + '"' + (String(f.pay_code||'')===t.code?' selected':'') + '>' + esc(t.name) + '</option>').join('') + '</select>'
+        ptActive(f.pay_code).map(t=>'<option value="' + esc(t.code) + '"' + (String(f.pay_code||'')===t.code?' selected':'') + '>' + esc(t.name) + '</option>').join('') + '</select>'
       : esc(finTermName(f.pay_code) || '—');
     /* 6.220.0 — התא הוא יומן: ההערה האחרונה + מונה, ומתחת שדה שמוסיף. ה-title
        נושא את הכותב והתאריך ואת הטקסט המלא, כי העמודה קוטמת ל-2 שורות. */
@@ -27670,7 +27664,8 @@ window.dlSetChan = async (id, ch)=>{
 const DEAL_PAY_METHODS = ['אשראי','העברה בנקאית','שקים','הוראת קבע','מזומן','שוטף'];
 const DEAL_PAY_LOCKED = ['אושרה ע״י לקוח','הזמנה','לא רלוונטי'];
 const DEAL_PAY_NET = [0, 30, 60, 90];
-const DEAL_PAY_ANCH = [['order','עם אישור ההצעה'],['delivery','לפני / אחרי אספקה'],['install','בהתקנה']];
+/* 7.37.2 — predeliv (רומן): "יש לאיש מכירות את האפשרות של 'לפני אספקה' בלבד". תשלום אחרי האספקה = שוטף (בהרשאה). */
+const DEAL_PAY_ANCH = [['order','עם אישור ההצעה'],['delivery','לפני אספקה']];
 const DL_PP = {};                     /* id ⇒ { term, beats:[{pct,anchor,offset_days,method,installments,net_days}], dirty } */
 const DL_PL = {};
 let PAYL = [];                        /* 7.25.0 — crm.deal_pay_links: נטען ב-loadLeads (סוף המערך) וברענון האוטומטי; לכרטיס ולמסך «קישורי תשלום» */
@@ -27738,12 +27733,21 @@ function dlPayDraw(id){
   const can = window.canEdit('crm.deals');
   const ed = can && (sp || DEAL_PAY_LOCKED.indexOf(d.stage||'') < 0);
   const S = dlPpState(d), cus = S.term === '__custom', dis = ed ? '' : ' disabled', dis0 = dis;
+  /* 7.37.2 — predeliv: שני שלבים (רומן, 30/10/2026): "מיידי / חלוקה — ורק אם בוחרים חלוקה אז יש את 2 האופציות הקבועות,
+     ואם הלקוח צריך חלוקה שונה אז בהתאם לאישור בעל הרשאות". "מיידי" = חלוקה מוצעת בתשלום אחד עם אישור ההצעה (dlPpIsImm —
+     נגזר מהתבנית, לא מקוד קשיח). '__split' = נבחר "חלוקה" ועוד לא איזו; לא נשמר עד שבוחרים. המותאמת מוצגת לכולם, נעולה בלי
+     הרשאה — כדי שאיש המכירות יידע שהיא קיימת ולמי לפנות. */
   const offer = (PTERMS||[]).filter(t=> t.deal_offer || t.code===S.term);
-  const sel = `<select id="dl-paysplit" aria-label="חלוקת התשלום" title="חלוקת התשלום — פנימית, לא בפריוריטי. האמצעי בכל תשלום הוא שמתורגם לתנאי התשלום בפריוריטי."${dis} onchange="dlPpSplit('${jsq(id)}',this.value)">`
-    + `<option value="">בחרו חלוקה…</option>`
-    + offer.map(t=>`<option value="${esc(t.code)}"${t.code===S.term?' selected':''}>${esc(t.name)}</option>`).join('')
-    + ((sp || cus) ? `<option value="__custom"${cus?' selected':''}${sp?'':' disabled'}>חלוקה מותאמת…${sp?'':' 🔒'}</option>` : '')
-    + `</select>`;
+  const imm = offer.find(dlPpIsImm), splits = offer.filter(t=> !dlPpIsImm(t));
+  const isSplit = S.term === '__split' || cus || splits.some(t=> t.code===S.term);
+  const segB = (k, on, lbl) => `<button type="button" data-pp-mode="${k}"${on?' class="on"':''} aria-pressed="${on?'true':'false'}"${dis} onclick="dlPpMode('${jsq(id)}','${k}')">${esc(lbl)}</button>`;
+  const sel = `<span class="dl-pp-pick"><span class="dd-seg dl-pp-mode" role="group" aria-label="אופן התשלום">`
+    + (imm ? segB('imm', S.term===imm.code, imm.name) : '') + segB('split', isSplit, 'חלוקה') + `</span>`
+    + (isSplit ? `<select id="dl-paysplit" aria-label="חלוקת התשלום" title="חלוקת התשלום — פנימית, לא בפריוריטי. האמצעי בכל תשלום הוא שמתורגם לתנאי התשלום בפריוריטי."${dis} onchange="dlPpSplit('${jsq(id)}',this.value)">`
+      + `<option value="">בחרו חלוקה…</option>`
+      + splits.map(t=>`<option value="${esc(t.code)}"${t.code===S.term?' selected':''}>${esc(t.name)}</option>`).join('')
+      + `<option value="__custom"${cus?' selected':''}${sp?'':' disabled'}${sp?'':' title="חלוקה מותאמת דורשת הרשאת «תנאי תשלום מיוחדים»"'}>חלוקה מותאמת…${sp?'':' 🔒'}</option>`
+      + `</select>` : '') + `</span>`;
   const tot = d.amount_incl_vat != null ? Number(d.amount_incl_vat) : null;
   const am = tot != null ? dlPpAmounts(S.beats, tot) : [];
   /* סכום עגול ⇒ בלי אגורות; אחרת תמיד שתי ספרות (13,651.50 ולא 13,651.5). */
@@ -27779,10 +27783,12 @@ function dlPayDraw(id){
     const amtCell = (am.length && (cus || edp))
       ? `<span class="dl-pp-amtw"><input class="dl-pp-amt${bad ? ' need' : ''}" id="dl-pp-amt-${i}" type="number" min="0" step="0.01" inputmode="decimal" aria-label="סכום — ${esc(dlPpLabel(S.beats, i))}"${dis} value="${esc(String(am[i]))}" onchange="dlPpAmt('${jsq(id)}',${i},this.value)">₪</span>`   /* 7.28.1 — ₪ משמאל, כמו בערך הסטטי */
       : (am.length ? esc(f2(am[i])) : '—');
+    /* 7.37.2 — predeliv: בלי שדה ימים. מועד ישן שאינו ברשימה (בהתקנה / N ימים אחרי) מוצג כמו שהוא — לא מוחלף בשקט. */
+    const _anc = DEAL_PAY_ANCH.some(([v])=> v===b.anchor) && !Number(b.offset_days||0);
     const when = (cus && b.method!=='שוטף')
-      ? `<select class="dl-pp-a" aria-label="מועד"${dis} onchange="dlPpSet('${jsq(id)}',${i},{anchor:this.value},1)">`
-         + DEAL_PAY_ANCH.map(([v,l])=>`<option value="${v}"${v===b.anchor?' selected':''}>${esc(l)}</option>`).join('') + `</select>`
-         + `<input class="dl-pp-days" type="number" min="0" max="365" aria-label="ימים"${dis} value="${esc(String(b.offset_days||0))}" title="ימים אחרי המועד" onchange="dlPpSet('${jsq(id)}',${i},{offset_days:+this.value},1)"> ימים`
+      ? `<select class="dl-pp-a" aria-label="מועד"${dis} onchange="dlPpSet('${jsq(id)}',${i},{anchor:this.value,offset_days:0},1)">`
+         + (_anc ? '' : `<option value="" selected disabled>${esc(dlPpWhen(b))}</option>`)
+         + DEAL_PAY_ANCH.map(([v,l])=>`<option value="${v}"${_anc && v===b.anchor?' selected':''}>${esc(l)}</option>`).join('') + `</select>`
       : esc(dlPpWhen(b));
     const L = DL_PL[id + ':' + (i+1)];
     const act = (paid ? `<span class="pill st-rel dd-paid">שולם ✓</span>`
@@ -27829,9 +27835,23 @@ function dlPayDraw(id){
     + (miss ? `<div class="dd-note">חובה לפני מעבר ל«נשלחה הצעת מחיר לחתימה».</div>` : '')
     + ((can && !ed) ? `<div class="dd-note">הלקוח כבר אישר — שינוי דורש הרשאת «תנאי תשלום מיוחדים».</div>` : '');
 }
+/* 7.37.2 — predeliv: "מיידי" = תבנית מוצעת בתשלום אחד, עם אישור ההצעה (0 ימים). */
+function dlPpIsImm(t){
+  const b = (t && Array.isArray(t.beats)) ? t.beats : [];
+  return b.length === 1 && (b[0].anchor || 'order') === 'order' && !Number(b[0].offset_days || 0);
+}
+window.dlPpMode = (id, mode)=>{
+  const d = (DEALS||[]).find(x=>x.id===id); if(!d) return;
+  const S = dlPpState(d), offer = (PTERMS||[]).filter(t=> t.deal_offer);
+  if(mode === 'imm'){ const t = offer.find(dlPpIsImm); if(t && S.term !== t.code) dlPpSplit(id, t.code); return; }
+  if(S.term === '__split' || S.term === '__custom' || offer.some(t=> !dlPpIsImm(t) && t.code===S.term)) return;
+  /* טיוטה — שום כתיבה עד שנבחרת חלוקה. prev: האמצעים שכבר נבחרו עוברים לחלוקה שתיבחר (או חזרה ל"מיידי"). */
+  DL_PP[id] = { term:'__split', beats:[], prev:S.beats, dirty:true };
+  dlPayDraw(id);
+};
 window.dlPpSplit = (id, code)=>{
   const d = (DEALS||[]).find(x=>x.id===id); if(!d) return;
-  const prev = dlPpState(d).beats;
+  const _S0 = dlPpState(d), prev = (_S0.term === '__split' && Array.isArray(_S0.prev)) ? _S0.prev : _S0.beats;   /* 7.37.2 — אחרי "חלוקה" */
   const m0 = (prev.find(b=>b.method)||{}).method || '';
   if(!code){ DL_PP[id] = { term:'', beats:[], dirty:true }; return dlPpSave(id); }      /* ניקוי */
   if(code === '__custom'){

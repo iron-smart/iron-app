@@ -4002,7 +4002,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.37.0</div>
+      <div class="ver">גרסה 7.37.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4134,7 +4134,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="wachat2-2026-10-27a">גרסה 7.37.0</div>
+    <div class="side-foot" title="dealpush-2026-10-30a">גרסה 7.37.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5922,6 +5922,7 @@ async function afterLogin(){
   try{ applyDashboard(); await loadLeads(); }
   catch(e){ console.error('afterLogin render', e); }
   custPushStart();   /* 7.31.0 */
+  dealPushStart();   /* 7.37.1 — dealpush */
 }
 /* ═══ 7.31.0 — שם/סטטוס לקוח מתעדכן חי (רומן, 21/10/2026: "אי אפשר בכל וובהוק פשוט לרענן?") ═══════════
    השרת (core.zz_customer_changed) שולח broadcast 'iron-cust' עם {cid} בלבד, רק כשהשם או הסטטוס **באמת** השתנו —
@@ -5950,6 +5951,70 @@ async function custPushApply(id){
   }catch(e){ console.warn('custPushApply', e); }
 }
 window.custPushApply = custPushApply;
+
+/* ═══ dealpush (7.37.1) — תהליך מכירה מתעדכן חי במסכים (רומן, 30/10/2026) ═══════════════════════════════════
+   רומן, על PQ26001268: "היא נשלחה בפריוריטי ועברה כמעט דקה עד שהמערכת התעדכנה". נמדד: פריוריטי שולחת את הוובהוק
+   תוך 1–2 שניות, העיבוד אצלנו (deal-quote-refresh + PDF) ~11 שניות, ואז המסך חיכה לסקירה הבאה (every 30ש' ותיקתוק
+   10ש' ⇒ עד ~40 שניות). "אז מה אתה ממליץ" ⇒ דחיפה מהשרת ⇒ "מאשר. לפרודקשן".
+   השרת (crm.zz_deal_push · crm.zz_deal_owner_push — טריגרים ברמת statement, פונקציות-מסד/deal_push.20261030.sql) שולח
+   broadcast 'iron-deal' עם {ids} (עד 40) רק כשעמודה שהמסך מציג באמת זזה, או כשהבעלות זזה; מעל 40 — {all:true}.
+   כאן מושכים את התהליכים האלה ואת הבעלות שלהם **דרך CRM_Q** — אותן עמודות של הטעינה ואותו RLS — ומציירים מחדש.
+   ⚠️ שתי שכבות, כמו בכרטיס החי (6.250.0): הדחיפה למהירות, הסקירה של 30 שניות לשלמות — היא נשארת כמות שהיא.
+   ⚠️ קיבוץ DPUSH_WAIT: הוובהוק כותב כמה פעמים בשנייה (העסקה, ואחריה הבעלות). {all} או יותר מ-DPUSH_MAX ⇒ לא מושכים
+      אחד-אחד אלא מקדימים את הסקירה (CRM_AUTO_AT.deals = 0 ⇒ התיקתוק הבא במסך התהליכים).
+   🔴 אותו שער של הרענון האוטומטי (crmAutoHeld): לא מציירים מתחת לכרטיס פתוח, לבחירה מרוכזת או לתא שנערך — המזהים
+      נשמרים וממתינים. וגם לא כשסקירה באוויר (CRM_AUTO_BUSY): התשובה שלה, שנשלחה לפני השינוי, הייתה דורסת את שלנו.
+      השער נבדק שוב אחרי ה-await — אותו לקח של crmAutoRefresh.
+   ⚠️ תהליך שהשרת לא החזיר (נמחק, או שהמשתמש איבד אליו הרשאה) יורד מהרשימה — בדיוק כמו בסקירה המלאה. לא כשהשליפה
+      נכשלה (אז מקדימים את הסקירה), ולא הכרטיס הפתוח (DLIVE_ID) — לו יש מנוי ושורה משלו (dlLiveApply).
+   ⚠️ לקוח או ליד שנוצרו אחרי הכניסה (תהליך אוטומטי מוובהוק על לקוח חדש) נמשכים גם הם — אחרת השורה מציגה תא ריק. */
+let DEAL_PUSH = null, DPUSH_T = null;
+const DPUSH_IDS = new Set(), DPUSH_MAX = 40, DPUSH_WAIT = 600, DPUSH_RETRY = 2000;
+const DPUSH_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function dealPushStart(){
+  if(DEAL_PUSH) return;
+  try{
+    DEAL_PUSH = sb.channel('iron-deal')
+      .on('broadcast', { event:'deal' }, p => dealPushOn(p && p.payload))
+      .subscribe();
+  }catch(_e){ DEAL_PUSH = null; }
+}
+function dealPushOn(pl){
+  if(!pl) return;
+  if(pl.all === true){ DPUSH_IDS.clear(); CRM_AUTO_AT.deals = 0; return; }
+  (Array.isArray(pl.ids) ? pl.ids : []).forEach(id => { if(typeof id === 'string' && DPUSH_RE.test(id)) DPUSH_IDS.add(id); });
+  if(DPUSH_IDS.size > DPUSH_MAX){ DPUSH_IDS.clear(); CRM_AUTO_AT.deals = 0; return; }
+  if(DPUSH_IDS.size && !DPUSH_T) DPUSH_T = setTimeout(dealPushRun, DPUSH_WAIT);
+}
+async function dealPushRun(){
+  DPUSH_T = null;
+  if(!DPUSH_IDS.size) return;
+  if(CRM_AUTO_BUSY || crmAutoHeld()){ DPUSH_T = setTimeout(dealPushRun, DPUSH_RETRY); return; }
+  const ids = Array.from(DPUSH_IDS); DPUSH_IDS.clear();
+  const again = () => { ids.forEach(id => DPUSH_IDS.add(id)); if(!DPUSH_T) DPUSH_T = setTimeout(dealPushRun, DPUSH_RETRY); };
+  try{
+    const [dq, oq] = await Promise.all([ CRM_Q.deals().in('id', ids), CRM_Q.down().in('deal_id', ids) ]);
+    if(!dq || dq.error || !Array.isArray(dq.data) || !oq || oq.error || !Array.isArray(oq.data)){ CRM_AUTO_AT.deals = 0; return; }
+    const has = (arr, id) => (arr || []).some(x => x.id === id);
+    const needC = [...new Set(dq.data.map(r => r.customer_id).filter(x => x && !has(CUSTS, x)))];
+    const needL = [...new Set(dq.data.map(r => r.lead_id).filter(x => x && !has(LEADS, x)))];
+    const [cq, lq] = await Promise.all([ needC.length ? CRM_Q.custs().in('id', needC) : null,
+                                         needL.length ? CRM_Q.leads().in('id', needL) : null ]);
+    if(CRM_AUTO_BUSY || crmAutoHeld()){ again(); return; }
+    ((cq && !cq.error && cq.data) || []).forEach(r => { if(!has(CUSTS, r.id)) CUSTS.unshift(r); });
+    ((lq && !lq.error && lq.data) || []).forEach(r => { if(!has(LEADS, r.id)) LEADS.unshift(r); });
+    const got = new Map(dq.data.map(r => [r.id, r]));
+    const mine = ids.filter(id => id !== DLIVE_ID);
+    mine.forEach(id => {
+      const r = got.get(id), i = DEALS.findIndex(x => x.id === id);
+      if(r){ if(i >= 0) Object.assign(DEALS[i], r); else DEALS.unshift(r); }
+      else if(i >= 0) DEALS.splice(i, 1);
+    });
+    reIndexDealOwners(oq.data.filter(r => r.deal_id !== DLIVE_ID), mine);
+    crmRepaint();
+  }catch(e){ console.warn('dealPushRun', e); CRM_AUTO_AT.deals = 0; }
+}
+window.dealPushOn = dealPushOn;
 
 $('#logoutBtn').onclick = async ()=>{
   if(VAS){ await vasEnd(); return; }
@@ -13740,7 +13805,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'wachat2-2026-10-27a';
+const BUILD_ID = 'dealpush-2026-10-30a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -21428,8 +21493,11 @@ const lbOwnersOf = l => (l && LOWN_OF[l.id]) || (l && l.owner_id ? [l.owner_id] 
    🔴 מפה נפרדת ולא הרחבה של LOWN_OF: מזהי ליד ומזהי עסקה הם שניהם
    uuid, ומפה משותפת הייתה מערבבת אותם ביום שמזהה יתנגש. */
 const DOWN_OF = {};
-function reIndexDealOwners(rows){
-  for(const k in DOWN_OF) delete DOWN_OF[k];
+/* 7.37.1 — dealpush: only (אופציונלי) = מזהי העסקאות שנמשכו ⇒ רק הבעלות שלהן מוחלפת. הדחיפה מושכת כמה עסקאות,
+   ואיפוס המפה כולה היה מוחק את הבעלים של כל השאר. בלי only — בדיוק כמו קודם. */
+function reIndexDealOwners(rows, only){
+  if(Array.isArray(only)) only.forEach(k => { delete DOWN_OF[k]; });
+  else for(const k in DOWN_OF) delete DOWN_OF[k];
   for(const r of (rows||[])){
     if(!r.profile_id) continue;
     const a = DOWN_OF[r.deal_id] || (DOWN_OF[r.deal_id] = []);

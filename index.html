@@ -4009,7 +4009,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.37.2</div>
+      <div class="ver">גרסה 7.37.3</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4141,7 +4141,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="predeliv-2026-10-30b">גרסה 7.37.2</div>
+    <div class="side-foot" title="predelfix-2026-10-30a">גרסה 7.37.3</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -13812,7 +13812,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'predeliv-2026-10-30b';
+const BUILD_ID = 'predelfix-2026-10-30a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -24283,9 +24283,12 @@ window.ptEdit = code => {
   const t = PTERMS.find(x=>x.code===code); if(!t) return;
   PT_EDIT = { code:t.code, name:t.name, active:t.active !== false, sort_order:t.sort_order || 100, isNew:false };
   PT_ROWS = (Array.isArray(t.beats) && t.beats.length ? t.beats : [{pct:100,label:'תשלום מלא',anchor:'order',offset_days:0}])
-    .map(b=>({ label:b.label || 'לפני אספקה', pct:Number(b.pct)||0,
-      anchor: b.anchor === 'install' ? 'delivery' : (b.anchor || 'order'),
-      offset_days: Number(b.offset_days)||0 }));
+    /* 7.37.3 — predelfix (סוקר Fable): בהתקנה ⇒ לפני אספקה (0 ימים); אספקה + N ⇒ שוטף מהחשבונית + N — "N ימים אחרי" נשמר
+       ולא הופך בשקט ל"לפני אספקה" (delivery+ימים נדחה בזריעה). */
+    .map(b=>{ const _d = Number(b.offset_days)||0, _a = b.anchor || 'order';
+      return { label:b.label || 'לפני אספקה', pct:Number(b.pct)||0,
+        anchor: _a === 'install' ? 'delivery' : ((_a === 'delivery' && _d) ? 'invoice' : _a),
+        offset_days: (_a === 'install' || (_a === 'delivery' && !_d)) ? 0 : _d }; });
   ptRender();
 };
 window.ptSetCount = n => {
@@ -24352,7 +24355,7 @@ window.ptSave = async () => {
   const row = { code: code, name: name, kind: 'beats', active: !!PT_EDIT.active,
     sort_order: Number(PT_EDIT.sort_order) || 100,
     beats: PT_ROWS.map(r=>({ pct: Number(r.pct)||0, label: r.label || 'לפני אספקה',
-      anchor: r.anchor || 'order', offset_days: Number(r.offset_days)||0 })),
+      anchor: r.anchor || 'order', offset_days: r.anchor === 'delivery' ? 0 : (Number(r.offset_days)||0) })),   /* 7.37.3 — "לפני אספקה" בלי ימים */
     updated_by: finMe(), updated_at: finNowIso() };
   const ok = await finDbw(()=>sb.schema('ord').from('payment_terms').upsert(row, { onConflict:'code' }),
     'התבנית נשמרה');
@@ -27563,6 +27566,7 @@ window.openDeal = async (id)=>{
     </section>
     </div>
 `;
+  if(DL_PP[id] && DL_PP[id].term === '__split') delete DL_PP[id];   /* 7.37.3 — טיוטת "חלוקה" בלי בחירה לא שורדת סגירה ופתיחה */
   dlPipeDraw(id); dlChanDraw(id); dlPayDraw(id);
   /* 🔴 אחרי הציור ולא לפניו: dlLiveApply קורא ל-dlPipeDraw, וקריאה
      על כרטיס שטרם צויר הייתה נופלת בשקט ל-catch. */
@@ -27737,7 +27741,7 @@ function dlPayDraw(id){
      ואם הלקוח צריך חלוקה שונה אז בהתאם לאישור בעל הרשאות". "מיידי" = חלוקה מוצעת בתשלום אחד עם אישור ההצעה (dlPpIsImm —
      נגזר מהתבנית, לא מקוד קשיח). '__split' = נבחר "חלוקה" ועוד לא איזו; לא נשמר עד שבוחרים. המותאמת מוצגת לכולם, נעולה בלי
      הרשאה — כדי שאיש המכירות יידע שהיא קיימת ולמי לפנות. */
-  const offer = (PTERMS||[]).filter(t=> t.deal_offer || t.code===S.term);
+  const offer = (PTERMS||[]).filter(t=> (t.deal_offer && t.active !== false) || t.code===S.term);   /* 7.37.3 — לא-פעילה נדחית ב-deal_set_payplan */
   const imm = offer.find(dlPpIsImm), splits = offer.filter(t=> !dlPpIsImm(t));
   const isSplit = S.term === '__split' || cus || splits.some(t=> t.code===S.term);
   const segB = (k, on, lbl) => `<button type="button" data-pp-mode="${k}"${on?' class="on"':''} aria-pressed="${on?'true':'false'}"${dis} onclick="dlPpMode('${jsq(id)}','${k}')">${esc(lbl)}</button>`;
@@ -27842,7 +27846,7 @@ function dlPpIsImm(t){
 }
 window.dlPpMode = (id, mode)=>{
   const d = (DEALS||[]).find(x=>x.id===id); if(!d) return;
-  const S = dlPpState(d), offer = (PTERMS||[]).filter(t=> t.deal_offer);
+  const S = dlPpState(d), offer = (PTERMS||[]).filter(t=> t.deal_offer && t.active !== false);
   if(mode === 'imm'){ const t = offer.find(dlPpIsImm); if(t && S.term !== t.code) dlPpSplit(id, t.code); return; }
   if(S.term === '__split' || S.term === '__custom' || offer.some(t=> !dlPpIsImm(t) && t.code===S.term)) return;
   /* טיוטה — שום כתיבה עד שנבחרת חלוקה. prev: האמצעים שכבר נבחרו עוברים לחלוקה שתיבחר (או חזרה ל"מיידי"). */

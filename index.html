@@ -1289,6 +1289,73 @@
   #set-wrap .srl-tbl input.st-num{ width:100%; min-width:70px }
   #set-wrap .srl-tbl input.st-txt{ width:100%; min-width:120px }
   #set-wrap .srl-act{ white-space:nowrap }
+  /* ===== 7.53.0 — calcui: מחשבון הסגירה בשפת המערכת (רומן, 31/10/2026: "מחשבון סגירה אני רוצה שתעצב לפי עיצוב המערכת") =====
+     אותם רכיבים של שאר המסכים: כרטיס עם פס כותרת (כמו .st-card/.st-hd), שדות בסולם הפקדים (--ctl-h-sm · --field-bd),
+     שורות עם קו רך, וסכום מסכם מודגש ב-navy. הכללים חלים גם על החלונית בכרטיס העסקה (#dl-ccm) — זה אותו מחשבון.
+     ⚠️ הכללים כאן באותה ספציפיות של כללי 7.49.0/7.51.0 שמעל, ומאוחרים מהם — המאוחר מנצח, וזו הכוונה. אל תזיז אותם למעלה. */
+  #dl-ccm .cc-form label > span, #tab-calc .cc-form label > span{ font-size:var(--fs-label); font-weight:600; color:var(--ink-2) }
+  #dl-ccm .cc-form input, #dl-ccm .cc-form select, #tab-calc .cc-form input, #tab-calc .cc-form select{ width:100%; box-sizing:border-box; height:var(--ctl-h-sm); padding:var(--field-py) var(--field-px); border:1px solid var(--field-bd); border-radius:var(--r-md); background:#fff; color:var(--ink-1); font-size:var(--fs-md); font-family:inherit }
+  #dl-ccm .cc-form input:focus, #dl-ccm .cc-form select:focus, #tab-calc .cc-form input:focus, #tab-calc .cc-form select:focus{ outline:none; border-color:var(--navy); box-shadow:var(--sh-focus) }
+  #dl-ccm .cc-card, #tab-calc .cc-card{ background:#fff; border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-card); padding:0; overflow:hidden }
+  #dl-ccm .cc-card h4, #tab-calc .cc-card h4{ margin:0; padding:var(--sp-2) var(--sp-3); background:var(--bg-subtle); border-bottom:1px solid var(--line-soft); font-size:var(--fs-md); font-weight:800; color:var(--navy) }
+  #dl-ccm .cc-r, #tab-calc .cc-r{ align-items:baseline; padding:var(--sp-1h) var(--sp-3); border-bottom:1px solid var(--line-soft) }
+  #dl-ccm .cc-r:last-child, #tab-calc .cc-r:last-child{ border-bottom:0 }
+  #dl-ccm .cc-r span, #tab-calc .cc-r span{ color:var(--ink-2) }
+  #dl-ccm .cc-r b, #tab-calc .cc-r b{ color:var(--ink-1); font-weight:700; white-space:nowrap; font-variant-numeric:tabular-nums }
+  #dl-ccm .cc-r.cc-tot, #tab-calc .cc-r.cc-tot{ margin-top:0; padding-top:var(--sp-2); padding-bottom:var(--sp-2); border-top:1px solid var(--line); background:var(--bg-subtle) }
+  #dl-ccm .cc-r.cc-tot span, #tab-calc .cc-r.cc-tot span{ color:var(--navy); font-weight:700 }
+  #dl-ccm .cc-r.cc-tot b, #tab-calc .cc-r.cc-tot b{ color:var(--navy); font-size:var(--fs-lg); font-weight:800 }
+  #dl-ccm .cc-appr, #tab-calc .cc-appr{ border:1px solid var(--line); border-inline-start-width:4px; border-radius:var(--r-lg); padding:var(--sp-2h) var(--sp-4); font-size:var(--fs-md); color:var(--ink-2) }
+  #dl-ccm .cc-appr b, #tab-calc .cc-appr b{ display:block; color:var(--ink-1); margin-bottom:var(--sp-0h) }
+  #dl-ccm .cc-need, #tab-calc .cc-need{ background:var(--amber-bg); border-color:var(--amber) }
+  #dl-ccm .cc-ok, #tab-calc .cc-ok{ background:#fff; border-color:var(--line); border-inline-start-color:var(--green) }
+  /* המסך: נתוני ההצעה למעלה (ארבעה שדות בשורה), אישור המנהל כפס, ושלושת הכרטיסים זה לצד זה. order ולא סדר ה-DOM —
+     ccHtml משותף לחלונית, ושם הסדר (הנחה ← אישור ← לקוח ← חברה) נשאר כמו שהוא. */
+  #tab-calc .cc-page{ max-width:1180px; background:transparent; border:0; border-radius:0; box-shadow:none; padding:0 }
+  #tab-calc .cc-in{ margin:0 0 var(--sp-3) }
+  #tab-calc .cc-in .cc-form{ grid-template-columns:minmax(0,1.2fr) minmax(0,1.6fr) minmax(0,.8fr) minmax(0,.8fr); gap:var(--sp-3); margin:0; padding:var(--sp-3) var(--sp-4) var(--sp-4) }
+  #tab-calc #ccs-body{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--sp-3); align-items:start }
+  #tab-calc #ccs-body > *{ min-width:0; margin:0 }
+  #tab-calc #ccs-body > :not(.cc-card){ grid-column:1 / -1 }
+  #tab-calc #ccs-body > .cc-appr{ order:-1 }
+  #tab-calc #ccs-body > .note{ order:1 }
+  /* "כללי המכירה" — קריאה בלבד (ccRulesPaint). העריכה בהגדרות ← כללי מכירה. */
+  #tab-calc .cc-rules{ max-width:1180px; margin-top:var(--sp-5) }
+  #tab-calc .cc-rl-top{ display:flex; align-items:baseline; gap:var(--sp-2h); flex-wrap:wrap; margin:0 0 var(--sp-3) }
+  #tab-calc .cc-rl-top h2.sec{ margin:0 }
+  #tab-calc .cc-rl-top .note{ margin:0; padding:0; background:none; border:0 }
+  #tab-calc .cc-rl-top .chip{ margin-inline-start:auto }
+  /* שתי עמודות שמתמלאות מלמעלה (columns ולא grid): הכרטיסים בגבהים שונים מאוד (שורה אחת מול שתים-עשרה), ו-grid השאיר
+     חורים — רומן: "גריד בלי חורים". הסדר נשאר הסדר של SRL_KINDS, מהעמודה הימנית. */
+  #tab-calc .cc-rl-grid{ column-count:2; column-gap:var(--sp-3) }
+  #tab-calc .cc-rl-grid .st-card{ margin:0 0 var(--sp-3); min-width:0; break-inside:avoid }
+  #tab-calc .cc-rl-grid .tbl-wrap{ border:0; border-radius:0 }
+  #tab-calc .cc-rl-grid > .st-card > .note{ margin:0; padding:var(--sp-2h) var(--sp-4) }
+  #tab-calc .cc-rl-tbl td{ font-size:var(--fs-sm); white-space:nowrap; font-variant-numeric:tabular-nums }
+  #tab-calc .cc-rl-tbl td.cc-rl-label, #tab-calc .cc-rl-tbl td.cc-rl-note{ white-space:normal; min-width:120px }
+  #tab-calc .cc-rl-tbl td.cc-rl-note{ color:var(--ink-3) }
+  #tab-calc .cc-rl-tbl tr.cc-rl-on td{ background:#eef4ff; color:var(--navy); font-weight:700 }
+  #tab-calc .cc-rl-tbl tr.cc-rl-on td:first-child{ box-shadow:inset -3px 0 0 var(--navy) }
+  #tab-calc .cc-rl-tag{ display:inline-block; padding:0 var(--sp-2); border-radius:var(--r-pill); background:var(--amber-bg); color:var(--warn-ink); font-size:var(--fs-xs); font-weight:700 }
+  /* ⚠️ רק ארבע נקודות השבירה של המערכת (559.98 · 759.98 · 1024 · 1279.98) — dstest אוכפת. */
+  @media (max-width:1279.98px){
+    #tab-calc .cc-in .cc-form{ grid-template-columns:repeat(2,minmax(0,1fr)) }
+    #tab-calc .cc-rl-grid{ column-count:1 }
+  }
+  @media (max-width:759.98px){ #tab-calc #ccs-body{ grid-template-columns:minmax(0,1fr) } }
+  @media (max-width:559.98px){ #tab-calc .cc-in .cc-form{ grid-template-columns:minmax(0,1fr) } }
+  /* 7.53.0 — העורך בהגדרות: שורה שנערכה מסומנת עד שנשמרת (כמו .st-row.st-dirty), וההערה רחבה מספיק לקריאה. */
+  #set-wrap .srl-tbl tr.st-dirty td{ background:var(--new-bg) }
+  #set-wrap .srl-tbl tr.st-dirty td:first-child{ box-shadow:inset -3px 0 0 var(--amber) }
+  #set-wrap .srl-tbl input.st-txt[data-f="note"]{ min-width:220px }
+  /* 7.52.0 — פיצול עמלה */
+  #tab-comm .cm-split{ display:block; font-size:var(--fs-xs); color:var(--ink-3); font-weight:400 }
+  #cm-spm .sheet{ max-width:520px }
+  #cm-spm .cm-sp-sub{ font-size:var(--fs-sm); color:var(--ink-2); margin:0 0 var(--sp-3) }
+  #cm-spm .cm-sp-row{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,7rem); gap:var(--sp-2); align-items:end; margin:0 0 var(--sp-2) }
+  #cm-spm .cm-sp-row label{ display:flex; flex-direction:column; gap:var(--sp-1); font-size:var(--fs-sm); color:var(--ink-2); min-width:0 }
+  #cm-spm .cm-sp-row b{ display:flex; align-items:center; min-height:var(--ctl-h-sm); font-size:var(--fs-md); color:var(--ink-1) }
+  #cm-spm .cm-sp-prev{ font-size:var(--fs-sm); color:var(--ink-2); margin:var(--sp-1) 0 var(--sp-3) }
   /* 7.50.0 — comm3: הדוח שלי · מדרגות · טווח · מדרגות בהגדרות */
   #tab-comm .cm-tiles{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:var(--sp-2); margin:0 0 var(--sp-3) }
   #tab-comm .cm-tile{ border:1px solid var(--line); border-radius:var(--r-md); padding:var(--sp-2); background:var(--bg-subtle); min-width:0 }
@@ -4178,7 +4245,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.51.2</div>
+      <div class="ver">גרסה 7.53.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4251,13 +4318,12 @@ tr.lb-on td{ background-color:#eef5fd !important; }
     <nav aria-label="תפריט ראשי">
     <button class="nav-item active" data-tab="today"><span>דשבורד</span></button>
     <!-- CRM — שבעת מסכי ניהול הלקוחות והמכירה תחת קטגוריית אב אחת (רומן 29/07/2026) -->
-    <div class="nav-wrap" data-tabs="tasks,leads,deals,comm,customers,contacts,meets,paylinks">
+    <div class="nav-wrap" data-tabs="tasks,leads,deals,customers,contacts,meets,paylinks">
       <button class="nav-item" data-tab="tasks" aria-expanded="false">CRM <span class="nav-arrow"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span></button>
       <div class="submenu">
         <button data-tab="tasks"     onclick="gotoTab('tasks')">משימות</button>
         <button data-tab="leads"     onclick="gotoTab('leads')">לידים</button>
         <button data-tab="deals"     onclick="gotoTab('deals')">תהליכי מכירה</button>
-        <button data-tab="comm"      onclick="gotoTab('comm')">עמלות</button>
         <button data-tab="customers" onclick="gotoTab('customers')">לקוחות</button>
         <button data-tab="contacts"  onclick="gotoTab('contacts')">אנשי קשר</button>
         <button data-tab="meets"     onclick="gotoTab('meets')">פגישות</button>
@@ -4268,11 +4334,14 @@ tr.lb-on td{ background-color:#eef5fd !important; }
          7.51.2 — "ניתוחים ודוחות" (רומן, 31/10/2026: "תעביר את ניתוח מכירות למסך ״מחשבונים״. את מסך מחשבונים תשנה
          ל״ניתוחים ודוחות״" · "גם את דשבורד שיווק תעביר לשם"). ההרשאות לא זזו: מי שיש לו רק crm.deals רואה כאן את
          המחשבון בלבד. ראש הקבוצה הוא הפריט הראשון (כמו CRM); בלי הרשאה אליו הלחיצה נופלת לפריט המותר הראשון.
-         מחשבון המשלוח וההתקנה יצטרף לכאן כשרומן יחזור אליו. -->
-    <div class="nav-wrap" data-tabs="sana,mkt,calc">
+         מחשבון המשלוח וההתקנה יצטרף לכאן כשרומן יחזור אליו.
+         7.53.0 — גם "עמלות" (רומן, 31/10/2026: "גם את העמלות תעביר לניתוחים ודוחות"), מיד אחרי ניתוח המכירות.
+         ההרשאה נשארה dash.commission: איש מכירות בלי dash.salesteam נוחת כאן בעמלות שלו. -->
+    <div class="nav-wrap" data-tabs="sana,comm,mkt,calc">
       <button class="nav-item" data-tab="sana" aria-expanded="false">ניתוחים ודוחות <span class="nav-arrow"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span></button>
       <div class="submenu">
         <button data-tab="sana" onclick="gotoTab('sana')">ניתוח מכירות</button>
+        <button data-tab="comm" onclick="gotoTab('comm')">עמלות</button>
         <button data-tab="mkt"  onclick="gotoTab('mkt')">דשבורד שיווק</button>
         <button data-tab="calc" onclick="gotoTab('calc')">מחשבון סגירה</button>
       </div>
@@ -4323,7 +4392,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="reports-2026-10-31a">גרסה 7.51.2</div>
+    <div class="side-foot" title="splitown-2026-10-31a">גרסה 7.53.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -4384,12 +4453,15 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       <div id="cm-body"></div>
     </section>
 
-    <!-- 7.51.0 — מחשבונים ← מחשבון סגירה: אותו מחשבון של כרטיס העסקה (7.49.0), בלי לפתוח עסקה. renderCalc. -->
+    <!-- 7.51.0 — מחשבונים ← מחשבון סגירה: אותו מחשבון של כרטיס העסקה (7.49.0), בלי לפתוח עסקה. renderCalc.
+         7.53.0 — calcui: נתוני ההצעה בכרטיס, התוצאה בשלושה כרטיסים, ו"כללי המכירה" מתחת (ccRulesPaint — קריאה בלבד). -->
     <section id="tab-calc" class="hidden">
       <div class="cc-page">
-        <div id="ccs-form" class="cc-form"></div>
+        <section class="st-card cc-in"><div class="st-hd"><h3>נתוני ההצעה</h3><small>סכום לפני מע״מ, כולל משלוח והתקנה. החישוב מתעדכן תוך כדי הקלדה.</small></div>
+          <div id="ccs-form" class="cc-form"></div></section>
         <div id="ccs-body"></div>
       </div>
+      <div id="ccs-rules" class="cc-rules"></div>
     </section>
 
     <!-- פגישות -->
@@ -14203,7 +14275,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'reports-2026-10-31a';
+const BUILD_ID = 'splitown-2026-10-31a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -16421,6 +16493,7 @@ PV.lfCsv = ()=>{
    קובץ חיצוני: כשל טעינה משאיר מחירון בלי לוגו, בשקט. נוצרו ע"י
    mk4442.py מהמקור, בנאמנות מדודה של 0 פיקסלים הפרש. */
 const PL_LOGO = 'data:image/png;base64,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';
+window.IRON_LOGO = PL_LOGO;   /* 7.52.0 — גם דוח העמלות המודפס (cmDocHtml) נושא את הלוגו; המודול רץ לכל משתמש בטעינה */
 const PL_SYM  = 'data:image/png;base64,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';
 
 /* נייר המכתבים (6.77.0) — עוצב בשיתוף fable לפי PQ26000938.
@@ -21444,7 +21517,9 @@ function cmLoad(){
   const done = (d, err)=>{
     if(CM.busy === m) CM.busy = '';
     if(cmMonth() !== m) return;          /* תשובה של חודש קודם אינה דורסת את החודש שנבחר אחריה */
-    CM.d = d; CM.err = err || ''; CM.at = Date.now();
+    /* 7.53.1 — data:null בלי error ⇒ שגיאה גלויה. בלעדיה CM.d=null ו-CM.err='' ⇒ renderComm ⇒ cmLoad מחדש ⇒ לולאה שתוקעת את הדף
+       (ממצא של סשן "סכומי תהליכים", נמדד ב-CDP). השגיאה עוצרת את הטעינה לדקה, כמו כל כשל אחר. */
+    CM.d = d; CM.err = err || (d ? '' : 'הדוח חזר ריק מהשרת'); CM.at = Date.now();
     if(CUR_TAB === 'comm') renderComm();
   };
   (async ()=>{
@@ -21490,7 +21565,13 @@ function cmRules(D){
     + '<li>העמלה משולמת בחודש העוקב לחודש המכירה — על החודש הזה: <b>'+pay+'</b>.</li>'
     + '</ul></div>';
 }
+/* 7.52.0 — "50% מ-₪59,616.95 · עם בן קויפמן 50%": השרת מחזיר amount = החלק, deal_amount = העסקה המלאה. */
+function cmSplitInfo(l){
+  if(!(+l.share_pct < 100)) return '';
+  return '<small class="cm-split">'+esc(cmPct(+l.share_pct/100))+' מ-'+cmIls(l.deal_amount)+(l.split_with ? ' · עם '+esc(l.split_with) : '')+'</small>';
+}
 function cmOwnerHtml(o){
+  const sp = !!(CM.d && CM.d.can_split);   /* 7.52.0 — רומן, בן ונח (dash.commission.all בעריכה), בחודש שלא נסגר */
   const B = o.breakdown || [], hit = B.filter(b=>+b.base > 0), next = B.find(b=>+b.lo > +o.sales);
   const bd = '<h4 class="cm-h">איך חושב</h4><div class="tbl-wrap"><table class="tbl cm-bd"><thead><tr><th>מדרגה</th><th class="num">אחוז</th><th class="num">הסכום במדרגה</th><th class="num">עמלה</th></tr></thead><tbody>'
     + (hit.length ? hit.map(b=>'<tr><td>'+esc(cmRange(b))+'</td><td class="num">'+cmPct(b.rate)+'</td><td class="num">'+cmIls(b.base)+'</td><td class="num">'+cmIls(b.amount)+'</td></tr>').join('')
@@ -21500,12 +21581,15 @@ function cmOwnerHtml(o){
   const L = o.lines || [];
   const ln = '<h4 class="cm-h">העסקאות <span class="cnt">'+(+o.deals||0)+' נספרות'+(+o.cancelled ? ' · '+(+o.cancelled)+' בוטלו' : '')+'</span></h4>'
     + (+o.missing_amount ? '<div class="sa-sub sa-warn">'+(+o.missing_amount)+' עסקאות בלי סכום — לא נכנסו לחשבון. יש להשלים את הסכום בעסקה.</div>' : '')
-    + (L.length ? '<div class="tbl-wrap"><table class="tbl cm-ln"><thead><tr><th>עסקה</th><th>לקוח</th><th>הזמנה</th><th>תאריך ההזמנה</th><th class="num">סכום לפני מע״מ</th><th>מצב</th></tr></thead><tbody>'
+    + (L.length ? '<div class="tbl-wrap"><table class="tbl cm-ln"><thead><tr><th>עסקה</th><th>לקוח</th><th>הזמנה</th><th>תאריך ההזמנה</th><th class="num">סכום לפני מע״מ</th><th>מצב</th>'
+        + (sp ? '<th class="cm-noprint">פיצול</th>' : '') + '</tr></thead><tbody>'
         + L.map(l=>{
             const can = l.status==='בוטלה';
             return '<tr class="clk'+(can ? ' cm-can' : '')+'" onclick="openDeal(\''+jsq(l.deal_id)+'\')"><td>'+esc(l.deal_name||'')+'</td><td>'+esc(l.customer||'')+'</td><td>'+esc(l.orders||'—')+'</td><td>'+esc(cmDay(l.won_at))+'</td>'
-              + '<td class="num">'+(l.amount==null ? '<span class="sa-warn">אין סכום</span>' : cmIls(l.amount))+'</td>'
-              + '<td>'+(can ? '<span class="cm-cr">בוטלה '+esc(cmDay(l.cancelled_at))+'</span><small class="sa-on">'+esc(l.cancel_reason||'')+'</small>' : 'נספרת')+'</td></tr>';
+              + '<td class="num">'+(l.amount==null ? '<span class="sa-warn">אין סכום</span>' : cmIls(l.amount))+cmSplitInfo(l)+'</td>'
+              + '<td>'+(can ? '<span class="cm-cr">בוטלה '+esc(cmDay(l.cancelled_at))+'</span><small class="sa-on">'+esc(l.cancel_reason||'')+'</small>' : 'נספרת')+'</td>'
+              + (sp ? '<td class="cm-noprint">'+(can ? '' : '<button type="button" class="chip" onclick="event.stopPropagation();cmSplitOpen(\''+jsq(l.deal_id)+'\')">'
+                                                 + (+l.share_pct < 100 ? 'עריכת פיצול' : 'פיצול')+'</button>')+'</td>' : '')+'</tr>';
           }).join('')
         + '</tbody></table></div>'
       : '<div class="empty">אין עסקאות</div>');
@@ -21556,6 +21640,17 @@ function cmExtra(D){
     + '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>עסקה</th><th>איש מכירות</th><th>מחודש</th><th class="num">סכום</th><th>בוטלה</th></tr></thead><tbody>'
     + G.map(a=>row(a, '<td>'+esc(cmLabel(a.from_month))+'</td><td class="num">'+cmIls(a.amount)+'</td><td>'+esc(cmDay(a.cancelled_at))+'</td>')).join('')
     + '</tbody></table></div></div>';
+  /* 7.53.1 — רומן: "כן, לאפשר" — פיצול גם בעסקה שהבעלים שלה אינו מקבל עמלה (רומן, נח, או לפני תאריך ההתחלה).
+     העסקאות האלה אינן בטבלת הצוות, ולכן זה המקום היחיד שממנו מגיעים אליהן. החלק של הבעלים אינו נספר; של השותף — נספר לו. */
+  const U = D.uncounted || [], sp = !!D.can_split;
+  if(U.length) h += '<div class="sa-card cm-unc"><h3>עסקאות שאינן נספרות לעמלה <span class="cnt">'+U.length+'</span></h3>'
+    + '<div class="sa-sub">עסקאות החודש של מי שאינו מקבל עמלה. '+(sp ? 'אפשר לפצל עסקה כזו עם איש מכירות, והחלק שלו ייספר לו.' : 'החודש נעול לפיצול.')+'</div>'
+    + '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>עסקה</th><th>בעלים</th><th>תאריך ההזמנה</th><th class="num">סכום לפני מע״מ</th>'
+    + (sp ? '<th class="cm-noprint">פיצול</th>' : '')+'</tr></thead><tbody>'
+    + U.map(u=>'<tr class="clk" onclick="openDeal(\''+jsq(u.deal_id)+'\')"><td>'+esc(u.customer||u.deal_name||'')+'</td><td>'+esc(u.owner||'')+'</td><td>'+esc(cmDay(u.won_at))+'</td>'
+        + '<td class="num">'+(u.amount==null ? '<span class="sa-warn">אין סכום</span>' : cmIls(u.amount))+(u.split_with ? '<small class="cm-split">'+esc(u.split_with)+'</small>' : '')+'</td>'
+        + (sp ? '<td class="cm-noprint"><button type="button" class="chip" onclick="event.stopPropagation();cmSplitOpen(\''+jsq(u.deal_id)+'\')">'+(u.split_with ? 'עריכת פיצול' : 'פיצול')+'</button></td>' : '')+'</tr>').join('')
+    + '</tbody></table></div></div>';
   return h;
 }
 /* 7.50.0 — "הדוח שלי": scope 'own' (dash.commission=1) — השרת כבר מחזיר רק את השורה שלו; כאן רק הצורה. */
@@ -21594,7 +21689,7 @@ function cmRangeLoad(){
   const done = (d, err)=>{
     if(CM.rbusy === key) CM.rbusy = '';
     if(CM.rf+'|'+CM.rt !== key) return;          /* טווח שהוחלף בינתיים אינו נדרס */
-    CM.rd = d ? Object.assign(d, { key }) : null; CM.rerr = err || ''; CM.rat = Date.now();
+    CM.rd = d ? Object.assign(d, { key }) : null; CM.rerr = err || (d ? '' : 'הטווח חזר ריק מהשרת'); CM.rat = Date.now();   /* 7.53.1 — כמו בחודש: לא לולאה */
     if(CUR_TAB === 'comm' && CM.mode === 'range') renderComm();
   };
   (async ()=>{
@@ -21671,7 +21766,274 @@ window.renderComm = function(){
     : own ? cmStatus(D) + cmMineHtml(D) + cmExtra(D) + cmRules(D)
           : cmStatus(D) + cmTable(D) + cmExtra(D) + cmRules(D);
 };
+/* ===== 7.52.0 — commdoc: דוח העמלות של איש מכירות להדפסה, בעיצוב נייר המכתבים של המחירון =====
+   רומן, 31/10/2026: "תייפה את הדוח של הדפסת הסוכן מכירות לפי עיצוב שלנו כמובן. תשלח לי רינדורים לפני ביצוע" — אושר על הרינדור
+   ("כן, כמו ברינדור"). ובאמצע: "חשוב להדגיש שהסכומים הסופיות עשויים להשתנות" ⇒ cmd-alert מתחת לכותרת, "(לא סופי)" באריח.
+   🔴 המסמך נכתב ל-iframe נסתר ומודפס ממנו, לא body.cm-print על המסך: הסתרת האפליקציה השאירה בעמודים את המסך עצמו
+      (נמדד ברינדור: 5 עמודים במקום 2). מסמך עצמאי נותן עמודי A4 מדויקים, וכותרת הטבלה חוזרת בכל עמוד.
+   ⚠️ הלוגו מ-window.IRON_LOGO (מודול התמחור). חסר ⇒ שם החברה בטקסט + שגיאה בקונסול — לא תמונה שבורה בשקט. */
+const CM_DOC_CSS = `@page{ size:A4; margin:11mm 13mm 12mm }
+html, body{ margin:0; padding:0; background:#fff }
+#cm-doc{ --d-navy:#002D48; --d-ink:#111c28; --d-gray:#5a6672; --d-line:#d9e0e7; --d-hair:#e8edf2; --d-zebra:#f5f7f9;
+  box-sizing:border-box; background:#fff; color:var(--d-ink); direction:rtl; text-align:right;
+  font-family:'Rubik',-apple-system,"Segoe UI",Arial,sans-serif; font-size:9.5pt; line-height:1.4;
+  print-color-adjust:exact; -webkit-print-color-adjust:exact }
+#cm-doc *{ box-sizing:border-box; margin:0; padding:0; border:0; border-radius:0; box-shadow:none; color:inherit; background:transparent; font:inherit; letter-spacing:normal; text-transform:none; list-style:none }
+#cm-doc .cmd-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10mm }
+#cm-doc .cmd-coname{ font-size:13pt; font-weight:700; margin-bottom:1.2mm }
+#cm-doc .cmd-colines{ font-size:8.5pt; line-height:1.55; color:#2a3540 }
+#cm-doc .cmd-brand{ text-align:left; flex:0 0 auto }
+#cm-doc .cmd-logo{ display:block; width:46mm; height:auto }
+#cm-doc .cmd-logotx{ font-size:16pt; font-weight:700; color:var(--d-navy); letter-spacing:.5mm }
+#cm-doc .cmd-web{ margin-top:2.2mm; font-size:8.5pt; line-height:1.55 }
+#cm-doc .cmd-rule{ border-top:1.4pt solid var(--d-navy); margin:3.6mm 0 3mm }
+#cm-doc .cmd-meta{ display:flex; align-items:flex-start; gap:10mm; font-size:9.5pt; line-height:1.6 }
+#cm-doc .cmd-meta b{ font-weight:700 }
+#cm-doc .cmd-dates{ margin-inline-start:auto; white-space:nowrap; font-weight:700 }
+#cm-doc .cmd-title{ margin:6mm 0 4mm; text-align:center; font-size:15pt; font-weight:700; color:var(--d-navy) }
+#cm-doc .cmd-title::after{ content:''; display:block; width:24mm; margin:1.8mm auto 0; border-top:1.2pt solid var(--d-navy) }
+#cm-doc .cmd-alert{ border:.8pt solid #d9a400; background:#fff8e1; padding:2.2mm 3.2mm; font-size:9pt; line-height:1.5 }
+#cm-doc .cmd-alert b{ font-weight:700 }
+#cm-doc .cmd-alert.cmd-final{ border-color:var(--d-line); background:var(--d-zebra) }
+#cm-doc .cmd-kpis{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:3mm; margin:4mm 0 2mm }
+#cm-doc .cmd-kpi{ border:.6pt solid var(--d-line); border-top:1.8pt solid var(--d-navy); padding:2.2mm 3mm 2.4mm }
+#cm-doc .cmd-kpi small{ display:block; font-size:8pt; color:var(--d-gray); margin-bottom:.8mm }
+#cm-doc .cmd-kpi b{ display:block; font-size:13pt; font-weight:700; font-variant-numeric:tabular-nums; direction:ltr; text-align:right }
+#cm-doc .cmd-kpi.cmd-pay{ background:var(--d-navy); border-color:var(--d-navy); color:#fff }
+#cm-doc .cmd-kpi.cmd-pay small{ color:#c9d6e0 }
+#cm-doc .cmd-h{ margin:6mm 0 2mm; font-size:10.5pt; font-weight:700; color:var(--d-navy); break-after:avoid }
+#cm-doc .cmd-h span{ font-size:8.5pt; font-weight:400; color:var(--d-gray); margin-inline-start:2mm }
+#cm-doc table.cmd-t{ width:100%; border-collapse:collapse; font-size:8.8pt }
+#cm-doc .cmd-t th{ background:var(--d-navy); color:#fff; font-weight:600; font-size:8.3pt; padding:1.5mm 2.2mm; text-align:right; white-space:nowrap }
+#cm-doc .cmd-t td{ padding:1.35mm 2.2mm; border-bottom:.5pt solid var(--d-hair); vertical-align:top }
+#cm-doc .cmd-t tbody tr:nth-child(even) td{ background:var(--d-zebra) }
+#cm-doc .cmd-t tr{ break-inside:avoid }
+#cm-doc .cmd-t .num{ text-align:left; direction:ltr; font-variant-numeric:tabular-nums; white-space:nowrap }
+#cm-doc .cmd-t .cmd-i{ width:7mm; color:var(--d-gray) }
+#cm-doc .cmd-t tfoot td{ border-top:1pt solid var(--d-navy); border-bottom:0; font-weight:700; background:#fff }
+#cm-doc .cmd-t tr.cmd-can td{ color:var(--d-gray) }
+#cm-doc .cmd-t tr.cmd-can td.num{ text-decoration:line-through }
+#cm-doc .cmd-t small{ display:block; font-size:7.8pt; color:var(--d-gray); direction:rtl; text-align:left }
+#cm-doc .cmd-t td:not(.num) small{ text-align:right }
+#cm-doc .cmd-t .cmd-cr{ color:#b42318; font-weight:600 }
+#cm-doc .cmd-note{ margin-top:1.6mm; font-size:8.5pt; color:var(--d-gray) }
+#cm-doc .cmd-warn{ margin:2mm 0; border:.6pt solid #d9a400; background:#fff8e1; padding:1.6mm 3mm; font-size:8.5pt }
+#cm-doc .cmd-rules{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.25fr); gap:6mm; margin-top:6mm; padding-top:4mm; border-top:.6pt solid var(--d-line); break-inside:avoid }
+#cm-doc .cmd-rules .cmd-h{ margin-top:0 }
+#cm-doc .cmd-how li{ position:relative; padding-inline-start:3.2mm; margin-bottom:1.4mm; font-size:8.5pt; line-height:1.5 }
+#cm-doc .cmd-how li::before{ content:''; position:absolute; inset-inline-start:0; top:1.9mm; width:1.2mm; height:1.2mm; background:var(--d-navy) }
+#cm-doc .cmd-sign{ display:flex; gap:14mm; margin-top:12mm; font-size:8.8pt; break-inside:avoid }
+#cm-doc .cmd-sign span{ flex:1; border-top:.6pt solid var(--d-ink); padding-top:1.6mm; text-align:center; color:var(--d-gray) }
+#cm-doc .cmd-foot{ margin-top:6mm; font-size:7.5pt; color:var(--d-gray); text-align:center }`;
+function cmDocHtml(D, o){
+  const ils = n => n==null || isNaN(+n) ? '—' : '₪'+(+n).toLocaleString('he-IL', { minimumFractionDigits:2, maximumFractionDigits:2 });
+  const ils0 = n => n==null || isNaN(+n) ? '—' : '₪'+Math.round(+n).toLocaleString('he-IL');
+  const today = fmtD(isoD(new Date()));   /* dstest: d.m.yyyy רק בחמשת האתרים המוצהרים — כאן fmtD, כמו בשאר המסך */
+  const pay = esc(D.pay_label||'') + (D.paid_in ? ' (משולמת ב'+esc(D.paid_in)+')' : '');
+  const fin = D.status === 'סגור', old = D.status === 'אקסל';
+  const B = (o.breakdown||[]).filter(b=>+b.base > 0), next = (o.breakdown||[]).find(b=>+b.lo > +o.sales);
+  const L = (o.lines||[]).slice().sort((a,b)=>String(a.won_at||'').localeCompare(String(b.won_at||'')));
+  const logo = window.IRON_LOGO || '';
+  if(!logo) console.error('cmDocHtml: אין IRON_LOGO — המסמך יודפס עם שם החברה בטקסט');
+  /* רומן: "חשוב להדגיש שהסכומים הסופיים עשויים להשתנות" — עד סגירת החודש זה המשפט הראשון אחרי הכותרת */
+  const alert = fin
+    ? '<div class="cmd-alert cmd-final"><b>החודש נסגר לתשלום ב-'+esc(cmDay(D.closed_at))+'.</b> אלה הסכומים ששולמו. ביטול שמתגלה אחרי הסגירה מקוזז מהעמלה בחודש שבו התגלה.</div>'
+    : old
+    ? '<div class="cmd-alert cmd-final"><b>חודש מלפני המעבר למערכת.</b> המספרים לעיון בלבד — התשלום בוצע לפי האקסל.</div>'
+    : '<div class="cmd-alert"><b>הסכומים אינם סופיים.</b> הם עשויים להשתנות עד שהחודש נסגר לתשלום — אם הזמנה מתבטלת, פריטים בהזמנה משתנים או שהעמלה מתחלקת עם איש מכירות אחר. ביטולים נבדקים עד '+esc(fmtD(D.window_until))+'.</div>';
+  let h = '<div class="cmd-top"><div><div class="cmd-coname">איירון פיטנס בע"מ</div><div class="cmd-colines">'
+    + '<div>קומבה 32, חדרה 3850134</div><div>טלפון: 074-7779988</div><div>עוסק מורשה: 516249547</div></div></div>'
+    + '<div class="cmd-brand" dir="ltr">'+(logo ? '<img class="cmd-logo" src="'+logo+'" alt="IRON FITNESS">' : '<div class="cmd-logotx">IRON FITNESS</div>')
+    + '<div class="cmd-web"><div>www.IronFitness.co.il</div></div></div></div>'
+    + '<div class="cmd-rule"></div>'
+    + '<div class="cmd-meta"><div><div>איש מכירות: <b>'+esc(o.name||'')+'</b></div><div>לתשלום ב: <b>'+pay+'</b></div></div>'
+    + '<div class="cmd-dates"><div>חודש המכירות: '+esc(cmLabel(D.month))+'</div><div>תאריך הפקה: '+today+'</div></div></div>'
+    + '<div class="cmd-title">דוח עמלות — '+esc(cmLabel(D.month))+'</div>'
+    + alert
+    + '<div class="cmd-kpis">'
+    + '<div class="cmd-kpi"><small>מכירות לפני מע״מ</small><b>'+ils0(o.sales)+'</b></div>'
+    + '<div class="cmd-kpi"><small>עמלה</small><b>'+ils(o.commission)+'</b></div>'
+    + '<div class="cmd-kpi"><small>קיזוזים</small><b>'+(+o.adj_total ? ils(o.adj_total) : '—')+'</b></div>'
+    + '<div class="cmd-kpi cmd-pay"><small>'+(fin || old ? 'לתשלום' : 'לתשלום (לא סופי)')+'</small><b>'+ils(o.payable)+'</b></div></div>';
+  h += '<div class="cmd-h">איך חושבה העמלה <span>אחוז בפועל '+esc(cmPct(o.effective_rate))+'</span></div>'
+    + '<table class="cmd-t cmd-bd"><thead><tr><th>מדרגה</th><th>מכירות בחודש</th><th class="num">אחוז</th><th class="num">הסכום במדרגה</th><th class="num">עמלה</th></tr></thead><tbody>'
+    + (B.length ? B.map((b,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(cmRange(b))+'</td><td class="num">'+esc(cmPct(b.rate))+'</td><td class="num">'+ils(b.base)+'</td><td class="num">'+ils(b.amount)+'</td></tr>').join('')
+                : '<tr><td colspan="5">אין מכירות בחודש</td></tr>')
+    + '</tbody><tfoot><tr><td colspan="3">סה״כ</td><td class="num">'+ils(o.sales)+'</td><td class="num">'+ils(o.commission)+'</td></tr></tfoot></table>'
+    + (next ? '<div class="cmd-note">המדרגה הבאה: '+esc(cmRange(next))+' · '+esc(cmPct(next.rate))+'. חסרים '+ils0(+next.lo - (+o.sales||0))+'.</div>' : '');
+  h += '<div class="cmd-h">העסקאות <span>'+(+o.deals||0)+' נספרות'+(+o.cancelled ? ' · '+(+o.cancelled)+' בוטלו' : '')+'</span></div>'
+    + (+o.missing_amount ? '<div class="cmd-warn">'+(+o.missing_amount)+' עסקאות בלי סכום — לא נכנסו לחשבון.</div>' : '')
+    + '<table class="cmd-t cmd-ln"><thead><tr><th class="cmd-i">#</th><th>לקוח</th><th>הצעה</th><th>הזמנה</th><th>תאריך</th><th class="num">סכום לפני מע״מ</th></tr></thead><tbody>'
+    + (L.length ? L.map((l,i)=>{ const can = l.status==='בוטלה', sp = +l.share_pct < 100;
+        return '<tr'+(can ? ' class="cmd-can"' : '')+'><td class="cmd-i">'+(i+1)+'</td><td>'+esc(l.customer||l.deal_name||'')
+          + (can ? '<small class="cmd-cr">בוטלה '+esc(cmDay(l.cancelled_at))+(l.cancel_reason ? ' — '+esc(l.cancel_reason) : '')+'</small>' : '')+'</td>'
+          + '<td>'+esc(l.quote_id||'—')+'</td><td>'+esc(l.orders||'—')+'</td><td>'+esc(cmDay(l.won_at))+'</td>'
+          + '<td class="num">'+(l.amount==null ? 'אין סכום' : ils(l.amount))
+          + (sp ? '<small>'+esc(cmPct(+l.share_pct/100))+' מ-'+ils(l.deal_amount)+(l.split_with ? ' · עם '+esc(l.split_with) : '')+'</small>' : '')+'</td></tr>'; }).join('')
+               : '<tr><td colspan="6">אין עסקאות בחודש</td></tr>')
+    + '</tbody><tfoot><tr><td></td><td colspan="4">סה״כ נספר</td><td class="num">'+ils(o.sales)+'</td></tr></tfoot></table>';
+  const A = o.adjustments || [];
+  if(A.length) h += '<div class="cmd-h">קיזוזים מחודשים שנסגרו</div><table class="cmd-t"><thead><tr><th>עסקה</th><th>מחודש</th><th class="num">סכום העסקה</th><th class="num">קיזוז</th></tr></thead><tbody>'
+    + A.map(a=>'<tr><td>'+esc(a.deal_name||'')+'</td><td>'+esc(cmLabel(a.from_month))+'</td><td class="num">'+ils(a.amount)+'</td><td class="num">'+ils(a.delta)+'</td></tr>').join('') + '</tbody></table>';
+  const T = D.tiers || [];
+  h += '<div class="cmd-rules"><div><div class="cmd-h">מדרגות העמלה</div><table class="cmd-t"><thead><tr><th>מדרגה</th><th>מכירות בחודש, לפני מע״מ</th><th class="num">אחוז</th></tr></thead><tbody>'
+    + T.map((t,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(cmRange(t))+'</td><td class="num">'+esc(cmPct(t.rate))+'</td></tr>').join('') + '</tbody></table></div>'
+    + '<div><div class="cmd-h">איך זה עובד</div><ul class="cmd-how">'
+    + '<li>המדרגות מצטברות: כל שקל מקבל את האחוז של המדרגה שבה הוא נמצא.</li>'
+    + '<li>עסקה נספרת בחודש שבו נפתחה ההזמנה, לפי סכום ההזמנה לפני מע״מ, כולל משלוח והתקנה. עסקה מפוצלת נספרת לפי החלק של כל אחד.</li>'
+    + '<li>הזמנה שבוטלה יורדת מהחשבון. ביטול אחרי שהחודש נסגר מקוזז בחודש שבו התגלה.</li>'
+    + '<li>העמלה משולמת במשכורת של החודש העוקב — על החודש הזה: '+pay+'.</li></ul></div></div>'
+    + '<div class="cmd-sign"><span>אישור מנהל המכירות</span><span>חתימת איש המכירות</span></div>'
+    + '<div class="cmd-foot">הופק ממערכת איירון פיטנס ב-'+today+' · כל הסכומים לפני מע״מ'+(fin || old ? '' : ' · הסכומים אינם סופיים עד סגירת החודש')+'</div>';
+  return h;
+}
+function cmDocPage(D, o){
+  return '<!DOCTYPE html><html dir="rtl" lang="he"><head><meta charset="utf-8"><title>'+esc('דוח עמלות — '+(o.name||'')+' — '+cmLabel(D.month))+'</title>'
+    + '<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">'
+    + '<style>'+CM_DOC_CSS+'</style></head><body><div id="cm-doc">'+cmDocHtml(D, o)+'</div></body></html>';
+}
+/* iframe חדש לכל הדפסה: ישן נשאר רק עד הבאה (Safari מדפיס אסינכרונית, ומחיקה מיד אחרי print() הייתה מדפיסה דף ריק).
+   🔴 סקירת Fable: d.fonts.ready שנשאל מיד אחרי close() נפתר לפני שגיליון הגופנים בכלל נטען — ו-print() יצא בגופן נפילה
+      (display=swap אינו "מחליף" בהדפסה). לכן: מחכים ל-load של ה-link, טוענים במפורש את Rubik ב-400 ו-700, ורק אז מדפיסים.
+      הכול תחום ב-4 שניות — בלי רשת יודפס בגופן המערכת ולא ייתקע. וגם בלי visibility:hidden על ה-iframe — רק מחוץ למסך. */
+window.cmPrintDoc = (D, o)=>{
+  const old = document.getElementById('cm-doc-frame'); if(old) old.remove();
+  const f = document.createElement('iframe');
+  f.id = 'cm-doc-frame'; f.title = 'דוח עמלות להדפסה'; f.setAttribute('aria-hidden', 'true'); f.tabIndex = -1;
+  f.style.cssText = 'position:fixed;inset-inline-start:-10000px;top:0;width:210mm;height:297mm;border:0';
+  document.body.appendChild(f);
+  const w = f.contentWindow, d = w.document;
+  d.open(); d.write(cmDocPage(D, o)); d.close();
+  CM.lastDoc = { owner: o.owner_id || null, month: D.month };
+  const go = ()=>{ try{ w.focus(); w.print(); }catch(_e){ toast('ההדפסה נכשלה — נסו שוב', 'err'); } };
+  const ln = d.querySelector('link[rel="stylesheet"]');
+  const css = new Promise(r=>{ if(!ln || ln.sheet) return r(); ln.addEventListener('load', r, { once:true }); ln.addEventListener('error', r, { once:true }); });
+  const fonts = css.then(()=> d.fonts ? Promise.all([d.fonts.load('400 10pt Rubik'), d.fonts.load('700 10pt Rubik')]).then(()=>d.fonts.ready) : null).catch(()=>null);
+  Promise.race([fonts, new Promise(r=>setTimeout(r, 4000))]).then(()=>setTimeout(go, 80));
+};
+
+/* ===== 7.52.0 — פיצול עמלה בין אנשי מכירות =====
+   רומן, 31/10/2026: "סכום העסקה" (מתחלק הסכום, וכל חלק נכנס למדרגה של בעליו) · "רומן בן ונח" (dash.commission.all בעריכה).
+   🔴 החלונית אינה מחשבת עמלה: היא שולחת את החלוקה ל-crm.commission_split_set, והדוח נטען מחדש מהשרת.
+   הבעלים של העסקה תמיד בפיצול (השרת אוכף) — העברת בעלות נעשית בעסקה עצמה. התצוגה המקדימה מחלקת כמו השרת:
+   החלק של השותף מעוגל, ולבעלים — היתרה, כך שהשניים מסתכמים בדיוק לסכום העסקה. */
+const CMS = { deal:null, line:null, shares:[], busy:false };
+function cmSpEl(){
+  let e = document.getElementById('cm-spm');
+  if(!e){
+    e = document.createElement('div'); e.id = 'cm-spm'; e.className = 'modal modal-over hidden';
+    /* הפעולות ילד ישיר של sheet — רק כך חלים עליהן כללי החלונית (שורה אחת, דביקה בתחתית) */
+    e.innerHTML = '<div class="sheet"><h3>פיצול עמלה</h3><div id="cm-sp-body"></div><div class="modal-actions" id="cm-sp-act"></div></div>';
+    document.body.appendChild(e);
+    e.addEventListener('click', ev=>{ if(ev.target === e) cmSplitClose(); });
+  }
+  return e;
+}
+const CM_SP_CLOSE = '<button type="button" class="ghost" onclick="cmSplitClose()">סגירה</button>';
+function cmSpAct(h){ const a = document.getElementById('cm-sp-act'); if(a) a.innerHTML = h; }
+window.cmSplitClose = ()=>{ const e = document.getElementById('cm-spm'); if(e) e.classList.add('hidden'); CMS.deal = null; CMS.line = null; CMS.busy = false; };
+window.cmSplitOpen = async id=>{
+  const D = CM.d; if(!D || !D.can_split) return;
+  const e = cmSpEl(), b = document.getElementById('cm-sp-body');
+  CMS.deal = id; CMS.line = null; CMS.shares = []; CMS.busy = false;
+  b.innerHTML = crmLoading('טוען את הפיצול…'); cmSpAct(CM_SP_CLOSE);
+  e.classList.remove('hidden');
+  let L = null, S = [];
+  try{
+    const [a, s] = await Promise.all([
+      sb.schema('crm').from('commission_lines').select('deal_id,owner_id,amount,month,status,customer_name,deal_name').eq('deal_id', id).maybeSingle(),
+      sb.schema('crm').from('commission_splits').select('profile_id,pct').eq('deal_id', id) ]);
+    if(a && a.error) throw a.error;
+    if(s && s.error) throw s.error;
+    L = (a && a.data) || null; S = (s && s.data) || [];
+  }catch(err){
+    if(CMS.deal !== id) return;
+    b.innerHTML = '<div class="err">הטעינה נכשלה — '+esc(String((err && err.message) || err || 'שגיאה'))+'</div>'; cmSpAct(CM_SP_CLOSE);
+    return;
+  }
+  if(CMS.deal !== id) return;   /* חלונית שנסגרה או נפתחה לעסקה אחרת בינתיים אינה נדרסת */
+  if(!L){ b.innerHTML = '<div class="err">העסקה אינה ברישום העמלות</div>'; cmSpAct(CM_SP_CLOSE); return; }
+  CMS.line = L; CMS.shares = S;
+  cmSplitPaint();
+};
+function cmSpName(id){
+  const D = CM.d || {}, p = (D.split_people || []).find(x=>x.id===id) || (D.owners || []).find(x=>x.owner_id===id);
+  if(p) return p.name || '';
+  const u = (D.uncounted || []).find(x=>x.owner_id===id);   /* 7.53.1 — בעלים שאינו נספר (רומן, נח) אינו ברשימות האחרות */
+  return u ? (u.owner || '') : '—';
+}
+/* 7.53.1 — הבעלים אינו מקבל עמלה בחודש הזה ⇒ החלק שלו אינו נספר (השרת: commission_counts) */
+const cmSpUncounted = id => (((CM.d || {}).uncounted) || []).some(x=>x.owner_id===id);
+function cmSplitPaint(){
+  const b = document.getElementById('cm-sp-body'), L = CMS.line, S = CMS.shares || [], D = CM.d || {};
+  if(!b || !L) return;
+  const own = L.owner_id, mine = S.find(s=>s.profile_id===own), other = S.find(s=>s.profile_id!==own);
+  const sub = '<div class="cm-sp-sub"><b>'+esc(L.customer_name||L.deal_name||'')+'</b> · '+cmIls(L.amount)+' לפני מע״מ · '+esc(cmLabel(L.month))+'</div>';
+  const clr = S.length ? '<button type="button" class="ghost" onclick="cmSplitClear()">ביטול הפיצול</button>' : '';
+  if(S.length > 2){   /* פיצול לשלושה ומעלה אפשרי בשרת בלבד — כאן רק מציגים ומאפשרים לבטל */
+    b.innerHTML = sub + '<div class="cm-sp-prev">'+S.map(s=>esc(cmSpName(s.profile_id))+' '+esc(cmPct(+s.pct/100))).join(' · ')+'</div>'
+      + '<div class="err" id="cm-sp-err" hidden></div>';
+    cmSpAct(clr + CM_SP_CLOSE);
+    return;
+  }
+  const P = (D.split_people || []).filter(p=>p.id !== own);
+  const a = mine ? +mine.pct : 50;
+  b.innerHTML = sub
+    + '<div class="cm-sp-row"><label class="field"><span>הבעלים של העסקה</span><b>'+esc(cmSpName(own))+'</b></label>'
+    + '<label class="field"><span>אחוז</span><input id="cm-sp-a" type="number" min="1" max="99" step="1" value="'+esc(String(a))+'" oninput="cmSplitPrev()"></label></div>'
+    + '<div class="cm-sp-row"><label class="field"><span>מתחלק עם</span><select id="cm-sp-p" onchange="cmSplitPrev()"><option value="">בחירה…</option>'
+    + P.map(p=>'<option value="'+esc(p.id)+'"'+(other && other.profile_id===p.id ? ' selected' : '')+'>'+esc(p.name||'')+'</option>').join('')+'</select></label>'
+    + '<label class="field"><span>אחוז</span><input id="cm-sp-b" type="number" readonly tabindex="-1" value="'+esc(String(100 - a))+'"></label></div>'
+    + '<div class="cm-sp-prev" id="cm-sp-prev"></div><div class="err" id="cm-sp-err" hidden></div>';
+  cmSpAct('<button type="button" class="btn" id="cm-sp-save" onclick="cmSplitSave()">שמירה</button>' + clr + CM_SP_CLOSE);
+  cmSplitPrev();
+}
+window.cmSplitPrev = ()=>{
+  const L = CMS.line, A = document.getElementById('cm-sp-a'), Bx = document.getElementById('cm-sp-b'), pv = document.getElementById('cm-sp-prev');
+  if(!L || !A || !Bx || !pv) return;
+  const a = +A.value, ok = a > 0 && a < 100;
+  Bx.value = ok ? String(Math.round((100 - a) * 100) / 100) : '';
+  const pid = (document.getElementById('cm-sp-p') || {}).value || '';
+  if(!ok || L.amount == null){ pv.textContent = ''; return; }
+  const part = Math.round(+L.amount * (100 - a)) / 100, mine = Math.round((+L.amount - part) * 100) / 100;
+  pv.innerHTML = esc(cmSpName(L.owner_id))+': <b>'+cmIls(mine)+'</b>'+(pid ? ' · '+esc(cmSpName(pid))+': <b>'+cmIls(part)+'</b>' : '')
+    + (cmSpUncounted(L.owner_id)
+        ? ' — החלק של '+esc(cmSpName(L.owner_id))+' אינו נספר לעמלה; החלק של השותף נספר במכירות החודש שלו ובמדרגה שלו.'
+        : ' — כל חלק נספר במכירות החודש של בעליו ובמדרגה שלו.');
+};
+function cmSplitErr(m){ const e = document.getElementById('cm-sp-err'); if(e){ e.textContent = m; e.hidden = !m; } }
+window.cmSplitSave = async ()=>{
+  const L = CMS.line; if(!L || CMS.busy) return;
+  const a = +((document.getElementById('cm-sp-a') || {}).value), pid = (document.getElementById('cm-sp-p') || {}).value || '';
+  if(!pid){ cmSplitErr('בחרו עם מי העמלה מתחלקת'); return; }
+  if(!(a > 0 && a < 100)){ cmSplitErr('האחוז של הבעלים חייב להיות בין 1 ל-99'); return; }
+  cmSplitErr(''); CMS.busy = true;
+  const id = L.deal_id;
+  let r; try{ r = await sb.schema('crm').rpc('commission_split_set', { p_deal: id, p_shares: [{ profile_id: L.owner_id, pct: a }, { profile_id: pid, pct: Math.round((100 - a) * 100) / 100 }] }); }catch(e){ r = { error:e }; }
+  CMS.busy = false;
+  /* סקירת Fable: שמירה שחזרה אחרי שהחלונית נסגרה — נשמרה בשרת, ולכן הדוח נטען מחדש גם אז */
+  if(!r || r.error){ if(CMS.deal === id) cmSplitErr('השמירה נכשלה — '+(((r && r.error) && r.error.message) || 'שגיאה')); return; }
+  toast('הפיצול נשמר');
+  if(CMS.deal === id) cmSplitClose();
+  CM.at = 0; renderComm();
+};
+window.cmSplitClear = async ()=>{
+  const L = CMS.line; if(!L || CMS.busy) return;
+  const ok = await sysConfirm('לבטל את הפיצול? העסקה תיספר במלואה ל'+cmSpName(L.owner_id)+'.', { ok:'ביטול הפיצול' });
+  if(!ok || CMS.line !== L) return;
+  CMS.busy = true;
+  let r; try{ r = await sb.schema('crm').rpc('commission_split_set', { p_deal: L.deal_id, p_shares: [] }); }catch(e){ r = { error:e }; }
+  CMS.busy = false;
+  if(CMS.line !== L) return;
+  if(!r || r.error){ cmSplitErr('הביטול נכשל — '+(((r && r.error) && r.error.message) || 'שגיאה')); return; }
+  toast('הפיצול בוטל');
+  cmSplitClose(); CM.at = 0; renderComm();
+};
 window.cmPrint = k=>{
+  /* 7.52.0 — דוח של איש מכירות אחד ⇒ המסמך הממותג (cmPrintDoc). בהיקף "הדוח שלי" גם "הדפסה" בסרגל היא המסמך שלו.
+     הדפסת הצוות (k ריק, היקף כולם) והטווח נשארות הדפסת המסך. */
+  if(!k && CM.mode !== 'range' && CM.d && CM.d.scope === 'own' && (CM.d.owners || []).length === 1) k = cmKey(CM.d.owners[0]);
+  if(k && CM.mode !== 'range'){ const D = CM.d, o = D && (D.owners || []).find(x=>cmKey(x)===k); if(o){ cmPrintDoc(D, o); return; } }
   CM.print = k || '*'; if(k) CM.open = k;
   renderComm();
   document.body.classList.add('cm-print');
@@ -21751,12 +22113,13 @@ async function ccRun(p){
   const n = Math.max(1, Math.round(+(v('n') || 1))), x = Math.min(50, Math.max(0, +(v('x') || 0)));   /* 7.50.3 — כמו השרת: 0–50 */
   const seq = ++S.seq;
   /* 7.51.0 — במסך אין עסקה שממנה בא הסכום: בלי סכום אין מה לחשב, ואין קריאה לשרת. ה-seq כבר עלה — תשובה ישנה לא תדרוס. */
-  if(k === 'ccs' && !(amt > 0)){ b.innerHTML = '<div class="note">הקלידו את סכום ההצעה לפני מע״מ, והחישוב יופיע כאן.</div>'; return; }
+  if(k === 'ccs' && !(amt > 0)){ b.innerHTML = '<div class="note">הקלידו את סכום ההצעה לפני מע״מ, והחישוב יופיע כאן.</div>'; ccRulesMark(null); return; }
   b.innerHTML = crmLoading('מחשב את תנאי הסגירה…');   /* ⚠️ לא 'מחשב…' — cardtest מונה אותו כאתר יחיד של מחשבון המשלוח */
   let r; try{ r = await sb.schema('crm').rpc('closing_calc', { p_amount: amt, p_method: m, p_n: n, p_extra: x }); }catch(e){ r = { error:e }; }
   if(seq !== S.seq) return;   /* תשובה ישנה אינה דורסת את מה שהוקלד אחריה */
-  if(!r || r.error){ b.innerHTML = '<div class="err">החישוב נכשל — '+esc(((r && r.error) && r.error.message) || 'שגיאה')+'</div>'; return; }
+  if(!r || r.error){ b.innerHTML = '<div class="err">החישוב נכשל — '+esc(((r && r.error) && r.error.message) || 'שגיאה')+'</div>'; if(k === 'ccs') ccRulesMark(null); return; }
   b.innerHTML = ccHtml(r.data || {});
+  if(k === 'ccs') ccRulesMark(r.data || null);   /* 7.53.0 — calcui */
 }
 function ccHtml(R){
   const row = (k, v, cls)=>'<div class="cc-r'+(cls ? ' '+cls : '')+'"><span>'+k+'</span><b>'+v+'</b></div>';
@@ -21792,6 +22155,7 @@ window.renderCalc = ()=>{
     f.dataset.built = '1';
   }
   ccRun('ccs');
+  ccRulesPaint(); ccRulesLoad();   /* 7.53.0 — כל כניסה טוענת מחדש: ייתכן שהכללים נערכו בהגדרות בינתיים */
 };
 /* ===== 7.49.0 — "כללי מכירה" בהגדרות =====
    עורך את crm.sales_rules. כתיבה — ה-RLS בודק עריכת set.crm; כאן רק מסתירים את הכפתורים.
@@ -21809,7 +22173,10 @@ const SRL_KINDS = [
 const SRL_COL = { lo:['מ (₪)','num'], hi:['עד (₪)','num'], pct:['%','num'], pct_customer:['% ללקוח','num'], max_n:['תשלומים','num'],
   n_from:['מתשלום','num'], n_to:['עד תשלום','num'], needs_approval:['אישור מנהל','bool'], label:['תיאור','txt'], note:['הערה','txt'] };
 function srlHtml(){
-  return '<div class="st-top"><h2 class="sec">כללי מכירה</h2></div><div class="note">הכללים של מחשבון הסגירה בכרטיס העסקה. שינוי חל מיד, בלי פריסה. אחוזים באחוזים (2 = 2%).</div>'
+  return '<div class="st-top"><h2 class="sec">כללי מכירה</h2>'
+    + (navCanTab('calc') ? '<button type="button" class="chip" onclick="gotoTab(\'calc\')">פתיחת מחשבון הסגירה</button>' : '')   /* 7.53.0 */
+    + '</div><div class="note">הכללים של מחשבון הסגירה — בכרטיס העסקה ובמסך "מחשבון סגירה", שם הם מוצגים גם מתחת למחשבון. '
+    + 'שינוי חל מיד, בלי פריסה. אחוזים באחוזים (2 = 2%). שורה שנערכה מסומנת עד שלוחצים "שמירה" בשורה שלה.</div>'
     + '<div id="srl-box">'+crmLoading('טוען כללים…')+'</div>';
 }
 window.srlLoad = async ()=>{
@@ -21823,7 +22190,7 @@ function srlCell(x, f, dis){
   const v = x[f], t = SRL_COL[f][1];
   if(t === 'bool') return '<input type="checkbox" data-f="'+f+'"'+(v ? ' checked' : '')+dis+' aria-label="'+esc(SRL_COL[f][0])+'">';
   if(t === 'num')  return '<input class="st-num" type="number" step="any" data-f="'+f+'" value="'+(v==null ? '' : esc(String(+v)))+'"'+dis+' aria-label="'+esc(SRL_COL[f][0])+'">';
-  return '<input class="st-txt" data-f="'+f+'" value="'+esc(v || '')+'"'+dis+' aria-label="'+esc(SRL_COL[f][0])+'">';
+  return '<input class="st-txt" data-f="'+f+'" value="'+esc(v || '')+'" title="'+esc(v || '')+'"'+dis+' aria-label="'+esc(SRL_COL[f][0])+'">';
 }
 function srlPaint(){
   const box = $('#srl-box'); if(!box) return;
@@ -21839,6 +22206,10 @@ function srlPaint(){
       + (ed && many ? '<button type="button" class="chip srl-add" onclick="srlAdd(\''+k+'\')">＋ שורה</button>' : '')
       + '</section>';
   }).join('');
+  /* 7.53.0 — שורה שנערכה מסומנת וכפתור ה"שמירה" שלה נצבע (.st-dirty .st-save, כמו בשאר מסכי ההגדרות).
+     srlLoad אחרי שמירה מצייר מחדש, ולכן הסימון יורד רק כשהשורה באמת נשמרה. */
+  const mark = e=>{ const tr = e.target && e.target.closest ? e.target.closest('tr[data-id]') : null; if(tr && ed) tr.classList.add('st-dirty'); };
+  box.oninput = mark; box.onchange = mark;
 }
 window.srlSave = async id=>{
   const tr = document.querySelector('#srl-box tr[data-id="'+id+'"]'); if(!tr) return;
@@ -21865,6 +22236,65 @@ window.srlDel = async id=>{
   if(!r || r.error || !(r.data || []).length){ toast('המחיקה נכשלה: '+(((r && r.error) && r.error.message) || 'אין הרשאת עריכה'), 'err'); return; }
   toast('נמחק'); srlLoad();
 };
+/* ===== 7.53.0 — calcui: "כללי המכירה" בתחתית מסך מחשבון סגירה =====
+   רומן, 31/10/2026: "אני רוצה לראות בתחתית המחשבון את הטבלה עם הנתונים. כמובן שאת הטבלה עם הנתונים אני יכול לערוך
+   דרך מסך הגדרות".
+   · קריאה בלבד, מאותם SRL_KINDS/SRL_COL של העורך בהגדרות — סוג או עמודה חדשים מופיעים בשני המקומות בלי עבודה כפולה.
+   · העריכה במקום אחד: הגדרות ← כללי מכירה (set.crm). הכפתור מופיע רק למי שרשאי לערוך שם.
+   · crm.sales_rules נקראת ב-RLS לכל מי שרואה crm.deals — אותו מפתח של המסך ושל crm.closing_calc.
+   · השורה שהחישוב האחרון השתמש בה מסומנת. ⚠️ זו אינה בחירה מחדש של הכלל בלקוח: שורה מסומנת רק כשהיא תואמת את מה
+     שהשרת החזיר (גבולות המדרגה · האחוז · מספר התשלומים המרבי), ורק כשהיא ההתאמה היחידה. אחרת אין סימון — לא סימון שגוי. */
+const CCR = { rows:null, err:'', seq:0, R:null };
+window.ccRulesLoad = async ()=>{
+  const seq = ++CCR.seq;
+  let r; try{ r = await sb.schema('crm').from('sales_rules').select('*').order('sort').order('id'); }catch(e){ r = { error:e }; }
+  if(seq !== CCR.seq) return;
+  if(!r || r.error) CCR.err = ((r && r.error) && r.error.message) || 'שגיאה';
+  else { CCR.err = ''; CCR.rows = r.data || []; }
+  ccRulesPaint();
+};
+function ccRulesMark(R){ CCR.R = R || null; ccRulesPaint(); }
+const ccNumEq = (a, b)=>(a == null || a === '' ? null : +a) === (b == null || b === '' ? null : +b);
+function ccRuleOn(k, rows, R){
+  if(!R) return null;
+  const n = +R.n || 1, inN = x=>n >= +x.n_from && n <= +x.n_to;
+  let m = [];
+  if(k === 'disc_amount'){ const A = R.disc_amount || {}; m = rows.filter(x=>ccNumEq(x.lo, A.lo) && ccNumEq(x.hi, A.hi)); }
+  else if(k === 'disc_terms') m = rows.filter(x=>x.code === R.method);
+  else if(k === 'free_installments' && (R.method === 'credit' || R.method === 'standing') && R.free_max != null){   /* כמו ccHtml: רלוונטי לאשראי/הו"ק בלבד */ const v = +R.net; m = rows.filter(x=>v > (+x.lo || 0) && (x.hi == null || v <= +x.hi) && ccNumEq(x.max_n, R.free_max)); }
+  else if(k === 'credit_fee' && R.method === 'credit') m = rows.filter(x=>inN(x) && ccNumEq(x.pct, R.fee_pct));
+  else if(k === 'credit_discount' && R.method === 'credit') m = rows.filter(x=>inN(x) && ccNumEq(x.pct, R.discount_rate_pct));
+  else if(k === 'standing_order' && R.method === 'standing') m = rows.filter(x=>inN(x) && ccNumEq(x.pct, R.fee_pct));
+  return m.length === 1 ? m[0].id : null;
+}
+function ccRuleVal(x, f){
+  const v = x[f], t = SRL_COL[f][1];
+  if(t === 'bool') return v ? '<span class="cc-rl-tag">נדרש</span>' : '';
+  if(v == null || v === '') return f === 'hi' ? 'ללא תקרה' : (f === 'pct' && x.needs_approval) ? 'לאישור מנהל' : '—';
+  if(f === 'lo' || f === 'hi') return '₪'+(+v).toLocaleString('he-IL', { maximumFractionDigits:0 });
+  if(f === 'pct' || f === 'pct_customer') return ccPct(v);
+  if(t === 'num') return esc(String(+v));
+  return esc(v);
+}
+function ccRulesPaint(){
+  const box = document.getElementById('ccs-rules'); if(!box) return;
+  const head = '<div class="cc-rl-top"><h2 class="sec">כללי המכירה</h2><span class="note">מה שהמחשבון מפעיל. השורה שחלה בחישוב שלמעלה מסומנת.</span>'
+    + (canEdit('set.crm') ? '<button type="button" class="chip" onclick="gotoSet(\'salesrules\')">עריכה בהגדרות ← כללי מכירה</button>' : '') + '</div>';
+  if(!CCR.rows){ box.innerHTML = head + (CCR.err ? '<div class="err">טעינת הכללים נכשלה — '+esc(CCR.err)+'</div>' : crmLoading('טוען כללים…')); return; }
+  const R = CCR.R;
+  box.innerHTML = head + (CCR.err ? '<div class="err">רענון הכללים נכשל — '+esc(CCR.err)+'. מוצגת הטעינה הקודמת.</div>' : '')
+    + '<div class="cc-rl-grid">' + SRL_KINDS.map(([k, t, sub, cols])=>{
+      const rows = CCR.rows.filter(x=>x.kind === k), on = ccRuleOn(k, rows, R);
+      return '<section class="st-card" data-kind="'+esc(k)+'"><div class="st-hd"><h3>'+esc(t)+'</h3><small>'+esc(sub)+'</small></div>'
+        + (rows.length
+          ? '<div class="tbl-wrap"><table class="tbl cc-rl-tbl" data-gs="own"><thead><tr>'+cols.map(f=>'<th>'+esc(SRL_COL[f][0])+'</th>').join('')+'</tr></thead><tbody>'
+            + rows.map(x=>'<tr data-id="'+(+x.id)+'"'+(x.id === on ? ' class="cc-rl-on" title="חל בחישוב שלמעלה"' : '')+'>'
+                + cols.map(f=>'<td class="cc-rl-'+f+'">'+ccRuleVal(x, f)+'</td>').join('')+'</tr>').join('')
+            + '</tbody></table></div>'
+          : '<div class="note">אין כללים מהסוג הזה.</div>')
+        + '</section>';
+    }).join('') + '</div>';
+}
 /* ===== 7.50.0 — "מדרגות עמלה" בהגדרות =====
    רומן: "עבורי אפשר מסך הגדרות במיקום הנכון לערוך את מספרי הבונוסים". שמירה = גרסה חדשה מחודש נבחר
    (crm.commission_tiers_save — רומן בלבד; מסרב לחודש שנסגר ולמדרגות שאינן ברצף מ-0 עם תקרה פתוחה בסוף).

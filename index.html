@@ -4331,7 +4331,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.56.0</div>
+      <div class="ver">גרסה 7.57.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4478,7 +4478,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="prefkind-2026-11-01a">גרסה 7.56.0</div>
+    <div class="side-foot" title="offerkinds-2026-11-01a">גרסה 7.57.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -4928,7 +4928,10 @@ tr.lb-on td{ background-color:#eef5fd !important; }
     <h3>הצעת ערך לסגירה</h3>
     <div class="note" id="sao-who"></div>
     <div class="field"><label>מה מציעים <span class="req">*</span></label><div class="sa-kinds" id="sao-kinds" role="radiogroup" aria-label="סוג ההצעה"></div></div>
-    <div class="field"><label>פירוט</label><input id="sao-detail" maxlength="120" placeholder="למשל: 5% על הכול · 6 תשלומים · התקנה בלי עלות"></div>
+    <!-- 7.57.0 — offerkinds: "הנחה במחיר" רק עם סיבה (רומן, 01/11/2026). השורה מוסתרת לכל סוג אחר. -->
+    <div class="field hidden" id="sao-rsn-f"><label>למה הנחה מעל המדרגה <span class="req">*</span></label><div class="sa-kinds" id="sao-rsns" role="radiogroup" aria-label="סיבת ההנחה"></div>
+      <div class="note">עד 10% הנחה כללית בסך הכול — באישור מנהל המכירות; מעבר לזה — באישור רומן. מול מתחרה: רק הצעה כתובה באותו מפרט.</div></div>
+    <div class="field"><label>פירוט</label><input id="sao-detail" maxlength="120" placeholder="בחרו מה מציעים — כאן הסכום או התנאי"></div>
     <div class="field"><label>עד מתי להציג ללקוח</label><input id="sao-due" type="date"></div>
     <div class="field"><label>הערה לאיש המכירות</label><textarea id="sao-note" rows="2" maxlength="300"></textarea></div>
     <div class="note">נפתחת משימה לבעלי התהליך במועד הזה (10:00), והתוצאה נרשמת במסך הניתוח.</div>
@@ -14364,7 +14367,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'prefkind-2026-11-01a';
+const BUILD_ID = 'offerkinds-2026-11-01a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -21440,7 +21443,21 @@ function saLost(d){
       (saPref למטה). הצעות הערך נשארו כמות שהן. deal_set_forecast נשארת במסד בלי קורא.
    ⚠️ אחרי כל כתיבה: התיקון המקומי מיידי (השורה), והסכומים מהשרת — saStale מסמן את כל המטמון כישן וטוען מחדש את הבחירה
       הנוכחית בלי להחליף את המסך ב"טוען" (renderSana מציג את הישן עד שהחדש מגיע). */
-const SA_OFR_KINDS = ['הנחה','תנאי תשלום','התקנה / משלוח','שדרוג','אחר'];   /* ⚠️ זהה ל-check של crm.deal_offers */
+/* 7.57.0 — offerkinds (רומן, 01/11/2026): הרשימה שבחר מגיליון "כללי מכירה" ומההצעות של Fable — "כל מה שלא רשמתי לא
+   רלוונטי ולא יעזור לסגור עסקה שמתנדנדת". הסדר: מהזול לנו להנחה במחיר, שבאה אחרונה (גיליון "כללי מכירה": "קודם ערך, אחר
+   כך מחיר"). ⚠️ כל ערך כאן ב-check של crm.deal_offers.kind (deal_offer_kinds.20261101.sql), שמקבל גם את חמשת הישנים —
+   להיסטוריה ולבנייה שלפני הקידום. SA_OFR_RSN = ה-check של crm.deal_offers.reason, חובה ל"הנחה במחיר" (גם בשרת). */
+const SA_OFR_KINDS = ['אביזרים לבחירה','הובלה בלי חיוב','מיתוג וצבע','הרחבת אחריות','שירות','זיכוי לרכישה חוזרת','תשלומים בלי ריבית','הנחה במחיר'];
+const SA_OFR_RSN = ['הצעת מתחרה באותו מפרט','התחייבות לעסקאות נוספות','מלאי תקוע במחסן','לקוח לדוגמה'];
+const SA_OFR_HINT = {   /* מה לכתוב ב"פירוט" — הכללים מהגיליון ומ-Fable, כדי שההצעה תהיה מדידה */
+  'אביזרים לבחירה':'₪ לאביזרים לבחירת הלקוח — עד 5% מהעסקה, תקרה ₪5,000, בלי החזר כספי',
+  'הובלה בלי חיוב':'למשל: הובלה עד הקומה',
+  'מיתוג וצבע':'למשל: לוגו הלקוח על הריג · צבע ריפוד',
+  'הרחבת אחריות':'למשל: חלקים נעים 3 שנים (עבודה כרגיל)',
+  'שירות':'למשל: ביקור תחזוקה בשנה, ביום שירות אזורי',
+  'זיכוי לרכישה חוזרת':'למשל: 20% מהעסקה כזיכוי ברכישה הבאה, עד 5 שנים',
+  'תשלומים בלי ריבית':'למשל: 10 תשלומים · הראשון 60 יום אחרי אספקה',
+  'הנחה במחיר':'למשל: 3% מעל המדרגה (סה״כ עד 10%)' };
 const SA_OFR_OUT = ['התקבלה','נדחתה','בוטלה'];
 function saStale(){ Object.keys(SA.cache).forEach(k=>{ SA.cache[k].at = 0; }); if(CUR_TAB==='sana') saLoad(); }   /* 7.43.0 — מהכרטיס: רק מסמן ישן */
 /* ===== 7.47.0 — pref: "מועדפות — רגע לפני סגירה" (במקום התחזית) =====
@@ -21507,7 +21524,8 @@ function saPref(d){
     if(!o.pref_at || !dd || !dlPrefMay(dd)) return pkChip(o);
     return ['ממתינה','לדחיפה'].map(k=>'<button type="button" class="ghost sa-pkb'+(o.pref_kind===k ? ' on' : '')+'" data-k="'+k+'" aria-pressed="'+(o.pref_kind===k)+'"'+
       ' onclick="event.stopPropagation();dlPrefSet(\''+jsq(o.id)+'\',true,\''+k+'\',this)">'+k+'</button>').join(' '); };
-  const ofr = o=> +o.offers_open ? '<span class="sa-chip sa-chip-of">הצעת ערך ממתינה</span>' : (saKindOf('לדחיפה')(o) ? saOfrBtn(o) : '');
+  /* 7.57.0 — גם לתהליך תקוע (רומן: "שתי אלו עשויים גם לתת הצעת ערך לעסקה שתקועה או מתנדנדת להסגר") */
+  const ofr = o=> +o.offers_open ? '<span class="sa-chip sa-chip-of">הצעת ערך ממתינה</span>' : (saKindOf('לדחיפה')(o) || +o.idle >= 14 ? saOfrBtn(o) : '');
   const rowO = o=> '<tr class="clk" data-id="'+esc(o.id)+'" onclick="openDeal(\''+jsq(o.id)+'\')">'+nm(o)+
       '<td class="sa-sig">'+saSignals(o).map(x=>'<span class="sa-chip">'+esc(x)+'</span>').join('')+'</td>'+
       '<td class="sa-out sa-pk" onclick="event.stopPropagation()">'+pk(o)+'</td>'+pd(o)+'<td>'+saDue(o)+'</td>'+
@@ -21536,13 +21554,22 @@ const saOfrBtn = o=> canEdit('crm.deals') ? '<button type="button" class="ghost 
 let SAO = null;   /* { id, kind, busy } */
 window.saOfrOpen = id=>{
   const D = (SA.cache[saKey()]||{}).d, o = D && (D.open||[]).find(x=>x.id===id); if(!o) return;
-  SAO = { id, kind:'', busy:false };
+  SAO = { id, kind:'', reason:'', busy:false };
   $('#sao-who').textContent = (o.cust||o.name||'')+' · '+ilsK(+o.amount||0)+' · '+saFirst(o.own)+' · '+vLbl(o.stage);
   const box = $('#sao-kinds');
   box.innerHTML = SA_OFR_KINDS.map(k=>'<button type="button" class="ghost sa-k" role="radio" aria-checked="false" data-v="'+esc(k)+'">'+esc(k)+'</button>').join('');
   box.querySelectorAll('button').forEach(b=>{ b.onclick = ()=>{ if(!SAO) return; SAO.kind = b.dataset.v;
     box.querySelectorAll('button').forEach(x=>{ x.classList.toggle('on', x===b); x.setAttribute('aria-checked', x===b ? 'true' : 'false'); });
+    $('#sao-detail').placeholder = SA_OFR_HINT[SAO.kind] || '';   /* 7.57.0 */
+    $('#sao-rsn-f').classList.toggle('hidden', SAO.kind !== 'הנחה במחיר');
     $('#sao-err').textContent = ''; }; });
+  /* 7.57.0 — הסיבה להנחה: אותו דפוס בחירה של הסוג (radiogroup), ונשמרת רק כשהסוג "הנחה במחיר" */
+  const rb = $('#sao-rsns');
+  rb.innerHTML = SA_OFR_RSN.map(k=>'<button type="button" class="ghost sa-k" role="radio" aria-checked="false" data-v="'+esc(k)+'">'+esc(k)+'</button>').join('');
+  rb.querySelectorAll('button').forEach(b=>{ b.onclick = ()=>{ if(!SAO) return; SAO.reason = b.dataset.v;
+    rb.querySelectorAll('button').forEach(x=>{ x.classList.toggle('on', x===b); x.setAttribute('aria-checked', x===b ? 'true' : 'false'); });
+    $('#sao-err').textContent = ''; }; });
+  $('#sao-rsn-f').classList.add('hidden'); $('#sao-detail').placeholder = 'בחרו מה מציעים — כאן הסכום או התנאי';
   const t = new Date(); t.setDate(t.getDate() + 2);
   $('#sao-detail').value = ''; $('#sao-note').value = ''; $('#sao-due').value = isoD(t); $('#sao-due').min = isoD(new Date());
   $('#sao-err').textContent = ''; $('#sao-save').disabled = false;
@@ -21553,12 +21580,14 @@ $('#sao-cancel').onclick = ()=>{ if(SAO && SAO.busy) return; $('#saOfrModal').cl
 $('#sao-save').onclick = async ()=>{
   if(!SAO || SAO.busy) return;
   if(!SAO.kind){ $('#sao-err').textContent = 'יש לבחור מה מציעים'; return; }
+  if(SAO.kind === 'הנחה במחיר' && !SAO.reason){ $('#sao-err').textContent = 'הנחה במחיר — יש לבחור למה (מתחרה · עסקאות נוספות · מלאי תקוע · לקוח לדוגמה)'; return; }
   const due = $('#sao-due').value || null;
   if(due && due < isoD(new Date())){ $('#sao-err').textContent = 'המועד כבר עבר'; return; }
   const m = $('#saOfrModal'), b = $('#sao-save'), cur = SAO;
   cur.busy = true; m.dataset.must = '1'; b.disabled = true;
   let r; try{ r = await sb.schema('crm').rpc('deal_offer_add', { p_deal:cur.id, p_kind:cur.kind, p_detail:$('#sao-detail').value.trim() || null,
-                                                                 p_due:due, p_note:$('#sao-note').value.trim() || null }); }catch(e){ r = { error:e }; }
+                                                                 p_due:due, p_note:$('#sao-note').value.trim() || null,
+                                                                 p_reason: cur.kind === 'הנחה במחיר' ? cur.reason : null }); }catch(e){ r = { error:e }; }
   cur.busy = false; b.disabled = false; delete m.dataset.must;
   if(!r || r.error){ $('#sao-err').textContent = 'השמירה נכשלה: '+(((r && r.error) && r.error.message) || 'שגיאה'); return; }
   m.classList.add('hidden'); SAO = null;
@@ -21583,7 +21612,7 @@ function saOffers(d){
       ? (ed ? SA_OFR_OUT.map(k=>'<button type="button" class="ghost sa-ob" data-out="'+esc(k)+'" onclick="saOfrOut(\''+jsq(f.id)+'\',\''+jsq(k)+'\',this)">'+esc(k)+'</button>').join('') : 'ממתין')
       : '<span class="sa-oo'+(f.outcome==='התקבלה' ? ' ok' : '')+'">'+esc(f.outcome)+'</span>'+(f.outcome_at ? ' <small>'+esc(fmtD(isoD(new Date(f.outcome_at))))+'</small>' : '');
     return '<tr class="clk" data-id="'+esc(f.id)+'" onclick="openDeal(\''+jsq(f.deal_id)+'\')"><td><b>'+esc(f.cust||f.deal_name||'')+'</b></td><td>'+esc(saFirst(f.own))+'</td>'+
-      '<td>'+esc(f.kind)+(f.detail ? ' — '+esc(f.detail) : '')+(f.note ? '<small class="sa-on">'+esc(f.note)+'</small>' : '')+'</td>'+
+      '<td>'+esc(f.kind)+(f.reason ? ' ('+esc(f.reason)+')' : '')+(f.detail ? ' — '+esc(f.detail) : '')+(f.note ? '<small class="sa-on">'+esc(f.note)+'</small>' : '')+'</td>'+
       '<td class="num">'+amt+'</td><td'+(late ? ' class="sa-warn"' : '')+'>'+(f.due_date ? esc(fmtD(f.due_date)) : '—')+'</td>'+
       '<td>'+mdPill(f.deal_stage, DEAL_ST_COLORS, LB_TK)+'</td><td class="sa-out" onclick="event.stopPropagation()">'+out+'</td></tr>';
   };
@@ -21591,7 +21620,7 @@ function saOffers(d){
   return '<div class="sa-card" id="sa-offers"><h3>הצעות ערך לסגירה <span class="cnt">'+pend+' ממתינות · '+L.length+' בסך הכול</span></h3>'+
     '<div class="sa-sub">הממתינות, ומה שנוצר בטווח. תוצאה סוגרת את המשימה של איש המכירות; "נסגרו להזמנה" — התהליך הגיע להזמנה.</div>'+st+
     (L.length ? '<div class="tbl-wrap"><table class="tbl" data-gs="own"><thead><tr><th>תהליך</th><th>בעלים</th><th>ההצעה</th><th class="num">סכום</th><th>עד</th><th>שלב</th><th>תוצאה</th></tr></thead><tbody>'+L.map(row).join('')+'</tbody></table></div>'
-              : '<div class="empty">עוד אין הצעות ערך. מציעים מתוך "מועדפות" — לתהליך שסומן "לדחיפה", בכפתור "הצעת ערך" שבשורה.</div>')+'</div>';
+              : '<div class="empty">עוד אין הצעות ערך. מציעים מתוך "מועדפות" — לתהליך שסומן "לדחיפה", או לתהליך שלא זז 14+ ימים ("כל הפתוחות"), בכפתור "הצעת ערך" שבשורה.</div>')+'</div>';
 }
 window.renderSana = function(){
   const bar = $('#sa-bar'), body = $('#sa-body'); if(!bar || !body) return;

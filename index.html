@@ -4331,7 +4331,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.57.0</div>
+      <div class="ver">גרסה 7.57.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4478,7 +4478,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="offerkinds-2026-11-01a">גרסה 7.57.0</div>
+    <div class="side-foot" title="repdup-2026-11-02a">גרסה 7.57.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -13423,6 +13423,12 @@ function docsVisible(){ return PROTS.filter(p=>window.canView('docs.'+(p.categor
    ⚠️ והפונקציה נשארת אי-דוחה (ה-catch בפנים): שלושת הקוראים עושים .then בלי
       catch, ודחייה הייתה משאירה אותם על "טוען…" לנצח — כלומר מחליפה לולאה
       בתקיעה שקטה. */
+/* 7.57.1 — השאילתה בהגדרה אחת לשני צרכנים: loadDocFiles ורענון מסך המסמכים (CRM_AUTO_REG), כמו CRM_Q.prots. */
+function docFilesQ(){
+  return sb.schema('ord').from('doc_files')
+    .select('id,category,order_id,call_id,protocol_id,deal_id,storage_path,file_name,mime_type,size_bytes,caption,uploaded_by,uploaded_at,po_ordname,doc_type,extract')
+    .order('uploaded_at',{ascending:false}).limit(5000);
+}
 let DOCFILES = null, DOCFILES_REQ = null, DOCFILES_ERR = '';
 async function loadDocFiles(force){
   if(DOCFILES && !force) return DOCFILES;
@@ -13430,9 +13436,7 @@ async function loadDocFiles(force){
   DOCFILES_ERR = '';
   DOCFILES_REQ = (async ()=>{
     try{
-      const { data, error } = await sb.schema('ord').from('doc_files')
-        .select('id,category,order_id,call_id,protocol_id,deal_id,storage_path,file_name,mime_type,size_bytes,caption,uploaded_by,uploaded_at,po_ordname,doc_type,extract')
-        .order('uploaded_at',{ascending:false}).limit(5000);
+      const { data, error } = await docFilesQ();
       if(error) throw error;
       DOCFILES = data || [];
       return DOCFILES;
@@ -13644,6 +13648,15 @@ async function protsRefreshFor(key, id){
       const i = PROTS.findIndex(x=>x.id===row.id); if(i>=0) PROTS[i] = row; else PROTS.unshift(row); });
   }catch(_e){}
 }
+/* 7.57.1 — protocol_create מחזיר את הדוח הפתוח הקיים (_existing) במקום ליצור אח (protocol_create.20261102.sql).
+   unshift עיוור היה מציג אותו פעמיים עד רענון — ולכן מיזוג לפי id, כמו protsRefreshFor. */
+function protsPut(row){
+  if(!row || !row.id) return row;
+  const p = Object.assign({}, row); delete p._existing;
+  const i = PROTS.findIndex(x=>x.id===p.id);
+  if(i>=0) PROTS[i] = p; else PROTS.unshift(p);
+  return p;
+}
 async function repForUpload(kind, parentId){
   await protsRefreshFor(kind==='call' ? 'call_id' : 'order_id', parentId);
   const pk = repPick(kind, parentId); if(pk.p) return pk.p;
@@ -13653,8 +13666,7 @@ async function repForUpload(kind, parentId){
     p_order_id: isCall?null:parentId, p_call_id: isCall?parentId:null, p_deal_id:null,
     p_category:'reports', p_doc_type: REPORT_DOC_TYPE });
   if(r.error || !r.data) throw new Error((r.error && r.error.message) || 'יצירת הדוח נכשלה');
-  PROTS.unshift(r.data);
-  return r.data;
+  return protsPut(r.data);
 }
 /* מה חסר לטכנאי לפני "בוצע" — אותו שער של השרת. '' = אין חוסר ידוע (או שאין לו הרשאה לדעת; השרת יכריע). */
 async function fieldMissing(kind, id){
@@ -13708,12 +13720,14 @@ window.createReport = async (kind, parentId)=>{
     p_order_id: isCall?null:parentId, p_call_id: isCall?parentId:null, p_deal_id:null,
     p_category:'reports', p_doc_type: REPORT_DOC_TYPE });
   if(error){ toast('יצירת הדוח נכשלה: '+error.message); return; }
-  if(data) PROTS.unshift(data);
+  /* 7.57.1 — יש כבר דוח פתוח ⇒ השרת מחזיר אותו ולא יוצר אח שהתמונות לא יגיעו אליו. */
+  const had = !!(data && data._existing);
+  if(data) protsPut(data);
   /* ציור הבלוק בלבד — פתיחת הכרטיס מחדש מאפסת גלילה ומיקוד (הלקח מ-6.154.0). */
   const box = document.getElementById('rep-box-'+parentId);
   if(box) box.outerHTML = window.reportBlock(kind, parentId);
   try{ renderDocs(); }catch(_e){}
-  toast('הדוח נוצר — אפשר להפיק קישור חתימה');
+  toast(had ? 'יש כבר דוח פתוח '+(isCall?'לקריאה':'להזמנה')+' — ממנו מפיקים את קישור החתימה' : 'הדוח נוצר — אפשר להפיק קישור חתימה');
 };
 
 /* 6.191.0 — הדוח מ"היום שלי": הטכנאי עומד מול הלקוח, והדוח צריך להיפתח
@@ -13737,7 +13751,7 @@ window.mdReport = async (parentId, kind)=>{
       p_order_id: isCall?null:parentId, p_call_id: isCall?parentId:null, p_deal_id:null,
       p_category:'reports', p_doc_type: REPORT_DOC_TYPE });
     if(r.error || !r.data){ if(tab){ try{ tab.close(); }catch(_e){} } toast('יצירת הדוח נכשלה: '+((r.error&&r.error.message)||'')); return; }
-    p = r.data; PROTS.unshift(p);
+    p = protsPut(r.data);
     const box = document.getElementById('rep-box-'+parentId);
     if(box) box.outerHTML = window.reportBlock(kind, parentId);
     try{ renderDocs(); }catch(_e){}
@@ -14367,7 +14381,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'offerkinds-2026-11-01a';
+const BUILD_ID = 'repdup-2026-11-02a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -23328,9 +23342,13 @@ const CRM_AUTO_REG = [
     put:(r)=>{ ORDS=r[0].data||[]; SCALLS=r[1].data||[]; },
     draw:()=>{ renderLogi(); try{ if($('#cal-wrap')) renderCal(); }catch(_e){} } },
   /* 6.241.0 — מסך המסמכים: חתימה שנעשתה אחרי טעינת הדף לא נראתה עד רענון (רומן, 12/10/2026). */
+  /* 7.57.1 — וגם התמונות (רומן, 02/11/2026: "כל הדוחות תקינות האלו עלו ללא תמונות?"). עד כאן הוחלף PROTS בלבד:
+     דוח שנחתם אחרי הכניסה הופיע, והתמונות שהטכנאי צירף אליו — לא, עד רענון הדף. השליפה ב-get ולא ב-draw:
+     crmAutoRefresh קורא ל-draw בלי await, ורק ב-get כשל משאיר את הקודם וכרטיס פתוח משהה. DOCFILES נמשך רק אם כבר
+     נטען — אחרת renderDocs טוען אותו בעצמו כשנכנסים ללשונית שצריכה אותו. */
   { k:'docs', tab:'tab-docs', host:'doc-chips',
-    get:()=>Promise.all([CRM_Q.prots()]),
-    put:(r)=>{ PROTS=r[0].data||[]; },
+    get:()=>Promise.all([CRM_Q.prots(), DOCFILES!==null ? docFilesQ() : Promise.resolve({ data:null, error:null })]),
+    put:(r)=>{ PROTS=r[0].data||[]; if(Array.isArray(r[1].data)){ DOCFILES=r[1].data; DOCFILES_ERR=''; } },
     draw:()=>renderDocs() },
   /* 7.25.0 — קישורי תשלום: הסטטוס משתנה מהשרת (pay-notify) בלי פעולה במסך — בלי רענון "שולם" לא היה נראה. */
   { k:'payl', tab:'tab-paylinks', host:'payl-chips',

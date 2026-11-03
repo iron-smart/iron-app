@@ -2789,6 +2789,14 @@ span.po-est{ cursor:default; }
 #poCntSheet tr.po-cnt-row{ cursor:pointer; }
 #poCntAsgSheet .po-cnt-opt{ display:flex; align-items:center; gap:var(--sp-2); padding:var(--sp-1h) 0; border-bottom:1px solid var(--line); }
 #poCntAsgSheet .po-cnt-opt small{ color:var(--ink-3); }
+/* ===== 7.62.0 — posplit: פיצול שורה ===== */
+.po-split-btn{ margin-inline-start:var(--sp-1); padding:0 var(--sp-1h); border:1px solid var(--line); border-radius:var(--r-pill); background:#fff; color:var(--ink-2); font:inherit; font-size:var(--fs-xs); line-height:1.6; cursor:pointer; }
+.po-split-btn:hover{ border-color:var(--navy); color:var(--navy); }
+#poSplitSheet .po-split-sum{ display:flex; flex-wrap:wrap; gap:var(--sp-1) var(--sp-3); margin:var(--sp-1) 0 var(--sp-3); font-size:var(--fs-sm); color:var(--ink-2); }
+#poSplitSheet .po-split-sum b{ color:var(--ink-1); }
+#poSplitSheet .po-split-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(min(180px, 100%), 1fr)); gap:var(--sp-2) var(--sp-3); }
+#poSplitSheet .po-split-calc{ margin:var(--sp-2) 0; font-size:var(--fs-sm); }
+#poSplitSheet .po-split-calc.bad{ color:var(--red); }
 #poCntAsgSheet .po-cnt-new{ display:grid; grid-template-columns:repeat(auto-fit, minmax(min(160px, 100%), 1fr)); gap:var(--sp-2); padding:var(--sp-2) 0; }
 /* ===== 7.59.0 — pocard: כותרת הכרטיס (במקום התקציר של 7.58.0 + "פרטי ההזמנה") ===== */
 #poSheet .po-hd{ display:flex; flex-direction:column; gap:var(--sp-2h); padding-bottom:var(--sp-4); margin-bottom:var(--sp-3); border-bottom:1px solid var(--line); }
@@ -4443,7 +4451,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.61.0</div>
+      <div class="ver">גרסה 7.62.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4590,7 +4598,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="pocnt-2026-11-03a">גרסה 7.61.0</div>
+    <div class="side-foot" title="posplit-2026-11-03a">גרסה 7.62.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5229,6 +5237,10 @@ tr.lb-on td{ background-color:#eef5fd !important; }
 
 <!-- 7.61.0 — מכולות. מודאלי-על (נפתחים גם מעל כרטיס ההזמנה), ו**לפני** #podView ו-#poModal ב-DOM: שער ה-Escape
      סוגר את הראשון הגלוי — חלונית השיוך, אחר כך חלון המכולה, ורק אז הכרטיס. -->
+<!-- 7.62.0 — פיצול שורה: מודאל-על מעל כרטיס ההזמנה, לפני חלוניות המכולה ב-DOM (Esc סוגר אותו ראשון). -->
+<div class="modal modal-over hidden" id="poSplitModal">
+  <div class="sheet" id="poSplitSheet" role="dialog" aria-modal="true" aria-label="פיצול שורה"></div>
+</div>
 <div class="modal modal-over hidden" id="poCntAsgModal">
   <div class="sheet" id="poCntAsgSheet" role="dialog" aria-modal="true" aria-label="שיוך שורות למכולה"></div>
 </div>
@@ -12382,6 +12394,9 @@ let PO=[], PO_SUPS=[], PO_AGG={}, PO_LOADED=false, PO_LOADING=false, PO_TRIED=fa
 /* 7.61.0 — מכולות (ord.containers + ord.container_lines). השיוך קיים אצלנו בלבד: PO_CL = שורה (ordname+ordi) ⇒ מכולה.
    כשל בטעינה אינו מפיל את המסך — PO_CNT_ERR, והמכולות פשוט לא מוצגות. */
 let PO_CNT = [], PO_CL = [], PO_CNT_ERR = '', PO_CNT_CUR = '', PO_CNT_BUSY = false;
+/* 7.62.0 — השורות האחרונות שנטענו לכל הזמנה (poLinesDraw), ודגל הנעילה של הפיצול */
+const PO_LINES = {};
+let PO_SPLIT_BUSY = false;
 const PO_CNT_ST = ['בייצור','בדרך','בנמל','שוחרר'];
 let PO_VIEW='open';
 const PO_F = { q:'', sups:[], ss:'', pri:'', cur:'' };
@@ -12982,6 +12997,7 @@ async function poLinesDraw(on, r){
     if(error) throw error;
     /* האגרגט של ההזמנה מתעדכן מהשורות הטריות — "ת.אספקה" בטבלה מסכים עם הקיבוץ בכרטיס */
     PO_AGG[on] = (data || []).reduce((g, x)=>poAggAdd(g, x), poAggNew());
+    PO_LINES[on] = data || [];   /* 7.62.0 — חלונית הפיצול קוראת את השורה מכאן */
     window.poHdPaint(on);   /* 7.59.0 — האריחים בכותרת מסכימים עם השורות הטריות (ממצא Fable: נשארו על הערך הישן) */
     const w = $('#po-lines-wrap'); if(!w) return;
     if(!data || !data.length){ w.innerHTML = '<div class="empty">אין שורות להזמנה זו</div>'; return; }
@@ -13026,7 +13042,9 @@ async function poLinesDraw(on, r){
           + '<td class="num" data-sort="'+(Number(it.price)||0)+'">'+poMoney(it.price, it.icode||r.currency)+'</td>'
           + '<td class="num" data-sort="'+(Number(it.qprice)||0)+'">'+poMoney(it.qprice, it.icode||r.currency)+'</td>'
           + '<td data-sort="'+esc(it.duedate||it.reqdate||'')+'">'+poLdCell(it)+'</td>'
-          + '<td>'+(it.closed?'סגורה':'פתוחה')+((k=>k ? ' '+poCntChip(k) : '')(poCntOfLine(on, it.ordi)))+'</td>'   /* 7.61.0 */
+          + '<td>'+(it.closed?'סגורה':'פתוחה')+((k=>k ? ' '+poCntChip(k) : '')(poCntOfLine(on, it.ordi)))   /* 7.61.0 */
+            + ((ldOk(it) && Number(it.tbalance) > 1) ? '<button type="button" class="po-split-btn" data-po-split="'+Number(it.kline)+'" onclick="event.stopPropagation();poSplitOpen(\''+jsq(on)+'\','+Number(it.kline)+')" title="פיצול השורה: חלק מגיע עכשיו, השאר בשורה חדשה עם תאריך מאוחר יותר">פצל</button>' : '')   /* 7.62.0 */
+            +'</td>'
           + '</tr>';
     };
     const ldN = data.filter(ldOk).length;
@@ -13335,6 +13353,95 @@ window.poCntAsg = (on, ordis)=>{
   m.classList.remove('hidden');
   const f0 = sh.querySelector('input[name=pca]:checked'); if(f0) f0.focus();
 };
+
+/* ===== 7.62.0 — posplit: פיצול שורת הזמנת רכש =====
+   רומן (03/11, שאלה 3): "60 מגיעות במכולה A, ו-40 יגיעו אחר כך" ⇒ השורה נשארת עם 60 ובתאריך שלה, ושורה חדשה
+   באותו מק"ט ובאותו מחיר עם 40 ותאריך מאוחר יותר. בפריוריטי — po-line-split (טיוטא ← שורה חדשה ← הקטנה ← חזרה).
+   החלק שנשאר שומר את ה-ORDI, ולכן שיוך למכולה (אם נבחר) הולך אליו. */
+window.poSplitOpen = (on, kline)=>{
+  if(!poMgr()) return;
+  if(PO_SPLIT_BUSY){ toast('פיצול קודם עדיין רץ — המתינו לסיומו', 'warn'); return; }
+  const r = PO.find(x=>x.ordname===on), it = (PO_LINES[on]||[]).find(x=>Number(x.kline)===Number(kline));
+  const m = $('#poSplitModal'), sh = $('#poSplitSheet'); if(!r || !it || !m || !sh) return;
+  const bal = Number(it.tbalance) || 0, iso = String(it.duedate||it.reqdate||'').slice(0,10);
+  const opts = PO_CNT.filter(k=>k.status !== 'שוחרר').sort((a, b)=> (a.supplier_no === r.supplier_no ? 0 : 1) - (b.supplier_no === r.supplier_no ? 0 : 1));
+  const cur = poCntOfLine(on, it.ordi);
+  sh.innerHTML = '<h3>פיצול שורה <span dir="ltr">'+esc(it.partname||'')+'</span></h3>'
+    + '<div class="po-split-sum"><span>'+esc(it.pdes||'')+'</span><span>יתרה בשורה: <b>'+fmtNum(bal)+'</b></span>'
+    + (iso ? '<span>אספקה: <b>'+poDate(iso)+'</b></span>' : '')+(cur ? '<span>מכולה: <b dir="ltr">'+esc(poCntLbl(cur))+'</b></span>' : '')+'</div>'
+    + '<div class="form-grid po-split-grid">'
+    + '<div><label for="psp-keep">נשארות בשורה הזו (מגיעות עכשיו)</label><input id="psp-keep" type="number" min="1" max="'+(bal - 1)+'" step="any" inputmode="decimal"></div>'
+    + '<div><label for="psp-date">תאריך אספקה לחלק השני</label><input id="psp-date" type="date"></div>'
+    + '<div><label for="psp-cnt">שיוך מה שנשאר למכולה</label><select id="psp-cnt"><option value="">'+(cur ? 'בלי שינוי ('+esc(poCntLbl(cur))+')' : 'בלי מכולה')+'</option>'
+      + opts.filter(k=>!cur || k.id !== cur.id).map(k=>'<option value="'+esc(k.id)+'">'+esc(poCntLbl(k))+(k.supplier_no && k.supplier_no !== r.supplier_no ? ' · ספק אחר' : '')+'</option>').join('')+'</select></div>'
+    + '</div>'
+    + '<div class="po-split-calc" id="psp-calc">רשמו כמה נשארות בשורה — השאר יעבור לשורה חדשה</div>'
+    + '<div class="err" id="psp-err"></div>'
+    + '<div class="actions"><button type="button" class="btn" id="psp-ok" disabled>פצל ושמור בפריוריטי</button><button type="button" class="ghost" id="psp-cancel">ביטול</button></div>';
+  const keepEl = $('#psp-keep'), dateEl = $('#psp-date'), ok = $('#psp-ok'), calc = $('#psp-calc');
+  const valid = () => { const k = Number(keepEl.value); return keepEl.value !== '' && isFinite(k) && k > 0 && k < bal; };
+  /* ממצא Fable: "אחר כך" — תאריך החלק השני אחרי תאריך השורה (אחרת המשמעות מתהפכת בשקט) */
+  const dateOk = () => !!dateEl.value && (!iso || dateEl.value > iso);
+  const paint = () => {
+    const k = Number(keepEl.value);
+    if(keepEl.value === ''){ calc.className = 'po-split-calc'; calc.textContent = 'רשמו כמה נשארות בשורה — השאר יעבור לשורה חדשה'; }
+    else if(!valid()){ calc.className = 'po-split-calc bad'; calc.textContent = 'הכמות חייבת להיות בין 0 ל-'+fmtNum(bal)+' (לא כולל)'; }
+    else if(dateEl.value && !dateOk()){ calc.className = 'po-split-calc bad'; calc.textContent = 'תאריך החלק השני חייב להיות אחרי '+poDate(iso); }
+    else { calc.className = 'po-split-calc'; calc.innerHTML = 'בשורה הזו: <b>'+fmtNum(k)+'</b> · לשורה חדשה: <b>'+fmtNum(Math.round((bal - k) * 10000) / 10000)+'</b>'+(dateEl.value ? ' באספקה '+poDate(dateEl.value) : ''); }
+    ok.disabled = !(valid() && dateOk());
+  };
+  keepEl.oninput = paint; dateEl.oninput = paint; dateEl.onchange = paint;
+  $('#psp-cancel').onclick = ()=> m.classList.add('hidden');
+  ok.onclick = async ()=>{
+    if(ok.disabled || !(valid() && dateOk())) return;
+    ok.disabled = true;   /* ממצא Fable: לחיצה כפולה תורה שני אישורים — ושני פיצולים */
+    const keep = Number(keepEl.value), move = Math.round((bal - keep) * 10000) / 10000, d = dateEl.value, cid = ($('#psp-cnt')||{}).value || '';
+    if(!(await sysConfirm('לפצל את '+(it.partname||'השורה')+' בפריוריטי?\n'+fmtNum(keep)+' נשארות בשורה הזו, '+fmtNum(move)+' עוברות לשורה חדשה באספקה '+poDate(d)+'.', { ok:'פיצול' }))){ paint(); return; }
+    poSplitRun(on, r, it, keep, move, d, cid);
+  };
+  m.classList.remove('hidden');
+  keepEl.focus();
+};
+async function poSplitRun(on, r, it, keep, move, d, cid){
+  const m = $('#poSplitModal'), e = $('#psp-err'), ok = $('#psp-ok');
+  if(PO_SPLIT_BUSY) return;
+  /* ממצא Fable: השורה שבזיכרון השתנתה מאז שנפתחה החלונית (רענון, פיצול קודם) ⇒ לא מפצלים לפי מספרים ישנים */
+  const fresh = (PO_LINES[on]||[]).find(x=>Number(x.kline)===Number(it.kline));
+  if(!fresh || Number(fresh.tbalance) !== Number(it.tbalance)){ if(e) e.textContent = 'השורה השתנתה מאז שנפתחה החלונית — סגרו ופתחו את הפיצול מחדש'; return; }
+  /* נעילה — Esc/רקע לא סוגרים (data-must), וגם לא נפתחת חלונית שנייה (הלקח של 7.61.0) */
+  PO_SPLIT_BUSY = true; if(m) m.dataset.must = '1';
+  $('#poSplitSheet').querySelectorAll('input,select,button').forEach(x=>{ x.disabled = true; });
+  if(ok) ok.textContent = 'מפצל בפריוריטי…';
+  let res = null, msg = '';
+  try{
+    const { data, error } = await sb.functions.invoke('po-line-split', { body:{ ordname:on, kline:Number(it.kline), move, expect_tbalance:Number(it.tbalance), date:d } });
+    if(error){
+      msg = error.message || 'שגיאה';
+      try{ const j = error.context && (await error.context.json()); if(j && j.error) msg = String(j.error); }catch(_e){}
+    } else res = data;
+  }catch(x){ msg = (x && x.message) || String(x); }
+  const split = !!(res && res.new_line);   /* פוצל בפריוריטי — גם אם החזרה לסטטוס נכשלה */
+  let cntMsg = '';
+  if(split && cid){
+    const { data, error } = await sb.schema('ord').from('container_lines').upsert([{ ordname:on, ordi:Number(it.ordi), container_id:cid }], { onConflict:'ordname,ordi' }).select('ordname,ordi,container_id');
+    if(error || !data || data.length !== 1) cntMsg = ' · השיוך למכולה לא נשמר: '+((error && error.message) || 'אין הרשאה');
+    else PO_CL = PO_CL.filter(x=>!(x.ordname===on && Number(x.ordi)===Number(it.ordi))).concat(data);
+  }
+  /* ממצא Fable: גם בכשל השורות נטענות מחדש — ייתכן שהפיצול נכנס (timeout, state_unknown) והחלונית מחזיקה יתרה ישנה */
+  await poLinesDraw(on, r); if(split) poAfterCnt(on);
+  PO_SPLIT_BUSY = false; if(m) delete m.dataset.must;   /* שחרור רק אחרי הציור (ממצא Fable) */
+  if(res && res.ok){
+    if(m) m.classList.add('hidden');
+    toast('השורה פוצלה: '+fmtNum(keep)+' כאן · '+fmtNum(move)+' בשורה חדשה ✓'+cntMsg+(res.db_error ? ' · '+res.db_error : ''), (cntMsg || res.db_error) ? 'warn' : '');
+    return;
+  }
+  /* כשל — החלונית נשארת עם ההודעה, "פצל" נשאר מושבת: ניסיון נוסף רק מחלונית חדשה, שנפתחת מהשורות הטריות */
+  $('#poSplitSheet').querySelectorAll('input,select').forEach(x=>{ x.disabled = true; });
+  const cc = $('#psp-cancel'); if(cc){ cc.disabled = false; cc.textContent = 'סגירה'; }
+  if(ok){ ok.textContent = 'פצל ושמור בפריוריטי'; ok.disabled = true; }
+  if(e) e.textContent = (split ? 'הפיצול בוצע, אבל: ' : (res && res.state_unknown ? '' : 'הפיצול לא בוצע — '))+String((res && res.error) || msg || 'שגיאה')+cntMsg
+    + (split ? '' : ' · כדי לנסות שוב — סגרו ופתחו את "פצל" מחדש');
+}
 
 /* 6.243.0 — כתיבת תאריכי אספקה לפריוריטי דרך po-line-date: מנות של 10 בטור (פריוריטי מחזירה 404
    חולף תחת עומס), כל שורה מקבלת תוצאה משלה; בסוף — ציור השורות מהמסד, ולכן מוצג רק מה שפריוריטי
@@ -14969,7 +15076,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'pocnt-2026-11-03a';
+const BUILD_ID = 'posplit-2026-11-03a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה

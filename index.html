@@ -2717,7 +2717,7 @@
 .po-etaw{ display:flex; align-items:center; gap:var(--sp-1); }
 /* בטבלה — השבב מתחת לתאריך ולא לצדו: לצדו הוא הרחיב את העמודה ב-80px והטבלה גלשה 108px ב-1440
    (נמדד; 28px כבר לפני). בכרטיס — בשורה אחת עם השדה. */
-#po-body .po-etaw{ flex-direction:column; justify-content:center; gap:var(--sp-0h); }
+#po-body .po-etaw{ flex-direction:row; justify-content:flex-start; gap:var(--sp-1); }   /* 7.63.0 — שורה אחת (רומן: "למה יש פה כל כך הרבה גובה שורות?") */
 #poSheet .po-etaw input{ flex:1; min-width:0; }
 /* 6.243.0 — רומן: "תקטין את התגית של הצפי גם פה וגם בכרטיס" — ריפוד 2/9 → 0/6, שורה 1.5 → 1.3. */
 .po-est{ display:inline-flex; align-items:center; gap:var(--sp-0h); font:inherit; font-size:var(--fs-xs); font-weight:600; color:var(--ink-3);
@@ -2762,17 +2762,20 @@ span.po-est{ cursor:default; }
 /* ===== 7.60.0 — polist: אריחי המסך ושורות-משנה בתאי הטבלה ===== */
 /* min(…, 50%) — בטלפון שניים בשורה בלי נקודת שבירה חדשה (הדפוס של .pod-grid; dstest סופרת את ה-759.98) */
 #po-views .po-ktiles{ display:grid; grid-template-columns:repeat(auto-fit, minmax(min(170px, calc(50% - var(--sp-1))), 1fr)); gap:var(--sp-2); width:100%; margin-bottom:var(--sp-1); }
-.po-kt{ display:flex; flex-direction:column; align-items:flex-start; gap:var(--sp-0h); min-width:0; padding:var(--sp-2h) var(--sp-3); border:1px solid var(--line); border-radius:var(--r-md); background:#fff; color:var(--ink-1); font:inherit; text-align:start; cursor:pointer; }
+.po-kt{ display:flex; flex-direction:row; flex-wrap:wrap; align-items:baseline; column-gap:var(--sp-2); row-gap:0; min-width:0; padding:var(--sp-1h) var(--sp-3); border:1px solid var(--line); border-radius:var(--r-md); background:#fff; color:var(--ink-1); font:inherit; text-align:start; cursor:pointer; }
 .po-kt:hover{ border-color:var(--line-strong); box-shadow:var(--sh-card); }
 .po-kt:focus-visible{ outline:2px solid var(--navy); outline-offset:2px; }
 .po-kt>span{ font-size:var(--fs-xs); font-weight:600; color:var(--ink-3); }
-.po-kt>b{ font-size:var(--fs-xl); font-weight:800; line-height:1.15; color:var(--ink-1); }
+.po-kt>b{ font-size:var(--fs-lg); font-weight:800; line-height:1.15; color:var(--ink-1); }
+.po-kt>small.po-kt-x{ display:none; }   /* 7.63.0 — ההסבר ב-title; רק סכום הפתוחות נשאר גלוי */
 .po-kt>small{ font-size:var(--fs-xs); color:var(--ink-3); }
 .po-kt.late>b{ color:var(--red); }
 .po-kt.on{ border-color:var(--navy); box-shadow:inset 0 0 0 1px var(--navy); }
 #po-body small.po-sub{ display:block; font-size:var(--fs-xs); font-weight:400; color:var(--ink-3); }
-#po-body small.po-late-t{ display:block; font-size:var(--fs-xs); font-weight:700; color:var(--red); }
-#po-body .po-port{ display:flex; align-items:center; flex-wrap:wrap; gap:var(--sp-1); margin-top:var(--sp-1); font-size:var(--fs-xs); font-weight:400; color:var(--ink-2); }
+#po-body small.po-late-t{ display:inline; margin-inline-start:var(--sp-1h); font-size:var(--fs-xs); font-weight:700; color:var(--red); }   /* 7.63.0 — באותה שורה עם התאריך */
+#po-body .po-port{ display:flex; align-items:center; flex-wrap:nowrap; gap:var(--sp-1); margin-top:var(--sp-0h); font-size:var(--fs-xs); font-weight:400; color:var(--ink-2); }
+#po-body td.po-due .datewrap .inline-edit.ie-date{ font-size:var(--fs-xs); padding-block:0; }   /* 7.63.0 — שדה הנמל בגובה שורת טקסט */
+#po-body td.po-cd{ color:var(--ink-2); }   /* 7.63.0 — ת.הזמנה */
 #po-body .po-port-l{ color:var(--ink-3); }
 #po-body .po-port.po-late{ color:var(--red); font-weight:700; }
 /* ===== 7.61.0 — pocnt: מכולות ===== */
@@ -2798,6 +2801,8 @@ span.po-est{ cursor:default; }
 #poSplitSheet .po-split-calc{ margin:var(--sp-2) 0; font-size:var(--fs-sm); }
 #poSplitSheet .po-split-calc.bad{ color:var(--red); }
 #poCntAsgSheet .po-cnt-new{ display:grid; grid-template-columns:repeat(auto-fit, minmax(min(160px, 100%), 1fr)); gap:var(--sp-2); padding:var(--sp-2) 0; }
+#poCntAsgSheet .po-cnt-new input:disabled{ background:var(--bg-soft, #f5f6f8); color:var(--ink-2); }   /* 7.63.0 — מכולה קיימת: המספרים שלה, נעולים */
+#poCntSheet .po-cnt-mv select{ width:auto; min-width:min(220px, 100%); }   /* 7.63.0 — העברה למכולה אחרת */
 /* ===== 7.59.0 — pocard: כותרת הכרטיס (במקום התקציר של 7.58.0 + "פרטי ההזמנה") ===== */
 #poSheet .po-hd{ display:flex; flex-direction:column; gap:var(--sp-2h); padding-bottom:var(--sp-4); margin-bottom:var(--sp-3); border-bottom:1px solid var(--line); }
 #poSheet .po-hd-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:var(--sp-3); flex-wrap:wrap; }
@@ -4451,7 +4456,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.62.0</div>
+      <div class="ver">גרסה 7.63.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4598,7 +4603,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="posplit-2026-11-03a">גרסה 7.62.0</div>
+    <div class="side-foot" title="podense-2026-11-04a">גרסה 7.63.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5514,7 +5519,7 @@ const LEAD_STATUSES = ['ליד חדש','ללא מענה','ללא מענה2','ל�
 const LEAD_ST_COLORS = {'ליד חדש':'#fdab3d','ללא מענה':'#ffadad','ללא מענה2':'#faa1f1','ללא מענה3':'#ff5ac4','רלוונטי':'#9cd326','סירוב':'#df2f4a','לא רלוונטי':'#bb3354'};
 const SUB_RELEVANT = ['פולואפ','תואמה פגישה','הצעת מחיר','הפניה לאתר'];
 const SUB_REFUSAL = ['מחיר יקר','העדיף מתחרים','אין מענה מספר פעמים','ירד מהעניין','היה צריך ציוד כללי שאין לנו','אין הבשלה כלכלית','מועד רחוק מדי','ייצור קשר עצמאית','אפשרות לשותפות','לקוח פעיל'];
-const SUB_IRRELEVANT = ['ליד פיקטיבי','טוען שלא השאיר פניה','לא הבין את המוצר','חיפשו חדר כושר','כפל'];
+const SUB_IRRELEVANT = ['ליד פיקטיבי','טוען שלא השאיר פניה','לא הבין את המוצר','חיפשו חדר כושר','כפל','טעות/בדיקה'];   /* 7.62.2 — רומן, 04/11/2026: לידי בדיקה ⇒ "טעות/בדיקה", כמו בתהליכי מכירה (7.50.1) */
 /* ===== טבלת הלידים — צבעים, עמודות והצלבה (6.97.0) =====
    רומן, 18/08/2026: "סוג לקוח תוסיף צבעים, מקור הגעה גם". הצבעים עוברים
    דרך mdPill/tint כמו צבעי הסטטוס, ולכן הם פסטל אחיד ולא כתם רווי. */
@@ -5525,7 +5530,7 @@ const LEAD_TYPES = ['בסיס','פ.ע','עסקי','ארגוני','מוסדי','�
    יוצאים פסטל אחיד — גם #333333 נהיה אפור קריא ולא ריבוע שחור. */
 const SUB_RELEVANT_COLORS = {'פולואפ':'#5559df','תואמה פגישה':'#9d50dd','הצעת מחיר':'#00c875','הפניה לאתר':'#9cd326'};
 const SUB_REFUSAL_COLORS = {'מחיר יקר':'#faa1f1','העדיף מתחרים':'#ffadad','אין מענה מספר פעמים':'#784bd1','ירד מהעניין':'#7e3b8a','היה צריך ציוד כללי שאין לנו':'#9d99b9','אין הבשלה כלכלית':'#333333','מועד רחוק מדי':'#bca58a','ייצור קשר עצמאית':'#4eccc6','אפשרות לשותפות':'#cab641','לקוח פעיל':'#ff007f'};
-const SUB_IRRELEVANT_COLORS = {'ליד פיקטיבי':'#9d50dd','טוען שלא השאיר פניה':'#faa1f1','לא הבין את המוצר':'#df2f4a','חיפשו חדר כושר':'#333333','כפל':'#563e3e'};
+const SUB_IRRELEVANT_COLORS = {'ליד פיקטיבי':'#9d50dd','טוען שלא השאיר פניה':'#faa1f1','לא הבין את המוצר':'#df2f4a','חיפשו חדר כושר':'#333333','כפל':'#563e3e','טעות/בדיקה':'#7d8b94'};
 const SUB_COLORS = {'רלוונטי':SUB_RELEVANT_COLORS,'סירוב':SUB_REFUSAL_COLORS,'לא רלוונטי':SUB_IRRELEVANT_COLORS};
 /* 6.107.0 — עוצמת הגוון בבורד הלידים בלבד (רומן: "צבעים בולטים").
    ⚠️ אל תחיל את זה על mdPill/ieSel מחוץ ללידים בלי למדוד onWhite:
@@ -9121,19 +9126,19 @@ function logiRenderTable(){
   if(!$('#logi-tbl')) return;
   const isCalls = LOGI_VIEW==='calls';
   if(isCalls){
-    const q=($('#logiSearchCalls').value||'').trim();
+    const q=($('#logiSearchCalls').value||'').trim().toLowerCase();   /* 7.62.3 — לא תלוי רישיות (רומן, 04/11/2026: "vic" לא מצא את Victor) */
     const _scDone=['הושלם','הושלמה','בוטלה','סגורה'];
     const stF=(SC_F.status||[]);
     let list = stF.some(x=>_scDone.includes(x)) ? SCALLS.slice() : SCALLS.filter(s=>!_scDone.includes(s.status));
     if(q) list = list.filter(s=>[s.customer_name,s.call_number,s.city,s.product,s.address,s.team,s.phone]
-      .some(v=>String(v||'').includes(q)));
+      .some(v=>String(v||'').toLowerCase().includes(q)));
     if(stF.length)   list = list.filter(s=>stF.includes(s.status));
     if(SC_F.urgency) list = list.filter(s=>(s.urgency||'רגילה')===SC_F.urgency);
     if(SC_F.team)    list = list.filter(s=>s.team===SC_F.team);
     if(SC_F.region)  list = list.filter(s=>s.region===SC_F.region);
     $('#logi-tbl').innerHTML = wideScreen() ? scTable(list) : capped(list, scRow, 'אין קריאות שירות');
   } else {
-    const q=($('#logiSearchOrders').value||'').trim();
+    const q=($('#logiSearchOrders').value||'').trim().toLowerCase();   /* 7.62.3 — לא תלוי רישיות (רומן, 04/11/2026: "vic" לא מצא את Victor) */
     const stF = LOGI_F.status||[];
     const doneScope = LOGI_SCOPE==='done';
     const pendScope = LOGI_SCOPE==='pend';
@@ -9160,7 +9165,7 @@ function logiRenderTable(){
       return !doneScope && !pendScope;
     });
     if(q) list = list.filter(o=>[o.customer_name,o.order_number,o.city,o.address,o.team,o.team2,o.phone]
-      .some(v=>String(v||'').includes(q)));
+      .some(v=>String(v||'').toLowerCase().includes(q)));
     if(stF.length) list = list.filter(o=>stF.includes(o.order_status));
     if(LOGI_NODATE)    list = list.filter(o=>!o.scheduled_date);
     if(LOGI_F.contact) list = list.filter(o=>o.contact_status===LOGI_F.contact);
@@ -9623,11 +9628,12 @@ function etaMates(e){
    התצוגות כאחת, כולל מוני האירועים בתאי החודש (רומן 29/07/2026). */
 let CAL_Q='';
 function evMatch(e,q){
+  q = String(q||'').toLowerCase();   /* 7.62.3 — לא תלוי רישיות (רומן, 04/11/2026: "vic" לא מצא את Victor) */
   const o=e.o;
   return [o.customer_name, o.city, o.address, o.team, o.team2, o.phone, o.time_slot,
           e.kind==='svc'?o.call_number:o.order_number,
           e.kind==='svc'?o.product:o.order_notes]
-    .some(v=>String(v||'').includes(q));
+    .some(v=>String(v||'').toLowerCase().includes(q));
 }
 /* ===== 6.2.5 — רשת שעות (רומן 30/07/2026) =====
    הלוח השבועי והיומי מציגים את שעות העבודה 08:00–17:00 כרשת, וכל שיבוץ ממוקם
@@ -12504,7 +12510,8 @@ const PO_CLX = {};   /* "סופקו" שנפתח בכרטיס (לפי הזמנה)
 function poHdKpis(r){
   const on = r.ordname, g = poAgg(on), ld = poLateDays(r), nd = poDocsOf(on).length;
   const k = (lbl, val, sub, cls) => '<div class="po-kpi'+(cls ? ' '+cls : '')+'"><span>'+lbl+'</span><b>'+val+'</b>'+(sub ? '<small>'+sub+'</small>' : '')+'</div>';
-  return k('ת.אספקה', (g.open && g.next) ? poDate(g.next) : '—',
+  return k('תאריך הזמנה', r.curdate ? poDate(r.curdate) : '—', '')   /* 7.63.0 — ראשון (רומן); ירד משורת הפרטים */
+    + k('ת.אספקה', (g.open && g.next) ? poDate(g.next) : '—',
            ld ? 'באיחור '+ld+(ld === 1 ? ' יום' : ' ימים') : ((g.dates && g.dates.length > 1) ? g.dates.length+' תאריכים בשורות' : ''), ld ? 'late' : '')
     + k('שורות פתוחות', g.lines ? g.open+' מתוך '+g.lines : '—', g.open ? 'יתרה '+fmtNum(g.bal)+' יח׳' : '')
     + (poImp(r) ? k('הגעה לנמל', r.eta_port ? poDate(r.eta_port) : '—', (r.eta_port && r.eta_estimate) ? 'צפי בלבד' : '') : '')
@@ -12755,13 +12762,15 @@ function poViews(){
   /* 7.60.0 — polist: ארבעה אריחים לחיצים — מה שדורש טיפול, במספרים, לפני הטבלה. לחיצה = PO_VIEW */
   const base = PO.filter(poInScope), lO = base.filter(poIsOpen), lL = base.filter(r=>poLateDays(r) > 0), lW = base.filter(poOnWay), lA = base.filter(poAwait);
   const sums = {}; lO.forEach(r=>{ const k = poCur(r.currency) || ''; sums[k] = (sums[k]||0) + (Number(r.price_incl_vat)||0); });
-  const tile = (v, lbl, n, sub, cls) => '<button class="po-kt'+(cls ? ' '+cls : '')+(PO_VIEW===v ? ' on' : '')+'" data-po-view="'+v+'" aria-pressed="'+(PO_VIEW===v ? 'true' : 'false')+'">'
-    + '<span>'+lbl+'</span><b class="n">'+fmtNum(n)+'</b>'+(sub ? '<small>'+sub+'</small>' : '')+'</button>';
+  /* 7.63.0 — שורה אחת: ההסבר ב-title (po-kt-x מוסתר); הסכום של "פתוחות" נשאר גלוי (keep) */
+  const tile = (v, lbl, n, sub, cls, keep) => '<button class="po-kt'+(cls ? ' '+cls : '')+(PO_VIEW===v ? ' on' : '')+'" data-po-view="'+v+'" aria-pressed="'+(PO_VIEW===v ? 'true' : 'false')+'"'
+    + ((sub && !keep) ? ' title="'+esc(sub)+'"' : '')+'>'
+    + '<span>'+lbl+'</span><b class="n">'+fmtNum(n)+'</b>'+(sub ? '<small'+(keep ? '' : ' class="po-kt-x"')+'>'+sub+'</small>' : '')+'</button>';
   const kpi = '<div class="po-ktiles" id="po-kpi">'
     + tile('late', 'באיחור', lL.length, lL.length ? 'אספקה שעברה ויש שורות פתוחות' : 'אין הזמנות באיחור', lL.length ? 'late' : '')
     + tile('way', 'בדרך / בנמל', lW.length, 'נשלחו מהספק או בנמל')
     + tile('wait', 'ממתינות לאישור', lA.length, 'טיוטא או מחכה לאישור בפריוריטי')
-    + tile('open', 'פתוחות', lO.length, Object.keys(sums).map(k=>'<span dir="ltr">'+k+Number(sums[k]).toLocaleString('he-IL',{maximumFractionDigits:0})+'</span>').join(' · '))
+    + tile('open', 'פתוחות', lO.length, Object.keys(sums).map(k=>'<span dir="ltr">'+k+Number(sums[k]).toLocaleString('he-IL',{maximumFractionDigits:0})+'</span>').join(' · '), '', true)
     + '</div>';
   el.innerHTML = tabs + kpi + chips.map(c=>'<button class="chip'+(PO_VIEW===c[0]?' active':'')+'" data-po-view="'+esc(c[0])+'">'
     + esc(c[1]) + ' <span class="n">' + fmtNum(c[2]) + '</span></button>').join('');
@@ -12827,6 +12836,7 @@ function poBody(){
      תאריך ההזמנה ומס' התיק — בכרטיס. עד כאן 13 עמודות, והטבלה גלשה ב-1440 (7.58.0). */
   el.innerHTML = '<div class="tbl-wrap"><table class="tbl" data-v="polist"><thead><tr>'
     + '<th class="rownum">#</th>'
+    + '<th title="תאריך ההזמנה בפריוריטי">ת.הזמנה</th>'   /* 7.63.0 — רומן: "זה אמור להופיע ראשון לפני הכל" */
     + '<th>הזמנה</th><th>ספק</th><th class="stcell">סטטוס</th>'
     + '<th title="מועד האספקה הקרוב בשורות הפתוחות (מפריוריטי) · +N = תאריכי אספקה נוספים · ביבוא — גם תאריך ההגעה לנמל">ת.אספקה</th>'
     + '<th class="num" title="שורות שטרם סופקו, מתוך כלל שורות ההזמנה · מתחת: יתרת הכמות לאספקה">שורות פתוחות</th>'
@@ -12849,6 +12859,7 @@ function poBody(){
       const contOld = cont && !cnts.some(k=>String(k.container_no||'').trim().toUpperCase() === cont.toUpperCase());
       return '<tr data-po="'+esc(r.ordname)+'">'
         + '<td class="rownum">'+(i+1)+'</td>'
+        + '<td class="po-cd po-m" data-l="הוזמנה" data-sort="'+esc(r.curdate||'')+'">'+(r.curdate ? poDate(r.curdate) : '—')+'</td>'   /* 7.63.0 */
         /* 7.58.0 — po-m: התאים שמוצגים בכרטיס של הטלפון; data-l: התווית שלהם שם */
         + '<td class="po-num po-m" dir="ltr" data-sort="'+esc(r.ordname)+'">'+esc(r.ordname)+(r.supordnum ? '<small class="po-sub">'+esc(r.supordnum)+'</small>' : '')+'</td>'
         + '<td class="po-sup po-m" title="'+esc(r.supplier_name||'')+'">'+esc(poSupShort(r.supplier_name) || r.supplier_no || '—')+'</td>'
@@ -12871,7 +12882,7 @@ function poBody(){
           + (contOld ? '<small class="po-sub" dir="ltr" title="מספר מכולה (מהכרטיס)">'+esc(cont)+'</small>' : '')+'</td>'
         + '</tr>';
     }).join('')
-    + '</tbody><tfoot><tr><td></td><td class="po-m" colspan="4" style="text-align:right">סה"כ · '+rows.length+' הזמנות</td>'
+    + '</tbody><tfoot><tr><td></td><td class="po-m" colspan="5" style="text-align:right">סה"כ · '+rows.length+' הזמנות</td>'
     + '<td class="num">'+totOpen+'</td>'
     + '<td class="po-money num">'+Object.keys(tot).map(k=>k+Number(tot[k]).toLocaleString('he-IL',{maximumFractionDigits:0})).join(' · ')+'</td>'
     + '<td></td></tr></tfoot></table></div>';
@@ -12920,7 +12931,6 @@ async function openPo(on){
      העבודה היא על השורות ותאריכי האספקה, ושדות היבוא מתמלאים פעם בכמה שבועות. סקשן "פרטי ההזמנה" ירד —
      עשרה שדות קריאה-בלבד שחזרו על התקציר (7.58.0); כל הערכים שלו בכותרת. אותם id בשדות — poSave לא השתנה. */
   const meta = [
-    ['הוזמנה', r.curdate ? poDate(r.curdate) : ''],
     ['הזמנת ספק', r.supordnum ? '<span dir="ltr">'+esc(r.supordnum)+'</span>' : ''],
     ['תנאי תשלום', esc(r.paydes||'')],
     ['תיק יבוא בפריוריטי', r.impfnum ? '<span dir="ltr">'+esc(r.impfnum)+'</span>' : ''],
@@ -13164,6 +13174,10 @@ async function poCntDraw(id, res){
               + (can ? '<td><button type="button" class="ghost po-cnt-rm" data-pcn-rm="'+esc(x.ordname)+'|'+Number(x.ordi)+'" title="הוצאת השורה מהמכולה">✕</button></td>' : '')
               + '</tr>'; }).join('')
         + '</tbody></table></div>' : '')
+    + ((can && rows.length && PO_CNT.some(o=>o.id !== id)) ? '<div class="po-cnt-bar po-cnt-mv"><label for="pcn-mv">העברה למכולה אחרת</label>'
+        + '<select id="pcn-mv"><option value="">בחרו מכולה…</option>'+PO_CNT.filter(o=>o.id !== id).map(o=>'<option value="'+esc(o.id)+'">'+esc(poCntLbl(o))+' · '+poCntLinesOf(o.id).length+' שורות</option>').join('')+'</select>'
+        + '<button type="button" class="ghost" id="pcn-mv-go">העבר את כל השורות ומחק את המכולה</button>'
+        + '<span class="po-note">בפריוריטי לא משתנה דבר</span></div>' : '')   /* 7.63.0 — רומן: "13465 עשיתי בטעות ואני רוצה להעביר אותה ל-13689" */
     + '<div class="actions">'
     + '<button type="button" class="ghost" id="pcn-list">כל המכולות</button>'
     + ((can && !rows.length) ? '<button type="button" class="ghost" id="pcn-del">מחיקת המכולה</button>' : '')
@@ -13171,6 +13185,7 @@ async function poCntDraw(id, res){
   const s = $('#pcn-save'); if(s) s.onclick = ()=> poCntSaveHd(id);
   const l = $('#pcn-list'); if(l) l.onclick = ()=> poCntList();
   const d = $('#pcn-del'); if(d) d.onclick = ()=> poCntDel(id);
+  const mv = $('#pcn-mv-go'); if(mv) mv.onclick = ()=>{ const to = ($('#pcn-mv')||{}).value || ''; if(!to){ toast('בחרו מכולת יעד', 'warn'); return; } poCntMerge(id, to, mv); };
   const ap = $('#pcn-apply');
   if(ap) ap.onclick = async ()=>{
     const v = ($('#pcn-date')||{}).value || '';
@@ -13237,6 +13252,8 @@ async function poCntSaveHd(id){
   const no = ($('#pcn-no')||{}).value || '', ifn = ($('#pcn-ifn')||{}).value || '';
   const e = $('#pcn-err');
   if(!no.trim() && !ifn.trim()){ if(e) e.textContent = 'נדרש מספר מכולה או מספר תיק יבוא'; return; }
+  const ex = poCntDup(no, ifn, id);   /* 7.63.0 */
+  if(ex){ if(e) e.textContent = 'המספר כבר שייך למכולה '+poCntLbl(ex)+' — כדי לאחד, השתמשו ב"העברה למכולה אחרת"'; return; }
   const upd = { container_no:no.trim(), import_file_no:ifn.trim(), eta_port:(($('#pcn-eta')||{}).value || null), status:($('#pcn-st')||{}).value || k.status };
   /* .select(): RLS שדוחה מחזיר אפס שורות בלי שגיאה (הלקח של 7.58.0) */
   const { data, error } = await sb.schema('ord').from('containers').update(upd).eq('id', id).select('*');
@@ -13253,6 +13270,34 @@ async function poCntUnassign(id, on, ordi){
   PO_CL = PO_CL.filter(x=>!(x.ordname===on && Number(x.ordi)===Number(ordi)));
   poAfterCnt(on);
   poCntDraw(id, '');
+}
+/* 7.63.0 — כל השורות של from עוברות ל-to, ו-from נמחקת. container_lines: update של container_id (המפתח ordname+ordi
+   לא זז, ולכן אין התנגשות); .select() סופר — RLS שדוחה מחזיר אפס שורות בלי שגיאה (הלקח של 7.58.0). מחיקה רק אם הכול עבר. */
+async function poCntMerge(from, to, btn){
+  const a = poCntById(from), b = poCntById(to); if(!a || !b || from === to) return;
+  if(PO_CNT_BUSY){ toast('עדכון אחר של מכולה רץ — המתינו לסיומו', 'warn'); return; }
+  const n = poCntLinesOf(from).length;
+  if(!(await sysConfirm('להעביר '+(n === 1 ? 'שורה אחת' : n+' שורות')+' מהמכולה '+poCntLbl(a)+' למכולה '+poCntLbl(b)+' ולמחוק את '+poCntLbl(a)+'?\nבפריוריטי לא משתנה דבר — את תאריכי השורות אפשר לעדכן מחלון המכולה '+poCntLbl(b)+'.', { ok:'העברה' }))) return;
+  PO_CNT_BUSY = true; if(btn) btn.disabled = true;
+  try{
+    const { data, error } = await sb.schema('ord').from('container_lines').update({ container_id:to }).eq('container_id', from).select('ordname,ordi,container_id');
+    if(error || !data){ toast('ההעברה נכשלה — '+((error && error.message) || 'אין הרשאת עריכה בהזמנות רכש'), 'err'); return; }
+    const moved = new Set(data.map(x=>x.ordname+'|'+Number(x.ordi)));
+    PO_CL = PO_CL.map(x=>moved.has(x.ordname+'|'+Number(x.ordi)) ? Object.assign({}, x, { container_id:to }) : x);
+    const left = PO_CL.filter(x=>x.container_id === from).length;
+    let delOk = false;
+    if(!left){
+      const dr = await sb.schema('ord').from('containers').delete().eq('id', from).select('id');
+      delOk = !dr.error && dr.data && dr.data.length === 1;
+      if(delOk) PO_CNT = PO_CNT.filter(x=>x.id !== from);
+    }
+    [...new Set(data.map(x=>x.ordname))].forEach(on=>poCntHdPaint(on));
+    poTools(); poBody();
+    const hd = document.getElementById('po-hd'); if(hd){ const r = PO.find(x=>x.ordname===hd.dataset.on); if(r) poLinesDraw(r.ordname, r); }
+    if(left) toast(data.length+' עברו · '+left+' לא עברו — המכולה '+poCntLbl(a)+' נשארה', 'err', 8000);
+    else toast(data.length+(data.length === 1 ? ' שורה עברה' : ' שורות עברו')+' למכולה '+poCntLbl(b)+(delOk ? ' · '+poCntLbl(a)+' נמחקה ✓' : ' · מחיקת '+poCntLbl(a)+' נכשלה — אפשר למחוק אותה ידנית (היא ריקה)'), delOk ? '' : 'warn');
+  }finally{ PO_CNT_BUSY = false; if(btn) btn.disabled = false; }
+  if(poCntById(to)) poCntOpen(to);
 }
 async function poCntDel(id){
   if(poCntLinesOf(id).length){ toast('אפשר למחוק רק מכולה ריקה', 'warn'); return; }
@@ -13291,11 +13336,18 @@ window.poCntList = ()=>{
     const no = (($('#pcl-no')||{}).value || '').trim(), ifn = (($('#pcl-ifn')||{}).value || '').trim();
     const e = $('#pcl-err');
     if(!no && !ifn){ if(e) e.textContent = 'נדרש מספר מכולה או מספר תיק יבוא'; return; }
+    const ex = poCntDup(no, ifn, '');   /* 7.63.0 — קיימת ⇒ פותחים אותה ולא כפולה */
+    if(ex){ toast('מכולה '+poCntLbl(ex)+' כבר קיימת — נפתחה היא', 'warn'); poCntOpen(ex.id); return; }
     const k = await poCntNew({ container_no:no, import_file_no:ifn, supplier_no:'' }, e); if(!k) return;
     poTools(); poCntOpen(k.id);
   };
   m.classList.remove('hidden');
 };
+/* 7.63.0 — מכולה קיימת באותו מספר מכולה או באותו תיק יבוא (חוץ מ-except); מונע כפולות שנפתחות מהצעת ההזמנה */
+function poCntDup(no, ifn, except){
+  const n = String(no||'').trim().toUpperCase(), f = String(ifn||'').trim();
+  return PO_CNT.find(k=>k.id !== except && ((n && String(k.container_no||'').trim().toUpperCase() === n) || (f && String(k.import_file_no||'').trim() === f))) || null;
+}
 async function poCntNew(row, errEl){
   const { data, error } = await sb.schema('ord').from('containers').insert(row).select('*').single();
   if(error || !data){
@@ -13318,12 +13370,20 @@ window.poCntAsg = (on, ordis)=>{
     + opts.map((k, i)=>'<label class="po-cnt-opt"><input type="radio" name="pca" value="'+esc(k.id)+'"'+((i === 0 && k.supplier_no === r.supplier_no) ? ' checked' : '')+'>'
         + '<b dir="ltr">'+esc(poCntLbl(k))+'</b><small>'+esc(poSupShort(poCntSupName(k.supplier_no)) || '')+(k.eta_port ? ' · נמל '+poDate(k.eta_port) : '')+' · '+esc(k.status||'')+' · '+poCntLinesOf(k.id).length+' שורות</small></label>').join('')
     + '<label class="po-cnt-opt"><input type="radio" name="pca" value="new"'+(opts.length ? '' : ' checked')+'><b>מכולה חדשה</b></label>'
-    + '<div class="form-grid po-cnt-new"><div><label for="pca-no">מספר מכולה</label><input id="pca-no" dir="ltr" value="'+esc(String(r.container_no||'').trim())+'"></div>'
-    + '<div><label for="pca-ifn">מספר תיק יבוא</label><input id="pca-ifn" dir="ltr" value="'+esc(String(r.import_file_no||'').trim() || String(r.impfnum||'').trim())+'"></div></div>'
+    + '<div class="form-grid po-cnt-new"><div><label for="pca-no">מספר מכולה</label><input id="pca-no" dir="ltr"></div>'
+    + '<div><label for="pca-ifn">מספר תיק יבוא</label><input id="pca-ifn" dir="ltr"></div></div>'
     + '<div class="err" id="pca-err"></div>'
     + '<div class="actions"><button type="button" class="btn" id="pca-ok">שיוך</button><button type="button" class="ghost" id="pca-cancel">ביטול</button></div>';
-  /* הקלדה בשדות המכולה החדשה בוחרת בה — אחרת היא נשמרת למכולה המסומנת בראש הרשימה */
-  sh.querySelectorAll('#pca-no, #pca-ifn').forEach(x=>x.oninput = ()=>{ const rn = sh.querySelector('input[name=pca][value=new]'); if(rn) rn.checked = true; });
+  /* 7.63.0 — השדות משקפים את הבחירה: מכולה קיימת ⇒ המספרים שלה, נעולים; חדשה ⇒ פתוחים, עם ההצעה מההזמנה
+     (רומן: "למרות שאני בוחר הוא רושם את שם התיק הקיים בהזמנה ואז נוצר בלבול") */
+  const nv = { no:String(r.container_no||'').trim(), ifn:String(r.import_file_no||'').trim() || String(r.impfnum||'').trim() };
+  const noEl = $('#pca-no'), ifnEl = $('#pca-ifn');
+  const syncF = ()=>{ const pk = (sh.querySelector('input[name=pca]:checked')||{}).value || '', k = pk !== 'new' ? poCntById(pk) : null;
+    noEl.disabled = ifnEl.disabled = !!k;
+    noEl.value = k ? String(k.container_no||'').trim() : nv.no; ifnEl.value = k ? String(k.import_file_no||'').trim() : nv.ifn; };
+  noEl.oninput = ()=>{ nv.no = noEl.value; }; ifnEl.oninput = ()=>{ nv.ifn = ifnEl.value; };
+  sh.querySelectorAll('input[name=pca]').forEach(x=>x.onchange = syncF);
+  syncF();
   $('#pca-cancel').onclick = ()=> m.classList.add('hidden');
   let made = null;   /* מכולה שנפתחה בחלונית הזו — ניסיון חוזר אחרי כשל בשיוך משתמש בה (ממצא Fable) */
   $('#pca-ok').onclick = async ()=>{
@@ -13334,9 +13394,11 @@ window.poCntAsg = (on, ordis)=>{
     if(pick === 'new'){
       const no = (($('#pca-no')||{}).value || '').trim(), ifn = (($('#pca-ifn')||{}).value || '').trim();
       if(!no && !ifn){ e.textContent = 'נדרש מספר מכולה או מספר תיק יבוא'; btn.disabled = false; return; }
-      const k = made || await poCntNew({ container_no:no, import_file_no:ifn, supplier_no:r.supplier_no||'', eta_port:r.eta_port||null }, e);
+      /* 7.63.0 — מספר מכולה או תיק יבוא שכבר קיים ⇒ שיוך לקיימת, בלי כפולה */
+      const dup = made ? null : poCntDup(no, ifn, '');
+      const k = made || dup || await poCntNew({ container_no:no, import_file_no:ifn, supplier_no:r.supplier_no||'', eta_port:r.eta_port||null }, e);
       if(!k){ btn.disabled = false; return; }
-      if(!made){ made = k; poTools(); }
+      if(!made && !dup){ made = k; poTools(); }
       cid = k.id;
     }
     if(!cid){ e.textContent = 'בחרו מכולה'; btn.disabled = false; return; }
@@ -13347,7 +13409,8 @@ window.poCntAsg = (on, ordis)=>{
     }
     PO_CL = PO_CL.filter(x=>!(x.ordname===on && ordis.indexOf(Number(x.ordi)) >= 0)).concat(data);
     m.classList.add('hidden');
-    toast((n === 1 ? 'השורה שויכה' : n+' שורות שויכו')+' למכולה '+poCntLbl(poCntById(cid)));
+    toast((n === 1 ? 'השורה שויכה' : n+' שורות שויכו')+' למכולה '+poCntLbl(poCntById(cid))
+      + ((pick === 'new' && made === null) ? ' (המכולה כבר הייתה קיימת — לא נפתחה כפולה)' : ''));
     poAfterCnt(on);
   };
   m.classList.remove('hidden');
@@ -14630,7 +14693,7 @@ function docRow(p){
 }
 function renderDocs(){
   docChips();
-  const q=($('#docSearch').value||'').trim();
+  const q=($('#docSearch').value||'').trim().toLowerCase();   /* 7.62.3 — לא תלוי רישיות (רומן, 04/11/2026: "vic" לא מצא את Victor) */
   if(DOC_CAT==='monday'){
     if(!window.canView('docs.monday')){ $('#docs-list').innerHTML='<div class="empty">אין לך הרשאה לקטגוריה הזו</div>'; return; }
     if(DOCFILES===null){
@@ -14655,7 +14718,7 @@ function renderDocs(){
        עם "—" בעמודת האב וכפתור מחיקה של media (ממצא הסוקר). */
     let ml = DOCFILES.filter(f=>f.category==='media');
     if(DOC_MEDIA_REP) ml = ml.filter(f=>f.protocol_id===DOC_MEDIA_REP);
-    if(q) ml = ml.filter(f=>(f.file_name||'').includes(q)||mediaParentLabel(f).includes(q)||mediaRepLabel(f).includes(q));
+    if(q) ml = ml.filter(f=>String(f.file_name||'').toLowerCase().includes(q)||String(mediaParentLabel(f)||'').toLowerCase().includes(q)||String(mediaRepLabel(f)||'').toLowerCase().includes(q));
     let _g;   /* 7.10.0 — כותרת קבוצה כשהדוח מתחלף (capped מצייר לפי הסדר) */
     $('#docs-list').innerHTML = (DOC_MEDIA_REP ? '<div style="margin-bottom:var(--sp-2)"><button class="chip" onclick="docPhotosOf(null)">← כל התמונות</button></div>' : '')
       + capped(mediaGroupSort(ml), f=>{ const g = f.protocol_id||''; const h = g!==_g ? '<div class="doc-grp">'+esc(mediaParentLabel(f))+' · '+esc(mediaRepLabel(f))+'</div>' : ''; _g = g; return h+mediaCard(f); }, 'אין עדיין תמונות מהשטח');
@@ -14663,7 +14726,7 @@ function renderDocs(){
   }
   let list = docsVisible().filter(p=>DOC_CAT==='all'||(p.category||'protocols')===DOC_CAT);
   list = DOC_FILTER==='all'?list:(DOC_FILTER==='signed'?list.filter(p=>p.status==='נחתם'):list.filter(docPending));
-  if(q) list=list.filter(p=>(p.customer_name||'').includes(q)||(p.order_number||'').includes(q));
+  if(q) list=list.filter(p=>String(p.customer_name||'').toLowerCase().includes(q)||String(p.order_number||'').toLowerCase().includes(q));
   $('#docs-list').innerHTML = capped(list, p=>docRow(p), 'אין מסמכים בסינון הזה');
 }
 debounceSearch($('#docSearch'), renderDocs);
@@ -15076,7 +15139,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'posplit-2026-11-03a';
+const BUILD_ID = 'podense-2026-11-04a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -24684,10 +24747,10 @@ window.tkBulkToggle = ()=>{ TK_BULK = !TK_BULK; if(!TK_BULK){ TK_SEL.clear(); TK
 window.tkSelOne = (id, on)=>{ on ? TK_SEL.add(id) : TK_SEL.delete(id); tkSelBar(); tkSelPaint(); };
 /* 🔴 6.216.0 — נקודת חנק אחת ל"מה על המסך", לציור ולסימון גם יחד. */
 window.tkShown = ()=>{
-  const q = ((document.getElementById('taskSearch')||{}).value||'').trim();
+  const q = ((document.getElementById('taskSearch')||{}).value||'').trim().toLowerCase();   /* 7.62.3 — לא תלוי רישיות (רומן, 04/11/2026: "vic" לא מצא את Victor) */
   const base = tkApplyF(tkViewList());
   if(!q) return base;
-  return base.filter(t=>(t.name||'').includes(q)||tkLinkName(t).includes(q)||tkLinkPhone(t).includes(q));
+  return base.filter(t=>String(t.name||'').toLowerCase().includes(q)||String(tkLinkName(t)||'').toLowerCase().includes(q)||String(tkLinkPhone(t)||'').includes(q));
 };
 window.tkSelAll = (on)=>{
   const list = tkShown();
@@ -25651,12 +25714,12 @@ function custTable(list){
 }
 function renderCustomers(){
   cuInitDef(); cuChips(); renderCuFilters(); lfWrapSync('cu-filters');
-  const q=($('#custSearch').value||'').trim();
+  const q=($('#custSearch').value||'').trim().toLowerCase();   /* 7.62.3 — לא תלוי רישיות (רומן, 04/11/2026: "vic" לא מצא את Victor) */
   const base = cuApplyF(cuViewList());
   if(q){
     /* 6.186.0 — מכבד את הסינון, כמו בשאר המסכים. כולל שם הליד. */
-    const list=base.filter(c=>(c.name||'').includes(q)||(c.phone||'').includes(q)
-      ||(c.priority_id||'').includes(q)||custLeads(c).some(l=>(l.full_name||'').includes(q)));
+    const list=base.filter(c=>String(c.name||'').toLowerCase().includes(q)||String(c.phone||'').includes(q)
+      ||String(c.priority_id||'').toLowerCase().includes(q)||custLeads(c).some(l=>String(l.full_name||'').toLowerCase().includes(q)));
     paintKeep('#customers-list', wideScreen() ? custTable(list) : capped(list, custRow, crmEmptyMsg('לקוחות')));
     return;
   }
@@ -25826,9 +25889,9 @@ function contTable(list){
   return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="rownum">#</th><th>שם</th><th>טלפון</th><th>מייל</th><th>תפקיד</th><th>לקוח</th></tr></thead><tbody>${rows}</tbody></table></div>${pgFoot('cont',list.length,'אנשי קשר')}`;
 }
 function renderConts(){
-  const q=($('#contSearch').value||'').trim();
+  const q=($('#contSearch').value||'').trim().toLowerCase();   /* 7.62.3 — לא תלוי רישיות (רומן, 04/11/2026: "vic" לא מצא את Victor) */
   let list=CONTS;
-  if(q) list=CONTS.filter(k=>(k.full_name||'').includes(q)||(k.phone||'').includes(q)||(k.email||'').includes(q));
+  if(q) list=CONTS.filter(k=>String(k.full_name||'').toLowerCase().includes(q)||String(k.phone||'').includes(q)||String(k.email||'').toLowerCase().includes(q));
   $('#contacts-list').innerHTML = wideScreen() ? contTable(list) : capped(list, contRow, 'לא נמצאו אנשי קשר');
 }
 debounceSearch($('#contSearch'), renderConts);
@@ -27770,9 +27833,9 @@ function renderPays(){
   PAY_PENDING = false;
   payChips();
   payTiles();
-  const q = (($('#paySearch')||{}).value||'').trim();
+  const q = (($('#paySearch')||{}).value||'').trim().toLowerCase();   /* 7.62.3 — לא תלוי רישיות (רומן, 04/11/2026: "vic" לא מצא את Victor) */
   let list = finRows();
-  if(q) list = list.filter(f => String(f.order_number||'').includes(q) || String(f.customer_name||'').includes(q));
+  if(q) list = list.filter(f => String(f.order_number||'').toLowerCase().includes(q) || String(f.customer_name||'').toLowerCase().includes(q));
   list = list.slice().sort(paySortFn);
   /* במובייל אין עמודת סימון, ולכן בחירה שנשארה מהמסך הרחב אינה ניתנת
      לניהול ואינה נראית — מנקים במקום להשאיר פס פעולות מרחף על בחירה
@@ -29396,14 +29459,14 @@ window.dlBulkToggle = ()=>{ DL_BULK = !DL_BULK; if(!DL_BULK){ DL_SEL.clear(); DL
 window.dlSelOne = (id, on)=>{ on ? DL_SEL.add(id) : DL_SEL.delete(id); dlSelBar(); dlSelPaint(); };
 /* 🔴 6.216.0 — ראו tkShown. כאן זה סוגר גם את היעדר dlApplyF בענף החיפוש. */
 window.dlShown = ()=>{
-  const q = ((document.getElementById('dealSearch')||{}).value||'').trim();
+  const q = ((document.getElementById('dealSearch')||{}).value||'').trim().toLowerCase();   /* 7.62.3 — לא תלוי רישיות (רומן, 04/11/2026: "vic" לא מצא את Victor) */
   const base = dlApplyF(dlViewList());
   if(!q) return base;
   return base.filter(d=>{
-    if((d.name||'').includes(q) || (d.priority_quote_id||'').includes(q)) return true;
+    if(String(d.name||'').toLowerCase().includes(q) || String(d.priority_quote_id||'').toLowerCase().includes(q)) return true;
     const l = dlLead(d), k = dlCust(d);
-    return ((k&&k.name)||'').includes(q)
-        || ((l&&l.full_name)||'').includes(q)
+    return String((k&&k.name)||'').toLowerCase().includes(q)
+        || String((l&&l.full_name)||'').toLowerCase().includes(q)
         || (((l&&l.phone)||(k&&k.phone)||'')).includes(q);
   });
 };
@@ -31890,7 +31953,7 @@ function mSpan(m){
   return {s:s,e:e};
 }
 const mSortKey=m=>{ const sp=mSpan(m); return sp?sp.s:-1; };
-function mMatch(m,q){ const ln=linkedName(m); return [m.subject,m.location,m.organizer_name,m.meet_type,m.status,ln&&ln.name].some(v=>String(v||'').includes(q)); }
+function mMatch(m,q){ q=String(q||'').toLowerCase(); const ln=linkedName(m); return [m.subject,m.location,m.organizer_name,m.meet_type,m.status,ln&&ln.name].some(v=>String(v||'').toLowerCase().includes(q)); }   /* 7.62.3 — לא תלוי רישיות (רומן, 04/11/2026: "vic" לא מצא את Victor) */
 function meetsOn(ds){
   let l=MEETS.filter(m=>m.meet_date===ds && m.status!=='בוטלה');
   if(MCAL_Q) l=l.filter(m=>mMatch(m,MCAL_Q));
@@ -32636,10 +32699,10 @@ window.lbBulkToggle = ()=>{ LB_BULK = !LB_BULK; if(!LB_BULK) LB_SEL.clear(); ren
 window.lbSelOne = (id, on)=>{ on ? LB_SEL.add(id) : LB_SEL.delete(id); lbSelBar(); lbSelPaint(); };
 /* 🔴 6.216.0 — ראו tkShown. */
 window.lbShown = ()=>{
-  const q = ((document.getElementById('search')||{}).value||'').trim();
+  const q = ((document.getElementById('search')||{}).value||'').trim().toLowerCase();   /* 7.62.3 — לא תלוי רישיות (רומן, 04/11/2026: "vic" לא מצא את Victor) */
   const base = lbApplyF(lbViewList());
   if(!q) return base;
-  return base.filter(l=>(l.full_name||'').includes(q)||(l.phone||'').includes(q)||(l.company||'').includes(q));
+  return base.filter(l=>String(l.full_name||'').toLowerCase().includes(q)||String(l.phone||'').includes(q)||String(l.company||'').toLowerCase().includes(q));
 };
 window.lbSelAll = (on)=>{
   const list = lbShown();
@@ -37538,7 +37601,8 @@ boot();
   function gsBusy(on){
     var h = document.querySelector('#gsModal .gs-head'), b = gsBody();
     if(h) h.classList.toggle('busy', !!on);
-    if(b) b.classList.toggle('busy', !!(on && gsRows.length));
+    /* 7.62.1 — גם כשכל התוצאות נבלעו בשמות (gsRows ריק): הרשימה מתעמעמת ולא מתחלפת ב"מחפש…" */
+    if(b) b.classList.toggle('busy', !!(on && (gsRows.length || (gsPeople && gsPeople.length))));
   }
   function gsCacheGet(q){ return Object.prototype.hasOwnProperty.call(gsCache, q) ? gsCache[q] : null; }
   function gsCachePut(q, ent){
@@ -37665,7 +37729,7 @@ boot();
   function gsRender(state, q, keepIdx){
     var b = gsBody(); if(!b) return;
     if(state === 'short'){ gsCnt(''); b.innerHTML = '<div class="gs-msg">הקלד לפחות שני תווים, או שש ספרות לחיפוש טלפון.</div>'; return; }
-    if(state === 'load'){ if(!gsRows.length) b.innerHTML = '<div class="gs-msg">מחפש…</div>'; return; }
+    if(state === 'load'){ if(!gsRows.length && !(gsPeople && gsPeople.length)) b.innerHTML = '<div class="gs-msg">מחפש…</div>'; return; }
     if(state === 'err'){ gsCnt(''); b.innerHTML = '<div class="gs-msg">החיפוש נכשל. נסה שוב בעוד רגע.</div>'; return; }
     if(gsPeople){ gsRenderPeople(b, q, keepIdx); return; }   /* 7.32.0 — מצב שמות */
     if(!gsRows.length){ gsCnt(''); b.innerHTML = '<div class="gs-msg">לא נמצאו תוצאות ל־"' + esc(q) + '".</div>'; return; }
@@ -37722,18 +37786,32 @@ boot();
     var w = String(n || '').trim().split(/ +/).filter(Boolean);
     return ((w[0] || '').charAt(0) + (w.length > 1 ? w[w.length - 1].charAt(0) : '')) || '?';
   }
+  /* 7.62.1 — "מוצגים 12 מתוך 46": השמות שמעבר לתקרה אינם ב-'other', ולכן בלי זה הקיטוע היה שקט */
+  function gsPCut(P){ return !!(P && ((+P.total || 0) > P.length || P.capped)); }
+  function gsPCount(P){
+    var n = P.length, all = Math.max(+(P && P.total) || 0, n);
+    /* capped: global_search קטמה 25 לסוג — המונה הוא חסם תחתון, ולכן "46+" ולא "46" */
+    return gsPCut(P) ? n + ' מתוך ' + all + (P.capped ? '+' : '') + ' שמות' : (n === 1 ? 'שם אחד' : n + ' שמות');
+  }
   function gsCntLbl(t, n){ var m = GS_TYPES[t]; return n === 1 ? (GS_ONE[t] || (m ? m.lbl : t)) : n + ' ' + (m ? m.lbl : t); }
+  /* 7.62.1 — why/email מ-gs_people_20261104. המייל רק כשההתאמה הייתה בו: אחרת השורה מתארכת בלי סיבה. */
+  function gsPWhy(p){ return Array.isArray(p && p.why) ? p.why : []; }
   function gsPSub(p){
-    return [p.phone, p.city, (Array.isArray(p.pid) && p.pid.length) ? 'לקוח ' + p.pid.join(', ') : ''].filter(Boolean).join(' · ');
+    return [p.phone, gsPWhy(p).indexOf('email') >= 0 ? p.email : '', p.city,
+            (Array.isArray(p.pid) && p.pid.length) ? 'לקוח ' + p.pid.join(', ') : ''].filter(Boolean).join(' · ');
   }
   function gsRenderPeople(b, q, keepIdx){
     var P = gsPeople || [];
     if(!P.length && !gsRows.length){ gsCnt(''); b.innerHTML = '<div class="gs-msg">לא נמצאו תוצאות ל־"' + esc(q) + '".</div>'; return; }
     var h = '';
     if(P.length){
-      h += '<div class="gs-hint"><b>' + (P.length === 1 ? 'שם אחד' : P.length + ' שמות') + '</b> · לחיצה פותחת את כל מה שקשור לשם</div>';
+      var cut = gsPCut(P);
+      h += '<div class="gs-hint">' + (cut ? 'מוצגים ' : '') + '<b>' + esc(gsPCount(P)) + '</b> · ' +
+           (cut ? 'דייק את החיפוש כדי לראות את השאר' : 'לחיצה פותחת את כל מה שקשור לשם') + '</div>';
       P.forEach(function(p, i){
         var cn = p.counts || {}, tags = '';
+        /* 7.62.1 — "התאמה בטלפון/במייל/במספר" לפני השבבים, כמו בקיבוץ לפי סוג. "בשם" לא מוצג: בחיפוש שם זה רעש. */
+        gsPWhy(p).forEach(function(k){ if(k !== 'name' && GS_WHY[k]) tags += '<span class="gs-tag why">' + esc(GS_WHY[k]) + '</span>'; });
         GS_PTYPES.forEach(function(t){ var n = +cn[t] || 0; if(n > 0) tags += '<span class="gs-tag">' + esc(gsCntLbl(t, n)) + '</span>'; });
         var st = p.status;   /* ⚠️ לא esc(p.status): protosendtest סופר את המחרוזת הזו בהקשר המסמכים */
         if(st) tags += '<span class="gs-tag">' + esc(st) + '</span>';
@@ -37749,7 +37827,7 @@ boot();
     if(gsRows.length) h += '<div class="gs-more">' + (P.length ? 'תוצאות נוספות' : 'תוצאות') + '</div>' + gsGroupedHtml(q);
     b.innerHTML = h;
     if(!keepIdx) gsIdx = -1;
-    gsCnt([P.length ? (P.length === 1 ? 'שם אחד' : P.length + ' שמות') : '',
+    gsCnt([P.length ? gsPCount(P) : '',
            gsRows.length ? gsRows.length + (P.length ? ' תוצאות נוספות' : ' תוצאות') : ''].filter(Boolean).join(' · '));
   }
   function gsRenderPerson(){
@@ -37804,6 +37882,9 @@ boot();
   }
   GS.person = function(i){
     var p = gsPeople && gsPeople[i]; if(!p) return;
+    /* 7.62.1 — בזמן טעינה הרשימה הישנה נשארת (מתעמעמת); לחיצה/Enter עליה הייתה פותחת את השם הישן, ותשובת
+       gs_related המאוחרת מציירת אותו מעל התוצאות החדשות. השורות אינן פעילות עד שהתשובה מגיעה. */
+    var bb = gsBody(); if(bb && bb.classList.contains('busy')) return;
     var b = gsBody(); gsScroll = b ? b.scrollTop : 0;
     var tok = gsPerson = { p:p, q:gsLast, rows:gsRelCache[p.key] || null, tab:'all', err:null };
     gsPScroll = 0;
@@ -37870,6 +37951,9 @@ boot();
       gsBusy(false);
       if(res.error){ gsRows = []; gsPeople = null; gsRender('err', q); return; }
       var d = res.data || {}; gsPeople = Array.isArray(d.people) ? d.people : []; gsRows = Array.isArray(d.other) ? d.other : [];
+      /* 7.62.1 — people_total (gs_people_20261104): כמה שמות היו לפני התקרה. נשמר על המערך עצמו כדי שיעבור
+         עם המטמון בכל מסלולי החזרה (GS.run מהמטמון, GS.open(q,true)) בלי לגעת בהם. שרת ישן ⇒ אין מפתח ⇒ 0. */
+      gsPeople.total = +d.people_total || 0; gsPeople.capped = !!d.people_capped;
       gsOpen = gsDefOpen(gsGroup(gsRows).order, gsRows);
       gsCachePut(q, { rows:gsRows, open:gsOpen, people:gsPeople });
       gsRender('ok', q);

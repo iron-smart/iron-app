@@ -2774,6 +2774,7 @@ span.po-est{ cursor:default; }
 .po-kt.late>b{ color:var(--red); }
 .po-kt.on{ border-color:var(--navy); box-shadow:inset 0 0 0 1px var(--navy); }
 #po-body small.po-sub{ display:block; font-size:var(--fs-xs); font-weight:400; color:var(--ink-3); }
+#po-body small.po-draft-t{ display:block; margin-top:var(--sp-0h); font-size:var(--fs-xs); font-weight:700; color:var(--ink-3); }   /* 7.64.1 — טיוטא בתוך "פתוחות" */
 #po-body small.po-late-t{ display:inline; margin-inline-start:var(--sp-1h); font-size:var(--fs-xs); font-weight:700; color:var(--red); }   /* 7.63.0 — באותה שורה עם התאריך */
 #po-body .po-port{ display:flex; align-items:center; flex-wrap:nowrap; gap:var(--sp-1); margin-top:var(--sp-0h); font-size:var(--fs-xs); font-weight:400; color:var(--ink-2); }
 #po-body td.po-due .datewrap .inline-edit.ie-date{ font-size:var(--fs-xs); padding-block:0; }   /* 7.63.0 — שדה הנמל בגובה שורת טקסט */
@@ -4459,7 +4460,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.64.0</div>
+      <div class="ver">גרסה 7.64.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4606,7 +4607,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="pocols-2026-11-04a">גרסה 7.64.0</div>
+    <div class="side-foot" title="podraft-2026-11-04a">גרסה 7.64.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -12445,6 +12446,10 @@ const poIsOpen = r => !poCancelled(r) && r.our_status !== 'הושלם';
    לאישור בפריוריטי; poCancelled מחשיב טיוטא כלא-פתוחה, ולכן היא אינה נספרת ב"פתוחות" ומקבלת אריח משלה. */
 const poOnWay = r => poIsOpen(r) && (['נשלחה','בנמל'].indexOf(r.our_status) >= 0 || /בדרך/.test(String(r.priority_status||'')));
 const poAwait = r => /טיוט|מחכה/.test(String(r.priority_status||'')) && !/בוטל/.test(String(r.priority_status||''));
+/* 7.64.1 — podraft: תצוגת "פתוחות" כוללת גם טיוטא / מחכה לאישור (רומן, 04/11/2026: "קצת מבלבל" — טיוטות נראו
+   רק תחת "ממתינות לאישור" ונחשבו "לא מגיעות למערכת"). 🔴 poIsOpen לא זז — הוא מראה של ord.po_is_open (לובי,
+   באיחור, בדרך); זו הגדרת התצוגה בלבד: האריח, הסכום שבו והסינון. */
+const poOpenView = r => poIsOpen(r) || poAwait(r);
 /* האריחים סופרים לפי סינון הספקים/המטבע/סטטוס פריוריטי — לא לפי התצוגה והחיפוש, שאותם הם עצמם קובעים */
 const poInScope = r => (!PO_F.sups.length || PO_F.sups.indexOf(r.supplier_no) >= 0) && (!PO_F.pri || r.priority_status === PO_F.pri) && (!PO_F.cur || r.currency === PO_F.cur);
 /* 6.219.0 — ביטול בלבד (בלי טיוטא): הסטטוס הפנימי של הזמנה מבוטלת אינו ניתן לעריכה —
@@ -12763,7 +12768,7 @@ function poViews(){
       + (PO_SS_DEF===s.id ? ' <span class="po-tab-def" title="ברירת המחדל שלך">✓</span>' : '') + '</button>').join('')
     + '</div>' : '';
   /* 7.60.0 — polist: ארבעה אריחים לחיצים — מה שדורש טיפול, במספרים, לפני הטבלה. לחיצה = PO_VIEW */
-  const base = PO.filter(poInScope), lO = base.filter(poIsOpen), lL = base.filter(r=>poLateDays(r) > 0), lW = base.filter(poOnWay), lA = base.filter(poAwait);
+  const base = PO.filter(poInScope), lO = base.filter(poOpenView), lL = base.filter(r=>poLateDays(r) > 0), lW = base.filter(poOnWay), lA = base.filter(poAwait);
   const sums = {}; lO.forEach(r=>{ const k = poCur(r.currency) || ''; sums[k] = (sums[k]||0) + (Number(r.price_incl_vat)||0); });
   /* 7.63.0 — שורה אחת: ההסבר ב-title (po-kt-x מוסתר); הסכום של "פתוחות" נשאר גלוי (keep) */
   const tile = (v, lbl, n, sub, cls, keep) => '<button class="po-kt'+(cls ? ' '+cls : '')+(PO_VIEW===v ? ' on' : '')+'" data-po-view="'+v+'" aria-pressed="'+(PO_VIEW===v ? 'true' : 'false')+'"'
@@ -12772,7 +12777,7 @@ function poViews(){
   const kpi = '<div class="po-ktiles" id="po-kpi">'
     + tile('late', 'באיחור', lL.length, lL.length ? 'אספקה שעברה ויש שורות פתוחות' : 'אין הזמנות באיחור', lL.length ? 'late' : '')
     + tile('way', 'בדרך / בנמל', lW.length, 'נשלחו מהספק או בנמל')
-    + tile('wait', 'ממתינות לאישור', lA.length, 'טיוטא או מחכה לאישור בפריוריטי')
+    + tile('wait', 'ממתינות לאישור', lA.length, 'טיוטא או מחכה לאישור — כלולות בפתוחות')
     + tile('open', 'פתוחות', lO.length, Object.keys(sums).map(k=>'<span dir="ltr">'+k+Number(sums[k]).toLocaleString('he-IL',{maximumFractionDigits:0})+'</span>').join(' · '), '', true)
     + '</div>';
   el.innerHTML = tabs + kpi + chips.map(c=>'<button class="chip'+(PO_VIEW===c[0]?' active':'')+'" data-po-view="'+esc(c[0])+'">'
@@ -12784,7 +12789,7 @@ function poViews(){
 function poFiltered(){
   const q = PO_F.q.trim().toLowerCase();
   return PO.filter(r=>{
-    if(PO_VIEW === 'open'){ if(!poIsOpen(r)) return false; }
+    if(PO_VIEW === 'open'){ if(!poOpenView(r)) return false; }
     else if(PO_VIEW === 'late'){ if(!(poLateDays(r) > 0)) return false; }
     else if(PO_VIEW === 'way'){ if(!poOnWay(r)) return false; }
     else if(PO_VIEW === 'wait'){ if(!poAwait(r)) return false; }
@@ -12873,7 +12878,8 @@ function poBody(){
            ולא ieSave: ieSave עושה update בלי .select() ואז Object.assign, בעוד הטריגר במסד
            עשוי להחזיר ערך אחר ("הזמנה חדשה" על הזמנה שבדרך ← "נשלחה") — והטבלה הציגה את מה שנבחר. */
         + '<td class="stcell po-m">'+(poVoid(r) ? mdPill(r.our_status||'מבוטלת', PO_ST_MD, LB_TK)
-            : ieSel('po', r.ordname, 'our_status', PO_STATUSES, r.our_status, {mdColors:PO_ST_MD, mdK:LB_TK, on:"poStatusSet(this,'"+jsq(r.ordname)+"')"}))+'</td>'
+            : ieSel('po', r.ordname, 'our_status', PO_STATUSES, r.our_status, {mdColors:PO_ST_MD, mdK:LB_TK, on:"poStatusSet(this,'"+jsq(r.ordname)+"')"}))
+          + (poAwait(r) ? '<small class="po-draft-t">'+(/מחכה/.test(String(r.priority_status||'')) ? 'מחכה לאישור' : 'טיוטא')+' בפריוריטי</small>' : '')+'</td>'
         + '<td class="po-due'+((g.open || impR) ? ' po-m' : '')+(dueLate ? ' po-warn' : '')+'" data-l="אספקה" data-sort="'+esc(g.next||'')+'">'
           + (g.open ? poDate(g.next)+poMoreDates(g) : '—')
           + (dueLate ? '<small class="po-late-t" title="מועד האספקה עבר ויש שורות פתוחות">באיחור '+lateN+(lateN===1 ? ' יום' : ' ימים')+'</small>' : '')
@@ -15140,7 +15146,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'pocols-2026-11-04a';
+const BUILD_ID = 'podraft-2026-11-04a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה

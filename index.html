@@ -4314,6 +4314,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
 #mktDrillList{ overflow:auto; flex:1 1 auto; min-height:0; }
 #mktDrillList table.tbl td{ font-size:var(--fs-sm); padding:6px 8px; }
 #mktDrillList tr[data-id]{ cursor:pointer; }
+#tab-mkt .mkt-ord-tbl tr[data-camp]{ cursor:pointer; }   /* 7.65.0 — שורת קמפיין פותחת את ההזמנות */
 #mktDrillList .kd{ font-size:var(--fs-xs); padding:2px 7px; border-radius:var(--r-pill); background:#eef4ff; color:var(--navy); }
 #mktDrillList .kd.deal{ background:#f3e8ff; color:#5b21b6; }
 /* ── 6.202.0 — תיקוני הביקורת + ניתוח דינמי ── */
@@ -4460,7 +4461,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.64.1</div>
+      <div class="ver">גרסה 7.65.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4607,7 +4608,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="podraft-2026-11-04a">גרסה 7.64.1</div>
+    <div class="side-foot" title="mktorders-2026-11-05a">גרסה 7.65.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -15146,7 +15147,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'podraft-2026-11-04a';
+const BUILD_ID = 'mktorders-2026-11-05a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -23517,7 +23518,7 @@ async function mktLoad(force){
     if(r.error){ mktStatus('טעינת הדשבורד נכשלה: '+(r.error.message||'')); return; }
     if(r.data==null){ mktStatus('אין הרשאה לדשבורד השיווק'); return; }
     MKT_D=r.data; MKT_AT=Date.now(); MKT_LAST=key; ok=true;
-    MKT_PV.key=''; MKT_IN.key='';   /* נתונים חדשים מהשרת ⇒ גם הניתוח הדינמי נטען מחדש (ולא ממטמון שנבנה על התשובה הקודמת) */
+    MKT_PV.key=''; MKT_IN.key=''; MKT_OR.key='';   /* נתונים חדשים מהשרת ⇒ גם הניתוח הדינמי נטען מחדש (ולא ממטמון שנבנה על התשובה הקודמת) */
     mktPaintBar(); mktPaint();
   }catch(e){ mktStatus('טעינת הדשבורד נכשלה: '+String(e)); }
   finally{
@@ -23744,6 +23745,7 @@ function mktPaint(){
     (k.spend>0 ? mktTile('הוצאת פרסום', mktTM(k.spend), k.spend, pv.spend, null, 'money', false)+mktTile('CPL — עלות לליד', mktTM(k.cpl), k.cpl, pv.cpl, null, 'money', false)+mktTile('CAC — עלות ללקוח', mktTM(k.cac), k.cac, pv.cac, null, 'money', false)+mktTile('ROAS', mktX(k.roas), k.roas, pv.roas, null, 'money') : ''))+
     (D.mode_note ? '<div class="mkt-modenote">'+esc(D.mode_note)+'</div>' : '')+
     '<div class="mkt-note" style="margin:-6px 0 var(--sp-3)">השוואה מול '+esc(fmtD(D.kpi.prev_from))+' – '+esc(fmtD(D.kpi.prev_to))+' · '+(MKT_F.date_mode==='close'?'עסקאות לפי תאריך סגירה':'כל העסקאות של הלידים שנוצרו בטווח (קוהורט); עסקה בלי ליד — לפי תאריך סגירתה')+' · לחיצה על כל מספר פותחת את הרשומות</div>'+
+    '<div class="mkt-card" id="mkt-orders"></div>'+
     '<div class="mkt-card" id="mkt-trend"></div>'+
     '<div class="mkt-grid2"><div class="mkt-card" id="mkt-funnel"></div><div class="mkt-card" id="mkt-response"></div></div>'+
     '<div class="mkt-card" id="mkt-sources"></div>'+
@@ -23755,7 +23757,7 @@ function mktPaint(){
     '<div class="mkt-card" id="mkt-quality"></div>'+
     '<div class="mkt-card" id="mkt-spend"></div>';
   body.innerHTML=h;
-  mktPaintTrend(); mktPaintFunnel(); mktPaintResponse(); mktPaintTables(); mktPaintIntent(); mktPaintPivot(); mktPaintLost(); mktPaintQuality(); mktPaintSpend();
+  mktPaintOrders(); mktPaintTrend(); mktPaintFunnel(); mktPaintResponse(); mktPaintTables(); mktPaintIntent(); mktPaintPivot(); mktPaintLost(); mktPaintQuality(); mktPaintSpend();
 }
 function mktPaintFunnel(){
   const el=document.getElementById('mkt-funnel'); if(!el||!MKT_D) return;
@@ -23865,6 +23867,95 @@ async function mktPaintIntent(){
   }catch(e){ put('<div class="empty">'+esc('טעינת הפילוח נכשלה: '+String(e))+'</div>'); }
   finally{ MKT_IN.busy=false; if(MKT_IN.again){ MKT_IN.again=false; mktPaintIntent(); } }
 }
+/* ===== הכנסות בפועל — מההזמנות (7.65.0 mktorders) =====
+   רומן (05/11/2026): "ה-CRM שלנו צודק" — המדידה מהמערכת. עד כאן הדשבורד ספר רק עסקאות שמקושרות לליד, ולכן
+   הזמנה חוזרת, קנייה באתר, ליד כפול וליד שלא הומר לא נספרו (קמפיין B2B 01/01/26: ₪438K מול ₪598K בהזמנות שלנו).
+   ההגדרה בשרת בלבד (crm.mkt_orders): לקוח מקבל ליד מקור אחד (הליד הראשון) · לקוח חדש — כל הזמנותיו ב-12
+   החודשים מהליד · לקוח קיים — רק הזמנות שההצעה שלהן בעסקה שמקושרת לליד. הסכום אחרי הנחה, בלי מבוטלת, כולל זיכויים.
+   כאן רק ציור: טעינה עצלה ומטמון לפי ה-payload — הדפוס של MKT_IN. */
+let MKT_OR = { key:'', data:null, busy:false, again:false };
+const MKT_OR_HEAD = '<h3>הכנסות בפועל — מההזמנות <small>כל ההזמנות של הלקוחות שהלידים הביאו, אחרי הנחה ולפני מע"מ · באותם מסננים</small></h3>';
+function mktOrdersHtml(D){
+  const rows = D.by_campaign || [];
+  if(!(+D.orders_n > 0)) return '<div class="db-empty">אין הזמנות של לקוחות מהלידים בטווח ובסינון.</div>';
+  let h = '<div class="db-fin">'+
+    '<div><b>'+mktTM(D.revenue)+'</b><small>'+mktN(D.orders_n)+' הזמנות · '+mktN(D.customers_n)+' לקוחות</small></div>'+
+    '<div><b>'+mktTM(D.revenue_new)+'</b><small>מ-'+mktN(D.new_customers_n)+' לקוחות חדשים</small></div>'+
+    '<div><b>'+(+D.spend > 0 ? mktX(D.roas) : '—')+'</b><small>'+(+D.spend > 0 ? 'ROAS בפועל · הוצאה '+mktTM(D.spend) : 'אין הוצאת פרסום בסינון')+'</small></div></div>';
+  h += '<div class="tbl-wrap"><table class="tbl mkt-ord-tbl"><thead><tr><th>קמפיין</th><th class="num">לקוחות</th><th class="num">הזמנות</th><th class="num">הכנסות בפועל</th><th class="num">מלקוחות חדשים</th><th class="num">הוצאה</th><th class="num">ROAS</th></tr></thead><tbody>'+
+    rows.map(r => {
+      const none = r.k === '__none__', lbl = none ? 'ללא קמפיין' : r.k;
+      return '<tr'+(none ? '' : ' data-camp="'+esc(r.k)+'" role="button" tabindex="0" onclick="mktOrdDrill(this)"')+'><td>'+esc(lbl)+'</td>'+
+        '<td class="num">'+mktN(r.customers_n)+'</td><td class="num">'+mktN(r.orders_n)+'</td><td class="num">'+mktM(r.revenue)+'</td>'+
+        '<td class="num">'+mktM(r.revenue_new)+'</td><td class="num">'+(+r.spend > 0 ? mktM(r.spend) : '—')+'</td><td class="num">'+(r.roas != null ? mktX(r.roas) : '—')+'</td></tr>'; }).join('')+
+    '</tbody></table></div>';
+  return h + '<div class="mkt-note">'+(+D.revenue_existing > 0 ? 'מזה '+mktM(D.revenue_existing)+' מלקוחות שהיו קיימים לפני הליד — רק מה שנמכר להם דרך הליד · ' : '')+
+    'לקוח מקושר לליד דרך עסקה, דרך המרת הליד או לפי טלפון שתואם ללקוח אחד בלבד · ליד כפול נספר פעם אחת, לליד הראשון · לחיצה על קמפיין פותחת את ההזמנות</div>';
+}
+async function mktPaintOrders(){
+  const el = document.getElementById('mkt-orders'); if(!el || !MKT_D) return;
+  if(!canView('mkt.dash')) return;
+  const key = JSON.stringify(mktPayload());
+  if(MKT_OR.key === key && MKT_OR.data){ el.innerHTML = MKT_OR_HEAD + mktOrdersHtml(MKT_OR.data); return; }
+  el.innerHTML = MKT_OR_HEAD + crmLoading();
+  if(MKT_OR.busy){ MKT_OR.again = true; return; }
+  MKT_OR.busy = true;
+  const put = h => { const e = document.getElementById('mkt-orders'); if(e) e.innerHTML = MKT_OR_HEAD + h; };
+  try{
+    const r = await sb.schema('crm').rpc('mkt_orders_summary', { p:mktPayload() });
+    if(r.error){ put('<div class="empty">'+esc('טעינת ההכנסות מההזמנות נכשלה: '+(r.error.message||''))+'</div>'); return; }
+    if(r.data == null){ put('<div class="empty">אין הרשאה</div>'); return; }
+    MKT_OR.key = key; MKT_OR.data = r.data;
+    if(JSON.stringify(mktPayload()) === key) put(mktOrdersHtml(r.data));
+  }catch(e){ put('<div class="empty">'+esc('טעינת ההכנסות מההזמנות נכשלה: '+String(e))+'</div>'); }
+  finally{ MKT_OR.busy = false; if(MKT_OR.again){ MKT_OR.again = false; mktPaintOrders(); } }
+}
+/* הרשימה שמאחורי שורת קמפיין — באותה חלונית של ה-drill, במצב נפרד (MKT_OD) כדי לא לגעת ב-MKT_DR */
+let MKT_OD = null;
+function mktOrdDrillRender(){
+  const list = document.getElementById('mktDrillList'); if(!list || !MKT_OD) return;
+  list.innerHTML = '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>הזמנה</th><th>תאריך</th><th>לקוח</th><th>סטטוס</th><th class="num">סכום</th><th>שיוך</th></tr></thead><tbody>'+
+    MKT_OD.rows.map(x => '<tr><td><b>'+esc(x.order_number||'')+'</b></td><td>'+esc(x.order_date ? fmtD(x.order_date) : '')+'</td>'+
+      '<td>'+esc(x.customer_name||'')+'<div class="mkt-note" style="margin:0">'+esc(x.customer_number||'')+'</div></td><td>'+esc(x.status||'')+'</td>'+
+      '<td class="num">'+mktM(x.net)+'</td><td><span class="kd'+(x.attr === 'new' ? '' : ' deal')+'">'+(x.attr === 'new' ? 'לקוח חדש' : 'דרך עסקה')+'</span></td></tr>').join('')+
+    '</tbody></table></div>'+
+    (MKT_OD.err ? '<div class="mkt-drerr">'+esc(MKT_OD.err)+'</div>' : '')+
+    (MKT_OD.rows.length < MKT_OD.total ? '<div style="text-align:center;padding:var(--sp-2)"><button type="button" class="chip" onclick="mktOrdDrillMore()"'+(MKT_OD.busy ? ' disabled' : '')+'>'+(MKT_OD.busy ? 'טוען…' : 'עוד ('+mktN(MKT_OD.total - MKT_OD.rows.length)+')')+'</button></div>' : '');
+}
+async function mktOrdLoad(off){
+  if(!MKT_OD) return;
+  const m = document.getElementById('mktDrillModal'), list = document.getElementById('mktDrillList'), nt = document.getElementById('mktDrillNote');
+  if(off && MKT_OD.busy) return;
+  MKT_OD.busy = true; MKT_OD.err = ''; if(off) mktOrdDrillRender();
+  let r;
+  try{ r = await sb.schema('crm').rpc('mkt_orders_list', { p:MKT_OD.p, p_limit:200, p_offset:off||0 }); }
+  catch(e){ r = { error:{ message:String(e) } }; }
+  if(!m || m.classList.contains('hidden') || MKT_OD.tok !== MKT_OD_TOK) return;   /* החלונית נסגרה או נפתחה לרשימה אחרת */
+  MKT_OD.busy = false;
+  if(r.error || r.data == null){
+    const msg = r.error ? (r.error.message||'') : 'אין הרשאה';
+    if(!off){ list.innerHTML = '<div class="empty">הטעינה נכשלה: '+esc(msg)+'</div>'; return; }
+    MKT_OD.err = 'טעינת ההמשך נכשלה: '+msg+' — אפשר לנסות שוב'; mktOrdDrillRender(); return;
+  }
+  const d = r.data;
+  (d.rows||[]).forEach(x => { if(MKT_OD.seen[x.order_number]) return; MKT_OD.seen[x.order_number] = 1; MKT_OD.rows.push(x); });
+  MKT_OD.total = +d.total || 0;
+  nt.textContent = mktN(MKT_OD.total)+' הזמנות · סה"כ '+mktM(d.sum)+' · '+fmtD(MKT_OD.p.from)+' – '+fmtD(MKT_OD.p.to);
+  mktOrdDrillRender();
+}
+let MKT_OD_TOK = 0;
+window.mktOrdDrill = tr => {
+  if(!canView('mkt.dash')) return;
+  const camp = tr && tr.getAttribute('data-camp'); if(!camp) return;
+  const m = document.getElementById('mktDrillModal'), list = document.getElementById('mktDrillList'), tt = document.getElementById('mktDrillTitle'), nt = document.getElementById('mktDrillNote');
+  if(!m || !list) return;
+  MKT_DR = null;   /* "עוד" של ה-drill הרגיל לא יפעל על הרשימה הזו */
+  const p = Object.assign({}, mktPayload(), { campaigns:[camp] });
+  MKT_OD = { p, rows:[], total:0, seen:{}, busy:false, err:'', tok:++MKT_OD_TOK };
+  tt.textContent = 'הזמנות · '+camp; nt.textContent = ''; list.innerHTML = '<div class="empty">טוען…</div>'; m.classList.remove('hidden');
+  mktOrdLoad(0);
+};
+window.mktOrdDrillMore = () => { if(MKT_OD && !MKT_OD.busy) mktOrdLoad(MKT_OD.rows.length); };
 /* ── ניתוח דינמי (6.202.0) — mkt_pivot(p, row, col): הגדרה אחת בשרת, כאן רק בחירה וציור ── */
 let MKT_PV = { key:'', data:null, busy:false, again:false, sorted:false };
 function mktPivotKey(){ return JSON.stringify([mktPayload(), MKT_F.pivot.row, MKT_F.pivot.col]); }

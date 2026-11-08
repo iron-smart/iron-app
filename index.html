@@ -4487,7 +4487,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.67.0</div>
+      <div class="ver">גרסה 7.67.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4634,7 +4634,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="leadret-2026-11-08a">גרסה 7.67.0</div>
+    <div class="side-foot" title="leadmeet-2026-11-08a">גרסה 7.67.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -15239,7 +15239,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'leadret-2026-11-08a';
+const BUILD_ID = 'leadmeet-2026-11-08a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -33956,11 +33956,29 @@ function lbTmActs(id){
 /* ציור מחדש **במקומו** של בלוק המשימות והפגישות בכרטיס הליד.
    ⚠️ ולא openLead: mountCard מאפס scrollTop=0, והמשתמש נמצא בתחתית
       הכרטיס בדיוק כשהוא עורך מועד. */
+/* 🔴 7.67.1 — משימות ופגישות של הליד **ושל הפגישות של הלקוח המקושר** (רומן, 08/11/2026, מתן חמו:
+   "אני רק רוצה להוסיף כל מה שקשור לפגישה לכרטיס הליד"). פגישה שנקבעה מכרטיס הלקוח מקושרת ל-customer,
+   ולפגישה יש קישור אחד במסד. ⇒ מצרפים: כל פגישה של הלקוח · משימה של הלקוח רק אם category='פגישה'.
+   הלקוח = lbCustId (customer_id, או הצלבת טלפון חד-משמעית; עמומה ⇒ '' ⇒ אין צירוף).
+   ⚠️ שני קוראים — openLead ו-lbTmRedraw — חייבים את אותו כלל, אחרת עריכת מועד מעלימה את הפגישה. */
+function lbKinCid(leadId){
+  const l = (LEADS||[]).find(x=>x.id===leadId);
+  return l ? lbCustId(l, lbMatch(l)) : '';
+}
+function lbKinT(leadId, cid){
+  return (TASKS||[]).filter(t=>(t.linked_type==='lead' && t.linked_id===leadId)
+    || (!!cid && t.linked_type==='customer' && t.linked_id===cid && t.category==='פגישה'));
+}
+function lbKinM(leadId, cid){
+  return (MEETS||[]).filter(m=>(m.linked_type==='lead' && m.linked_id===leadId)
+    || (!!cid && m.linked_type==='customer' && m.linked_id===cid));
+}
 window.lbTmRedraw = (leadId)=>{
   const box = document.getElementById('lb-tmblock');
   if(!box || !leadId || box.dataset.lead !== leadId) return false;
-  const _t = (TASKS||[]).filter(t=>t.linked_type==='lead' && t.linked_id===leadId);
-  const _m = (MEETS||[]).filter(m=>m.linked_type==='lead' && m.linked_id===leadId);
+  const _cid = lbKinCid(leadId);
+  const _t = lbKinT(leadId, _cid);
+  const _m = lbKinM(leadId, _cid);
   box.innerHTML = lbTmBlock(_t.filter(tmOpen), _m.filter(m=>!mDone(m)), lbTmActs(leadId));
   return true;
 };
@@ -34267,8 +34285,8 @@ window.openLead = (id)=>{
   const meId=lbMe();
   /* 🔴 6.145.0 — הסינון פעם אחת, והחלוקה אחריו. המיון ירד מכאן: כל בלוק
      ממיין בכיוון שלו (פתוח = הקרוב קודם · היסטוריה = האחרון קודם). */
-  const _lbT=(TASKS||[]).filter(t=>t.linked_type==='lead'&&t.linked_id===id);
-  const _lbM=(MEETS||[]).filter(m=>m.linked_type==='lead'&&m.linked_id===id);
+  const _lbT=lbKinT(id, _lcid);
+  const _lbM=lbKinM(id, _lcid);
   const myTasks=_lbT.filter(tmOpen),  myMeets=_lbM.filter(m=>!mDone(m));
   const hsTasks=_lbT.filter(tmDone),  hsMeets=_lbM.filter(mDone);
   $('#leadSheet').innerHTML = `

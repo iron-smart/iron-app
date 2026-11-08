@@ -3365,6 +3365,19 @@ td.lb-today .lb-dt{ background-color:transparent; }
 .pill.lb-cx{ background:#e0f2fe; color:#075985; border:1px solid #bae6fd; }
 .pill.lb-cxamb{ background:#fef3c7; color:#92400e; border:1px solid #fde68a; }
 .lb-cxnew{ color:var(--ink-3); font-size:var(--fs-xs); }
+/* 7.67.0 — ליד חוזר (רומן, 08/11/2026: "שיהיה ברור שהוא ליד חוזר"). סגול — לא הכתום של "ליד חדש" ולא הכחול של לקוח. */
+.pill.lb-ret{ background:#ede9fe; color:#5b21b6; border:1px solid #ddd6fe; font-weight:700; margin-inline-start:var(--sp-1h); white-space:nowrap; }
+.lb-rethd{ display:flex; align-items:baseline; gap:var(--sp-2); margin:0 0 var(--sp-2h); padding:var(--sp-2) var(--sp-3);
+  border-radius:var(--r-md); background:#f5f3ff; border:1px solid #ddd6fe; color:#4c1d95; font-size:var(--fs-sm); line-height:1.5; }
+.lb-rethd b{ font-weight:800; }
+.lbu-row.lbu-ret{ background:#f5f3ff; border-inline-start:3px solid #7c3aed; padding-inline-start:var(--sp-2); }
+.lbu-row.lbu-ret .lbu-body{ color:#4c1d95; font-weight:600; font-style:normal; }
+.tk-kind.lbu-rettag{ background:#ede9fe; color:#5b21b6; border:1px solid #ddd6fe; }
+/* 🔴 תא השם קפוא ברוחב 158px עם overflow:hidden — תגית אחרי שם ארוך נחתכה (Fable, נמדד: 26px מתוך 76 בשם של 19 תווים).
+   לכן השם הוא שמתקצר, והתגית flex:none תמיד שלמה. השם המלא ב-title. */
+.lb-nmw{ display:flex; align-items:center; gap:var(--sp-1); min-width:0; }
+.lb-nmw > b{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.lb-nmw > .pill.lb-ret{ flex:none; margin:0; }
 /* 6.107.0 — התגית העמומה הופכת ללחיצה. ⚠️ .lb-cxgo לבדה אינה מספיקה
    כי .pill.lb-cxamb מאוחרת ממנה בגיליון באותה ספציפיות; לכן הבורר
    המשולב, ולא הסתמכות על סדר. */
@@ -4474,7 +4487,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.66.1</div>
+      <div class="ver">גרסה 7.67.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4621,7 +4634,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="convset-2026-11-07b">גרסה 7.66.1</div>
+    <div class="side-foot" title="leadret-2026-11-08a">גרסה 7.67.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -12417,7 +12430,7 @@ function invExport(){
 let PO=[], PO_SUPS=[], PO_AGG={}, PO_LOADED=false, PO_LOADING=false, PO_TRIED=false, PO_ERR='';
 /* 7.61.0 — מכולות (ord.containers + ord.container_lines). השיוך קיים אצלנו בלבד: PO_CL = שורה (ordname+ordi) ⇒ מכולה.
    כשל בטעינה אינו מפיל את המסך — PO_CNT_ERR, והמכולות פשוט לא מוצגות. */
-let PO_CNT = [], PO_CL = [], PO_CNT_ERR = '', PO_CNT_CUR = '', PO_CNT_BUSY = false;
+let PO_CNT = [], PO_CL = [], PO_CNT_ERR = '', PO_CNT_CUR = '', PO_CNT_BUSY = false, PO_CNT_APPLY = null;   /* 7.66.2 — PO_CNT_APPLY: כפתור 'עדכן שורות' של החלון הפתוח */
 /* 7.62.0 — השורות האחרונות שנטענו לכל הזמנה (poLinesDraw), ודגל הנעילה של הפיצול */
 const PO_LINES = {};
 let PO_SPLIT_BUSY = false;
@@ -13219,6 +13232,12 @@ async function poCntDraw(id, res){
   const cnt = (n, one, many) => n === 1 ? one : n+' '+many;
   const inK = n => n === 1 ? ' בהזמנה אחת' : ' ב-'+n+' הזמנות';
   const iso = it => String((it && (it.duedate||it.reqdate))||'').slice(0,10);
+  /* 7.66.2 — הכפתור והשורה שמתחתיו לפי "הגעה משוערת לנמל" */
+  const eta0 = String(k.eta_port||'').slice(0,10);
+  const apLbl = v => 'עדכן '+cnt(nO, 'שורה אחת', 'שורות')+inK(kO)+(v ? ' ל-'+poDate(v) : '');
+  const diffTxt = v => { if(!v) return 'קבעו "הגעה משוערת לנמל" — השורות הפתוחות במכולה יעודכנו לתאריך הזה, גם בפריוריטי';
+    const n = op.filter(r=>iso(r.it) !== v).length;
+    return n ? (n === nO ? 'כל השורות הפתוחות' : cnt(n, 'שורה אחת', 'שורות'))+' בתאריך אחר מ-'+poDate(v)+' · נשמר גם בפריוריטי' : 'כל השורות הפתוחות כבר ב-'+poDate(v)+' ✓'; };
   const f = (id2, lbl, v, type) => '<div><label for="'+id2+'">'+lbl+'</label>'+(can ? '<input id="'+id2+'" type="'+(type||'text')+'" value="'+esc(v==null ? '' : String(v))+'"'+(type ? '' : ' dir="ltr"')+'>' : roIn(type === 'date' ? (v ? poDate(v) : '') : (v||'')))+'</div>';
   sh.innerHTML = '<h3>מכולה <span dir="ltr">'+esc(poCntLbl(k))+'</span></h3>'
     + '<div class="form-grid po-cnt-hd">'
@@ -13232,9 +13251,9 @@ async function poCntDraw(id, res){
     + '<div class="err" id="pcn-err"></div>'
     + (res || '')
     + '<div class="po-cnt-sum">'+(rows.length ? cnt(rows.length, 'שורה אחת', 'שורות')+inK(ords.length) : 'אין עדיין שורות במכולה — משייכים מכרטיס ההזמנה: מסמנים שורות ← "שייך למכולה"')+'</div>'
-    + ((can && nO) ? '<div class="po-cnt-bar"><label for="pcn-date">תאריך אספקה חדש</label><input type="date" id="pcn-date">'
-        + '<button type="button" class="btn" id="pcn-apply">עדכן '+cnt(nO, 'שורה אחת', 'שורות')+inK(kO)+'</button>'
-        + '<span class="po-note">נשמר גם בפריוריטי · רק השורות הפתוחות שבמכולה הזו</span></div>' : '')
+    /* 7.66.2 — תאריך אחד (רומן: "למה יש פעמיים בכלל? שיהיה רק את 'הגעה משוערת לנמל' וכפתור 'עדכן שורות'") */
+    + ((can && nO) ? '<div class="po-cnt-bar"><button type="button" class="btn" id="pcn-apply">'+apLbl(eta0)+'</button>'
+        + '<span class="po-note" id="pcn-diff">'+diffTxt(eta0)+'</span></div>' : '')
     + (err ? '<div class="err">טעינת השורות נכשלה: '+esc(err)+'</div>' : '')
     + (rows.length ? '<div class="tbl-wrap"><table class="tbl" data-gs="own"><thead><tr><th>הזמנה</th><th>הזמנת ספק</th><th>מק"ט</th><th>תאור</th><th class="num">כמות</th><th class="num">יתרה</th><th>אספקה</th><th>מצב</th>'+(can ? '<th></th>' : '')+'</tr></thead><tbody>'
         + rows.map(({ x, it })=>{ const p = PO.find(o=>o.ordname===x.ordname) || {};
@@ -13260,13 +13279,23 @@ async function poCntDraw(id, res){
   const d = $('#pcn-del'); if(d) d.onclick = ()=> poCntDel(id);
   const mv = $('#pcn-mv-go'); if(mv) mv.onclick = ()=>{ const to = ($('#pcn-mv')||{}).value || ''; if(!to){ toast('בחרו מכולת יעד', 'warn'); return; } poCntMerge(id, to, mv); };
   const ap = $('#pcn-apply');
+  const etaEl = $('#pcn-eta');
+  if(etaEl && ap) etaEl.oninput = etaEl.onchange = ()=>{ ap.textContent = apLbl(etaEl.value); const dd = $('#pcn-diff'); if(dd) dd.textContent = diffTxt(etaEl.value); };
+  PO_CNT_APPLY = ap ? ()=>ap.onclick() : null;
   if(ap) ap.onclick = async ()=>{
-    const v = ($('#pcn-date')||{}).value || '';
-    if(!v){ toast('בחרו תאריך אספקה', 'warn'); return; }
-    const todo = op.filter(r=>iso(r.it) !== v);
-    if(!todo.length){ toast('כל השורות הפתוחות במכולה כבר בתאריך הזה'); return; }
+    const v = (etaEl||{}).value || '';
+    if(!v){ toast('קבעו "הגעה משוערת לנמל"', 'warn'); if(etaEl) etaEl.focus(); return; }
+    const todo = op.filter(r=>iso(r.it) !== v), etaChg = v !== String(k.eta_port||'').slice(0,10);
+    if(!todo.length && !etaChg){ toast('כל השורות הפתוחות במכולה כבר בתאריך הזה'); return; }
     const kk = new Set(todo.map(r=>r.x.ordname)).size;
-    if(!(await sysConfirm('לעדכן תאריך אספקה '+poDate(v)+(todo.length === 1 ? ' לשורה אחת' : ' ל-'+todo.length+' שורות')+inK(kk)+' — גם בפריוריטי?\nשורות אחרות באותן הזמנות לא יזוזו.', { ok:'עדכון' }))) return;
+    if(todo.length && !(await sysConfirm('הגעה לנמל '+poDate(v)+': לעדכן '+(todo.length === 1 ? 'שורה אחת' : todo.length+' שורות')+inK(kk)+' — גם בפריוריטי?\nשורות אחרות באותן הזמנות לא יזוזו.', { ok:'עדכון' }))) return;
+    /* התאריך נשמר במכולה לפני השורות — כך היא לא נשארת על התאריך הקודם גם אם עדכון השורות נכשל באמצע */
+    if(etaChg){
+      const { data, error } = await sb.schema('ord').from('containers').update({ eta_port:v }).eq('id', id).select('*');
+      if(error || !data || data.length !== 1){ const e = $('#pcn-err'); if(e) e.textContent = 'שמירת התאריך במכולה נכשלה — '+((error && error.message) || 'אין הרשאת עריכה בהזמנות רכש'); return; }
+      Object.assign(k, data[0]); poBody();
+    }
+    if(!todo.length){ toast('תאריך ההגעה נשמר במכולה · כל השורות כבר בתאריך הזה'); poCntDraw(id, ''); return; }
     poCntDates(id, todo.map(r=>({ ordname:r.x.ordname, kline:Number(r.it.kline) })), v, ap);
   };
   sh.querySelectorAll('[data-pcn-rm]').forEach(b=>b.onclick = ev=>{ ev.stopPropagation(); const p = b.dataset.pcnRm.split('|'); poCntUnassign(id, p[0], Number(p[1])); });
@@ -13328,13 +13357,16 @@ async function poCntSaveHd(id){
   const ex = poCntDup(no, ifn, id);   /* 7.63.0 */
   if(ex){ if(e) e.textContent = 'המספר כבר שייך למכולה '+poCntLbl(ex)+' — כדי לאחד, השתמשו ב"העברה למכולה אחרת"'; return; }
   const upd = { container_no:no.trim(), import_file_no:ifn.trim(), eta_port:(($('#pcn-eta')||{}).value || null), status:($('#pcn-st')||{}).value || k.status };
+  const etaChg = String(upd.eta_port||'') !== String(k.eta_port||'').slice(0,10);   /* 7.66.2 */
   /* .select(): RLS שדוחה מחזיר אפס שורות בלי שגיאה (הלקח של 7.58.0) */
   const { data, error } = await sb.schema('ord').from('containers').update(upd).eq('id', id).select('*');
   if(error || !data || data.length !== 1){ if(e) e.textContent = 'השמירה נכשלה — '+((error && /containers_no_uq|duplicate/.test(String(error.message))) ? 'מכולה במספר הזה כבר קיימת' : ((error && error.message) || 'אין הרשאת עריכה בהזמנות רכש')); return; }
   Object.assign(k, data[0]);
   toast('פרטי המכולה נשמרו');
   poBody(); const hd = document.getElementById('po-hd'); if(hd) poCntHdPaint(hd.dataset.on);
-  poCntDraw(id, '');
+  await poCntDraw(id, '');
+  /* 7.66.2 — תאריך ההגעה השתנה ⇒ ממשיכים לעדכון השורות (הכפתור שואל לפני) — אחרת המכולה והשורות מתפצלות שוב */
+  if(etaChg && upd.eta_port && PO_CNT_APPLY && PO_CNT_CUR === id) PO_CNT_APPLY();
 }
 async function poCntUnassign(id, on, ordi){
   if(!(await sysConfirm('להוציא את השורה מהמכולה? בפריוריטי לא משתנה דבר.', { ok:'הוצאה' }))) return;
@@ -15207,7 +15239,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'convset-2026-11-07b';
+const BUILD_ID = 'leadret-2026-11-08a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -21878,7 +21910,7 @@ const LOAD_NAMES = ['לידים','לקוחות','משימות','עסקאות','�
    expires_at נוסף — בלעדיו "פג תוקף" אינו ניתן לחישוב. */
 const PROTS_COLS = 'id,order_id,call_id,deal_id,order_number,customer_name,phone,doc_type,category,status,sent_at,signed_at,signer_name,link_sent_at,link_sent_via,link_sent_by,link_sent_count,expires_at,superseded_at,superseded_reason';
 const CRM_Q = {
-  leads: () => sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at,position,address,notes,utm_campaign,utm_source,utm_medium,utm_term,landing_page_url,send_whatsapp_catalog,owner_id,updated_at,contact_id').order('created_at',{ascending:false}).limit(10000),
+  leads: () => sb.schema('crm').from('leads').select('id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at,position,address,notes,utm_campaign,utm_source,utm_medium,utm_term,landing_page_url,send_whatsapp_catalog,owner_id,updated_at,contact_id,returned_at,return_count,return_kind').order('created_at',{ascending:false}).limit(10000),
   custs: () => sb.schema('core').from('customers').select('id,name,phone,email,priority_id,status,opened_at,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes').order('created_at',{ascending:false}).limit(10000),
   /* 7.31.0 — הפתוחות קודם, ואז מיון מקומי לפי due_at (הסדר שהצרכנים מכירים — עולה, ריקים בסוף). עד כאן
      order(due_at).limit(10000) — 8,524 ב-21/10/2026; מעבר לתקרה היו נחתכות **בשקט** המשימות עם המועד הרחוק,
@@ -30165,7 +30197,7 @@ const DL_TASK_COLS = 'id,name,status,value_tag,category,due_at,closed_at,created
 const DL_MEET_COLS = 'id,subject,status,meet_date,start_time,end_time,meet_type,location,teams_link,linked_type,linked_id,source,organizer_name,attendees,all_day,web_link,owner_id,contact_phone,created_at';
 const DL_PROT_COLS = 'id,order_id,call_id,deal_id,order_number,customer_name,phone,doc_type,category,status,sent_at,signed_at,signer_name,link_sent_at,link_sent_via,link_sent_by,link_sent_count,expires_at,superseded_at,superseded_reason';
 const DL_CUST_COLS = 'id,name,phone,email,priority_id,status,opened_at,customer_type,price_group,city,address,region,truck_access,elevator,freight_elevator,logistics_notes';
-const DL_LEAD_COLS = 'id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at,position,address,notes,utm_campaign,utm_source,utm_medium,utm_term,landing_page_url,send_whatsapp_catalog,owner_id,updated_at,contact_id';
+const DL_LEAD_COLS = 'id,full_name,company,phone,email,city,source,status,sub_status,reject_reason,irrelevant_reason,customer_type,customer_id,created_at,position,address,notes,utm_campaign,utm_source,utm_medium,utm_term,landing_page_url,send_whatsapp_catalog,owner_id,updated_at,contact_id,returned_at,return_count,return_kind';
 window.dlDatesHtml = (d)=>{
   const dt = v => v ? fmtIso(v) : '—';   /* 6.206.0 */
   return `<div class="c2-half"><label>תאריך אישור ההצעה</label>${roIn(dt(d.approved_at))}</div>`
@@ -32578,7 +32610,7 @@ function leadRow(l, nt){
   const t = nt ? nt[l.id] : null, dmk = lbDueMark(t);
   const due = t ? new Date(t).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
   return `<div class="lead${dmk.rowCls?' '+dmk.rowCls:''}${window.isNewRec(l)?' row-new':''}" onclick="openLead('${l.id}')">
-    <div><div class="nm">${esc(l.full_name)}${window.newChip(l)}</div>
+    <div><div class="nm">${esc(l.full_name)}${lbRetPill(l)}${window.newChip(l)}</div>
     <div class="meta">${esc(l.phone||'')} · ${esc(l.source||'—')}${sub?' · '+esc(sub):''}</div>
     ${t?`<div class="meta${dmk.cls?' '+dmk.cls:''}"><span class="lb-duew">${dmk.ico}משימה: ${esc(due)}</span></div>`:''}</div>
     ${mdPill(l.status||'—',LEAD_ST_COLORS,LB_TK)}</div>`;
@@ -32737,6 +32769,29 @@ function lbSubCell(l, st, opts, col){
   const _on = `lbPipeSet('${jsq(l.id)}','${jsq(l.status||'')}',this.value)`;
   return `<td class="lb-sub">${ieSel('lead',l.id,col,opts,l[col],{allowEmpty:true,mdColors:SUB_COLORS[st],mdK:LB_TK,on:_on})}</td>`;
 }
+/* ===== ליד חוזר (7.67.0) =====
+   🔴 המקור הוא crm.leads.return_count/returned_at/return_kind — מתוחזקים **רק** בטריגר zz_activity_lead_return
+   משורות היומן של lead-intake. הלקוח אינו כותב אותם. lbRet היא נקודת החנק: הטבלה, הכרטיס והמסנן עוברים דרכה. */
+function lbRet(l){ return !!(l && Number(l.return_count) > 0); }
+function lbRetTip(l){
+  const n = Number(l.return_count)||0, at = l.returned_at ? fmtDT(l.returned_at) : '';
+  const k = l.return_kind==='נפתח מחדש' ? 'ליד סגור שנפתח מחדש' : l.return_kind==='לקוח קיים' ? 'לקוח קיים שהשאיר פנייה חדשה' : 'פנייה נוספת על ליד פתוח';
+  return 'ליד חוזר · ' + k + (at ? ' · לאחרונה ' + at : '') + (n > 1 ? ' · ' + n + ' פניות חוזרות' : '');
+}
+function lbRetPill(l){ return lbRet(l) ? `<span class="pill lb-ret" title="${esc(lbRetTip(l))}">↻ ליד חוזר</span>` : ''; }
+function lbRetBar(l){
+  if(!lbRet(l)) return '';
+  const n = Number(l.return_count)||0, at = l.returned_at ? fmtDT(l.returned_at) : '';
+  /* ⚠️ Fable: reject_reason/irrelevant_reason הם הסיבה **הנוכחית**. רק כשהליד פתוח עכשיו הם הסיבה "הקודמת"
+     (lead-intake פותח מחדש בלי לנקות אותן). ליד שנסגר שוב — אומרים זאת, בלי לייחס סיבה לעבר. */
+  const closedNow = l.status==='סירוב' || l.status==='לא רלוונטי';
+  const prev = closedNow ? '' : (l.reject_reason || l.irrelevant_reason || '');
+  const what = l.return_kind==='נפתח מחדש'
+      ? 'ליד שנסגר בעבר השאיר פנייה חדשה ונפתח מחדש' + (closedNow ? ' (ונסגר שוב)' : prev ? ' · סיבת הסגירה הקודמת: ' + prev : '')
+    : l.return_kind==='לקוח קיים' ? 'לקוח קיים במערכת השאיר פנייה חדשה'
+    : 'השאיר פנייה נוספת בזמן שהליד פתוח';
+  return `<div class="lb-rethd" id="lb-rethd">↻ <span><b>ליד חוזר</b> — ${esc(what)}${at ? ' · ' + esc(at) : ''}${n > 1 ? ' · ' + n + ' פניות חוזרות' : ''}.</span></div>`;
+}
 function lbRow(l, i, nt, nm, ntid){
   const t=nt[l.id], tid=ntid&&ntid[l.id], m=lbMatch(l);
   const dmk = lbDueMark(t);
@@ -32757,7 +32812,7 @@ function lbRow(l, i, nt, nm, ntid){
   return `<tr class="${LB_SEL.has(l.id)?'lb-on':''}${dmk.rowCls?' '+dmk.rowCls:''}${window.isNewRec(l)?' row-new':''}" onclick="openLead('${l.id}')">
       ${LB_BULK?`<td class="lb-ck lb-fz0" onclick="event.stopPropagation()"><input type="checkbox" ${LB_SEL.has(l.id)?'checked':''} onclick="lbSelOne('${jsq(l.id)}',this.checked)"></td>`:''}
       <td class="rownum lb-fz1">${i}</td>
-      <td class="lb-fz2"><b>${esc(l.full_name)}</b></td>
+      <td class="lb-fz2">${lbRet(l) ? `<span class="lb-nmw"><b title="${esc(l.full_name)}">${esc(l.full_name)}</b>${lbRetPill(l)}</span>` : `<b>${esc(l.full_name)}</b>`}</td>
       <td class="lb-fz3">${cust}</td>
       <td>${esc(l.company||'')||'<span class="lb-na">·</span>'}</td>
       <td>${lbOwnerCell(l)}</td>
@@ -34217,7 +34272,8 @@ window.openLead = (id)=>{
   const myTasks=_lbT.filter(tmOpen),  myMeets=_lbM.filter(m=>!mDone(m));
   const hsTasks=_lbT.filter(tmDone),  hsMeets=_lbM.filter(mDone);
   $('#leadSheet').innerHTML = `
-    <h3>${esc(l.full_name)} ${mdPill(l.status||'—',LEAD_ST_COLORS,LB_TK)}</h3>
+    <h3>${esc(l.full_name)} ${mdPill(l.status||'—',LEAD_ST_COLORS,LB_TK)}${lbRetPill(l)}</h3>
+    ${lbRetBar(l)}
     <div class="lb-pipe" id="lb-pipe" data-lead="${esc(l.id)}"></div>
     ${ctabsHtml('lb')}
     <div id="lb-pn-main">
@@ -34400,7 +34456,7 @@ function lbInitDef(){
     if(LB_F.owner && !LOWN_BY[LB_F.owner]) LB_F.owner='';
     if(LB_F.source && !LEAD_SOURCES.includes(LB_F.source)) LB_F.source='';
     if(LB_F.ctype && !LEAD_TYPES.includes(LB_F.ctype)) LB_F.ctype='';
-    if(!['','cust','new'].includes(LB_F.match)) LB_F.match='';
+    if(!['','cust','new','ret'].includes(LB_F.match)) LB_F.match='';
     /* 🔴 קמפיין שנשמר ואינו קיים עוד **מסנן החוצה את הכול** בלי שום
        סימן — הלקח מ-logiInit. `__none__` הוא ערך חוקי ולא קמפיין. */
     if(LB_F.camp && LB_F.camp!=='__none__' && !lbCamps().includes(LB_F.camp)) LB_F.camp='';
@@ -34428,6 +34484,7 @@ function lbApplyF(list){
     if(LB_F.camp==='__none__' ? (l.utm_campaign||'').trim() : (LB_F.camp && (l.utm_campaign||'').trim()!==LB_F.camp)) return false;
     if(LB_F.match==='cust' && !lbMatch(l)) return false;
     if(LB_F.match==='new'  &&  lbMatch(l)) return false;
+    if(LB_F.match==='ret'  && !lbRet(l)) return false;
     if(!lfDateOk(l, LB_F, 'lead')) return false;
     return true;
   });
@@ -34464,7 +34521,7 @@ function renderLbFilters(){
     sel('owner','בעלים — הכל',[['__none__','ללא בעלים']].concat(owners))+
     sel('source','מקור הגעה — הכל',LEAD_SOURCES.map(s=>[s,s]))+
     sel('ctype','סוג לקוח — הכל',LEAD_TYPES.map(s=>[s,s]))+
-    sel('match','לקוח קיים — הכל',[['cust','לקוח קיים במערכת'],['new','ליד חדש למערכת']])+
+    sel('match','לקוח קיים — הכל',[['cust','לקוח קיים במערכת'],['new','ליד חדש למערכת'],['ret','ליד חוזר']])+
     /* ⚠️ select ולא רב-בחירה: 21 קמפיינים ושמות עד ~70 תווים — רשימת
        תיבות סימון כמו הסטטוס הייתה תופסת מסך שלם. */
     sel('camp','קמפיין — הכל',[['__none__','ללא קמפיין']].concat(lbCamps().map(s=>[s,s])))+
@@ -34813,6 +34870,7 @@ const UPD_TIMEOUT_MS = 12000;
    (ג) **מנה שנכשלה אינה מוחקת את מה שכבר נאסף.** הקוד הישן עשה
        `if(r.error) return` בתוך הלולאה, כלומר כשל במנה השנייה מחק את
        200 השורות של הראשונה. */
+const UPD_ALWAYS = ['עדכון','פנייה חוזרת','נפתח מחדש'];
 async function updFetch(ids, withSys){
   const parts = [];
   for(let i=0; i<ids.length; i+=UPD_CHUNK) parts.push(ids.slice(i, i+UPD_CHUNK));
@@ -34824,7 +34882,8 @@ async function updFetch(ids, withSys){
       let q = sb.schema('crm').from('activities')
         .select('id,at,body,actor_id,kind,linked_type,linked_id')
         .in('linked_id', part);
-      if(!withSys) q = q.eq('kind','עדכון');
+      /* 7.67.0 — 'פנייה חוזרת'/'נפתח מחדש' הן שורות מערכת, אבל הן התשובה לשאלה "האם הליד חזר" ולכן גלויות תמיד. */
+      if(!withSys) q = q.in('kind', UPD_ALWAYS);
       q = q.order('at',{ascending:false}).limit(UPD_LIMIT);
       if(ac && q.abortSignal) q = q.abortSignal(ac.signal);
       /* ⚠️ ביטול **דוחה** ולא מחזיר {error} — בלי ההמרה כאן Promise.all
@@ -34952,6 +35011,7 @@ async function lbLoadUpdates(id, type, pfx){
   const _stamp = new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   box.innerHTML = data.map(a=>{
     const sys = a.kind !== 'עדכון';
+    const ret = a.linked_type === 'lead' && (a.kind === 'פנייה חוזרת' || a.kind === 'נפתח מחדש');
     /* 🔴 מי כתב. `actor_id` ריק אינו מקרה קצה נדיר: מ-23/08/2026
        יישור הסטטוסים ממאנדיי רץ יומית ב-09:00 כ-service_role, ו-auth.uid()
        שם הוא NULL — ביום הראשון לבדו נוצרו כך **215 שורות**. "משתמש שאינו
@@ -34990,9 +35050,9 @@ async function lbLoadUpdates(id, type, pfx){
     const act = mine ? `<span class="lbu-act">`
         + `<button type="button" onclick="lbUpdEdit('${jsq(a.id)}','${jsq(id)}','${jsq(_t)}','${jsq(p)}')">עריכה</button>`
         + `<button type="button" onclick="lbUpdDel('${jsq(a.id)}','${jsq(id)}','${jsq(_t)}','${jsq(p)}')">מחיקה</button></span>` : '';
-    return `<div class="lbu-row${sys?' lbu-sys':''}" data-upd="${esc(a.id)}">`
+    return `<div class="lbu-row${sys?' lbu-sys':''}${ret?' lbu-ret':''}" data-upd="${esc(a.id)}">`
       + `<span class="lbu-who">${esc(who)}</span>`
-      + `<span class="lbu-tagc">${tag}${xr}</span>`
+      + `<span class="lbu-tagc">${ret?'<span class="tk-kind lbu-rettag">↻ ליד חוזר</span>':''}${tag}${xr}</span>`
       + `<span class="lbu-when">${esc(when)}</span>`
       + `<span class="lbu-body">${esc(a.body||a.kind||'')}</span>${act}</div>`;
   }).join('');

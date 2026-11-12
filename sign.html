@@ -42,6 +42,9 @@ textarea{width:100%;border:1px solid #c0c5c9;border-radius:9px;padding:10px 12px
 .agree input{width:20px;height:20px;margin-top:2px;flex:none}
 .btn-send{width:100%;background:#002d48;color:#fff;border:none;border-radius:11px;padding:14px;font-size:1.05rem;font-weight:800;font-family:inherit;cursor:pointer}
 .btn-send:disabled{background:#b8bdc2}
+input[type=text].bad{border-color:#a92f2f}
+.fld-hint{display:none;color:#a92f2f;font-weight:700;font-size:.8rem;margin-top:5px}
+.need{color:#84898f;font-size:.8rem;margin-top:8px;text-align:center}
 .qpdf{width:100%;height:68vh;min-height:420px;border:1px solid #dfe3e6;border-radius:10px;background:#fff;display:block}
 .qpdf-nt{font-size:.78rem;color:#84898f;margin-top:6px}
 .qpdf-m{display:none}
@@ -374,6 +377,7 @@ function renderProtocol(d){
     <h2>אישור וחתימה</h2>
     <label>שם מלא של החותם</label>
     <input type="text" id="signerName" value="${esc(d.customer_name)}">
+    <div class="fld-hint" id="nameHint">יש להקליד שם פרטי ושם משפחה של החותם</div>
     <label style="margin-top:14px">חתימה (עם האצבע או העכבר)</label>
     <div class="sig-box"><canvas id="pad1"></canvas><div class="sig-hint" id="hint1">✍️ חתמו כאן</div></div>
     <button type="button" class="btn-clear" id="clear1">ניקוי חתימה</button>
@@ -381,6 +385,7 @@ function renderProtocol(d){
     <div class="agree"><input type="checkbox" id="agree"><span id="agree-txt">${esc(d.agree||DEF_AGREE)}</span></div>
     ${d.payterms_agree?`<div class="agree"><input type="checkbox" id="payt"><span id="payt-txt">${esc(d.payterms_agree)}</span></div>`:''}
     <button class="btn-send" id="sendBtn" disabled>${esc(btnTxt)}</button>
+    <div class="need" id="need"></div>
     <div id="err" style="color:#a92f2f;font-weight:700;font-size:.85rem;margin-top:8px"></div>
   </div>
   <div class="foot">צוות איירון פיטנס בע"מ · טלפון 074-7779988</div>
@@ -396,8 +401,22 @@ function renderProtocol(d){
      POST ישיר עוקף אותה, וזה בדיוק מה שקרה עם סימון ההצהרה. */
   const nameOk=()=>{ const v=(nameEl.value||'').replace(/\s+/g,' ').trim();
     return v.length>=4 && v.split(' ').length>=2; };
-  function check(){ sendBtn.disabled=!(pad.hasInk()&&agree.checked&&auth.checked&&(!payt||payt.checked)&&nameOk()); }
+  /* 12/11/2026 (רומן: "תבדוק למה PQ26001239 לא ניתן לחתום") — הכפתור ננעל בשקט כשהשם שמולא מראש הוא מילה
+     אחת ("סיסטרס"): 13 פתיחות של הקישור ואפס ניסיונות חתימה. התנאי לנעילה לא השתנה; הדף רק אומר מה חסר.
+     ⚠️ miss הוא מקור אחד גם לנעילה וגם להסבר — שני תנאים נפרדים היו מתפצלים, וכפתור נעול בלי הסבר חוזר. */
+  const nameHint=document.getElementById('nameHint'), need=document.getElementById('need');
+  function check(){
+    const miss=[];
+    if(!nameOk()) miss.push('שם פרטי ושם משפחה של החותם');
+    if(!pad.hasInk()) miss.push('חתימה');
+    if(!(agree.checked&&auth.checked&&(!payt||payt.checked))) miss.push('סימון כל תיבות האישור');
+    sendBtn.disabled=miss.length>0;
+    nameEl.classList.toggle('bad',!nameOk());
+    nameHint.style.display=nameOk()?'none':'block';
+    need.textContent=miss.length?'כדי לאשר חסר: '+miss.join(' · '):'';
+  }
   agree.onchange=check; auth.onchange=check; if(payt) payt.onchange=check; nameEl.addEventListener('input',check);
+  check();
   sendBtn.onclick=async()=>{
     const sig=pad.dataURL();
     if(!sig){ document.getElementById('err').textContent='נראה שלא נחתמה חתימה — אנא חתמו על הלוח לפני השליחה.'; return; }

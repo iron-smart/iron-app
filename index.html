@@ -4594,7 +4594,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.71.4</div>
+      <div class="ver">גרסה 7.72.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4720,12 +4720,13 @@ tr.lb-on td{ background-color:#eef5fd !important; }
     <div class="nav-wrap" data-tabs="prc" id="nav-prc" hidden>
       <button class="nav-item" data-tab="prc">תמחור ומחירונים</button>
     </div>
-    <div class="nav-wrap" data-tabs="pays,sup,sinv">
+    <div class="nav-wrap" data-tabs="pays,sup,sinv,checks">
       <button class="nav-item" data-tab="pays" aria-expanded="false">הנהלת חשבונות <span class="nav-arrow"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span></button>
       <div class="submenu">
         <button data-tab="pays" onclick="gotoPays('open')">תשלומים</button>
         <button data-tab="sup" onclick="gotoTab('sup')">ספקים</button>
         <button data-tab="sinv" onclick="gotoTab('sinv')">קליטת חשבוניות</button>
+        <button data-tab="checks" onclick="gotoTab('checks')">שקים</button>
       </div>
     </div>
     <div class="nav-wrap" data-tabs="set">
@@ -4741,7 +4742,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="leadsubj-2026-11-12a">גרסה 7.71.4</div>
+    <div class="side-foot" title="checks-2026-11-12a">גרסה 7.72.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -4880,6 +4881,27 @@ tr.lb-on td{ background-color:#eef5fd !important; }
         <div class="chips" id="si-chips"></div>
       </div>
       <div id="si-body"></div>
+    </section>
+
+    <!-- 7.72.0 — שקים שהחברה נותנת (acc.checks). הסרגל סטטי: ציור הרשימה אינו נוגע בו, ולכן המיקוד בחיפוש נשמר. -->
+    <section id="tab-checks" class="hidden">
+      <div id="chk-note"></div>
+      <div class="pay-tiles" id="chk-tiles"></div>
+      <div class="chk-bar" id="chk-bar">
+        <input id="chk-q" class="chk-q" type="search" placeholder="חיפוש — מוטב, מספר שק, עבור" aria-label="חיפוש שק">
+        <label class="chk-dl">פירעון מ־<input type="date" id="chk-from"></label>
+        <label class="chk-dl">עד<input type="date" id="chk-to"></label>
+        <span class="chk-sp"></span>
+        <button type="button" class="ghost chk-ed" onclick="chkNew()">＋ שק חדש</button>
+        <button type="button" class="ghost chk-ed" onclick="chkSeries()">＋ סדרת שקים</button>
+        <label class="chk-up chk-ed" id="chk-uplab">
+          <input type="file" id="chk-file" accept="image/jpeg,image/png,image/webp,application/pdf" multiple hidden>
+          העלאת צילומי שקים
+        </label>
+      </div>
+      <div class="chips" id="chk-chips"></div>
+      <div id="chk-prog"></div>
+      <div id="chk-body"></div>
     </section>
 
     <section id="tab-pays" class="hidden">
@@ -6116,6 +6138,9 @@ window.TAB_PERM = {
      נשארים כמפתחות של orders_v ושל כרטיס ההזמנה. */
   skus:'sku.cards', docs:'docs', inv:'inv.stock', po:'inv.po', prc:'prc', pays:'acc.pays',
   sup:'acc.sup', sinv:'acc.sinv',
+  /* 7.72.0 — שקים שהחברה נותנת (רומן, 12/11/2026: "רק אני"). acc.checks הוא בן של acc עם 0 מפורש לכל משתמש —
+     בלי השורות האלה מי שיש לו acc=2 היה יורש את המסך. אותו מפתח ב-RLS של ord.checks ובפונקציית הקצה check-extract. */
+  checks:'acc.checks',
   /* 6.199.0 — דשבורד השיווק. mkt.dash הוא בן של שורש חדש (mkt) ולא של crm: בן של crm היה
      נפתח בירושה לכל מי שיש לו crm≥1. השרת (crm.mkt_dash) בודק את אותו מפתח בשורה הראשונה. */
   mkt:'mkt.dash',
@@ -6144,7 +6169,7 @@ window.navCanTab = t=>{
   const k = TAB_PERM[t];
   return k ? canView(k) : true;
 };
-window.NAV_LAND_ORDER = ['today','tasks','leads','deals','customers','contacts','meets','paylinks','logi','docs','skus','inv','po','pays','sup','sinv','prc','set','mkt','sana','comm','calc'];
+window.NAV_LAND_ORDER = ['today','tasks','leads','deals','customers','contacts','meets','paylinks','logi','docs','skus','inv','po','pays','sup','sinv','checks','prc','set','mkt','sana','comm','calc'];
 window.navLanding = ()=> NAV_LAND_ORDER.find(t=>navCanTab(t)) || null;
 window.canView = k => window.pLevel(k) >= 1;
 window.canEdit = k => window.pLevel(k) >= 2;
@@ -6831,7 +6856,7 @@ $('#logoutBtn').onclick = async ()=>{
    עד 6.1.0 הניווט התבצע דרך b.click() על כפתור התפריט, ולכן כל מסך היה חייב
    כפתור ראשי משלו בסרגל. משנכנסו שבעת מסכי ה-CRM תחת קטגוריית אב אחת, אין
    לכל מסך כפתור ראשי — ולכן הניווט עבר לפונקציה אחת שאינה תלויה ב-DOM. */
-const NAV_TABS = ['today','leads','deals','paylinks','meets','customers','contacts','comm','pays','sup','sinv','tasks','logi','skus','inv','po','prc','docs','set','mkt','sana','calc'];
+const NAV_TABS = ['today','leads','deals','paylinks','meets','customers','contacts','comm','pays','sup','sinv','checks','tasks','logi','skus','inv','po','prc','docs','set','mkt','sana','calc'];
 let CUR_TAB = 'today';
 /* התצוגה הפנימית הנוכחית של כל מסך שיש לו תתי-קטגוריות — לצורך סימון הפריט הפעיל */
 const NAV_VIEW = {
@@ -6925,6 +6950,7 @@ window.gotoTab = t=>{
   if(t==='prc')  renderPrc();
   if(t==='sup')  siRender();
   if(t==='sinv') spiRender();
+  if(t==='checks') chkRender();   /* 7.72.0 */
   if(t==='set') renderSettings();
   if(t==='today') dashLoad();
   if(t==='mkt') renderMkt();
@@ -15621,7 +15647,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'leadsubj-2026-11-12a';
+const BUILD_ID = 'checks-2026-11-12a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -36765,6 +36791,716 @@ window.spiRender = async function(){
     });
   }
   spiPaint();
+};
+
+
+/* ===== שקים — שקים שהחברה נותנת (7.72.0) =====
+   רומן, 12/11/2026: "תבנה לי מסך שקים תחת הנהלת חשבונות. המסך ישרת אותי בשביל ניהול שקים שאנחנו נותנים תחת החברה."
+   הכרעותיו: הקלדה + העלאת תמונות לקריאה ומילוי אוטומטי · "רק אני" (acc.checks) · סדרת שקים דחויים · צילום השק.
+   הנתונים: ord.checks (RLS לפי acc.checks). הצילומים: הדלי docs תחת checks/<uuid>/<uuid>.<ext> — הנתיב נקבע תמיד
+   ע"י המערכת, ושם הקובץ של המשתמש חי ב-image_name בלבד. הקריאה מהצילום: פונקציית הקצה check-extract — היא מחזירה
+   שדות ואינה כותבת; השורה נשמרת מכאן כ-needs_review=true ונשארת "לבדיקה" עד שמאשרים אותה בכרטיס.
+   🔴 שק "לבדיקה" אינו נספר בשום אריח ובשום חלון: סכום שאיש לא אישר אינו סכום שאפשר לתכנן לפיו. */
+const CHK_CSS = `
+#tab-checks .chk-bar{ display:flex; gap:var(--sp-2h); align-items:center; flex-wrap:wrap; margin:0 0 var(--sp-3); }
+#tab-checks .chk-q{ flex:0 1 280px; min-width:160px; padding:var(--sp-2) var(--sp-3); border:1px solid var(--field-bd);
+  border-radius:var(--r-md); font:inherit; font-size:var(--fs-md); min-height:var(--ctl-h-md); box-sizing:border-box; }
+#tab-checks .chk-dl{ display:inline-flex; align-items:center; gap:var(--sp-1h); font-size:var(--fs-sm); color:var(--ink-2);
+  font-weight:600; white-space:nowrap; }
+#tab-checks .chk-dl input{ padding:var(--sp-1) var(--sp-2); border:1px solid var(--field-bd); border-radius:var(--r-md); font:inherit; font-size:var(--fs-md);
+  min-height:var(--ctl-h-md); box-sizing:border-box; background-color:#fff; }
+#tab-checks .chk-sp{ flex:1 1 auto; }
+#tab-checks .chk-bar .ghost{ min-height:var(--ctl-h-md); box-sizing:border-box; }
+#tab-checks .chk-up{ background-color:var(--navy); color:#fff; padding:var(--sp-2) var(--sp-4); border-radius:var(--r-md); cursor:pointer; font-size:var(--fs-md);
+  font-weight:600; min-height:var(--ctl-h-md); display:inline-flex; align-items:center; box-sizing:border-box; }
+#tab-checks .chk-warn{ background-color:var(--new-bg); border:1px solid var(--warn); border-radius:var(--r-md);
+  padding:var(--sp-2h) var(--sp-3); margin:0 0 var(--sp-3); font-size:var(--fs-md); line-height:1.5; }
+#tab-checks .chk-sum{ font-size:var(--fs-sm); color:var(--ink-2); margin:0 0 var(--sp-2); }
+#tab-checks .chk-st{ display:inline-block; padding:1px var(--sp-2); border-radius:var(--r-pill); font-size:var(--fs-xs); font-weight:700; white-space:nowrap; }
+#tab-checks .chk-st.given{ background-color:var(--bg-muted); color:var(--ink-2); }
+#tab-checks .chk-st.paid{ background-color:#e7f6ec; color:var(--ok); }
+#tab-checks .chk-st.void{ background-color:var(--bg-muted); color:var(--ink-3); text-decoration:line-through; }
+#tab-checks .chk-st.bounced{ background-color:var(--red-bg); color:var(--red); }
+#tab-checks .chk-st.review{ background-color:var(--amber-bg); color:var(--warn-ink); }
+#tab-checks tr.chk-row{ cursor:pointer; }
+#tab-checks td.chk-no{ text-align:right; font-variant-numeric:tabular-nums; }
+#tab-checks td.chk-ic .ico{ width:16px; height:16px; color:var(--ink-3); vertical-align:middle; }
+#tab-checks .chk-qp{ margin-inline-start:var(--sp-2); border:1px solid var(--line-strong); background-color:#fff; color:var(--navy);
+  border-radius:var(--r-pill); padding:var(--sp-0h) var(--sp-2); font:inherit; font-size:var(--fs-xs); font-weight:700; cursor:pointer; }
+#tab-checks .chk-qp:hover{ border-color:var(--navy); }
+#tab-checks .chk-back{ cursor:pointer; color:var(--navy); font:inherit; font-size:var(--fs-md); font-weight:600;
+  margin:0 0 var(--sp-3); padding:0; display:inline-block; background:none; border:0; }
+#tab-checks .chk-ttl{ margin:0 0 var(--sp-3); font-size:var(--fs-xl); color:var(--navy); display:flex; align-items:center;
+  gap:var(--sp-2); flex-wrap:wrap; }
+#tab-checks .chk-two{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.25fr); gap:var(--sp-4); align-items:start; }
+#tab-checks .chk-two.noimg{ grid-template-columns:minmax(0,1fr); max-width:980px; }
+#tab-checks .chk-two.noimg .chk-prev{ display:none; }
+#tab-checks .chk-prev{ background-color:#fff; border:1px solid var(--line); border-radius:var(--r-lg); overflow:hidden;
+  position:sticky; top:var(--sp-3); }
+#tab-checks .chk-prev img{ width:100%; display:block; }
+#tab-checks .chk-prev iframe{ width:100%; height:70vh; border:0; display:block; }
+#tab-checks .chk-card{ background-color:#fff; border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--sp-4); }
+#tab-checks .chk-card label{ font-size:var(--fs-label); font-weight:600; color:var(--ink-2); margin:0 0 var(--sp-0h); }
+#tab-checks .chk-card label .chk-req{ font-weight:400; color:var(--ink-3); }
+#tab-checks .chk-card textarea{ min-height:64px; resize:vertical; }
+#tab-checks .chk-imgact, #tab-checks .chk-act{ display:flex; gap:var(--sp-2h); flex-wrap:wrap; align-items:center; }
+#tab-checks .chk-act{ margin-top:var(--sp-4); }
+#tab-checks .chk-act .btn{ width:auto; }
+#tab-checks .chk-act .chk-del{ margin-inline-start:auto; color:var(--red); }
+#tab-checks .chk-err{ color:var(--red); font-size:var(--fs-md); margin-top:var(--sp-2h); min-height:1em; }
+#tab-checks .chk-msg{ color:var(--ink-3); font-size:var(--fs-md); margin-top:var(--sp-1h); min-height:1em; }
+#tab-checks .chk-hint{ font-size:var(--fs-sm); color:var(--ink-3); line-height:1.5; }
+@media (max-width:1024px){ #tab-checks .chk-two{ grid-template-columns:minmax(0,1fr); }
+  #tab-checks .chk-prev{ position:static; } #tab-checks .chk-prev iframe{ height:52vh; } }
+@media (max-width:759.98px){ #tab-checks .chk-sp{ display:none; } #tab-checks .chk-q{ flex:1 1 100%; }
+  #tab-checks .chk-dl{ flex:1 1 40%; min-width:0; flex-direction:column; align-items:stretch; }
+  #tab-checks .chk-dl input{ width:100%; min-width:0; }
+  #tab-checks .chk-bar .chk-ed{ flex:1 1 auto; justify-content:center; text-align:center; } }
+#tab-checks .chips .chip b{ margin-inline-start:var(--sp-1); }
+`;
+function chkInjectCss(){
+  if(document.getElementById('chk-css')) return;
+  const st = document.createElement('style'); st.id = 'chk-css'; st.textContent = CHK_CSS;
+  document.head.appendChild(st);
+}
+
+const CHK_PERM = 'acc.checks';
+const CHK_STATUSES = ['ניתן','נפרע','בוטל','חזר'];
+const CHK_ST_CLS = { 'ניתן':'given', 'נפרע':'paid', 'בוטל':'void', 'חזר':'bounced' };
+const CHK_COLS = 'id,check_no,bank_account,payee,amount,due_date,issued_date,status,purpose,notes,series_id,series_pos,series_len,image_path,image_name,needs_review,ocr,created_at,updated_at';
+/* השדות שהכרטיס עורך, ושדות החובה לשק מאושר — אותה רשימה שהאילוץ checks_complete_chk אוכף במסד */
+const CHK_FIELDS = ['check_no','payee','amount','due_date','issued_date','bank_account','status','purpose','notes'];
+const CHK_REQ = [['check_no','מספר שק'],['payee','מוטב'],['amount','סכום'],['due_date','תאריך פירעון']];
+const CHK_OCR_HE = { check_no:'מספר שק', payee:'מוטב', amount:'סכום', due_date:'תאריך פירעון', bank_name:'בנק', branch_no:'סניף', account_no:'חשבון', memo:'עבור' };
+const CHK_CHIPS = [['open','פתוחים'],['review','לבדיקה'],['נפרע','נפרעו'],['בוטל','בוטלו'],['חזר','חזרו'],['all','הכל']];
+let CHK_ROWS = null, CHK_ERR = '', CHK_OPEN = null, CHK_BUSY = false, CHK_SNAP = null, CHK_IMG = null, CHK_PEND = null, CHK_SEQ = 0;
+let CHK_F = { st:'open', q:'', from:'', to:'' };
+
+/* סכום כמו במסך החשבוניות: ₪ לפני המספר ושתי ספרות אחרי הנקודה — אותה פונקציה, לא עותק שלה */
+const chkMoney = v => spiMoney(v);
+function chkIso(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+/* החלונות בתאריך מקומי (לא UTC): היום · סוף השבוע הקלנדרי (שבת) · סוף החודש */
+function chkWin(){
+  const t = new Date(); t.setHours(0,0,0,0);
+  const we = new Date(t); we.setDate(t.getDate() + (6 - t.getDay()));
+  const me = new Date(t.getFullYear(), t.getMonth()+1, 0);
+  return { today: chkIso(t), weekEnd: chkIso(we), monthEnd: chkIso(me) };
+}
+/* 🔴 ההגדרה היחידה של "לאיזה חלון שייך שק". האריחים, מוני השבבים והטבלה עוברים כולם דרכה. */
+function chkIn(r, k, W){
+  if(k === 'all') return true;
+  if(k === 'review') return !!r.needs_review;
+  if(r.needs_review) return false;
+  if(k === 'נפרע' || k === 'בוטל' || k === 'חזר') return r.status === k;
+  if(r.status !== 'ניתן') return false;
+  if(k === 'open')  return true;
+  if(k === 'past')  return !!r.due_date && r.due_date <  W.today;
+  if(k === 'week')  return !!r.due_date && r.due_date >= W.today && r.due_date <= W.weekEnd;
+  if(k === 'month') return !!r.due_date && r.due_date >= W.today && r.due_date <= W.monthEnd;
+  return false;
+}
+function chkAggr(k, W){
+  const list = (CHK_ROWS || []).filter(r => chkIn(r, k, W));
+  return { n: list.length, sum: list.reduce((s, r) => s + Number(r.amount || 0), 0) };
+}
+function chkAccts(){
+  const m = new Map();
+  (CHK_ROWS || []).forEach(r => { const a = String(r.bank_account || '').trim(); if(a) m.set(a, (m.get(a) || 0) + 1); });
+  return [...m.entries()].sort((a, b) => b[1] - a[1]).map(x => x[0]);
+}
+function chkPayees(){
+  return [...new Set((CHK_ROWS || []).map(r => String(r.payee || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'he'));
+}
+function chkErrHe(e){
+  const s = String((e && e.message) || e || '');
+  if(/checks_no_uq|duplicate key|23505/i.test(s)) return 'שק עם המספר הזה כבר קיים בחשבון הזה';
+  if(/checks_complete_chk/i.test(s)) return 'חסרים שדות חובה (מספר שק, מוטב, סכום, תאריך פירעון)';
+  if(/checks_amount_chk/i.test(s)) return 'הסכום חייב להיות גדול מאפס';
+  if(/row-level security|42501|permission denied/i.test(s)) return 'אין לך הרשאת עריכה במסך השקים';
+  return mediaErrHe(s);
+}
+
+async function chkLoad(){
+  CHK_ERR = '';
+  try{
+    const all = [];
+    /* PostgREST חותך ב-1000 שורות בשקט — דפדוף מפורש, עם מפתח ייחודי במיון */
+    for(let from = 0; from < 20000; from += 1000){
+      const r = await sb.schema('ord').from('checks').select(CHK_COLS)
+        .order('due_date', { ascending:false, nullsFirst:true }).order('id').range(from, from + 999);
+      if(r.error) throw r.error;
+      all.push.apply(all, r.data || []);
+      if((r.data || []).length < 1000) break;
+    }
+    /* העלאה שרצה ברגע זה מוסיפה שורות ל-CHK_ROWS; תשובה שנשלפה לפניהן הייתה מוחקת אותן מהזיכרון */
+    if(CHK_BUSY && CHK_ROWS) return;
+    CHK_ROWS = all;
+  }catch(e){ CHK_ERR = (e && e.message) ? e.message : String(e); CHK_ROWS = CHK_ROWS || []; }
+}
+
+/* ── הרשימה ── */
+function chkRowsView(){
+  const W = chkWin(), q = String(CHK_F.q || '').trim().toLowerCase();
+  let rows = (CHK_ROWS || []).filter(r => chkIn(r, CHK_F.st, W));
+  if(q) rows = rows.filter(r => [r.check_no, r.payee, r.purpose, r.bank_account, r.notes].some(v => String(v || '').toLowerCase().indexOf(q) >= 0));
+  if(CHK_F.from) rows = rows.filter(r => r.due_date && r.due_date >= CHK_F.from);
+  if(CHK_F.to)   rows = rows.filter(r => r.due_date && r.due_date <= CHK_F.to);
+  /* מה שעוד לפנינו — מהקרוב לרחוק; מה שמאחורינו — מהחדש לישן. בלי תאריך — בראש, כדי שלא ייעלם בסוף */
+  const asc = ['open','week','month','past','review'].indexOf(CHK_F.st) >= 0;
+  return rows.slice().sort((a, b) => {
+    const x = a.due_date || '', y = b.due_date || '';
+    if(x === y) return String(a.check_no || '').localeCompare(String(b.check_no || ''), 'en', { numeric:true });
+    if(!x) return -1; if(!y) return 1;
+    return asc ? (x < y ? -1 : 1) : (x < y ? 1 : -1);
+  });
+}
+function chkStPill(r){
+  if(r.needs_review) return '<span class="chk-st review">לבדיקה</span>';
+  return '<span class="chk-st ' + (CHK_ST_CLS[r.status] || 'given') + '">' + esc(r.status) + '</span>';
+}
+function chkCanQuick(r, W){ return canEdit(CHK_PERM) && !r.needs_review && r.status === 'ניתן' && !!r.due_date && r.due_date <= W.today; }
+function chkRowM(r){
+  return '<div class="lead" onclick="chkOpen(\'' + esc(r.id) + '\')">'
+    + '<div><div class="nm">' + esc(r.payee || '—') + '</div>'
+    + '<div class="meta">' + (r.due_date ? fmtD(r.due_date) : 'בלי תאריך') + ' · שק ' + esc(r.check_no || '—') + ' · ' + chkMoney(r.amount)
+    + (r.series_id ? ' · ' + r.series_pos + '/' + r.series_len : '') + '</div></div>' + chkStPill(r) + '</div>';
+}
+function chkTable(){
+  const rows = chkRowsView(), W = chkWin(), ed = canEdit(CHK_PERM);
+  if(!rows.length) return '<div class="empty">אין שקים להצגה.' + (ed && !(CHK_ROWS || []).length ? ' הוסיפו שק חדש, סדרת שקים, או העלו צילום.' : '') + '</div>';
+  const sum = '<div class="chk-sum" id="chk-sum">' + rows.length + ' שקים · סה״כ ' + chkMoney(rows.reduce((s, r) => s + Number(r.amount || 0), 0)) + '</div>';
+  if(!wideScreen()) return sum + capped(rows, chkRowM, 'אין שקים להצגה.');
+  const head = '<thead><tr><th>ת. פירעון</th><th>מספר שק</th><th>מוטב</th><th class="num">סכום</th><th>עבור</th><th>חשבון</th><th>סדרה</th><th>סטטוס</th><th>צילום</th></tr></thead>';
+  const body = rows.map(r =>
+    '<tr class="chk-row" data-id="' + esc(r.id) + '" onclick="chkOpen(\'' + esc(r.id) + '\')">'
+    + '<td>' + (r.due_date ? fmtD(r.due_date) : '—') + '</td>'
+    + '<td class="chk-no" dir="ltr">' + esc(r.check_no || '—') + '</td>'
+    + '<td>' + esc(r.payee || '—') + '</td>'
+    + '<td class="num">' + chkMoney(r.amount) + '</td>'
+    + '<td>' + esc(r.purpose || '') + '</td>'
+    + '<td>' + esc(r.bank_account || '') + '</td>'
+    + '<td>' + (r.series_id ? r.series_pos + '/' + r.series_len : '') + '</td>'
+    + '<td>' + chkStPill(r) + (chkCanQuick(r, W) ? '<button type="button" class="chk-qp" title="סימון השק כנפרע" onclick="chkQuick(\'' + esc(r.id) + '\',\'נפרע\',event)">נפרע</button>' : '') + '</td>'
+    + '<td class="chk-ic">' + (r.image_path ? ico('image') : '') + '</td></tr>').join('');
+  return sum + '<div class="tbl-wrap"><table class="tbl">' + head + '<tbody>' + body + '</tbody></table></div>';
+}
+function chkTiles(){
+  const el = $('#chk-tiles'); if(!el) return;
+  const W = chkWin();
+  const tile = (k, cls, label, tip) => { const a = chkAggr(k, W);
+    return '<button type="button" class="payt ' + cls + (CHK_F.st === k ? ' active' : '') + '" data-k="' + k + '" title="' + esc(tip) + '" onclick="chkSetFilter(\'' + k + '\')">'
+      + '<span class="payt-n">' + a.n + '</span><span class="payt-l">' + esc(label) + '</span><span class="payt-a">' + chkMoney(a.sum) + '</span></button>'; };
+  el.innerHTML = tile('open',  'payt-open', 'שקים פתוחים',      'כל השקים שניתנו וטרם נפרעו')
+               + tile('week',  'payt-open', 'לפירעון השבוע',    'שקים שמועד הפירעון שלהם מהיום ועד סוף השבוע')
+               + tile('month', 'payt-open', 'לפירעון החודש',    'שקים שמועד הפירעון שלהם מהיום ועד סוף החודש')
+               + tile('past',  'payt-week', 'עבר המועד · לסמן', 'שקים שמועד הפירעון שלהם עבר ועדיין מסומנים "ניתן" — לסמן נפרע או חזר')
+               + tile('חזר',   'payt-late', 'חזרו',             'שקים שחזרו');
+}
+function chkChips(){
+  const el = $('#chk-chips'); if(!el) return;
+  const W = chkWin();
+  el.innerHTML = CHK_CHIPS.map(([k, lb]) => { const n = chkAggr(k, W).n;
+    if(k === 'review' && !n && CHK_F.st !== 'review') return '';      // "לבדיקה" מופיע רק כשיש מה לבדוק
+    return '<button type="button" class="chip' + (CHK_F.st === k ? ' on' : '') + '" data-k="' + k + '" onclick="chkSetFilter(\'' + k + '\')">' + lb + ' <b>' + n + '</b></button>'; }).join('');
+}
+window.chkSetFilter = k => { CHK_F.st = k; chkPaint(); };
+function chkListPaint(){ if(CHK_OPEN != null) return; const b = $('#chk-body'); if(b) b.innerHTML = chkTable(); }
+function chkPaint(){
+  const b = $('#chk-body'); if(!b) return;
+  const ed = canEdit(CHK_PERM), card = CHK_OPEN != null;
+  const note = $('#chk-note'); if(note) note.innerHTML = CHK_ERR ? '<div class="chk-warn">לא ניתן לטעון את השקים: ' + esc(CHK_ERR) + '</div>' : '';
+  ['#chk-tiles','#chk-bar','#chk-chips'].forEach(s => { const el = $(s); if(el) el.classList.toggle('hidden', card); });
+  document.querySelectorAll('#chk-bar .chk-ed').forEach(el => el.classList.toggle('hidden', !ed));
+  if(card){ b.innerHTML = CHK_OPEN === 'series' ? chkSeriesHtml() : chkCardHtml(); chkAfterCard(); return; }
+  chkTiles(); chkChips();
+  b.innerHTML = chkTable();
+}
+function chkWire(){
+  const f = $('#chk-file');
+  if(f && !f._chkWired){ f._chkWired = true;
+    f.addEventListener('change', async () => { const files = [...f.files]; f.value = ''; if(files.length) await chkUpload(files); }); }
+  const q = $('#chk-q');
+  if(q && !q._chkWired){ q._chkWired = true; q.addEventListener('input', () => { CHK_F.q = q.value; chkListPaint(); }); }
+  [['#chk-from','from'],['#chk-to','to']].forEach(([s, k]) => { const el = $(s);
+    if(el && !el._chkWired){ el._chkWired = true; el.addEventListener('change', () => { CHK_F[k] = el.value; chkListPaint(); }); } });
+}
+window.chkRender = async function(){
+  chkInjectCss(); chkWire();
+  const b = $('#chk-body'); if(!b) return;
+  /* כרטיס פתוח נשאר כמות שהוא — ציור מחדש היה מוחק את מה שהוקלד ולא נשמר */
+  if(CHK_OPEN != null && b.querySelector('.chk-card')) return;
+  if(!CHK_ROWS) b.innerHTML = crmLoading(); else chkPaint();
+  const seq = ++CHK_SEQ;
+  await chkLoad();
+  if(seq !== CHK_SEQ || CHK_OPEN != null) return;      // תשובה ישנה, או שנפתח כרטיס בזמן הטעינה
+  chkPaint();
+};
+
+/* ── כרטיס השק ── */
+function chkCur(){ return (CHK_OPEN == null || CHK_OPEN === 'new' || CHK_OPEN === 'series') ? null : ((CHK_ROWS || []).find(x => x.id === CHK_OPEN) || null); }
+function chkDl(id, vals){ return '<datalist id="' + id + '">' + vals.map(v => '<option value="' + esc(v) + '"></option>').join('') + '</datalist>'; }
+function chkCardHtml(){
+  const r = chkCur(), isNew = CHK_OPEN === 'new', ed = canEdit(CHK_PERM);
+  if(!isNew && !r) return '<button type="button" class="chk-back" onclick="chkBack()">→ חזרה לרשימה</button><div class="chk-warn">השק לא נמצא.</div>';
+  const v = r || { status:'ניתן', issued_date: todayStr(), bank_account: chkAccts()[0] || '' };
+  const ro = ed ? '' : ' readonly class="ro"';
+  const req = ' <span class="chk-req">(חובה)</span>';
+  const f = (col, lab, type, o) => { o = o || {};
+    return '<div' + (o.cls ? ' class="' + o.cls + '"' : '') + '><label for="chk-f-' + col + '">' + lab + '</label>'
+      + '<input id="chk-f-' + col + '" type="' + (type || 'text') + '" value="' + esc(v[col] == null ? '' : v[col]) + '"' + (o.attr ? ' ' + o.attr : '') + ro + '></div>'; };
+  let banner = '';
+  if(r && r.needs_review){
+    const oc = (r.ocr && r.ocr.check) || null, un = oc && Array.isArray(oc.unreadable_fields) ? oc.unreadable_fields : [];
+    const unHe = [...new Set(un.map(x => CHK_OCR_HE[x] || '').filter(Boolean))];
+    banner = '<div class="chk-warn" id="chk-rev">' + (oc
+        ? 'השק נקרא מהצילום וטרם אושר. בדקו את הפרטים מול הצילום ולחצו "אישור השק".'
+        : 'הצילום לא נקרא אוטומטית' + (r.ocr && r.ocr.error ? ' (' + esc(r.ocr.error) + ')' : '') + '. מלאו את הפרטים מול הצילום ולחצו "אישור השק".')
+      + (unHe.length ? '<br><b>לא נקראו בוודאות:</b> ' + esc(unHe.join(' · ')) : '')
+      + (r.ocr && r.ocr.legibility === 'ירוד' ? '<br>איכות הצילום ירודה — כדאי לבדוק כל שדה.' : '') + '</div>';
+  }
+  const ttl = isNew ? 'שק חדש' : ('שק ' + esc(r.check_no || '(בלי מספר)') + (r.payee ? ' · ' + esc(r.payee) : ''));
+  return '<button type="button" class="chk-back" onclick="chkBack()">→ חזרה לרשימה</button>'
+    + '<div class="chk-two noimg" id="chk-two"><div class="chk-prev" id="chk-prev"></div><div class="chk-card">'
+    + '<h3 class="chk-ttl">' + ttl + (r ? ' ' + chkStPill(r) : '') + (r && r.series_id ? ' <span class="chk-hint">שק ' + r.series_pos + ' מתוך ' + r.series_len + ' בסדרה</span>' : '') + '</h3>'
+    + banner
+    + '<div class="form-grid">'
+    +   '<div class="form-sep">פרטי השק</div>'
+    +   f('check_no', 'מספר שק' + req, 'text', { attr:'dir="ltr" inputmode="numeric" autocomplete="off"' })
+    +   f('payee', 'מוטב' + req, 'text', { cls:'span2', attr:'list="chk-dl-payee" autocomplete="off"' })
+    +   f('amount', 'סכום ב-₪' + req, 'number', { attr:'step="0.01" min="0" inputmode="decimal"' })
+    +   f('due_date', 'תאריך פירעון' + req, 'date')
+    +   f('issued_date', 'תאריך מסירה', 'date')
+    +   f('bank_account', 'חשבון בנק', 'text', { attr:'list="chk-dl-acct" autocomplete="off"' })
+    +   '<div><label for="chk-f-status">סטטוס</label><select id="chk-f-status"' + (ed ? '' : ' disabled class="ro"') + '>'
+    +     CHK_STATUSES.map(s => '<option' + (s === v.status ? ' selected' : '') + '>' + esc(s) + '</option>').join('') + '</select></div>'
+    +   '<div class="form-sep">עבור והערות</div>'
+    +   f('purpose', 'עבור', 'text', { cls:'span4', attr:'autocomplete="off" placeholder="חשבונית, הזמנת רכש, שכירות…"' })
+    +   '<div class="span4"><label for="chk-f-notes">הערות</label><textarea id="chk-f-notes"' + ro + '>' + esc(v.notes || '') + '</textarea></div>'
+    +   '<div class="form-sep">צילום השק</div>'
+    +   '<div class="span4"><div class="chk-imgact" id="chk-imgact"></div></div>'
+    + '</div>'
+    + chkDl('chk-dl-payee', chkPayees()) + chkDl('chk-dl-acct', chkAccts())
+    + (ed ? '<div class="chk-act" id="chk-act">'
+        + (r && r.needs_review
+            ? '<button type="button" class="btn" id="chk-approve" onclick="chkSave(true)">אישור השק</button><button type="button" class="ghost" id="chk-save" onclick="chkSave(false)">שמירה בלי אישור</button>'
+            : '<button type="button" class="btn" id="chk-save" onclick="chkSave(false)">שמירה</button>')
+        + '<button type="button" class="ghost" onclick="chkBack()">ביטול</button>'
+        + (r ? '<button type="button" class="ghost chk-del" id="chk-del" onclick="chkDelete()">מחיקת השק</button>' : '')
+        + '</div>' : '')
+    + '<div class="chk-msg" id="chk-msg"></div><div class="chk-err" id="chk-err" role="alert"></div>'
+    + '</div></div>';
+}
+function chkFormRead(){
+  const o = {};
+  CHK_FIELDS.forEach(c => { const el = $('#chk-f-' + c); o[c] = el ? String(el.value == null ? '' : el.value) : ''; });
+  return o;
+}
+function chkImgPath(){ const r = chkCur(); return r ? (r.image_path || null) : (CHK_PEND ? CHK_PEND.path : null); }
+/* מציירת רק את חלונית הצילום ואת כפתורי הצילום — לעולם לא את הטופס, כדי שמה שהוקלד לא יימחק */
+function chkPrevPaint(){
+  const two = $('#chk-two'), pv = $('#chk-prev'), act = $('#chk-imgact'); if(!two || !pv) return;
+  const path = chkImgPath(), ed = canEdit(CHK_PERM);
+  two.classList.toggle('noimg', !path);
+  pv.innerHTML = !path ? '' : (!CHK_IMG ? crmLoading('טוען את הצילום…')
+    : (CHK_IMG.err ? '<div class="empty">הצילום לא נטען.</div>'
+      : (CHK_IMG.pdf ? '<iframe src="' + esc(CHK_IMG.url) + '" title="צילום השק"></iframe>' : '<img src="' + esc(CHK_IMG.url) + '" alt="צילום השק">')));
+  if(act) act.innerHTML = path
+    ? '<button type="button" class="ghost" onclick="chkImgOpen()">פתיחה בגודל מלא</button>'
+      + (ed ? '<button type="button" class="ghost" onclick="chkRead()">קריאה מהצילום</button>'
+            + '<button type="button" class="ghost" onclick="chkAttach(false)">החלפת הצילום</button>'
+            + '<button type="button" class="ghost" onclick="chkImgRemove()">הסרת הצילום</button>' : '')
+    : (ed ? '<button type="button" class="ghost" onclick="chkAttach(true)">צירוף צילום וקריאה אוטומטית</button>'
+          + '<button type="button" class="ghost" onclick="chkAttach(false)">צירוף צילום בלבד</button>'
+          : '<span class="chk-hint">לא צורף צילום.</span>');
+}
+function chkAfterCard(){
+  if(CHK_OPEN === 'series'){ chkSeriesPreview(); return; }
+  CHK_SNAP = chkFormRead();
+  chkPrevPaint();
+  if(CHK_OPEN === 'new'){ const el = $('#chk-f-check_no'); if(el) try{ el.focus(); }catch(_e){} }
+}
+function chkBusyUi(on, msg){
+  document.querySelectorAll('#chk-body .chk-act button, #chk-body .chk-imgact button').forEach(b => { b.disabled = !!on; });
+  const m = $('#chk-msg'); if(m) m.textContent = on ? (msg || 'שומר…') : '';
+}
+const chkSay = m => { const eb = $('#chk-err'); if(eb) eb.textContent = m || ''; };
+async function chkImgLoad(path, forId){
+  CHK_IMG = null; chkPrevPaint();
+  let got = { err:true };
+  try{
+    const su = await sb.storage.from('docs').createSignedUrl(path, 3600);
+    if(su.data && su.data.signedUrl) got = { url: su.data.signedUrl, pdf: /[.]pdf$/i.test(path) };
+  }catch(_e){}
+  if(CHK_OPEN !== forId || chkImgPath() !== path) return;      // תשובה ישנה — כרטיס אחר או צילום אחר כבר על המסך
+  CHK_IMG = got; chkPrevPaint();
+}
+window.chkOpen = async function(id){
+  const r = (CHK_ROWS || []).find(x => x.id === id); if(!r) return;
+  CHK_OPEN = id; CHK_IMG = null; CHK_PEND = null; chkPaint();
+  if(r.image_path) await chkImgLoad(r.image_path, id);
+};
+window.chkNew = () => {
+  if(!canEdit(CHK_PERM)){ toast('אין לך הרשאת עריכה'); return; }
+  CHK_OPEN = 'new'; CHK_IMG = null; CHK_PEND = null; chkPaint();
+};
+/* מוחק קובץ מהאחסון רק כשאף שק אינו מצביע עליו — צילום אחד יכול להכיל כמה שקים */
+async function chkFileDrop(path){
+  if(!path || (CHK_ROWS || []).some(x => x.image_path === path)) return;
+  try{ await sb.storage.from('docs').remove([path]); }catch(_e){ console.warn('chk: קובץ יתום באחסון', path, _e); }
+}
+window.chkBack = async () => {
+  if(CHK_BUSY) return;
+  const p = CHK_PEND;
+  CHK_OPEN = null; CHK_IMG = null; CHK_PEND = null; CHK_SNAP = null; chkPaint();
+  if(p) await chkFileDrop(p.path);      // שק חדש שבוטל: הצילום שצורף אליו לא נשמר בשום שורה
+};
+window.chkSave = async function(approve){
+  if(!canEdit(CHK_PERM)){ toast('אין לך הרשאת עריכה'); return; }
+  if(CHK_BUSY) return;
+  chkSay('');
+  const r = chkCur(), isNew = CHK_OPEN === 'new', cur = chkFormRead();
+  if(!isNew && !r) return;
+  /* שורה שנקראה מצילום ונשמרת בלי אישור רשאית להישאר חלקית; כל שמירה אחרת חייבת את ארבעת שדות החובה */
+  const stayReview = !!(r && r.needs_review) && !approve;
+  const amt = cur.amount.trim();
+  if(amt !== '' && !(Number(amt) > 0)){ chkSay('הסכום חייב להיות מספר גדול מאפס.'); return; }
+  if(!stayReview){
+    const miss = CHK_REQ.filter(([col]) => !String(cur[col] || '').trim()).map(([, lb]) => lb);
+    if(miss.length){ chkSay('חסרים שדות חובה: ' + miss.join(' · ') + '.'); return; }
+  }
+  const val = col => { const s = String(cur[col] == null ? '' : cur[col]).trim(); if(s === '') return null; return col === 'amount' ? Math.round(Number(s) * 100) / 100 : s; };
+  CHK_BUSY = true; chkBusyUi(true);
+  try{
+    let res;
+    if(isNew){
+      const row = {}; CHK_FIELDS.forEach(col => { row[col] = val(col); });
+      if(!row.status) row.status = 'ניתן';
+      if(CHK_PEND){ row.image_path = CHK_PEND.path; row.image_name = CHK_PEND.name; if(CHK_PEND.ocr) row.ocr = CHK_PEND.ocr; }
+      res = await sb.schema('ord').from('checks').insert(row).select(CHK_COLS);
+    } else {
+      /* "מה הוצג מול מה יש עכשיו" — שתי מחרוזות מאותו שדה; נשלח רק מה שהשתנה */
+      const patch = {};
+      CHK_FIELDS.forEach(col => { if(cur[col] !== CHK_SNAP[col]) patch[col] = val(col); });
+      if(approve && r.needs_review) patch.needs_review = false;
+      if(!Object.keys(patch).length){ toast('אין שינויים לשמור', ''); return; }
+      res = await sb.schema('ord').from('checks').update(patch).eq('id', r.id).select(CHK_COLS);
+    }
+    if(res.error) throw res.error;
+    const saved = (res.data || [])[0];
+    if(!saved) throw new Error('השינוי לא נשמר — ייתכן שאין לך הרשאת עריכה במסך השקים');
+    if(isNew) CHK_ROWS.push(saved); else Object.assign(r, saved);
+    CHK_PEND = null; CHK_OPEN = null; CHK_IMG = null; CHK_SNAP = null;
+    toast(isNew ? 'השק נוסף' : (approve ? 'השק אושר ונשמר' : 'השק נשמר'), 'ok');
+    chkPaint();
+  }catch(e){ chkSay(chkErrHe(e)); }
+  finally{ CHK_BUSY = false; chkBusyUi(false); }
+};
+window.chkDelete = async function(){
+  const r = chkCur(); if(!r || !canEdit(CHK_PERM) || CHK_BUSY) return;
+  const ok = await sysConfirm('למחוק את שק ' + (r.check_no || '(בלי מספר)') + (r.payee ? ' של ' + r.payee : '') + '? אי אפשר לשחזר. שק שבוטל עדיף לסמן בסטטוס "בוטל".', { ok:'מחיקה', danger:true });
+  if(!ok) return;
+  CHK_BUSY = true; chkBusyUi(true, 'מוחק…'); chkSay('');
+  try{
+    const res = await sb.schema('ord').from('checks').delete().eq('id', r.id).select('id');
+    if(res.error) throw res.error;
+    if(!(res.data || []).length) throw new Error('השק לא נמחק — ייתכן שאין לך הרשאת עריכה במסך השקים');
+    CHK_ROWS = CHK_ROWS.filter(x => x.id !== r.id);
+    await chkFileDrop(r.image_path);
+    CHK_OPEN = null; CHK_IMG = null; CHK_PEND = null; CHK_SNAP = null;
+    toast('השק נמחק', 'ok'); chkPaint();
+  }catch(e){ chkSay(chkErrHe(e)); }
+  finally{ CHK_BUSY = false; chkBusyUi(false); }
+};
+window.chkQuick = async function(id, st, ev){
+  if(ev && ev.stopPropagation) ev.stopPropagation();
+  const r = (CHK_ROWS || []).find(x => x.id === id);
+  if(!r || !canEdit(CHK_PERM) || CHK_BUSY || CHK_STATUSES.indexOf(st) < 0) return;
+  CHK_BUSY = true;
+  try{
+    const res = await sb.schema('ord').from('checks').update({ status: st }).eq('id', id).select(CHK_COLS);
+    if(res.error) throw res.error;
+    if(!(res.data || []).length) throw new Error('השינוי לא נשמר — ייתכן שאין לך הרשאת עריכה במסך השקים');
+    Object.assign(r, res.data[0]);
+    toast('שק ' + (r.check_no || '') + ' סומן ' + st, 'ok');
+  }catch(e){ toast('הסימון נכשל — ' + chkErrHe(e), 'err'); }
+  finally{ CHK_BUSY = false; chkPaint(); }
+};
+
+/* ── צילום: אחסון, קריאה, צירוף ── */
+async function chkStore(file, folder){
+  let f = file, ext = (String(file.name || '').split('.').pop() || '').toLowerCase();
+  if(ext === 'pdf' || file.type === 'application/pdf'){ ext = 'pdf'; f = new File([file], file.name, { type:'application/pdf' }); }
+  else {
+    if(!/^image\//.test(file.type || '') && MEDIA_EXT.concat(['heic','heif']).indexOf(ext) < 0) throw new Error('סוג קובץ שאינו נתמך');
+    /* כל תמונה מומרת ל-JPEG מוקטן (mediaToJpeg): HEIC של אייפון נדחה בדלי, ותמונה של 5MB גדולה מדי לקריאה אוטומטית */
+    try{ f = await mediaToJpeg(file); ext = 'jpg'; }
+    catch(_e){ if(MEDIA_MIME[ext] && ext !== 'pdf'){ f = new File([file], file.name, { type: MEDIA_MIME[ext] }); } else throw new Error(mediaConvErr()); }
+  }
+  if(f.size > 15*1024*1024) throw new Error('הקובץ גדול מ-15 מגה');
+  const path = 'checks/' + (folder || mediaUuid()) + '/' + mediaUuid() + '.' + (ext === 'jpeg' ? 'jpg' : ext);
+  const up = await sb.storage.from('docs').upload(path, f, { contentType: f.type || undefined, upsert:false });
+  if(up.error) throw new Error(mediaErrHe(up.error.message));
+  return { path, name: String(file.name || f.name || '') };
+}
+async function chkExtract(path){
+  const inv = await sb.functions.invoke('check-extract', { body:{ path } });
+  if(inv.error){
+    let m = inv.error.message || 'הקריאה מהצילום נכשלה';
+    try{ const j = inv.error.context && (await inv.error.context.json()); if(j && j.error) m = String(j.error); }catch(_e){}
+    throw new Error(m);
+  }
+  if(!inv.data || inv.data.ok === false) throw new Error((inv.data && inv.data.error) || 'הקריאה מהצילום נכשלה');
+  return inv.data;
+}
+/* חשבון שכבר מופיע במסך תחת תווית אחרת מקבל את אותה תווית — אחרת הייחודיות (חשבון + מספר שק) לא תתפוס כפילות */
+function chkAcctLabel(o){
+  const acct = String(o.account_no == null ? '' : o.account_no).replace(/\D/g, '');
+  if(acct.length >= 4){ const hit = chkAccts().find(a => a.replace(/\D/g, '').indexOf(acct) >= 0); if(hit) return hit; }
+  const t = x => String(x == null ? '' : x).trim();
+  const parts = [t(o.bank_name), [t(o.branch_no), t(o.account_no)].filter(Boolean).join('-')].filter(Boolean);
+  return parts.length ? parts.join(' ') : null;
+}
+/* מה שהמודל קרא ⇒ ערכים שמותר לכתוב לשורה. ערך שאינו עומד באילוצי המסד הופך ל-null ולא נשמר שגוי */
+function chkOcrFields(o){
+  o = o || {};
+  const s = x => { const t = String(x == null ? '' : x).trim(); return t === '' ? null : t; };
+  const amt = Number(o.amount), due = s(o.due_date);
+  return {
+    check_no: s(o.check_no), payee: s(o.payee),
+    amount: (isFinite(amt) && amt > 0) ? Math.round(amt * 100) / 100 : null,
+    due_date: (due && /^\d{4}-\d{2}-\d{2}$/.test(due) && !isNaN(Date.parse(due))) ? due : null,
+    bank_account: chkAcctLabel(o), purpose: s(o.memo)
+  };
+}
+window.chkUpload = async function(files){
+  if(!canEdit(CHK_PERM)){ toast('אין לך הרשאת עריכה'); return; }
+  if(CHK_BUSY){ toast('העלאה קודמת עדיין רצה — המתינו לסיומה', 'warn'); return; }
+  if(!CHK_ROWS) CHK_ROWS = [];
+  CHK_BUSY = true;
+  const prog = $('#chk-prog'), bad = [], folder = mediaUuid(); let made = 0;
+  for(let i = 0; i < files.length; i++){
+    const file = files[i];
+    if(prog) prog.innerHTML = '<div class="chk-warn">קורא צילום ' + (i+1) + ' מתוך ' + files.length + ' — ' + esc(file.name) + '…</div>';
+    let up = null;
+    try{
+      up = await chkStore(file, folder);
+      let d = null, why = '';
+      try{ d = await chkExtract(up.path); }catch(e){ why = (e && e.message) ? e.message : String(e); }
+      const got = (d && Array.isArray(d.checks)) ? d.checks : [];
+      /* כל צילום מניב לפחות שורה אחת "לבדיקה": גם צילום שלא נקרא נשמר עם שורה ריקה, כדי שלא ייעלם */
+      const rows = (got.length ? got : [null]).map(o => Object.assign(
+        { status:'ניתן', needs_review:true, image_path: up.path, image_name: up.name,
+          ocr: o ? { check:o, legibility: d.legibility || null, model: d.model || null } : { error: why || 'לא זוהה שק בצילום' } },
+        o ? chkOcrFields(o) : {}));
+      /* שורה-שורה ולא במנה אחת: שק שכבר קיים (חשבון + מספר) לא יפיל את שאר השקים שבאותו צילום */
+      let okN = 0;
+      for(const row of rows){
+        const ins = await sb.schema('ord').from('checks').insert(row).select(CHK_COLS);
+        if(ins.error || !(ins.data || []).length){
+          bad.push(esc(file.name) + (row.check_no ? ' · שק ' + esc(row.check_no) : '') + ' — ' + esc(chkErrHe(ins.error || new Error('לא נשמר'))));
+          continue;
+        }
+        CHK_ROWS.push(ins.data[0]); okN++; made++;
+      }
+      if(!okN) await chkFileDrop(up.path);
+      else if(!d) bad.push(esc(file.name) + ' — הצילום לא נקרא (' + esc(why) + '). נוספה שורה ריקה עם הצילום למילוי ידני');
+      else if(!got.length) bad.push(esc(file.name) + ' — לא זוהה שק בצילום. נוספה שורה ריקה עם הצילום');
+    }catch(e){
+      bad.push(esc(file.name) + ' — ' + esc(chkErrHe(e)));
+      if(up) await chkFileDrop(up.path);
+    }
+  }
+  CHK_BUSY = false;
+  if(prog) prog.innerHTML = bad.length ? '<div class="chk-warn"><b>' + made + ' שקים נוספו לבדיקה.</b><br>' + bad.join('<br>') + '</div>' : '';
+  if(made && CHK_OPEN == null) CHK_F.st = 'review';
+  if(CHK_OPEN == null) chkPaint();
+  if(made && !bad.length) toast(made + ' שקים נקראו — בדקו ואשרו כל אחד', 'ok');
+};
+window.chkAttach = function(read){
+  if(!canEdit(CHK_PERM) || CHK_BUSY) return;
+  /* ה-input חייב לשבת ב-DOM בזמן ה-click: Safari ל-iOS אינו פותח בורר קבצים לאלמנט מנותק */
+  document.querySelectorAll('input.chk-picker').forEach(x => x.remove());
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/jpeg,image/png,image/webp,application/pdf'; inp.className = 'chk-picker';
+  inp.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0';
+  inp.onchange = async () => { const f = (inp.files || [])[0]; try{ inp.remove(); }catch(_e){} if(f) await chkAttachFile(f, read); };
+  document.body.appendChild(inp); inp.click();
+};
+async function chkAttachFile(file, read){
+  if(CHK_BUSY) return;
+  const forId = CHK_OPEN;
+  CHK_BUSY = true; chkBusyUi(true, 'מעלה את הצילום…'); chkSay('');
+  try{
+    const up = await chkStore(file);
+    if(CHK_OPEN !== forId){ await chkFileDrop(up.path); return; }
+    const r = chkCur();
+    if(r){
+      /* שק קיים: הצילום נרשם בשורה מיד, כדי שלא יישאר קובץ יתום אם הכרטיס ייסגר בלי שמירה */
+      const old = r.image_path;
+      const res = await sb.schema('ord').from('checks').update({ image_path: up.path, image_name: up.name }).eq('id', r.id).select('id');
+      if(res.error || !(res.data || []).length){ await chkFileDrop(up.path); throw (res.error || new Error('הצילום לא נשמר — ייתכן שאין לך הרשאת עריכה במסך השקים')); }
+      r.image_path = up.path; r.image_name = up.name;
+      if(old && old !== up.path) await chkFileDrop(old);
+    } else {
+      const prev = CHK_PEND; CHK_PEND = up;
+      if(prev) await chkFileDrop(prev.path);
+    }
+    await chkImgLoad(up.path, forId);
+    if(read && CHK_OPEN === forId) await chkReadInto(up.path);
+  }catch(e){ chkSay(chkErrHe(e)); }
+  finally{ CHK_BUSY = false; chkBusyUi(false); }
+}
+/* קריאה מהצילום אל הכרטיס הפתוח: ממלאת רק שדות ריקים — לעולם לא דורסת מה שהוקלד */
+async function chkReadInto(path){
+  chkBusyUi(true, 'קורא את השק מהצילום…');
+  const d = await chkExtract(path), list = Array.isArray(d.checks) ? d.checks : [];
+  if(!list.length){ toast('לא זוהה שק בצילום — מלאו את הפרטים ידנית', 'warn'); return; }
+  const o = chkOcrFields(list[0]); let n = 0;
+  ['check_no','payee','amount','due_date','bank_account','purpose'].forEach(col => {
+    const el = $('#chk-f-' + col);
+    if(el && !String(el.value || '').trim() && o[col] != null){ el.value = o[col]; n++; }
+  });
+  if(CHK_PEND && CHK_PEND.path === path) CHK_PEND.ocr = { check: list[0], legibility: d.legibility || null, model: d.model || null };
+  toast(n ? ('מולאו ' + n + ' שדות מהצילום — בדקו לפני השמירה' + (list.length > 1 ? ' (בצילום ' + list.length + ' שקים; נקרא הראשון)' : ''))
+          : 'לא נמצאו שדות ריקים למלא מהצילום', n ? 'ok' : 'warn', 4000);
+}
+window.chkRead = async function(){
+  const path = chkImgPath(); if(!path || !canEdit(CHK_PERM) || CHK_BUSY) return;
+  CHK_BUSY = true; chkSay('');
+  try{ await chkReadInto(path); }
+  catch(e){ chkSay(chkErrHe(e)); }
+  finally{ CHK_BUSY = false; chkBusyUi(false); }
+};
+window.chkImgOpen = async function(){
+  const path = chkImgPath(); if(!path) return;
+  /* הלשונית נפתחת לפני ה-await, אחרת חוסם החלונות הקופצים בולע אותה */
+  const tab = window.open('', '_blank');
+  const su = await sb.storage.from('docs').createSignedUrl(path, 300);
+  if(su.error || !su.data || !su.data.signedUrl){ if(tab){ try{ tab.close(); }catch(_e){} } toast('פתיחת הצילום נכשלה', 'err'); return; }
+  if(tab) tab.location.href = su.data.signedUrl;
+};
+window.chkImgRemove = async function(){
+  const path = chkImgPath(); if(!path || !canEdit(CHK_PERM) || CHK_BUSY) return;
+  const ok = await sysConfirm('להסיר את הצילום מהשק?', { ok:'הסרה', danger:true });
+  if(!ok) return;
+  CHK_BUSY = true; chkBusyUi(true, 'מסיר את הצילום…'); chkSay('');
+  try{
+    const r = chkCur();
+    if(r){
+      const res = await sb.schema('ord').from('checks').update({ image_path:null, image_name:null }).eq('id', r.id).select('id');
+      if(res.error) throw res.error;
+      if(!(res.data || []).length) throw new Error('הצילום לא הוסר — ייתכן שאין לך הרשאת עריכה במסך השקים');
+      r.image_path = null; r.image_name = null;
+    } else { CHK_PEND = null; }
+    CHK_IMG = null;
+    await chkFileDrop(path);
+    chkPrevPaint();
+  }catch(e){ chkSay(chkErrHe(e)); }
+  finally{ CHK_BUSY = false; chkBusyUi(false); }
+};
+
+/* ── סדרת שקים דחויים ── */
+/* טהורה: קלט הטופס ⇒ שורות, או רשימת השדות השגויים בשמם. מספרי השקים עוקבים ושומרים אפסים מובילים;
+   התאריך נשאר על אותו יום בחודש, ונצמד לסוף החודש כשהיום אינו קיים בו (31 בינואר ⇒ 28/29 בפברואר, לא מרץ). */
+function chkSeriesBuild(p){
+  const t = x => String(x == null ? '' : x).trim(), err = [];
+  const no = t(p.first_no), n = Number(p.count), amt = Number(p.amount), d0 = t(p.first_due), step = Number(t(p.step) === '' ? 1 : p.step);
+  if(!t(p.payee)) err.push('מוטב');
+  if(!/^\d{1,18}$/.test(no)) err.push('מספר שק ראשון (ספרות בלבד)');
+  if(!(Number.isInteger(n) && n >= 2 && n <= 60)) err.push('מספר שקים (2 עד 60)');
+  if(!(isFinite(amt) && amt > 0)) err.push('סכום כל שק');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(d0) || isNaN(Date.parse(d0))) err.push('תאריך פירעון ראשון');
+  if(!(Number.isInteger(step) && step >= 1 && step <= 12)) err.push('מרווח בחודשים (1 עד 12)');
+  if(err.length) return { err, rows:[] };
+  const y = +d0.slice(0,4), m = +d0.slice(5,7), day = +d0.slice(8,10), rows = [];
+  const p2 = x => String(x).padStart(2, '0');
+  for(let i = 0; i < n; i++){
+    const mm = (m - 1) + i * step, yy = y + Math.floor(mm / 12), mo = mm % 12;
+    const dim = new Date(yy, mo + 1, 0).getDate();
+    rows.push({
+      check_no: (BigInt(no) + BigInt(i)).toString().padStart(no.length, '0'),
+      payee: t(p.payee), amount: Math.round(amt * 100) / 100,
+      due_date: yy + '-' + p2(mo + 1) + '-' + p2(Math.min(day, dim)),
+      issued_date: t(p.issued_date) || null, bank_account: t(p.bank_account) || null,
+      status:'ניתן', purpose: t(p.purpose) || null, series_pos: i + 1, series_len: n
+    });
+  }
+  return { err:[], rows };
+}
+window.chkSeries = () => {
+  if(!canEdit(CHK_PERM)){ toast('אין לך הרשאת עריכה'); return; }
+  CHK_OPEN = 'series'; CHK_IMG = null; CHK_PEND = null; chkPaint();
+};
+function chkSeriesHtml(){
+  const req = ' <span class="chk-req">(חובה)</span>';
+  const f = (id, lab, type, val, o) => { o = o || {};
+    return '<div' + (o.cls ? ' class="' + o.cls + '"' : '') + '><label for="chk-s-' + id + '">' + lab + '</label>'
+      + '<input id="chk-s-' + id + '" type="' + (type || 'text') + '" value="' + esc(val == null ? '' : val) + '"' + (o.attr ? ' ' + o.attr : '') + ' oninput="chkSeriesPreview()"></div>'; };
+  return '<button type="button" class="chk-back" onclick="chkBack()">→ חזרה לרשימה</button>'
+    + '<div class="chk-two noimg"><div class="chk-card">'
+    + '<h3 class="chk-ttl">סדרת שקים דחויים</h3>'
+    + '<div class="form-grid">'
+    +   '<div class="form-sep">פרטי הסדרה</div>'
+    +   f('payee', 'מוטב' + req, 'text', '', { cls:'span2', attr:'list="chk-dl-payee" autocomplete="off"' })
+    +   f('bank_account', 'חשבון בנק', 'text', chkAccts()[0] || '', { cls:'span2', attr:'list="chk-dl-acct" autocomplete="off"' })
+    +   f('first_no', 'מספר שק ראשון' + req, 'text', '', { attr:'dir="ltr" inputmode="numeric" autocomplete="off"' })
+    +   f('count', 'מספר שקים' + req, 'number', '', { attr:'min="2" max="60" step="1" inputmode="numeric"' })
+    +   f('amount', 'סכום כל שק ב-₪' + req, 'number', '', { attr:'step="0.01" min="0" inputmode="decimal"' })
+    +   f('first_due', 'תאריך פירעון ראשון' + req, 'date', '')
+    +   f('step', 'מרווח בחודשים', 'number', '1', { attr:'min="1" max="12" step="1" inputmode="numeric"' })
+    +   f('issued_date', 'תאריך מסירה', 'date', todayStr())
+    +   f('purpose', 'עבור', 'text', '', { cls:'span2', attr:'autocomplete="off"' })
+    +   '<div class="form-sep">השקים שייווצרו</div>'
+    +   '<div class="span4" id="chk-s-prev"></div>'
+    + '</div>'
+    + chkDl('chk-dl-payee', chkPayees()) + chkDl('chk-dl-acct', chkAccts())
+    + '<div class="chk-act" id="chk-act"><button type="button" class="btn" id="chk-s-save" onclick="chkSeriesSave()">יצירת הסדרה</button>'
+    + '<button type="button" class="ghost" onclick="chkBack()">ביטול</button></div>'
+    + '<div class="chk-msg" id="chk-msg"></div><div class="chk-err" id="chk-err" role="alert"></div>'
+    + '</div></div>';
+}
+function chkSeriesRead(){
+  const o = {};
+  ['payee','bank_account','issued_date','first_no','count','amount','first_due','step','purpose'].forEach(k => { const el = $('#chk-s-' + k); o[k] = el ? el.value : ''; });
+  return o;
+}
+window.chkSeriesPreview = function(){
+  const el = $('#chk-s-prev'); if(!el) return;
+  const b = chkSeriesBuild(chkSeriesRead()), btn = $('#chk-s-save');
+  if(b.err.length){
+    el.innerHTML = '<div class="chk-hint">מלאו את פרטי הסדרה כדי לראות את השקים. חסר: ' + esc(b.err.join(' · ')) + '.</div>';
+    if(btn) btn.textContent = 'יצירת הסדרה';
+    return;
+  }
+  const tot = b.rows.reduce((s, r) => s + r.amount, 0);
+  el.innerHTML = '<div class="chk-sum">' + b.rows.length + ' שקים · סה״כ ' + chkMoney(tot) + ' · מ-' + fmtD(b.rows[0].due_date) + ' עד ' + fmtD(b.rows[b.rows.length - 1].due_date) + '</div>'
+    + '<div class="tbl-wrap"><table class="tbl" data-gs="own"><thead><tr><th>#</th><th>מספר שק</th><th>ת. פירעון</th><th class="num">סכום</th></tr></thead><tbody>'
+    + b.rows.map(r => '<tr><td>' + r.series_pos + '</td><td class="chk-no" dir="ltr">' + esc(r.check_no) + '</td><td>' + fmtD(r.due_date) + '</td><td class="num">' + chkMoney(r.amount) + '</td></tr>').join('')
+    + '</tbody></table></div>';
+  if(btn) btn.textContent = 'יצירת ' + b.rows.length + ' שקים';
+};
+window.chkSeriesSave = async function(){
+  if(!canEdit(CHK_PERM)){ toast('אין לך הרשאת עריכה'); return; }
+  if(CHK_BUSY) return;
+  chkSay('');
+  const b = chkSeriesBuild(chkSeriesRead());
+  if(b.err.length){ chkSay('חסרים או שגויים: ' + b.err.join(' · ') + '.'); return; }
+  const sid = mediaUuid(), rows = b.rows.map(r => Object.assign({ series_id: sid }, r));
+  CHK_BUSY = true; chkBusyUi(true, 'יוצר את הסדרה…');
+  try{
+    /* insert אחד לכל הסדרה — אטומי: מספר שק שכבר קיים מפיל את כולה, ולא נשארת חצי סדרה */
+    const res = await sb.schema('ord').from('checks').insert(rows).select(CHK_COLS);
+    if(res.error) throw res.error;
+    if((res.data || []).length !== rows.length) throw new Error('הסדרה לא נשמרה — ייתכן שאין לך הרשאת עריכה במסך השקים');
+    if(!CHK_ROWS) CHK_ROWS = [];
+    CHK_ROWS.push.apply(CHK_ROWS, res.data);
+    CHK_OPEN = null; CHK_F.st = 'open';
+    toast('נוספו ' + rows.length + ' שקים', 'ok'); chkPaint();
+  }catch(e){
+    const m = chkErrHe(e);
+    chkSay(/כבר קיים/.test(m) ? 'אחד ממספרי השקים בסדרה כבר קיים בחשבון הזה — הסדרה לא נוצרה.' : m);
+  }
+  finally{ CHK_BUSY = false; chkBusyUi(false); }
 };
 
 

@@ -3446,6 +3446,9 @@ td.lb-today .lb-dt{ background-color:transparent; }
 #meets-list .mt-lnk, .mt-lnk{ cursor:pointer; border-bottom:1px dashed var(--line-strong); }
 #meets-list .mt-lnk:hover, .mt-lnk:hover{ border-bottom-color:#0f4c81; }
 .mt-nolink{ color:var(--warn-ink); }
+/* 7.73.0 — הקישור לליד/לעסקה/ללקוח בכרטיס הפגישה: נראה כמו .tk-link בטבלת המשימות, קו תחתון רק בריחוף ובמיקוד. */
+a.mt-go{ text-decoration:none; }
+a.mt-go:hover, a.mt-go:focus-visible{ text-decoration:underline; }
 #meets-list .tbl tbody tr.mt-week:hover{ background-color:#fdeecd; }
 /* שבב הישות המקושרת בבורר (6.130.0) */
 .tkl-box{ display:flex; align-items:center; gap:var(--sp-1h); flex-wrap:wrap; min-height:24px; margin-bottom:var(--sp-1); }
@@ -3477,9 +3480,10 @@ td.lb-today .lb-dt{ background-color:transparent; }
    הסימון נכנסת בראש, ו-nth-child(-n+3) הקפיא [✓, #, שם] ושחרר את "לקוח" — נמדד. ההיסט
    האופקי הוא --lb-ck (0 / 34px ב-.tbl-wrap.lb-bulk) ולכן זז עם העמודה. שורות הקבוצה
    (.lb-grp/.lb-grpfoot) אינן נושאות lb-fz ולכן ה-:not ירד. */
-#leads-list .tbl > thead > tr > th.lb-fz0, #leads-list .tbl > thead > tr > th.lb-fz1, #leads-list .tbl > thead > tr > th.lb-fz2, #leads-list .tbl > thead > tr > th.lb-fz3{ position:sticky; box-sizing:border-box; background-color:var(--navy); }
-#leads-list .tbl > tbody > tr > td.lb-fz0, #leads-list .tbl > tbody > tr > td.lb-fz1, #leads-list .tbl > tbody > tr > td.lb-fz2, #leads-list .tbl > tbody > tr > td.lb-fz3{ position:sticky; box-sizing:border-box; background-color:inherit; }
-#leads-list .tbl-wrap{ --lb-ck:0px; }
+#leads-list .tbl > thead > tr > th.lb-fz0, #leads-list .tbl > thead > tr > th.lb-fz1, #leads-list .tbl > thead > tr > th.lb-fz2, #leads-list .tbl > thead > tr > th.lb-fz3, #leads-list .tbl > thead > tr > th.lb-fzc{ position:sticky; box-sizing:border-box; background-color:var(--navy); }
+#leads-list .tbl > tbody > tr > td.lb-fz0, #leads-list .tbl > tbody > tr > td.lb-fz1, #leads-list .tbl > tbody > tr > td.lb-fz2, #leads-list .tbl > tbody > tr > td.lb-fz3, #leads-list .tbl > tbody > tr > td.lb-fzc{ position:sticky; box-sizing:border-box; background-color:inherit; }
+/* 7.73.0 — --lb-cw הוא רוחב עמודת "נוצר" הקפואה (lb-fzc); "שם מלא" ו"לקוח" מוסטים בו. מתחת ל-1280 הוא 0. */
+#leads-list .tbl-wrap{ --lb-ck:0px; --lb-cw:112px; }
 #leads-list .tbl-wrap.lb-bulk{ --lb-ck:34px; }
 /* ---- סימון הגלילה האופקית (6.103.0) ----
    🔴 **נמדד ב-19/08/2026: הגלילה עצמה כבר עבדה.** ב-pay4485 העוטף גליל
@@ -3509,16 +3513,18 @@ td.lb-today .lb-dt{ background-color:transparent; }
   background-size: 34px 100%, 34px 100%, 13px 100%, 13px 100%;
   background-attachment: local, local, scroll, scroll;
 }
-#leads-list .tbl > thead > tr > th.lb-fz0, #leads-list .tbl > thead > tr > th.lb-fz1, #leads-list .tbl > thead > tr > th.lb-fz2, #leads-list .tbl > thead > tr > th.lb-fz3{ z-index:7 }
-#leads-list .tbl > tbody > tr > td.lb-fz0, #leads-list .tbl > tbody > tr > td.lb-fz1, #leads-list .tbl > tbody > tr > td.lb-fz2, #leads-list .tbl > tbody > tr > td.lb-fz3{ z-index:3 }
+#leads-list .tbl > thead > tr > th.lb-fz0, #leads-list .tbl > thead > tr > th.lb-fz1, #leads-list .tbl > thead > tr > th.lb-fz2, #leads-list .tbl > thead > tr > th.lb-fz3, #leads-list .tbl > thead > tr > th.lb-fzc{ z-index:7 }
+#leads-list .tbl > tbody > tr > td.lb-fz0, #leads-list .tbl > tbody > tr > td.lb-fz1, #leads-list .tbl > tbody > tr > td.lb-fz2, #leads-list .tbl > tbody > tr > td.lb-fz3, #leads-list .tbl > tbody > tr > td.lb-fzc{ z-index:3 }
 #leads-list .tbl > thead > tr > th.lb-fz0,
 #leads-list .tbl > tbody > tr > td.lb-fz0{ inset-inline-start:0; width:34px; min-width:34px; max-width:34px }
 #leads-list .tbl > thead > tr > th.lb-fz1,
 #leads-list .tbl > tbody > tr > td.lb-fz1{ inset-inline-start:var(--lb-ck,0px); width:42px; min-width:42px; max-width:42px }
+#leads-list .tbl > thead > tr > th.lb-fzc,
+#leads-list .tbl > tbody > tr > td.lb-fzc{ inset-inline-start:calc(42px + var(--lb-ck,0px)); width:112px; min-width:112px; max-width:112px }
 #leads-list .tbl > thead > tr > th.lb-fz2,
-#leads-list .tbl > tbody > tr > td.lb-fz2{ inset-inline-start:calc(42px + var(--lb-ck,0px)); width:158px; min-width:158px; max-width:158px; text-align:right; overflow:hidden; text-overflow:ellipsis }
+#leads-list .tbl > tbody > tr > td.lb-fz2{ inset-inline-start:calc(42px + var(--lb-cw,0px) + var(--lb-ck,0px)); width:158px; min-width:158px; max-width:158px; text-align:right; overflow:hidden; text-overflow:ellipsis }
 #leads-list .tbl > thead > tr > th.lb-fz3,
-#leads-list .tbl > tbody > tr > td.lb-fz3{ inset-inline-start:calc(200px + var(--lb-ck,0px)); width:132px; min-width:132px; max-width:132px }
+#leads-list .tbl > tbody > tr > td.lb-fz3{ inset-inline-start:calc(200px + var(--lb-cw,0px) + var(--lb-ck,0px)); width:132px; min-width:132px; max-width:132px }
 /* צל שמפריד את הגוש הקפוא. הכיוון פיזי והמסך RTL — ולכן ההיסט שלילי. */
 #leads-list .tbl > tbody > tr > td.lb-fz3{ box-shadow:-9px 0 12px -10px rgba(6,24,39,.30) }
 #leads-list .tbl > thead > tr > th.lb-fz3{ box-shadow:inset 0 -1px 0 rgba(255,255,255,.14), -9px 0 12px -10px rgba(6,24,39,.30) }
@@ -3527,6 +3533,10 @@ td.lb-today .lb-dt{ background-color:transparent; }
      חייבים לשאת בדיוק את אותה צורה, כי media query אינו מוסיף ספציפיות. */
   #leads-list .tbl > thead > tr > th.lb-fz3,
   #leads-list .tbl > tbody > tr > td.lb-fz3{ position:static }
+  /* 7.73.0 — גם "נוצר" משתחרר במסך צר, ו---lb-cw מתאפס כדי ש"שם מלא" ייעצר מיד אחרי "#" כמו קודם. */
+  #leads-list .tbl > thead > tr > th.lb-fzc,
+  #leads-list .tbl > tbody > tr > td.lb-fzc{ position:static }
+  #leads-list .tbl-wrap{ --lb-cw:0px; }
 }
 .lb-dt{ font-size:var(--fs-xs); padding:var(--sp-0h) var(--sp-1); border:1px solid var(--line); border-radius:var(--r-sm); font-family:inherit; background:#fff; }
 /* ---- בורר הבעלים בכרטיס (6.98.0) ----
@@ -4594,7 +4604,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.72.0</div>
+      <div class="ver">גרסה 7.74.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4742,7 +4752,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="checks-2026-11-12a">גרסה 7.72.0</div>
+    <div class="side-foot" title="ownrule-2026-11-12a">גרסה 7.74.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5789,7 +5799,9 @@ window.addEventListener('resize', ()=>{ if(SRC_TIP_AT) srcTipPlace(); });
 /* סדר העמודות הוא **בדיוק** הרשימה של רומן. colspan של שורות הקבוצה נגזר
    מהאורך ולא מקודד — עמודה שתתווסף לא תשבור את הכותרות בשקט. */
 const LB_COLS = [
-  ['#','rownum'], ['שם מלא','srt'], ['לקוח','srt'], ['שם חברה','srt'], ['בעלים','srt'],
+  /* 7.73.0 — "נוצר" עבר מהסוף אל אחרי "#" (רומן, 12/11/2026: "תעביר הכי ימינה בין שם מלא למספר עמודה #").
+     ⚠️ האינדקס כאן הוא גם המפתח של LB_KEY וגם הארגומנט של lbSortBy — הזזת עמודה = מספור מחדש של LB_KEY. */
+  ['#','rownum'], ['נוצר','srt'], ['שם מלא','srt'], ['לקוח','srt'], ['שם חברה','srt'], ['בעלים','srt'],
   ['טלפון',''], ['ת.משימה הבאה','srt'], ['מקור הגעה','srt'],
   /* 6.197.0 — תוויות כמו בכרטיס (lbSubLabel): "סיבת" ולא "סטטוס"; "בעלים" כמו במשימות ובעסקאות. */
   ['סטטוס','srt'], ['סטטוס רלוונטי','lb-sub'], ['סיבת סירוב','lb-sub'], ['סיבת לא רלוונטי','lb-sub'], ['סוג לקוח','srt'],
@@ -5797,8 +5809,11 @@ const LB_COLS = [
      6.196.0 — ההקפאה ורוחב תת-הסטטוס עברו ממיקום (nth-child) למחלקה: lb-fz1..3 לשלוש
      הקפואות (lbHead/lbRow) ו-'lb-sub' כאן. ההערה הקודמת הצהירה -n+4 / n+11..13 וה-CSS היה
      -n+3 / n+10..12 — כלומר בבחירה מרובה '#' קפא ברוחב של "שם מלא" ו"לקוח" השתחרר. */
-  ['נוצר','srt'], ['קמפיין (UTM)','srt']
+  ['קמפיין (UTM)','srt']
 ];
+/* 7.73.0 — הגוש הקפוא לפי **שם העמודה** ולא לפי מיקום. עד כאן lbHead נתן lb-fz1..3 לשלוש הראשונות (i<3),
+   ועמודה שנכנסת במקום 1 הייתה מקפיאה [#, נוצר, שם] ברוחבים של [#, שם, לקוח]. lbRow נושא את אותן מחלקות על התאים. */
+const LB_FZ = { '#':'lb-fz1', 'נוצר':'lb-fzc', 'שם מלא':'lb-fz2', 'לקוח':'lb-fz3' };
 /* ---- הצלבת הליד מול לקוח קיים ----
    רומן: "יש לידים שמשאירים פניה אבל הם כבר לקוחות במערכת והאיש מכירות
    חייב לדעת מזה" · "חובה לבדוק, לא למלא".
@@ -15647,7 +15662,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'checks-2026-11-12a';
+const BUILD_ID = 'ownrule-2026-11-12a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -25698,7 +25713,7 @@ function tkSelBar(){
   const el = document.getElementById('tk-selbar'); if(!el) return;
   if(!TK_BULK){ el.innerHTML=''; return; }
   const n = TK_SEL.size;
-  const own = LOWN.filter(o=>o.assignable).map(o=>`<option value="${esc(o.owner_key)}">${esc(o.name)}</option>`).join('');
+  const own = LOWN.filter(o=>o.assignable && (window.canEdit('crm.leads.assign') || o.owner_key!==lbMe())).map(o=>`<option value="${esc(o.owner_key)}">${esc(o.name)}</option>`).join('');
   el.innerHTML = `<div class="lb-selbar">
     <b>${n} מסומנות</b>
     ${n?`<button type="button" class="chip" onclick="tkBulk('done')">✓ סימון כבוצע</button>
@@ -25717,6 +25732,9 @@ window.tkBulk = async (op)=>{
   const val = op==='owner' ? (document.getElementById('tk-blk-own')||{}).value
             : op==='due'   ? (document.getElementById('tk-blk-due')||{}).value : '';
   if(op!=='done' && !val){ toast('בחרו ערך'); return; }
+  /* 7.74.0 — ownrule: כמו בלידים. */
+  if(op==='owner' && !window.canEdit('crm.leads.assign')
+     && !(await sysConfirm('להעביר ' + ids.length + ' משימות ל' + ((LOWN_BY[val]||{}).name||'') + '?\n\nיעברו רק משימות שאתה הבעלים שלהן.\nאחרי ההעברה רק מנהל יכול להחזיר אליך.', { ok:'העברה', cancel:'ביטול' }))) return;
   const nameOf = id => (((TASKS||[]).find(x=>x.id===id)||{}).name)||id;
   if(op==='done'){
     const names = ids.slice(0,8).map(nameOf).join(' · ') + (ids.length>8?` ועוד ${ids.length-8}`:'');
@@ -32608,9 +32626,20 @@ window.mtLinkSave = async ()=>{
   const lb = document.getElementById('mt-lnkbox');
   if(lb && m) lb.innerHTML = mtLinkRow(m);
 };
+/* 7.73.0 — לאן הקישור של הפגישה מוביל (רומן, 12/11/2026: "אפשרות לגשת מכרטיס פגישה לליד").
+   ⚠️ נקרא רק אחרי ש-linkedName מצאה את הישות במטמון — open* על ישות שאינה טעונה יוצא בשקט ומשאיר CARD_NAV דלוק. */
+function mtLinkGo(m){
+  const id = jsq(m.linked_id||'');
+  return m.linked_type==='lead' ? `openLead('${id}')`
+       : m.linked_type==='deal' ? `openDeal('${id}')`
+       : m.linked_type==='customer' ? `openCust('${id}')` : '';
+}
 function mtLinkRow(m){
   const ln = linkedName(m);
-  return ln ? (esc(ln.label) + ': ' + esc(ln.name)) : '<b class="mt-nolink">לא מקושרת</b>';
+  if(!ln) return '<b class="mt-nolink">לא מקושרת</b>';
+  const go = mtLinkGo(m), txt = esc(ln.label) + ': ' + esc(ln.name);
+  /* goCard דוחף את כרטיס הפגישה למחסנית, ולכן "→ חזרה" מחזיר אליו — אותו דפוס של האריח בכרטיס המשימה. */
+  return go ? `<a class="tk-link mt-go" href="#" title="פתיחת הכרטיס" onclick="event.preventDefault();goCard(()=>${go})">${txt} ↗</a>` : txt;
 }
 
 let LM_AUTO_SUBJ = '';
@@ -33282,7 +33311,7 @@ window.openMeet = (id)=>{
       <div><label>סוג</label><div class="tk-lnk">${ieSel('meet',m.id,'meet_type',MEET_TYPES,mtType(m),{mdColors:MEET_TYPE_COLORS,mdK:LB_TK,allowEmpty:true})}</div></div>
       <div class="span2"><label>${mtType(m)==='מקוונת'?'קישור':(mtType(m)==='טלפונית'?'טלפון':'מיקום')}</label><div class="tk-lnk">${mtDetail(m)}</div></div>
       <div class="span2"><label>בעלים ושותפים</label><div class="tk-lnk" id="mt-ownbox">${ownCellName('meet',m)}</div></div>
-      <div class="span4"><label>מקושרת אל</label><div class="tk-lnk"><span id="mt-lnkbox">${mtLinkRow(m)}</span>${(window.canEdit('crm.meets') && m.status!=='בוטלה')?`<button type="button" class="chip mt-lnkbtn" onclick="mtLinkOpen('${jsq(m.id)}')">קישור</button>`:''}</div></div>
+      <div class="span4"><label>מקושרת אל</label><div class="tk-lnk"><span id="mt-lnkbox">${mtLinkRow(m)}</span>${(window.canEdit('crm.meets') && m.status!=='בוטלה')?`<button type="button" class="chip mt-lnkbtn" onclick="mtLinkOpen('${jsq(m.id)}')">שינוי קישור</button>`:''}</div></div>
     </div>
     ${mtActs(m)}
     </div>
@@ -33516,6 +33545,7 @@ function lbRow(l, i, nt, nm, ntid){
   return `<tr class="${LB_SEL.has(l.id)?'lb-on':''}${dmk.rowCls?' '+dmk.rowCls:''}${window.isNewRec(l)?' row-new':''}" onclick="openLead('${l.id}')">
       ${LB_BULK?`<td class="lb-ck lb-fz0" onclick="event.stopPropagation()"><input type="checkbox" ${LB_SEL.has(l.id)?'checked':''} onclick="lbSelOne('${jsq(l.id)}',this.checked)"></td>`:''}
       <td class="rownum lb-fz1">${i}</td>
+      <td data-sort="${esc(l.created_at||'')}" class="lb-cdt lb-fzc"><span dir="ltr">${esc(fmtDT(l.created_at))}</span></td>
       <td class="lb-fz2">${lbRet(l) ? `<span class="lb-nmw"><b title="${esc(l.full_name)}">${esc(l.full_name)}</b>${lbRetPill(l)}</span>` : `<b>${esc(l.full_name)}</b>`}</td>
       <td class="lb-fz3">${cust}</td>
       <td>${esc(l.company||'')||'<span class="lb-na">·</span>'}</td>
@@ -33528,7 +33558,6 @@ function lbRow(l, i, nt, nm, ntid){
       ${lbSubCell(l,'סירוב',SUB_REFUSAL,'reject_reason')}
       ${lbSubCell(l,'לא רלוונטי',SUB_IRRELEVANT,'irrelevant_reason')}
       <td>${ieSel('lead',l.id,'customer_type',LEAD_TYPES,l.customer_type,{allowEmpty:true,mdColors:LEAD_TYPE_COLORS,mdK:LB_TK})}</td>
-      <td dir="ltr" data-sort="${esc(l.created_at||'')}" class="lb-cdt">${esc(fmtDT(l.created_at))}</td>
       <td class="lb-utm" title="${esc(l.utm_campaign||'')}">${esc(l.utm_campaign||'')||'<span class="lb-na">·</span>'}</td>
     </tr>`;
 }
@@ -33549,7 +33578,7 @@ function lbHead(){
   /* 6.196.0 — lb-fz1..3 על שלוש הקפואות ו-.lb-bulk על העוטף: ההיסט (--lb-ck) זז עם עמודת
      הסימון במקום ש-nth-child יקפיא את העמודה הלא-נכונה. */
   return '<div class="tbl-wrap' + (LB_BULK ? ' lb-bulk' : '') + '"><table class="tbl" data-gs="own"><thead><tr>' + ck
-    + LB_COLS.map(([lbl,cls],i)=>`<th class="${lbl==='#'?'rownum':cls}${i<3?' lb-fz'+(i+1):''}${cls==='srt'&&LB_SORT[0]===i?' on':''}"${cls==='srt'?` data-ar="${LB_SORT[1]>0?'▲':'▼'}" onclick="lbSortBy(${i})"`:''}>${lbl}${lbl==='מקור הגעה'?srcHelp():''}</th>`).join('')
+    + LB_COLS.map(([lbl,cls],i)=>`<th class="${lbl==='#'?'rownum':cls}${LB_FZ[lbl]?' '+LB_FZ[lbl]:''}${cls==='srt'&&LB_SORT[0]===i?' on':''}"${cls==='srt'?` data-ar="${LB_SORT[1]>0?'▲':'▼'}" onclick="lbSortBy(${i})"`:''}>${lbl}${lbl==='מקור הגעה'?srcHelp():''}</th>`).join('')
     + '</tr></thead><tbody>';
 }
 /* משימה קרובה קודם (בלי-משימה בסוף), ואז מהחדש לישן — הסדר של תצוגות
@@ -33566,14 +33595,16 @@ function lbSort(nt){
    null בעמודה = סדר העבודה המקורי (lbSort: משימה קרובה קודם). */
 let LB_SORT = [null, 1];
 const LB_KEY = {
-  1:l=>l.full_name||'', 2:l=>{const m=lbMatch(l); return m?(m.amb?'~':(m.name||'')):'';},
-  3:l=>l.company||'',   4:l=>((LOWN_BY[lbOwnerOf(l)]||{}).name)||'',
-  6:(l,nt)=>(nt&&nt[l.id])||'',
-  7:l=>l.source||'',    8:l=>String(LEAD_STATUSES.indexOf(l.status)),
-  12:l=>l.customer_type||'',
   /* ⚠️ `created_at` ממוין על המחרוזת הגולמית של ISO ולא על התצוגה:
-     '05.07.25' ו-'18.08.26' אינם משתווים נכון כמחרוזות. */
-  13:l=>l.created_at||'', 14:l=>l.utm_campaign||''
+     '05.07.25' ו-'18.08.26' אינם משתווים נכון כמחרוזות.
+     7.73.0 — "נוצר" עבר למקום 1 ב-LB_COLS, ולכן כל המפתחות שאחריו זזו באחד (קמפיין נשאר 14). */
+  1:l=>l.created_at||'',
+  2:l=>l.full_name||'', 3:l=>{const m=lbMatch(l); return m?(m.amb?'~':(m.name||'')):'';},
+  4:l=>l.company||'',   5:l=>((LOWN_BY[lbOwnerOf(l)]||{}).name)||'',
+  7:(l,nt)=>(nt&&nt[l.id])||'',
+  8:l=>l.source||'',    9:l=>String(LEAD_STATUSES.indexOf(l.status)),
+  13:l=>l.customer_type||'',
+  14:l=>l.utm_campaign||''
 };
 /* 🔴 6.113.0 — מפתח 6 ("תאריך משימה הבאה") היה חסר, בעוד LB_COLS מסמן
    את העמודה כ-'srt'. lbOrder נפל בשקט ל-lbSort, החץ בכותרת התהפך
@@ -33669,7 +33700,7 @@ function lbSelBar(){
         ל"בתהליך" מחזירה את הסרגל עם אותה בחירה בדיוק. */
   if(!LB_BULK || LB_VIEW==='trash'){ el.innerHTML=''; return; }
   const n = LB_SEL.size;
-  const own = LOWN.filter(o=>o.assignable).map(o=>`<option value="${esc(o.owner_key)}">${esc(o.name)}</option>`).join('');
+  const own = LOWN.filter(o=>o.assignable && (window.canEdit('crm.leads.assign') || o.owner_key!==lbMe())).map(o=>`<option value="${esc(o.owner_key)}">${esc(o.name)}</option>`).join('');
   el.innerHTML = `<div class="lb-selbar">
     <b>${n} מסומנים</b>
     ${n?`<select id="lb-blk-own"><option value="">העברת בעלות אל…</option>${own}</select>
@@ -33693,6 +33724,9 @@ window.lbBulk = async (op)=>{
             : op==='partner' ? (document.getElementById('lb-blk-prt')||{}).value
             : op==='status' ? (document.getElementById('lb-blk-st')||{}).value : '';
   if(op!=='delete' && !val){ toast('בחרו ערך'); return; }
+  /* 7.74.0 — ownrule: העברה מרוכזת של איש מכירות רגיל היא חד-כיוונית. השרת מעביר רק לידים שהוא הראשי שלהם. */
+  if(op==='owner' && !window.canEdit('crm.leads.assign')
+     && !(await sysConfirm('להעביר ' + ids.length + ' לידים ל' + ((LOWN_BY[val]||{}).name||'') + '?\n\nיעברו רק לידים שאתה הבעלים שלהם.\nאחרי ההעברה רק מנהל יכול להחזיר אליך.', { ok:'העברה', cancel:'ביטול' }))) return;
   const nameOf = id => ((LEADS.find(x=>x.id===id)||{}).full_name)||id;
   if(op==='delete'){
     const names = ids.slice(0,8).map(nameOf).join(' · ') + (ids.length>8?` ועוד ${ids.length-8}`:'');
@@ -35140,6 +35174,7 @@ window.saveLead = async (id)=>{
 };
 window.lbClaim = async (id)=>{
   if(!window.canEdit('crm.leads')){ toast('אין לך הרשאת עריכה ללידים'); return; }
+  if(!window.canEdit('crm.leads.assign')){ toast('רק מנהל משייך לידים'); return; }   /* 7.74.0 */
   const l=LEADS.find(x=>x.id===id); if(!l || l.owner_id) return;
   /* 🔴 עובר דרך ה-RPC ולא דרך update על crm.leads: owner_id הוא מראה
      שמתוחזקת בטריגר, וכתיבה ישירה אליה נדרסת בעדכון הבא של lead_owners.
@@ -35307,6 +35342,30 @@ const OWN_KIND = {
 let LBOWN_K = 'lead';
 const ownK = () => OWN_KIND[LBOWN_K] || OWN_KIND.lead;
 const ownEnt = () => (ownK().rows()||[]).find(x=>x.id===LBOWN_LEAD);
+/* ═══ 7.74.0 — ownrule (רומן, 12/11/2026) ═══════════════════════════════════════════════
+   "איש מכירות רגיל לא יוכל לקחת לידים, אבל ליד שכבר שלו ... להעביר את המשימה או הליד לאיש מכירות אחר
+   שהוא יוכל, אבל לא יוכל לקחת חזרה". "רגיל" = בלי crm.leads.assign (הרשאה ולא תפקיד).
+   'all'  — מחלק לידים, או סוג שהכלל אינו חל עליו (עסקה, פגישה).
+   'mine' — אני הבעלים הראשי: מותר להעביר לאחר ולנהל שותפים; אסור לנקות בעלות.
+   'none' — לא שלי (או בלי בעלים): קריאה בלבד.
+   🔴 האכיפה בשרת (lead_set_owner · task_set_owner ואחיותיהן, guard:lead_own_* / guard:task_own_*).
+      כאן רק מיישרים את המסך אליו — אל תסתמך על הפונקציה הזאת כהגנה. */
+const OWN_RULED = { lead:1, task:1 };
+function ownRule(kind, e){
+  if(!OWN_RULED[kind] || window.canEdit('crm.leads.assign')) return 'all';
+  const k = OWN_KIND[kind];
+  const all = (e && ((k.map()[e.id]) || (e.owner_id ? [e.owner_id] : []))) || [];
+  return (all[0] && all[0] === lbMe()) ? 'mine' : 'none';
+}
+window.ownRule = ownRule;
+/* אישור לפני העברה שאין ממנה חזרה. true = להמשיך. מי שאינו 'mine' אינו נשאל. */
+async function ownMoveOk(key){
+  if(ownRule(LBOWN_K, ownEnt()) !== 'mine') return true;
+  const what = LBOWN_K==='task' ? 'המשימה' : 'הליד';
+  return await sysConfirm('להעביר את ' + what + ' ל' + ((LOWN_BY[key]||{}).name||'') + '?\n\n'
+    + (LBOWN_K==='lead' ? 'המשימות הפתוחות של הליד יעברו יחד איתו.\n' : '')
+    + 'אחרי ההעברה רק מנהל יכול להחזיר אליך.', { ok:'העברה', cancel:'ביטול' });
+}
 window.lbOwnerPick = (leadId, ev, kind)=>{
   LBOWN_LEAD = leadId;
   /* ⚠️ ברירת המחדל 'lead' — כל קורא קיים אינו מעביר סוג. */
@@ -35361,7 +35420,9 @@ function lbOwnerDraw(keepQ){
   const _k = ownK();
   const l = ownEnt(); if(!l) return;
   if(!keepQ) LBOWN_Q = '';
-  const can = window.canEdit(_k.perm);
+  /* 7.74.0 — ownrule: מי שאינו מחלק לידים רואה ליד/משימה שאינם שלו לקריאה בלבד. */
+  const _rule = ownRule(LBOWN_K, l), _me = lbMe(), _canK = window.canEdit(_k.perm);
+  const can = _canK && _rule !== 'none';
   const _all = (_k.map()[l.id]) || (l.owner_id ? [l.owner_id] : []);
   const prim = _all[0] || '', parts = _all.slice(1);
   const nameOf = k => (LOWN_BY[k]||{}).name || '—';
@@ -35375,7 +35436,8 @@ function lbOwnerDraw(keepQ){
        הפעולה נעלמה מהמסך בלי שאיש יבחין. הבדיקות תפסו את זה. */
     + (can && !pri?`<button type="button" class="lbop-x" title="הפוך לראשי"`
         + ` onclick="lbOwnerPromote('${jsq(k)}')">⇧</button>`:'')
-    + (can?`<button type="button" class="lbop-x" title="הסרה"`
+    /* 7.74.0 — 'mine': אין ✕ על הראשי (ניקוי בעלות למנהל בלבד) · 'none': שותף יכול להסיר את עצמו. */
+    + (((can && !(pri && _rule==='mine')) || (!pri && _rule==='none' && _canK && k===_me))?`<button type="button" class="lbop-x" title="הסרה"`
         + ` onclick="${pri?'lbOwnerClear()':`lbOwnerRemove('${jsq(k)}')`}">✕</button>`:'')
     + `</span>`;
   const q = LBOWN_Q.trim().toLowerCase();
@@ -35402,6 +35464,8 @@ function lbOwnerDraw(keepQ){
     </div>
     ${can?`<div class="lbop-hint">אנשי מכירות שאפשר לשייך</div>
     <div class="lbop-list">${rows || '<div class="lbop-empty">'+(q?'אין התאמה לחיפוש.':'כל אנשי המכירות כבר משויכים.')+'</div>'}</div>`:''}
+    ${_canK && _rule==='none'?`<div class="lbop-hint lbop-rule">${LBOWN_K==='task'?'המשימה אינה משויכת אליך':'הליד אינו משויך אליך'}. רק מנהל משייך ומעביר.</div>`:''}
+    ${_canK && _rule==='mine'?`<div class="lbop-hint lbop-rule">אפשר להעביר לאיש מכירות אחר. אחרי ההעברה רק מנהל יכול להחזיר אליך.</div>`:''}
     <div class="modal-actions"><button class="btn btnw" onclick="lbOwnerClose()">סגירה</button></div>`;
   if(can && LBOWN_Q){ const qi=document.getElementById('lbop-q');
     if(qi){ qi.focus(); qi.setSelectionRange(qi.value.length, qi.value.length); } }
@@ -35459,16 +35523,21 @@ window.lbOwnerRemove = async (key)=>{
    בשקט — פיצול בין מה שהמסך מבטיח למה שהשרת עושה הוא מקור לבאג. */
 window.lbOwnerMakePrimary = async (key)=>{
   const id = LBOWN_LEAD;
+  if(!(await ownMoveOk(key))) return;   /* 7.74.0 */
   await window.lbSetOwner(id, lbOwnUuid(key), true);
   lbOwnerDraw();
 };
 window.lbOwnerPromote = async (key)=>{
   const id = LBOWN_LEAD;
-  if(!(await sysConfirm('להפוך את ' + ((LOWN_BY[key]||{}).name||'') + ' לבעלים הראשי?\n\nהבעלים הראשי הנוכחי יוסר מ' + ownK().hd.replace('שיוך ','') + '.'))) return;
+  if(!(await sysConfirm('להפוך את ' + ((LOWN_BY[key]||{}).name||'') + ' לבעלים הראשי?\n\nהבעלים הראשי הנוכחי יוסר מ' + ownK().hd.replace('שיוך ','') + '.'
+      + (ownRule(LBOWN_K, ownEnt())==='mine' ? '\nאחרי ההעברה רק מנהל יכול להחזיר אליך.' : '')))) return;
   await window.lbSetOwner(id, lbOwnUuid(key), true);
   lbOwnerDraw();
 };
-window.lbOwnerClear = async ()=>{ await window.lbSetOwner(LBOWN_LEAD, null, true); lbOwnerDraw(); };
+window.lbOwnerClear = async ()=>{
+  /* 7.74.0 — ניקוי בעלות למחלק לידים בלבד (השרת: guard:*_own_clear). */
+  if(ownRule(LBOWN_K, ownEnt()) !== 'all'){ toast('רק מנהל יכול להשאיר בלי בעלים'); return; }
+  await window.lbSetOwner(LBOWN_LEAD, null, true); lbOwnerDraw(); };
 /* הכרטיס הפתוח מאחורי המודאל חייב להתרענן, אחרת הוא מציג את המצב הישן
    עד סגירה ופתיחה (הכלל מ-6.83.1: לכל מטמון נקודת ריענון אחת). */
 function lbOwnerSync(id){
@@ -35658,19 +35727,11 @@ async function lbOwnAsk(leadId){
     if(lbOwnersOf(l).length) return true;
     if(window.canEdit('crm.leads.assign')) return true;
     if(!(LOWN||[]).some(o=>o.assignable && o.owner_key===me)) return true;
-    /* "היסטוריה של בעלות" או "נגיעה של איש מכירות אחר" — שורה אחת מספיקה. actor_id.neq אינו תופס null,
-       ולכן שורות מערכת ('ליד נקלט', שינוי סטטוס מהיומן) אינן נחשבות נגיעה. */
-    const { data, error } = await sb.schema('crm').from('activities').select('id')
-      .eq('linked_type','lead').eq('linked_id', leadId)
-      .or('kind.eq.בעלות,actor_id.neq.' + me).limit(1);
-    if(error || (data||[]).length) return true;
   }catch(_e){ return true; }
-  const go = await sysConfirm('לליד הזה אין עדיין בעלים.\nלפני שכותבים עליו עדכון צריך לקחת עליו בעלות.',
-                              { ok:'קח בעלות והמשך', cancel:'ביטול' });
-  if(!go) return false;
-  const _k0 = LBOWN_K; LBOWN_K = 'lead';
-  try{ await window.lbSetOwner(leadId, me, true); } finally { LBOWN_K = _k0; }
-  return ((LOWN_OF[leadId]||[])[0] === me);
+  /* 7.74.0 — ownrule (רומן, 12/11/2026: "לחסום"). עד כאן הוצע כאן "קח בעלות והמשך"; איש מכירות רגיל כבר אינו
+     לוקח לידים, ולכן ליד בלי בעלים חסום לעדכון שלו עד שמנהל משייך אותו — בלי קשר להיסטוריה ביומן. */
+  await sysAlert('לליד הזה אין עדיין בעלים, ורק מנהל משייך לידים.\nפנה למנהל כדי שישייך אותו אליך, ואז תוכל לכתוב עדכון.');
+  return false;
 }
 window.lbOwnAsk = lbOwnAsk;
 /* יומן העדכונים — הוספה.

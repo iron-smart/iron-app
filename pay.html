@@ -9,7 +9,16 @@
 <meta name="format-detection" content="telephone=no">
 <link rel="icon" href="https://app.ironfitness.co.il/assets/icon-192.png">
 <!--
-  pay.html v5 — דף התשלום ללקוח (27/10/2026). נפרס מ-core.app_files.pay_view_html (gh-deploy v28).
+  pay.html v6 — דף התשלום ללקוח (13/11/2026). נפרס מ-core.app_files.pay_view_html (gh-deploy v28).
+  v6 (13/11/2026, רומן: "עדיין חווה את זה לפעמים… זה משגע אותנו" · "כן, תבנה"): **כרטיס אשראי באייפון ובדפדפן פנימי — דף מלא, לא iframe.**
+     🔴 נמדד 29/10–12/11 (סטטוס ה-3DS מטרנזילה × המכשיר): אימות בנק עם קוד הושלם 5 פעמים, כולן במחשב או בכרום באנדרואיד;
+        באייפון ובדפדפן של וואטסאפ — אפס, וכל קודי 930/931 הגיעו משם. הטופס מוטמע כ-iframe חוצה-אתר, שם WebKit ו-WebView
+        חוסמים עוגיות, והחזרה מאימות הבנק נגמרת ב-"System Error" (ההסבר היסק; טרנזילה לא אישרה). ₪1–2 אינם מקפיצים אימות.
+     · TOPNAV (אייפון/אייפד · WebView · WhatsApp/FB/Instagram): "תשלום בכרטיס אשראי" ⇒ כל הלשונית עוברת ל-pay-go?go=1&nav=top
+       ⇒ טרנזילה ⇒ חזרה לכאן (s=ok/fail). "תשלום ב-Bit" ⇒ הטופס המוטמע כמו קודם (nav=bit), עם הסקר של 5 שניות.
+     · מחשב וכרום באנדרואיד: בלי שינוי. nav=top / nav=frame בכתובת כופים מצב.
+     ⚠️ בכרטיס במצב TOPNAV אין שעון 15/18 ואין סקר בזמן שהלקוח אצל טרנזילה. חזרה ב"אחורה" ⇒ pageshow ⇒ סקר מיידי.
+     ⚠️ nav= אינו נקרא ב-pay-go — הוא נרשם ביומן ה-edge בלבד, למדידה.
   v5 (27/10/2026, רומן: "דף תשלום ותשלום התקבל תשפר את העיצוב"): **עיצוב מחדש — תצוגה בלבד.** בנייה: mkpayview5.py.
      · טוקנים אחידים לכל המצבים: navy #002D48 של האפליקציה, ריווח במדרגות 4px, פינות 8/12/16/20, כפתורים 48px (ראשי 52px).
      · דף התשלום: הסכום בראש; לקוח/הצעה כרשימה; הבורר והפירוט בתוך אותו בלוק; "המשך לתשלום" + "בכרטיס אשראי או ב-Bit".
@@ -106,6 +115,8 @@
   .inst > div:not(.inst-h){ display:flex; justify-content:space-between; gap:var(--s4); padding:var(--s2) 0; border-top:1px solid var(--line-soft); color:var(--ink-2); }
   .inst b{ font-weight:600; color:var(--ink-1); font-variant-numeric:tabular-nums; }
   .cta{ margin-top:var(--s6); }
+  .cta .b + .b{ margin-top:var(--s2); }      /* v6 — "תשלום ב-Bit" מתחת ל"כרטיס אשראי" */
+  .b:disabled{ opacity:.72; cursor:default; }
   .secure{ margin:var(--s3) 0 0; text-align:center; font-size:var(--fs-cap); color:var(--ink-3); }
 
   /* כפתורים — אותו גובה, רוחב ופינה בכל המצבים */
@@ -247,6 +258,14 @@
   var t = String(q.get('t') || ''), s = String(q.get('s') || ''), embed = q.get('embed') === '1';
   if(embed) document.body.className += ' embed';
   var inFrame = false; try { inFrame = window.parent !== window; } catch(_e){ inFrame = true; }
+  /* v6 — הקשרים שבהם iframe חוצה-אתר אינו מקבל עוגיות, ואימות הבנק (3DS) בתוך הטופס המוטמע נגמר ב-System Error:
+     כל דפדפן ב-iOS (WebKit; iPadOS מציג Macintosh + מגע) ודפדפנים פנימיים של אפליקציות. nav=top / nav=frame כופים. */
+  var UA = String(navigator.userAgent || '');
+  var IOS = /iPhone|iPad|iPod/.test(UA) || (/Macintosh/.test(UA) && Number(navigator.maxTouchPoints) > 0);
+  var INAPP = /; wv[)]|WhatsApp|WA4A|FBAN|FBAV|FB_IAB|Instagram/.test(UA);
+  var navQ = String(q.get('nav') || '');
+  var TOPNAV = navQ === 'top' || (navQ !== 'frame' && (IOS || INAPP));
+  var CARD_LBL = 'תשלום בכרטיס אשראי';
   var cur = null, hsAt = 0, tickT = null, pollT = null, verT = null, formOpen = false;
   var pageUrl = function(tok, st){ return location.origin + location.pathname + '?t=' + encodeURIComponent(tok) + '&s=' + encodeURIComponent(st) + (embed ? '&embed=1' : ''); };
   var postUp = function(msg){ if(!inFrame) return; try { window.parent.postMessage(msg, location.origin); } catch(_e){} };
@@ -321,14 +340,20 @@
     /* v5 — o.msg ("לחצו על הכפתור…") אינו מוצג: הכפתור ושורת האמצעים אומרים את זה. o.title הוא התג "תשלום מאובטח". */
     card.innerHTML = '<h1 class="badge">' + svg('shield') + '<span>' + esc(o.title || 'תשלום מאובטח') + '</span></h1>'
       + factsHtml(o, 'pay', sel)
-      + '<div class="cta"><button type="button" class="b p big" id="goBtn">המשך לתשלום</button>'
-      + '<p class="secure">בכרטיס אשראי או ב-Bit · הסליקה באמצעות טרנזילה</p></div>'
+      + '<div class="cta">' + (TOPNAV
+          ? '<button type="button" class="b p big" id="goBtn">' + CARD_LBL + '</button>'
+            + '<button type="button" class="b g" id="bitBtn">תשלום ב-Bit</button>'
+            + '<p class="secure">הסליקה באמצעות טרנזילה</p>'
+          : '<button type="button" class="b p big" id="goBtn">המשך לתשלום</button>'
+            + '<p class="secure">בכרטיס אשראי או ב-Bit · הסליקה באמצעות טרנזילה</p>') + '</div>'
       + '<div class="warn" id="warn" role="status"></div>'
       + '<div class="frwrap" id="frwrap" hidden></div>'
       + '<div class="since" id="since"></div>'
       + (help ? '<div class="btns sec">' + help + '</div>' : '');
     document.title = (o.title || 'תשלום') + ' — איירון פיטנס';
-    document.getElementById('goBtn').addEventListener('click', openForm);
+    document.getElementById('goBtn').addEventListener('click', TOPNAV ? goTop : openForm);
+    var bitEl = document.getElementById('bitBtn');
+    if(bitEl) bitEl.addEventListener('click', openForm);
     var selEl = document.getElementById('instSel');
     if(selEl) selEl.addEventListener('change', function(){
       instK = Math.max(1, Math.min(max, parseInt(this.value, 10) || 1));
@@ -340,15 +365,39 @@
   }
   /* v3 — כתובת ה-go עם מספר התשלומים שנבחר. pay-go v9 חותך לטווח 1..installments; בלי inst הוא היה חוזר ל-maxpay. */
   function goUrl(){ return cur.go + '&inst=' + (instK >= 1 ? instK : 1); }
+  function goOk(){ return !!(cur && cur.go && /^https:[/][/]hjibpfavkjqocjvffsbq[.]supabase[.]co[/]functions[/]v1[/]pay-go[?]t=[A-Za-z0-9_-]{16,40}&go=1$/.test(String(cur.go))); }
+  /* v6 — כרטיס אשראי במצב TOPNAV: כל הלשונית (גם מתוך דף החתימה — window.top) עוברת לטופס של טרנזילה כדף מלא, ושם
+     העוגיות שלה צד-ראשון. pay-go עושה handshake ו-302 כרגיל; החזרה (r=ok/fail) נוחתת ב-pay.html?s=… בדף המלא.
+     הכפתור ננעל ל-8 שניות (לחיצה כפולה = שני handshake); אם הניווט לא יצא — משתחרר לבד. */
+  var goT = null;
+  function goReset(){
+    if(goT){ clearTimeout(goT); goT = null; }
+    var b = document.getElementById('goBtn');
+    if(b && b.disabled){ b.disabled = false; b.textContent = CARD_LBL; }
+  }
+  function goTop(){
+    if(!goOk()) return;
+    var b = document.getElementById('goBtn'), url = goUrl() + '&nav=top';
+    if(b){ b.disabled = true; b.textContent = 'מעביר לדף התשלום…'; }
+    if(goT) clearTimeout(goT);
+    goT = setTimeout(goReset, 8000);
+    try { (inFrame ? window.top : window).location.href = url; }
+    catch(_e){ try { window.open(url, '_top'); } catch(_e2){ goReset(); } }
+  }
+  /* חזרה ב"אחורה" מהדף של טרנזילה (bfcache): הכפתור משתחרר, והדף בודק מיד אם התשלום נקלט בינתיים. */
+  window.addEventListener('pageshow', function(e){ if(e && e.persisted){ goReset(); if(cur) poll(); } });
   function openForm(){
-    if(!cur || !cur.go || !/^https:[/][/]hjibpfavkjqocjvffsbq[.]supabase[.]co[/]functions[/]v1[/]pay-go[?]t=[A-Za-z0-9_-]{16,40}&go=1$/.test(String(cur.go))) return;
-    var wrap = document.getElementById('frwrap'), btn = document.getElementById('goBtn');
+    if(!goOk()) return;
+    var wrap = document.getElementById('frwrap'), btn = document.getElementById('goBtn'), bitB = document.getElementById('bitBtn');
     wrap.hidden = false;
-    wrap.innerHTML = '<div class="bitnote">' + svg('info') + '<span>משלמים ב-Bit? אחרי האישור באפליקציה הדף הזה יתעדכן לבד תוך כמה שניות.</span></div>'
-      + '<iframe class="payfr" id="payfr" allow="payment" title="תשלום מאובטח — טרנזילה" src="' + esc(goUrl() + '&n=' + Date.now()) + '"></iframe>'
+    wrap.innerHTML = '<div class="bitnote">' + svg('info') + '<span>' + (TOPNAV
+        ? 'בטופס שלמטה בחרו ב-Bit. אחרי האישור באפליקציה הדף הזה יתעדכן לבד תוך כמה שניות.'
+        : 'משלמים ב-Bit? אחרי האישור באפליקציה הדף הזה יתעדכן לבד תוך כמה שניות.') + '</span></div>'
+      + '<iframe class="payfr" id="payfr" allow="payment" title="תשלום מאובטח — טרנזילה" src="' + esc(goUrl() + (TOPNAV ? '&nav=bit' : '') + '&n=' + Date.now()) + '"></iframe>'
       + '<div class="cover" id="cover"></div>'
       + '<p class="fallback">הטופס אינו מוצג? <a id="popout" href="' + esc(goUrl()) + '" target="_blank" rel="noopener">לפתיחת התשלום בחלון נפרד</a></p>';
-    if(btn) btn.style.display = 'none';
+    /* v6 — במצב TOPNAV כפתור הכרטיס נשאר מעל הטופס (כרטיס משלמים רק בדף המלא); נעלם רק כפתור ה-Bit שנלחץ. */
+    if(TOPNAV){ if(bitB) bitB.style.display = 'none'; } else if(btn) btn.style.display = 'none';
     var se = document.getElementById('instSel'), hint = document.getElementById('instHint');
     if(se) se.disabled = true;      /* הטופס נפתח עם הפריסה הזו; שינוי עכשיו = DCdisable חדש = סיכון חיוב כפול */
     if(hint) hint.hidden = false;

@@ -1523,6 +1523,15 @@
   .md-nm{ font-weight:800; font-size:var(--fs-lg); margin:var(--sp-0h) 0 1px }
   .md-meta{ font-size:var(--fs-sm); color:var(--ink-3); margin-bottom:var(--sp-1) }
   .md-act{ display:flex; gap:var(--sp-1h); flex-wrap:wrap }
+  /* 7.77.0 — הערות מחסן (הזמנה) / הערות (קריאת שירות) מובלטות לטכנאי. עד כאן שורה אפורה קטנה
+     "מחסן: …" בכרטיס "היום שלי", ובקריאה — בתחתית הכרטיס (רומן, 15/11/2026: "שגם הטכנאים יוכלו לראות"). */
+  .md-note,.tech-note{ background:var(--amber-bg); border:1px solid var(--warn); border-radius:var(--r-md); padding:var(--sp-1h) var(--sp-2h); margin:0 0 var(--sp-2); color:var(--ink-1); font-size:var(--fs-md); white-space:pre-wrap; overflow-wrap:anywhere }
+  .md-note b,.tech-note b{ display:block; font-size:var(--fs-xs); font-weight:800; color:var(--warn-ink); margin-bottom:var(--sp-0h); white-space:normal }
+  .tech-note{ font-size:var(--fs-lg); margin:var(--sp-2) 0 var(--sp-3) }
+  /* 7.77.0 — "היסטוריה" ב"היום שלי": שורה קומפקטית לכל ביקור */
+  .md-hrow{ display:flex; align-items:center; gap:var(--sp-1h); flex-wrap:wrap; padding:var(--sp-1h) var(--sp-2); border:1px solid var(--line-soft); border-radius:var(--r-md); margin-bottom:var(--sp-1); background:#fff; cursor:pointer; font-size:var(--fs-md) }
+  .md-hrow small{ color:var(--ink-3) }
+  .md-hrow:active{ background:var(--bg-subtle) }
   /* 7.10.0 — תמונות צמודות לדוח (כרטיס) · כותרת קבוצה במסך המסמכים · נעילת כפתורי העלאה בזמן העלאה */
   .rep-ph{ margin:0 0 var(--sp-2); padding-inline-start:var(--sp-3); border-inline-start:2px solid #e6eaf0 }
   .rep-ph .row .k{ font-weight:500 }
@@ -1775,6 +1784,14 @@
   .tg-dn{ grid-area:1/1; min-width:0; overflow:hidden; text-overflow:ellipsis; }
   .tg-head .hol-tag{ grid-area:2/1/3/3; min-width:0; overflow:hidden; text-overflow:ellipsis; margin-inline-start:0; }
   .tg-head .hol-tag.hol-none{ visibility:hidden; }
+  /* 7.77.0 — הערת יום (ord.cal_notes). בכותרת: שורה משלה על שתי העמודות, ממוקמת אוטומטית אחרי תגית החג.
+     כשיש הערה בשבוע, כל עמודה מקבלת שורה כזאת (cn-none, נסתרת) — אותו עיקרון של hol-none: קו 08:00 אחיד. */
+  .cn-tag{ display:block; border-radius:var(--r-sm); padding:0 var(--sp-1); font-size:var(--fs-2xs); font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; background:var(--amber-bg); color:var(--warn-ink); border-inline-start:3px solid var(--warn); cursor:pointer; margin:0 0 var(--sp-1) }
+  .cn-tag.k-off{ background:var(--red-bg); color:var(--red); border-inline-start-color:var(--red) }
+  .cn-tag.k-fun{ background:var(--hol-bg); color:var(--hol-ink); border-inline-start-color:var(--navy) }
+  .cn-tag.k-oth{ background:var(--bg-muted); color:var(--ink-2); border-inline-start-color:var(--line-strong) }
+  .tg-head .cn-tag{ grid-column:1/-1; min-width:0; margin:0 }
+  .tg-head .cn-tag.cn-none{ visibility:hidden }
   .tg-head.today{ outline:2px solid var(--green); outline-offset:-1px; }
   .tg-head .dnum{ font-size:var(--fs-sm); color:var(--ink-3); font-weight:700; grid-area:1/2; }
   .tg-hr{ position:absolute; inset-inline-end:4px; transform:translateY(-7px); font-size:var(--fs-xs); font-weight:700; color:var(--ink-3); white-space:nowrap; }
@@ -2456,6 +2473,12 @@
   #tab-set .am-s-sent{ color:var(--ink-2); }
   #tab-set .am-s-read{ color:var(--ok); }
   #tab-set .am-s-off{ color:var(--ink-3); }
+  /* 7.77.1 — admnote2: עריכה. ⚠️ [hidden] מפורש: .st-row (grid) ו-.ghost גוברים על ה-hidden של הדפדפן */
+  #tab-set #am-form [hidden]{ display:none; }
+  #tab-set .am-edhd{ font-size:var(--fs-sm); font-weight:700; color:var(--warn-ink); background:var(--amber-bg); }
+  #tab-set .am-acts{ white-space:nowrap; }
+  #tab-set .am-acts .st-save + .st-save{ margin-inline-start:var(--sp-1h); }
+  #tab-set .am-tbl tr.am-editing td{ background-color:var(--amber-bg); }
   .st-errline{ margin:0 var(--sp-4) var(--sp-2h); }
   .st-grp{ background:#fff; border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-card); margin-bottom:var(--sp-2h); overflow:hidden; }
   .st-grp[hidden]{ display:none; }
@@ -4625,7 +4648,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.76.0</div>
+      <div class="ver">גרסה 7.77.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4773,7 +4796,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="retailprint-2026-11-15a">גרסה 7.76.0</div>
+    <div class="side-foot" title="admnote2-2026-11-16a">גרסה 7.77.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5541,6 +5564,26 @@ tr.lb-on td{ background-color:#eef5fd !important; }
     <div class="note" style="margin:0 0 var(--sp-2h)">הזמנות פתוחות שטרם תואמו. הבחירה פותחת את כרטיס ההזמנה עם התאריך ממולא — השיבוץ נשמר רק בלחיצה על שמירה.</div>
     <input id="calPickQ" class="cal-pick-q" autocomplete="off" placeholder="חיפוש לפי לקוח, מספר הזמנה, עיר או טלפון…" oninput="calPickSearch(this.value)">
     <div id="calPickList" class="cal-pick-list"></div>
+  </div>
+</div>
+
+<!-- 7.77.0 — הערת יום ביומן (ord.cal_notes). modal-over: נפתח מעל הלוח; רקע סוגר. -->
+<div class="modal modal-over hidden" id="calNoteModal">
+  <div class="sheet">
+    <h3 id="cnTitle">הערת יום</h3>
+    <div class="note" style="margin:0 0 var(--sp-2h)">אילוץ בשיבוץ, חופש של עובד, יום כיף. מוצג ביומן רק לרומן, נח ומיקי.</div>
+    <div class="form-grid">
+      <div><label>מתאריך</label><input id="cn-from" type="date"></div>
+      <div><label>עד תאריך</label><input id="cn-to" type="date"></div>
+      <div><label>סוג</label><select id="cn-kind"><option>אילוץ</option><option>חופש</option><option>יום כיף</option><option>אחר</option></select></div>
+      <div class="span4"><label>הערה</label><textarea id="cn-body" rows="3" maxlength="300"></textarea></div>
+    </div>
+    <div class="actions">
+      <button class="btn green" id="cn-save" onclick="calNoteSave()">שמירה</button>
+      <button class="ghost" onclick="calNoteClose()">ביטול</button>
+      <button class="ghost hidden" id="cn-del" onclick="calNoteDel()">מחיקה</button>
+    </div>
+    <div class="err" id="cn-err"></div>
   </div>
 </div>
 
@@ -8753,7 +8796,10 @@ window.dashSecFocus = sec=>{
 /* ===== שלב D — "היום שלי" לטכנאי (6.88.0) ===== */
 let MD_VIEW = 'day', _mdAt = 0;
 window.MD_HIDE = false;
-window.mdView = v=>{ MD_VIEW = v==='week' ? 'week' : 'day'; renderMyDay(); };
+/* 7.77.0 — 'hist': 30 יום אחורה, "עוד 30 יום" עד 90 — תקרת הטווח של team_days_map היא 92 יום */
+let MD_HIST_DAYS = 30, _mdHistTok = 0;
+window.mdView = v=>{ MD_VIEW = (v==='week' || v==='hist') ? v : 'day'; if(v==='hist') MD_HIST_DAYS = 30; renderMyDay(); };
+window.mdHistMore = ()=>{ MD_HIST_DAYS = Math.min(90, MD_HIST_DAYS + 30); renderMyDay(); };
 /* 7.10.0 — כשל רשת בטעינת השיבוץ הוצג כ"לא שובצת להיום — פנו למנהל הלוגיסטיקה", בלי ניסיון חוזר
    חמש דקות (סקירת 15/10/2026). בשטח זו "האפליקציה אומרת שאני לא משובץ". */
 function mdFailHtml(){ return '<div class="note">טעינת השיבוץ היומי נכשלה — כנראה אין קליטה כרגע. <button type="button" class="chip" onclick="mdRetry()">נסה שוב</button></div>'; }
@@ -8784,8 +8830,9 @@ function mdCard(e){
   const o = e.o, svc = e.kind==='svc';
   const addr = [o.address||o.customer_address||'', o.city||''].filter(Boolean).join(', ');
   const phone = o.contact_phone||o.phone||'';
-  const items = svc ? [o.product, o.fault_details].filter(Boolean).join(' — ')
-                    : [o.equipment_list, o.warehouse_notes?('מחסן: '+o.warehouse_notes):''].filter(Boolean).join(' · ');
+  const items = svc ? [o.product, o.fault_details].filter(Boolean).join(' — ') : (o.equipment_list||'');
+  /* 7.77.0 — ההערה בתיבה משלה ולא בשורה האפורה (רומן, 15/11/2026). בקריאה: notes (logi.calls) — אין לה הערות מחסן */
+  const note = svc ? o.notes : o.warehouse_notes;
   /* 6.189.0 — "בוצע" גם להזמנה, ורק כשהכול סופק לפי פריוריטי. ⚠️ ordHasOpen
      ולא openAny: openAny שואל "דורש ביקור השלמה" (supply_state), בעוד השרת
      שואל open_lines>0 — הזמנה 'בתהליך' עוברת את הראשון ונדחית בשני. */
@@ -8805,6 +8852,7 @@ function mdCard(e){
     '<div class="md-nm">'+esc(o.customer_name||'')+'</div>'+
     (addr?'<div class="md-meta">'+esc(addr)+'</div>':'')+
     (items?'<div class="md-meta">'+esc(items)+'</div>':'')+
+    (note?'<div class="md-note"><b>'+(svc?'הערות':'הערות מחסן')+'</b>'+esc(note)+'</div>':'')+
     '<div class="md-act">'+
       (addr?'<a class="chip" target="_blank" rel="noopener" href="'+wazeUrl(addr)+'" onclick="event.stopPropagation()">ניווט</a>':'')+
       (phone?'<a class="chip" href="tel:'+esc(String(phone))+'" onclick="event.stopPropagation()">חיוג</a>':'')+
@@ -8812,6 +8860,21 @@ function mdCard(e){
       (window.canEdit('docs.reports')?'<button type="button" class="chip" onclick="event.stopPropagation();mdReport(\''+o.id+'\',\''+(svc?'call':'order')+'\')">דוח תקינות'+(mdRepSigned(svc?'call':'order', o.id)?' ✓':'')+'</button>':'')+
       (canDone?'<button type="button" class="chip chip-done" onclick="event.stopPropagation();mdDone(\''+o.id+'\',\''+(svc?'call':'order')+'\')">✓ בוצע</button>':'')+
     '</div></div>';
+}
+/* 7.77.0 — שורת היסטוריה: מה היה ומה נעשה בביקור (סטטוס · דוח חתום · תמונות). לחיצה פותחת את הכרטיס כמו ב"היום". */
+function mdHistRow(e){
+  const o = e.o, svc = e.kind==='svc', k = svc ? 'call' : 'order';
+  const open = svc ? "openScall('"+o.id+"')" : "openOrd('"+o.id+"')";
+  const st = svc ? o.status : o.order_status;
+  const stDone = svc ? ['הושלם','הושלמה','בוטלה','סגורה'].includes(st) : ['הושלם','בוטל','מבוטלת'].includes(st);
+  const n = mdPhotoN(k, o.id), rep = mdRepSigned(k, o.id);
+  return '<div class="md-hrow" role="button" tabindex="0" onclick="'+open+'" onkeydown="if(event.key===\'Enter\'){'+open+'}">'+
+    '<b>'+esc(o.customer_name||'')+'</b>'+(o.city?'<small>'+esc(o.city)+'</small>':'')+
+    (svc?'<span class="pill p-gray">קריאת שירות</span>':'')+(o.__fup?'<span class="pill p-gray">השלמה</span>':'')+
+    (st?'<span class="pill '+(stDone?'p-green':'p-gray')+'">'+esc(st)+'</span>':'')+
+    (rep?'<span class="pill p-green">דוח חתום ✓</span>':'')+
+    (n?'<span class="pill p-gray">'+n+' תמונות</span>':'')+
+  '</div>';
 }
 window.mdDone = async (id, kind)=>{
   /* 6.189.0 — kind אופציונלי: 'order' מסמן הזמנה דרך ord.order_mark_done;
@@ -8859,9 +8922,32 @@ async function renderMyDay(){
   const tog = '<div class="md-tog">'+
     '<button type="button" class="chip '+(MD_VIEW==='day'?'active':'')+'" onclick="mdView(\'day\')">היום</button>'+
     '<button type="button" class="chip '+(MD_VIEW==='week'?'active':'')+'" onclick="mdView(\'week\')">השבוע</button>'+
+    '<button type="button" class="chip '+(MD_VIEW==='hist'?'active':'')+'" onclick="mdView(\'hist\')">היסטוריה</button>'+
     (myTeams(from).length?'<span class="pill p-gray">'+esc(myTeams(from).join(' · '))+'</span>':'')+
     '<span id="md-fresh"></span>'+
     '</div>';
+  if(MD_VIEW === 'hist'){
+    /* 7.77.0 — השיבוץ של העבר נטען לפי דרישה. תאריך שנכשל נטען שוב בציור הבא (נסה שוב / רענון אוטומטי). */
+    const tok = ++_mdHistTok;
+    const hTo = addDaysIso(from, -1), hFrom = addDaysIso(from, -MD_HIST_DAYS);
+    const hDays = []; for(let d=hTo; d>=hFrom; d=addDaysIso(d,-1)) hDays.push(d);
+    if(hDays.some(d=>!TD_HAVE.has(d) || TD_FAIL.has(d))){
+      el.innerHTML = tog + crmLoading('טוען היסטוריה…');
+      await loadTeamDays(hFrom, hTo);
+      if(tok !== _mdHistTok || MD_VIEW !== 'hist') return;
+    }
+    const failH = hDays.some(d=>TD_FAIL.has(d));
+    const body = hDays.map(d=>{
+      const mine = myTeams(d); if(!mine.length) return '';
+      const evs = mdEventsOn(d); if(!evs.length) return '';
+      return '<div class="md-day">'+esc(dayNameHe(d))+' <small>'+fmtD(d)+'</small><span class="pill p-gray">'+esc(mine.join(' · '))+'</span></div>'+evs.map(mdHistRow).join('');
+    }).join('');
+    el.innerHTML = tog + (failH ? mdFailHtml() : '') +
+      (body || (failH ? '' : '<div class="empty">אין עבודות ב-'+MD_HIST_DAYS+' הימים האחרונים</div>')) +
+      (MD_HIST_DAYS < 90 ? '<div class="md-act"><button type="button" class="chip" onclick="mdHistMore()">עוד 30 יום</button></div>'
+                         : '<div class="note">מוצגים 90 הימים האחרונים</div>');
+    dashAlert('myday','myday',0); mdStampFresh(); return;
+  }
   if(MD_VIEW === 'day'){
     if(!myTeams(from).length){
       if(tdFail){ el.innerHTML = tog + mdFailHtml(); dashAlert('myday','myday',0); mdStampFresh(); return; }
@@ -10928,6 +11014,93 @@ window.calPickChoose = id => {
   if(d && !d.disabled){ d.value=ds; d.dispatchEvent(new Event('change',{bubbles:true})); toast('התאריך '+fmtD(ds)+' מולא — השיבוץ יישמר בלחיצה על שמירה'); }
 };
 window.calGoDay = ds=>{ CAL_D=new Date(ds+'T12:00:00'); CAL_VIEW='day'; renderCal(); };
+/* ===== 7.77.0 — הערות יום ביומן (ord.cal_notes, הרשאה logi.cal.notes) =====
+   רומן (15/11/2026): "להוסיף נגיד הערה לאיזשהו יום ספיציפי שלמיקי יש אילוצים בשיבוצים נניח, או יום כיף
+   או חופש של עובד". צפייה וכתיבה — רומן, נח ומיקי (שורות מפורשות, 0 לכל השאר). השרת אוכף ב-RLS.
+   טעינה עצלה לטווח המוצג, מחוץ ל-Promise.all של loadLeads. CN_KEY מונע לולאת ציור כשהטעינה נכשלת. */
+let CAL_NOTES = [], CN_FROM = '', CN_TO = '', CN_KEY = '', CN_BUSY = false, CN_ERR = false, CN_EDIT = null;
+const CN_CLS = { 'אילוץ':'k-con', 'חופש':'k-off', 'יום כיף':'k-fun', 'אחר':'k-oth' };
+function calNotesOn(ds){ return CAL_NOTES.filter(n=>n.date_from<=ds && n.date_to>=ds); }
+const cnText  = n => n.kind==='אחר' ? String(n.body||'') : n.kind+': '+String(n.body||'');
+const cnRange = n => n.date_from===n.date_to ? fmtD(n.date_from) : fmtD(n.date_from)+' – '+fmtD(n.date_to);
+async function calNotesLoad(from, to){
+  if(!canView('logi.cal.notes') || CN_BUSY) return false;
+  CN_BUSY = true; CN_KEY = from+'|'+to;
+  try{
+    const r = await sb.schema('ord').from('cal_notes').select('id,date_from,date_to,kind,body,updated_at')
+      .lte('date_from', to).gte('date_to', from).order('date_from');
+    if(r.error){ CN_ERR = true; console.error('טעינת הערות היום נכשלה', r.error); return false; }
+    CN_ERR = false; CAL_NOTES = r.data || []; CN_FROM = from; CN_TO = to;
+    return true;
+  }catch(e){ CN_ERR = true; console.error('טעינת הערות היום נכשלה', e); return false; }
+  finally{ CN_BUSY = false; }
+}
+function cnTag(n, extra, tag){
+  const t = tag || 'span';
+  return '<'+t+' class="cn-tag '+(CN_CLS[n.kind]||'k-oth')+'" title="'+esc(cnText(n)+' · '+cnRange(n))+'" onclick="event.stopPropagation();calNoteOpen(\''+jsq(String(n.id))+'\')">'+esc(cnText(n))+(extra||'')+'</'+t+'>';
+}
+/* כותרת יום בשבועי/ביומי. all — ביומי כל ההערות; בשבועי אחת + "+N" כדי שהכותרות יישארו באותו גובה. */
+function calNoteHead(ds, ph, all){
+  const ns = calNotesOn(ds);
+  if(!ns.length) return ph || '';
+  if(all) return ns.map(n=>cnTag(n)).join('');
+  return cnTag(ns[0], ns.length>1 ? ' +'+(ns.length-1) : '');
+}
+function calNoteMonth(ds){
+  const ns = calNotesOn(ds);
+  return ns.slice(0,2).map(n=>cnTag(n, '', 'div')).join('') + (ns.length>2 ? '<div class="mini-more">+'+(ns.length-2)+' הערות</div>' : '');
+}
+window.calNoteNew = ds => { if(canEdit('logi.cal.notes')) calNoteForm({ id:null, date_from:ds, date_to:ds, kind:'אילוץ', body:'' }); };
+window.calNoteOpen = id => {
+  const n = CAL_NOTES.find(x=>String(x.id)===String(id)); if(!n) return;
+  if(!canEdit('logi.cal.notes')){ sysAlert(cnText(n)+'\n'+cnRange(n)); return; }
+  calNoteForm(n);
+};
+function calNoteForm(n){
+  CN_EDIT = n.id || null;
+  $('#cnTitle').textContent = CN_EDIT ? 'עריכת הערת יום' : 'הערת יום חדשה';
+  $('#cn-from').value = n.date_from || ''; $('#cn-to').value = n.date_to || n.date_from || '';
+  $('#cn-kind').value = n.kind || 'אילוץ'; $('#cn-body').value = n.body || '';
+  $('#cn-err').textContent = '';
+  $('#cn-del').classList.toggle('hidden', !CN_EDIT);
+  $('#cn-save').disabled = false;
+  $('#calNoteModal').classList.remove('hidden');
+  setTimeout(()=>{ try{ $('#cn-body').focus(); }catch(_e){} }, 30);
+}
+window.calNoteClose = ()=>{ $('#calNoteModal').classList.add('hidden'); CN_EDIT = null; };
+function cnReload(){ CN_FROM = ''; CN_TO = ''; CN_KEY = ''; renderCal(); }
+window.calNoteSave = async ()=>{
+  if(!canEdit('logi.cal.notes')) return;
+  const f = $('#cn-from').value, t = $('#cn-to').value || f, k = $('#cn-kind').value, b = $('#cn-body').value.trim();
+  const err = $('#cn-err'), btn = $('#cn-save');
+  if(!f){ err.textContent = 'חסר תאריך התחלה'; return; }
+  if(t < f){ err.textContent = '"עד תאריך" לפני "מתאריך"'; return; }
+  if((new Date(t+'T12:00:00') - new Date(f+'T12:00:00')) / 864e5 > 92){ err.textContent = 'טווח של עד 92 ימים'; return; }
+  if(!b){ err.textContent = 'חסר טקסט להערה'; return; }
+  if(b.length > 300){ err.textContent = 'עד 300 תווים'; return; }
+  if(btn.disabled) return;
+  btn.disabled = true; err.textContent = '';
+  const row = { date_from:f, date_to:t, kind:k, body:b };
+  const tbl = sb.schema('ord').from('cal_notes');
+  const r = CN_EDIT ? await tbl.update(row).eq('id', CN_EDIT).select('id') : await tbl.insert(row).select('id');
+  /* 0 שורות בלי שגיאה = RLS שדחה עדכון בשקט — אינו "נשמר" */
+  if(r.error || !(r.data && r.data.length)){
+    btn.disabled = false;
+    err.textContent = 'השמירה נכשלה — ' + ((r.error && r.error.message) || 'אין הרשאה לשמור הערת יום');
+    return;
+  }
+  calNoteClose(); toast('נשמר ✓'); cnReload();
+};
+window.calNoteDel = async ()=>{
+  if(!CN_EDIT || !canEdit('logi.cal.notes')) return;
+  if(!(await sysConfirm('למחוק את הערת היום?', { ok:'מחיקה' }))) return;
+  const r = await sb.schema('ord').from('cal_notes').delete().eq('id', CN_EDIT).select('id');
+  if(r.error || !(r.data && r.data.length)){
+    $('#cn-err').textContent = 'המחיקה נכשלה — ' + ((r.error && r.error.message) || 'אין הרשאה');
+    return;
+  }
+  calNoteClose(); toast('נמחק'); cnReload();
+};
 function renderCal(){
   const el = $('#cal-wrap'); if(!el) return;
   const t=isoD(new Date()), cd=isoD(CAL_D);
@@ -10952,6 +11125,7 @@ function renderCal(){
         const nowork=dowOf(d)===CAL_FRIDAY&&!evs.length;
         return `<div class="month-cell ${inMonth?'':'out'} ${d===t?'today':''} ${nowork?'nowork':''}${heCls(d)}" onclick="calGoDay('${d}')">
           ${heDay(d)?`<div class="mhol hol-${heDay(d).kind}" title="${esc(heDay(d).name)}">${esc(heDay(d).name)}</div>`:''}
+          ${calNoteMonth(d)}
           <div class="mnum"><span>${parseInt(d.slice(8),10)}</span>${nReal?`<span class="mcount">${nReal}</span>`:''}${nEta?`<span class="mcount eta" title="צפי אספקה — אינו תיאום">${nEta} צפי</span>`:''}${calPickBtn(d)}</div>
           ${shown.map(e=>{ const o=e.o, col=evColor(e), done=evDone(e), ok=evOk(e), st=evStatus(e);
             if(e.kind==='eta'){
@@ -10990,6 +11164,7 @@ function renderCal(){
     const wkEv = {}; days.forEach(d=>{ wkEv[d] = eventsOnCal(d); });
     /* 6.221.0 — עמודה בלי חג בשבוע שיש בו חג מקבלת תגית נסתרת, כדי שכל הכותרות יהיו באותו גובה. */
     const wkHolPh = days.some(d=>heDay(d)) ? '<span class="hol-tag hol-none">&nbsp;</span>' : '';
+    const wkNotePh = days.some(d=>calNotesOn(d).length) ? '<span class="cn-tag cn-none">&nbsp;</span>' : '';
     const adCap=4;
     const adReal=Math.max(0,...days.map(d=>wkEv[d].filter(e=>!evSpan(e)).length));
     const adMax=Math.min(adCap, adReal);
@@ -10997,7 +11172,7 @@ function renderCal(){
     body=`<div class="cal-scroll"><div class="tg-wrap" style="grid-template-columns:56px repeat(${days.length},minmax(150px,1fr))">
       ${tgGutter(adH)}
       ${days.map(d=>`<div class="tg-col ${dowOf(d)===CAL_FRIDAY?'nowork':''}${heCls(d)}">
-          <div class="tg-head ${d===t?'today':''}" onclick="calGoDay('${d}')"><span><span class="tg-dn">${dayNameHe(d)}${dowOf(d)===CAL_FRIDAY?' <span class="fri-tag">שישי</span>':''}</span>${heTag(d)||wkHolPh}</span><span class="dnum">${fmtD(d)} ${calPickBtn(d)}</span></div>
+          <div class="tg-head ${d===t?'today':''}" onclick="calGoDay('${d}')"><span><span class="tg-dn">${dayNameHe(d)}${dowOf(d)===CAL_FRIDAY?' <span class="fri-tag">שישי</span>':''}</span>${heTag(d)||wkHolPh}${calNoteHead(d, wkNotePh)}</span><span class="dnum">${fmtD(d)} ${calPickBtn(d)}</span></div>
           ${tgDay(d, wkEv[d], true, adH, adCap)}
         </div>`).join('')}
     </div></div>`;
@@ -11018,7 +11193,7 @@ function renderCal(){
     body=`<div class="cal-scroll"><div class="tg-wrap tg-wrap-day" style="grid-template-columns:56px minmax(260px,1fr)">
       ${tgGutter(adH)}
       <div class="tg-col ${dowOf(cd)===CAL_FRIDAY?'nowork':''}${heCls(cd)}">
-        <div class="tg-head ${cd===t?'today':''}"><span><span class="tg-dn">${dayNameHe(cd)}</span>${heTag(cd)}</span><span class="dnum">${fmtD(cd)} ${calPickBtn(cd,true)}</span></div>
+        <div class="tg-head ${cd===t?'today':''}"><span><span class="tg-dn">${dayNameHe(cd)}</span>${heTag(cd)}${calNoteHead(cd, '', true)}</span><span class="dnum">${fmtD(cd)} ${calPickBtn(cd,true)}</span></div>
         ${fulls.length?`<div class="tg-fullday"><div class="tg-fullday-t">יום מלא · מחוץ לשעות הפעילות</div><div class="tg-fullday-cards">${fulls.map(e=>evCard(e,false)).join('')}</div></div>`:''}
         ${evs.length? tgDay(cd, rest, false, adH) : `<div class="empty">${CAL_Q?'אין אירועים תואמים לחיפוש ביום זה':'אין אירועים מתואמים ליום זה'}</div>`}
       </div>
@@ -11034,6 +11209,7 @@ function renderCal(){
   el.innerHTML = `<div class="cal-topbar">
       <span class="cal-title">${title}</span>
       <span class="grow"></span>
+      ${canEdit('logi.cal.notes')?`<button class="nav-b" id="cn-new" onclick="calNoteNew('${cd}')" title="אילוץ, חופש של עובד, יום כיף — מוצג רק למי שמורשה">＋ הערת יום${CN_ERR?' <span style="color:var(--red)" title="טעינת הערות היום נכשלה">⚠️</span>':''}</button>`:''}
       <button class="nav-b td-open" onclick="openTeamDay('${cd}')" title="מי עובד בכל נתיב ביום שנבחר">${ico('crew')} שיבוץ יומי${TD_ERR?' <span style="color:#a92f2f" title="טעינת השיבוץ נכשלה">⚠️</span>':''}</button>
       <div class="cal-seg">
         <button class="${CAL_VIEW==='day'?'on':''}" onclick="calMode('day')">יומי</button>
@@ -11052,6 +11228,12 @@ function renderCal(){
     <div class="cal-legend">${legend}</div>`;
   /* 6.24.18 — השיבוץ היומי נטען בעצלתיים לטווח המוצג בלבד, ואחריו ציור אחד נוסף.
      כל תאריך בטווח מסומן כנטען גם כשהשליפה נכשלה, ולכן אין לולאת ציור. */
+  /* 7.77.0 — הערות היום לטווח המוצג. CN_KEY: אותו טווח אינו נטען שוב אחרי כישלון (אחרת לולאת ציור). */
+  if(canView('logi.cal.notes') && scope.length){
+    const _cs = scope.slice().sort(), _cf = _cs[0], _ct = _cs[_cs.length-1];
+    if(!(CN_FROM && CN_FROM<=_cf && CN_TO>=_ct) && !CN_BUSY && CN_KEY !== _cf+'|'+_ct)
+      calNotesLoad(_cf, _ct).then(()=>{ if($('#cal-wrap')) renderCal(); });
+  }
   const _tdMiss = scope.filter(d=>!TD_HAVE.has(d));
   if(_tdMiss.length && !TD_BUSY){
     const _a = _tdMiss.slice().sort();
@@ -15683,7 +15865,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'retailprint-2026-11-15a';
+const BUILD_ID = 'admnote2-2026-11-16a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -21069,6 +21251,8 @@ function renderSettings(){
 let AM = { people:null, notes:null, err:'', busy:false };
 const AM_SEL = new Set();
 let AM_LINK = null;
+/* 7.77.1 — admnote2: השורה שבעריכה (null = הודעה חדשה). כל מעבר בין המצבים עובר ב-amFormReset / amEdit. */
+let AM_EDIT = null;
 function amPad(n){ return String(n).padStart(2, '0'); }
 /* ברירת המחדל לתזמון: מחר 08:00 — זה בדיוק המקרה שהוליד את המסך */
 function amDefAt(){ const d = new Date(); d.setDate(d.getDate() + 1); return d.getFullYear() + '-' + amPad(d.getMonth() + 1) + '-' + amPad(d.getDate()) + 'T08:00'; }
@@ -21080,6 +21264,7 @@ function amLinkHtml(){
 function amHtml(){
   const ed = canEdit('set.notif');
   const form = ed ? `<section class="st-card" id="am-form"><div class="st-rows">
+      <div class="st-row st-wide am-edhd" id="am-edhd" hidden></div>
       <div class="st-row st-wide"><div class="st-l"><b>למי</b></div><div class="am-people" id="am-people">${crmLoading('טוען עובדים…')}</div></div>
       <div class="st-row st-wide"><label class="st-l" for="am-title"><b>כותרת</b></label><input id="am-title" class="st-txt" maxlength="200" placeholder="למשל: לבדוק ליד קיים לפני שפותחים ליד ידני"></div>
       <div class="st-row st-wide"><label class="st-l" for="am-body"><b>טקסט</b> <small>לא חובה</small></label><textarea id="am-body" class="st-ta" maxlength="2000" rows="4"></textarea></div>
@@ -21088,7 +21273,7 @@ function amHtml(){
         <label class="st-swl"><input type="radio" name="am-when" value="now" checked onchange="amWhen()"><span>עכשיו</span></label>
         <label class="st-swl"><input type="radio" name="am-when" value="at" onchange="amWhen()"><span>בתאריך ושעה</span></label>
         <input type="datetime-local" id="am-at" value="${amDefAt()}" disabled aria-label="מועד השליחה"></div></div>
-      <div class="st-row st-wide"><div class="am-act"><button type="button" class="btn" id="am-send" onclick="amSend()">שליחה</button></div><div class="err" id="am-err"></div></div>
+      <div class="st-row st-wide"><div class="am-act"><button type="button" class="btn" id="am-send" onclick="amSend()">שליחה</button><button type="button" class="ghost" id="am-edx" hidden onclick="amEditEnd()">ביטול עריכה</button></div><div class="err" id="am-err"></div></div>
     </div></section>` : '<div class="st-lead">צפייה בלבד — שליחה דורשת הרשאת עריכה במסך «התראות».</div>';
   return `<div class="st-top"><h2 class="sec">הודעה לעובד</h2></div>
     <div class="st-lead">הודעה שלך לעובד אחד או יותר. היא נכנסת לפעמון שלו ונפתחת אצלו בחלון במרכז המסך (נשלט במסך «התראות», הסוג «הודעה ממנהל»). הודעה מתוזמנת יוצאת בשעה שנבחרה גם כשהמערכת סגורה אצלך; כדי לשנות אותה — ביטול ושליחה מחדש.</div>
@@ -21099,7 +21284,7 @@ function amHtml(){
 function amPeopleRender(){
   const box = document.getElementById('am-people'); if(!box) return;
   if(!AM.people){ if(AM.err) box.innerHTML = `<div class="err">${esc(AM.err)}</div>`; return; }
-  box.innerHTML = AM.people.map(p => `<label class="am-p${AM_SEL.has(p.id) ? ' on' : ''}"><input type="checkbox" value="${esc(p.id)}"${AM_SEL.has(p.id) ? ' checked' : ''} onchange="amPick(this)"><span>${esc(p.name || '—')}</span></label>`).join('')
+  box.innerHTML = AM.people.map(p => `<label class="am-p${AM_SEL.has(p.id) ? ' on' : ''}"><input type="checkbox" value="${esc(p.id)}"${AM_SEL.has(p.id) ? ' checked' : ''} onchange="amPick(this)"${AM_EDIT ? ' disabled' : ''}><span>${esc(p.name || '—')}</span></label>`).join('')
     || '<div class="st-note">אין עובדים פעילים</div>';
 }
 window.amPick = el => {
@@ -21133,6 +21318,50 @@ window.amLinkPick = (t, id) => {
   const b = document.getElementById('am-link-box'); if(b) b.innerHTML = amLinkHtml();
 };
 window.amLinkClear = () => { AM_LINK = null; const b = document.getElementById('am-link-box'); if(b) b.innerHTML = amLinkHtml(); };
+/* 7.77.1 — admnote2. ניתנת לעריכה = מתוזמנת ויוצאת בעוד יותר מדקה. השרת אוכף את אותו תנאי (P0001) —
+   כאן רק לא מציעים כפתור שהשרת ידחה. */
+function amEditable(m){
+  return !!m && !m.sent_at && !m.cancelled_at && (new Date(m.send_at).getTime() - Date.now() > 60000);
+}
+/* ISO ⇒ ערך ל-datetime-local בשעון המקומי (לא toISOString, שהוא UTC ויזיז את השעה בשעתיים) */
+function amLocal(v){
+  const d = new Date(v);
+  return d.getFullYear() + '-' + amPad(d.getMonth() + 1) + '-' + amPad(d.getDate()) + 'T' + amPad(d.getHours()) + ':' + amPad(d.getMinutes());
+}
+function amFormReset(){
+  AM_EDIT = null; AM_SEL.clear(); AM_LINK = null;
+  ['am-title', 'am-body'].forEach(id => { const e = document.getElementById(id); if(e) e.value = ''; });
+  const r = document.querySelector('input[name="am-when"][value="now"]'); if(r) r.checked = true;
+  const at = document.getElementById('am-at'); if(at) at.value = amDefAt();
+  window.amWhen();
+  const lb = document.getElementById('am-link-box'); if(lb) lb.innerHTML = amLinkHtml();
+  const hd = document.getElementById('am-edhd'); if(hd){ hd.textContent = ''; hd.hidden = true; }
+  const x = document.getElementById('am-edx'); if(x) x.hidden = true;
+  const s = document.getElementById('am-send'); if(s) s.textContent = 'שליחה';
+  amPeopleRender(); amListRender();
+}
+window.amEdit = id => {
+  const m = (AM.notes || []).find(x => Number(x.id) === Number(id)); if(!m) return;
+  if(!amEditable(m)){ toast('אי אפשר לערוך: ההודעה כבר נשלחה, בוטלה או יוצאת בדקה הקרובה'); return; }
+  AM_EDIT = m;
+  AM_SEL.clear(); AM_SEL.add(m.user_id);
+  AM_LINK = m.linked_type ? { t:m.linked_type, id:m.linked_id, name:m.link_name || '—' } : null;
+  const t = document.getElementById('am-title'), b = document.getElementById('am-body'), at = document.getElementById('am-at');
+  if(t) t.value = m.title || '';
+  if(b) b.value = m.body || '';
+  if(at) at.value = amLocal(m.send_at);
+  const r = document.querySelector('input[name="am-when"][value="at"]'); if(r) r.checked = true;
+  window.amWhen();
+  const lb = document.getElementById('am-link-box'); if(lb) lb.innerHTML = amLinkHtml();
+  const hd = document.getElementById('am-edhd');
+  if(hd){ hd.textContent = 'עריכת ההודעה ל' + (m.user_name || 'עובד') + ' · הנמען אינו משתנה — כדי לשלוח לאחר: ביטול ושליחה חדשה'; hd.hidden = false; }
+  const x = document.getElementById('am-edx'); if(x) x.hidden = false;
+  const s = document.getElementById('am-send'); if(s) s.textContent = 'שמירת השינויים';
+  const e = document.getElementById('am-err'); if(e) e.textContent = '';
+  amPeopleRender(); amListRender();
+  const f = document.getElementById('am-form'); if(f && f.scrollIntoView) f.scrollIntoView({ block:'start', behavior:'smooth' });
+};
+window.amEditEnd = () => { const e = document.getElementById('am-err'); if(e) e.textContent = ''; amFormReset(); };
 function amStatus(m){
   if(m.cancelled_at) return ['בוטלה', 'am-s-off'];
   if(!m.sent_at) return ['מתוזמנת', 'am-s-plan'];
@@ -21154,10 +21383,10 @@ function amListRender(){
     const lk = m.linked_type
       ? `<a href="#" onclick="amOpen('${esc(m.linked_type)}','${esc(m.linked_id)}');return false">${m.linked_type === 'lead' ? 'ליד' : 'תהליך'} · ${esc(m.link_name || '—')}</a>`
       : '—';
-    return `<tr data-am="${Number(m.id)}"><td class="am-wc">${esc(amFmt(m.sent_at || m.send_at))}</td><td>${esc(m.user_name || '—')}</td>`
+    return `<tr data-am="${Number(m.id)}"${AM_EDIT && Number(AM_EDIT.id) === Number(m.id) ? ' class="am-editing"' : ''}><td class="am-wc">${esc(amFmt(m.sent_at || m.send_at))}</td><td>${esc(m.user_name || '—')}</td>`
       + `<td><b>${esc(m.title)}</b>${m.body ? `<span class="am-sub">${esc(m.body)}</span>` : ''}</td><td>${lk}</td>`
       + `<td><span class="${st[1]}">${esc(st[0])}</span></td>`
-      + (ed ? `<td>${live ? `<button type="button" class="st-save" onclick="amCancel(${Number(m.id)})">ביטול</button>` : ''}</td>` : '') + '</tr>';
+      + (ed ? `<td class="am-acts">${amEditable(m) ? `<button type="button" class="st-save" onclick="amEdit(${Number(m.id)})">עריכה</button>` : ''}${live ? `<button type="button" class="st-save" onclick="amCancel(${Number(m.id)})">ביטול</button>` : ''}</td>` : '') + '</tr>';
   }).join('')}</tbody></table></div>`;
 }
 window.amOpen = (t, id) => {
@@ -21197,21 +21426,27 @@ window.amSend = async () => {
     if(d.getTime() < Date.now() - 60000) return say('השעה שנבחרה כבר עברה');
     sendAt = d.toISOString();
   }
-  AM.busy = true; if(btn){ btn.disabled = true; btn.textContent = 'שולח…'; }
+  AM.busy = true; if(btn){ btn.disabled = true; btn.textContent = AM_EDIT ? 'שומר…' : 'שולח…'; }
   try{
-    const { data, error } = await sb.schema('core').rpc('admin_note_send', {
-      p_users:[...AM_SEL], p_title:title, p_body:body || null,
-      p_linked_type:AM_LINK ? AM_LINK.t : null, p_linked_id:AM_LINK ? AM_LINK.id : null, p_send_at:sendAt });
-    if(error) throw error;
-    const n = (data && data.count) || AM_SEL.size;
-    toast(data && data.scheduled ? 'תוזמנה ל' + amFmt(data.send_at) + ' — ' + n + ' עובדים' : 'נשלחה ✓ — ' + n + ' עובדים');
-    AM_SEL.clear(); AM_LINK = null;
-    ['am-title', 'am-body'].forEach(id => { const e = document.getElementById(id); if(e) e.value = ''; });
-    const lb = document.getElementById('am-link-box'); if(lb) lb.innerHTML = amLinkHtml();
-    amPeopleRender();
+    /* 7.77.1 — בעריכה: admin_note_update (נמען לא נשלח — אינו משתנה). שני המסלולים שולחים את ארבעת המפתחות במפורש. */
+    if(AM_EDIT){
+      const { data, error } = await sb.schema('core').rpc('admin_note_update', {
+        p_id:Number(AM_EDIT.id), p_title:title, p_body:body || null,
+        p_linked_type:AM_LINK ? AM_LINK.t : null, p_linked_id:AM_LINK ? AM_LINK.id : null, p_send_at:sendAt });
+      if(error) throw error;
+      toast(data && data.scheduled ? 'ההודעה עודכנה — תצא ב' + amFmt(data.send_at) : 'ההודעה עודכנה ונשלחה ✓');
+    } else {
+      const { data, error } = await sb.schema('core').rpc('admin_note_send', {
+        p_users:[...AM_SEL], p_title:title, p_body:body || null,
+        p_linked_type:AM_LINK ? AM_LINK.t : null, p_linked_id:AM_LINK ? AM_LINK.id : null, p_send_at:sendAt });
+      if(error) throw error;
+      const n = (data && data.count) || AM_SEL.size;
+      toast(data && data.scheduled ? 'תוזמנה ל' + amFmt(data.send_at) + ' — ' + n + ' עובדים' : 'נשלחה ✓ — ' + n + ' עובדים');
+    }
+    amFormReset();
     await window.amLoad();
-  }catch(e){ say('השליחה נכשלה: ' + String((e && e.message) || e)); }
-  finally{ AM.busy = false; if(btn){ btn.disabled = false; btn.textContent = 'שליחה'; } }
+  }catch(e){ say((AM_EDIT ? 'השמירה נכשלה: ' : 'השליחה נכשלה: ') + String((e && e.message) || e)); }
+  finally{ AM.busy = false; if(btn){ btn.disabled = false; btn.textContent = AM_EDIT ? 'שמירת השינויים' : 'שליחה'; } }
 };
 window.amCancel = async id => {
   const n = (AM.notes || []).find(x => Number(x.id) === Number(id)); if(!n) return;
@@ -21220,6 +21455,7 @@ window.amCancel = async id => {
     const { data, error } = await sb.schema('core').rpc('admin_note_cancel', { p_id:Number(id) });
     if(error) throw error;
     toast(data ? 'ההודעה בוטלה' : 'ההודעה כבר נשלחה ולא בוטלה');
+    if(AM_EDIT && Number(AM_EDIT.id) === Number(id)) amFormReset();
   }catch(e){ toast('הביטול נכשל: ' + String((e && e.message) || e)); }
   await window.amLoad();
 };
@@ -29335,6 +29571,7 @@ window.scallTechCard = (s)=>{
   return `
     <h3>${ico('wrench')} ${esc(s.call_number||'קריאה')} — ${esc(s.customer_name||'')}</h3>
     <div class="note" style="margin:var(--sp-1) 0 var(--sp-3)">נפתחה ב-${fmtD(s.opened_date)||'—'}</div>
+    ${s.notes?`<div class="tech-note"><b>הערות</b>${esc(s.notes)}</div>`:''}
     <div class="form-grid">
       <div class="form-sep">פרטי הקריאה</div>
       <div><label>מס' קריאה</label>${roIn(s.call_number,{ltr:1})}</div>
@@ -29354,7 +29591,6 @@ window.scallTechCard = (s)=>{
       <div><label>משבצת זמן</label>${roIn(s.time_slot)}</div>
       <div><label>צוות</label>${roIn(s.team)}</div>
       <div><label>אחריות</label>${roIn(s.warranty)}</div>
-      ${s.notes?`<div class="span4"><label>הערות</label>${roIn(s.notes)}</div>`:''}
     </div>
     ${window.mediaBlock('call', s.id)}
     ${window.reportBlock('call', s.id)}
@@ -30036,6 +30272,7 @@ window.openOrd = (id, ctx)=>{
     <h3>${esc(o.order_number)} — ${esc(o.customer_name||'')}${o.erp_status?` <span class="pill p-violet" title="הסטטוס בפריוריטי — מתעדכן בסנכרון">${PRI_ICO}פריוריטי: ${esc(o.erp_status)}</span>`:''}${o.erp_synced_at?`<span class="pill" style="font-weight:400" title="התאריך שבו השתנה לאחרונה שדה שמגיע מפריוריטי. הסנכרון עצמו בודק את ההזמנה כל שעה — מועד הבדיקה האחרונה מוצג בראש המסך.">עודכן מפריוריטי ${fmtIso(o.erp_synced_at)}</span>`:''}${window.regressTag?window.regressTag(o):''}${openBadge(o.order_number,1)}${retBadge(o.order_number,1)}</h3>
     ${window.canEdit('logi.orders')?`<div class="ord-sync-row"><button class="btn ord-sync-btn" id="ord-sync-${o.id}" onclick="ordSyncOne('${o.id}','${ctx||''}')">↻ סנכרון הזמנה זו מפריוריטי</button><span class="note" style="margin:0">מושך את הכותרת, הפירוט, הדו-שיח, הערות ההזמנה ופרטי הלקוח של ההזמנה הזו בלבד</span></div>`:''}
     ${ordQuoteBar(o)}
+    ${(o.warehouse_notes && ordSecShow(['logi.orders.warehouse']) && !window.ordCardEditable('warehouse_notes'))?`<div class="tech-note"><b>הערות מחסן</b>${esc(o.warehouse_notes)}</div>`:''}
     <div style="height:10px"></div>
     <div class="form-grid">
       <div class="form-sep">פרטי ההזמנה מפריוריטי</div>

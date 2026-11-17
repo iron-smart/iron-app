@@ -4648,7 +4648,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.77.1</div>
+      <div class="ver">גרסה 7.77.2</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4796,7 +4796,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="admnote2-2026-11-16a">גרסה 7.77.1</div>
+    <div class="side-foot" title="leadhist-2026-11-17p">גרסה 7.77.2</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -15865,7 +15865,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'admnote2-2026-11-16a';
+const BUILD_ID = 'leadhist-2026-11-17p';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -24950,9 +24950,12 @@ function mktPaintTables(){
     s.innerHTML='<h3>ביצועים לפי מקור <small>מגע '+(MKT_F.touch==='last'?'אחרון':'ראשון')+' של הליד · "ללא שיוך לליד" = עסקאות בלי lead_id, מוצמדת למטה</small></h3>'+mktTable('sources', cols, rows, 'src', r=>mktLbl('sources',r.k), mktFoot(rows, cols)); }
   const cmp=document.getElementById('mkt-campaigns');
   if(cmp){ const rows=mktEnrich(D.campaigns||[], L);
-    const cols=[{k:'k',l:'קמפיין',sub:r=>r.platform&&r.platform!=='__none__'?r.platform:''},{k:'src',l:'מקור',raw:r=>r.k==='__none__'?'—':(r.src||'')}].concat(MKT_DIM_COLS)
+    const cols=[{k:'k',l:'קמפיין',sub:r=>r.platform&&r.platform!=='__none__'?r.platform:''},{k:'src',l:'מקור',raw:r=>r.k==='__none__'?'—':(r.src||'')}]
+      /* 7.80.0 — leadhist: "כל הפניות" = לידים שפנו מהקמפיין בטווח לפי תאריך הפנייה, כולל ליד ותיק שחזר (crm.mkt_dash
+         'touch_leads'). אחרי "לידים" כדי שההפרש ייראה מיד. הסיכום ריק בכוונה — ליד שפנה משני קמפיינים נספר בשניהם. */
+      .concat(MKT_DIM_COLS.slice(0,1), [{k:'touch_leads',l:'כל הפניות',t:'לידים שפנו מהקמפיין בטווח, לפי תאריך הפנייה — כולל ליד קיים שחזר. ליד שפנה משני קמפיינים נספר בשניהם',lead:true}], MKT_DIM_COLS.slice(1))
       .concat([{k:'spend',l:'הוצאה',f:'m'},{k:'cpl',l:'CPL',f:'m',t:'הוצאה / לידים',lead:true},{k:'cac',l:'CAC',f:'m',t:'הוצאה / עסקאות שנסגרו'},{k:'roas',l:'ROAS',f:'x',t:'הכנסות / הוצאה'}]);
-    cmp.innerHTML='<h3>ביצועים לפי קמפיין <small>utm_campaign של המגע · הוצאה מהזנה ידנית, פרו-רטה לימי הטווח (ראו למטה)</small></h3>'+mktTable('campaigns', cols, rows, 'camp', r=>mktLbl('campaigns',r.k), mktFoot(rows, cols)); }
+    cmp.innerHTML='<h3>ביצועים לפי קמפיין <small>utm_campaign של המגע · "כל הפניות" כולל לידים קיימים שחזרו מהקמפיין בטווח · הוצאה מהזנה ידנית, פרו-רטה לימי הטווח (ראו למטה)</small></h3>'+mktTable('campaigns', cols, rows, 'camp', r=>mktLbl('campaigns',r.k), mktFoot(rows, cols)); }
   const ow=document.getElementById('mkt-owners');
   if(ow){ const rows=mktEnrich(D.owners||[], L);
     const cols=[{k:'name',l:'איש מכירות'},{k:'leads',l:'לידים שהתקבלו',drill:'leads',lead:true},{k:'qualified',l:'רלוונטיים',drill:'leads_qualified',lead:true},{k:'won_n',l:'עסקאות שנסגרו',drill:'deals_won'},{k:'conv',l:'המרה',f:'p',lead:true},{k:'revenue',l:'הכנסות',f:'m',drill:'deals_won'},{k:'avg',l:'עסקה ממוצעת',f:'m'},{k:'med_days',l:'זמן לסגירה (חציון)',f:'d',t:'ימים מיצירת הליד עד סגירת העסקה, חציון',lead:true},{k:'avg_days',l:'זמן לסגירה (ממוצע)',f:'d',lead:true},{k:'n_days',l:'נמדדו',t:'עסקאות שנסגרו עם תאריכים תקינים — המכנה של זמן הסגירה',lead:true},{k:'lost_leads',l:'לידים אבודים',drill:'leads_lost',lead:true},{k:'lost_deals',l:'עסקאות אבודות',drill:'deals_lost'}];
@@ -34001,6 +34004,35 @@ function lbRetTip(l){
   return 'ליד חוזר · ' + k + (at ? ' · לאחרונה ' + at : '') + (n > 1 ? ' · ' + n + ' פניות חוזרות' : '');
 }
 function lbRetPill(l){ return lbRet(l) ? `<span class="pill lb-ret" title="${esc(lbRetTip(l))}">↻ ליד חוזר</span>` : ''; }
+/* ===== היסטוריית פניות (7.80.0 leadhist) =====
+   רומן, 17/11/2026: ליד חוזר מציג את הקמפיין האחרון (השדות הראשיים — lead-intake כותב אותם בכל פנייה עם UTM),
+   וכל הפניות גלויות בכרטיס. המקור: crm.lead_history (security definer, שער crm.leads) — כי crm.lead_touches
+   נעולה ל-mkt.dash, ופנייה חוזרת מהאתר בלי UTM קיימת רק ב-crm.activities. השרת מאחד את שתיהן, החדשה למעלה.
+   ⚠️ רק לליד חוזר (lbRet): ליד שלא חזר מעולם — פנייה אחת, שכבר מוצגת בשדות; בלי קריאה לשרת בכל פתיחת כרטיס.
+   ⚠️ פנייה אחת = אין בלוק: היא כבר מוצגת בשדות שמעל, ושורה כפולה הייתה רק רעש.
+   ⚠️ תשובה שמגיעה אחרי שהכרטיס עבר לליד אחר — נזרקת (data-lead), כמו בשאר הטעינות העצלות. */
+function lbHistHtml(rows){
+  const cell = v => '<td>' + (v ? esc(String(v)) : '—') + '</td>';
+  const body = rows.map(r => '<tr><td dir="ltr">' + esc(fmtDT(r.at)) + '</td>' + cell(r.kind) + cell(r.source) + cell(r.utm_campaign)
+      + cell(r.utm_medium) + cell(r.utm_term) + cell(r.form_name || (r.landing_page_url ? lbLpTxt(r.landing_page_url) : '')) + '</tr>').join('');
+  return '<div class="form-sep">היסטוריית פניות (' + rows.length + ') <span class="note" style="font-weight:400">החדשה למעלה · הקמפיין שבשדות הליד הוא של הפנייה האחרונה שהגיעה מקמפיין</span></div>'
+    + '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>מתי</th><th>סוג</th><th>מקור</th><th>קמפיין</th><th>קבוצה</th><th>מודעה</th><th>טופס / דף</th></tr></thead><tbody>'
+    + body + '</tbody></table></div>';
+}
+async function lbHistLoad(id){
+  const b0 = document.getElementById('lb-hist');
+  if(!b0 || b0.dataset.lead !== id) return;   /* ליד שאינו חוזר — אין תא, אין קריאה */
+  let rows = null;
+  try{
+    const { data, error } = await sb.schema('crm').rpc('lead_history', { p_lead: id });
+    if(!error && Array.isArray(data)) rows = data;
+  }catch(_e){ rows = null; }
+  const box = document.getElementById('lb-hist');
+  if(!box || box.dataset.lead !== id) return;
+  if(!rows || rows.length < 2){ box.classList.add('hidden'); box.innerHTML = ''; return; }
+  box.innerHTML = lbHistHtml(rows);
+  box.classList.remove('hidden');
+}
 function lbRetBar(l){
   if(!lbRet(l)) return '';
   const n = Number(l.return_count)||0, at = l.returned_at ? fmtDT(l.returned_at) : '';
@@ -35571,6 +35603,10 @@ window.openLead = (id)=>{
       <div${cust?'':' class="span2"'} title="${esc(utmRest)}"><label>UTM_CAMPAIGN</label>${roIn(l.utm_campaign||'—')}</div>
       ${cust?`<div><label>לקוח מקושר${l.customer_id?'':' <span class="note" style="font-weight:400">(הוצלב לפי טלפון)</span>'}</label><div class="lb-links"><a href="#" onclick="event.preventDefault();goCard(()=>openCust('${jsq(cust.id)}'))">${esc(cust.name||'כרטיס הלקוח')} ↗</a></div></div>`:''}
       ${lbCtCell(l, true)}
+      <!-- 7.80.0 — leadhist: היסטוריית הפניות (רומן, 17/11/2026). רק לליד חוזר (lbRet — אותו כלל כמו תגית ↻),
+           ומוסתר עד שהשרת מחזיר 2 פניות ומעלה. ליד רגיל: אין תא ואין קריאה — הגריד וסדר הקריאות לשרת
+           בדיוק כמו קודם (נתפס בבנייה הראשונה: leadflowtest מדד את התא המוסתר כחור, leadstest ראה RPC נוסף). -->
+      ${lbRet(l)?`<div class="span4 hidden" id="lb-hist" data-lead="${esc(l.id)}"></div>`:''}
 
       <div class="form-sep">משימות ופגישות</div>
       <div class="span4" id="lb-tmblock" data-lead="${esc(l.id)}">${lbTmBlock(myTasks, myMeets, lbTmActs(l.id))}</div>
@@ -35609,6 +35645,7 @@ window.openLead = (id)=>{
   try{ window.markEmpty('leadModal'); }catch(_e){}
   if(!editable) document.querySelectorAll('#leadSheet input,#leadSheet select,#leadSheet textarea,#leadSheet .lb-pseg,#leadSheet .lb-psub button').forEach(el=>el.disabled=true);
   ctabArm('lb', id, 'lead');
+  lbHistLoad(id);
 };
 window.saveLead = async (id)=>{
   const l = LEADS.find(x=>x.id===id); if(!l) return;

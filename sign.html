@@ -42,6 +42,7 @@ textarea{width:100%;border:1px solid #c0c5c9;border-radius:9px;padding:10px 12px
 .agree input{width:20px;height:20px;margin-top:2px;flex:none}
 .btn-send{width:100%;background:#002d48;color:#fff;border:none;border-radius:11px;padding:14px;font-size:1.05rem;font-weight:800;font-family:inherit;cursor:pointer}
 .btn-send:disabled{background:#b8bdc2}
+textarea.bad{border-color:#a92f2f}
 input[type=text].bad{border-color:#a92f2f}
 .fld-hint{display:none;color:#a92f2f;font-weight:700;font-size:.8rem;margin-top:5px}
 .need{color:#84898f;font-size:.8rem;margin-top:8px;text-align:center}
@@ -301,6 +302,7 @@ async function init(){
        'אישור הצעת מחיר' היה נופל ל-renderReport ומבקש מהלקוח למלא טופס
        טכנאי ושתי חתימות. אותה הסתעפות-לפי-קטגוריה שנוספה בשרת. */
     if(d.kind==='quote') renderProtocol(d);
+    else if(d.doc_type==='דוח קריאת שירות') renderService(d);
     else if(d.doc_type&&d.doc_type!=='פרוטוקול הכנה להתקנה') renderReport(d); else renderProtocol(d);
   }catch(e){
     show('אירעה שגיאה: '+esc(e.message)+'<br><br>אנא פנו לצוות איירון פיטנס: 074-7779988');
@@ -430,6 +432,120 @@ function renderProtocol(d){
         ? '<h2 style="margin:10px 0 6px">ההצעה אושרה ונחתמה!</h2><p style="font-size:.9rem;color:#4c5560">קיבלנו את אישורכם. נציג מטעמינו יצור קשר להמשך התהליך.<br><br>תודה רבה,<br>צוות איירון פיטנס</p>'+payBlock(dd.pay)
         : '<h2 style="margin:10px 0 6px">הפרוטוקול נחתם בהצלחה!</h2><p style="font-size:.9rem;color:#4c5560">נציג מטעמינו יצור קשר לתיאום מועד ההתקנה לאחר שישובץ בלוח השיבוצים שלנו.<br><br>תודה רבה,<br>צוות איירון פיטנס</p>');
     }catch(e){ document.getElementById('err').textContent='השליחה נכשלה: '+e.message+' — נסו שוב'; sendBtn.disabled=false; sendBtn.textContent=btnTxt; }
+  };
+}
+
+/* ============ דוח קריאת שירות (15/11/2026) ============
+   רומן: "בדוח תקינות יש הרבה דברים לא רלוונטיים". פרטי הקריאה מהשרת; הטכנאי ממלא מה בוצע, חלקים ותוצאה. */
+function renderService(d){
+  const addr=d.address||d.customer_address||'';
+  const photos=Array.isArray(d.report&&d.report.photos)?d.report.photos:[];
+  document.getElementById('app').innerHTML=`
+<div class="band">${d.logo?`<img src="${d.logo}" alt="IRON FITNESS">`:`<h1>IRON FITNESS</h1>`}
+  <h1>דוח קריאת שירות</h1><div class="sub">הטכנאי ממלא · הלקוח והטכנאי חותמים בתחתית</div></div>
+<div class="wrap">
+  <div class="card"><div class="facts">
+    <div><span class="lbl">מס' קריאה</span><b>${esc(d.call_number||'')}</b></div>
+    <div><span class="lbl">לקוח / חברה</span><b>${esc(d.customer_name)}</b></div>
+    ${d.phone?`<div><span class="lbl">טלפון</span><b dir="ltr">${esc(d.phone)}</b></div>`:''}
+    ${addr?`<div><span class="lbl">כתובת</span><b>${esc(addr)}${d.city?', '+esc(d.city):''}</b></div>`:''}
+    ${d.product?`<div><span class="lbl">מוצר</span><b>${esc(d.product)}</b></div>`:''}
+    ${d.warranty?`<div><span class="lbl">אחריות</span><b>${esc(d.warranty)}</b></div>`:''}
+    ${d.sent_by?`<div><span class="lbl">טכנאי מבצע</span><b>${esc(d.sent_by)}</b></div>`:''}
+  </div>
+  ${d.fault_details?`<div style="margin-top:10px"><span class="lbl" style="font-size:.72rem;color:#84898f;display:block">תיאור התקלה</span><div style="font-size:.9rem">${esc(d.fault_details)}</div></div>`:''}
+  </div>
+
+  <div class="card wm"><h2>מה בוצע</h2>
+    <textarea id="work" rows="4" placeholder="תיאור העבודה שבוצעה (חובה)"></textarea>
+    <label style="margin-top:12px">חלקים שהוחלפו</label>
+    <textarea id="parts" rows="2" placeholder="אם הוחלפו חלקים — פירוט"></textarea>
+  </div>
+
+  <div class="card"><h2>תוצאה</h2>
+    <label class="chk on"><input type="radio" name="outc" value="התקלה טופלה" checked><span>התקלה טופלה</span></label>
+    <label class="chk"><input type="radio" name="outc" value="נדרש ביקור נוסף"><span>נדרש ביקור נוסף — פירוט:</span></label>
+    <textarea id="followup" rows="2" placeholder="מה נשאר לעשות, חלק שצריך להזמין וכו'" style="display:none"></textarea>
+  </div>
+
+  ${photos.length?`<div class="card"><h2>📷 תיעוד מהשטח (${photos.length})</h2><div class="photos">${photos.map(u=>`<a href="${esc(u)}" target="_blank"><img src="${esc(u)}"></a>`).join('')}</div></div>`:''}
+
+  <div class="card"><h2>✍️ אישור הלקוח</h2>
+    <div class="statement">${esc(d.customer_statement||'')}</div>
+    <div class="agree"><input type="checkbox" id="agree"><span>קראתי את ההצהרה שלעיל ואני מאשר/ת אותה</span></div>
+    <label>שם הלקוח</label>
+    <input type="text" id="custName" value="${esc(d.customer_name)}">
+    <label style="margin-top:12px">חתימת הלקוח</label>
+    <div class="sig-box"><canvas id="pad1"></canvas><div class="sig-hint" id="hint1">✍️ חתימת הלקוח</div></div>
+    <button type="button" class="btn-clear" id="clear1">🗑 ניקוי</button>
+  </div>
+
+  <div class="card"><h2>🔧 חתימת הטכנאי</h2>
+    ${d.tech_statement?`<div class="statement">${esc(d.tech_statement)}</div>`:''}
+    <label>שם הטכנאי</label>
+    <input type="text" id="techName" value="${esc(d.sent_by||'')}">
+    <label style="margin-top:12px">חתימת הטכנאי</label>
+    <div class="sig-box"><canvas id="pad2"></canvas><div class="sig-hint" id="hint2">✍️ חתימת הטכנאי</div></div>
+    <button type="button" class="btn-clear" id="clear2">🗑 ניקוי</button>
+  </div>
+
+  <div class="card">
+    <button class="btn-send" id="sendBtn" disabled>שליחת הדוח החתום ✓</button>
+    <div class="need" id="needSvc" style="font-size:.8rem;color:#84898f;margin-top:8px;text-align:center"></div>
+    <div id="err" style="color:#a92f2f;font-weight:700;font-size:.85rem;margin-top:8px"></div>
+  </div>
+  <div class="foot">צוות איירון פיטנס בע"מ · טלפון 074-7779988</div>
+</div>`;
+  const pad1=makePad('pad1','hint1','clear1',check);
+  const pad2=makePad('pad2','hint2','clear2',check);
+  const sendBtn=document.getElementById('sendBtn'), agree=document.getElementById('agree');
+  const work=document.getElementById('work'), fup=document.getElementById('followup'), need=document.getElementById('needSvc');
+  const outc=()=>document.querySelector('[name=outc]:checked').value;
+  const fupNeeded=()=>outc()==='נדרש ביקור נוסף';
+  /* מה חסר — כתוב מתחת לכפתור, ולא כפתור אפור ושותק (הלקח של 12/11/2026) */
+  function check(){
+    const miss=[];
+    if(!work.value.trim()) miss.push('מה בוצע');
+    if(fupNeeded()&&!fup.value.trim()) miss.push('פירוט הביקור הנוסף');
+    if(!document.getElementById('custName').value.trim()) miss.push('שם הלקוח');
+    if(!document.getElementById('techName').value.trim()) miss.push('שם הטכנאי');
+    if(!agree.checked) miss.push('אישור ההצהרה');
+    if(!pad1.hasInk()) miss.push('חתימת הלקוח');
+    if(!pad2.hasInk()) miss.push('חתימת הטכנאי');
+    sendBtn.disabled=miss.length>0;
+    work.classList.toggle('bad',!work.value.trim());
+    fup.classList.toggle('bad',fupNeeded()&&!fup.value.trim());
+    need.textContent=miss.length?'כדי לשלוח חסר: '+miss.join(' · '):'';
+  }
+  agree.onchange=check; work.addEventListener('input',check); fup.addEventListener('input',check);
+  /* סקירה 17/11: שם ריק נדחה בשרת (400) — כאן הוא נכתב ב"חסר" לפני השליחה */
+  ['custName','techName'].forEach(i=>document.getElementById(i).addEventListener('input',check));
+  document.querySelectorAll('[name=outc]').forEach(inp=>inp.addEventListener('change',()=>{
+    document.querySelectorAll('[name=outc]').forEach(o=>o.closest('.chk').classList.toggle('on',o.checked));
+    fup.style.display=fupNeeded()?'block':'none';
+    check();
+  }));
+  check();
+  sendBtn.onclick=async()=>{
+    const cSig=pad1.dataURL(), tSig=pad2.dataURL();
+    if(!cSig||!tSig){ document.getElementById('err').textContent='נדרשות שתי חתימות — לקוח וטכנאי. אנא חתמו על שני הלוחות.'; return; }
+    sendBtn.disabled=true; sendBtn.textContent='שולח...';
+    try{
+      const r=await fetch(API,{method:'POST',headers:{'content-type':'application/json'},
+        body:JSON.stringify({token,
+          service_form:{
+            work_done:work.value.trim(),
+            parts:document.getElementById('parts').value.trim(),
+            outcome:outc(),
+            followup:fupNeeded()?fup.value.trim():'',
+            customer_name:document.getElementById('custName').value.trim(),
+            tech_name:document.getElementById('techName').value.trim(),
+          },
+          agreed:agree.checked, customer_sig:cSig, tech_sig:tSig})});
+      const dd=await r.json();
+      if(!r.ok||!dd.ok) throw new Error(dd.error||'שגיאה');
+      show('<div class="v">✅</div><h2 style="margin:10px 0 6px">דוח קריאת השירות נחתם בהצלחה!</h2><p style="font-size:.9rem;color:#4c5560">הדוח תויק אוטומטית במערכת.<br><br>תודה, צוות איירון פיטנס 💪</p>');
+    }catch(e){ document.getElementById('err').textContent='השליחה נכשלה: '+e.message+' — נסו שוב'; sendBtn.disabled=false; sendBtn.textContent='שליחת הדוח החתום ✓'; }
   };
 }
 

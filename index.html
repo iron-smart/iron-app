@@ -4652,7 +4652,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.82.0</div>
+      <div class="ver">גרסה 7.83.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4801,7 +4801,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="revreq3-2026-11-20a">גרסה 7.82.0</div>
+    <div class="side-foot" title="revreq4-2026-11-21a">גרסה 7.83.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5079,6 +5079,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
         <span class="rr-sp"></span>
         <button type="button" class="ghost" onclick="rrReload()">רענון</button>
       </div>
+      <div class="rr-stats hidden" id="rr-stats"></div>
       <div class="rr-row" id="rr-row">
         <div class="chips" id="rr-chips"></div>
         <div id="rr-bulk" class="rr-bulk hidden"></div>
@@ -5792,7 +5793,7 @@ let ME = null, LEADS = [];
 const statusClass = s => s==='רלוונטי'?'st-rel' : (s==='ליד חדש'?'st-new' : (['סירוב','לא רלוונטי'].includes(s)?'st-no':'st-def'));
 
 /* ===== סטטוסים אחד-לאחד מהמאנדיי (הנחיית רומן 27/07) ===== */
-const LEAD_SOURCES = ['קשרים אישיים','Paycall - שיחה נכנסת','המלצת לקוח','דף נחיתה','אתר אינטרנט','פייסבוק / אינסטגרם','סושיאל','ידנית','קביעת פגישה באתר','דף נחיתה - וואטסאפ','גוגל'];
+const LEAD_SOURCES = ['קשרים אישיים','Paycall - שיחה נכנסת','המלצת לקוח','דף נחיתה','אתר אינטרנט','פייסבוק / אינסטגרם','סושיאל','ידנית','קביעת פגישה באתר','דף נחיתה - וואטסאפ','גוגל','פרופיל גוגל'];
 const LEAD_STATUSES = ['ליד חדש','ללא מענה','ללא מענה2','ללא מענה3','רלוונטי','סירוב','לא רלוונטי'];
 const LEAD_ST_COLORS = {'ליד חדש':'#fdab3d','ללא מענה':'#ffadad','ללא מענה2':'#faa1f1','ללא מענה3':'#ff5ac4','רלוונטי':'#9cd326','סירוב':'#df2f4a','לא רלוונטי':'#bb3354'};
 const SUB_RELEVANT = ['פולואפ','תואמה פגישה','הצעת מחיר','הפניה לאתר'];
@@ -5816,7 +5817,7 @@ const SUB_COLORS = {'רלוונטי':SUB_RELEVANT_COLORS,'סירוב':SUB_REFUSA
    ללבן במסכים אחרים. יש ספירת עוקפים בסקריפט הבנייה. */
 const LB_TK = .70;
 const LEAD_TYPE_COLORS = {'בסיס':'#a1a8b5','פ.ע':'#579bfc','עסקי':'#00c875','ארגוני':'#784bd1','מוסדי':'#ff642e','מסחרי':'#fdab3d','סטונאי':'#0086c0'};
-const LEAD_SRC_COLORS  = {'קשרים אישיים':'#00c875','Paycall - שיחה נכנסת':'#0086c0','המלצת לקוח':'#037f4c','דף נחיתה':'#fdab3d','אתר אינטרנט':'#579bfc','פייסבוק / אינסטגרם':'#a25ddc','סושיאל':'#ff158a','ידנית':'#a1a8b5','קביעת פגישה באתר':'#0f766e','דף נחיתה - וואטסאפ':'#66ccff','גוגל':'#e2445c'};
+const LEAD_SRC_COLORS  = {'קשרים אישיים':'#00c875','Paycall - שיחה נכנסת':'#0086c0','המלצת לקוח':'#037f4c','דף נחיתה':'#fdab3d','אתר אינטרנט':'#579bfc','פייסבוק / אינסטגרם':'#a25ddc','סושיאל':'#ff158a','ידנית':'#a1a8b5','קביעת פגישה באתר':'#0f766e','דף נחיתה - וואטסאפ':'#66ccff','גוגל':'#e2445c','פרופיל גוגל':'#7f5347'};
 /* ===== 6.244.0 — srcdoc: מאיפה מגיע כל "מקור הגעה" =====
    רומן, 10/10/2026: "גם טפסים עתידיים יהיה עדיין מקור הגעה פייסבוק / אינסטגרם. תתעד את זה ... בהגדרות
    CRM. כמו כן תעשה הסבר כוכבית קטנה במקום ההגעה". **מקור אחד, שני צרכנים**: הבלוק בהגדרות ← CRM
@@ -5842,6 +5843,9 @@ const LEAD_SRC_DOC = [
    'נבחר ידנית — ליד שהגיע בהמלצת לקוח.'],
   ['גוגל','manual','ידני; ליד מגוגל שמילא טופס באתר נרשם "אתר אינטרנט"',
    'נבחר ידנית. ליד מקמפיין גוגל שמגיע דרך טופס באתר נרשם "אתר אינטרנט", והקמפיין מזוהה מה-UTM.'],
+  /* 7.82.1 — gbpsrc (רומן, 21/11/2026): שיחה או ביקור מפרופיל העסק אינם עוברים בקישור, ולכן אין להם UTM — הנציג מסמן. */
+  ['פרופיל גוגל','manual','ידני; מי שהתקשר או הגיע אחרי שמצא אותנו בפרופיל העסק בגוגל או במפות',
+   'נבחר ידנית — מי שהתקשר, ביקש מסלול או הגיע לאולם אחרי שמצא אותנו בפרופיל העסק בגוגל (חיפוש או מפות). ליד מהפרופיל שמילא טופס באתר או קבע פגישה נרשם לפי הטופס, ומזוהה אוטומטית בדשבורד השיווק כ"פרופיל העסק בגוגל".'],
   ['קשרים אישיים','manual','בחירה ידנית של הנציג',
    'נבחר ידנית — ליד מקשרים אישיים.'],
   ['סושיאל','manual','בחירה ידנית של הנציג',
@@ -16038,7 +16042,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'revreq3-2026-11-20a';
+const BUILD_ID = 'revreq4-2026-11-21a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -37556,7 +37560,7 @@ window.spiRender = async function(){
 };
 
 
-/* ===== בקשת ביקורת גוגל — וואטסאפ ללקוחות שקיבלו את הציוד (7.81.0 · 7.82.0) =====
+/* ===== בקשת ביקורת גוגל — וואטסאפ ללקוחות שקיבלו את הציוד (7.81.0 · 7.82.0 · 7.83.0) =====
    רומן, 20/11/2026 (אפיון מאושר): בוחר במסך למי לשלוח · שליחה ידנית בלבד, אין טריגר · אפשרות להסיר לקוח · רק רומן ונח.
    השרת מחזיק את כל ההגדרות — מי מופיע (ord.review_req_candidates), ראיית האספקה, פעם אחת לטלפון (dedupe_key
    ב-core.outbox), והמתג. המסך רק מציג ושולח מזהים.
@@ -37622,6 +37626,17 @@ const RR_CSS = `
 #tab-revreq .rr-cm .meta{ font-size:var(--fs-md); color:var(--ink-3); margin:var(--sp-0h) 0; }
 #tab-revreq .rr-cm .rr-sub{ max-width:none; white-space:normal; }
 #tab-revreq .rr-card .rr-acts{ flex:none; flex-direction:column; align-items:stretch; }
+#tab-revreq .rr-stats{ display:flex; flex-wrap:wrap; gap:var(--sp-1) var(--sp-3); align-items:baseline; margin:0 0 var(--sp-2h);
+  font-size:var(--fs-sm); color:var(--ink-2); }
+#tab-revreq .rr-stats b{ color:var(--ink-1); font-variant-numeric:tabular-nums; }
+#tab-revreq .rr-stn.good b{ color:var(--ok); }
+#tab-revreq .rr-stn.bad b{ color:var(--red); }
+#tab-revreq .rr-stn.rr-rvs{ margin-inline-start:auto; color:var(--ink-3); }
+#tab-revreq .rr-stn.rr-rvs.warn{ color:var(--warn-ink); font-weight:600; }
+#tab-revreq .rr-nm.set{ font-weight:600; }
+#tab-revreq .rr-ned{ border:0; background:none; cursor:pointer; color:var(--ink-3); font:inherit; font-size:var(--fs-sm); line-height:1;
+  padding:var(--sp-1); margin-inline-start:var(--sp-1); border-radius:var(--r-md); }
+#tab-revreq .rr-ned:hover{ color:var(--navy); background-color:var(--bg-muted); }
 @media (max-width:1024px){
   #tab-revreq .rr-row{ position:sticky; top:calc(52px + var(--verbar-h,0px)); z-index:5; background-color:var(--bg);
     padding:var(--sp-1) 0; }
@@ -37630,7 +37645,9 @@ const RR_CSS = `
 }
 @media (max-width:759.98px){ #tab-revreq .rr-sp{ display:none; } #tab-revreq .rr-q{ flex:1 1 0; min-width:0; }
   #tab-revreq .rr-acts .ghost{ min-height:var(--ctl-h-touch-sm); }
-  #tab-revreq .rr-acts .rr-nosend{ display:none; } }
+  #tab-revreq .rr-acts .rr-nosend{ display:none; }
+  #tab-revreq .rr-ned{ min-width:var(--ctl-h-touch-sm); min-height:var(--ctl-h-touch-sm); }
+  #tab-revreq .rr-stn.rr-rvs{ margin-inline-start:0; flex:1 1 100%; } }
 `;
 function rrInjectCss(){
   if(document.getElementById('rr-css')) return;
@@ -37641,7 +37658,11 @@ function rrInjectCss(){
 const RR_PERM = 'crm.review';
 const RR_CHIPS = [['new','לא נשלחו'],['sent','נשלחו'],['fail','נכשלו'],['all','הכל']];
 const RR_OFF_NOTE = 'השליחה כבויה. אפשר לעבור על הרשימה ולהסיר ממנה לקוחות. להפעלה: הגדרות ← מתקדם ← "בקשות ביקורת גוגל — שליחה".';
-const RR_OFF_MSG = 'השליחה עדיין כבויה. היא תופעל אחרי שהתבנית תאושר במטא ורומן ידליק אותה בהגדרות ← מתקדם ← "בקשות ביקורת גוגל — שליחה".';
+const RR_OFF_MSG = 'השליחה כבויה. מדליקים אותה בהגדרות ← מתקדם ← "בקשות ביקורת גוגל — שליחה" (מנהל מערכת בלבד).';
+/* 7.83.0 — אותו כלל של השרת (ord.review_req_set_name): שם פרטי אחד. outbox-dispatch שולח ל-Heyy רק את המילה הראשונה,
+   ולכן שם בשתי מילים היה יוצא חתוך בלי שאיש יראה. */
+const RR_NAME_RE = /^[א-תA-Za-z'"״׳-]{2,20}$/;
+const RR_RV_STALE_DAYS = 3;
 /* מקור ראיית האספקה ⇐ הנוסח. הרמה (dv_level) מגיעה מהשרת: confirmed = יש אישור שהלקוח קיבל */
 const RR_DV_SRC = { yahav:'יהב', signed:'דוח חתום', done:'הצוות סימן בוצע', transit:'יהב', dnote:'תעודת משלוח בלבד', invoice:'חשבונית בלבד', none:'אין מסמך אספקה' };
 const RR_DV_LVL = { confirmed:['התקבל','ok'], transit:['בדרך','wait'], shipped:['יצא','none'], none:['לא ידוע','none'] };
@@ -37705,6 +37726,7 @@ async function rrLoad(){
     if(error) throw error;
     if(seq !== RR_SEQ) return;              // תשובה ישנה אינה דורסת חדשה
     RR = data || { rows:[] }; RR_ERR = '';
+    if(RR_F.st === 'gone' && !rrGone().length) RR_F.st = 'new';
     const ok = new Set((RR.rows || []).filter(rrPickable).map(r => r.id));
     [...RR_SEL].forEach(id => { if(!ok.has(id)) RR_SEL.delete(id); });
   }catch(e){ if(seq !== RR_SEQ) return; RR_ERR = rrErrHe(e); }
@@ -37720,7 +37742,15 @@ function rrRowsView(){
   return rows;                               // הסדר מהשרת: מהאספקה האחרונה לישנה
 }
 function rrShared(){ const m = {}; ((RR && RR.rows) || []).forEach(r => { m[r.p9] = (m[r.p9] || 0) + 1; }); return m; }
-function rrName(r){ return r.first_name ? esc(r.first_name) : '<span class="rr-noname" title="אין שם פרטי — ההודעה תיפתח בלי פנייה אישית, או בשם שכבר שמור למספר">בלי שם</span>'; }
+/* עריכה רק מול שרת שמכיר אותה (v>=3), רק למי ששולח, ורק לפני שהבקשה יצאה */
+function rrNameEd(r){ return !!(RR && RR.can_send && +RR.v >= 3 && rrSendable(r)); }
+function rrName(r){
+  const nm = r.first_name
+    ? '<span class="rr-nm' + (r.name_set ? ' set" title="הוקלד ידנית' : '') + '">' + esc(r.first_name) + '</span>'
+    : '<span class="rr-noname" title="אין שם פרטי — ההודעה תיפתח בלי פנייה אישית, או בשם שכבר שמור למספר">בלי שם</span>';
+  return nm + (rrNameEd(r) ? '<button type="button" class="rr-ned" aria-label="עריכת השם בפנייה" title="עריכת השם בפנייה"'
+    + ' onclick="rrEditName(\'' + jsq(r.order_number) + '\',event)">✎</button>' : '');
+}
 function rrPhone(r, sh){
   return '<span class="rr-ph">' + esc(r.phone || '') + '</span>'
     + (r.mobile ? '' : '<span class="rr-tag rr-land" title="מספר קווי — אין וואטסאפ">קווי</span>')
@@ -37757,10 +37787,38 @@ function rrRowM(r, sh){
     + '<div class="meta">פנייה: ' + rrName(r) + ' · ' + rrPhone(r, sh) + '</div>' + rrPill(r) + '</div>'
     + rrActs(r) + '</div>';
 }
+/* 7.83.0 — ההזמנות שהוסרו מהרשימה (RR.dismissed מהשרת), עם "החזרה". בלי המפתח (שרת של גרסה 2) אין שבב ואין תצוגה. */
+function rrGone(){ return (RR && RR.dismissed) || []; }
+function rrDay(ts){ return ts ? new Date(ts).toLocaleDateString('he-IL', { day:'2-digit', month:'2-digit', year:'2-digit' }) : ''; }
+function rrGoneRows(){
+  const q = String(RR_F.q || '').trim().toLowerCase();
+  return rrGone().filter(d => !q || [d.customer_name, d.order_number, d.reason].some(v => String(v || '').toLowerCase().indexOf(q) >= 0));
+}
+function rrGoneTable(){
+  const rows = rrGoneRows(), ed = !!(RR && RR.can_send);
+  if(!rows.length) return '<div class="empty">' + (rrGone().length ? 'אין הזמנות שהוסרו בחיפוש הזה.' : 'אין הזמנות שהוסרו מהרשימה.') + '</div>';
+  const sum = '<div class="rr-sum" id="rr-sum">' + (rows.length === 1 ? 'הזמנה אחת הוסרה' : rows.length + ' הזמנות הוסרו')
+    + ' מהרשימה. "החזרה" מחזירה אותה, אם היא עדיין בתוך 30 הימים.</div>';
+  const btn = d => '<button type="button" class="ghost rr-back" onclick="rrRestore(\'' + jsq(d.order_number) + '\',event)">החזרה</button>';
+  if(!wideScreen()) return sum + rows.map(d => '<div class="rr-card rr-gone" data-o="' + esc(d.order_number) + '"><div class="rr-cm">'
+    + '<div class="nm">' + esc(d.customer_name || '—') + '</div>'
+    + '<div class="meta">הזמנה <bdi>' + esc(d.order_number) + '</bdi> · הוסרה ' + esc(rrDay(d.at)) + (d.by ? ' · ' + esc(d.by) : '') + '</div>'
+    + (d.reason ? '<div class="meta" dir="auto">' + esc(d.reason) + '</div>' : '') + '</div>'
+    + (ed ? '<div class="rr-acts">' + btn(d) + '</div>' : '') + '</div>').join('');
+  return sum + '<div class="tbl-wrap"><table class="tbl" data-gs="own"><thead><tr><th>הוסרה</th><th>הזמנה</th><th>לקוח</th><th>סיבה</th>'
+    + (ed ? '<th aria-label="פעולות"></th>' : '') + '</tr></thead><tbody>'
+    + rows.map(d => '<tr class="rr-nop rr-gone" data-o="' + esc(d.order_number) + '"><td>' + esc(rrDay(d.at)) + (d.by ? '<span class="rr-sub">' + esc(d.by) + '</span>' : '') + '</td>'
+      + '<td><bdi>' + esc(d.order_number) + '</bdi></td>'
+      + '<td><span class="rr-cust" title="' + esc(d.customer_name || '') + '">' + esc(d.customer_name || '—') + '</span></td>'
+      + '<td dir="auto">' + esc(d.reason || '') + '</td>'
+      + (ed ? '<td class="rr-act"><div class="rr-acts">' + btn(d) + '</div></td>' : '') + '</tr>').join('')
+    + '</tbody></table></div>';
+}
 function rrTable(){
   const rows = rrRowsView(), ed = !!(RR && RR.can_send);
   const all = (RR && RR.rows) || [];
   if(!RR) return '';
+  if(RR_F.st === 'gone') return rrGoneTable();
   if(!rows.length) return '<div class="empty">' + (all.length ? 'אין הזמנות להצגה בסינון הזה.' : 'אין כרגע הזמנות שסופקו ב-30 הימים האחרונים.') + '</div>';
   const sh = rrShared(), nPh = new Set(rows.map(r => r.p9)).size;
   const nOk = rows.filter(r => rrDv(r).ok).length, hasDv = rows.some(r => rrDv(r).has);
@@ -37794,12 +37852,39 @@ function rrChips(){
     if(k === 'fail' && !n && RR_F.st !== 'fail') return '';       // "נכשלו" מופיע רק כשיש
     return '<button type="button" class="chip' + (RR_F.st === k ? ' active' : '') + '" data-k="' + k
       + '" onclick="rrSetFilter(\'' + k + '\')">' + lb + ' <b>' + n + '</b></button>'; }).join('');
-  if(rows.some(r => rrDv(r).has)){
+  if(RR_F.st !== 'gone' && rows.some(r => rrDv(r).has)){
     const n = rows.filter(r => rrIn(r, RR_F.st) && rrDv(r).ok).length;
     h += '<span class="rr-sepc"></span><button type="button" class="chip' + (RR_F.conf ? ' active' : '') + '" data-k="conf" aria-pressed="' + (RR_F.conf ? 'true' : 'false')
       + '" title="רק הזמנות שיש אישור שהלקוח קיבל: יהב, דוח חתום או סימון בוצע" onclick="rrToggleConf()">עם אישור קבלה <b>' + n + '</b></button>';
   }
+  const ng = rrGone().length;
+  if(ng || RR_F.st === 'gone') h += '<span class="rr-sepc"></span><button type="button" class="chip' + (RR_F.st === 'gone' ? ' active' : '')
+    + '" data-k="gone" title="הזמנות שהוסרו מהרשימה — אפשר להחזיר" onclick="rrSetFilter(\'gone\')">הוסרו <b>' + ng + '</b></button>';
   el.innerHTML = h;
+}
+/* 7.83.0 — המדידה (RR.stats מהשרת: כל הבקשות שיצאו אי-פעם) ועדכניות רשימת הביקורות מגוגל.
+   "כתבו ביקורת אחרי הבקשה" = כותב בשם דומה לשם הלקוח, אחרי שהבקשה יצאה — הערכה לפי שמות. */
+function rrStats(){
+  const el = $('#rr-stats'); if(!el) return;
+  const s = RR && RR.stats, rv = RR && RR.reviews;
+  if(!s){ el.classList.add('hidden'); el.innerHTML = ''; return; }
+  const n = k => +(s[k] || 0);
+  let h = '';
+  if(!(n('sent') + n('failed') + n('pending'))) h = '<span class="rr-stx">עוד לא נשלחו בקשות.</span>';
+  else h = '<span class="rr-stx">בקשות עד היום:</span>'
+    + '<span class="rr-stn" data-k="sent"><b>' + n('sent') + '</b> נשלחו</span>'
+    + '<span class="rr-stn" data-k="delivered"><b>' + n('delivered') + '</b> נמסרו</span>'
+    + '<span class="rr-stn" data-k="read"><b>' + n('read') + '</b> נקראו</span>'
+    + (n('pending') ? '<span class="rr-stn" data-k="pending"><b>' + n('pending') + '</b> בתור</span>' : '')
+    + (n('failed') ? '<span class="rr-stn bad" data-k="failed"><b>' + n('failed') + '</b> נכשלו</span>' : '')
+    + '<span class="rr-stn good" data-k="reviewed" title="כותב ביקורת בשם דומה לשם הלקוח, אחרי שהבקשה יצאה. הערכה לפי שמות — לא ודאי"><b>'
+      + n('reviewed') + '</b> כתבו ביקורת אחרי הבקשה' + (n('sent') ? ' (' + Math.round(100 * n('reviewed') / n('sent')) + '%)' : '') + '</span>';
+  if(rv && rv.synced_at){
+    const old = (Date.now() - new Date(rv.synced_at).getTime()) / 86400000 > RR_RV_STALE_DAYS;
+    h += '<span class="rr-stn rr-rvs' + (old ? ' warn' : '') + '" id="rr-rvs" title="הסימון על ביקורת קיימת והמדידה נשענים על רשימת הביקורות הזאת">'
+      + (old ? 'הביקורות מגוגל לא עודכנו מאז ' + esc(rrDay(rv.synced_at)) : (+rv.n || 0) + ' ביקורות בגוגל · עודכן ' + esc(rrDay(rv.synced_at))) + '</span>';
+  }
+  el.classList.remove('hidden'); el.innerHTML = h;
 }
 function rrNote(){
   const el = $('#rr-note'); if(!el) return;
@@ -37842,7 +37927,7 @@ function rrListPaint(){
 }
 function rrPaint(){
   if(!$('#rr-body')) return;
-  rrNote(); rrChips(); rrListPaint();
+  rrNote(); rrStats(); rrChips(); rrListPaint();
 }
 /* סימון אינו מצייר את הטבלה מחדש (נמדד ב-7.81: scrollTop 1664 ⇒ 0 אחרי סימון השורה ה-41) — רק את שורת הבחירה */
 function rrSelSync(){
@@ -37850,7 +37935,7 @@ function rrSelSync(){
   const all = document.getElementById('rr-all'); if(all) all.checked = rrAllOn(rrRowsView());
   rrBulkPaint(); rrFit();
 }
-window.rrSetFilter = k => { RR_F.st = k; rrPaint(); };
+window.rrSetFilter = k => { if(k === 'gone') RR_SEL.clear(); RR_F.st = k; rrPaint(); };
 window.rrToggleConf = () => { RR_F.conf = !RR_F.conf; rrPaint(); };
 window.rrPick = (id, on) => { if(on) RR_SEL.add(id); else RR_SEL.delete(id); rrSelSync(); };
 window.rrPickAll = on => { rrRowsView().filter(rrBulkOk).forEach(r => { if(on) RR_SEL.add(r.id); else RR_SEL.delete(r.id); }); rrSelSync(); };
@@ -37931,9 +38016,53 @@ window.rrDismiss = async function(order, ev){
     ++RR_SEQ;                                 // טעינה שיצאה לפני ההסרה לא תחזיר את השורה
     (RR.rows || []).filter(r => r.order_number === order).forEach(r => RR_SEL.delete(r.id));
     RR.rows = (RR.rows || []).filter(r => r.order_number !== order);
-    toast('הוסרה מהרשימה', 'ok');
+    if(RR.dismissed) RR.dismissed = [{ order_number: order, customer_name: (row && row.customer_name) || '', reason: String(reason || '').trim() || null,
+      by: '', at: new Date().toISOString() }].concat(RR.dismissed.filter(d => d.order_number !== order));
+    toast(RR.dismissed ? 'הוסרה מהרשימה — אפשר להחזיר תחת "הוסרו"' : 'הוסרה מהרשימה', 'ok');
   }catch(e){ toast(rrErrHe(e), 'err'); }
   finally{ RR_BUSY = false; rrPaint(); }
+};
+
+/* ── 7.83.0 — החזרת הזמנה שהוסרה: ord.review_req_restore. אחרי ההחזרה נטענת הרשימה מחדש (השרת מחליט אם היא עוד בחלון) ── */
+window.rrRestore = async function(order, ev){
+  if(ev) ev.stopPropagation();
+  if(!RR || !RR.can_send) return;
+  if(RR_BUSY){ toast('פעולה מתבצעת — נסו שוב בעוד רגע'); return; }
+  RR_BUSY = true;
+  let res = null;
+  try{
+    const { data, error } = await sb.schema('ord').rpc('review_req_restore', { p_order: order });
+    if(error) throw error;
+    res = data || {};
+    RR.dismissed = rrGone().filter(d => d.order_number !== order);
+    toast(res.in_list === false ? 'הוחזרה, אבל היא כבר מחוץ ל-30 הימים ולכן לא תוצג ברשימה' : 'הוחזרה לרשימה', 'ok');
+  }catch(e){ toast(rrErrHe(e), 'err'); }
+  finally{ RR_BUSY = false; }
+  if(res) await rrLoad();
+  rrPaint();
+};
+
+/* ── 7.83.0 — השם בפנייה ("היי <שם>"): ord.review_req_set_name. ריק ⇒ חזרה לשם האוטומטי. השרת מחזיר את השם שבתוקף ── */
+window.rrEditName = async function(order, ev){
+  if(ev) ev.stopPropagation();
+  if(!RR || !RR.can_send || RR_BUSY) return;
+  const row = (RR.rows || []).find(r => r.order_number === order);
+  if(!row || !rrNameEd(row)) return;
+  const v = await sysPrompt('השם שיופיע אחרי "היי" בהודעה ל' + (row.customer_name || 'לקוח') + '.\nשם פרטי אחד, בלי רווחים. שדה ריק מחזיר את השם האוטומטי.',
+    row.first_name || '', { ok:'שמירה' });
+  if(v === null) return;
+  const nm = String(v).trim();
+  if(nm === (row.first_name || '')) return;
+  if(nm && !RR_NAME_RE.test(nm)){ await sysAlert('שם פרטי אחד בלבד — אותיות בלי רווחים, 2 עד 20 תווים.'); return; }
+  if(RR_BUSY) return;
+  RR_BUSY = true;
+  try{
+    const { data, error } = await sb.schema('ord').rpc('review_req_set_name', { p_order: order, p_name: nm });
+    if(error) throw error;
+    row.first_name = String((data && data.first_name) || ''); row.name_set = !!(data && data.name_set);
+    toast(nm ? 'השם בפנייה עודכן' : 'חזר לשם האוטומטי', 'ok');
+  }catch(e){ toast(rrErrHe(e), 'err'); }
+  finally{ RR_BUSY = false; rrListPaint(); }
 };
 
 

@@ -179,7 +179,10 @@ async function qpdfMobile(){
     const pdf=await lib.getDocument({url:src,
       cMapUrl:PDFJS_CDN+'cmaps/', cMapPacked:true,
       standardFontDataUrl:PDFJS_CDN+'standard_fonts/',
-      disableFontFace:true}).promise;
+      disableFontFace:true,
+      /* 22/11/2026 - the flag below closes CVE-2024-4367: a crafted PDF could run script through
+         the glyph compiler (new Function) of pdf.js 3.11. Same drawing, interpreted. See mksign21html.py. */
+      isEvalSupported:false}).promise;
     const n=Math.min(pdf.numPages||0, 30);
     if(!n) throw new Error('empty');
     box.innerHTML='';

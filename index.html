@@ -1770,7 +1770,7 @@
   .cal-act:hover{ background:var(--bg-subtle); border-color:var(--navy); }
   .cal-act:focus-visible{ outline:2px solid var(--navy); outline-offset:2px; }
   /* 7.85.1 — "כפתורים בצבע" (רומן, 22/11/2026): שיבוץ יומי = נייבי מלא; הערת יום = ענבר, כמו תגית ההערה ביומן */
-  .cal-act.td-open{ background:var(--navy); color:#fff; border-color:var(--navy); }
+  .cal-act.td-open{ background:var(--navy); color:#fff; border-color:var(--navy); gap:var(--sp-1h); }   /* 7.88.1 — .td-open (מאוחר, אותה ספציפיות) הוריד את הרווח ל-4px */
   .cal-act.td-open:hover{ background:var(--navy); border-color:var(--navy); box-shadow:var(--sh-pop); }
   .cal-act.cal-act-note{ background:var(--amber-bg); color:var(--warn-ink); border-color:var(--warn); }
   .cal-act.cal-act-note:hover{ background:var(--amber-bg); border-color:var(--warn-ink); box-shadow:var(--sh-pop); }
@@ -3103,7 +3103,8 @@ span.po-est{ cursor:default; }
   .db-block h3 .more{ display:inline-flex; align-items:center; }
   .cal-seg button{ min-height:var(--ctl-h-touch-sm); }
   .cal-nav .nav-b{ width:40px; height:40px; }
-  .nav-b{ min-height:var(--ctl-h-touch-sm); }   /* 👷 שיבוץ (td-open) בשורת היומן — 25px */
+  .nav-b{ min-height:var(--ctl-h-touch-sm); }
+  .cal-act, .cal-plus-menu .po-menu-it{ min-height:var(--ctl-h-touch-sm); }   /* 7.88.1 — כפתורי סרגל היומן עברו מ-.nav-b ל-.cal-act ואיבדו את גובה המגע */   /* 👷 שיבוץ (td-open) בשורת היומן — 25px */
   .inv-btn{ min-height:var(--ctl-h-touch); }
   input[type=checkbox], .selcol input[type=checkbox]{ width:22px; height:22px; }
   #tab-set .set-body select, #tab-set .set-body input:not([type=checkbox]):not([type=radio]):not([type=color]){ min-height:var(--ctl-h-touch); box-sizing:border-box; }
@@ -4671,7 +4672,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.87.0</div>
+      <div class="ver">גרסה 7.88.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4820,7 +4821,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="retnew-2026-11-22a">גרסה 7.87.0</div>
+    <div class="side-foot" title="revfix-2026-11-23a">גרסה 7.88.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -5097,6 +5098,11 @@ tr.lb-on td{ background-color:#eef5fd !important; }
         <input id="rr-q" class="rr-q" type="search" placeholder="חיפוש — לקוח, איש קשר, הזמנה או טלפון" aria-label="חיפוש בבקשות הביקורת">
         <span class="rr-win" id="rr-win">מוצגות הזמנות שסופקו ב-30 הימים האחרונים</span>
         <span class="rr-sp"></span>
+        <span class="rr-dts" id="rr-dts" title="סינון לפי היום שבו הבקשה נשלחה">
+          <label class="rr-dl">נשלחה מ־<input type="date" id="rr-from" aria-label="הבקשה נשלחה מתאריך"></label>
+          <label class="rr-dl">עד<input type="date" id="rr-to" aria-label="הבקשה נשלחה עד תאריך"></label>
+          <button type="button" class="rr-dx hidden" id="rr-dx" onclick="rrClearDates()">ניקוי</button>
+        </span>
         <button type="button" class="ghost" onclick="rrReload()">רענון</button>
       </div>
       <div class="rr-stats hidden" id="rr-stats"></div>
@@ -7243,7 +7249,7 @@ document.querySelectorAll('#side .nav-wrap').forEach(w=>{
 /* ריחוף על פריט תפריט ללא תתי-קטגוריות סוגר מיד תפריט צף פתוח */
 document.querySelectorAll('#side nav > .nav-item').forEach(b=>
   b.addEventListener('mouseenter', ()=>{ _subCancel(); closeSubmenus(null); }));
-document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ _subCancel(); closeSubmenus(null); } });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ try{ calPlusEsc(); }catch(_e){} _subCancel(); closeSubmenus(null); } });
 document.addEventListener('click',   e=>{ const t=e.target; if(!(t && t.closest && t.closest('.nav-wrap, #sideToggle, #sideOpenTab'))){ _subCancel(); closeSubmenus(null); } });
 const _posSubmenus = ()=>document.querySelectorAll('.nav-wrap.open').forEach(w=>placeSubmenu(w));
 window.addEventListener('resize', _posSubmenus);
@@ -8984,7 +8990,7 @@ window.mdDone = async (id, kind)=>{
   const s = (isOrd ? ORDS : SCALLS).find(x=>String(x.id)===String(id));
   if(s && r.data) Object.assign(s, r.data);
   toast(nr ? 'סומן כבוצע בלי דוח ✓ — מנהלי הלוגיסטיקה קיבלו התראה' : 'סומן כבוצע ✓');
-  if(nr){ NOREP = null; try{ window.fieldRefresh(k2, id); }catch(_e){} }
+  if(nr){ noRepDrop(); try{ window.fieldRefresh(k2, id); }catch(_e){} }   /* 7.88.1 — לא NOREP=null: טעינה שבאוויר יצאה לפני ה-insert */
   /* 7.10.0 — בכרטיס הפתוח הכפתור נשאר, ולחיצה שנייה החזירה "כבר בסטטוס" (או נבלעה בקריאות) */
   const b = document.getElementById('done-btn-'+id); if(b) b.outerHTML = '<span class="pill p-green">הושלם ✓</span>';
   try{ dlOrdSecSync(); renderLogi(); renderCal(); }catch(_e){}
@@ -11102,16 +11108,44 @@ const calPickBtn = (ds, lbl) => {
   const t = nt ? (sch ? 'שיבוץ הזמנה או הערת יום' : 'הערת יום') : 'שיבוץ הזמנה ליום זה';
   return `<button type="button" class="cal-pick-btn${lbl?' lbl':''}" title="${t}" aria-haspopup="${nt?'menu':'dialog'}" onclick="event.stopPropagation();calPlus(this,'${ds}')">${lbl?'＋ '+t:'＋'}</button>`;
 };
-function calPlusClose(){
+/* 7.88.1 — סקירה 23/11: התפריט עוקב אחרי הכפתור בגלילה, Esc גם כשהפוקוס מחוץ לתפריט, לחיצה שנייה על אותו "＋" סוגרת. */
+let CAL_PLUS_BTN = null;
+function calPlusClose(back){
   const m = document.getElementById('calPlusMenu'); if(m) m.remove();
   document.removeEventListener('mousedown', calPlusOut, true);
-  window.removeEventListener('scroll', calPlusClose);
+  document.removeEventListener('touchstart', calPlusOut, true);
+  document.removeEventListener('scroll', calPlusMove, true);
+  const b = CAL_PLUS_BTN; CAL_PLUS_BTN = null;
+  if(back === true && b && b.isConnected){ try{ b.focus(); }catch(_e){} }
 }
-function calPlusOut(e){ const m = document.getElementById('calPlusMenu'); if(m && !m.contains(e.target)) calPlusClose(); }
+function calPlusOut(e){
+  const m = document.getElementById('calPlusMenu'); if(!m || m.contains(e.target)) return;
+  if(CAL_PLUS_BTN && CAL_PLUS_BTN.contains(e.target)) return;   /* ה-click שיבוא מיד יסגור (calPlus) — לא לסגור ולפתוח מחדש */
+  calPlusClose();
+}
+function calPlusPlace(m, btn){
+  const r = btn.getBoundingClientRect(), w = m.offsetWidth, h = m.offsetHeight, vw = window.innerWidth, vh = window.innerHeight;
+  let top = r.bottom + 4; if(top + h > vh - 8) top = Math.max(8, r.top - h - 4);
+  m.style.top = top + 'px';
+  m.style.left = Math.max(8, Math.min(r.right - w, vw - w - 8)) + 'px';
+}
+/* גלילה (capture — גם גלילה פנימית ב-.cal-scroll): התפריט נצמד מחדש לכפתור; כפתור שיצא מהמסך ⇒ סגירה. כפתור שהוחלף
+   בציור מחדש של היומן אינו מחובר עוד ⇒ לא נוגעים (התפריט נשאר במקומו, כמו קודם). גלילה בתוך התפריט עצמו — מתעלמים. */
+function calPlusMove(e){
+  const m = document.getElementById('calPlusMenu'), b = CAL_PLUS_BTN; if(!m) return;
+  if(e && e.target && e.target.nodeType === 1 && m.contains(e.target)) return;
+  if(!b || !b.isConnected) return;
+  const r = b.getBoundingClientRect();
+  if(r.bottom < 0 || r.top > window.innerHeight || r.right < 0 || r.left > window.innerWidth){ calPlusClose(); return; }
+  calPlusPlace(m, b);
+}
+function calPlusEsc(){ if(!document.getElementById('calPlusMenu')) return false; calPlusClose(true); return true; }
 window.calPlus = (btn, ds) => {
   const sch = canEdit('logi.orders.schedule'), nt = canEdit('logi.cal.notes');
   if(!nt){ if(sch) calPickOpen(ds); return; }
+  const same = !!document.getElementById('calPlusMenu') && CAL_PLUS_BTN === btn;
   calPlusClose();
+  if(same) return;   /* 7.88.1 — לחיצה שנייה על אותו "＋" סוגרת */
   const m = document.createElement('div');
   m.id = 'calPlusMenu'; m.className = 'cal-plus-menu'; m.setAttribute('role','menu'); m.dir = 'rtl';
   m.innerHTML = '<div class="cpm-h">'+esc(dayNameHe(ds)+', '+fmtD(ds))+'</div>'
@@ -11119,13 +11153,11 @@ window.calPlus = (btn, ds) => {
     + '<div class="cpm-l">הערת יום</div>'
     + Object.keys(CN_CLS).map(k=>'<button type="button" role="menuitem" class="po-menu-it" data-kind="'+esc(k)+'"><span class="cpm-dot '+CN_CLS[k]+'"></span>'+esc(k)+'</button>').join('');
   document.body.appendChild(m);
-  const r = btn.getBoundingClientRect(), w = m.offsetWidth, h = m.offsetHeight, vw = window.innerWidth, vh = window.innerHeight;
-  let top = r.bottom + 4; if(top + h > vh - 8) top = Math.max(8, r.top - h - 4);
-  m.style.top = top + 'px';
-  m.style.left = Math.max(8, Math.min(r.right - w, vw - w - 8)) + 'px';
-  /* Esc על התפריט עצמו (הפוקוס בתוכו) — לא מאזין keydown גלובלי נוסף (dlgtest/srcdoctest סופרות). גלילה: רק של
-     החלון — גלילה פנימית ביומן (כולל הגלילה האוטומטית ל-08:00 בטלפון) אינה סוגרת. */
-  m.onkeydown = e=>{ if(e.key==='Escape'){ e.stopPropagation(); e.preventDefault(); calPlusClose(); } };
+  CAL_PLUS_BTN = btn;
+  calPlusPlace(m, btn);
+  /* Esc על התפריט עצמו (הפוקוס בתוכו); כשהפוקוס בחוץ — calPlusEsc מתוך מאזין ה-Esc הגלובלי הקיים, לא מאזין keydown
+     נוסף (dlgtest/srcdoctest סופרות). גלילה: התפריט עוקב אחרי הכפתור (calPlusMove) — גם בגלילה האוטומטית ל-08:00 בטלפון. */
+  m.onkeydown = e=>{ if(e.key==='Escape'){ e.stopPropagation(); e.preventDefault(); calPlusClose(true); } };
   m.addEventListener('click', e=>{
     const b = e.target.closest('button'); if(!b) return;
     calPlusClose();
@@ -11133,8 +11165,10 @@ window.calPlus = (btn, ds) => {
     else calNoteForm({ id:null, date_from:ds, date_to:ds, kind:b.dataset.kind, body:'' });
   });
   setTimeout(()=>{
+    if(document.getElementById('calPlusMenu') !== m) return;   /* 7.88.1 — נסגר באותו tick: לא להשאיר מאזינים בלי תפריט */
     document.addEventListener('mousedown', calPlusOut, true);
-    window.addEventListener('scroll', calPlusClose);   /* 7.85.1 — בלי resize: בטלפון נורה כשסרגל הכתובת מתכווץ */
+    document.addEventListener('touchstart', calPlusOut, { capture:true, passive:true });   /* אייפון: נגיעה באזור לא-לחיץ אינה מייצרת mousedown */
+    document.addEventListener('scroll', calPlusMove, true);   /* 7.85.1 — בלי resize: בטלפון נורה כשסרגל הכתובת מתכווץ */
   }, 0);
   try{ m.querySelector('button').focus(); }catch(_e){}
 };
@@ -15414,23 +15448,41 @@ window.reportBlock = (kind, parentId)=>{
 /* 7.79.0 — "נסגר בלי דוח · <סיבה>" בכרטיס. ord.done_noreport נטען פעם אחת (500 אחרונות), עצל, ומתאפס אחרי סגירה בלי דוח. */
 /* 7.80.1 — סקירה 17/11: promise משותף. ב-7.79.0 קורא מקביל קיבל promise פתור (BUSY), שרשר fieldRefresh ⇒
    reportBlock ⇒ noRepLine ⇒ שוב — לולאת microtasks שהקפיאה את הלשונית לפני שהתשובה מהרשת נקלטה. */
-let NOREP = null, NOREP_REQ = null;
+/* 7.88.1 — סקירה 23/11: המטמון התיישן בשקט. (א) שגיאה אינה נשמרת כ-[] — נשאר null ומנסים שוב (לכל היותר פעם ב-NOREP_RETRY);
+   (ב) NOREP_GEN: תשובה שיצאה לפני noRepDrop (סגירה בלי דוח בזמן טעינה) נזרקת; (ג) מטמון בן יותר מ-NOREP_TTL נמשך מחדש ברקע,
+   והכרטיס מצויר שוב רק אם השורה שלו השתנתה. NOREP_AT מתקדם בכל ניסיון ⇒ אין לולאה גם כשהשרת נופל. */
+let NOREP = null, NOREP_REQ = null, NOREP_GEN = 0, NOREP_AT = 0, NOREP_ERR = 0;
+const NOREP_TTL = 60000, NOREP_RETRY = 15000;
+function noRepDrop(){ NOREP = null; NOREP_REQ = null; NOREP_GEN++; NOREP_ERR = 0; }
 function noRepLoad(){
   if(NOREP_REQ) return NOREP_REQ;
-  NOREP_REQ = (async ()=>{
+  const g = NOREP_GEN; NOREP_AT = Date.now();
+  let req = null;
+  req = (async ()=>{
+    let ok = false;
     try{
+      await null;   /* גם כשל סינכרוני מגיע ל-finally אחרי ש-NOREP_REQ כבר הוצב */
       const r = await sb.schema('ord').from('done_noreport').select('order_id,call_id,reason,note,created_at').order('created_at', { ascending:false }).limit(500);
-      NOREP = (r && !r.error && Array.isArray(r.data)) ? r.data : [];
-    }catch(_e){ NOREP = []; }
-    finally{ NOREP_REQ = null; }
+      if(r && !r.error && Array.isArray(r.data)){ ok = true; if(g === NOREP_GEN) NOREP = r.data; }
+    }catch(_e){}
+    finally{ if(g === NOREP_GEN) NOREP_ERR = ok ? 0 : Date.now(); if(NOREP_REQ === req) NOREP_REQ = null; }
   })();
-  return NOREP_REQ;
+  NOREP_REQ = req;
+  return req;
 }
 function noRepLine(kind, parentId){
   if(!window.canView('logi')) return '';
-  if(NOREP === null){ noRepLoad().then(()=>{ if(NOREP !== null){ try{ window.fieldRefresh(kind, parentId); }catch(_e){} } }); return ''; }
+  if(NOREP === null){
+    if(NOREP_REQ || !NOREP_ERR || Date.now() - NOREP_ERR > NOREP_RETRY) noRepLoad().then(()=>{ if(NOREP !== null){ try{ window.fieldRefresh(kind, parentId); }catch(_e){} } });
+    return '';
+  }
   const key = kind==='call' ? 'call_id' : 'order_id';
   const n = NOREP.find(x=>x[key]===parentId);
+  if(!NOREP_REQ && Date.now() - NOREP_AT > NOREP_TTL){
+    const sig = x => x ? String(x.created_at||'')+'|'+String(x.reason||'')+'|'+String(x.note||'') : '';
+    const had = sig(n);
+    noRepLoad().then(()=>{ if(NOREP !== null && sig(NOREP.find(x=>x[key]===parentId)) !== had){ try{ window.fieldRefresh(kind, parentId); }catch(_e){} } });
+  }
   return n ? '<div class="note" style="margin-top:var(--sp-2)"><b>נסגר בלי דוח</b> · '+esc(n.reason)+(n.note?' — '+esc(n.note):'')+'</div>' : '';
 }
 window.createReport = async (kind, parentId)=>{
@@ -16104,7 +16156,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'retnew-2026-11-22a';
+const BUILD_ID = 'revfix-2026-11-23a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -37656,7 +37708,7 @@ window.spiRender = async function(){
 };
 
 
-/* ===== בקשת ביקורת גוגל — וואטסאפ ללקוחות שקיבלו את הציוד (7.81.0 · 7.82.0 · 7.83.0 · 7.84.0 · 7.86.0) =====
+/* ===== בקשת ביקורת גוגל — וואטסאפ ללקוחות שקיבלו את הציוד (7.81.0 · 7.82.0 · 7.83.0 · 7.84.0 · 7.86.0 · 7.88.0) =====
    רומן, 20/11/2026 (אפיון מאושר): בוחר במסך למי לשלוח · שליחה ידנית בלבד, אין טריגר · אפשרות להסיר לקוח · רק רומן ונח.
    השרת מחזיק את כל ההגדרות — מי מופיע (ord.review_req_candidates), ראיית האספקה, פעם אחת לטלפון (dedupe_key
    ב-core.outbox), והמתג. המסך רק מציג ושולח מזהים.
@@ -37673,6 +37725,15 @@ const RR_CSS = `
 #tab-revreq .rr-q{ flex:0 1 320px; min-width:160px; padding:var(--sp-2) var(--sp-3); border:1px solid var(--field-bd);
   border-radius:var(--r-md); font:inherit; font-size:var(--fs-md); min-height:var(--ctl-h-md); box-sizing:border-box; }
 #tab-revreq .rr-sp{ flex:1 1 auto; }
+#tab-revreq .rr-dts{ display:inline-flex; align-items:center; gap:var(--sp-2); }
+#tab-revreq .rr-dl{ display:inline-flex; align-items:center; gap:var(--sp-1h); font-size:var(--fs-sm); color:var(--ink-2); white-space:nowrap; }
+#tab-revreq .rr-dl input{ padding:var(--sp-1) var(--sp-2); border:1px solid var(--field-bd); border-radius:var(--r-md); font:inherit; font-size:var(--fs-md);
+  min-height:var(--ctl-h-md); box-sizing:border-box; background-color:#fff; }
+#tab-revreq .rr-dts.on .rr-dl input{ border-color:var(--navy); }
+#tab-revreq .rr-dx{ border:0; background:none; cursor:pointer; color:var(--ink-3); font:inherit; font-size:var(--fs-sm); text-decoration:underline;
+  padding:var(--sp-1) var(--sp-1h); }
+#tab-revreq .rr-dx:hover{ color:var(--navy); }
+#tab-revreq .rr-sub.rr-ago{ max-width:none; }
 #tab-revreq .rr-bar .ghost{ min-height:var(--ctl-h-md); box-sizing:border-box; }
 #tab-revreq .rr-note{ border-radius:var(--r-md); padding:var(--sp-2h) var(--sp-3); margin:0 0 var(--sp-3); font-size:var(--fs-md);
   line-height:1.5; background-color:var(--new-bg); border:1px solid var(--warn); color:var(--ink-1); }
@@ -37745,6 +37806,10 @@ const RR_CSS = `
 }
 @media (max-width:759.98px){ #tab-revreq .rr-sp{ display:none; } #tab-revreq .rr-q{ flex:1 1 0; min-width:0; }
   #tab-revreq .rr-win{ order:3; flex:1 1 100%; white-space:normal; }
+  #tab-revreq .rr-dts{ order:4; flex:1 1 100%; flex-wrap:wrap; }
+  #tab-revreq .rr-dl{ flex:1 1 40%; min-width:0; }
+  #tab-revreq .rr-dl input{ flex:1 1 auto; min-width:0; min-height:var(--ctl-h-touch-sm); }
+  #tab-revreq .rr-dx{ min-height:var(--ctl-h-touch-sm); }
   #tab-revreq .rr-acts .ghost{ min-height:var(--ctl-h-touch-sm); }
   #tab-revreq .rr-acts .rr-nosend{ display:none; }
   #tab-revreq .rr-ned{ min-width:var(--ctl-h-touch-sm); min-height:var(--ctl-h-touch-sm); }
@@ -37772,7 +37837,7 @@ const RR_RV_STALE_DAYS = 3;
 const RR_DV_SRC = { yahav:'יהב', signed:'דוח חתום', done:'הצוות סימן בוצע', transit:'יהב', dnote:'תעודת משלוח בלבד', invoice:'חשבונית בלבד', none:'אין מסמך אספקה' };
 const RR_DV_LVL = { confirmed:['התקבל','ok'], transit:['בדרך','wait'], shipped:['יצא','none'], none:['לא ידוע','none'] };
 let RR = null, RR_ERR = '', RR_SEQ = 0, RR_BUSY = false, RR_FIT_T = 0;
-let RR_F = { st:'new', q:'', conf:false };
+let RR_F = { st:'new', q:'', conf:false, from:'', to:'' };
 const RR_SEL = new Set();
 
 /* 🔴 ההגדרה היחידה של מצב הבקשה לשורה. השבבים (rrIn), התגית (rrPill) והאם מותר לבחור (rrPickable) עוברים דרכה.
@@ -37788,7 +37853,40 @@ function rrState(r){
   if(s === 'נשלח') return { k:'sent', label:'נשלחה', cls:'sent' };
   return { k:'sent', label:'בתור לשליחה', cls:'wait' };
 }
-function rrIn(r, k){ return k === 'all' || (k === 'remind' ? rrDue(r) : rrState(r).k === k); }
+function rrIn(r, k){ return k === 'all' || (k === 'remind' ? rrDue(r) : k === 'new' ? rrState(r).k === 'new' && !rrYhWait(r) : rrState(r).k === k); }
+/* 7.88.0 — משלוח של יהב שאין עליו אישור מסירה (רומן, 23/11/2026: "ב'לא נשלחו' אני לא רוצה לראות מה שרק 'יצא' מחברת
+   המשלוחים יהב ולא נמסר עדיין ללקוח. תציג לי רק כאשר זה נמסר"). השורה נשארת ב"הכל", ושם אפשר לשלוח אליה ביד.
+   מול שרת בלי ראיות אספקה (גרסה 1) אין מה לדעת — ולכן אין סינון. */
+function rrYhWait(r){
+  const d = rrDv(r);
+  if(!d.has || d.ok) return false;
+  return r.dv_kind === 'yahav' || r.dv_kind === 'transit' || /יהב/.test(String(r.delivery_method || '') + ' ' + String(r.dv_note || ''));
+}
+/* 7.88.0 — מתי הבקשה יצאה: ob_sent מהשרת (v4), ולפניו ob_at. היום נגזר מהשעון המקומי ולא מ-UTC — בקשה שיצאה
+   ב-00:30 שייכת ליום שבו המשתמש ראה אותה יוצאת. */
+function rrSentAt(r){ return r.ob_id ? (r.ob_sent || r.ob_at || null) : null; }
+function rrSentDay(r){
+  const t = rrSentAt(r); if(!t) return '';
+  const d = new Date(t); if(isNaN(d.getTime())) return '';
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function rrSentTxt(r){
+  const t = rrSentAt(r); if(!t) return '';
+  const d = new Date(t); if(isNaN(d.getTime())) return '';
+  const p = n => String(n).padStart(2, '0');
+  return p(d.getDate()) + '.' + p(d.getMonth() + 1) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+/* טווח תאריכי השליחה. טווח הפוך מתהפך — מי שהקליד "עד" מוקדם מ"מ־" התכוון לטווח, לא לרשימה ריקה. */
+function rrDates(){
+  let a = RR_F.from || '', b = RR_F.to || '';
+  if(a && b && a > b){ const x = a; a = b; b = x; }
+  return { a, b, on: !!(a || b) };
+}
+function rrInDates(r){ const D = rrDates(); if(!D.on) return true; const d = rrSentDay(r); return !!d && (!D.a || d >= D.a) && (!D.b || d <= D.b); }
+function rrDatesTxt(D){
+  if(D.a && D.b) return D.a === D.b ? 'ב-' + fmtD(D.a) : 'בין ' + fmtD(D.a) + ' ל-' + fmtD(D.b);
+  return D.a ? 'מ-' + fmtD(D.a) : 'עד ' + fmtD(D.b);
+}
 /* 7.86.0 — מי מותר לבחור תלוי בשבב: ב"לתזכורת" — מי שאפשר לשלוח לו תזכורת; בכל השאר — מי שעוד לא נשלחה לו בקשה */
 function rrPickNew(r){ return !!(RR && RR.can_send && r.mobile && rrState(r).k === 'new'); }
 function rrPickable(r){ return RR_F.st === 'remind' ? rrRemindable(r) : rrPickNew(r); }
@@ -37844,7 +37942,9 @@ function rrPill(r){
   const st = rrState(r), rv = rrRv(r);
   let h = '<span class="rr-st ' + st.cls + '"' + (r.ob_at ? ' title="' + esc(fmtDT(r.ob_at)) + '"' : '') + '>' + esc(st.label) + '</span>';
   const ago = rrAgo(r), rm = rrRm(r);
-  if(ago !== null) h += '<span class="rr-sub rr-ago">' + rrAgoTxt(ago) + '</span>';
+  if(ago !== null){ const sx = rrSentTxt(r);
+    h += '<span class="rr-sub rr-ago"' + (sx ? ' title="הבקשה נשלחה ב-' + esc(fmtDT(rrSentAt(r))) + '"' : '') + '>'
+      + (sx ? '<bdi class="rr-sent">' + esc(sx) + '</bdi> · ' : '') + rrAgoTxt(ago) + '</span>'; }
   if(rm) h += ' <span class="rr-st rr-rm ' + rm.cls + '"' + (r.rm_at ? ' title="' + esc(fmtDT(r.rm_at)) + '"' : '') + '>' + esc(rm.label) + '</span>'
     + (rm.k === 'fail' && r.rm_error ? '<span class="rr-sub bad" dir="auto" title="' + esc(r.rm_error) + '">' + esc(r.rm_error) + '</span>' : '');
   if(r.ob_order && r.ob_order !== r.order_number) h += '<span class="rr-sub">מהזמנה <bdi>' + esc(r.ob_order) + '</bdi></span>';
@@ -37878,13 +37978,17 @@ function rrRowsView(){
   const q = String(RR_F.q || '').trim().toLowerCase();
   let rows = ((RR && RR.rows) || []).filter(r => rrIn(r, RR_F.st));
   if(RR_F.conf) rows = rows.filter(r => rrDv(r).ok);
+  rows = rows.filter(rrInDates);
   if(q) rows = rows.filter(r => [r.customer_name, r.contact_name, r.order_number, r.phone, r.first_name]
     .some(v => String(v || '').toLowerCase().indexOf(q) >= 0));
   return rows;                               // הסדר מהשרת: מהאספקה האחרונה לישנה
 }
 function rrShared(){ const m = {}; ((RR && RR.rows) || []).forEach(r => { m[r.p9] = (m[r.p9] || 0) + 1; }); return m; }
-/* עריכה רק מול שרת שמכיר אותה (v>=3), רק למי ששולח, ורק לפני שהבקשה יצאה */
-function rrNameEd(r){ return !!(RR && RR.can_send && +RR.v >= 3 && rrSendable(r)); }
+/* עריכה רק מול שרת שמכיר אותה (v>=3) ורק למי ששולח. לפני שהבקשה יצאה — תמיד; אחרי שיצאה (7.88.0; רומן, 23/11/2026:
+   "להוסיף שם לפניה באופן ידני… שורות שאין") — כל עוד עוד אפשר לשלוח תזכורת: אין תזכורת, או שנכשלה ולא נמסרה.
+   שם שנכתב אחרי שגם התזכורת יצאה לא היה מגיע לשום הודעה. */
+function rrNameLate(r){ return !!(RR && +RR.v >= 4 && r.mobile && r.ob_id && r.ob_status === 'נשלח' && r.ob_delivery !== 'נכשל' && (!r.rm_id || r.rm_retry)); }
+function rrNameEd(r){ return !!(RR && RR.can_send && +RR.v >= 3 && (rrSendable(r) || rrNameLate(r))); }
 function rrName(r){
   const nm = r.first_name
     ? '<span class="rr-nm' + (r.name_set ? ' set" title="הוקלד ידנית' : '') + '">' + esc(r.first_name) + '</span>'
@@ -37964,15 +38068,21 @@ function rrTable(){
   const all = (RR && RR.rows) || [];
   if(!RR) return '';
   if(RR_F.st === 'gone') return rrGoneTable();
-  if(!rows.length) return '<div class="empty">' + (RR_F.st === 'remind' && all.length
+  const D = rrDates();
+  const nYh = RR_F.st === 'new' ? all.filter(r => rrState(r).k === 'new' && rrYhWait(r)).length : 0;
+  const yh = nYh ? (nYh === 1 ? 'משלוח אחד של יהב בלי אישור מסירה אינו מוצג' : nYh + ' משלוחי יהב בלי אישור מסירה אינם מוצגים') + ' (מופיעים ב"הכל")' : '';
+  if(!rows.length) return '<div class="empty">' + (D.on && all.length ? 'אין בקשות שנשלחו ' + rrDatesTxt(D) + '.'
+    : RR_F.st === 'remind' && all.length
     ? 'אין כרגע לקוחות לתזכורת. לקוח מופיע כאן ' + RR_REMIND_DAYS + ' ימים אחרי הבקשה, אם לא זוהתה ביקורת שלו.'
-    : all.length ? 'אין הזמנות להצגה בסינון הזה.' : 'אין כרגע הזמנות שסופקו ב-30 הימים האחרונים.') + '</div>';
+    : all.length ? 'אין הזמנות להצגה בסינון הזה.' + (yh ? ' ' + yh + '.' : '') : 'אין כרגע הזמנות שסופקו ב-30 הימים האחרונים.') + '</div>';
   const sh = rrShared(), nPh = new Set(rows.map(r => r.p9)).size;
   const nOk = rows.filter(r => rrDv(r).ok).length, hasDv = rows.some(r => rrDv(r).has);
   const sum = '<div class="rr-sum" id="rr-sum">' + (RR_F.st === 'remind'
     ? rows.length + ' הזמנות · ' + nPh + ' מספרי טלפון · הבקשה יצאה לפני ' + RR_REMIND_DAYS + ' ימים או יותר ולא זוהתה ביקורת · כל מספר מקבל תזכורת אחת'
     : rows.length + ' הזמנות · ' + nPh + ' מספרי טלפון · כל מספר מקבל בקשה אחת'
-    + (hasDv ? ' · ל-' + nOk + ' יש אישור שהלקוח קיבל' : '')) + '</div>';
+    + (hasDv ? ' · ל-' + nOk + ' יש אישור שהלקוח קיבל' : ''))
+    + (D.on ? ' · <span id="rr-sumd">נשלחו ' + rrDatesTxt(D) + '</span>' : '')
+    + (yh ? ' · <span id="rr-yh">' + yh + '</span>' : '') + '</div>';
   if(!wideScreen()) return sum + rows.map(r => rrRowM(r, sh)).join('');
   const pick = rows.filter(rrPickable), cbCol = ed && pick.length > 0;
   const head = '<thead><tr>' + (cbCol ? '<th class="rr-cbc"><input type="checkbox" id="rr-all" aria-label="בחירת כל מי שאפשר לשלוח לו"' + (rrAllOn(rows) ? ' checked' : '') + ' onchange="rrPickAll(this.checked)"></th>' : '')
@@ -37991,7 +38101,7 @@ function rrTable(){
   return sum + '<div class="tbl-wrap"><table class="tbl" data-gs="own">' + head + '<tbody>' + body + '</tbody></table></div>';
 }
 /* "בחירת הכל" אינה כוללת מי שייתכן שכבר כתב ביקורת — אותו בוחרים ביד */
-function rrBulkOk(r){ return rrPickable(r) && !r.rv_name; }
+function rrBulkOk(r){ return rrPickable(r) && !r.rv_name && (RR_F.st === 'remind' || !rrYhWait(r)); }
 function rrAllOn(rows){ const p = rows.filter(rrBulkOk); return p.length > 0 && p.every(r => RR_SEL.has(r.id)); }
 function rrChips(){
   const el = $('#rr-chips'); if(!el) return;
@@ -38094,6 +38204,22 @@ function rrSelSync(){
 }
 window.rrSetFilter = k => { if(k === 'gone' || (k === 'remind') !== (RR_F.st === 'remind')) RR_SEL.clear(); RR_F.st = k; rrPaint(); };
 window.rrToggleConf = () => { RR_F.conf = !RR_F.conf; rrPaint(); };
+/* 7.88.0 — טווח תאריכי השליחה. לשורה שלא נשלחה אין תאריך, ולכן בחירה בשבב "לא נשלחו" עוברת ל"נשלחו".
+   הבחירה מתנקה: מה שסומן עלול לצאת מהתצוגה, ושליחה למי שאינו על המסך היא הפתעה. */
+function rrDatesSync(){
+  const D = rrDates(), f = $('#rr-from'), t = $('#rr-to'), x = $('#rr-dx'), w = $('#rr-dts');
+  if(f && f.value !== (RR_F.from || '')) f.value = RR_F.from || '';
+  if(t && t.value !== (RR_F.to || '')) t.value = RR_F.to || '';
+  if(x) x.classList.toggle('hidden', !D.on);
+  if(w) w.classList.toggle('on', D.on);
+}
+window.rrSetDate = (k, v) => {
+  if(k !== 'from' && k !== 'to') return;
+  RR_F[k] = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(String(v || '')) ? String(v) : '';
+  if(rrDates().on && RR_F.st === 'new') RR_F.st = 'sent';
+  RR_SEL.clear(); rrDatesSync(); rrPaint();
+};
+window.rrClearDates = () => { RR_F.from = ''; RR_F.to = ''; RR_SEL.clear(); rrDatesSync(); rrPaint(); };
 window.rrPick = (id, on) => { if(on) RR_SEL.add(id); else RR_SEL.delete(id); rrSelSync(); };
 window.rrPickAll = on => { rrRowsView().filter(rrBulkOk).forEach(r => { if(on) RR_SEL.add(r.id); else RR_SEL.delete(r.id); }); rrSelSync(); };
 window.rrClearSel = () => { RR_SEL.clear(); rrSelSync(); };
@@ -38123,6 +38249,8 @@ window.rrRowClick = (ev, id) => {
 };
 function rrWire(){
   const q = $('#rr-q');
+  ['from', 'to'].forEach(k => { const el = $('#rr-' + k);
+    if(el && !el._rrWired){ el._rrWired = true; el.addEventListener('change', () => rrSetDate(k, el.value)); } });
   if(q && !q._rrWired){ q._rrWired = true; q.addEventListener('input', () => { RR_F.q = q.value; rrListPaint(); });
     window.addEventListener('resize', () => { clearTimeout(RR_FIT_T); RR_FIT_T = setTimeout(() => { if(CUR_TAB === 'revreq') rrListPaint(); }, 150); }); }
 }
@@ -38301,7 +38429,7 @@ window.rrEditName = async function(order, ev){
   if(!RR || !RR.can_send || RR_BUSY) return;
   const row = (RR.rows || []).find(r => r.order_number === order);
   if(!row || !rrNameEd(row)) return;
-  const v = await sysPrompt('השם שיופיע אחרי "היי" בהודעה ל' + (row.customer_name || 'לקוח') + '.\nשם פרטי אחד, בלי רווחים. שדה ריק מחזיר את השם האוטומטי.',
+  const v = await sysPrompt('השם שיופיע אחרי "היי" ' + (row.ob_id && !rrSendable(row) ? 'בתזכורת' : 'בהודעה') + ' ל' + (row.customer_name || 'לקוח') + '.\nשם פרטי אחד, בלי רווחים. שדה ריק מחזיר את השם האוטומטי.',
     row.first_name || '', { ok:'שמירה' });
   if(v === null) return;
   const nm = String(v).trim();

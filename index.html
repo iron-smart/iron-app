@@ -3316,6 +3316,13 @@ td.lb-today .lb-dt{ background-color:transparent; }
         border-radius:var(--r-pill); background:#fff; cursor:pointer; color:var(--navy); font-family:inherit; }
 .cu-ab:hover{ background:#f2f6fa; border-color:#c7e0f7; }
 .cu-ln:hover{ background-color:#d8ebff; }
+/* 7.89.1 — custpl2: "לא מסווג" = חסר (מקווקו, בלי מילוי) · נקודת המחירון בצבע הסוג. */
+.pill.cu-unseg{ background:transparent; border:1px dashed var(--line-strong); color:var(--ink-3); }
+/* ⚠️ mdPill ו-cu-unseg נושאים מסגרת 1px ⇒ 26px מול 24 של שבב הסטטוס באותה שורה (polishtest: 20–25).
+   הריפוד האנכי יורד ב-1px לכל צד, והשבבים בשורה באותו גובה. */
+#customers-list td.cu-seg .pill{ padding-block:3px; }
+.cpl-nm{ display:inline-flex; align-items:center; gap:var(--sp-1h); white-space:nowrap; }
+.cpl-dot{ display:inline-block; width:8px; height:8px; flex:0 0 8px; border-radius:50%; background:var(--line-strong); }
 #dealSheet .tk-lnk{ display:flex; align-items:center; gap:var(--sp-2); flex-wrap:wrap; }
 /* 6.196.0 — עמודת שם העסקה: אותה שלישייה של td.tk-nm, אחרת שם ארוך מותח את הטבלה. */
 #deals-list td.dl-nm{ width:220px; min-width:220px; max-width:220px; text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -4672,7 +4679,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.89.0</div>
+      <div class="ver">גרסה 7.89.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4821,7 +4828,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="custpl-2026-11-25a">גרסה 7.89.0</div>
+    <div class="side-foot" title="custpl2-2026-11-25a">גרסה 7.89.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -16156,7 +16163,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'custpl-2026-11-25a';
+const BUILD_ID = 'custpl2-2026-11-25a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -27375,10 +27382,34 @@ function cplCell(v){
   if(v) return esc(v);
   return '<span class="lb-na" title="' + (CPL_BY ? '' : (CPL_ERR ? 'המחירונים מפריוריטי לא נטענו' : 'טוען מפריוריטי…')) + '">·</span>';
 }
+/* 7.89.1 — custpl2: צבעים (רומן, 25/11/2026: "אם צריך לסוג לקוח ולמחירון תוסיף צבעים").
+   🔴 הצבעים **אינם חדשים**: צבע הסוג = צבע סוג הלקוח בבורד הלידים (LEAD_TYPE_COLORS) של המחירון שממנו הוא נגזר.
+      ליד "עסקי" ירוק ⇒ לקוח "עסקי" ירוק; ליד "בסיס" אפור ⇒ לקוח "פרטי" אפור. כך אין שתי שפות צבע לאותו מושג.
+   ⚠️ "לא מסווג" = שבב מקווקו ריק ("חסר"), לא כתום — כתום הוא כבר "מסחרי". "אתר"/"אחר" — ניטרלי (mdPill בלי צבע).
+   המחירון = נקודה + שם: הוא פירוט של הסוג, ושבב שני באותו צבע בשורה היה רעש. */
+function cuSegColors(){
+  const o = {};
+  Object.keys(CU_SEG_OF).forEach(pl=>{ const s = CU_SEG_OF[pl]; if(!o[s] && LEAD_TYPE_COLORS[pl]) o[s] = LEAD_TYPE_COLORS[pl]; });
+  return o;
+}
+function cuSegPill(c){
+  const s = custSeg(c);
+  if(!s) return cplCell('');
+  if(s === 'לא מסווג') return '<span class="pill cu-unseg" title="ללקוח אין מחירון בפריוריטי">לא מסווג</span>';
+  return mdPill(s, cuSegColors());
+}
+function cuPlDot(pl){
+  const col = pl ? cuSegColors()[CU_SEG_OF[pl]] : '';
+  return '<span class="cpl-dot"' + (col ? ' style="background:' + col + '"' : '') + '></span>';
+}
+function cuPlTxt(c){
+  const pl = cplOf(c);
+  return pl ? '<span class="cpl-nm">' + cuPlDot(pl) + esc(pl) + '</span>' : cplCell('');
+}
 const CU_COLS = [
   ['#','rownum'], ['לקוח','srt'], ["מס' פריוריטי",'srt'], ['טלפון',''],
   /* 6.197.0 — 'פניות' (כמו 'פנייה מקורית' בעסקאות); עמודת הפעולות קיבלה כותרת. */
-  ['עיר / כתובת','srt'], ['פניות','srt'], ['סוג','srt'], ['מחירון','srt'], ['סטטוס','srt'],
+  ['עיר / כתובת','srt'], ['פניות','srt'], ['סוג לקוח','srt'], ['מחירון','srt'], ['סטטוס','srt'],
   /* 6.253.0 — תאריך הפתיחה בפריוריטי (רומן, 13/10/2026). ⚠️ לפני 'פעולות', כדי שכל האינדקסים
      הקיימים ב-CU_KEY לא יזוזו. */
   ['נפתח','srt'],
@@ -27509,8 +27540,8 @@ function custTable(list){
     <td dir="ltr">${phCell(c.phone)}</td>
     <td>${esc(c.city||'')}${c.address?`<div class="note-preview" title="${esc(c.address)}">${esc(String(c.address).slice(0,22))}</div>`:''}</td>
     <td data-sort="${ld.length}">${ldCell}</td>
-    <td class="cu-seg">${cplCell(custSeg(c))}</td>
-    <td class="cu-pl">${cplCell(cplOf(c))}</td>
+    <td class="cu-seg">${cuSegPill(c)}</td>
+    <td class="cu-pl">${cuPlTxt(c)}</td>
     <td><span class="pill ${c.status==='פעיל'?'st-rel':(c.status==='לא פעיל'?'st-no':'st-def')}">${esc(c.status||'—')}</span></td>
     <td class="nowrap">${cuOpenedCell(c)}</td>
     <td class="cu-act">${cuRowActs(c)}</td>
@@ -27592,10 +27623,12 @@ window.openCust = async (id)=>{
            נשאר — הוא צרכן נפרד.
            ⚠️ ו-cu-pl-slot עבר ל-span4 ולא נשאר span2: בלי זה נשארו 10
            יחידות בגריד של 4 עמודות, כלומר שני תאים ריקים. -->
-      <div><label>אזור</label>${roIn(c.region||'')}</div>
+      <!-- 7.89.1 — "סוג לקוח" ו"מחירון" זה לצד זה (היה: מחירון בשורה מלאה). "אזור" מלא אצל 112 מתוך 4,612
+           לקוחות (2.4%, נמדד 25/11/2026) ⇒ עבר לסוף הכתובת כשהוא קיים, במקום תא ריק ב-97.6% מהכרטיסים.
+           2 שורות מלאות (4+4) במקום 3; cu-pl-slot מקבל "מחירון" מיד מהמראה, והקישור מגיע מ-onCard כמו קודם. -->
       <div id="cu-seg" data-cpl-pid="${esc(c.priority_id||'')}" title="לפי המחירון של הלקוח בפריוריטי"><label>סוג לקוח</label>${roIn(custSegTxt(c))}</div>
-      <div class="span2"><label>כתובת</label>${roIn([c.address,c.city].filter(Boolean).join(', '))}</div>
-      <div class="span4" id="cu-pl-slot"></div>
+      <div id="cu-pl-slot"><label>מחירון</label>${roIn(cplOf(c))}</div>
+      <div class="span2"><label>כתובת</label>${roIn([c.address,c.city].filter(Boolean).join(', ') + (c.region ? ' · אזור ' + c.region : ''))}</div>
       ${c.logistics_notes?`<div class="span4"><div class="note">לוגיסטיקה: ${esc(c.logistics_notes)}</div></div>`:''}
 
       <div class="form-sep">משימות ופגישות</div>
@@ -39938,7 +39971,7 @@ boot();
             pldes = pr.data && pr.data.pldes;
           }
         }
-        var label = assigned ? (pldes || plname) : 'מחירון בסיס (ברירת מחדל)';
+        var label = assigned ? (pldes || plname) : 'לא שויך — מחירי בסיס';   /* 7.89.1 — היה "מחירון בסיס (ברירת מחדל)", שנראה כמו שיוך */
         var target = assigned ? plname : 'בסיס';
         var lnk = '<a href="#" onclick="openPLBrowser(\'' + plEsc(target).replace(/'/g, "\\'") + '\');return false">' + plEsc(label) + '</a>';
         /* 6.146.0 — משבצת מפורשת בגריד. העוגן הישן היה ".row הראשון
@@ -39946,7 +39979,7 @@ boot();
         var slot = sheet.querySelector('#cu-pl-slot');
         if(slot && slot.dataset.cust && slot.dataset.cust !== String(id)) return;
         if(slot){ slot.dataset.plDone = '1';
-                  slot.innerHTML = '<label>מחירון</label><div class="tk-lnk">' + lnk + '</div>'; }
+                  slot.innerHTML = '<label>מחירון</label><div class="tk-lnk">' + (assigned && typeof cuPlDot === 'function' ? cuPlDot(plname) : '') + lnk + '</div>'; }
         else {
           var row = document.createElement('div');
           row.className = 'row'; row.id = 'cust-pl-row';

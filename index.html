@@ -4679,7 +4679,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.89.1</div>
+      <div class="ver">גרסה 7.90.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4828,7 +4828,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="custpl2-2026-11-25a">גרסה 7.89.1</div>
+    <div class="side-foot" title="plmult-2026-11-25a">גרסה 7.90.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -16163,7 +16163,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'custpl2-2026-11-25a';
+const BUILD_ID = 'plmult-2026-11-25a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -16411,6 +16411,9 @@ const PV_CSS = `
 #tab-prc .pv-sub2{ font-weight:400; color:var(--ink-3); font-size:var(--fs-2xs); display:block; margin-top:var(--sp-0h) }
 #tab-prc .pv-cmpmain{ font-weight:700 }
 #tab-prc .pv-cmpsub{ font-size:var(--fs-xs); color:var(--ink-3); margin-top:1px }
+#tab-prc .pv-cmpnx{ font-size:var(--fs-2xs); color:var(--ink-3); margin-top:var(--sp-0h); white-space:nowrap; line-height:1.5 }
+#tab-prc .pv-cmpnx b{ color:var(--ink-1); font-size:var(--fs-xs); font-weight:700 }
+#tab-prc .pv-cmpnx .sep{ color:var(--line); margin-inline:var(--sp-1) }
 #tab-prc .pv-cmpmg{ font-size:var(--fs-xs); color:var(--ink-2); margin-top:var(--sp-0h); display:inline-flex; align-items:center; gap:var(--sp-1); border-radius:6px; padding:1px var(--sp-1h); line-height:1.5 }
 #tab-prc .pv-cmpmg.ed{ cursor:pointer; background:#eef2f6; border:1px solid var(--line) }
 #tab-prc .pv-cmpmg.ed:hover{ background:#dce8f2; border-color:var(--navy) }
@@ -18751,7 +18754,35 @@ function discSummary(rows, ed){
     : '';
   return thr+
     '<div class="pv-hint" style="margin-top:var(--sp-1h)" title="הסיכום מחושב על השורות שבתצוגה הנוכחית, ליחידה אחת מכל מק״ט ובלי לשקלל כמויות מכירה.">'+
-    'ההנחה היא אחוז ממחיר האתר <b>שלנו</b> לפני מע״מ, והיא שקובעת את מחיר המחירון.</div>';
+    'ההנחה היא אחוז ממחיר האתר <b>שלנו</b> לפני מע״מ, והיא שקובעת את מחיר המחירון. '+
+    'בכל תא מוצגים גם ההנחה ממחיר האתר ו<b>המכפיל</b> — מחיר לפני מע״מ ÷ עלות בש״ח לפני העמסה.</div>';
+}
+/* ---------- הנחה ומכפיל בכל תא (7.90.0) ----------
+   רומן (25/11/2026): "אני רוצה לדעת כמה אחוז הנחה השולי רווח האלו מהווים" ו"איך
+   אני יכול לדעת את המכפלה של הרווח" — בכל המחירונים; המכפיל "לשקל לפני העמסה".
+   תצוגה בלבד, נגזרת מ-finalEx — המחיר שבאמת מוצג בתא. הבסיס הוא discBase ולא
+   finalEx של 'אתר', כי זה הבסיס שעליו מוחלת ההנחה בעסקי: כך במחירון שמונע מהנחה
+   המספר כאן זהה בדיוק לאחוז שהוקלד, ובמחירון שמונע ממרווח הוא התוצאה.
+   העלות — costBefore בשער הפועל, כמו finalMargin; רצפת השער היא החלטת תמחור ולא
+   עלות. מחיר מעל מחיר האתר (מרווח דרוס גבוה) נכתב במפורש ולא כ"הנחה" שלילית. */
+function cmpNxLine(sku, grp, ex){
+  if(ex==null || !(ex>0)) return '';
+  const pc1 = n=> (n*100).toLocaleString('he-IL',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
+  const cb = costBefore(sku);
+  const b  = discBase(sku);
+  let dTxt = '';
+  if(grp===DISC_BASE_GRP) dTxt = 'בסיס';
+  else if(b!=null && b>0){
+    const d = 1 - ex/b;
+    dTxt = (d < -0.0005)? 'מעל האתר '+pc1(-d) : 'הנחה '+pc1(Math.max(d,0));
+  }
+  const x = (cb!=null && cb>0)? ex/cb : null;
+  if(!dTxt && x==null) return '';
+  const ttl = (x==null? 'אין עלות — אין מכפיל' : 'מכפיל = '+fmt(ex)+' ₪ לפני מע״מ ÷ עלות בש״ח לפני העמסה '+fmt(cb)+' ₪')+
+              ((grp===DISC_BASE_GRP || b==null)? '' : ' · ההנחה ממחיר האתר '+fmt(b)+' ₪ לפני מע״מ');
+  return '<div class="pv-cmpnx" title="'+esc(ttl)+'">'+(dTxt? '<span>'+dTxt+'</span>' : '')+
+    ((dTxt && x!=null)? '<span class="sep">·</span>' : '')+
+    (x==null? '' : '<b dir="ltr">×'+fmt(x,2)+'</b>')+'</div>';
 }
 function cmpCell(p, grp, ed){
   /* רומן (14/08/2026): "בתצוגת השוואת כולם אני רוצה משבצת ריקה, שלא יראו
@@ -18790,7 +18821,7 @@ function cmpCell(p, grp, ed){
   const pinc = (grp===DISC_BASE_GRP)? finalInc(p.sku, grp) : null;
   const incLine = (pinc==null)? '' : '<div class="pv-cmpsub pv-fold">'+fmt(pinc)+' ₪ כולל</div>';
   const chLine  = (pinc==null)? '' : charmLine(p.sku, pinc);
-  return '<td class="pv-num"'+(pinc!=null? ' title="כולל מע״מ: '+fmt(pinc)+' ₪"' : '')+'>'+price+incLine+mgCell+chLine+'</td>';
+  return '<td class="pv-num"'+(pinc!=null? ' title="כולל מע״מ: '+fmt(pinc)+' ₪"' : '')+'>'+price+incLine+mgCell+cmpNxLine(p.sku, grp, ex)+chLine+'</td>';
 }
 
 /* ---------- תג מרווח אפקטיבי (רצפות) ---------- */

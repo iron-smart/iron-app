@@ -4672,7 +4672,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.88.2</div>
+      <div class="ver">גרסה 7.89.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4821,7 +4821,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="meethours-2026-11-25a">גרסה 7.88.2</div>
+    <div class="side-foot" title="custpl-2026-11-25a">גרסה 7.89.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -16156,7 +16156,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'meethours-2026-11-25a';
+const BUILD_ID = 'custpl-2026-11-25a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -27282,7 +27282,7 @@ function custRow(c){
   const st = c.status==='פעיל'?'st-rel':(c.status==='לא פעיל'?'st-no':'st-def');
   return `<div class="lead" onclick="openCust('${c.id}')">
     <div><div class="nm">${esc(c.name)}</div>
-    <div class="meta">${esc(c.phone||'')} · ${esc(c.priority_id||'ללא מספר פריוריטי')}</div></div>
+    <div class="meta">${esc(c.phone||'')} · ${esc(c.priority_id||'ללא מספר פריוריטי')}${custSeg(c)?' · '+esc(custSeg(c)):''}</div></div>
     <span class="pill ${st}">${esc(c.status||'—')}</span></div>`;
 }
 /* ═══ בורד הלקוחות (6.124.0) ═════════════════════════════════════
@@ -27298,6 +27298,83 @@ function custRow(c){
          · logistics_notes · region) הם היחידים שהסנכרון לעולם אינו נוגע
          בהם, ולכן הם היחידים שבטוח יהיה לפתוח לעריכה בעתיד.
       יש `assert` בבנייה שאוסר כתיבה כלשהי לטבלה. (הועלה בסקירה מקבילה.) */
+/* ===== 7.89.0 — custpl: סוג לקוח ומחירון מפריוריטי =====
+   רומן, 25/11/2026: "למה אין לי במערכת במסך לקוחות את סיווג הלקוח?" ⇒ "כן תחבר ישר לפרודקשן".
+   🔴 עד כאן "סוג"/"מחירון" קראו core.customers.customer_type/price_group — שרידי מאנדיי שאיש אינו מעדכן
+      (נמדד: 2,361 לקוחות עם מחירון בפריוריטי ומסך ריק). מקור האמת: ord.customer_price_lists (מראת CUSTPLIST,
+      pricelist-sync) — אותו מקור של ניתוח המכירות.
+   🔴 CU_SEG_OF = מראה מילולית של crm.customer_segment (פונקציות-מסד/customer_segment.20261125.sql);
+      custpltest משווה ביניהם. שינוי באחד ⇒ גם בשני.
+   ⚠️ הטעינה עצלה ולא ב-Promise.all של loadLeads: הוספה שם מסיטה את כל המפרק (מלכודת הטוען). */
+const CU_SEG_OF = { 'בסיס':'פרטי', 'פ.ע':'פרטי-עסקי', 'עסקי':'עסקי', 'ארגוני':'ארגוני', 'מוסדי':'מוסדי',
+  'מסחרי':'מסחרי', 'ה.פ':'מסחרי', 'ספייס':'מסחרי', 'פיט':'מסחרי', 'סטונאי':'סיטונאי' };
+const CU_SEGS = new Set([...Object.values(CU_SEG_OF), 'אתר', 'לא מסווג', 'אחר']);
+const CPL_TTL = 5*60*1000;
+let CPL_BY = null, CPL_AT = 0, CPL_P = null, CPL_ERR = '', CPL_ERR_AT = 0;
+const cuIsWP = c => /^wp/i.test(String((c && c.priority_id) || ''));
+function cplOf(c){
+  if(!CPL_BY || !c || c.priority_id == null) return '';
+  return CPL_BY.get(String(c.priority_id).trim()) || '';
+}
+/* '' = עוד לא נטען (או נכשל). אחרת תמיד ערך: 'אתר' · 'לא מסווג' · סוג · 'אחר'. */
+function custSeg(c){
+  if(!c) return '';
+  if(cuIsWP(c)) return 'אתר';
+  if(!CPL_BY) return '';
+  const pl = cplOf(c);
+  if(!pl.trim()) return 'לא מסווג';
+  return CU_SEG_OF[pl] || 'אחר';
+}
+function custSegTxt(c){
+  if(!c) return '';
+  if(!CPL_BY && !cuIsWP(c)){ cplEnsure(); return CPL_ERR ? '' : 'טוען…'; }
+  return custSeg(c);
+}
+const cplSig = m => JSON.stringify([...m]);
+/* 🔴 בלי לולאה: אחרי כשל אין ניסיון חוזר 30 שניות, ולכן הציור שאחרי הכשל (שקורא שוב ל-cplEnsure) נעצר. */
+function cplEnsure(){
+  if(CPL_P) return CPL_P;
+  const now = Date.now();
+  if(CPL_BY && now - CPL_AT < CPL_TTL) return Promise.resolve(CPL_BY);
+  if(CPL_ERR && now - CPL_ERR_AT < 30000) return Promise.resolve(CPL_BY);
+  CPL_P = (async()=>{
+    let changed = false;
+    try{
+      const r = await sb.schema('ord').from('customer_price_lists').select('customer_number,plname').limit(10000);
+      if(!r || r.error || !Array.isArray(r.data)) throw new Error((r && r.error && r.error.message) || 'אין תשובה');
+      const m = new Map();
+      r.data.forEach(x=>{ if(x && x.customer_number != null) m.set(String(x.customer_number).trim(), String(x.plname || '')); });
+      changed = !CPL_BY || !!CPL_ERR || cplSig(m) !== cplSig(CPL_BY);
+      CPL_BY = m; CPL_AT = Date.now(); CPL_ERR = '';
+      /* מחירון שנשמר בברירת המחדל ואינו קיים עוד — יורד, אחרת הוא מסנן החוצה הכל בלי שבורר ייראה מסומן. */
+      if(CU_F.price && ![...m.values()].includes(CU_F.price)){ CU_F.price = ''; changed = true; }
+    }catch(e){
+      console.error('cpl', e);
+      changed = !CPL_ERR;
+      CPL_ERR = String((e && e.message) || e) || 'שגיאה'; CPL_ERR_AT = Date.now();
+    }finally{ CPL_P = null; }
+    if(changed) cplRepaint();
+    return CPL_BY;
+  })();
+  return CPL_P;
+}
+function cplRepaint(){
+  try{
+    const t = document.getElementById('tab-customers');
+    if(t && !t.classList.contains('hidden')) renderCustomers();
+  }catch(e){ console.error('cpl repaint', e); }
+  try{
+    document.querySelectorAll('[data-cpl-pid]').forEach(el=>{
+      const inp = el.querySelector('input'); if(!inp) return;
+      const v = custSegTxt({ priority_id: el.getAttribute('data-cpl-pid') });
+      inp.value = v; inp.title = v;
+    });
+  }catch(e){ console.error('cpl repaint', e); }
+}
+function cplCell(v){
+  if(v) return esc(v);
+  return '<span class="lb-na" title="' + (CPL_BY ? '' : (CPL_ERR ? 'המחירונים מפריוריטי לא נטענו' : 'טוען מפריוריטי…')) + '">·</span>';
+}
 const CU_COLS = [
   ['#','rownum'], ['לקוח','srt'], ["מס' פריוריטי",'srt'], ['טלפון',''],
   /* 6.197.0 — 'פניות' (כמו 'פנייה מקורית' בעסקאות); עמודת הפעולות קיבלה כותרת. */
@@ -27328,7 +27405,7 @@ const CU_VIEW_ST = { active:'פעיל', temp:'זמני', inactive:'לא פעיל
 const CU_KEY = {
   1:k=>k.name||'', 2:k=>k.priority_id||'', 4:k=>k.city||'',
   5:k=>{ const n=custLeads(k).length; return n?String(n).padStart(6,'0'):''; },
-  6:k=>k.customer_type||'', 7:k=>k.price_group||'', 8:k=>k.status||'', 9:k=>k.opened_at||''
+  6:k=>custSeg(k), 7:k=>cplOf(k), 8:k=>k.status||'', 9:k=>k.opened_at||''   /* 7.89.0 — מפריוריטי */
 };
 window.cuSortBy = i=>{ CU_SORT = (CU_SORT[0]===i) ? [i,-CU_SORT[1]] : [i,1]; renderCustomers(); };
 function cuOrder(list){ return ordBy(list, CU_KEY[CU_SORT[0]]||null, CU_SORT[1],
@@ -27358,8 +27435,10 @@ function cuInitDef(){
     /* ערך שאינו קיים עוד יורד — אחרת הוא מסנן החוצה כל שורה בלי שאף בורר ייראה מסומן. */
     const has = f => new Set((CUSTS||[]).map(f).filter(Boolean));
     if(CU_F.status && !has(k=>k.status).has(CU_F.status)) CU_F.status='';
-    if(CU_F.type   && !has(k=>k.customer_type).has(CU_F.type)) CU_F.type='';
-    if(CU_F.price  && !has(k=>k.price_group).has(CU_F.price)) CU_F.price='';
+    /* 7.89.0 — סוג נבדק מול רשימת הסוגים הקבועה; מחירון — מול המראה כשהיא טעונה (ואחרת ב-cplEnsure).
+       ערך ישן ממאנדיי ("מחירון מאמנים", "בסיס" כסוג) יורד כאן. */
+    if(CU_F.type   && !CU_SEGS.has(CU_F.type)) CU_F.type='';
+    if(CU_F.price  && CPL_BY && ![...CPL_BY.values()].includes(CU_F.price)) CU_F.price='';
     if(CU_F.city   && !has(k=>k.city).has(CU_F.city)) CU_F.city='';
     if(!['','yes','no'].includes(CU_F.leads)) CU_F.leads='';
   }
@@ -27376,8 +27455,8 @@ function cuViewList(){
 function cuApplyF(list){
   return list.filter(k=>{
     if(CU_F.status && (k.status||'')!==CU_F.status) return false;
-    if(CU_F.type   && (k.customer_type||'')!==CU_F.type) return false;
-    if(CU_F.price  && (k.price_group||'')!==CU_F.price) return false;
+    if(CU_F.type   && custSeg(k)!==CU_F.type) return false;   /* 7.89.0 — מפריוריטי */
+    if(CU_F.price  && cplOf(k)!==CU_F.price) return false;
     if(CU_F.city   && (k.city||'')!==CU_F.city) return false;
     if(CU_F.leads==='yes' && !custLeads(k).length) return false;
     if(CU_F.leads==='no'  &&  custLeads(k).length) return false;
@@ -27393,14 +27472,16 @@ function cuChips(){
     Object.keys(CU_VIEW_ST).map(v=>ch(v,CU_VIEW_ST[v],CUSTS.filter(k=>k.status===CU_VIEW_ST[v]).length)).join('')+
     ch('leads','עם פנייה',wl);
 }
+/* 7.89.0 — הערך הנבחר נשאר באפשרויות גם לפני שהמראה נטענה — אחרת הבורר נראה "הכל" בזמן שהוא מסנן. */
+const cuWithCur = (arr,k) => (CU_F[k] && !arr.includes(CU_F[k])) ? [...arr, CU_F[k]] : arr;
 function renderCuFilters(){
   const box=document.getElementById('cu-filters'); if(!box) return;
   const opt=(v,lbl,cur)=>`<option value="${esc(v)}" ${String(cur)===String(v)?'selected':''}>${esc(lbl)}</option>`;
   const sel=(k,ph,pairs)=>`<select class="lf-sel ${CU_F[k]?'lf-on':''}" onchange="cuFilter('${k}',this.value)"><option value="">${ph}</option>${pairs.map(([v,l])=>opt(v,l,CU_F[k])).join('')}</select>`;
   const uniq=f=>[...new Set(CUSTS.map(f).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),'he'));
   box.innerHTML =
-    sel('type','סוג לקוח — הכל',uniq(k=>k.customer_type).map(s=>[s,s]))+
-    sel('price','מחירון — הכל',uniq(k=>k.price_group).map(s=>[s,s]))+
+    sel('type','סוג לקוח — הכל',cuWithCur(uniq(k=>custSeg(k)),'type').map(s=>[s,s]))+
+    sel('price','מחירון — הכל',cuWithCur(uniq(k=>cplOf(k)),'price').map(s=>[s,s]))+
     sel('city','עיר — הכל',uniq(k=>k.city).map(s=>[s,s]))+
     sel('leads','פנייה — הכל',[['yes','עם פנייה'],['no','ללא פנייה']])+
     (cuFilterActive()?`<button type="button" class="lf-clear" onclick="cuFilterClear()">✕ ניקוי סינון</button>`:'')+
@@ -27428,8 +27509,8 @@ function custTable(list){
     <td dir="ltr">${phCell(c.phone)}</td>
     <td>${esc(c.city||'')}${c.address?`<div class="note-preview" title="${esc(c.address)}">${esc(String(c.address).slice(0,22))}</div>`:''}</td>
     <td data-sort="${ld.length}">${ldCell}</td>
-    <td>${esc(c.customer_type||'')||'<span class="lb-na">·</span>'}</td>
-    <td>${esc(c.price_group||'')||'<span class="lb-na">·</span>'}</td>
+    <td class="cu-seg">${cplCell(custSeg(c))}</td>
+    <td class="cu-pl">${cplCell(cplOf(c))}</td>
     <td><span class="pill ${c.status==='פעיל'?'st-rel':(c.status==='לא פעיל'?'st-no':'st-def')}">${esc(c.status||'—')}</span></td>
     <td class="nowrap">${cuOpenedCell(c)}</td>
     <td class="cu-act">${cuRowActs(c)}</td>
@@ -27438,6 +27519,14 @@ function custTable(list){
 }
 function renderCustomers(){
   cuInitDef(); cuChips(); renderCuFilters(); lfWrapSync('cu-filters');
+  cplEnsure();   /* 7.89.0 — סוג ומחירון מפריוריטי; בסיום הטעינה cplRepaint מצייר שוב */
+  if(!CPL_BY && (CU_F.type||CU_F.price)){
+    /* בלי המראה אין במה לסנן — רשימה ריקה הייתה נראית "אין לקוחות", ורשימה מלאה — כאילו הסינון חל. */
+    paintKeep('#customers-list', '<div class="empty">' + (CPL_ERR
+      ? 'המחירונים מפריוריטי לא נטענו, ולכן אי אפשר לסנן לפי סוג או מחירון. נקו את הסינון או רעננו את הדף.'
+      : 'טוען את הסיווג מפריוריטי…') + '</div>');
+    return;
+  }
   const q=($('#custSearch').value||'').trim().toLowerCase();   /* 7.62.3 — לא תלוי רישיות (רומן, 04/11/2026: "vic" לא מצא את Victor) */
   const base = cuApplyF(cuViewList());
   if(q){
@@ -27504,7 +27593,7 @@ window.openCust = async (id)=>{
            ⚠️ ו-cu-pl-slot עבר ל-span4 ולא נשאר span2: בלי זה נשארו 10
            יחידות בגריד של 4 עמודות, כלומר שני תאים ריקים. -->
       <div><label>אזור</label>${roIn(c.region||'')}</div>
-      <div><label>סוג לקוח</label>${roIn(c.customer_type||'')}</div>
+      <div id="cu-seg" data-cpl-pid="${esc(c.priority_id||'')}" title="לפי המחירון של הלקוח בפריוריטי"><label>סוג לקוח</label>${roIn(custSegTxt(c))}</div>
       <div class="span2"><label>כתובת</label>${roIn([c.address,c.city].filter(Boolean).join(', '))}</div>
       <div class="span4" id="cu-pl-slot"></div>
       ${c.logistics_notes?`<div class="span4"><div class="note">לוגיסטיקה: ${esc(c.logistics_notes)}</div></div>`:''}
@@ -31748,7 +31837,7 @@ window.dlCustCells = (lead, cust, contact, d)=>{
        ⇒ כתובת (חצי שורה) ועיר בתאים נפרדים, ו"(כרטיס הלקוח)" עבר לריחוף — .note בתוך label צויר כקופסה אפורה. */
     `<div class="span2" id="dl-cc-ad" title="מכרטיס הלקוח"><label>כתובת חיוב</label>${roIn((cust&&cust.address)||'')}</div>`,
     `<div id="dl-cc-ac" title="מכרטיס הלקוח"><label>עיר</label>${roIn((cust&&cust.city)||'')}</div>`,
-    `<div id="dl-cc-ty"><label>סוג לקוח</label>${roIn((cust&&cust.customer_type)||'')}</div>`,
+    `<div id="dl-cc-ty"${cust?` data-cpl-pid="${esc(cust.priority_id||'')}"`:''} title="לפי המחירון של הלקוח בפריוריטי"><label>סוג לקוח</label>${roIn(custSegTxt(cust))}</div>`,   /* 7.89.0 */
     dlShipHtml(d)
   ];
 };

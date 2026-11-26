@@ -4701,7 +4701,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.91.0</div>
+      <div class="ver">גרסה 7.91.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4850,7 +4850,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="salesdrill-2026-11-26a">גרסה 7.91.0</div>
+    <div class="side-foot" title="payrem-2026-11-26a">גרסה 7.91.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -16185,7 +16185,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'salesdrill-2026-11-26a';
+const BUILD_ID = 'payrem-2026-11-26a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -32642,12 +32642,14 @@ function dlPayDraw(id){
     const gx = (!cus && b.grp != null) ? dlPpParts(S, b.grp) : [i];
     const part = gx.length > 1, rem = part && gx[gx.length-1] === i, edp = part && !rem;
     const bad = part && !(Number(b.pct) > 0 && Number(b.pct) < (dlPpGpct(S, b.grp) || 0));
-    const pct = cus
+    /* 7.91.1 — חלוקה מותאמת: האחרון הוא היתרה (dlPpCusRem) — אחוז וסכום כטקסט; תשלום יחיד = 100%. */
+    const crem = cus && S.beats.length > 1 && i === S.beats.length - 1, cone = cus && S.beats.length === 1;
+    const pct = (cus && !crem && !cone)
       ? `%<input class="dl-pp-pct" type="number" min="0.01" max="100" step="0.01" aria-label="אחוז"${dis} value="${esc(String(dlP2(b.pct)))}" onchange="dlPpSet('${jsq(id)}',${i},{pct:+this.value},1)">`   /* 7.28.1 — % מימין, כמו בערך הסטטי */
       : edp ? `%<input class="dl-pp-pct${bad ? ' need' : ''}" type="number" min="0.01" max="100" step="0.01" aria-label="אחוז — ${esc(dlPpLabel(S.beats, i))}"${dis} value="${esc(String(dlP2(b.pct)))}" onchange="dlPpPct('${jsq(id)}',${i},this.value)">`
       : `${esc(String(dlP2(b.pct)))}%`;
     /* ₪ קודם (רומן): בחלק שנערך ובחלוקה מותאמת — שדה סכום, שממנו נגזר האחוז. בלי סכום לעסקה אין ממה לגזור. */
-    const amtCell = (am.length && (cus || edp))
+    const amtCell = (am.length && ((cus && !crem && !cone) || edp))
       ? `<span class="dl-pp-amtw"><input class="dl-pp-amt${bad ? ' need' : ''}" id="dl-pp-amt-${i}" type="number" min="0" step="0.01" inputmode="decimal" aria-label="סכום — ${esc(dlPpLabel(S.beats, i))}"${dis} value="${esc(String(am[i]))}" onchange="dlPpAmt('${jsq(id)}',${i},this.value)">₪</span>`   /* 7.28.1 — ₪ משמאל, כמו בערך הסטטי */
       : (am.length ? esc(f2(am[i])) : '—');
     /* 7.46.0 — predeliv: בלי שדה ימים. מועד ישן שאינו ברשימה (בהתקנה / N ימים אחרי) מוצג כמו שהוא — לא מוחלף בשקט. */
@@ -32675,17 +32677,19 @@ function dlPayDraw(id){
     return `<div class="dd-pr dl-pp-row${paid ? ' paid' : ''}${part ? ' part' : ''}">`
       + `<div class="dd-pr-n"><span class="dd-idx">${i+1}</span><span>${esc(dlPpLabel(S.beats, i))}</span></div>`
       + `<div class="dd-pr-pct">${pct}</div>`
-      + `<div class="dd-pr-amt">${amtCell}${rem ? `<span class="dl-pp-rem">היתרה</span>` : ''}</div>`
+      + `<div class="dd-pr-amt">${amtCell}${(rem || crem) ? `<span class="dl-pp-rem">היתרה</span>` : ''}</div>`
       + `<div class="dd-pr-when">${when}</div>`
       + `<div class="dd-pr-m">${meth}</div><div class="dd-pr-x">${more}</div>`
       + `<div class="dd-pr-act">${act}</div>${_in ? `<div class="dd-pr-inst">${_in}</div>` : ''}${lk}${payLinkStatusHtml(id, i+1)}</div>`;
   }).join('');
   const sum = Math.round(S.beats.reduce((a,b)=>a+Number(b.pct||0), 0)*100)/100;
-  const off = Math.abs(sum-100) > 0.001;
+  /* 7.91.1 — בחלוקה מותאמת הסכום תמיד 100; הכשל היחיד הוא שהשאר כבר עוברים את הסה"כ ולא נשארה יתרה. */
+  const cneg = cus && S.beats.length > 1 && !(Number(S.beats[S.beats.length-1].pct) > 0);
+  const off = Math.abs(sum-100) > 0.001 || cneg;
   /* 7.28.0 — Summary: "סה"כ לתשלום" מודגש ו-100% לידו, מיושר תחת עמודת הסכום; הפעולות (הוספה/שמירה) בצד השני. */
   const foot = S.beats.length ? `<div class="dd-pay-f">`
       + `<div class="dd-total">${tot != null ? `<span class="dd-total-k">סה"כ לתשלום (כולל מע"מ)</span><b>${esc(f2(tot))}</b>` : ''}`
-      + `<span class="dl-pp-sum${off?' bad':''}">${esc(String(sum))}%${off ? (sum < 100 ? ' · חסרים ' + esc(String(Math.round((100-sum)*100)/100)) + '%' : ' · עודף ' + esc(String(Math.round((sum-100)*100)/100)) + '%') : ' ✓'}</span></div>`
+      + `<span class="dl-pp-sum${off?' bad':''}">${cneg ? 'הסכומים עוברים את הסה"כ — אין יתרה' : esc(String(sum)) + '%'}${cneg ? '' : off ? (sum < 100 ? ' · חסרים ' + esc(String(Math.round((100-sum)*100)/100)) + '%' : ' · עודף ' + esc(String(Math.round((sum-100)*100)/100)) + '%') : ' ✓'}</span></div>`
       + `<div class="dd-pay-acts">`
       + ((cus && ed && S.beats.length < 6) ? `<button type="button" class="dd-add" onclick="dlPpAdd('${jsq(id)}')">＋ הוסף תשלום</button>` : '')
       + ((cus && ed && S.dirty) ? `<button type="button" class="dd-btn"${off?' disabled title="סכום האחוזים חייב להיות 100"':''} onclick="dlPpSave('${jsq(id)}')">שמירת החלוקה</button>` : '')
@@ -32724,7 +32728,7 @@ window.dlPpSplit = (id, code)=>{
   if(code === '__custom'){
     const beats = prev.length ? prev.map(b=>Object.assign({}, b, { grp:null }))
                               : [{pct:50, anchor:'order', offset_days:0, method:m0}, {pct:50, anchor:'delivery', offset_days:0, method:m0}];
-    DL_PP[id] = { term:'__custom', beats, dirty:true }; return dlPayDraw(id);
+    DL_PP[id] = { term:'__custom', beats, dirty:true }; dlPpCusRem(DL_PP[id]); return dlPayDraw(id);
   }
   const t = (PTERMS||[]).find(x=>x.code===code); if(!t) return;
   /* האמצעים הקודמים נשמרים לפי מיקום — מעבר מ-50/50 ל-70/30 אינו מוחק את מה שכבר נבחר. */
@@ -32741,13 +32745,17 @@ window.dlPpSet = (id, i, patch, noAuto)=>{
   Object.assign(b, patch); S.dirty = true;
   if(patch.method !== undefined){ if(b.method!=='אשראי') b.installments = null; else b.installments = b.installments || 1;
                                   if(b.method!=='שוטף') b.net_days = null; else b.net_days = b.net_days || 0; }
+  if(S.term === '__custom') dlPpCusRem(S);   /* 7.91.1 */
   if(noAuto || S.term === '__custom') return dlPayDraw(id);
   dlPpMaybeSave(id);
 };
 window.dlPpAdd = id=>{ const d=(DEALS||[]).find(x=>x.id===id); if(!d) return; const S=dlPpState(d);
-  if(S.beats.length>=6) return; S.beats.push({pct:0, anchor:'delivery', offset_days:0, method:(S.beats[0]||{}).method||''}); S.dirty=true; dlPayDraw(id); };
+  if(S.beats.length>=6) return;
+  /* 7.91.1 — התשלום החדש הוא היתרה: האחרון הקודם מתחלק בינו לבין החדש (ולא 0 שמשאיר את השורה ריקה) */
+  const L = S.beats[S.beats.length-1]; if(S.term==='__custom' && L) L.pct = dlR6(Number(L.pct||0)/2);
+  S.beats.push({pct:0, anchor:'delivery', offset_days:0, method:(S.beats[0]||{}).method||''}); S.dirty=true; dlPpCusRem(S); dlPayDraw(id); };
 window.dlPpDel = (id, i)=>{ const d=(DEALS||[]).find(x=>x.id===id); if(!d) return; const S=dlPpState(d);
-  if(S.beats.length<=1) return; S.beats.splice(i,1); S.dirty=true; dlPayDraw(id); };
+  if(S.beats.length<=1) return; S.beats.splice(i,1); S.dirty=true; dlPpCusRem(S); dlPayDraw(id); };
 /* ===== 7.27.0 — פיצול תשלום בין אמצעים (paysplit) =====
    רומן, 19/10/2026: "הלקוח רוצה לשלם 15,000 בהעברה בנקאית ואת היתר באשראי 3 תשלומים … הכל מיידי אבל עם חלוקה" ·
    "גם שקלים גם אחוזים ניתנים לערכים, קודם כל השקלים. והם משנים ומשפיעים אחד על השני" · פתוח לכל אנשי המכירות.
@@ -32773,6 +32781,17 @@ function dlPpNorm(S){
     const others = ix.slice(0, -1).reduce((a, k)=>a + Number(S.beats[k].pct||0), 0);
     S.beats[ix[ix.length-1]].pct = dlR6(gp - others);
   });
+}
+/* 7.91.1 — payrem (רומן, 26/11/2026): "שישלים אוטומטית את יתרת האחוז ויתרת הסכום - לא להשאיר לאיש המכירות להקליד את זה".
+   חלוקה מותאמת: האחרון = 100 − השאר, בשש ספרות — כך הסכום הוא 100 בדיוק, כפי שהשרת דורש (crm.deal_set_payplan).
+   עד כאן ₪16,000 (20.049874%) + 79.95% = 99.999874: המסך עיגל ל-100% ✓ והשרת דחה. כל כותב ל-beats בחלוקה מותאמת
+   עובר כאן (dlPpAmt · dlPpSet · dlPpAdd · dlPpDel · dlPpSplit). */
+function dlPpCusRem(S){
+  if(!S || S.term!=='__custom' || !S.beats.length) return;
+  const n = S.beats.length;
+  if(n===1){ S.beats[0].pct = 100; return; }
+  const others = S.beats.slice(0, -1).reduce((a, b)=>a + Number(b.pct||0), 0);
+  S.beats[n-1].pct = dlR6(100 - others);
 }
 function dlPpSplitOk(S){
   if(!S || S.term==='__custom') return true;
@@ -32811,7 +32830,7 @@ window.dlPpAmt = (id, i, v)=>{
   const tot = d.amount_incl_vat != null ? Number(d.amount_incl_vat) : null; if(!(tot > 0)) return;
   const a = Math.round(Number(v)*100)/100;
   b.pct = (isFinite(a) && a > 0) ? dlR6(a / tot * 100) : 0; S.dirty = true;
-  if(S.term==='__custom') return dlPayDraw(id);
+  if(S.term==='__custom'){ dlPpCusRem(S); return dlPayDraw(id); }
   dlPpNorm(S); dlPpMaybeSave(id);
 };
 window.dlPpPct = (id, i, v)=>{

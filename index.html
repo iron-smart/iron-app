@@ -4701,7 +4701,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.92.0</div>
+      <div class="ver">גרסה 7.92.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4850,7 +4850,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="rtdisc-2026-11-26a">גרסה 7.92.0</div>
+    <div class="side-foot" title="wpplseg-2026-11-26a">גרסה 7.92.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -16186,7 +16186,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'rtdisc-2026-11-26a';
+const BUILD_ID = 'wpplseg-2026-11-26a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -23821,7 +23821,7 @@ function saTypes(d){
   const un = T.find(x=>x.seg==='לא מסווג'), unN = un ? (+un.opened_n||0)+(+un.won_n||0)+(+un.lost_n||0)+(+un.open_n||0) : 0;
   const allN = tot('opened_n')+tot('won_n')+tot('lost_n')+tot('open_n');
   return '<div class="sa-card" id="sa-types"><h3>לפי סוג לקוח <span class="cnt">שבעת הסוגים של תוכנית המכירות</span></h3>'+
-    '<div class="sa-sub">הסוג = המחירון של הלקוח בפריוריטי (בסיס ופ.ע = פרטי, ה.פ/מסחרי = מסחרי, סטונאי = סיטונאי, ריטייל = חנויות); לקוח אתר (WP) = פרטי, ועסקי כשהמחירון שלו עסקי.</div>'+
+    '<div class="sa-sub">הסוג = המחירון של הלקוח בפריוריטי (בסיס ופ.ע = פרטי, ה.פ/מסחרי = מסחרי, סטונאי = סיטונאי, ריטייל = חנויות); לקוח אתר (WP) בלי מחירון = פרטי.</div>'+
       (unN ? '<div class="sa-sub sa-warn">'+Math.round(100*unN/Math.max(1,allN))+'% מהשורות בלי מחירון בפריוריטי.</div>' : '')+
     (T.length ? '<div class="tbl-wrap"><table class="tbl" data-gs="own"><thead><tr><th>סוג</th><th class="num">פתוח עכשיו</th><th class="num">נפתחו</th><th class="num">נסגרו להזמנה</th><th class="num">ירדו</th><th class="num">אחוז סגירה</th></tr></thead><tbody>'+
       T.map(x=>'<tr data-seg="'+esc(x.seg)+'"><td><b>'+esc(x.seg)+'</b></td><td class="num">'+saNv(+x.open_n, +x.open_s)+'</td><td class="num">'+saNv(+x.opened_n, +x.opened_s)+'</td>'+
@@ -27422,13 +27422,14 @@ function cplOf(c){
   return CPL_BY.get(String(c.priority_id).trim()) || '';
 }
 /* '' = עוד לא נטען (או נכשל). אחרת תמיד ערך: 'לא מסווג' · סוג · 'אחר'.
-   7.90.1 — לקוח WP: עסקי כשהמחירון שלו עסקי, ואחרת פרטי — גם בלי מחירון (רומן: "אין סיווג כזה אתר"). */
+   7.90.1 — לקוח WP בלי מחירון = פרטי (רומן: "אין סיווג כזה אתר").
+   7.92.1 — WP עם מחירון מקבל את הסוג של המחירון, כמו כל לקוח (רומן, 26/11/2026: "WP12029 מוסדי כן").
+   ⚠️ crm.customer_segment בשרת — אותו חוק בדיוק (customer_segment.20261126.sql, wpsegtest משווה). */
 function custSeg(c){
   if(!c) return '';
   if(!CPL_BY) return '';
   const pl = cplOf(c);
-  if(cuIsWP(c)) return pl === 'עסקי' ? 'עסקי' : 'פרטי';
-  if(!pl.trim()) return 'לא מסווג';
+  if(!pl.trim()) return cuIsWP(c) ? 'פרטי' : 'לא מסווג';
   return CU_SEG_OF[pl] || 'אחר';
 }
 function custSegTxt(c){

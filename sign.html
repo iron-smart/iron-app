@@ -274,6 +274,9 @@ async function init(){
       html=html.replace(/(<iframe class="qpdf" src="[^"#]*)"/,'$1#toolbar=0&amp;navpanes=0&amp;view=FitH"');
       if(d.hash) html=html.replace('<div class="foot">',
         '<div style="text-align:center;color:#84898f;font-size:.68rem;margin-top:12px;word-break:break-all" dir="ltr"><b>טביעת אצבע דיגיטלית (SHA-256):</b><br>'+d.hash+'</div><div class="foot">');
+      /* 26/11/2026 — סימן המים במסמכים שכבר נחתמו: תיקון תצוגה בלבד, בלי לגעת ב-signed_html (הראיה). */
+      html=html.replace('</head>','<style>.card[style*="base64"]{background-size:min(80%,440px) auto!important;'
+        +'background-position:center!important;min-height:calc(min(80vw - 22.4px, 440px) * .6338 + 40px)}</style></head>');
       document.open(); document.write(html); document.close();
       return;
     }
@@ -290,10 +293,20 @@ async function init(){
        הגבוה מוגבל ברוחב והנמוך בגובה, ולכן 80% על הציר המגביל בכל אחד. */
     if(d.wm && /^[A-Za-z0-9+/]+={0,2}$/.test(d.wm)){
       const st=document.createElement('style');
-      st.textContent='.card.wm,.ok-card{background-image:url("data:image/png;base64,'+d.wm+'");'
-        +'background-repeat:no-repeat;background-position:center center}'
-        +'.card.wm{background-size:80% auto}.ok-card{background-size:auto 80%}'
-        +'@media print{.card.wm{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
+      /* 26/11/2026 — רומן: "הסמל צריך להיות בגבולות ובשקיפות" + "פה קטן מדי, פה חתוך".
+         הסמל הוא שכבה נפרדת מאחורי התוכן: רוחב 80% מהכרטיס (תקרה 440px) ביחס 710:450, והכרטיס
+         מקבל גובה מינימלי שמכיל אותו עם שוליים — כך הוא לא נחתך בכרטיס נמוך ולא מתכווץ לזעיר.
+         min-height נמדד ב-vw כי אחוז בגובה מתייחס לגובה ההורה ולא לרוחב: רוחב הכרטיס =
+         min(רוחב-מקסימלי, 100vw) פחות שולי ה-wrap. השקיפות — מה-PNG עצמו (אלפא ~5%). */
+      st.textContent='.card.wm,.ok-card{position:relative;isolation:isolate}'
+        +'.card.wm::before,.ok-card::before{content:"";position:absolute;z-index:-1;pointer-events:none;'
+        +'left:50%;top:50%;transform:translate(-50%,-50%);width:80%;max-width:440px;aspect-ratio:710/450;'
+        +'background:url("data:image/png;base64,'+d.wm+'") center/contain no-repeat;'
+        +'-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+        +'.card.wm{min-height:calc(min(80vw - 22.4px, 440px) * .6338 + 40px)}'
+        /* בכרטיס התודה הסמל בראש הכרטיס, מאחורי הטקסט — באמצע הוא נבלע מאחורי טופס התשלום. */
+        +'.ok-card::before{top:24px;transform:translateX(-50%)}'
+        +'.ok-card{min-height:calc(min(80vw - 25.6px, 390.4px) * .6338 + 48px)}';
       /* 🔴 02/09/2026 — כללי המובייל ירדו מכאן לגיליון הסטטי. הם היו
          בתוך `if(d.wm …)`, כלומר **תלויים בקיומו של סימן המים**: יום
          שבו wm_png_b64 חסר או פגום, תיקון המובייל של 01/09 לא היה חל

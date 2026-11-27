@@ -4492,6 +4492,8 @@ tr.lb-on td{ background-color:#eef5fd !important; }
 #tab-mkt .mkt-fact b{ color:var(--ink-1); }
 #tab-mkt .mkt-card > .tbl-wrap + .tbl-wrap, #tab-mkt .mkt-card > .so-more-row + .tbl-wrap{ margin-top:var(--sp-5); }
 .so-chips{ gap:var(--sp-2); margin:0 0 var(--sp-3); }
+/* 7.93.0 — soseg: תווית לשורת "סוג לקוח" (שורת המקור שמעליה נשארת בלי תווית, כמו עד היום) */
+.so-chips .so-chl{ align-self:center; font-size:var(--fs-xs); color:var(--ink-3); margin-inline-end:var(--sp-1h); }
 .so-more-row{ text-align:center; padding:var(--sp-3) 0 0; }
 /* כותרות טבלה בהירות בשני מסכי הניתוח: עשר טבלאות בזו אחר זו עם פס כהה היו רוב ה"רעש" במסך */
 #tab-sana .tbl th, #tab-mkt table.tbl th{ background:var(--bg-subtle); color:var(--ink-2); box-shadow:inset 0 -1px 0 var(--line); padding:var(--sp-2h) var(--sp-3); }
@@ -4701,7 +4703,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.92.1</div>
+      <div class="ver">גרסה 7.93.0</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4850,7 +4852,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="wpplseg-2026-11-26a">גרסה 7.92.1</div>
+    <div class="side-foot" title="soseg-2026-11-26a">גרסה 7.93.0</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -9383,9 +9385,12 @@ function soList(n){
   const cap = !SO_OPEN[n.key] && n.rows.length > SO_CAP, rows = cap ? n.rows.slice(0, SO_CAP) : n.rows;
   /* 7.71.1 — עמודה שכל שורותיה זהות אינה מוצגת: סיווג כשהרשימה מסוננת לסיווג, איש מכירות כשמסוננת אליו */
   const hc = !(n.p && n.p.cls && n.p.cls !== 'sales'), ho = !(n.p && n.p.owner);   /* 7.91.0 — 'sales' = ליד + לקוח קיים */
-  return '<div class="tbl-wrap"><table class="tbl so-tbl"><thead><tr><th>הזמנה</th><th>תאריך</th><th>לקוח</th><th class="num">סכום</th>'+(hc ? '<th>סיווג</th>' : '')+'<th>ערוץ</th><th>קמפיין</th>'+(ho ? '<th>איש מכירות</th>' : '')+'</tr></thead><tbody>'+
+  /* 7.93.0 — סוג לקוח: רק כשהשרת מחזיר seg (crm.sales_orders_list; לא mkt_orders_list), ולא כשהרשימה מסוננת לסוג אחד */
+  const hs = n.rows.some(x=>x.seg != null) && !(n.p && n.p.seg);
+  return '<div class="tbl-wrap"><table class="tbl so-tbl"><thead><tr><th>הזמנה</th><th>תאריך</th><th>לקוח</th>'+(hs ? '<th>סוג לקוח</th>' : '')+'<th class="num">סכום</th>'+(hc ? '<th>סיווג</th>' : '')+'<th>ערוץ</th><th>קמפיין</th>'+(ho ? '<th>איש מכירות</th>' : '')+'</tr></thead><tbody>'+
     rows.map(x=>'<tr'+(x.deal_id ? ' class="clk" data-deal="'+esc(x.deal_id)+'" onclick="openDeal(\''+jsq(x.deal_id)+'\')"' : '')+'><td><b>'+esc(x.order_number||'')+'</b></td>'+
       '<td>'+esc(x.order_date ? fmtD(x.order_date) : '')+'</td><td>'+esc(x.customer_name||'')+' <small class="so-cn">'+esc(x.customer_number||'')+'</small></td>'+
+      (hs ? '<td class="so-c so-seg">'+soSegPill(x.seg)+'</td>' : '')+
       '<td class="num">'+shekel(+x.net||0)+'</td>'+soCells(x, hc, ho)+'</tr>').join('')+'</tbody></table></div>'+
     (n.err ? '<div class="empty">'+esc('טעינת ההמשך נכשלה: '+n.err+' — אפשר לנסות שוב')+'</div>' : '')+
     (cap ? '<div class="so-more-row"><button type="button" class="chip so-all" onclick="soOpen(\''+jsq(n.key)+'\')">הצג את כל '+(n.total || n.rows.length)+' ההזמנות</button></div>' :
@@ -16186,7 +16191,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'wpplseg-2026-11-26a';
+const BUILD_ID = 'soseg-2026-11-26a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -23709,17 +23714,45 @@ function saTime(d){
 /* 7.68.0 — "סך המכירות" בראש ניתוח המכירות; 7.69.1 — כטבלת הזמנות עם תגיות ושבבי סיווג (רומן: "טבלה עם פירוט שורות"). */
 let SA_OCLS = '';
 window.saOcls = k=>{ SA_OCLS = k||''; renderSana(); };
+/* ===== 7.93.0 — soseg: סוג לקוח ב"סך המכירות" (רומן, 26/11/2026: "אפשר להוסיף את כל הפילוח עליה") =====
+   הסוג = crm.customer_segment על המחירון הנוכחי (אותו חוק של custSeg במסך הלקוחות). by_cls_seg = מקור × סוג מהשרת;
+   כל שורת שבבים נספרת לפי הבחירה בשורה השנייה, כך ששני הסינונים משתלבים. ⚠️ ערך שאינו ברשימה ⇒ "כל הסוגים". */
+const SO_SEGS = ['פרטי', 'עסקי', 'ארגוני', 'מוסדי', 'מסחרי', 'סיטונאי', 'חנויות', 'אחר', 'לא מסווג'];
+let SA_OSEG = '';
+window.saOseg = k=>{ SA_OSEG = SO_SEGS.includes(k) ? k : ''; renderSana(); };
+function soSegPill(s){
+  if(!s) return SO_NO;
+  if(s === 'לא מסווג') return '<span class="pill cu-unseg" title="ללקוח אין מחירון בפריוריטי">לא מסווג</span>';
+  return mdPill(s, cuSegColors());
+}
+const soClsIn = (cls, k)=> !k || cls===k || (k==='sales' && (cls==='lead' || cls==='existing'));
+function soSegChips(counts, cur){
+  const b = (k, l, o)=> '<button type="button" class="chip'+(cur===k ? ' on' : '')+'" data-seg="'+esc(k)+'" onclick="saOseg(\''+jsq(k)+'\')">'+esc(l)+
+    (o ? ' <small>'+(+o.n||0)+' · '+ilsK(+o.net||0)+'</small>' : '')+'</button>';
+  /* שבב בלי הזמנות לא מצויר — חוץ מהנבחר, כדי שתמיד אפשר יהיה לראות מה מסנן */
+  return '<div class="so-chips so-segs"><span class="so-chl">סוג לקוח</span>'+b('', 'כל הסוגים', counts.all)+
+    SO_SEGS.map(s=>(+((counts[s]||{}).n) || cur===s) ? b(s, s, counts[s]) : '').join('')+'</div>';
+}
+function saSoChips(D){
+  const T = D.total || {}, bc = D.by_class || {}, X = Array.isArray(D.by_cls_seg) ? D.by_cls_seg : null;
+  if(!X) return soChips({ all:T, lead:bc.lead, existing:bc.existing, web:bc.web, manual:bc.manual, 'return':bc['return'] }, SA_OCLS, 'saOcls');   /* שרת בלי by_cls_seg — כמו 7.92 */
+  const sum = f=> X.filter(f).reduce((a, x)=>({ n:a.n + (+x.n||0), net:a.net + (+x.net||0) }), { n:0, net:0 });
+  const inSeg = x=> !SA_OSEG || x.seg===SA_OSEG;
+  const cc = { all:sum(inSeg) }; SO_K.forEach(([k])=>{ cc[k] = sum(x=>x.cls===k && inSeg(x)); });
+  const sc = { all:sum(x=>soClsIn(x.cls, SA_OCLS)) }; SO_SEGS.forEach(s=>{ sc[s] = sum(x=>x.seg===s && soClsIn(x.cls, SA_OCLS)); });
+  return soChips(cc, SA_OCLS, 'saOcls') + soSegChips(sc, SA_OSEG);
+}
 function saOrders(){
   const R = saRange(), own = saOwner(), e = soaGet(R.from, R.to, saGrain()), D = (e && e.d && !e.err) ? e.d : null;
   if(!D && e && e.err==='אין הרשאה') return '';   /* השרת החזיר null — אין הרשאה, הכרטיס לא מצויר */
   const T = (D && D.total) || {}, bc = (D && D.by_class) || {}, o = own && D ? soaOwn(D, own) : null;
   const cnt = !D ? 'כמו בפריוריטי' : own ? ilsK(o.s)+' · '+o.n+' הזמנות של '+((LOWN_BY[own]||{}).name||'')
             : ilsK(+T.net||0)+' · '+(+T.n||0)+' הזמנות · כמו בפריוריטי';
-  const p = Object.assign({ from:R.from, to:R.to }, own ? { owner:own } : (SA_OCLS ? { cls:SA_OCLS } : {}));
+  const p = Object.assign({ from:R.from, to:R.to }, own ? { owner:own } : Object.assign({}, SA_OCLS ? { cls:SA_OCLS } : {}, SA_OSEG ? { seg:SA_OSEG } : {}));   /* 7.93.0 — seg */
   const n = solGet('sales_orders_list', p, ()=>{ try{ if(CUR_TAB==='sana') renderSana(); }catch(_e){} });
   return '<div class="sa-card" id="sa-orders"><h3>סך המכירות <span class="cnt">'+esc(cnt)+'</span></h3>'+
-    '<div class="sa-sub">כל ההזמנות בטווח, לפי תאריך ההזמנה, אחרי הנחה ולפני מע״מ. לחיצה על הזמנה מתהליך פותחת את התהליך.</div>'+
-    (own ? '' : D ? soChips({ all:T, lead:bc.lead, existing:bc.existing, web:bc.web, manual:bc.manual, 'return':bc['return'] }, SA_OCLS, 'saOcls') : '')+
+    '<div class="sa-sub">כל ההזמנות בטווח, לפי תאריך ההזמנה, אחרי הנחה ולפני מע״מ. לחיצה על הזמנה מתהליך פותחת את התהליך. סוג הלקוח — לפי המחירון הנוכחי שלו בפריוריטי.</div>'+
+    (own ? '' : D ? saSoChips(D) : '')+   /* 7.93.0 — מקור + סוג לקוח */
     soList(n)+'</div>';
 }
 function saReps(d){

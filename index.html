@@ -4813,7 +4813,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
   <div class="card">
     <div class="brand">
       <img class="wm" id="loginLogo" src="assets/logo-white.png" alt="IRON FITNESS" onerror="this.style.display='none'; var d=document.createElement('div'); d.className='wmtxt'; d.textContent='IRON FITNESS'; if(this.parentNode) this.parentNode.insertBefore(d,this);">
-      <div class="ver">גרסה 7.99.0</div>
+      <div class="ver">גרסה 7.99.1</div>
     </div>
     <div class="form">
       <h1>ברוכים הבאים</h1>
@@ -4962,7 +4962,7 @@ tr.lb-on td{ background-color:#eef5fd !important; }
       </div>
       <button class="side-out" id="logoutBtn" title="יציאה מהמערכת" aria-label="יציאה מהמערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
-    <div class="side-foot" title="goalsviz-2026-11-28a">גרסה 7.99.0</div>
+    <div class="side-foot" title="herodedup-2026-11-28a">גרסה 7.99.1</div>
     <button class="side-collapse" title="כיווץ התפריט" aria-label="כיווץ התפריט" onclick="setSide(false)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </aside>
   <button id="sideOpenTab" title="פתיחת התפריט" aria-label="פתיחת התפריט" onclick="setSide(true)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -16629,7 +16629,7 @@ window.createProtocol = async (orderId, ctx)=>{
    כאן הוא ברמה העליונה, לפני המודול. שני הצרכנים ממשיכים לעבוד: ייצוא
    המחירון פותר אותו לקסיקלית, ובלוק הגרסה מהסקופ הגלובלי.
    זה הצימוד היחיד שמנע ממודול התמחור להיות ניתן לחילוץ. */
-const BUILD_ID = 'goalsviz-2026-11-28a';
+const BUILD_ID = 'herodedup-2026-11-28a';
 window.BUILD_ID = BUILD_ID;
 /* ===== סביבת בדיקה (iron-smart.github.io/iron-app-next) =====
    אותו קוד, אותו מסד. ההבדל היחיד: לא בודקים גרסה (BUILD_ID כאן תמיד חדש מהגרסה
@@ -24090,7 +24090,7 @@ function saGoals(m, D, G, to){
   const ml = new Date(m+'T12:00:00').toLocaleDateString('he-IL', { month:'long', year:'numeric' });
   const ed = canEdit('crm.deals') ? '<button type="button" class="lf-clear sa-gle" onclick="saGlEdit(\''+m+'\')">עריכת יעדים</button>' : '';
   const W = saWd(m), left = W.tot - W.done, sg = SA_GL_SEGS.filter(s=>G.seg[s] > 0);
-  const hd = '<div class="sa-glh"><b>יעדי החודש</b> <small>'+esc(ml)+' · לפני מע״מ'+(W.past ? '' : ' · '+(left===1 ? 'נותר יום עבודה אחד' : 'נותרו '+left+' ימי עבודה'))+'</small>'+ed+'</div>';
+  const hd = '<div class="sa-glh"><b>יעדי החודש</b> <small>'+esc(ml)+(W.past ? '' : ' · '+(left===1 ? 'נותר יום עבודה אחד' : 'נותרו '+left+' ימי עבודה'))+'</small>'+ed+'</div>';
   if(!(G.sales > 0 || G.web > 0 || sg.length)) return '<div class="sa-gl" id="sa-gl">'+hd+'<div class="sa-gln">לא הוגדרו יעדים לחודש הזה.</div></div>';
   const free = X ? SA_GL_SEGS.filter(s=>!(G.seg[s] > 0)).map(s=>[s, segAct(s)]).filter(z=>z[1] > 0) : [];
   let main = '';
@@ -24129,21 +24129,25 @@ function saHero(){
   if(own){ const o = soaOwn(D, own);
     return '<div class="sa-card sa-hero" id="sa-hero"><div class="sa-kpis c2">'+
       k('מכירות '+lbl+' · '+esc((LOWN_BY[own]||{}).name||''), saMoney(o.s), ['לפני מע״מ', saN(o.n)+' מתהליכים'], 'main')+
-      k('כל המכירות', saMoney(T.net), ['לפני מע״מ', saN(T.n)])+'</div></div>'; }
+      k('כל המכירות', saMoney(T.net), [saN(T.n)])+'</div></div>'; }
   const n = +T.n||0, net = +T.net||0, sl = bc.sales || {}, wb = bc.web || {}, mn = bc.manual || {}, rt = bc['return'] || {};
   const P = (SA.cache[saKey()] || {}).d, tg = (R.p==='month' && P && P.pref) ? (+P.pref.target_m||0) : 0;
-  const gm = saGlMonth(R), G = gm ? saGlOf(gm) : null, tgS = G && G.sales > 0 ? G.sales : tg, tgW = G && G.web > 0 ? G.web : 0;   /* 7.94.0 */
+  const gm = saGlMonth(R), G = gm ? saGlOf(gm) : null, tgS = G && G.sales > 0 ? G.sales : tg;   /* 7.94.0 */
+  /* 7.99.1 — herodedup (רומן, 28/11/2026: "תנקה טקסט שחוזר על עצמו … למה רשום 83% מהיעד אם רשום במילא למטה"):
+     "% מהיעד" רק כש"יעדי החודש" מתחת אינו מציג את אותו יעד (יעד ישן מ-sales_targets בלבד); אחרת "% מהמכירות" כמו בידני.
+     "לפני מע״מ" — רק ליד "כולל מע״מ" (הראשי והאתר); בשאר האריחים הוא חזר שש פעמים. */
+  const glS = !!(G && G.sales > 0);
   const pc = v=> net > 0 ? Math.round(100*(+v||0)/net)+'% מהמכירות' : '';
   return '<div class="sa-card sa-hero" id="sa-hero"><div class="sa-kpis">'+
     /* 7.93.1 — "לפני מע״מ" לבד מתחת לסכום, ו"כולל מע״מ" בשורה משלו (רומן, 27/11/2026: "₪764,737 ואז למטה רשום לפני מע״מ") */
     k('מכירות '+lbl, saMoney(net), ['לפני מע״מ', T.gross != null ? '<b>'+saMoney(T.gross)+'</b> כולל מע״מ' : ''], 'main')+
     /* 7.93.2 — "לפני מע״מ" בכל אריח (רומן: "תציין גם ביתר לפני מעמ"); באתר גם "כולל מע״מ" — מחירי האתר כוללים מע״מ,
        וכך אפשר להשוות לחנות (רומן: "באתר תעשה לי בקטן גם כולל מעמ"). שרת בלי by_class.web.gross ⇒ בלי השורה. */
-    k('הזמנות', n, [n ? 'ממוצע להזמנה '+saMoney(net/n) : '', n ? 'לפני מע״מ' : ''], 'all', '')+
-    k('מתהליכי מכירה', saMoney(sl.net), ['לפני מע״מ', saN(sl.n), tgS > 0 ? Math.round(100*(+sl.net||0)/tgS)+'% מהיעד' : pc(sl.net)], '', 'sales')+
-    k('אתר', saMoney(wb.net), ['לפני מע״מ', wb.gross != null ? '<b>'+saMoney(wb.gross)+'</b> כולל מע״מ' : '', saN(wb.n), tgW > 0 ? Math.round(100*(+wb.net||0)/tgW)+'% מהיעד' : pc(wb.net)], '', 'web')+
-    k('ידני', saMoney(mn.net), ['לפני מע״מ', saN(mn.n), pc(mn.net)], '', 'manual')+
-    k('החזרות', saMoney(rt.net), ['לפני מע״מ', saN(rt.n)], '', 'return')+'</div>'+saGoals(gm, D, G, R.to)+'</div>';   /* 7.94.0 — יעדי החודש */
+    k('הזמנות', n, [n ? 'ממוצע להזמנה '+saMoney(net/n) : ''], 'all', '')+
+    k('מתהליכי מכירה', saMoney(sl.net), [saN(sl.n), (!glS && tgS > 0) ? Math.round(100*(+sl.net||0)/tgS)+'% מהיעד' : pc(sl.net)], '', 'sales')+
+    k('אתר', saMoney(wb.net), (wb.gross != null ? ['לפני מע״מ', '<b>'+saMoney(wb.gross)+'</b> כולל מע״מ'] : []).concat([saN(wb.n), pc(wb.net)]), '', 'web')+   /* יעד האתר — בטבעת שב"יעדי החודש" */
+    k('ידני', saMoney(mn.net), [saN(mn.n), pc(mn.net)], '', 'manual')+
+    k('החזרות', saMoney(rt.net), [saN(rt.n)], '', 'return')+'</div>'+saGoals(gm, D, G, R.to)+'</div>';   /* 7.94.0 — יעדי החודש */
 }
 function saMonthR(){ const t = new Date(); return { from:isoD(new Date(t.getFullYear(), t.getMonth()-11, 1)), to:isoD(t) }; }
 /* לחיצה על חודש = הטווח של אותו חודש (עד היום, לחודש הנוכחי); לחיצה שנייה על אותו חודש מחזירה ל"החודש" */
@@ -24361,11 +24365,11 @@ function saOrders(){
   const R = saRange(), own = saOwner(), e = soaGet(R.from, R.to, saGrain()), D = (e && e.d && !e.err) ? e.d : null;
   if(!D && e && e.err==='אין הרשאה') return '';   /* השרת החזיר null — אין הרשאה, הכרטיס לא מצויר */
   const T = (D && D.total) || {}, bc = (D && D.by_class) || {}, o = own && D ? soaOwn(D, own) : null;
-  const cnt = !D ? 'כמו בפריוריטי' : own ? ilsK(o.s)+' · '+o.n+' הזמנות של '+((LOWN_BY[own]||{}).name||'')
-            : ilsK(+T.net||0)+' · '+(+T.n||0)+' הזמנות · כמו בפריוריטי';
+  const cnt = !D ? '' : own ? ilsK(o.s)+' · '+o.n+' הזמנות של '+((LOWN_BY[own]||{}).name||'')
+            : ilsK(+T.net||0)+' · '+(+T.n||0)+' הזמנות';
   const p = Object.assign({ from:R.from, to:R.to }, own ? { owner:own } : Object.assign({}, SA_OCLS ? { cls:SA_OCLS } : {}, SA_OSEG ? { seg:SA_OSEG } : {}));   /* 7.93.0 — seg */
   const n = solGet('sales_orders_list', p, ()=>{ try{ if(CUR_TAB==='sana') renderSana(); }catch(_e){} });
-  return '<div class="sa-card'+(saClOn('sa-orders') ? ' sa-cl' : '')+'" id="sa-orders">'+saClH('sa-orders', 'סך המכירות', esc(cnt))+
+  return '<div class="sa-card'+(saClOn('sa-orders') ? ' sa-cl' : '')+'" id="sa-orders">'+saClH('sa-orders', 'סך המכירות', esc(cnt)+(own ? '' : '<span class="sa-hint">'+(cnt ? ' · ' : '')+'כמו בפריוריטי</span>'))+
     '<div class="sa-sub">כל ההזמנות בטווח, לפי תאריך ההזמנה, אחרי הנחה ולפני מע״מ. לחיצה על הזמנה מתהליך פותחת את התהליך. סוג הלקוח — לפי המחירון הנוכחי שלו בפריוריטי.</div>'+
     (own ? '' : D ? saSoChips(D) : '')+   /* 7.93.0 — מקור + סוג לקוח */
     soList(n, { noCh:true })+'</div>';   /* 7.94.0 */
